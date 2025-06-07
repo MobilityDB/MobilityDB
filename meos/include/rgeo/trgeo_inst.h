@@ -59,10 +59,6 @@ extern TInstant *trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose,
 extern TInstant *trgeoseq_to_tinstant(const TSequence *seq);
 extern TInstant *trgeoseqset_to_tinstant(const TSequenceSet *ts);
 
-/* Accessor functions */
-
-extern TSequence **trgeoinst_sequences(const TInstant *inst, int *count);
-
 /*****************************************************************************/
 
 #endif /* __TRGEO_INST_H__ */

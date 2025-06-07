@@ -102,9 +102,9 @@
  *   @ingroup mobilitydb_pose_rel
  *   @brief Ever and always spatial relationship functions for temporal poses
  *
- *   @defgroup mobilitydb_pose_rel_temp Temporal spatial relationship functions
+ *   @defgroup mobilitydb_pose_rel_temp Spatiotemporal relationship functions
  *   @ingroup mobilitydb_pose_rel
- *   @brief Temporal spatial relationship functions for temporal poses
+ *   @brief Spatiotemporal relationship functions for temporal poses
  *
  * @defgroup mobilitydb_pose_agg Aggregate functions
  * @ingroup mobilitydb_pose

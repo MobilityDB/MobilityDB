@@ -253,12 +253,12 @@ CREATE FUNCTION aIntersects(tgeogpoint, tgeogpoint)
 
 CREATE FUNCTION eTouches(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_geo_tgeo'
+  AS 'MODULE_PATHNAME', 'Etouches_geo_tpoint'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Etouches_tpoint_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

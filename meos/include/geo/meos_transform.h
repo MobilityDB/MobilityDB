@@ -9,7 +9,9 @@
  *
  **********************************************************************/
 
+/* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
 #include <liblwgeom.h>
 
 /* Prototypes */

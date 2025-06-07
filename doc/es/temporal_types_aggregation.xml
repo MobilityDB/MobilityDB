@@ -219,12 +219,12 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
-		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver la <xref linkend="tgeo_spatial_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		<para>En el caso de los geometrías temporales, todas las relaciones espaciales con la semántica alguna vez o siempre (ver la <xref linkend="tgeo_spatial_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT tintersects(T.Trip, R.Geom)
+SELECT tIntersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 -- Filtro de índice con cuadro delimitador
-WHERE intersects(T.Trip, R.Geom);
+WHERE eIntersects(T.Trip, R.Geom);
 </programlisting>
 		</para>
 	</sect1>

@@ -37,9 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include <meos.h>
 #include <meos_npoint.h>
-#include "temporal/meos_catalog.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * fmgr macros
@@ -74,17 +73,8 @@ extern bool ensure_valid_tnpoint_tnpoint(const Temporal *temp1,
 
 extern bool common_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
-extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
 extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
-
-extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
-  const STBox *box);
-
-/* Utility functions */
-
-extern TSequenceSet *tnpointseqset_filter_rid(const TSequenceSet *ss,
-  int64 rid);
 
 /* Collinear functions */
 
@@ -100,8 +90,6 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
-extern int32_t get_srid_ways(void);
-extern Npoint *npoint_parse(const char **str, bool end);
 extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
@@ -109,19 +97,6 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 /* Input/output functions */
 
 extern char *npoint_wkt_out(Datum value, int maxdd);
-
-extern Npoint *npoint_in(const char *str);
-extern char *npoint_out(const Npoint *np, int maxdd);
-
-extern Nsegment *nsegment_in(const char *str);
-extern char *nsegment_out(const Nsegment *ns, int maxdd);
-
-extern char *npoint_as_text(const Npoint *np, int maxdd);
-extern char *npoint_as_ewkt(const Npoint *np, int maxdd);
-extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out);
-extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out);
-extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);
-extern Npoint *npoint_from_hexwkb(const char *hexwkb);
 
 /* Constructor functions */
 
@@ -131,8 +106,6 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 /* Transformation functions */
 
 extern Datum datum_npoint_round(Datum npoint, Datum size);
-extern Npoint *npoint_round(const Npoint *np, int maxdd);
-extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
 
 /*****************************************************************************
  * Temporal network point functions
@@ -168,8 +141,12 @@ extern Set *tnpointseqset_routes(const TSequenceSet *ss);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
-extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
-extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
+extern Temporal *tnpoint_restrict_npoint(const Temporal *temp, const Npoint
+  *np, bool atfunc);
+extern Temporal *tnpoint_restrict_npointset(const Temporal *temp, const Set *s,
+  bool atfunc);
 
 /*****************************************************************************/
 

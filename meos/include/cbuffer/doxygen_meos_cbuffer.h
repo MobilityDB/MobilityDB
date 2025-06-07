@@ -52,9 +52,17 @@
  * @ingroup meos_cbuffer
  * @brief Accessor functions for temporal circular buffers
  *
+ * @defgroup meos_cbuffer_transf Transformation functions
+ * @ingroup meos_cbuffer
+ * @brief Transformation functions for temporal circular buffers
+ *
  * @defgroup meos_cbuffer_restrict Restriction functions
  * @ingroup meos_cbuffer
  * @brief Restriction functions for temporal circular buffers
+ *
+ * @defgroup meos_cbuffer_dist Distance functions
+ * @ingroup meos_cbuffer
+ * @brief Distance functions for temporal circular buffers
  *
  * @defgroup meos_cbuffer_comp Comparison functions
  * @ingroup meos_cbuffer
@@ -68,9 +76,17 @@
  *   @ingroup meos_cbuffer_comp
  *   @brief Temporal comparison functions for temporal circular buffers
  *
- * @defgroup meos_cbuffer_dist Distance functions
+ * @defgroup meos_cbuffer_rel Spatial relationship functions
  * @ingroup meos_cbuffer
- * @brief Distance functions for temporal circular buffers
+ * @brief Spatial relationship functions for temporal circular buffers
+ *
+ *   @defgroup meos_cbuffer_rel_ever Ever/always relationship functions
+ *   @ingroup meos_cbuffer_rel
+ *   @brief Ever/always relationship functions for temporal circular buffers
+ *
+ *   @defgroup meos_cbuffer_rel_temp Temporal relationship functions
+ *   @ingroup meos_cbuffer_rel
+ *   @brief Temporal relationship functions for temporal circular buffers
  */
 
 /*****************************************************************************/
@@ -99,6 +115,14 @@
  * @defgroup meos_cbuffer_base_srid Spatial reference system functions
  * @ingroup meos_cbuffer_base
  * @brief Spatial reference system functions for static circular buffers
+ *
+ * @defgroup meos_cbuffer_base_rel Spatial relationship functions
+ * @ingroup meos_cbuffer_base
+ * @brief Spatial relationship functions for static circular buffers
+ *
+ * @defgroup meos_cbuffer_base_dist Distance functions
+ * @ingroup meos_cbuffer_base
+ * @brief Distance functions for static circular buffers
  *
  * @defgroup meos_cbuffer_base_comp Comparison functions
  * @ingroup meos_cbuffer_base

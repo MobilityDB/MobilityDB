@@ -107,12 +107,12 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Only used for temporal spatial types.
+ * @param[in] totalrows Only used for spatiotemporal types.
  * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 static void
 temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
+  int samplerows, double totalrows UNUSED)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *value_lengths = NULL, *time_lengths; /* make compiler quiet */
@@ -140,7 +140,11 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   for (int i = 0; i < samplerows; i++)
   {
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
 
     bool isnull;
     Datum value = fetchfunc(stats, i, &isnull);
@@ -159,7 +163,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
-      Span *span = tnumber_span(temp);
+      Span *span = tnumber_to_span(temp);
       SpanBound span_lower, span_upper;
       span_deserialize(span, &span_lower, &span_upper);
       value_lowers[non_null_cnt] = span_lower;

@@ -174,7 +174,7 @@ PGDLLEXPORT Datum Spanset_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return a span set from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a span set from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn intspansetFromHexWKB(), floatspansetFromHexWKB(), ...
  */
@@ -213,7 +213,7 @@ PGDLLEXPORT Datum Spanset_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a span set
  * @sqlfn asHexWKB()
  */

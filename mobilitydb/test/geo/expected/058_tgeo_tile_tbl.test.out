@@ -7,11 +7,11 @@ SELECT spaceTiles(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROU
 (3 rows)
 
 SELECT timeTiles(b, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                                  timetiles                                  | count 
------------------------------------------------------------------------------+-------
- (1,"STBOX T([Mon Jan 22 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST))") |     6
- (1,"STBOX T([Mon May 21 01:00:00 2001 PDT, Mon May 28 01:00:00 2001 PDT))") |     6
- (1,"STBOX T([Mon Aug 27 01:00:00 2001 PDT, Mon Sep 03 01:00:00 2001 PDT))") |     6
+                                                         timetiles                                                          | count 
+----------------------------------------------------------------------------------------------------------------------------+-------
+ (1,"STBOX XT(((10.392726,37.996562),(15.342478,47.342932)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((40.726817,95.354125),(49.566783,98.357342)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))") |     1
+ (1,"STBOX XT(((52.831943,61.599744),(61.76716,63.9717)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST))")    |     1
 (3 rows)
 
 SELECT spaceTimeTiles(b, 2.5, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

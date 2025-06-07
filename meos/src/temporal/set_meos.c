@@ -56,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * POSE_inout
+ * @ingroup meos_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @csqlfn #Set_in()

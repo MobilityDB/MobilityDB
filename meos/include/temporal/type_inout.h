@@ -40,10 +40,6 @@
 /* MEOS */
 #include "temporal/meos_catalog.h"
 
-/*
- * Export functions
- */
-
 /*****************************************************************************
  * Definitions taken from the file liblwgeom_internal.h
  *****************************************************************************/

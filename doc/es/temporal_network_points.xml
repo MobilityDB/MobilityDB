@@ -706,12 +706,12 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &gt;&gt;
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Relaciones espaciales</title>
 		<para>
-			Las relaciones espaciales descritas en <xref linkend="tgeo_spatial_rel"/>, como <varname>eIntersects</varname>, <varname>aDwithin</varname> o <varname>tContains</varname>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Para aplicar estas relaciones espaciales a los puntos de la red temporal, estos deben transformarse en puntos geométricos temporales. Esto se puede realizar fácilmente mediante las funciones <varname>geometry</varname> y <varname>tgeompoint</varname> o mediante una conversión explícita de valores con <varname>::</varname>, como se muestra en los ejemplos a continuación.
+			Las relaciones topológicas y de distancia descritas en <xref linkend="tgeo_spatial_rel"/>, como <varname>eIntersects</varname>, <varname>aDwithin</varname> o <varname>tContains</varname>, se definen en el espacio geográfico, mientras que los puntos de la red temporal se definen en el espacio de la red. Para aplicar estas relaciones espaciales a los puntos de la red temporal, estos deben transformarse en puntos geométricos temporales. Esto se puede realizar fácilmente mediante las funciones <varname>geometry</varname> y <varname>tgeompoint</varname> o mediante una conversión explícita de valores con <varname>::</varname>, como se muestra en los ejemplos a continuación.
 		</para>
 
 		<itemizedlist>
 			<listitem xml:id="tnpoint_espatialrels">
-				<para>Relaciones espaciales alguna vez</para>
+				<para>Relaciones alguna vez y siempre</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));
@@ -727,7 +727,7 @@ SELECT eIntersects(
 			</listitem>
 
 			<listitem xml:id="tnpoint_tspatialrels">
-				<para>Relaciones espaciales temporales</para>
+				<para>Relaciones espaciotemporales</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));

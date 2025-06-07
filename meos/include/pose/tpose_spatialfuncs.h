@@ -34,24 +34,10 @@
 #ifndef __TPOSE_SPATIALFUNCS_H__
 #define __TPOSE_SPATIALFUNCS_H__
 
-#include <meos.h>
-#include <meos_pose.h>
 #include "temporal/temporal.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
-
-/* Validity functions */
-
-extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
-extern bool ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern bool ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose);
-extern bool ensure_valid_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
-
-/* Interpolation functions */
-
-extern bool tposesegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
 
 /* Trajectory function */
 

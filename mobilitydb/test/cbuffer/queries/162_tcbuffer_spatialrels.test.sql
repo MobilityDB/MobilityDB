@@ -41,18 +41,13 @@ SELECT eContains(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
 SELECT eContains(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
 
-SELECT eContains(geometry 'Linestring(1 1,3 3)', tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]');
-SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)', tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]');
-SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]');
-SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]');
-
 SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3)');
 SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
 SELECT eContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
 
 /* Errors */
-SELECT eContains(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 
 -------------------------------------------------------------------------------
 -- eDisjoint

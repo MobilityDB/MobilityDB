@@ -41,9 +41,9 @@
  * @ingroup meos_internal
  * @brief Functions for set and span types
  *
- * @defgroup meos_internal_box Functions for box types
+ * @defgroup meos_internal_box Functions for temporal boxes
  * @ingroup meos_internal
- * @brief Functions for box types
+ * @brief Functions for temporal boxes
  *
  * @defgroup meos_internal_temporal Functions for temporal types
  * @ingroup meos_internal

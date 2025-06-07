@@ -32,8 +32,6 @@
  * @brief Functions for temporal bounding boxes
  */
 
-#include "temporal/tbox.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -43,8 +41,10 @@
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "temporal/type_util.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
@@ -175,7 +175,7 @@ PGDLLEXPORT Datum Tbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Return a temporal box from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal box from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn tboxFromHexWKB()
  */
@@ -210,7 +210,7 @@ PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a temporal box
  * @sqlfn asHexWKB()
  */
@@ -333,7 +333,7 @@ Datum
 Timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PG_RETURN_TBOX_P(timestamptz_tbox(t));
+  PG_RETURN_TBOX_P(timestamptz_to_tbox(t));
 }
 
 PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);

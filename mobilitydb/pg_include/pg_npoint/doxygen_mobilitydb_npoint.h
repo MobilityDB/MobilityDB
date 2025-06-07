@@ -99,9 +99,9 @@
  *   @ingroup mobilitydb_npoint_rel
  *   @brief Ever and always spatial relationship functions for temporal network points
  *
- *   @defgroup mobilitydb_npoint_rel_temp Temporal spatial relationship functions
+ *   @defgroup mobilitydb_npoint_rel_temp Spatiotemporal relationship functions
  *   @ingroup mobilitydb_npoint_rel
- *   @brief Temporal spatial relationship functions for temporal network points
+ *   @brief Spatiotemporal relationship functions for temporal network points
  *
  *   @defgroup mobilitydb_npoint_route Route functions
  *   @ingroup mobilitydb_npoint

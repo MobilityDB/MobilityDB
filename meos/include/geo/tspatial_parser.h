@@ -49,8 +49,6 @@ extern bool spatial_parse_elem(const char **str, meosType temptype, char delim,
 extern bool geo_parse(const char **str, meosType basetype, char delim, 
   int *srid, GSERIALIZED **result);
 extern STBox *stbox_parse(const char **str);
-extern TSequence *tpointseq_parse(const char **str, meosType temptype,
-  interpType interp, bool end, bool make, int *tpoint_srid);
 extern Temporal *tpoint_parse(const char **str, meosType temptype);
 
 extern bool tspatialinst_parse(const char **str, meosType temptype, bool end,

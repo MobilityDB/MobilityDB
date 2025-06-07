@@ -44,12 +44,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h" /* For oid_type() */
@@ -118,7 +118,7 @@ Tspatial_from_ewkt(PG_FUNCTION_ARGS)
 
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
- * a temporal spatial value
+ * a spatiotemporal value
  * @sqlfn asText()
  */
 static Datum
@@ -140,7 +140,7 @@ PGDLLEXPORT Datum Tspatial_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_as_text);
 /**
  * @ingroup mobilitydb_geo_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal spatial
+ * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
  * value
  * @sqlfn asText()
  */
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(Tspatial_as_ewkt);
 /**
  * @ingroup mobilitydb_geo_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
- * temporal spatial value
+ * spatiotemporal value
  * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
@@ -174,8 +174,8 @@ PG_FUNCTION_INFO_V1(Tspatial_as_ewkb);
 /**
  * @ingroup mobilitydb_geo_inout
  * @brief Return the Extended Well-Known Binary (WKB) representation of a
- * temporal spatial value
- * @note This will have 'SRID=#;' for temporal spatial values
+ * spatiotemporal value
+ * @note This will have 'SRID=#;' for spatiotemporal values
  * @sqlfn asEWKB()
  */
 Datum
@@ -197,7 +197,7 @@ PGDLLEXPORT Datum Tspatial_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_to_stbox);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Convert a temporal spatial value into a spatiotemporal box
+ * @brief Convert a spatiotemporal value into a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -212,56 +212,14 @@ Tspatial_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_expand_space);
-/**
- * @ingroup mobilitydb_geo_transf
- * @brief Return the bounding box of a geometry/geography expanded on the
- * spatial dimension by a value
- * @sqlfn expandSpace()
- */
-Datum
-Geo_expand_space(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  double d = PG_GETARG_FLOAT8(1);
-  STBox *result = geo_expand_space(gs, d);
-  PG_FREE_IF_COPY(gs, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_STBOX_P(result);
-}
-
-PGDLLEXPORT Datum Tspatial_expand_space(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tspatial_expand_space);
-/**
- * @ingroup mobilitydb_geo_transf
- * @brief Return the bounding box of a temporal spatial value expanded on the
- * spatial dimension by a value
- * @sqlfn expandSpace()
- */
-Datum
-Tspatial_expand_space(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double d = PG_GETARG_FLOAT8(1);
-  STBox *result = tspatial_expand_space(temp, d);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_STBOX_P(result);
-}
-
-/*****************************************************************************
- * Spatial reference system functions for temporal spatial types
+ * Spatial reference system functions for spatiotemporal types
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tspatial_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_srid);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return the SRID of a temporal spatial value
+ * @brief Return the SRID of a spatiotemporal value
  * @sqlfn SRID()
  */
 Datum
@@ -277,7 +235,7 @@ PGDLLEXPORT Datum Tspatial_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_set_srid);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return a temporal spatial value with the coordinates set to an SRID
+ * @brief Return a spatiotemporal value with the coordinates set to an SRID
  * @sqlfn setSRID()
  */
 Datum
@@ -294,7 +252,7 @@ PGDLLEXPORT Datum Tspatial_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_transform);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return a temporal spatial value transformed to an SRID
+ * @brief Return a spatiotemporal value transformed to an SRID
  * @sqlfn transform()
  */
 Datum
@@ -311,7 +269,7 @@ PGDLLEXPORT Datum Tspatial_transform_pipeline(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_transform_pipeline);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return a temporal spatial value transformed to an SRID using a
+ * @brief Return a spatiotemporal value transformed to an SRID using a
  * pipeline
  * @sqlfn transformPipeline()
  */

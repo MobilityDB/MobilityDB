@@ -18,7 +18,7 @@
 		</para>
 
 		<para>
-			La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <xref linkend="insert_fig" />.
+			La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en la <xref linkend="insert_fig" />.
 		</para>
 
 		<figure xml:id="insert_fig" float="start">

@@ -50,6 +50,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/tbox.h"
 #include "geo/stbox.h"
@@ -288,7 +289,7 @@ tspatial_sel_default(meosOper oper)
  * we don't have statistics or cannot use them for some reason
  */
 float8
-temporal_joinsel_default(Oid operid __attribute__((unused)))
+temporal_joinsel_default(Oid operid UNUSED)
 {
   // TODO take care of the operators
   return 0.001;
@@ -299,7 +300,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
  * we don't have statistics or cannot use them for some reason
  */
 float8
-tnumber_joinsel_default(meosOper oper __attribute__((unused)))
+tnumber_joinsel_default(meosOper oper UNUSED)
 {
   // TODO take care of the operators
   return 0.001;
@@ -355,7 +356,7 @@ tspatial_joinsel_default(meosOper oper)
  * @brief Return the enum value associated to the operator
  */
 static bool
-temporal_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
+temporal_oper_sel(meosOper oper UNUSED, meosType ltype,
   meosType rtype)
 {
   if ((timespan_basetype(ltype) || timeset_type(ltype) ||
@@ -372,7 +373,7 @@ temporal_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
  * @brief Return the enum value associated to the operator
  */
 bool
-tnumber_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+tnumber_oper_sel(Oid operid UNUSED, meosType ltype,
   meosType rtype)
 {
   if ((timespan_basetype(ltype) || timeset_type(ltype) ||
@@ -389,7 +390,7 @@ tnumber_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
  * @brief Get the enum value associated to the operator
  */
 static bool
-tspatial_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+tspatial_oper_sel(Oid operid UNUSED, meosType ltype,
   meosType rtype)
 {
   if ((timespan_basetype(ltype) || timeset_type(ltype) ||
@@ -407,7 +408,7 @@ tspatial_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
  * family
  */
 static bool
-temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
+temporal_oper_sel_family(meosOper oper UNUSED, meosType ltype,
   meosType rtype, TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */

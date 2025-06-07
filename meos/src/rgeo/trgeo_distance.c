@@ -57,6 +57,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
@@ -218,20 +219,6 @@ uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
 }
 
 /**
- * @brief
- */
-static void
-apply_pose_point4d(POINT4D *p, Pose *pose)
-{
-  double c = cos(pose->data[2]);
-  double s = sin(pose->data[2]);
-  double x = p->x, y = p->y;
-  p->x = x * c - y * s + pose->data[0];
-  p->y = x * s + y * c + pose->data[1];
-  return;
-}
-
-/**
  * @brief Computes the relative position of point on segment v(vs, ve)
  * @details
  * s < 0      -> p before point vs
@@ -244,7 +231,7 @@ static inline double
 compute_s(POINT4D p, POINT4D vs, POINT4D ve)
 {
   return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    (pow(ve.x - vs.x, 2) + pow(ve.y - vs.y, 2));
+    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
 }
 
 /**
@@ -271,8 +258,8 @@ static inline double
 compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 {
   double s = compute_s(p, vs, ve);
-  return pow(p.x - vs.x - (ve.x - vs.x) * s, 2) + 
-    pow(p.y - vs.y - (ve.y - vs.y) * s, 2);
+  return (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) + 
+    (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
 }
 
 // /**
@@ -460,12 +447,12 @@ solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
  * @brief
  */
 static double
-solve_angle_0_tpoly_point(LWPOLY *poly __attribute__((unused)),
-  LWPOINT *point __attribute__((unused)),
-  Pose *poly_pose_s __attribute__((unused)),
-  Pose *poly_pose_e __attribute__((unused)),
-  uint32_t poly_v __attribute__((unused)),
-  double r_prev __attribute__((unused)))
+solve_angle_0_tpoly_point(LWPOLY *poly UNUSED,
+  LWPOINT *point UNUSED,
+  Pose *poly_pose_s UNUSED,
+  Pose *poly_pose_e UNUSED,
+  uint32_t poly_v UNUSED,
+  double r_prev UNUSED)
 {
   return 2;
 }
@@ -486,13 +473,13 @@ compute_dist_tpoly_point(cfp_elem *cfp, tdist_array *tda)
   getPoint4d_p(poly->rings[0], v, &q);
   apply_pose_point4d(&q, cfp->pose_1);
   if (cfp->cf_1 % 2 == 0)
-    dist = sqrt(pow(p.x - q.x, 2) + pow(p.y - q.y, 2));
+    dist = sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y));
   else /* cfp->cf_1 % 2 == 1 */
   {
     getPoint4d_p(poly->rings[0], uint_mod_add(v, 1, n), &r);
     apply_pose_point4d(&r, cfp->pose_1);
-    double s = ((p.x - q.x) * (r.x - q.x)
-      + (p.y - q.y) * (r.y - q.y)) / (pow(r.x - q.x, 2) + pow(r.y - q.y, 2));
+    double s = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) /
+      ((r.x - q.x) * (r.x - q.x) + (r.y - q.y) * (r.y - q.y));
     if (s <= 0 || s >= 1)
     {
       /*printf("Problem, s should be between 0 and 1: s = %lf\n", s);
@@ -501,7 +488,7 @@ compute_dist_tpoly_point(cfp_elem *cfp, tdist_array *tda)
     }
     double x = q.x  + (r.x - q.x) * s;
     double y = q.y  + (r.y - q.y) * s;
-    dist = sqrt(pow(p.x - x, 2) + pow(p.y - y, 2));
+    dist = sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
   }
   tdist_elem td = tdist_make(dist, cfp->t);
   append_tdist_elem(tda, td);
@@ -542,7 +529,7 @@ f_turnpoints_v_e_tpoint_poly(POINT4D p, POINT4D q, POINT4D r,
   double qx, qy, qx_, qy_;
   double rx, ry, rx_, ry_;
   double x, y, x_, y_;
-  double l2 = pow(q.x - r.x, 2) + pow(q.y - r.y, 2);
+  double l2 = (q.x - r.x) * (q.x - r.x) + (q.y - r.y) * (q.y - r.y);
   pose_interpolate_2d(poly_pose_s, poly_pose_e, ratio, &tx, &ty, &ttheta);
   pose_diff_2d(poly_pose_s, poly_pose_e, &dx, &dy, &dtheta);
   co = cos(ttheta);
@@ -599,11 +586,11 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       ratio = (dx * (q.x - p.x) + dy * (q.y - p.y)) / (dx * dx + dy * dy);
       if (0 < ratio && ratio < 1)
       {
-        Pose *pose_at_ratio = pose_interpolate(cfp_s->pose_1, cfp_e->pose_1,
+        Pose *pose_at_ratio = posesegm_interpolate(cfp_s->pose_1, cfp_e->pose_1,
           ratio);
         getPoint4d_p(poly->rings[0], v, &q);
         apply_pose_point4d(&q, pose_at_ratio);
-        dist = sqrt(pow(p.x - q.x, 2) + pow(p.y - q.y, 2));
+        dist = sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y));
         tdist_elem td = tdist_make(dist, cfp_s->t + 
           (cfp_e->t - cfp_s->t) * ratio);
         append_tdist_elem(tda, td);
@@ -620,14 +607,14 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       ratio = ((q.x - p.x) * (r.y - q.y) + (q.y - p.y) * (r.x - q.x)) / det;
       if (0 < ratio && ratio < 1)
       {
-        Pose *pose_at_ratio = pose_interpolate(cfp_s->pose_1, cfp_e->pose_1,
+        Pose *pose_at_ratio = posesegm_interpolate(cfp_s->pose_1, cfp_e->pose_1,
           ratio);
         getPoint4d_p(poly->rings[0], v, &q);
         apply_pose_point4d(&q, pose_at_ratio);
         getPoint4d_p(poly->rings[0], uint_mod_add(v, 1, n), &r);
         apply_pose_point4d(&r, pose_at_ratio);
-        double s = ((p.x - q.x) * (r.x - q.x)
-          + (p.y - q.y) * (r.y - q.y)) / (pow(r.x - q.x, 2) + pow(r.y - q.y, 2));
+        double s = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) /
+          ((r.x - q.x) * (r.x - q.x) + (r.y - q.y) * (r.y - q.y));
         if (s <= 0 || s >= 1)
         {
           /*printf("Problem, s should be between 0 and 1: s = %lf\n", s);
@@ -636,7 +623,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
         }
         double x = q.x  + (r.x - q.x) * s;
         double y = q.y  + (r.y - q.y) * s;
-        dist = sqrt(pow(p.x - x, 2) + pow(p.y - y, 2));
+        dist = sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
         tdist_elem td = tdist_make(dist, cfp_s->t + 
           (cfp_e->t - cfp_s->t) * ratio);
         append_tdist_elem(tda, td);
@@ -691,14 +678,14 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       double qy = q.x * si + q.y * co + dy;
       if (cfp_s->cf_1 % 2 == 0)
       {
-        dist = sqrt(pow(p.x - qx, 2) + pow(p.y - qy, 2));
+        dist = sqrt((p.x - qx) * (p.x - qx) + (p.y - qy) * (p.y - qy));
       }
       else /* cfp_s->cf_1 % 2 == 1 */
       {
         double rx = r.x * co - r.y * si + dx;
         double ry = r.x * si + r.y * co + dy;
         double s = ((p.x - qx) * (rx - qx) + (p.y - qy) * (ry - qy)) /
-          (pow(rx - qx, 2) + pow(ry - qy, 2));
+          ((rx - qx) * (rx - qx) + (ry - qy) * (ry - qy));
         if (s <= 0 || s >= 1)
         {
           /*printf("Problem, s should be between 0 and 1: s = %lf\n", s);
@@ -707,7 +694,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
         }
         double x = qx  + (rx - qx) * s;
         double y = qy  + (ry - qy) * s;
-        dist = sqrt(pow(p.x - x, 2) + pow(p.y - y, 2));
+        dist = sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
       }
       tdist_elem td = tdist_make(dist, cfp_s->t + (cfp_e->t - cfp_s->t) * t0);
       append_tdist_elem(tda, td);
@@ -859,7 +846,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
       if (state == MEOS_CONTINUE)
       {
         cfp.t = inst1->t + (inst2->t - inst1->t) * ratio;
-        cfp.pose_1 = pose_interpolate(pose1, pose2, ratio);
+        cfp.pose_1 = posesegm_interpolate(pose1, pose2, ratio);
         cfp.free_pose_1 = MEOS_CFP_FREE;
         cfp.store = MEOS_CFP_STORE_NO;
         append_cfp_elem(&cfpa, cfp);
@@ -1266,13 +1253,13 @@ solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
  * @brief
  */
 static inline double
-solve_angle_0_poly_tpoly(LWPOLY *poly1 __attribute__((unused)), 
-  LWPOLY *poly2 __attribute__((unused)), 
-  Pose *poly_pose_s __attribute__((unused)),
-  Pose *poly_pose_e __attribute__((unused)), 
-  uint32_t poly1_v __attribute__((unused)), 
-  uint32_t poly2_v __attribute__((unused)),
-  double ratio __attribute__((unused)))
+solve_angle_0_poly_tpoly(LWPOLY *poly1 UNUSED, 
+  LWPOLY *poly2 UNUSED, 
+  Pose *poly_pose_s UNUSED,
+  Pose *poly_pose_e UNUSED, 
+  uint32_t poly1_v UNUSED, 
+  uint32_t poly2_v UNUSED,
+  double ratio UNUSED)
 {
   return 2;
 }
@@ -1283,7 +1270,7 @@ solve_angle_0_poly_tpoly(LWPOLY *poly1 __attribute__((unused)),
 static int
 vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   LWPOLY *poly2, uint32_t *poly1_feature, uint32_t *poly2_feature,
-  int *dir1 __attribute__((unused)), int *dir2, double *ratio)
+  int *dir1 UNUSED, int *dir2, double *ratio)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t i1 = *poly1_feature / 2;
@@ -1342,7 +1329,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1394,7 +1381,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], i1, &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1446,7 +1433,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
 static int
 edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   LWPOLY *poly2, uint32_t *poly1_feature, uint32_t *poly2_feature,
-  int *dir1, int *dir2 __attribute__((unused)), double *ratio)
+  int *dir1, int *dir2 UNUSED, double *ratio)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t i1 = *poly1_feature / 2;
@@ -1505,7 +1492,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1557,7 +1544,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &ps);
     getPoint4d_p(poly2->rings[0], i2, &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1621,14 +1608,14 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
   getPoint4d_p(poly1->rings[0], v1, &qs);
   apply_pose_point4d(&qs, cfp->pose_1);
   if (cfp->cf_1 % 2 == 0 && cfp->cf_2 % 2 == 0)
-    dist = sqrt(pow(ps.x - qs.x, 2) + pow(ps.y - qs.y, 2));
+    dist = sqrt((ps.x - qs.x) * (ps.x - qs.x) + (ps.y - qs.y) * (ps.y - qs.y));
   else if (cfp->cf_2 % 2 == 0) /* cfp->cf_1 % 2 == 1 */
   {
     getPoint4d_p(poly1->rings[0], uint_mod_add(v1, 1, n1), &qe);
     apply_pose_point4d(&qe, cfp->pose_1);
     double s = 
       ((ps.x - qs.x) * (qe.x - qs.x) + (ps.y - qs.y) * (qe.y - qs.y)) /
-      (pow(qe.x - qs.x, 2) + pow(qe.y - qs.y, 2));
+      ((qe.x - qs.x) * (qe.x - qs.x) + (qe.y - qs.y) * (qe.y - qs.y));
     if (s <= 0 || s >= 1)
     {
       printf("Problem 1, s should be between 0 and 1: s = %lf\n", s);
@@ -1637,14 +1624,14 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
     }
     double x = qs.x  + (qe.x - qs.x) * s;
     double y = qs.y  + (qe.y - qs.y) * s;
-    dist = sqrt(pow(ps.x - x, 2) + pow(ps.y - y, 2));
+    dist = sqrt((ps.x - x) * (ps.x - x) + (ps.y - y) * (ps.y - y));
   }
   else /* cfp->cf_1 % 2 == 0 && cfp->cf_2 % 2 == 1 */
   {
     getPoint4d_p(poly2->rings[0], uint_mod_add(v2, 1, n2), &pe);
     double s = 
       ((qs.x - ps.x) * (pe.x - ps.x) + (qs.y - ps.y) * (pe.y - ps.y)) /
-      (pow(pe.x - ps.x, 2) + pow(pe.y - ps.y, 2));
+      ((pe.x - ps.x) * (pe.x - ps.x) + (pe.y - ps.y) * (pe.y - ps.y));
     if (s <= 0 || s >= 1)
     {
       printf("Problem 2, s should be between 0 and 1: s = %lf\n", s);
@@ -1653,7 +1640,7 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
     }
     double x = ps.x  + (pe.x - ps.x) * s;
     double y = ps.y  + (pe.y - ps.y) * s;
-    dist = sqrt(pow(qs.x - x, 2) + pow(qs.y - y, 2));
+    dist = sqrt((qs.x - x) * (qs.x - x) + (qs.y - y) * (qs.y - y));
   }
   tdist_elem td = tdist_make(dist, cfp->t);
   append_tdist_elem(tda, td);
@@ -1726,7 +1713,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       if (state == MEOS_CONTINUE)
       {
         cfp.t = inst1->t + (inst2->t - inst1->t) * ratio;
-        cfp.pose_1 = pose_interpolate(pose1, pose2, ratio);
+        cfp.pose_1 = posesegm_interpolate(pose1, pose2, ratio);
         cfp.free_pose_1 = MEOS_CFP_FREE;
         cfp.store = MEOS_CFP_STORE_NO;
         append_cfp_elem(&cfpa, cfp);
@@ -1873,8 +1860,8 @@ distance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlop @p <->
  */
 Temporal *
-distance_trgeo_tpoint(const Temporal *temp1 __attribute__((unused)),
-  const Temporal *temp2 __attribute__((unused)))
+distance_trgeo_tpoint(const Temporal *temp1 UNUSED,
+  const Temporal *temp2 UNUSED)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
@@ -1892,8 +1879,8 @@ distance_trgeo_tpoint(const Temporal *temp1 __attribute__((unused)),
  * @sqlop @p <->
  */
 Temporal *
-distance_trgeo_trgeo(const Temporal *temp1 __attribute__((unused)),
-  const Temporal *temp2 __attribute__((unused)))
+distance_trgeo_trgeo(const Temporal *temp1 UNUSED,
+  const Temporal *temp2 UNUSED)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))

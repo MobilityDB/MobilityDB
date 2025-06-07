@@ -32,8 +32,6 @@
  * @brief Static buffer type
  */
 
-#include "pose/tpose.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>
@@ -49,19 +47,17 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
-#include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "temporal/type_parser.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
-#include "pose/tpose_parser.h"
 #include "pose/tpose_spatialfuncs.h"
 
 /*****************************************************************************

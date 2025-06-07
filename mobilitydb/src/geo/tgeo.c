@@ -38,12 +38,14 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include <meos_geo.h>
+#include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
@@ -177,7 +179,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
   if (n > TSPATIAL_MAX_TYPMOD)
-    elog(ERROR, "Incorrect number of type modifiers for temporal spatial values");
+    elog(ERROR, "Incorrect number of type modifiers for spatiotemporal values");
 
   /* Set default values for typmod if they are not given */
   int16 tempsubtype = ANYTEMPSUBTYPE;

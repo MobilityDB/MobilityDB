@@ -15,10 +15,10 @@ SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_cbuffer_tmp;
 DROP TABLE
-SELECT ST_AsEWKT(MAX(point(cb)), 6) FROM tbl_cbuffer;
-               st_asewkt               
----------------------------------------
- SRID=5676;POINT(67.317663 -43.262378)
+SELECT MAX(ST_X(point(cb))) FROM tbl_cbuffer;
+        max        
+-------------------
+ 99.09629227730261
 (1 row)
 
 SELECT MAX(radius(cb)) FROM tbl_cbuffer;
@@ -34,6 +34,12 @@ SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer WHERE cb ~= (cb::geometry)::cbuffer;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer WHERE expand(temp, 1) IS NOT NULL;
  count 
 -------
    100

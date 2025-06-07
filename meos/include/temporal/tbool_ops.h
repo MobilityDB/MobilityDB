@@ -49,7 +49,6 @@ extern Temporal *boolop_tbool_bool(const Temporal *temp, Datum b,
   datum_func2 func, bool invert);
 extern Temporal *boolop_tbool_tbool(const Temporal *temp1,
   const Temporal *temp2, datum_func2 func);
-extern Temporal *tnot_tbool(const Temporal *temp);
 
 /*****************************************************************************/
 

@@ -172,7 +172,7 @@ PGDLLEXPORT Datum Set_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return a set from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return a set from its ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation
  * @sqlfn intsetFromHexWKB(), floatsetFromHexWKB(), ...
  */
@@ -211,7 +211,7 @@ PGDLLEXPORT Datum Set_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_as_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a set
  * @sqlfn asHexWKB()
  */

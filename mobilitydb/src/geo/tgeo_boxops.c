@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal spatial values
- * @details These operators test the bounding box of temporal spatial values,
+ * @brief Bounding box operators for spatiotemporal values
+ * @details These operators test the bounding box of spatiotemporal values,
  * which is an`STBox`, where the *x*, *y*, and optional *z* coordinates are
  * or the space (value) dimension and the *t* coordinate is for the time 
  * dimension. The following operators are defined: `overlaps`, `contains`,
@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(Tgeo_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal spatial value, where the choice between instants or segments
+ * of a spatiotemporal value, where the choice between instants or segments
  * depends, respectively, on whether the interpolation is discrete or 
  * continuous
  * @sqlfn stboxes()
@@ -105,7 +105,7 @@ PG_FUNCTION_INFO_V1(Tgeo_split_n_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the instants or
- * segments of a temporal spatial value, where the choice between instants or
+ * segments of a spatiotemporal value, where the choice between instants or
  * segments depends, respectively, on whether the interpolation is discrete or
  * continuous
  * @sqlfn splitNStboxes()
@@ -153,7 +153,7 @@ PG_FUNCTION_INFO_V1(Tgeo_split_each_n_stboxes);
 /**
  * @ingroup mobilitydb_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal spatial value, where the choice between instants or segments
+ * of a spatiotemporal value, where the choice between instants or segments
  * depends, respectively, on whether the interpolation is discrete or
  * continuous
  * @sqlfn splitEachNStboxes()
@@ -218,7 +218,7 @@ Boxop_stbox_tspatial(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic bounding box function for a temporal spatial value and a
+ * @brief Generic bounding box function for a spatiotemporal value and a
  * spatiotemporal box
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
@@ -235,7 +235,7 @@ Boxop_tspatial_stbox(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic topological function for two temporal spatial values
+ * @brief Generic topological function for two spatiotemporal values
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -260,7 +260,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * temporal spatial value overlap
+ * spatiotemporal value overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
@@ -274,7 +274,7 @@ PGDLLEXPORT Datum Overlaps_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of a temporal spatial value and
+ * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -289,7 +289,7 @@ PGDLLEXPORT Datum Overlaps_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two temporal spatial
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
@@ -323,7 +323,7 @@ PGDLLEXPORT Datum Contains_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of a temporal spatial value
+ * @brief Return true if the spatiotemporal box of a spatiotemporal value
  * contains a spatiotemporal box
  * @sqlfn contains_bbox()
  * @sqlop @p <@
@@ -338,8 +338,8 @@ PGDLLEXPORT Datum Contains_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of the first temporal spatial
- * value contains the one of the second temporal spatial value
+ * @brief Return true if the spatiotemporal box of the first spatiotemporal
+ * value contains the one of the second spatiotemporal value
  * @sqlfn contains_bbox()
  * @sqlop @p <@
  */
@@ -358,7 +358,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box is contained in the
- * spatiotemporal box of a temporal spatial value
+ * spatiotemporal box of a spatiotemporal value
  * @sqlfn contained_bbox()
  * @sqlop @p \@>
  */
@@ -372,7 +372,7 @@ PGDLLEXPORT Datum Contained_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of a temporal spatial value is
+ * @brief Return true if the spatiotemporal box of a spatiotemporal value is
  * contained in the spatiotemporal box
  * @sqlfn contained_bbox()
  * @sqlop @p \@>
@@ -387,8 +387,8 @@ PGDLLEXPORT Datum Contained_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of the first temporal spatial
- * value is contained in the one of the second temporal spatial value
+ * @brief Return true if the spatiotemporal box of the first spatiotemporal
+ * value is contained in the one of the second spatiotemporal value
  * @sqlfn contained_bbox()
  * @sqlop @p \@>
  */
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * temporal spatial value are equal in the common dimensions
+ * spatiotemporal value are equal in the common dimensions
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
@@ -421,7 +421,7 @@ PGDLLEXPORT Datum Same_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of a temporal spatial value and
+ * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box are equal in the common dimensions
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -436,7 +436,7 @@ PGDLLEXPORT Datum Same_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two temporal spatial
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values are equal in the common dimensions
  * @sqlfn same_bbox()
  * @sqlop @p ~=
@@ -456,7 +456,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * temporal spatial value are adjacent
+ * spatiotemporal value are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
@@ -470,7 +470,7 @@ PGDLLEXPORT Datum Adjacent_tspatial_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tspatial_stbox);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of a temporal spatial value
+ * @brief Return true if the spatiotemporal box of a spatiotemporal value
  * and a spatiotemporal box are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
@@ -485,7 +485,7 @@ PGDLLEXPORT Datum Adjacent_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two temporal spatial
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-

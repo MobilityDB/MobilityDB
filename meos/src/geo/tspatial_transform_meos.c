@@ -13,12 +13,12 @@
 /**
  * @file
  * @brief Functions for transforming coordinates from one SRID to another one
- * @details PostGIS manages a cache of information obtained from PROJ to speed 
+ * @details PostGIS manages a cache of information obtained from PROJ to speed
  * up transformations (see file file libpgcommon/lw_transform.c).
  * The functions in this file are derived from PostGIS functions by perforning
  * memory allocation with `malloc` instead of using PostreSQL contexts.
  */
- 
+
 #include "geo/meos_transform.h"
 
 /* C */
@@ -59,8 +59,8 @@ typedef struct struct_PROJSRSCacheItem
 #define PROJ_CACHE_ITEMS 128
 
 /**
- * @brief The proj4 cache holds a fixed number of reprojection entries. 
- * In normal usage we don't expect it to have many entries, so we always 
+ * @brief The proj4 cache holds a fixed number of reprojection entries.
+ * In normal usage we don't expect it to have many entries, so we always
  * linearly scanthe list.
  * @note The structure removes the context field from PostGIS PROJSRSCache
  */
@@ -128,6 +128,7 @@ PROJSRSDestroyPJ(void *projection)
     proj_destroy(pj->pj);
     pj->pj = NULL;
   }
+  pfree(pj);
 }
 
 /**
@@ -160,7 +161,7 @@ GetMEOSPROJSRSCache()
 void
 meos_finalize_projsrs(void)
 {
-  MEOSPROJSRSCache* cache = MEOS_PROJ_CACHE;
+  MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
   if (cache)
   {
     for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
@@ -169,6 +170,7 @@ meos_finalize_projsrs(void)
         PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
     }
   }
+  pfree(cache);
   return;
 }
 
@@ -199,7 +201,7 @@ GetProjectionFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
 
 #if ! MEOS
 /**
- * @brief Return a copy of a string obtained from the database using SPI 
+ * @brief Return a copy of a string obtained from the database using SPI
  */
 static char*
 SPI_pstrdup(const char *str)
@@ -215,7 +217,7 @@ SPI_pstrdup(const char *str)
 #endif /* ! MEOS */
 
 /**
- * @brief Return the PROJ strings of an SRID either from a CSV file 
+ * @brief Return the PROJ strings of an SRID either from a CSV file
  * `spatial_ref_sys.csv` (for MEOS) or from the PostGIS table
  * `spatial_ref_sys` (for MobilityDB)
  * @note The PostGIS function is copied here since it is declared as `static`
@@ -245,13 +247,13 @@ GetProjStringsSPI(int32_t srid)
   bool found = false;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
+  int read = fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
     /* Read each line from the file */
-    int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
+    read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
       auth_name, &auth_srid, proj4text, srtext);
 
     if (ferror(file))
@@ -272,12 +274,13 @@ GetProjStringsSPI(int32_t srid)
       break;
     }
   } while (! feof(file));
-  
+
   if (! found)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Cannot find SRID (%d) in spatial_ref_sys", srid);
   }
+  fclose(file);
   return strs;
 }
 #else
@@ -386,16 +389,16 @@ GetProjStrings(int32_t srid)
     /* UTM South */
     else if (id >= SRID_SOUTH_UTM_START && id <= SRID_SOUTH_UTM_END)
     {
-      snprintf(strs.proj4text, maxprojlen, 
+      snprintf(strs.proj4text, maxprojlen,
         "+proj=utm +zone=%d +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         id - SRID_SOUTH_UTM_START + 1);
     }
-    /* Lambert zones (about 30x30, larger in higher latitudes) 
+    /* Lambert zones (about 30x30, larger in higher latitudes)
      * There are three latitude zones, divided at -90,-60,-30,0,30,60,90.
-     * - In yzones 2,3 (equator) zones, the longitudinal zones are divided 
+     * - In yzones 2,3 (equator) zones, the longitudinal zones are divided
          every 30 degrees (12 of them)
      * - In yzones 1,4 (temperate) zones, the longitudinal zones are every 45
-         degrees (8 of them) 
+         degrees (8 of them)
      * - In yzones 0,5 (polar) zones, the longitudinal zones are ever 90
          degrees (4 of them) */
     else if (id >= SRID_LAEA_START && id <= SRID_LAEA_END)
@@ -417,35 +420,35 @@ GetProjStrings(int32_t srid)
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown yzone encountered!");
 
-      snprintf(strs.proj4text, maxprojlen, 
+      snprintf(strs.proj4text, maxprojlen,
         "+proj=laea +ellps=WGS84 +datum=WGS84 +lat_0=%g +lon_0=%g +units=m +no_defs",
         lat_0, lon_0);
     }
     /* Lambert Azimuthal Equal Area South Pole */
     else if (id == SRID_SOUTH_LAMBERT)
     {
-      strncpy(strs.proj4text, 
+      strncpy(strs.proj4text,
         "+proj=laea +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         maxprojlen);
     }
     /* Polar Sterographic South */
     else if (id == SRID_SOUTH_STEREO)
     {
-      strncpy(strs.proj4text, 
+      strncpy(strs.proj4text,
         "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         maxprojlen);
     }
     /* Lambert Azimuthal Equal Area North Pole */
     else if (id == SRID_NORTH_LAMBERT)
     {
-      strncpy(strs.proj4text, 
+      strncpy(strs.proj4text,
         "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         maxprojlen);
     }
     /* Polar Stereographic North */
     else if (id == SRID_NORTH_STEREO)
     {
-      strncpy(strs.proj4text, 
+      strncpy(strs.proj4text,
         "+proj=stere +lat_0=90 +lat_ts=71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         maxprojlen);
     }

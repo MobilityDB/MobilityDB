@@ -90,9 +90,9 @@
  *   @ingroup mobilitydb_rgeo_rel
  *   @brief Ever and always spatial relationship functions for temporal rigid geometries
  *
- *   @defgroup mobilitydb_rgeo_rel_temp Temporal spatial relationship functions
+ *   @defgroup mobilitydb_rgeo_rel_temp Spatiotemporal relationship functions
  *   @ingroup mobilitydb_rgeo_rel
- *   @brief Temporal spatial relationship functions for temporal rigid geometries
+ *   @brief Spatiotemporal relationship functions for temporal rigid geometries
  *
  * @defgroup mobilitydb_rgeo_agg Aggregate functions
  * @ingroup mobilitydb_rgeo

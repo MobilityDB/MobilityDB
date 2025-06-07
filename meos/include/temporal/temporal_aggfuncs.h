@@ -63,7 +63,7 @@ extern TSequence **tsequence_tagg(const TSequence **sequences1, int count1,
   bool crossings, int *newcount);
 extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);
-extern SkipList *temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
+extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
   datum_func2 func, bool crossings);
 
 extern SkipList *tinstant_tagg_transfn(SkipList *state, const TInstant *inst,

@@ -131,9 +131,9 @@
  *   @ingroup mobilitydb_geo_rel
  *   @brief Ever and always spatial relationship functions for temporal geometries
  *
- *   @defgroup mobilitydb_geo_rel_temp Temporal spatial relationship functions
+ *   @defgroup mobilitydb_geo_rel_temp Spatiotemporal relationship functions
  *   @ingroup mobilitydb_geo_rel
- *   @brief Temporal spatial relationship functions for temporal geometries
+ *   @brief Spatiotemporal relationship functions for temporal geometries
  *
  * @defgroup mobilitydb_geo_agg Aggregate functions
  * @ingroup mobilitydb_geo

@@ -259,6 +259,7 @@ SELECT eIntersects(tgeography 'Point(1 1)@2000-01-01', tgeography 'SRID=4283;Poi
 -------------------------------------------------------------------------------
 -- eTouches
 -------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
 
 SELECT eTouches(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eTouches(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -270,16 +271,6 @@ SELECT eTouches(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point
 SELECT eTouches(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT eTouches(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-
-SELECT eTouches(geometry 'Point Z empty', tgeometry 'Point(1 1 1)@2000-01-01');
-SELECT eTouches(geometry 'Point Z empty', tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-SELECT eTouches(geometry 'Point Z empty', tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-SELECT eTouches(geometry 'Point Z empty', tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-
 SELECT eTouches(tgeometry 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
 SELECT eTouches(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
 SELECT eTouches(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
@@ -290,43 +281,20 @@ SELECT eTouches(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT eTouches(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
 SELECT eTouches(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
 
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-SELECT eTouches(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-SELECT eTouches(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
-SELECT eTouches(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
-SELECT eTouches(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
-
 SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 SELECT eTouches(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-
--- Mixed 2D/3D
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 
 -- Coverage: Other geometry types
 SELECT eTouches(tgeometry '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
 SELECT eTouches(tgeometry '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
--- Notice that the boundary of a closed circular string is empty !
+-- Notice that the boundary of a closed line or circular string is empty !
 SELECT eTouches(tgeometry '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
-SELECT eTouches(tgeometry '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
-  geometry 'TIN (((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,0 1 0,1 1 0,0 0 0)))');
-
 
 /* Errors */
 SELECT eTouches(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eTouches(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
--- unsupported geometry type
-SELECT eTouches(tgeometry '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
-  geometry 'POLYHEDRALSURFACE( ((0 0 0, 0 0 1, 0 1 1, 0 1 0, 0 0 0)),
-  ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)), ((0 0 0, 1 0 0, 1 0 1, 0 0 1, 0 0 0)),
-  ((1 1 0, 1 1 1, 1 0 1, 1 0 0, 1 1 0)),
-  ((0 1 0, 0 1 1, 1 1 1, 1 1 0, 0 1 0)), ((0 0 1, 1 0 1, 1 1 1, 0 1 1, 0 0 1)) )');
+SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
 -- eDwithin

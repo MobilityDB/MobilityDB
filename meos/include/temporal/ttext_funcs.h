@@ -42,7 +42,6 @@
 
 /*****************************************************************************/
 
-extern text *text_catenate(const text *txt1, const text *txt2);
 extern Datum datum_textcat(Datum l, Datum r);
 extern Datum datum_lower(Datum value);
 extern Datum datum_upper(Datum value);

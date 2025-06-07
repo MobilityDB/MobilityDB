@@ -724,7 +724,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &gt;&gt;
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Spatial Relationships</title>
 		<para>
-			The spatial relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. To be able to apply these spatial relationships to the temporal network points, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
+			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. To be able to apply these relationships to the temporal network points, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
 		</para>
 
 		<itemizedlist>
@@ -745,7 +745,7 @@ SELECT eIntersects(
 			</listitem>
 
 			<listitem xml:id="tnpoint_tspatialrels">
-				<para>Temporal spatial relationships</para>
+				<para>Spatiotemporal relationships</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));

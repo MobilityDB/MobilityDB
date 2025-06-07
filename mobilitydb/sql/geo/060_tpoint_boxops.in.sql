@@ -52,21 +52,21 @@ CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
 
 CREATE FUNCTION expandSpace(geometry, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_expand_space'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION expandSpace(geography, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geo_expand_space'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION expandSpace(tgeompoint, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tspatial_expand_space'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION expandSpace(tgeogpoint, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tspatial_expand_space'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/
 

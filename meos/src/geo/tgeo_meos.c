@@ -39,13 +39,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/doublen.h"
-#include "temporal/lifting.h"
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
-#include "temporal/skiplist.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
-#include "temporal/temporal_aggfuncs.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
@@ -128,7 +125,7 @@ tgeographyinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeompointseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -147,7 +144,7 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeogpointseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -166,7 +163,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeometryseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -185,7 +182,7 @@ tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeographyseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeographyseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -275,7 +272,7 @@ tgeographyseqset_in(const char *str)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TInstant *
-tgeompointinst_from_mfjson(json_object *mfjson, int srid)
+tgeompointinst_from_mfjson(json_object *mfjson, int32_t srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
 }
@@ -289,7 +286,7 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TInstant *
-tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
+tgeogpointinst_from_mfjson(json_object *mfjson, int32_t srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
 }
@@ -302,7 +299,7 @@ tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TInstant *
-tgeometryinst_from_mfjson(json_object *mfjson, int srid)
+tgeometryinst_from_mfjson(json_object *mfjson, int32_t srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMETRY);
 }
@@ -315,7 +312,7 @@ tgeometryinst_from_mfjson(json_object *mfjson, int srid)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TInstant *
-tgeographyinst_from_mfjson(json_object *mfjson, int srid)
+tgeographyinst_from_mfjson(json_object *mfjson, int32_t srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY);
 }
@@ -332,7 +329,7 @@ tgeographyinst_from_mfjson(json_object *mfjson, int srid)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequence *
-tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeompointseq_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
@@ -347,7 +344,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequence *
-tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeogpointseq_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
@@ -361,7 +358,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequence *
-tgeometryseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeometryseq_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
 }
@@ -375,7 +372,7 @@ tgeometryseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequence *
-tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeographyseq_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
 }
@@ -392,7 +389,7 @@ tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequenceSet *
-tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeompointseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
@@ -407,7 +404,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequenceSet *
-tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeogpointseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
@@ -422,7 +419,7 @@ tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequenceSet *
-tgeometryseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeometryseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
 }
@@ -437,7 +434,7 @@ tgeometryseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @csqlfn #Temporal_from_mfjson()
  */
 inline TSequenceSet *
-tgeographyseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
+tgeographyseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
 }
@@ -767,7 +764,11 @@ tgeo_values(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  Datum *datumarr = temporal_values_p(temp, count);
+  int count1;
+  Datum *datumarr = temporal_values_p(temp, &count1);
+  meosType basetype = temptype_basetype(temp->temptype);
+  datumarr_sort(datumarr, count1, basetype);
+  *count = datumarr_remove_duplicates(datumarr, count1, basetype);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = geo_copy(DatumGetGserializedP(datumarr[i]));

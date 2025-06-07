@@ -274,7 +274,7 @@ temporal_slice(Datum tempdatum)
  * Version functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
  * @ingroup mobilitydb_misc
@@ -282,14 +282,14 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
  * @sqlfn mobilitydb_version()
  */
 Datum
-Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
   text *result = cstring2text(version);
   PG_RETURN_TEXT_P(result);
 }
 
-PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_misc
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
  * @sqlfn mobilitydb_full_version()
  */
 Datum
-Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_full_version();
   text *result = cstring2text(version);
@@ -719,7 +719,7 @@ Datum
 Tbool_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tbool_tint(temp);
+  Temporal *result = tbool_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -736,7 +736,7 @@ Datum
 Tint_to_tfloat(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tint_tfloat(temp);
+  Temporal *result = tint_to_tfloat(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -753,7 +753,7 @@ Datum
 Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tfloat_tint(temp);
+  Temporal *result = tfloat_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -788,7 +788,7 @@ Datum
 Tnumber_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = tnumber_span(temp);
+  Span *result = tnumber_to_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }

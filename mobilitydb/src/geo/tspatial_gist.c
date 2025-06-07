@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for temporal spatial values
+ * @brief R-tree GiST index for spatiotemporal values
  */
 
 /* C */
@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/stratnum.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
@@ -91,7 +92,7 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
 PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
 /**
- * @brief GiST consistent method for temporal spatial values
+ * @brief GiST consistent method for spatiotemporal values
  */
 Datum
 Stbox_gist_consistent(PG_FUNCTION_ARGS)
@@ -150,7 +151,7 @@ stbox_adjust(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
- * @brief GiST union method for temporal spatial values
+ * @brief GiST union method for spatiotemporal values
  * @details Return the minimal bounding box that encloses all the entries in 
  * entryvec
  */
@@ -172,7 +173,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_gist_compress);
 /**
- * @brief GiST compress methods for temporal spatial values
+ * @brief GiST compress methods for spatiotemporal values
  */
 Datum
 Tspatial_gist_compress(PG_FUNCTION_ARGS)
@@ -285,7 +286,7 @@ stbox_penalty(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
- * @brief GiST penalty method for temporal spatial values
+ * @brief GiST penalty method for spatiotemporal values
  * @note As in the R-tree paper, we use change in area as our penalty metric
  */
 Datum
@@ -307,7 +308,7 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
- * @brief GiST picksplit method for temporal spatial values
+ * @brief GiST picksplit method for spatiotemporal values
  * @details
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -342,7 +343,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
- * @brief GiST same method for temporal spatial values
+ * @brief GiST same method for spatiotemporal values
  * @details Return true only when boxes are exactly the same.  We can't use 
  * fuzzy comparisons here without breaking index consistency; therefore, this 
  * isn't equivalent to #same_stbox_stbox().
@@ -372,7 +373,7 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * @brief GiST distance for temporal spatial values
+ * @brief GiST distance for spatiotemporal values
  * @note Take in a query and an entry and return the "distance" between them
 */
 Datum
@@ -382,23 +383,23 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   STBox *key = (STBox *) DatumGetPointer(entry->key);
-  STBox query;
-  double distance;
+  if (! key)
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* The index is lossy for leaf levels */
   if (GIST_LEAF(entry))
     *recheck = true;
 
-  if (key == NULL)
-    PG_RETURN_FLOAT8(DBL_MAX);
-
   /* Transform the query into a box */
+  STBox query;
   if (! tspatial_gist_get_stbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
-  distance = nad_stbox_stbox(key, &query);
+  double distance = nad_stbox_stbox(key, &query);
+  if (distance < 0)
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   PG_RETURN_FLOAT8(distance);
 }

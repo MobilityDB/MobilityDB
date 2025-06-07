@@ -56,7 +56,11 @@ extern bool ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
 /* Conversion */
 
-extern void spanset_tbox_slice(Datum psdatum, TBox *box);
+extern TBox *set_tbox(const Set *s);
+extern TBox *span_tbox(const Span *s);
+extern Span *tbox_tstzspan(const TBox *box);
+extern Span *tbox_intspan(const TBox *box);
+extern Span *tbox_floatspan(const TBox *box);
 
 /*****************************************************************************/
 

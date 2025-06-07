@@ -46,6 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "temporal/meos_catalog.h"

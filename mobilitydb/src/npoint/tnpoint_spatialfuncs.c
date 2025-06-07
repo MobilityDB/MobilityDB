@@ -39,7 +39,6 @@
 #include <meos_internal.h>
 #include "temporal/span.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"

@@ -36,16 +36,11 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include <meos_cbuffer.h>
-#include "temporal/pg_types.h"
-#include "temporal/lifting.h"
-#include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
-// #include "cbuffer/tcbuffer_spatialfuncs.h"
+#include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -53,8 +48,7 @@
 
 /**
  * @brief Return true if a temporal circular buffer and a circular buffer
- * satisfy the ever/always
- * comparison
+ * satisfy the ever/always comparison
  * @param[in] temp Temporal value
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics

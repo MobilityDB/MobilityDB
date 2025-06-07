@@ -209,11 +209,11 @@ CREATE FUNCTION stbox(geography)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geomset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geoset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Spatialset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geogset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Geoset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Spatialset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(timestamptz)
   RETURNS stbox
@@ -658,9 +658,7 @@ CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
 CREATE AGGREGATE extent(stbox) (
   SFUNC = stbox_extent_transfn,
   STYPE = stbox,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 

@@ -50,7 +50,7 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
+#include "geo/tgeo.h"
 #include "geo/tspatial.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h" /* For oid_type() */

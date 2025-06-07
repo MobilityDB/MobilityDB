@@ -32,155 +32,20 @@
  * @brief Spatial functions for temporal pose objects.
  */
 
-#include "pose/tpose_spatialfuncs.h"
-
-/* PostgreSQL */
+/* C */
 #include <stdio.h>
+/* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <meos_pose.h>
 #include "pose/pose.h"
+#include "pose/tpose.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo_utils.h"
-
-/*****************************************************************************
- * Utility functions
- *****************************************************************************/
-
-/**
- * @brief Ensure the validity of a geometry and a spatiotemporal box 
- */
-bool
-ensure_valid_pose_stbox(const Pose *pose, const STBox *box)
-{
-  VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(box, false);
-  if (! ensure_has_X(T_STBOX, box->flags) ||
-      ! ensure_same_srid(pose_srid(pose), box->srid))
-    return false;
-  return true;
-}
-
-/**
- * @brief Ensure the validity of a temporal pose and a geometry
- */
-bool
-ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
-{
-  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
-    return false;
-  return true;
-}
-
-/**
- * @brief Ensure the validity of a temporal pose and a pose
- */
-bool
-ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose)
-{
-  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(pose, false);
-  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
-    return true;
-  return false;
-}
-
-/**
- * @brief Ensure the validity of a temporal pose and a spatiotemporal box
- */
-bool
-ensure_valid_tpose_stbox(const Temporal *temp, const STBox *box)
-{
-  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(box, false);
-  if (! ensure_has_X(T_STBOX, box->flags) || 
-      ! ensure_same_srid(tspatial_srid(temp), box->srid))
-    return false;
-  return true;
-}
-
-
-/**
- * @brief Ensure the validity of two temporal poses
- */
-bool
-ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
-{
-  VALIDATE_TPOSE(temp1, false); VALIDATE_TPOSE(temp2, false);
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
-    return false;
-  return true;
-}
-
-/*****************************************************************************
- * Interpolation functions defining functionality required by tsequence.c
- * that must be implemented by each temporal type
- *****************************************************************************/
-
-/**
- * @brief Return true if a segment of a temporal pose value intersects
- * a base value at the timestamp
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[out] t Timestamp, may be @p NULL
- */
-bool
-tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
-{
-  assert(inst1); assert(inst2);
-  /* We are sure that the trajectory is a line */
-  Datum start = tinstant_value(inst1);
-  Datum end = tinstant_value(inst2);
-  Datum geom_start = datum_pose_point(start);
-  Datum geom_end = datum_pose_point(end);
-  Datum geom = datum_pose_point(value);
-  double dist;
-  /* Compute the value taking into account position only */
-  double fraction = (double) pointsegm_locate(geom_start, geom_end, geom,
-    &dist);
-  pfree(DatumGetPointer(geom_start)); pfree(DatumGetPointer(geom_end));
-  pfree(DatumGetPointer(geom));
-  if (fraction < 0.0)
-    return false;
-  /* Compare value with interpolated pose to take into account orientation as
-   * well */
-  const Pose *pose1 = DatumGetPoseP(start);
-  const Pose *pose2 = DatumGetPoseP(end);
-  Pose *pose_interp = pose_interpolate(pose1, pose2, fraction);
-  /* Temporal rigid geometries have poses as base values but are restricted
-   * to geometries */
-  bool same;
-  if (inst1->temptype == T_TRGEOMETRY)
-  {
-    const GSERIALIZED *gs1 = DatumGetGserializedP(start);
-    const GSERIALIZED *gs2 = DatumGetGserializedP(value);
-    LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-    LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-    LWGEOM *geom_interp = lwgeom_clone_deep(geom2);
-    lwgeom_apply_pose(pose_interp, geom_interp);
-    if (geom_interp->bbox)
-      lwgeom_refresh_bbox(geom_interp);
-    same = lwgeom_same(geom1, geom_interp);
-    lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(geom_interp);
-  }
-  else
-  {
-    Pose *pose = DatumGetPoseP(value);
-    same = pose_same(pose, pose_interp);
-  }
-  pfree(pose_interp);
-  if (! same)
-    return false;
-  if (t)
-  {
-    double duration = (double) (inst2->t - inst1->t);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = inst1->t + (TimestampTz) (duration * fraction);
-  }
-  return true;
-}
 
 /*****************************************************************************
  * Trajectory function
@@ -197,7 +62,7 @@ tpose_trajectory(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  Temporal *tpoint = tpose_tpoint(temp);
+  Temporal *tpoint = tpose_to_tpoint(temp);
   GSERIALIZED *result = tpoint_trajectory(tpoint);
   pfree(tpoint);
   return result;
@@ -224,7 +89,7 @@ tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = tpose_tpoint(temp);
+  Temporal *tpoint = tpose_to_tpoint(temp);
   Temporal *res = tgeo_restrict_geom(tpoint, gs, zspan, atfunc);
   Temporal *result = NULL;
   if (res)
@@ -279,7 +144,7 @@ tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
 tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -289,7 +154,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   if (! ensure_valid_tpose_stbox(temp, box))
     return NULL;
 
-  Temporal *tgeom = tpose_tpoint(temp);
+  Temporal *tgeom = tpose_to_tpoint(temp);
   Temporal *tgeomres = tgeo_restrict_stbox(tgeom, box, border_inc, atfunc);
   Temporal *result = NULL;
   if (tgeomres)

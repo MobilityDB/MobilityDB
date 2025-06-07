@@ -855,23 +855,23 @@ CREATE FUNCTION stops(tgeography, maxdist float DEFAULT 0.0,
  * Multidimensional tiling
  ******************************************************************************/
 
-CREATE TYPE time_tgeometry AS (
+CREATE TYPE time_tgeom AS (
   time timestamptz,
-  temp tgeometry
+  tgeom tgeometry
 );
-CREATE TYPE time_tgeography AS (
+CREATE TYPE time_tgeog AS (
   time timestamptz,
-  temp tgeography
+  tgeog tgeography
 );
 
 CREATE FUNCTION timeSplit(tgeometry, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
-  RETURNS setof time_tgeometry
+  RETURNS setof time_tgeom
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION timeSplit(tgeography, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
-  RETURNS setof time_tgeography
+  RETURNS setof time_tgeog
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 

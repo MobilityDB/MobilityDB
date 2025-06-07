@@ -559,6 +559,30 @@ SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset
  Sun Dec 30 04:06:00 2001 PST
 (1 row)
 
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspanset;
+   max    
+----------
+ 47.33331
+(1 row)
+
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspanset;
+        max         
+--------------------
+ 2711.9986879303624
+(1 row)
+
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspanset;
+        max         
+--------------------
+ 359.61309578633416
+(1 row)
+
+SELECT MAX(lower(radians(f))) FROM tbl_floatspanset;
+        max         
+--------------------
+ 0.8261220427822861
+(1 row)
+
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
  count 
 -------

@@ -843,7 +843,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
-				<para>TODO Ever and always spatial relationships</para>
+				<para>TODO Ever and always relationships</para>
 				<para><varname>eContains(geometry,tcbuffer) → boolean</varname></para>
 				<para><varname>aContains(geometry,tcbuffer) → boolean</varname></para>
 				<para><varname>eDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
@@ -874,7 +874,7 @@ SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
-				<para>TODO Temporal spatial relationships</para>
+				<para>TODO Spatiotemporal relationships</para>
 				<para><varname>tContains(geometry,tcbuffer) → boolean</varname></para>
 				<para><varname>tDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
 				<para><varname>tIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
@@ -965,7 +965,7 @@ FROM Temp;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal circular buffers, which is an <varname>stbox</varname>, as all temporal spatial types.</para>
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal circular buffers, which is an <varname>stbox</varname>, as all spatiotemporal types.</para>
 
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
 		<itemizedlist>

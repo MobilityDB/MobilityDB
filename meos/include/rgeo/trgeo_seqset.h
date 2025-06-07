@@ -69,18 +69,6 @@ extern TSequence *trgeo_to_tsequence(const Temporal *temp,
 extern TSequenceSet *trgeo_to_tsequenceset(const Temporal *temp,
   const char *interp_str);
 
-extern TSequenceSet *trgeoinst_to_seqset(const TInstant *inst,
-  interpType interp);
-extern TSequenceSet *trgeo_discseq_to_seqset(const TSequence *seq,
-  interpType interp);
-extern TSequence *trgeoseqset_to_discseq(const TSequenceSet *ss);
-extern TSequenceSet *trgeoseq_to_seqset(const TSequence *seq);
-
-/* Accessor functions */
-
-extern TSequence **trgeoseqset_sequences(const TSequenceSet *ss, int *count);
-extern TSequence **trgeoseqset_segments(const TSequenceSet *ss, int *count);
-
 /*****************************************************************************/
 
 #endif /* __TRGEO_SEQSET_H__ */

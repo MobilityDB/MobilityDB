@@ -28,17 +28,33 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal pose objects.
+ * @brief General functions for temporal pose objects.
  */
 
 #ifndef __TPOSE_H__
 #define __TPOSE_H__
 
 #include "temporal/temporal.h"
-#include <meos_pose.h>
+#include "pose/pose.h"
 
 /*****************************************************************************/
 
+/* Validity functions */
+
+extern bool ensure_valid_tpose_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose);
+extern bool ensure_valid_tpose_stbox(const Temporal *temp, const STBox *box);
+extern bool ensure_valid_tpose_tpose(const Temporal *temp1,
+  const Temporal *temp2);
+
+/* Interpolation functions */
+
+extern int tposesegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
+extern int tposesegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
 
 /*****************************************************************************/
 

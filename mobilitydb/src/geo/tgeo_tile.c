@@ -44,11 +44,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal_tile.h"
 #include "temporal/temporal_tile.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "geo/tpoint_tile.h"
+#include "geo/tgeo_tile.h"
 /* MobilityDB */
 #include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"

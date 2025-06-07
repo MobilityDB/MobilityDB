@@ -128,7 +128,7 @@ nad_tfloat_float(const Temporal *temp, double d)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error or if the time frames of the boxes do not overlap return -1
+ * @return On error return -1
  * @csqlfn #NAD_tnumber_tbox()
  */
 int
@@ -146,7 +146,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error or if the time frames of the boxes do not overlap return -1
+ * @return On error return -1
  * @csqlfn #NAD_tnumber_tbox()
  */
 double

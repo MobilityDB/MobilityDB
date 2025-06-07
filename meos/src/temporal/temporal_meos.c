@@ -48,7 +48,7 @@
 #include <meos_internal.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_tile.h"
 #include "temporal/tinstant.h"

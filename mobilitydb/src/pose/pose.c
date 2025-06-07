@@ -45,11 +45,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/stbox.h"
 #include "pose/pose.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
@@ -176,7 +177,7 @@ PGDLLEXPORT Datum Pose_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_from_hexwkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
- * @brief Return a pose from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return a pose from its ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation
  * @sqlfn poseFromHexWKB()
  */
@@ -275,7 +276,7 @@ PGDLLEXPORT Datum Pose_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_as_hexwkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a pose
  * @sqlfn asHexWKB()
  */
@@ -369,7 +370,7 @@ Datum
 Pose_to_point(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  GSERIALIZED *result = pose_point(pose);
+  GSERIALIZED *result = pose_to_point(pose);
   PG_RETURN_POINTER(result);
 }
 
@@ -441,7 +442,7 @@ Datum
 Pose_point(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  Datum d = PointerGetDatum(pose_point(pose));
+  Datum d = PointerGetDatum(pose_to_point(pose));
   PG_RETURN_DATUM(datum_copy(d, T_GEOMETRY));
 }
 

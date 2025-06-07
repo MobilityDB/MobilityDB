@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for selectivity estimation of operators on temporal spatial
+ * @brief Functions for selectivity estimation of operators on spatiotemporal
  * values
  */
 
