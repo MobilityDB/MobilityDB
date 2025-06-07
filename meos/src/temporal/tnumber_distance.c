@@ -239,8 +239,9 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] value Value
+ * @note The function returns a double for both integer and float numbers
  */
-Datum
+double
 nad_tnumber_number(const Temporal *temp, Datum value)
 {
   assert(temp); assert(tnumber_type(temp->temptype));
@@ -255,7 +256,7 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
+ * @return On error return infinity
  * @note Function called when using indexes for k-nearest neighbor queries for
  * temporal numbers. Therefore, it must satisfy the following conditions
  * (1) the actual distance is always greater than or equal to the estimated
@@ -263,8 +264,9 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * estimated distance.
  * https://www.postgresql.org/message-id/CA%2BTgmoauhLf6R07sAUzQiRcstF5KfRw7nwiWn4VZgiSF8MaQaw%40mail.gmail.com
  * @csqlfn #NAD_tbox_tbox()
+ * @note The function returns a double for both integer and float boxes
  */
-Datum
+double
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
@@ -272,16 +274,15 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
-    return (box1->span.basetype == T_INT4) ?
-      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+    return Float8GetDatum(DBL_MAX);
 
-  /* If the boxes do not intersect in the time dimension return -1 */
+  /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-    return (box1->span.basetype == T_INT4) ?
-      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+    return Float8GetDatum(DBL_MAX);
 
-  return distance_span_span(&box1->span, &box2->span);
+  Datum res = distance_span_span(&box1->span, &box2->span);
+  return datum_double(res, spantype_basetype(box1->span.spantype));
 }
 
 /**
@@ -290,10 +291,11 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error or if the time frames of the boxes do not overlap return -1
+ * @return On error or if the time frames do not overlap return infinity
  * @csqlfn #NAD_tnumber_tbox()
+ * @note The function returns a double for both integer and float numbers
  */
-Datum
+double
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   assert(temp); assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
@@ -306,8 +308,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
-    return (box->span.basetype == T_INT4) ?
-      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+    return Float8GetDatum(DBL_MAX);
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
@@ -317,37 +318,39 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   TBox box1;
   tnumber_set_tbox(temp1, &box1);
   if (overlaps_tbox_tbox(box, &box1))
-    return (box->span.basetype == T_INT4) ?
-      DatumGetInt32(0) : DatumGetFloat8(0.0);
+    return DatumGetFloat8(0.0);
 
   /* Get the minimum distance between the values of the boxes */
-  Datum result = distance_value_value(box->span.lower, box1.span.upper,
+  Datum res = distance_value_value(box->span.lower, box1.span.upper,
     box->span.basetype);
 
   if (hast)
     pfree(temp1);
 
-  return result;
+  return datum_double(res, temptype_basetype(temp->temptype));
 }
 
 /**
+ * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between two temporal numbers
+ * @param[in] temp1,temp2 Temporal boxes
+ * @return On error or when the time frames do not intersect return infinity
+ * @note The function returns a double for both integer and float numbers
  */
-Datum
+double
 nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
   assert(tnumber_type(temp1->temptype));
   Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
-  /* If the boxes do not intersect in the time dimension return -1 */
+  /* If the boxes do not intersect in the time dimension return infinity */
   if (dist == NULL)
-    return (temp1->temptype == T_TINT) ?
-      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+    return Float8GetDatum(DBL_MAX);
 
-  Datum result = temporal_min_value(dist);
+  Datum res = temporal_min_value(dist);
   pfree(dist);
-  return result;
+  return datum_double(res, temptype_basetype(temp1->temptype));
 }
 
 /*****************************************************************************/

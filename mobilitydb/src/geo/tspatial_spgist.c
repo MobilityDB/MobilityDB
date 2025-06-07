@@ -1212,7 +1212,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   {
     queries = palloc0(sizeof(STBox) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
-      /* If the argument is an empty geometry the following call will do nothing */
+      /* The following call will do nothing for an empty geometry */
       tspatial_spgist_get_stbox(&in->scankeys[i], &queries[i]);
   }
 

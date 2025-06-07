@@ -31,61 +31,59 @@
  * @file
  * @brief SP-GiST implementation of 4-dimensional quad-tree and kd-tree over
  * temporal integers and temporal floats
+ * @note These functions are based on those in the file ``geo_spgist.c`.
+ * @details This module provides an SP-GiST implementation for temporal number
+ * types using a quad tree analogy in 4-dimensional space. Since SP-GiST
+ * does not allow indexing of overlapping objects, we transform 2D objects
+ * in a 4D space to make them not overlap. This technique has some benefits
+ * compared to traditional R-Tree which is implemented as GiST. The performance
+ * tests reveal that this technique especially beneficial with too much
+ * overlapping objects, so called "spaghetti data".
  *
- * These functions are based on those in the file ``geo_spgist.c`. from
- * PostgreSQL. This module provides SP-GiST implementation for temporal
- * number types using a quad tree analogy in 4-dimensional space. Notice
- * that SP-GiST doesn't allow indexing of overlapping objects.  We are
- * making 2D objects never-overlapping in 4D space.  This technique has some
- * benefits compared to traditional R-Tree which is implemented as GiST.
- * The performance tests reveal that this technique especially beneficial
- * with too much overlapping objects, so called "spaghetti data".
- *
- * Unlike the original quad tree, we are splitting the tree into 16
- * quadrants in 4D space.  It is easier to imagine it as splitting space
- * two times into 4:
+ * Unlike the original quadtree, we are splitting the tree into 16 quadrants
+ * in 4D space. It is easier to imagine it as splitting space two times into 4:
  * @code
  *              |      |
  *              |      |
  *              | -----+-----
- *              |      |
+ *              |      | c2
  *              |      |
  * -------------+-------------
- *              |
+ *              | c1
  *              |
  *              |
  *              |
  *              |
  * @endcode
- * We are using a temporal box datatype as the prefix, but we are treating them
- * as points in 4-dimensional space, because 2D boxes are not enough
- * to represent the quadrant boundaries in 4D space.  They however are
- * sufficient to point out the additional boundaries of the next
- * quadrant.
+ * where `c1` and `c2` are the centroids of the node and the child quadrant.
  *
- * We are using traversal values provided by SP-GiST to calculate and
- * to store the bounds of the quadrants, while traversing into the tree.
- * Traversal value has all the boundaries in the 4D space, and is is
- * capable of transferring the required boundaries to the following
- * traversal values.  In conclusion, three things are necessary
+ * We use centroids represented as a temporal box as the prefix, but we treat 
+ * them as points in 4-dimensional space. Notice that 2D boxes are not enough 
+ * to represent the quadrant boundaries in 4D space. However, they are 
+ * sufficient to point out the additional boundaries of the next quadrant.
+ *
+ * We use node boxes (see below) composed by a left and a right temporal boxes
+ * as traversal values to calculate and to store the bounds of the quadrants
+ * while traversing the tree. A traversal value has all the boundaries in 
+ * 4D space, and is is capable of transferring the required boundaries to the
+ * following traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
  *  1. the traversal value of the parent
  *  2. the quadrant of the current node
  *  3. the prefix of the current node
  *
- * If we visualize them on our simplified drawing (see the drawing after);
- * transferred boundaries of (1) would be the outer axis, relevant part
- * of (2) would be the up right part of the other axis, and (3) would be
- * the inner axis.
+ * If we visualize them on the above drawing, transferred boundaries of
+ * (1) would be the relevant part of the outer axis, 
+ * (2) would be the up right part of the other axis, and 
+ * (3) would be the inner axis.
  *
- * For example, consider the case of overlapping.  When recursion
- * descends deeper and deeper down the tree, all quadrants in
- * the current node will be checked for overlapping.  The boundaries
- * will be re-calculated for all quadrants.  Overlap check answers
- * the question: can any box from this quadrant overlap with the given
- * box?  If yes, then this quadrant will be walked.  If no, then this
- * quadrant will be skipped.
+ * For example, consider the case of overlapping.  When recursion descends
+ * deeper and deeper down the tree, all quadrants in the current node will be
+ * checked for overlapping.  The boundaries will be re-calculated for all
+ * quadrants. Overlap check answers  the question: can any box from this
+ * quadrant overlap with the given box? If yes, then this quadrant will be
+ * walked. If no, then this quadrant will be skipped.
  *
  * This method provides restrictions for minimum and maximum values of
  * every dimension of every corner of the box on every level of the tree
@@ -125,6 +123,20 @@
 /**
  * @brief Structure to represent the bounding box of an inner node containing a
  * set of temporal boxes
+ * @details The left box keeps, for the X and T dimensions, the ranges of the
+ * lower bounds of the boxes in the quadrant, while the right box keeps the
+ * ranges of the upper boxes.
+ *
+ * As an example, suppose that a quadrant contains two boxes 
+ * @code
+ * b1 = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])
+ * b3 = TBOXFLOAT XT([7, 9],[2001-01-07, 2001-01-09])
+ * @endcode
+ * The corresponding `TboxNode` will be 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
  */
 typedef struct
 {
@@ -147,9 +159,12 @@ typedef struct SortedTbox
 
 /**
  * @brief Initialize the traversal value
- *
- * In the beginning, we don't have any restrictions.  We have to
- * initialize the struct to cover the whole 4D space.
+ * @details In the beginning, we don't have any restrictions. We initialize the
+ * node box to cover the whole 4D space as follows
+ * @code
+ * left = TBOXFLOAT XT((-inf, +inf),(-inf, +inf))
+ * right = TBOXFLOAT XT((-inf, +inf),(-inf, +inf))
+ * @endcode
  */
 static void
 tboxnode_init(TBox *centroid, TboxNode *nodebox)
@@ -198,10 +213,34 @@ tboxnode_copy(const TboxNode *box)
 
 /**
  * @brief Calculate the quadrant
+ * @details The quadrant is 8 bit unsigned integer with 4 least bits in use.
+ * This function accepts temporal boxes as input. All 4 bits are set by
+ * comparing a corner of the box. This makes 16 quadrants in total.
  *
- * The quadrant is 8 bit unsigned integer with 4 least bits in use.
- * This function accepts BOXes as input. All 4 bits are set by comparing
- * a corner of the box. This makes 16 quadrants in total.
+ * Continuing with the example at the top of this file 
+ * @code
+ *              |      |
+ *              |      |
+ *              | -----+-----
+ *              |      | inbox
+ *              |      |
+ * -------------+-------------
+ *              | centroid
+ *              |
+ *              |
+ *              |
+ *              |
+ * @endcode
+ * where `centroid` and `inbox` are as follows
+ * @code
+ * centroid = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])
+ * inbox = TBOXFLOAT XT([7, 9],[2001-01-07, 2001-01-09])
+ * @endcode
+ * Then
+  - `quadrant |= 0x8` since 7 > 3
+  - `quadrant |= 0x4` since 9 > 5
+  - `quadrant |= 0x2` since 2001-01-07 > 2001-01-03
+  - `quadrant |= 0x1` since 2001-01-09 > 2001-01-05
  */
 static uint8
 getQuadrant4D(const TBox *centroid, const TBox *inBox)
@@ -225,10 +264,39 @@ getQuadrant4D(const TBox *centroid, const TBox *inBox)
 
 /**
  * @brief Calculate the next traversal value
- *
- * All centroids are bounded by TboxNode, but SP-GiST only keeps
- * boxes.  When we are traversing the tree, we must calculate TboxNode,
+ * @details All centroids are bounded by TboxNode, but SP-GiST only keeps
+ * boxes. When we are traversing the tree, we must calculate TboxNode,
  * using centroid and quadrant.
+ *
+ * Continuing with the example at the top of this file 
+ * @code
+ *              |      |
+ *              | 1110 | 1111
+ *              | -----+-----
+ *              | 1100 | 1101
+ *              |      |
+ * -------------+-------------
+ *              | centroid
+ *              |
+ *              |
+ *              |
+ *              |
+ * @endcode
+ * where `centroid` is as follows
+ * @code
+ * c1 = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])
+ * centroid = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])
+ * @endcode
+ * The next traversal value of quadrant ´1111´ is
+ * @code
+ * left = TBOXFLOAT XT([3, +inf),[2001-01-03, +inf))
+ * right = TBOXFLOAT XT([5, +inf),[2001-01-05, +inf))
+ * @endcode
+ * Also, the traversal value of quadrant ´1100´ is
+ * @code
+ * left = TBOXFLOAT XT([3, +inf),(-inf, 2001-01-03))
+ * right = TBOXFLOAT XT([5, +inf),(-inf, 2001-01-05))
+ * @endcode
  */
 static void
 tboxnode_quadtree_next(const TboxNode *nodebox, const TBox *centroid,
@@ -306,7 +374,25 @@ tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,
 }
 
 /**
- * @brief Can any rectangle from nodebox overlap with this argument?
+ * @brief Can any box from nodebox overlap with the query?
+ * @details A span `s1` contains a span `s2` if `s1.lower <= s2.lower`
+ * and `s1.upper >= s2.upper`. Therefore, given a query box and a node box, a
+ * @details Two spans overlap if the maximum of their lower bound is greater
+ * than or equal to the minimum of their upper bound. Therefore, given a 
+ * query box and a node box, the query box may overlap a box in the
+ * node box if for each dimension X and T
+ * - `nodebox->left.span.lower` (the minimum of the lower bounds in the node
+ *   box) <= `query->span.upper` (the upper bound of the query).
+ * - `nodebox->right.span.upper` (the maximum of the upper bounds in the node
+ *   box) <= `query->span.lower` (the lower bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([2, 4],[2001-01-02, 2001-01-04]) satisfies the above
+ * condition.
  */
 static bool
 overlap4D(const TboxNode *nodebox, const TBox *query)
@@ -326,7 +412,23 @@ overlap4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox contain this argument?
+ * @brief Can any box from nodebox contain the query?
+ * @details A span `s1` contains a span `s2` if `s1.lower <= s2.lower`
+ * and `s1.upper >= s2.upper`. Therefore, given a query box and a node box, a
+ * box in the node box may contain the query box if for each
+ * dimension X and T
+ * - `nodebox->left.span.lower` (the minimum of the lower bounds in the node
+ *   box) <= `query->span.lower` (the lower bound of the query).
+ * - `nodebox->right.span.upper` (the maximum of the upper bounds in the node
+ *   box) >= `query->span.upper` (the upper bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([3, 4],[2001-01-02, 2001-01-04]) satisfies the above
+ * condition.
  */
 static bool
 contain4D(const TboxNode *nodebox, const TBox *query)
@@ -335,8 +437,8 @@ contain4D(const TboxNode *nodebox, const TBox *query)
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_X(query->flags))
     result &=
-      datum_ge(nodebox->right.span.upper, query->span.upper, query->span.basetype) &&
-      datum_le(nodebox->left.span.lower, query->span.lower, query->span.basetype);
+      datum_le(nodebox->left.span.lower, query->span.lower, query->span.basetype) &&
+      datum_ge(nodebox->right.span.upper, query->span.upper, query->span.basetype);
   /* If the dimension is not missing */
   if (MEOS_FLAGS_GET_T(query->flags))
     result &=
@@ -346,7 +448,20 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be to the left of this argument?
+ * @brief Can any box from nodebox be to the left of the query?
+ * @details A span `s1` is to the left of a span `s2` if `s1.upper < s2.lower`.
+ * Therefore, given a query box and a node box, a box in the node box
+ * may may be to the left of the query box if for dimension X
+ * - `nodebox->right.span.upper` (the maximum of the upper bounds in the node
+ *   box) < `query->span.lower` (the lower bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) satisfies the above
+ * condition.
  */
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
@@ -356,8 +471,21 @@ left4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend to the right of this
- * argument?
+ * @brief Can any box from nodebox does not extend to the right of this query?
+ * @details A span `s1` does not extend to the right of a span `s2` if
+ * `s1.upper < s2.upper`. Therefore, given a query box and a node box, a box
+ * in the node box may may not extend to the right of the query box
+ * if for dimension X
+ * - `nodebox->right.span.upper` (the maximum of the upper bounds in the node
+ *   box) <= `query->span.upper` (the upper bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) satisfies the above
+ * condition.
  */
 static bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
@@ -367,7 +495,20 @@ overLeft4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be right of this argument?
+ * @brief Can any box from nodebox be right of the query?
+ * @details A span `s1` is to the right of a span `s2` if `s1.lower > s2.upper`.
+ * Therefore, given a query box and a node box, a box in the node box
+ * may may be to the left of the query box if for dimension X
+ * - `nodebox->left.span.lower` (the minimum of the lower bounds in the node
+ *   box) > `query->span.upper` (the upper bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) satisfies the above
+ * condition.
  */
 static bool
 right4D(const TboxNode *nodebox, const TBox *query)
@@ -376,8 +517,21 @@ right4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox does not extend to the left of this
- * argument?
+ * @brief Can any box from nodebox does not extend to the left of the query?
+ * @details A span `s1` does not extend to the left of a span `s2` if
+ * `s1.lower > s2.lower`. Therefore, given a query box and a node box, a box in
+ * the node box may may not extend to the right of the query box
+ * if for dimension X
+ * - `nodebox->left.span.lower` (the minimum of the lower bounds in the node
+ *   box) <= `query->span.lower` (the lower bound of the query).
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) satisfies the above
+ * condition.
  */
 static bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
@@ -387,7 +541,8 @@ overRight4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be before this argument?
+ * @brief Can any box from nodebox be before the query?
+ * @note See above the explanations for #left4D
  */
 static bool
 before4D(const TboxNode *nodebox, const TBox *query)
@@ -397,7 +552,8 @@ before4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be not after this argument?
+ * @brief Can any box from nodebox be not after the query?
+ * @note See above the explanations for #overleft4D
  */
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
@@ -407,7 +563,8 @@ overBefore4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be after this argument?
+ * @brief Can any box from nodebox be after the query?
+ * @note See above the explanations for #right4D
  */
 static bool
 after4D(const TboxNode *nodebox, const TBox *query)
@@ -417,7 +574,8 @@ after4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any rectangle from nodebox be not before this argument?
+ * @brief Can any box from nodebox be not before the query?
+ * @note See above the explanations for #overright4D
  */
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
@@ -427,10 +585,32 @@ overAfter4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Lower bound for the distance between query and nodebox
- * @note The temporal dimension is not taken into the account since it is not
- * possible to mix different units in the computation. As a consequence, the
- * filtering is not very restrictive.
+ * @brief Return the lower bound for the distance between query and nodebox
+ * @details The distance between two spans `s1` and `s2` is 
+ * - `s1.upper - s2.lower` if `s1` is to the left of `s2`: `s1.upper > s2.lower`
+ * - `s1.lower - s2.upper` if `s1` is to the right of `s2`: `s1.lower > s2.upper`
+ * - 0 if the `s1` and `s2` overlap
+ * Therefore, given a query box and a node box, the minimum distance between a
+ * box in the node box and the query will be 
+ * - `nodebox->left.span.lower - query->span.upper` (the distance between the
+ *   upper bound of the query and the minimum of the lower bounds in the node
+ *   box).
+ * - `query->span.lower - nodebox->right.span.upper` (the distance between the 
+ *   lower bound of the query and the maximum of the upper bounds in the node
+ *   box).
+ * - 0 otherwise.
+ * 
+ * Continuing with the example at the top of this file, if `TboxNode` is 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ * the distance with a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12])
+ * is 10 - 9 = 1 since the query is to the right of the node box
+ * condition.
+ * @note The distance is computed only on the value dimension. The temporal
+ * dimension is taken into account for setting the distance to infinity when
+ * the time spans of the node box and the query do not overlap.
  */
 static double
 distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
@@ -825,8 +1005,8 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   /*
    * Note: points that have coordinates exactly equal to centroid may get
    * classified into either node, depending on where they happen to fall in
-   * the sorted list.  This is okay as long as the inner_consistent function
-   * descends into both sides for such cases.  This is better than the
+   * the sorted list. This is okay as long as the inner_consistent function
+   * descends into both sides for such cases. This is better than the
    * alternative of trying to have an exact boundary, because it keeps the
    * tree balanced even when we have many instances of the same point value.
    * So we should never trigger the allTheSame logic.
