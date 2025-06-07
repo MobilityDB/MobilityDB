@@ -554,23 +554,6 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(result);
 }
 
-PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_to_stbox);
-/**
- * @ingroup mobilitydb_geo_box_conversion
- * @brief Convert a geometry/geography set into a spatiotemporal box
- * @sqlfn stbox()
- * @sqlop @p ::
- */
-Datum
-Geoset_to_stbox(PG_FUNCTION_ARGS)
-{
-  Set *set = PG_GETARG_SET_P(0);
-  STBox *result = spatialset_stbox(set);
-  PG_FREE_IF_COPY(set, 0);
-  PG_RETURN_STBOX_P(result);
-}
-
 PGDLLEXPORT Datum Timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_to_stbox);
 /**
