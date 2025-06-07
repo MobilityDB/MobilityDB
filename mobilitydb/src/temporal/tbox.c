@@ -347,8 +347,7 @@ Datum
 Set_to_tbox(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  TBox *result = set_tbox(s);
-  PG_FREE_IF_COPY_P(s, 0);
+  TBox *result = set_to_tbox(s);
   PG_RETURN_TBOX_P(result);
 }
 
@@ -417,7 +416,7 @@ Datum
 Tbox_to_intspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_intspan(box));
+  PG_RETURN_SPAN_P(tbox_to_intspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
@@ -431,7 +430,7 @@ Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_floatspan(box));
+  PG_RETURN_SPAN_P(tbox_to_floatspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
@@ -445,7 +444,7 @@ Datum
 Tbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_tstzspan(box));
+  PG_RETURN_SPAN_P(tbox_to_tstzspan(box));
 }
 
 /*****************************************************************************

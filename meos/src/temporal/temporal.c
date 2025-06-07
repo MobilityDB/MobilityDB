@@ -608,7 +608,7 @@ ensure_valid_day_duration(const Interval *duration)
  * @brief Return true if an interval is a positive duration
  */
 bool
-valid_duration(const Interval *duration)
+positive_duration(const Interval *duration)
 {
   if (duration->month != 0)
     return false;
@@ -623,9 +623,9 @@ valid_duration(const Interval *duration)
  * @brief Ensure that an interval is a positive duration
  */
 bool
-ensure_valid_duration(const Interval *duration)
+ensure_positive_duration(const Interval *duration)
 {
-  if (valid_duration(duration))
+  if (positive_duration(duration))
     return true;
 
   if (! ensure_not_month_duration(duration))
@@ -1150,6 +1150,7 @@ tnumber_to_span(const Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_temporal_conversion
  * @brief Convert a temporal number into a temporal box
@@ -1165,6 +1166,7 @@ tnumber_to_tbox(const Temporal *temp)
   tnumber_set_tbox(temp, result);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -1546,20 +1548,17 @@ temporal_tsequence(const Temporal *temp, interpType interp)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation string, may be NULL
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequence()
  */
 TSequence *
-temporal_to_tsequence(const Temporal *temp, const char *interp_str)
+temporal_to_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     if (temp->subtype == TSEQUENCE)
       interp = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1609,20 +1608,17 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence set
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation string
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
-temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
+temporal_to_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     interp = MEOS_FLAGS_GET_INTERP(temp->flags);
     if (interp == INTERP_NONE || interp == DISCRETE)
@@ -1635,16 +1631,15 @@ temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to an interpolation
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation
+ * @param[in] interp Interpolation
  * @return On error return @p NULL
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-temporal_set_interp(const Temporal *temp, const char *interp_str)
+temporal_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  interpType interp = interptype_from_string(interp_str);
   if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
@@ -1721,7 +1716,7 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -2928,7 +2923,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   if (! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;
 
-  /* We cannot call #ensure_valid_duration since the duration may be zero */
+  /* We cannot call #ensure_positive_duration since the duration may be zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = pg_interval_cmp(minduration, &intervalzero);

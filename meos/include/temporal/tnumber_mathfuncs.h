@@ -57,14 +57,8 @@ typedef enum
 
 /*****************************************************************************/
 
-extern int tnumber_arithop_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param UNUSED, meosType basetype, TimestampTz lower,
-  TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
-extern int tint_arithop_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2);
 extern int tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
+  Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,

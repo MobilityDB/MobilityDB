@@ -292,8 +292,7 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   meosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
-    (basetype == T_INT4) ? &tint_arithop_turnpt :
-      &tfloat_arithop_turnpt);
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
 
 /*****************************************************************************
@@ -378,7 +377,7 @@ div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   meosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
-    (basetype == T_INT4) ? &tint_arithop_turnpt : &tfloat_arithop_turnpt);
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
 
 /*****************************************************************************/

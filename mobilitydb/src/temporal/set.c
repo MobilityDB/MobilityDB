@@ -285,7 +285,7 @@ Datum
 Intset_to_floatset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = intset_floatset(s);
+  Set *result = intset_to_floatset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -302,7 +302,7 @@ Datum
 Floatset_to_intset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = floatset_intset(s);
+  Set *result = floatset_to_intset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -319,7 +319,7 @@ Datum
 Dateset_to_tstzset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = dateset_tstzset(s);
+  Set *result = dateset_to_tstzset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -336,7 +336,7 @@ Datum
 Tstzset_to_dateset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = tstzset_dateset(s);
+  Set *result = tstzset_to_dateset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }

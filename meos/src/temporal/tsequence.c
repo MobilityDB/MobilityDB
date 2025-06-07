@@ -1831,7 +1831,7 @@ tnumberseq_valuespans(const TSequence *seq)
   {
     Span span;
     memcpy(&span, &((TBox *) TSEQUENCE_BBOX_PTR(seq))->span, sizeof(Span));
-    return span_spanset(&span);
+    return span_to_spanset(&span);
   }
 
   /* Temporal sequence number with discrete or step interpolation */
@@ -1859,7 +1859,7 @@ tsequence_time(const TSequence *seq)
   assert(seq);
   /* Continuous sequence */
   if (! MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
-    return span_spanset(&seq->period);
+    return span_to_spanset(&seq->period);
 
   /* Discrete sequence */
   Span *periods = palloc(sizeof(Span) * seq->count);

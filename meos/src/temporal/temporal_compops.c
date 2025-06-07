@@ -751,9 +751,10 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************
- * Temporal eq
+ * Temporal comparisons
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equality of two temporal values
@@ -773,10 +774,6 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
 
-/*****************************************************************************
- * Temporal ne
- *****************************************************************************/
-
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal inequality of two temporal values
@@ -795,5 +792,6 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

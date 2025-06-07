@@ -127,13 +127,13 @@ EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
  */
 Datum
 EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
-  int (*func)(const GSERIALIZED *, const Temporal *, double dist, bool),
+  int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
   bool ever)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = func(gs, temp, dist, ever);
+  int result = func(temp, gs, dist, ever);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -678,25 +678,6 @@ Atouches_tgeo_tgeo(PG_FUNCTION_ARGS)
  * The function only accepts points and not arbitrary geometries/geographies
  *****************************************************************************/
 
-/**
- * @brief Return true if a geometry/geography and a temporal geometry are
- * ever/always within a distance
- * @sqlfn eDwithin()
- */
-static Datum
-EA_dwithin_geo_tgeo(FunctionCallInfo fcinfo, bool ever)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  int result = ea_dwithin_tgeo_geo(temp, gs, dist, ever);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
-}
-
 PGDLLEXPORT Datum Edwithin_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_geo_tgeo);
 /**
@@ -708,8 +689,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tgeo);
 inline Datum
 Edwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tgeo(fcinfo, EVER);
-  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_tgeo_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_geo_tgeo(PG_FUNCTION_ARGS);
@@ -723,26 +703,7 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_tgeo);
 inline Datum
 Adwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tgeo(fcinfo, ALWAYS);
-}
-
-/**
- * @brief Return true if a temporal geometry and a geometry/geography are
- * ever/always within a distance
- * @sqlfn eDwithin()
- */
-static Datum
-EA_dwithin_tgeo_geo(FunctionCallInfo fcinfo, bool ever)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double dist = PG_GETARG_FLOAT8(2);
-  int result = ea_dwithin_tgeo_geo(temp, gs, dist, ever);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edwithin_tgeo_geo(PG_FUNCTION_ARGS);
@@ -756,7 +717,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tgeo_geo);
 inline Datum
 Edwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tgeo_geo(fcinfo, EVER);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_tgeo_geo(PG_FUNCTION_ARGS);
@@ -770,7 +731,7 @@ PG_FUNCTION_INFO_V1(Adwithin_tgeo_geo);
 inline Datum
 Adwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tgeo_geo(fcinfo, ALWAYS);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
 }
 
 /**

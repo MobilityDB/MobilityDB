@@ -95,7 +95,7 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
       /* If time arguments are given */
       ensure_has_T(T_STBOX, bounds->flags);
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
+      ensure_positive_duration(duration);
     }
     if (spacetiles)
     {

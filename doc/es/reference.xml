@@ -238,8 +238,11 @@
 
 		<sect2>
 			<title>Transformaciones</title>
-
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="setspan_expand"><varname>expand</varname></link>: Desplazar con un valor o intervalo de tiempo</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar con un valor o intervalo de tiempo</para>
 				</listitem>

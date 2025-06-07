@@ -1410,7 +1410,7 @@ TSequenceSet *
 tsequenceset_delete_tstzspan(const TSequenceSet *ss, const Span *s)
 {
   assert(ss); assert(ss);
-  SpanSet *sps = span_spanset(s);
+  SpanSet *sps = span_to_spanset(s);
   TSequenceSet *result = tsequenceset_delete_tstzspanset(ss, sps);
   pfree(sps);
   return result;

@@ -573,15 +573,14 @@ set_set_span(const Set *s, Span *result)
 Span *
 set_span(const Set *s)
 {
-  assert(s);
-  if (! ensure_set_spantype(s->settype))
-    return NULL;
-
+  /* Ensure the validity of the arguments */
+  assert(s); assert(set_spantype(s->settype));
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a set into a span
@@ -593,8 +592,11 @@ set_to_span(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
   return set_span(s);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_conversion
@@ -613,21 +615,6 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert an integer span into a float span
- * @param[in] s Span
- * @return On error return @p NULL
- */
-Span *
-intspan_floatspan(const Span *s)
-{
-  assert(s); assert(s->spantype == T_INTSPAN);
-  Span *result = palloc(sizeof(Span));
-  intspan_set_floatspan(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_setspan_conversion
  * @brief Convert an integer span into a float span
  * @param[in] s Span
@@ -638,7 +625,9 @@ intspan_to_floatspan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
-  return intspan_floatspan(s);
+  Span *result = palloc(sizeof(Span));
+  intspan_set_floatspan(s, result);
+  return result;
 }
 
 /**
@@ -658,21 +647,6 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a float span into an integer span
- * @param[in] s Span
- * @return On error return @p NULL
- */
-Span *
-floatspan_intspan(const Span *s)
-{
-  assert(s); assert(s->spantype == T_FLOATSPAN);
-  Span *result = palloc(sizeof(Span));
-  floatspan_set_intspan(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_setspan_conversion
  * @brief Convert a float span into an integer span
  * @param[in] s Span
@@ -682,7 +656,9 @@ Span *
 floatspan_to_intspan(const Span *s)
 {
   VALIDATE_FLOATSPAN(s, NULL);
-  return floatspan_intspan(s);
+  Span *result = palloc(sizeof(Span));
+  floatspan_set_intspan(s, result);
+  return result;
 }
 
 /**
@@ -705,21 +681,6 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a date span into a timestamptz span
- * @param[in] s Span
- * @return On error return @p NULL
- */
-Span *
-datespan_tstzspan(const Span *s)
-{
-  assert(s); assert(s->spantype == T_DATESPAN);
-  Span *result = palloc(sizeof(Span));
-  datespan_set_tstzspan(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_setspan_conversion
  * @brief Convert a date span into a timestamptz span
  * @param[in] s Span
@@ -730,7 +691,9 @@ datespan_to_tstzspan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
-  return datespan_tstzspan(s);
+  Span *result = palloc(sizeof(Span));
+  datespan_set_tstzspan(s, result);
+  return result;
 }
 
 /**
@@ -760,21 +723,6 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a timestamptz span into a date span
- * @param[in] s Span
- * @return On error return @p NULL
- */
-Span *
-tstzspan_datespan(const Span *s)
-{
-  assert(s); assert(s->spantype == T_TSTZSPAN);
-  Span *result = palloc(sizeof(Span));
-  tstzspan_set_datespan(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_setspan_conversion
  * @brief Convert a timestamptz span into a date span
  * @param[in] s Span
@@ -785,7 +733,9 @@ tstzspan_to_datespan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  return tstzspan_datespan(s);
+  Span *result = palloc(sizeof(Span));
+  tstzspan_set_datespan(s, result);
+  return result;
 }
 
 /*****************************************************************************
@@ -1000,6 +950,46 @@ span_expand(const Span *s1, Span *s2)
   return;
 }
 
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span expanded/decreased by an interval
+ * @param[inout] s Span
+ * @param[in] interv Interval
+ * @csqlfn #Tstzspan_expand()
+ */
+Span *
+tstzspan_expand(const Span *s, const Interval *interv)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(interv, NULL);
+  /* When the interval is negative, ensure that its absolute value is less than
+   * the duration of the span */ 
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
+  Interval *duration = tstzspan_duration(s);
+  /* Negate the interval */
+  Interval interv_neg;
+  interval_negate(interv, &interv_neg);
+  bool smaller = pg_interval_cmp(&interv_neg, duration) < 0;
+  pfree(duration);
+  if (negative && ! smaller)
+  {
+    char *str = pg_interval_out(interv);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The duration of the time span must be greater than the interval to decrease: %s",
+      str);
+    pfree(str);
+    return NULL;
+  }
+
+  Span *result = span_copy(s);
+  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(
+    s->upper), interv);
+  result->upper = TimestampTzGetDatum(tmax);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**
@@ -1048,7 +1038,7 @@ span_bounds_shift_scale_time(const Interval *shift, const Interval *duration,
   TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift || duration); assert(lower); assert(upper);
-  assert(! duration || valid_duration(duration));
+  assert(! duration || positive_duration(duration));
 
   bool instant = (*lower == *upper);
   if (shift)
@@ -1275,7 +1265,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Copy the input period to the result */

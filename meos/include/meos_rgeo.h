@@ -125,7 +125,7 @@ extern Temporal *trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool c
 extern Temporal *trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect);
 extern Temporal *trgeo_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *trgeo_round(const Temporal *temp, int maxdd);
-extern Temporal *trgeo_set_interp(const Temporal *temp, const char *interp_str);
+extern Temporal *trgeo_set_interp(const Temporal *temp, interpType interp);
 extern TInstant *trgeo_to_tinstant(const Temporal *temp);
 
 /*****************************************************************************

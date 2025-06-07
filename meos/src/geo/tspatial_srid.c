@@ -324,10 +324,11 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
   return result;
 }
 
-/*****************************************************************************
+/*****************************************************************************Add commentMore actions
  * Defitions taken from file lwgeom_transform.c
  *****************************************************************************/
 
+#if CBUFFER || POSE
 /**
  * @brief Convert decimal degress to radians
  */
@@ -347,6 +348,7 @@ to_dec(POINT4D *pt)
   pt->x *= 180.0/M_PI;
   pt->y *= 180.0/M_PI;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************
  * Functions fetching an LWPROJ structure containing transform information
@@ -377,6 +379,7 @@ ensure_srid_is_latlong(int32_t srid)
   return false;
 }
 
+#if CBUFFER || POSE
 /**
  * @brief Transform the point to another SRID
  * @param[in] gs Point
@@ -424,6 +427,7 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   gserialized_set_srid(gs, srid_to);
   return true;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************
  * Generic functions

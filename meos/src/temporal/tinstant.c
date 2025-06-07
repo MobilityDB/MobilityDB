@@ -330,7 +330,7 @@ tnumberinst_valuespans(const TInstant *inst)
   meosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);
-  return span_spanset(&s);
+  return span_to_spanset(&s);
 }
 
 /**

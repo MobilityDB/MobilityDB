@@ -116,6 +116,7 @@ geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @brief Return -1, 0, or 1 depending on whether the first point is less than,
  * equal to, or greater than the second one
@@ -146,6 +147,7 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return 0;
   }
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the points are equal
@@ -876,6 +878,7 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
+#if MEOS
 /**
  * @brief Ensure the validity of a spatiotemporal value and a 
  * geometry/geography
@@ -893,6 +896,7 @@ ensure_valid_tspatial_base(const Temporal *temp, Datum base)
     return false;
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure the validity of a temporal geo and a spatiotemporal box

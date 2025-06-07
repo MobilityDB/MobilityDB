@@ -62,7 +62,7 @@
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
+ * @param[in] func Spatial relationship function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
  * @return On error return -1

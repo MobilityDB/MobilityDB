@@ -447,15 +447,14 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] func Spatial relationship
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @note Mixed 2D/3D allowed
+ * @note The function assumes that all validity tests have been previously done
  */
 int
 ea_spatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
   datum_func2 func, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
-
+  assert(temp); assert(gs); assert(! gserialized_is_empty(gs)); assert(func);
   int count;
   Datum *datumarr = temporal_values_p(temp, &count);
   int result = 0;
@@ -518,7 +517,7 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if two temporal geometries ever/always contains satisfy a 
+ * @brief Return 1 if two temporal geometries ever/always contains satisfy a
  * spatial relationship, 0 if not, and -1 on error
  * @details
  * - A temporal geometry *ever* contains another one if there is an instant in
@@ -545,7 +544,7 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   if (ever)
     return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, EVER);
   /* Always */
-  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL, 
+  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL,
     (varfunc) func, 2);
   return result ? 1 : 0;
 }
@@ -760,7 +759,7 @@ ea_covers_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
   int result = ever ?
-    /* Iterate for each compose geometry */
+    /* Iterate for each composing geometry */
     ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_covers, EVER) :
     /* Compute the result from the traversed area and the geometry */
     spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geom_covers,
@@ -1326,7 +1325,7 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
 
-  return ea_spatialrel_tspatial_geo(temp, gs,  &datum_geom_touches, ever);
+  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever);
 }
 
 #if MEOS
@@ -1341,7 +1340,7 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, EVER);
+  return ea_touches_tgeo_geo(temp, gs, EVER);
 }
 
 /**
@@ -1355,7 +1354,7 @@ etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ALWAYS);
+  return ea_touches_tgeo_geo(temp, gs, ALWAYS);
 }
 #endif /* MEOS */
 
@@ -1397,6 +1396,7 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     ever);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever touches another one, 0 if not,
@@ -1422,6 +1422,7 @@ atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always dwithin (for both geometry and geography)
@@ -1668,13 +1669,14 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Edwithin_tgeo_tgeo(), #Adwithin_tgeo_tgeo()
  */
-int 
+int
 ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool ever)
 {
   VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
   datum_func3 func = geo_dwithin_fn(temp1->flags, temp2->flags);

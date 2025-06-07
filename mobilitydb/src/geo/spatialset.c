@@ -234,7 +234,7 @@ Datum
 Spatialset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *set = PG_GETARG_SET_P(0);
-  STBox *result = spatialset_stbox(set);
+  STBox *result = spatialset_to_stbox(set);
   PG_FREE_IF_COPY(set, 0);
   PG_RETURN_STBOX_P(result);
 }

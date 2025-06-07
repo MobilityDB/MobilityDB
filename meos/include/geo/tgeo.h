@@ -52,11 +52,6 @@ extern void mobilitydb_init(void);
 
 extern STBox *geo_stbox(const GSERIALIZED *gs);
 extern GSERIALIZED *stbox_geo(const STBox *box);
-extern STBox *spatialset_stbox(const Set *s);
-extern Span *stbox_tstzspan(const STBox *box);
-extern STBox *tstzset_stbox(const Set *s);
-extern STBox *tstzspan_stbox(const Span *s);
-extern STBox *tspatial_to_stbox(const Temporal *temp);
 
 /* Temporal comparisons */
 

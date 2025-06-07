@@ -193,7 +193,7 @@ get_srid_ways()
   int32_t result = 0; /* make compiler quiet */
   bool isNull = true;
   SPI_connect();
-  int ret = SPI_execute("SELECT ST_SRID(the_geom) FROM public.ways LIMIT 1;",
+  int ret = SPI_execute("SELECT public.ST_SRID(the_geom) FROM public.ways LIMIT 1;",
     true, 1);
   uint64 proc = SPI_processed;
   if (ret > 0 && proc > 0 && SPI_tuptable)

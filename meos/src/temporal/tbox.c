@@ -594,22 +594,16 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 TBox *
 span_tbox(const Span *s)
 {
-  assert(s);
+  assert(s); assert(span_tbox_type(s->spantype));
   TBox *result = palloc(sizeof(TBox));
   if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
-  else if (s->spantype == T_TSTZSPAN)
+  else /* s->spantype == T_TSTZSPAN */
     tstzspan_set_tbox(s, result);
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Unknown span type for converting to temporal box: %s",
-      meostype_name(s->spantype));
-    return NULL;
-  }
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_box_conversion
  * @brief Convert a number span into a temporal box
@@ -621,38 +615,9 @@ span_to_tbox(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_span_tbox_type(s->spantype))
+    return NULL;
   return span_tbox(s);
-}
-
-#if MEOS
-/**
- * @ingroup meos_internal_box_conversion
- * @brief Return in the last argument a temporal box constructed from a span
- * set
- * @param[in] ss Span set
- * @param[out] box Result
- */
-void
-numspanset_set_tbox(const SpanSet *ss, TBox *box)
-{
-  assert(ss); assert(box); assert(tnumber_spansettype(ss->spansettype));
-  tbox_set(&ss->span, NULL, box);
-  return;
-}
-
-/**
- * @ingroup meos_internal_box_conversion
- * @brief Return in the last argument a temporal box constructed from a
- * timestamptz span set
- * @param[in] ss Span set
- * @param[out] box Result
- */
-void
-tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
-{
-  assert(ss); assert(box);
-  tbox_set(NULL, &ss->span, box);
-  return;
 }
 
 /**
@@ -662,23 +627,34 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
  * @csqlfn #Spanset_to_tbox()
  */
 TBox *
+spanset_tbox(const SpanSet *ss)
+{
+  assert(ss); assert(span_tbox_type(ss->spantype));
+  TBox *result = palloc(sizeof(TBox));
+  if (tnumber_spantype(ss->spantype))
+    tbox_set(&ss->span, NULL, result);
+  else /* ss->spantype == T_TSTZSPAN */
+    tbox_set(NULL, &ss->span, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a number span set into a temporal box
+ * @param[in] ss Span set
+ * @csqlfn #Spanset_to_tbox()
+ * @note This function is only used in MEOS since for MobilityDB we use the
+ * #spanset_tbox_slice function for obtaining the first bytes of the spanset
+ * to get the precomputed span bounding box
+ */
+TBox *
 spanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL);
-  TBox *result = palloc(sizeof(TBox));
-  if (tnumber_spansettype(ss->spansettype))
-    numspanset_set_tbox(ss, result);
-  else if (ss->spansettype == T_TSTZSPANSET)
-    tstzspanset_set_tbox(ss, result);
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Unknown span set type for converting to temporal box: %s",
-      meostype_name(ss->spansettype));
+  if (! ensure_span_tbox_type(ss->spantype))
     return NULL;
-  }
-  return result;
+  return spanset_tbox(ss);
 }
 #endif /* MEOS */
 
@@ -693,10 +669,7 @@ spanset_to_tbox(const SpanSet *ss)
 Span *
 tbox_intspan(const TBox *box)
 {
-  assert(box);
-  /* Ensure the validity of the arguments */
-  if (! ensure_has_X(T_TBOX, box->flags))
-    return NULL;
+  assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
   if (box->span.basetype == T_INT4)
     return span_copy(&box->span);
   /* Convert the integer span to a float span */
@@ -716,6 +689,8 @@ tbox_to_intspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_TBOX, box->flags))
+    return NULL;
   return tbox_intspan(box);
 }
 
@@ -728,10 +703,7 @@ tbox_to_intspan(const TBox *box)
 Span *
 tbox_floatspan(const TBox *box)
 {
-  assert(box);
-  /* Ensure the validity of the arguments */
-  if (! ensure_has_X(T_TBOX, box->flags))
-    return NULL;
+  assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
   if (box->span.basetype == T_FLOAT8)
     return span_copy(&box->span);
   /* Convert the integer span to a float span */
@@ -751,6 +723,8 @@ tbox_to_floatspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_TBOX, box->flags))
+    return NULL;
   return tbox_floatspan(box);
 }
 
@@ -763,9 +737,7 @@ tbox_to_floatspan(const TBox *box)
 Span *
 tbox_tstzspan(const TBox *box)
 {
-  assert(box);
-  if (! ensure_has_T(T_TBOX, box->flags))
-    return NULL;
+  assert(box); assert(MEOS_FLAGS_GET_T(box->flags));
   return span_copy(&box->period);
 }
 
@@ -780,6 +752,8 @@ tbox_to_tstzspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_T(T_TBOX, box->flags))
+    return NULL;
   return tbox_tstzspan(box);
 }
 
@@ -1192,7 +1166,7 @@ tbox_shift_scale_time(const TBox *box, const Interval *shift,
   /* Ensure the validity of the arguments */
   if (! ensure_has_T(T_TBOX, box->flags) ||
       ! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Copy the input period to the result */
@@ -1246,8 +1220,7 @@ tbox_expand_int(const TBox *box, const int i)
         (DatumGetInt32(box->span.upper) - DatumGetInt32(box->span.lower) - 1))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the width of the span: %d",
-i);
+      "The value to decrease must be smaller than the width of the span: %d", i);
     return NULL;
   }
 
@@ -1279,7 +1252,7 @@ tbox_expand_float(const TBox *box, const double d)
         (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the width of the span: %lf",
+      "The value to decrease must be smaller than the width of the value span: %lf",
       d);
     return NULL;
   }
@@ -1305,31 +1278,11 @@ tbox_expand_time(const TBox *box, const Interval *interv)
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(interv, NULL);
   if (! ensure_has_T(T_TBOX, box->flags))
     return NULL;
-  /* When the interval is negative, ensure that its absolute value is less than
-   * the duration of the temporal box */ 
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
-  Interval *duration = tstzspan_duration(&box->period);
-  bool smaller = pg_interval_cmp(interv, duration) < 0;
-  pfree(duration);
-  if (negative && ! smaller)
-  {
-    char *str = pg_interval_out(interv);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The interval to decrease must be smaller than the time span of the tbox: %s",
-      str);
-    pfree(str);
+  Span *s = tstzspan_expand(&box->period, interv);
+  if (! s)
     return NULL;
-  }
-
   TBox *result = tbox_copy(box);
-  TimestampTz tmin = minus_timestamptz_interval(DatumGetTimestampTz(
-    box->period.lower), interv);
-  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(
-    box->period.upper), interv);
-  result->period.lower = TimestampTzGetDatum(tmin);
-  result->period.upper = TimestampTzGetDatum(tmax);
+  memcpy(&result->period, s, sizeof(Span));
   return result;
 }
 

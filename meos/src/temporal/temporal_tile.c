@@ -315,7 +315,7 @@ timestamptz_get_bin(TimestampTz t, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, DT_NOEND);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return DT_NOEND;
   int64 size = interval_units(duration);
   return timestamptz_bin_start(t, size, origin);
@@ -437,7 +437,7 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
   if ((numspan_type(s->spantype) && 
         ! ensure_positive_datum(size, s->basetype)) ||
       (s->spantype == T_DATESPAN && ! ensure_valid_day_duration(duration)) ||
-      (s->spantype == T_TSTZSPAN &&  ! ensure_valid_duration(duration)))
+      (s->spantype == T_TSTZSPAN &&  ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Compute the size in time units */
@@ -486,7 +486,7 @@ spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
   if ((numspan_type(ss->spantype) && 
         ! ensure_positive_datum(size, ss->basetype)) ||
       (ss->spantype == T_DATESPAN && ! ensure_valid_day_duration(duration)) ||
-      (ss->spantype == T_TSTZSPAN &&  ! ensure_valid_duration(duration)))
+      (ss->spantype == T_TSTZSPAN &&  ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Compute the size in time units */
@@ -543,7 +543,7 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   /* Set bounding box */
@@ -818,7 +818,7 @@ tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   meosType basetype, meosType spantype)
 {
   /* Ensure the validity of the arguments */
-  if (duration && ! ensure_valid_duration(duration))
+  if (duration && ! ensure_positive_duration(duration))
     return NULL;
 
   /* Determine whether there is a value tile */
@@ -865,7 +865,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
   if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Set bounding box */

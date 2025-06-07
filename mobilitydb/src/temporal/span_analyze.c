@@ -357,7 +357,7 @@ Span_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a span as a bounding box */
-  assert(span_bbox_type(oid_type(stats->attrtypid)));
+  assert(type_span_bbox(oid_type(stats->attrtypid)));
 
   /*
    * Call the standard typanalyze function. It may fail to find needed

@@ -77,7 +77,7 @@ extern Datum EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
   bool ever);
 extern Datum EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
-  int (*func)(const GSERIALIZED *, const Temporal *, double dist, bool),
+  int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
   bool ever);
 
 extern Datum Tdwithin_geo_tspatial(FunctionCallInfo fcinfo,

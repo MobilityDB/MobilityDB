@@ -141,7 +141,7 @@ tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);

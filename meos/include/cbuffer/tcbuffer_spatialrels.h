@@ -42,12 +42,6 @@
 
 /*****************************************************************************/
 
-extern int tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2);
-
-/*****************************************************************************/
-
 extern int ea_contains_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
 extern int ea_contains_tcbuffer_geo(const Temporal *temp,

@@ -118,8 +118,6 @@ Temporal_split_n_spans(PG_FUNCTION_ARGS)
   int count;
   Span *spans = temporal_split_n_spans(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! spans)
-    PG_RETURN_NULL();
   ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -142,8 +140,6 @@ Tnumber_split_n_tboxes(PG_FUNCTION_ARGS)
   int count;
   TBox *boxes = tnumber_split_n_tboxes(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! boxes)
-    PG_RETURN_NULL();
   ArrayType *result = tboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -168,8 +164,6 @@ Temporal_split_each_n_spans(PG_FUNCTION_ARGS)
   int count;
   Span *spans = temporal_split_each_n_spans(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! spans)
-    PG_RETURN_NULL();
   ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -192,8 +186,6 @@ Tnumber_split_each_n_tboxes(PG_FUNCTION_ARGS)
   int count;
   TBox *boxes = tnumber_split_each_n_tboxes(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! boxes)
-    PG_RETURN_NULL();
   ArrayType *result = tboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);

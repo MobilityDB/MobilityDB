@@ -691,7 +691,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
          ! ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin))) ||
       (duration &&
         (! ensure_has_T(T_STBOX, bounds->flags) ||
-         ! ensure_valid_duration(duration))))
+         ! ensure_positive_duration(duration))))
       return NULL;
   int32 srid = bounds->srid;
   int32 gs_srid = gserialized_get_srid(sorigin);
@@ -836,7 +836,7 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
         ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
         ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin)))
     return NULL;
-  if (hast && ! ensure_valid_duration(duration))
+  if (hast && ! ensure_positive_duration(duration))
     return NULL;
 
   /* Initialize to 0 missing dimensions */
@@ -969,7 +969,7 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
       (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
       (xsize > 0 && MEOS_FLAGS_GET_Z(temp->flags) &&
         ! ensure_positive_datum(zsize, T_FLOAT8)) ||
-      (duration && ! ensure_valid_duration(duration)) ||
+      (duration && ! ensure_positive_duration(duration)) ||
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) &&
       ! ensure_has_not_Z(temp->temptype, temp->flags)))
@@ -1327,7 +1327,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   }
 
   if (duration)
-    ensure_valid_duration(duration);
+    ensure_positive_duration(duration);
   else
     /* Disallow T dimension for generating a spatial only grid */
     MEOS_FLAGS_SET_T(bounds.flags, false);

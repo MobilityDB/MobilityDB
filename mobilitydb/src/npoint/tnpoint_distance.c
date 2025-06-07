@@ -34,8 +34,11 @@
 
 #include "npoint/tnpoint_distance.h"
 
+/* C */
+#include <float.h>
 /* MEOS */
 #include <meos.h>
+#include "geo/stbox.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
@@ -273,7 +276,7 @@ NAD_geo_tnpoint(PG_FUNCTION_ARGS)
   double result = nad_tnpoint_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -290,13 +293,51 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_geo);
 Datum
 NAD_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double result = nad_tnpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum NAD_stbox_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_tnpoint);
+/**
+ * @ingroup mobilitydb_npoint_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal network point
+ * @sqlfn nearestApproachDistance()
+ * @sqlop |=|
+ */
+Datum
+NAD_stbox_tnpoint(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  double result = nad_tnpoint_stbox(temp, box);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum NAD_tnpoint_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tnpoint_stbox);
+/**
+ * @ingroup mobilitydb_npoint_dist
+ * @brief Return the nearest approach distance between a temporal network point
+ * and a spatiotemporal box
+ * @sqlfn nearestApproachDistance()
+ * @sqlop |=|
+ */
+Datum
+NAD_tnpoint_stbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  double result = nad_tnpoint_stbox(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -355,7 +396,7 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   double result = nad_tnpoint_tnpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }

@@ -412,6 +412,9 @@ SELECT tDwithin(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000
 -- Mixed 2D/3D
 SELECT tDwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 
+-- Coverage
+SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(5 5)@2000-01-05, Point(7 7)@2000-01-07]}', tgeompoint '{Point(3 3)@2000-01-03, Point(4 4)@2000-01-04}', 1);
+
 -- Additional parameter
 SELECT tDwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2, true);
 SELECT tDwithin(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2, true);

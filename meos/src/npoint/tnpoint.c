@@ -79,21 +79,6 @@ common_rid_tnpoint_npointset(const Temporal *temp, const Set *s)
 }
 
 /**
- * @brief Return true if two temporal network points have common route
- * identifiers
- */
-bool
-common_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  assert(temp1); assert(temp2);
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
-  bool result = overlaps_set_set(routes1, routes2);
-  pfree(routes1); pfree(routes2);
-  return result;
-}
-
-/**
  * @brief Ensure that two temporal network point instants have the same route
  * identifier
  */

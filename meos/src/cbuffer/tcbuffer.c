@@ -125,17 +125,22 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @pre The segments are not constant.
  */
 int
-tcbuffersegm_dwithin_turnpt(const Cbuffer *start1, const Cbuffer *end1,
-  const Cbuffer *start2, const Cbuffer *end2, double d,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2)
 {
-  assert(start1); assert(end1); assert(start2); assert(end2);
   assert(t1); assert(t2); assert(lower < upper);
-
-  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start1));
-  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end1));
-  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start2));
-  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end2));
+  /* Extract the circular buffers and the distance */
+  Cbuffer *sv1 = DatumGetCbufferP(start1);
+  Cbuffer *ev1 = DatumGetCbufferP(end1);
+  Cbuffer *sv2 = DatumGetCbufferP(start2);
+  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  double d = DatumGetFloat8(dist);
+  /* Extract the points */
+  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv1));
+  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev1));
+  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv2));
+  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev2));
 
   double duration = (double)(upper - lower);
 
@@ -146,13 +151,13 @@ tcbuffersegm_dwithin_turnpt(const Cbuffer *start1, const Cbuffer *end1,
   double dy1 = ept1->y - ept2->y;
 
   /* Initial and final combined radii */
-  double r0 = start1->radius + start2->radius;
-  double r1 = end1->radius + end2->radius;
+  double r0 = sv1->radius + sv2->radius;
+  double r1 = ev1->radius + ev2->radius;
 
   /* Relative velocities */
   double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
   double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (end1->radius - start1->radius + end2->radius - start2->radius) /
+  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
     duration;
 
   /* Quadratic derivative coefficients of f(t) = (distance - d)^2 */
@@ -165,12 +170,12 @@ tcbuffersegm_dwithin_turnpt(const Cbuffer *start1, const Cbuffer *end1,
   /* Interpolation at turning point */
   double cx1 = spt1->x + (ept1->x - spt1->x) * t_rel / duration;
   double cy1 = spt1->y + (ept1->y - spt1->y) * t_rel / duration;
-  double rbuf1 = start1->radius + (end1->radius - start1->radius) * t_rel /
+  double rbuf1 = sv1->radius + (ev1->radius - sv1->radius) * t_rel /
     duration;
 
   double cx2 = spt2->x + (ept2->x - spt2->x) * t_rel / duration;
   double cy2 = spt2->y + (ept2->y - spt2->y) * t_rel / duration;
-  double rbuf2 = start2->radius + (end2->radius - start2->radius) * t_rel /
+  double rbuf2 = sv2->radius + (ev2->radius - sv2->radius) * t_rel /
     duration;
 
   /* Distance between buffer edges at turning point */
@@ -270,11 +275,11 @@ tcbuffersegm_dwithin_turnpt(const Cbuffer *start1, const Cbuffer *end1,
  * @pre The segments are not constant.
  */
 int
-tcbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
-  const Cbuffer *start2, const Cbuffer *end2, TimestampTz lower,
-  TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
+ Datum dist UNUSED, Datum end2, TimestampTz lower, TimestampTz upper,
+ TimestampTz *t1, TimestampTz *t2)
 {
-  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, 0.0,
+  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
     lower, upper, t1, t2);
 }
 
@@ -296,17 +301,8 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  int result = tcbuffersegm_distance_turnpt(DatumGetCbufferP(start),
-    DatumGetCbufferP(end), DatumGetCbufferP(value), DatumGetCbufferP(value),
-    lower, upper, t1, t2);
-  /* The above temporary function sometimes provides inverted timestamps 
-   * We patch it for the moment */
-  if (*t1 > *t2)
-  {
-    TimestampTz temp = *t2;
-    *t2 = *t1;
-    *t1 = temp;
-  }
+  int result = tcbuffersegm_distance_turnpt(start, end, value, value,
+    (Datum) 0.0, lower, upper, t1, t2);
   return result;
 }
 
@@ -326,8 +322,7 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 {
   assert(lower < upper); assert(t1); assert(t2);
   /* While waiting for this function we cheat and call the function below */
-  return tcbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
-    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
+  return tcbuffersegm_distance_turnpt(start1, end1, start2, end2, (Datum) 0.0,
     lower, upper, t1, t2);
 }
 

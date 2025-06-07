@@ -56,7 +56,7 @@
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum
+ * float segments is at a local minimum/maximum
  * @details The function supposes that the instants are synchronized, that is,
  * `start1->t = start2->t` and `end1->t = end2->t`.
  * The function only return an intersection at the middle, that is, it
@@ -64,15 +64,15 @@
  * @note This function is called only when both sequences are linear
  */
 int
-tnumber_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
-  Datum param UNUSED, meosType basetype, TimestampTz lower, TimestampTz upper,
+tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum param UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  double x1 = datum_double(start1, basetype);
-  double x2 = datum_double(end1, basetype);
-  double x3 = datum_double(start2, basetype);
-  double x4 = datum_double(end2, basetype);
+  double x1 = Float8GetDatum(start1);
+  double x2 = Float8GetDatum(end1);
+  double x3 = Float8GetDatum(start2);
+  double x4 = Float8GetDatum(end2);
   /* Compute the instants t1 and t2 at which the linear functions of the two
    * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
    * minimum/maximum exactly at the middle between t1 and t2.
@@ -94,42 +94,6 @@ tnumber_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   long double duration = (long double) (upper - lower);
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
   return 1;
-}
-
-/**
- * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum
- * @details The function supposes that the instants are synchronized, that is,
- * `start1->t = start2->t` and `end1->t = end2->t`.
- * The function only return an intersection at the middle, that is, it
- * it returns false if the timestamp found is not at a bound
- * @note This function is called only when both sequences are linear
- */
-int
-tint_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
-  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
-  TimestampTz *t2)
-{
-  return tnumber_arithop_turnpt(start1, end1, start2, end2, value, T_INT4,
-    lower, upper, t1, t2);
-}
-
-/**
- * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum
- * @details The function supposes that the instants are synchronized, that is,
- * `start1->t = start2->t` and `end1->t = end2->t`.
- * The function only return an intersection at the middle, that is, it
- * it returns false if the timestamp found is not at a bound
- * @note This function is called only when both sequences are linear
- */
-int
-tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
-  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
-  TimestampTz *t2)
-{
-  return tnumber_arithop_turnpt(start1, end1, start2, end2, value, T_FLOAT8,
-    lower, upper, t1, t2);
 }
 
 /*****************************************************************************

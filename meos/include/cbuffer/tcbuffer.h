@@ -62,6 +62,13 @@ extern int tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
 
+extern int tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2);
+extern int tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2);
+
 /*****************************************************************************/
 
 #endif /* __TCBUFFER_H__ */

@@ -898,12 +898,12 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-trgeo_set_interp(const Temporal *temp, const char *interp_str)
+trgeo_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(interp_str, NULL);
+  VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeo_to_tpose(temp);
-  Temporal *res = temporal_set_interp(tpose, interp_str);
+  Temporal *res = temporal_set_interp(tpose, interp);
   if (! res)
     return NULL;
   /* We need to explicitly set the temporal type to T_TPOSE */

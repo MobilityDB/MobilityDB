@@ -27,31 +27,6 @@
 --
 -------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------
-
-SELECT geometry 'Point empty'::stbox;
-SELECT geometry 'Point(1 1)'::stbox;
-SELECT geometry 'Point(1 1 1)'::stbox;
-SELECT round(geography 'Point empty'::stbox, 13);
-SELECT round(geography 'Point(1 1)'::stbox, 13);
-SELECT round(geography 'Point(1 1 1)'::stbox, 13);
-SELECT timestamptz '2000-01-01'::stbox;
-SELECT tstzset '{2000-01-01, 2000-01-02}'::stbox;
-SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox;
-SELECT tstzspanset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::stbox;
-SELECT stbox(geometry 'Point empty', timestamptz '2000-01-01');
-SELECT stbox(geometry 'Point(1 1)', timestamptz '2000-01-01');
-SELECT stbox(geometry 'Point(1 1 1)', timestamptz '2000-01-01');
-SELECT stbox(geometry 'Point empty', tstzspan '[2000-01-01, 2000-01-02]');
-SELECT stbox(geometry 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]');
-SELECT stbox(geometry 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]');
-SELECT round(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
-SELECT round(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
-SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
-SELECT round(stbox(geography 'Point empty', tstzspan '[2000-01-01, 2000-01-02]'), 13);
-SELECT round(stbox(geography 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]'), 13);
-SELECT round(stbox(geography 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]'), 13);
-
 SELECT tgeometry 'Point(1 1)@2000-01-01'::stbox;
 SELECT tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox;
 SELECT tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox;
@@ -452,25 +427,6 @@ SELECT COUNT(*) FROM tbl_tgeometry WHERE splitNStboxes(temp, 2) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeometry WHERE splitNStboxes(temp, 3) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeometry WHERE splitNStboxes(temp, 4) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeometry WHERE splitNStboxes(temp, 5) IS NOT NULL;
-
--------------------------------------------------------------------------------
-
-SELECT expandSpace(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', 0.5);
-SELECT expandSpace(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', 0.5);
-SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
-SELECT expandSpace(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
-SELECT expandSpace(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', 0.5);
-
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
-SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
-SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
-/* Errors */
-SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
-SELECT expandTime(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
-SELECT expandTime(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
-
-SELECT expandSpace(geometry 'Linestring empty', 0.5);
-SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
 
 -------------------------------------------------------------------------------
 

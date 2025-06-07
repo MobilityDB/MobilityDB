@@ -398,21 +398,6 @@ spatialset_set_stbox(const Set *s, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_geo_set_box
- * @brief Convert a spatiotemporal set into a spatiotemporal box
- * @param[in] s Set
- * @csqlfn #Spatialset_to_stbox()
- */
-STBox *
-spatialset_stbox(const Set *s)
-{
-  assert(s);
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a spatiotemporal set into a spatiotemporal box
  * @param[in] s Set
@@ -422,8 +407,10 @@ STBox *
 spatialset_to_stbox(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
-  return spatialset_stbox(s);
+  VALIDATE_SPATIALSET(s, NULL);
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
 }
 
 /*****************************************************************************/

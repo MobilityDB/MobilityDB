@@ -532,23 +532,6 @@ value_set(Datum value, meosType basetype)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert an integer set into a float set
- * @param[in] s Set
- * @csqlfn #Intset_to_floatset()
- */
-Set *
-intset_floatset(const Set *s)
-{
-  assert(s); assert(s->settype == T_INTSET);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
-  /* All distinct integers will yield distinct floats */
-  return set_make_free(values, s->count, T_FLOAT8, ORDER_NO);
-}
-
-/**
  * @ingroup meos_setspan_conversion
  * @brief Convert an integer set into a float set
  * @param[in] s Set
@@ -559,25 +542,11 @@ intset_to_floatset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
-  return intset_floatset(s);
-}
-
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a float set into an integer set
- * @param[in] s Set
- * @csqlfn #Floatset_to_intset()
- */
-Set *
-floatset_intset(const Set *s)
-{
-  /* Ensure the validity of the arguments */
-  assert(s); assert(s->settype == T_FLOATSET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
-  /* Two distinct floats can yield the same integer */
-  return set_make_free(values, s->count, T_INT4, ORDER);
+    values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
+  /* All distinct integers will yield distinct floats */
+  return set_make_free(values, s->count, T_FLOAT8, ORDER_NO);
 }
 
 /**
@@ -591,27 +560,13 @@ floatset_to_intset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  return floatset_intset(s);
-}
-
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a date set into a timestamptz set
- * @param[in] s Set
- * @csqlfn #Dateset_to_tstzset()
- */
-Set *
-dateset_tstzset(const Set *s)
-{
-  /* Ensure the validity of the arguments */
-  assert(s); assert(s->settype == T_DATESET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
-      SET_VAL_N(s, i))));
-  /* All distinct dates will yield distinct timestamptz */
-  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
+    values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
+  /* Two distinct floats can yield the same integer */
+  return set_make_free(values, s->count, T_INT4, ORDER);
 }
+
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a date set into a timestamptz set
@@ -623,25 +578,12 @@ dateset_to_tstzset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
-  return dateset_tstzset(s);
-}
-
-/**
- * @ingroup meos_internal_setspan_conversion
- * @brief Convert a timestamptz set into a date set
- * @param[in] s Set
- * @csqlfn #Tstzset_to_dateset()
- */
-Set *
-tstzset_dateset(const Set *s)
-{
-  assert(s); assert(s->settype == T_TSTZSET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
+    values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
       SET_VAL_N(s, i))));
-  /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDER);
+  /* All distinct dates will yield distinct timestamptz */
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
 }
 
 /**
@@ -655,7 +597,12 @@ tstzset_to_dateset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  return tstzset_dateset(s);
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
+      SET_VAL_N(s, i))));
+  /* Two distinct timestamptz can yield the same date */
+  return set_make_free(values, s->count, T_DATE, ORDER);
 }
 
 /*****************************************************************************
@@ -1032,7 +979,7 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   Set *result = set_copy(s);

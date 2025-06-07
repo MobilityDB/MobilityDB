@@ -455,8 +455,7 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_temp = lfinfo.reslinear ?
-    &tcbuffer_tcbuffer_distance_turnpt : NULL;
+  lfinfo.tpfn_temp = lfinfo.reslinear ? &tcbuffersegm_distance_turnpt : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 

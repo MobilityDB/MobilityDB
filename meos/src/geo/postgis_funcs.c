@@ -417,6 +417,7 @@ box3d_to_lwgeom(BOX3D *box)
  * Functions adapted from lwgeom_functions_basic.c
  *****************************************************************************/
 
+#if CBUFFER
 /**
  * @ingroup meos_geo_base_accessor
  * @note Inspired from PostGIS function: @p lwgeom_is_unitary(const LWGEOM *geom)
@@ -438,8 +439,9 @@ geo_is_unitary(const GSERIALIZED *gs)
       return false;
   }
 }
+#endif /* CBUFFER */
 
-#if NPOINT
+#if MEOS 
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry
@@ -461,7 +463,7 @@ geom_length(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return dist;
 }
-#endif /* NPOINT */
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_accessor
@@ -893,6 +895,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   return result;
 }
 
+#if CBUFFER
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return a MultiPoint containing all the coordinates of a geometry
@@ -930,7 +933,9 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
   lwgeom_free(lwgeom); 
   return result;
 }
+#endif /* CBUFFER */
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
@@ -945,6 +950,7 @@ geo_npoints(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return(npoints);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
@@ -1199,6 +1205,7 @@ geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, INTERSECTS);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry contains the second one
@@ -1210,6 +1217,7 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_rel
@@ -1223,6 +1231,7 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, TOUCHES);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry covers the second one
@@ -1235,7 +1244,6 @@ geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, COVERS);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are disjoint in 2D
@@ -1767,6 +1775,7 @@ geom_buffer(const GSERIALIZED *gs, double size, char *params)
 
 /*****************************************************************************/
 
+#if CBUFFER
 /**
  * @brief Extract the first-level elements of a gemetry collection
  */
@@ -1844,6 +1853,7 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   pfree_array((void *) elems2, count2);
   return result;
 }
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos_predicates.c
@@ -2924,6 +2934,7 @@ geo_out(const GSERIALIZED *gs)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its WKT representation (and
@@ -2965,6 +2976,7 @@ geo_from_text(const char *wkt, int32_t srid)
 
   return geo_result;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return the (Extended) Well-Known Text (EWKT or WKT) representation of
@@ -3002,6 +3014,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
   return geo_as_wkt(gs, precision, false);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
@@ -3187,6 +3200,7 @@ geo_from_geojson(const char *geojson)
   lwgeom_free(geom);
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_inout

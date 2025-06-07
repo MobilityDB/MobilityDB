@@ -44,6 +44,11 @@
 #include <common/int128.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
+#if MEOS
+  #include "utils/timestamp_def.h"
+#else
+  #include "utils/timestamp.h"
+#endif
 #include "utils/formatting.h"
 #include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -239,32 +244,7 @@ int4_in(const char *str)
   return pg_strtoint32(str);
 }
 
-/*
- * pg_ltoa: converts a signed 32-bit integer to its string representation and
- * returns strlen(a).
- *
- * It is the caller's responsibility to ensure that a is at least 12 bytes long,
- * which is enough room to hold a minus sign, a maximally long int32, and the
- * above terminating NUL.
- *
- * @note This function is copied here since it returned void in PostgreSQL
- * version < 14
- */
-static int
-mobdb_ltoa(int32 value, char *a)
-{
-  uint32 uvalue = (uint32) value;
-  int len = 0;
-
-  if (value < 0)
-  {
-    uvalue = (uint32) 0 - uvalue;
-    a[len++] = '-';
-  }
-  len += pg_ultoa_n(uvalue, a + len);
-  a[len] = '\0';
-  return len;
-}
+extern int pg_ltoa(int32 value, char *a);
 
 /**
  * @brief Return a string from an int4
@@ -274,7 +254,7 @@ char *
 int4_out(int32 val)
 {
   char *result = palloc(MAXINT4LEN);  /* sign, 10 digits, '\0' */
-  mobdb_ltoa(val, result);
+  pg_ltoa(val, result);
   return result;
 }
 
@@ -302,32 +282,8 @@ int8_in(const char *str)
   return result;
 }
 
-/*
- * pg_lltoa: converts a signed 64-bit integer to its string representation and
- * returns strlen(a).
- *
- * Caller must ensure that 'a' points to enough memory to hold the result
- * (at least MAXINT8LEN + 1 bytes, counting a leading sign and trailing NUL).
- *
- * @note This function is copied here since it returned void in PostgreSQL
- * version < 14
- */
-int
-mobdb_lltoa(int64 value, char *a)
-{
-  uint64    uvalue = value;
-  int      len = 0;
-
-  if (value < 0)
-  {
-    uvalue = (uint64) 0 - uvalue;
-    a[len++] = '-';
-  }
-
-  len += pg_ulltoa_n(uvalue, a + len);
-  a[len] = '\0';
-  return len;
-}
+/* The function is not exported in file numutils.c */
+extern int pg_lltoa(int64 value, char *a);
 
 /**
  * @brief Return a string from an @p int8
@@ -338,7 +294,7 @@ int8_out(int64 val)
 {
   char *result;
   char buf[MAXINT8LEN + 1];
-  int len = mobdb_lltoa(val, buf) + 1;
+  int len = pg_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().
@@ -902,6 +858,7 @@ add_date_int(DateADT d, int32 days)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_base_types
  * @brief Return the subtraction of a date and a number of days
@@ -928,6 +885,7 @@ minus_date_int(DateADT d, int32 days)
 
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_base_types
@@ -1011,6 +969,7 @@ date2timestamp(DateADT dateVal)
   return date2timestamp_opt_overflow(dateVal, NULL);
 }
 
+#if MEOS
 /**
  * @ingroup meos_base_types
  * @brief Convert a date into a timestamp 
@@ -1056,6 +1015,7 @@ timestamp_to_date(Timestamp t)
   }
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  *   Time ADT
@@ -1771,7 +1731,6 @@ pg_interval_in(const char *str, int32 prec)
 
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_base_types
@@ -1811,6 +1770,7 @@ interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
 
   return result;
 }
+#endif /* MEOS */
 
 #if ! MEOS
 /**
@@ -2102,6 +2062,7 @@ add_timestamptz_interval(TimestampTz t, const Interval *interv)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_base_types
  * @brief Return the subtraction of a timestamptz and an interval
@@ -2121,6 +2082,7 @@ minus_timestamptz_interval(TimestampTz t, const Interval *interv)
   tinterv.time = -interv->time;
   return add_timestamptz_interval(t, &tinterv);
 }
+#endif /* MEOS */
 
 /**
  * @brief Add an interval to a timestamp data type.
@@ -2178,6 +2140,77 @@ minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2)
   interv.month = 0;
   interv.day = 0;
   return pg_interval_justify_hours(&interv);
+}
+
+static inline bool
+pg_sub_s64_overflow(int64 a, int64 b, int64 *result)
+{
+#if defined(HAVE__BUILTIN_OP_OVERFLOW)
+  return __builtin_sub_overflow(a, b, result);
+#elif defined(HAVE_INT128)
+  int128    res = (int128) a - (int128) b;
+
+  if (res > PG_INT64_MAX || res < PG_INT64_MIN)
+  {
+    *result = 0x5EED;    /* to avoid spurious warnings */
+    return true;
+  }
+  *result = (int64) res;
+  return false;
+#else
+  /*
+   * Note: overflow is also possible when a == 0 and b < 0 (specifically,
+   * when b == PG_INT64_MIN).
+   */
+  if ((a < 0 && b > 0 && a < PG_INT64_MIN + b) ||
+    (a >= 0 && b < 0 && a > PG_INT64_MAX + b))
+  {
+    *result = 0x5EED;    /* to avoid spurious warnings */
+    return true;
+  }
+  *result = a - b;
+  return false;
+#endif
+}
+
+static inline bool
+pg_sub_s32_overflow(int32 a, int32 b, int32 *result)
+{
+#if defined(HAVE__BUILTIN_OP_OVERFLOW)
+  return __builtin_sub_overflow(a, b, result);
+#else
+  int64    res = (int64) a - (int64) b;
+
+  if (res > PG_INT32_MAX || res < PG_INT32_MIN)
+  {
+    *result = 0x5EED;    /* to avoid spurious warnings */
+    return true;
+  }
+  *result = (int32) res;
+  return false;
+#endif
+}
+
+/**
+ * @brief Negate an interval.
+ * @note The PostgreSQL function @p interval_um_internal is declared static
+ */
+void
+interval_negate(const Interval *interval, Interval *result)
+{
+  if (INTERVAL_IS_NOBEGIN(interval))
+    INTERVAL_NOEND(result);
+  else if (INTERVAL_IS_NOEND(interval))
+    INTERVAL_NOBEGIN(result);
+  else
+  {
+    /* Negate each field, guarding against overflow */
+    if (pg_sub_s64_overflow(INT64CONST(0), interval->time, &result->time) ||
+      pg_sub_s32_overflow(0, interval->day, &result->day) ||
+      pg_sub_s32_overflow(0, interval->month, &result->month) ||
+      INTERVAL_NOT_FINITE(result))
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "Interval out of range");
+  }
 }
 
 /*
@@ -2323,6 +2356,7 @@ text_cmp(const text *txt1, const text *txt2)
   return varstr_cmp(t1p, len1, t2p, len2, DEFAULT_COLLATION_OID);
 }
 
+#if MEOS
 /**
  * @ingroup meos_base_types
  * @brief Copy a text value
@@ -2336,6 +2370,7 @@ text_copy(const text *txt)
   memcpy(result, txt, VARSIZE(txt));
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_base_types

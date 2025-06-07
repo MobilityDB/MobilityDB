@@ -238,3 +238,102 @@ SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Np
  {[0@Sat Jan 01 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT round(geometry 'SRID=5676;Point(1 1)' |=| tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
+   round   
+-----------
+ 90.386909
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point(1 1)' |=| tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
+   round   
+-----------
+ 90.386909
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point(1 1)' |=| tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
+   round   
+-----------
+ 90.386909
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point(1 1)' |=| tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
+   round   
+-----------
+ 81.027522
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point empty' |=| tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point empty' |=| tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point empty' |=| tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(geometry 'SRID=5676;Point empty' |=| tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' |=| tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
+  round   
+----------
+ 3.046623
+(1 row)
+
+SELECT round(stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' |=| tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
+  round   
+----------
+ 3.046623
+(1 row)
+
+SELECT round(stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' |=| tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
+  round   
+----------
+ 2.939053
+(1 row)
+
+SELECT round(stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' |=| tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
+  round   
+----------
+ 2.939053
+(1 row)
+
+/* Error */
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-01])' |=| tnpoint 'Npoint(1, 0.5)@2000-01-01';
+ERROR:  The stbox must have X dimension
+SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' |=| stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' , 6);
+  round   
+----------
+ 3.046623
+(1 row)
+
+SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' |=| stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' , 6);
+  round   
+----------
+ 3.046623
+(1 row)
+
+SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' |=| stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' , 6);
+  round   
+----------
+ 2.939053
+(1 row)
+
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' |=| stbox 'SRID=5676;STBOX XT(((50,50),(75,75)),[2000-01-01, 2000-01-01])' , 6);
+  round   
+----------
+ 2.939053
+(1 row)
+

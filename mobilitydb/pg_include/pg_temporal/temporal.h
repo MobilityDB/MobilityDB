@@ -189,6 +189,10 @@ extern uint32_t time_max_header_size(void);
 extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 
+/* Input an interpolation string and convert it to the interp enum */
+
+extern interpType input_interp_string(FunctionCallInfo fcinfo, int argno);
+
 /* Send/receive functions */
 
 extern Temporal *temporal_recv(StringInfo buf);

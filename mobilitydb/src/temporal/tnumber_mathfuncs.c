@@ -100,9 +100,9 @@ Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   meosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   Temporal *result;
-  if (oper == MULT || oper == DIV)
+  if (basetype == T_FLOAT8 && (oper == MULT || oper == DIV))
     result = arithop_tnumber_tnumber(temp1, temp2, oper, func,
-      (basetype == T_INT4) ? &tint_arithop_turnpt : &tfloat_arithop_turnpt);
+      &tfloat_arithop_turnpt);
   else
     result = arithop_tnumber_tnumber(temp1, temp2, oper, func, NULL);
   PG_FREE_IF_COPY(temp1, 0);

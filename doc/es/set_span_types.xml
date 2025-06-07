@@ -692,8 +692,22 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 
 	<sect1>
 		<title>Transformaciones</title>
-
 		<itemizedlist>
+			<listitem xml:id="setspan_expand">
+				<indexterm significance="normal"><primary><varname>expand</varname></primary></indexterm>
+				<para>Expandir o reducir un lapso de marcas de tiempo mediante un intervalo</para>
+				<para><varname>expand(tstzspan,interval) → tstzspan</varname></para>
+				<para>La función devuelve un error si el intervalo es negativo y su duración absoluta es mayor que la duración del lapso.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT expand(tstzspan '[2001-01-01, 2001-01-03]', interval '1 day');
+-- [2001-01-01, 2001-01-04]
+SELECT expand(tstzspan '[2001-01-01, 2001-01-03]', interval '-1 day');
+-- [2001-01-01, 2001-01-02]
+SELECT expand(tstzspan '[2001-01-01, 2001-01-03]', interval '-2 day');
+-- The duration of the time span must be greater than the interval to decrease: -2 days
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_shift">
 				<indexterm significance="normal"><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar con un valor o rango de tiempo</para>

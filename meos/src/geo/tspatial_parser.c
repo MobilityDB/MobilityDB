@@ -260,6 +260,7 @@ stbox_parse(const char **str)
 
 /*****************************************************************************/
 
+#if CBUFFER || POSE
 /**
  * @brief Parse a geometry/gegraphy from the buffer
  * @param[in] str Input string
@@ -308,6 +309,7 @@ geo_parse(const char **str, meosType basetype, char delim, int *srid,
     pfree(gs);
   return true;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************/
 

@@ -75,7 +75,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
 {
   assert(box); assert(count);
   assert(not_negative_datum(vsize, box->span.basetype));
-  assert(! duration || valid_duration(duration));
+  assert(! duration || positive_duration(duration));
 
   TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,
     vorigin, torigin);
@@ -668,7 +668,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_positive_duration(duration))
     return NULL;
 
   Span s;
@@ -1234,7 +1234,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
 {
   meosType basetype = temptype_basetype(temp->temptype);
   ensure_positive_datum(size, basetype);
-  ensure_valid_duration(duration);
+  ensure_positive_duration(duration);
 
   Datum start_bin, end_bin, start_time_bin, end_time_bin;
   /* Compute the value bounds */
@@ -1387,7 +1387,7 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_positive_duration(duration))
     return NULL;
 
   Datum *datum_bins;
@@ -1430,7 +1430,7 @@ tfloat_value_time_split(const Temporal *temp, double size,
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_positive_duration(duration))
     return NULL;
 
   Datum *datum_bins;

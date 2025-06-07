@@ -608,6 +608,7 @@ extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
+extern Span *tstzspan_expand(const Span *s, const Interval *interv);
 extern Set *set_round(const Set *s, int maxdd);
 extern Set *textcat_text_textset(const text *txt, const Set *s);
 extern Set *textcat_textset_text(const Set *s, const text *txt);
@@ -1319,12 +1320,12 @@ extern double float_degrees(double value, bool normalize);
 extern Temporal **temparr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
-extern Temporal *temporal_set_interp(const Temporal *temp, const char *interp_str);
+extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern TInstant *temporal_to_tinstant(const Temporal *temp);
-extern TSequence *temporal_to_tsequence(const Temporal *temp, const char *interp_str);
-extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, const char *interp_str);
+extern TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp);
+extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *tfloat_ceil(const Temporal *temp);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_floor(const Temporal *temp);
@@ -1771,7 +1772,7 @@ extern Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interv
 /* Reduction functions for temporal types */
 
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin, const char *interp_str);
+extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin, interpType interp);
 
 /*****************************************************************************/
 

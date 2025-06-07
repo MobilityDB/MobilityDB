@@ -279,6 +279,7 @@ extern Temporal *distance_tnpoint_point(const Temporal *temp, const GSERIALIZED 
 extern Temporal *distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern double nad_tnpoint_stbox(const Temporal *temp, const STBox *box);
 extern double nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
 extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np);

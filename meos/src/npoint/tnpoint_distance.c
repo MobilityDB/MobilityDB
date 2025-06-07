@@ -35,7 +35,10 @@
 #include "npoint/tnpoint_distance.h"
 
 /* MEOS */
+#include <float.h>
+/* MEOS */
 #include <meos.h>
+#include <meos_internal_geo.h>
 #include <meos_npoint.h>
 #include "npoint/tnpoint.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -210,7 +213,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_npoint_dist
- * @brief Return the nearest approach distance of two temporal network point
+ * @brief Return the nearest approach distance of a temporal network point
  * and a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -221,11 +224,34 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, gs);
   pfree(traj);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_dist
+ * @brief Return the nearest approach distance of a temporal network point
+ * and a spatiotemporal box
+ * @param[in] temp Temporal point
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #NAD_tnpoint_tbox()
+ */
+double
+nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_stbox(temp, box) ||
+      ! ensure_has_X(T_STBOX, box->flags))
+    return DBL_MAX;
+
+  GSERIALIZED *gs = stbox_geo(box);
+  GSERIALIZED *traj = tnpoint_trajectory(temp);
+  double result = geom_distance2d(traj, gs);
+  pfree(traj); pfree(gs);
   return result;
 }
 
@@ -242,7 +268,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_npoint(temp, np))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geom = npoint_to_geom(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
@@ -262,11 +288,11 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
-    return -1.0;
+    return DBL_MAX;
   return DatumGetFloat8(temporal_min_value(dist));
 }
 

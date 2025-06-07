@@ -43,7 +43,35 @@
 #else
 #include <utils/date.h>
 #include <utils/timestamp.h>
-#endif
+#endif /* MEOS */
+
+#if POSTGRESQL_VERSION_NUMBER < 170000
+/*
+ * Infinite intervals are represented by setting all fields to the minimum or
+ * maximum integer values.
+ */
+#define INTERVAL_NOBEGIN(i)  \
+  do {  \
+    (i)->time = PG_INT64_MIN;  \
+    (i)->day = PG_INT32_MIN;  \
+    (i)->month = PG_INT32_MIN;  \
+  } while (0)
+
+#define INTERVAL_IS_NOBEGIN(i)  \
+  ((i)->month == PG_INT32_MIN && (i)->day == PG_INT32_MIN && (i)->time == PG_INT64_MIN)
+
+#define INTERVAL_NOEND(i)  \
+  do {  \
+    (i)->time = PG_INT64_MAX;  \
+    (i)->day = PG_INT32_MAX;  \
+    (i)->month = PG_INT32_MAX;  \
+  } while (0)
+
+#define INTERVAL_IS_NOEND(i)  \
+  ((i)->month == PG_INT32_MAX && (i)->day == PG_INT32_MAX && (i)->time == PG_INT64_MAX)
+
+#define INTERVAL_NOT_FINITE(i) (INTERVAL_IS_NOBEGIN(i) || INTERVAL_IS_NOEND(i))
+#endif /* POSTGRESQL_VERSION_NUMBER < 170000 */
 
 /* Functions adapted from int.c */
 
@@ -67,6 +95,9 @@ extern float8 pg_datan2(float8 arg1, float8 arg2);
 
 /* Functions adadpted from timestamp.c */
 
+
+
+extern void interval_negate(const Interval *interval, Interval *result);
 extern DateADT pg_date_in(const char *str);
 extern char *pg_date_out(DateADT d);
 extern int pg_interval_cmp(const Interval *interv1, const Interval *interv2);

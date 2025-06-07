@@ -255,7 +255,7 @@ Tbox_value_time_tiles_ext(FunctionCallInfo fcinfo, bool valuetiles,
     {
       ensure_has_T(T_TBOX, bounds->flags);
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
+      ensure_positive_duration(duration);
     }
     if (valuetiles)
       xorigin = PG_GETARG_FLOAT8(i++);
@@ -613,7 +613,7 @@ temporal_time_bin_init(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   VALIDATE_NOT_NULL(nbins, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   /* Set bounding box */
@@ -623,33 +623,6 @@ temporal_time_bin_init(const Temporal *temp, const Interval *duration,
   int64 tunits = interval_units(duration);
   SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
     tunits, torigin);
-  *nbins = state->nbins;
-  return state;
-}
-
-/**
- * @brief Set the state with a temporal value and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] temp Temporal value
- * @param[in] vsize Size of the value dimension
- * @param[in] vorigin Origin for the value dimension
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-tnumber_value_bin_init(const Temporal *temp, Datum vsize, Datum vorigin,
-  int *nbins)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(nbins, NULL);
-  if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
-    return NULL;
-
-  /* Set bounding box */
-  Span bounds;
-  tnumber_set_span(temp, &bounds);
-  /* Create function state */
-  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
-    vsize, vorigin);
   *nbins = state->nbins;
   return state;
 }
@@ -862,20 +835,6 @@ inline Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_ext(fcinfo, true, false);
-}
-
-PGDLLEXPORT Datum Tnumber_time_split(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnumber_time_split);
-/**
- * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the fragments of a temporal number split according to value
- * bins
- * @sqlfn timeSplit()
- */
-inline Datum
-Tnumber_time_split(PG_FUNCTION_ARGS)
-{
-  return Tnumber_value_time_split_ext(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);

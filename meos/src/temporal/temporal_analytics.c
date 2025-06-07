@@ -74,7 +74,7 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, DT_NOEND);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return DT_NOEND;
   return timestamptz_get_bin(t, duration, torigin);
 }
@@ -91,7 +91,7 @@ tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   Datum *values = palloc(sizeof(Datum) * s->count);
@@ -114,7 +114,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -141,7 +141,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -185,7 +185,7 @@ TInstant *
 tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration); assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(positive_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
@@ -200,7 +200,7 @@ TSequence *
 tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(seq); assert(duration); assert(valid_duration(duration));
+  assert(seq); assert(duration); assert(positive_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
     seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
@@ -348,7 +348,7 @@ TSequenceSet *
 tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
   assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
     ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
 
@@ -434,7 +434,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -466,7 +466,7 @@ TInstant *
 tinstant_tsample(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration); assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(positive_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   if (timestamp_cmp_internal(lower, inst->t) == 0)
     return tinstant_copy(inst);
@@ -575,7 +575,7 @@ TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  assert(seq); assert(duration); assert(valid_duration(duration));
+  assert(seq); assert(duration); assert(positive_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -602,7 +602,7 @@ TSequence *
 tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = tsequenceset_start_timestamptz(ss);
@@ -636,7 +636,7 @@ TSequenceSet *
 tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
   assert(interp != DISCRETE);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -673,29 +673,17 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
- * @param[in] interp_str Interpolation
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_tsample()
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, const char *interp_str)
+  TimestampTz torigin, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
-
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
-  {
-    if (temp->subtype == TSEQUENCE)
-      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
-    else
-      interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
-  }
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1401,7 +1389,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(mint, NULL);
   if (! ensure_tnumber_tpoint_type(temp->temptype) ||
-      ! ensure_valid_duration(mint))
+      ! ensure_positive_duration(mint))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));

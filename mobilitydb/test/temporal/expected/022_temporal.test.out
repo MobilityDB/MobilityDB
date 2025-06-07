@@ -1954,6 +1954,36 @@ SELECT appendInstant(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
  {["AAA"@Sat Jan 01 00:00:00 2000 PST, "BBB"@Sun Jan 02 00:00:00 2000 PST, "AAA"@Mon Jan 03 00:00:00 2000 PST], ["CCC"@Tue Jan 04 00:00:00 2000 PST, "AAA"@Thu Jan 06 00:00:00 2000 PST]}
 (1 row)
 
+SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-02', 'discrete');
+                          appendinstant                           
+------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02', 'discrete');
+                          appendinstant                           
+------------------------------------------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT appendInstant(tfloat '1@2000-01-01', tfloat '1@2000-01-02', 'discrete');
+                          appendinstant                           
+------------------------------------------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT appendInstant(tfloat '1@2000-01-01', tfloat '1@2000-01-02', 'step');
+                                appendinstant                                 
+------------------------------------------------------------------------------
+ Interp=Step;[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT appendInstant(ttext 'AAA@2000-01-01', ttext 'AAA@2000-01-02', 'discrete');
+                              appendinstant                               
+--------------------------------------------------------------------------
+ {"AAA"@Sat Jan 01 00:00:00 2000 PST, "AAA"@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
 SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-01');
           appendinstant           
 ----------------------------------

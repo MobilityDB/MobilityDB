@@ -1047,6 +1047,145 @@ SELECT eTouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 
 ERROR:  Operation on mixed SRID
 SELECT eTouches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1 1)');
 ERROR:  The geometry cannot have Z dimension
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ atouches 
+----------
+ 
+(1 row)
+
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
+/* Errors */
+SELECT aTouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT aTouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT aTouches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  The geometry cannot have Z dimension
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
  edwithin 
 ----------

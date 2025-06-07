@@ -546,28 +546,10 @@ Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  STBox *result = palloc(sizeof(STBox));
-  bool found = geo_set_stbox(gs, result);
+  STBox *result = geo_to_stbox(gs);
   PG_FREE_IF_COPY(gs, 0);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_STBOX_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_to_stbox);
-/**
- * @ingroup mobilitydb_geo_box_conversion
- * @brief Convert a geometry/geography set into a spatiotemporal box
- * @sqlfn stbox()
- * @sqlop @p ::
- */
-Datum
-Geoset_to_stbox(PG_FUNCTION_ARGS)
-{
-  Set *set = PG_GETARG_SET_P(0);
-  STBox *result = spatialset_stbox(set);
-  PG_FREE_IF_COPY(set, 0);
   PG_RETURN_STBOX_P(result);
 }
 
@@ -614,8 +596,10 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
-  PG_RETURN_STBOX_P(tstzset_stbox(ts));
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  STBox *result = palloc(sizeof(STBox));
+  tstzset_stbox_slice(tsdatum, result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tstzspan_to_stbox(PG_FUNCTION_ARGS);
@@ -630,7 +614,7 @@ Datum
 Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
-  PG_RETURN_STBOX_P(tstzspan_stbox(p));
+  PG_RETURN_STBOX_P(tstzspan_to_stbox(p));
 }
 
 /**

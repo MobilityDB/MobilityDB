@@ -258,6 +258,10 @@
 
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="setspan_expand"><varname>expand</varname></link>: Expand or shrink a timestamptz span by an interval</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="setspan_shift"><varname>shift</varname>, <varname>scale</varname>, <varname>shiftScale</varname></link>: Shift and/or scale by a value or an interval</para>
 				</listitem>
 
@@ -518,7 +522,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="box_expandTime"><varname>expandTime</varname></link>: Expand the temporal dimension of a bounding box by a time interval</para>
+					<para><link linkend="box_expandTime"><varname>expandTime</varname></link>: Expand or shrink the temporal dimension of a bounding box by a time interval</para>
 				</listitem>
 
 				<listitem>

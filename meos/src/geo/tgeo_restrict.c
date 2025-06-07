@@ -235,7 +235,7 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
  * point found by PostGIS is located. This function differs from function
  * #tpointsegm_intersection_value in particular since the latter is used for
  * finding crossings during synchronization and thus it is required that the
- * timestamp in strictly between the timestamps of a segment.
+ * timestamp is strictly between the timestamps of a segment.
  * @param[in] seq Temporal point sequence
  * @param[in] value Base value
  * @param[out] t Timestamp
@@ -745,16 +745,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
 {
   assert(seq); assert(box); assert(tpoint_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
-  assert(! MEOS_FLAGS_GET_T(box->flags));
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box,
-        border_inc, REST_AT))
-      return tsequence_to_tsequenceset(seq);
-    return NULL;
-  }
+  assert(! MEOS_FLAGS_GET_T(box->flags)); assert(seq->count > 1);
 
   /* General case */
   bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
@@ -1769,16 +1760,13 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
  * as stated in https://postgis.net/docs/ST_Intersection.html
  * After this computation, the Z values are recovered by restricting the
  * original sequence to the time span of the 2D result.
- * @note Instantaneous sequences must be managed since this function is called
- * after restricting to the time dimension
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
 static TSequenceSet *
 tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 {
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  TSequenceSet *result;
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1871,7 +1859,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   assert(totalpers > 0);
   SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE, ORDER);
   /* Recover the Z values from the original sequence */
-  result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
   pfree(ss);
   return result;
 }

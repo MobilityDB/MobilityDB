@@ -635,19 +635,6 @@ stbox_to_geo(const STBox *box)
 }
 
 /**
- * @ingroup meos_internal_geo_box_conversion
- * @brief Convert a spatiotemporal box into a timestamptz span
- * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_to_tstzspan()
- */
-Span *
-stbox_tstzspan(const STBox *box)
-{
-  assert(box); assert(MEOS_FLAGS_GET_T(box->flags));
-  return span_copy(&box->period);
-}
-
-/**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a spatiotemporal box into a timestamptz span
  * @param[in] box Spatiotemporal box
@@ -852,7 +839,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs))
+  if (gserialized_is_empty(gs))
     return NULL;
   return geo_stbox(gs);
 }
@@ -930,21 +917,7 @@ tstzset_set_stbox(const Set *s, STBox *box)
   return;
 }
 
-/**
- * @ingroup meos_internal_geo_box_conversion
- * @brief Convert a timestamptz set into a spatiotemporal box
- * @param[in] s Set
- * @csqlfn #Tstzset_to_stbox()
- */
-STBox *
-tstzset_stbox(const Set *s)
-{
-  assert(s); assert(s->settype == T_TSTZSET);
-  STBox *result = palloc(sizeof(STBox));
-  tstzset_set_stbox(s, result);
-  return result;
-}
-
+#if MEOS
 /**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a timestamptz set into a spatiotemporal box
@@ -956,8 +929,11 @@ tstzset_to_stbox(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  return tstzset_stbox(s);
+  STBox *result = palloc(sizeof(STBox));
+  tstzset_set_stbox(s, result);
+  return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_box_conversion
@@ -978,22 +954,6 @@ tstzspan_set_stbox(const Span *s, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_geo_box_conversion
- * @brief Convert a timestamptz span into a spatiotemporal box
- * @param[in] s Span
- * @csqlfn #Tstzspan_to_stbox()
- */
-STBox *
-tstzspan_stbox(const Span *s)
-{
-  /* Ensure the validity of the arguments */
-  assert(s); assert(s->spantype == T_TSTZSPAN);
-  STBox *result = palloc(sizeof(STBox));
-  tstzspan_set_stbox(s, result);
-  return result;
-}
-
-/**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a timestamptz span into a spatiotemporal box
  * @param[in] s Span
@@ -1004,7 +964,9 @@ tstzspan_to_stbox(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  return tstzspan_stbox(s);
+  STBox *result = palloc(sizeof(STBox));
+  tstzspan_set_stbox(s, result);
+  return result;
 }
 
 /**
@@ -1507,7 +1469,7 @@ stbox_shift_scale_time(const STBox *box, const Interval *shift,
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_T(T_STBOX, box->flags) ||
       ! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Copy the input period to the result */
@@ -1567,7 +1529,7 @@ stbox_expand_space(const STBox *box, double d)
        (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the size of the stbox: %d", d);
+      "The value to decrease must be smaller than the size of the box: %lf", d);
     return NULL;
   }
 
@@ -1599,31 +1561,12 @@ stbox_expand_time(const STBox *box, const Interval *interv)
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(interv, NULL);
   if (! ensure_has_T(T_STBOX, box->flags))
     return NULL;
-  /* When the interval is negative, ensure that its absolute value is less than
-   * the duration of the spatiotemporal box */ 
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
-  Interval *duration = tstzspan_duration(&box->period);
-  bool smaller = pg_interval_cmp(interv, duration) < 0;
-  pfree(duration);
-  if (negative && ! smaller)
-  {
-    char *str = pg_interval_out(interv);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The interval to decrease must be smaller than the time span of the stbox: %s",
-      str);
-    pfree(str);
+  Span *s = tstzspan_expand(&box->period, interv);
+  if (! s)
     return NULL;
-  }
-
   STBox *result = stbox_copy(box);
-  TimestampTz tmin = minus_timestamptz_interval(DatumGetTimestampTz(
-    box->period.lower), interv);
-  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(
-    box->period.upper), interv);
-  result->period.lower = TimestampTzGetDatum(tmin);
-  result->period.upper = TimestampTzGetDatum(tmax);
+  memcpy(&result->period, s, sizeof(Span));
+  pfree(s);
   return result;
 }
 

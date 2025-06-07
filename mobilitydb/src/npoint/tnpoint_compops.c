@@ -66,8 +66,6 @@ EAcomp_npoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int result = func(temp, np);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -84,8 +82,6 @@ EAcomp_tnpoint_npoint(FunctionCallInfo fcinfo,
   Npoint *np = PG_GETARG_NPOINT_P(1);
   int result = func(temp, np);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
-    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 

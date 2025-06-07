@@ -270,6 +270,30 @@ SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np %= t2.temp;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?<> t2.np;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np ?<> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %<> t2.np;
+ count 
+-------
+  9899
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np %<> t2.temp;
+ count 
+-------
+  9899
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
  count 
 -------

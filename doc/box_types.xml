@@ -524,14 +524,17 @@ SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 
 			<listitem xml:id="box_expandTime">
 				<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
-				<para>Expand the temporal dimension of the bounding box by a time interval</para>
+				<para>Expand or shrink the temporal dimension of the bounding box by a time interval</para>
 				<para><varname>expandTime(box,interval) → box</varname></para>
+				<para>The function returns an error if the interval is negative and its absolute duration is greater than the duration of the span.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT expandTime(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
--- TBOXFLOAT XT((1,2),[2011-12-31,2001-01-04])
+-- TBOXFLOAT XT((1,2),[2001-01-01,2001-01-04])
 SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
-  interval '1 day');
--- STBOX ZT(((1,1,1),(2,2,2)),[2011-12-31,2001-01-04])
+  interval '-1 day');
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
+SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '-2 days');
+-- The duration of the time span must be greater than the interval to decrease: -2 days
 </programlisting>
 			</listitem>
 

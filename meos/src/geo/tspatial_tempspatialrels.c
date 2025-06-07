@@ -567,13 +567,14 @@ tspatialrel_tspatial_base(const Temporal *temp, Datum base,
  * geometry is computed at each instant using the lifting infrastructure
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @param[in] restr True when the result is restricted to a value
  * @param[in] func Spatial relationship function to apply
+ * @param[in] invert True if the arguments should be inverted
+ * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
  */
 Temporal *
 tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool restr, bool atvalue, varfunc func)
+ varfunc func, bool invert, bool restr, bool atvalue)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
@@ -584,7 +585,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
 
   Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
-    (Datum) NULL, func, 0, INVERT_NO);
+    (Datum) NULL, func, 0, invert);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -752,8 +753,8 @@ Temporal *
 tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  return tspatialrel_tgeo_geo(temp, gs, restr, atvalue,
-    (varfunc) datum_geom_contains);
+  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_contains,
+    INVERT_NO, restr, atvalue);
 }
 
 /**
@@ -805,24 +806,8 @@ Temporal *
 tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags))
-    return NULL;
-
-  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
-    (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT);
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_covers,
+    INVERT, restr, atvalue);
 }
 
 /**
@@ -843,8 +828,8 @@ Temporal *
 tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  return tspatialrel_tgeo_geo(temp, gs, restr, atvalue,
-    (varfunc) datum_geom_covers);
+  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_covers,
+    INVERT_NO, restr, atvalue);
 }
 
 /**
