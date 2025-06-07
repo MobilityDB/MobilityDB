@@ -177,6 +177,15 @@ SELECT MAX(lower(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspanset;
+SELECT MAX(lower(radians(f))) FROM tbl_floatspanset;
+
+-------------------------------------------------------------------------------
+-- Comparison Functions
+-------------------------------------------------------------------------------
+
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i = t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <> t2.i;
