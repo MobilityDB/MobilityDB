@@ -603,8 +603,6 @@ Tstzspan_expand(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   Span *result = tstzspan_expand(s, interval);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_SPAN_P(result);
 }
 
