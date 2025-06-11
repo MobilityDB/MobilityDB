@@ -115,7 +115,7 @@ ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] start,end Base values defining the segment
  * @param[in] value Base value
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp, may be @p NULL
+ * @param[out] t1,t2 Resulting timestamps, may be @p NULL
  */
 int
 tposesegm_intersection_value(Datum start, Datum end, Datum value,
@@ -177,16 +177,16 @@ tposesegm_intersection_value(Datum start, Datum end, Datum value,
   return 1;
 }
 
-/**
- * @brief Return 1 if the segments of two temporal poses intersect
- * during the period defined by the timestamps output in the last arguments
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
- */
+// /**
+ // * @brief Return 1 if the segments of two temporal poses intersect
+ // * during the period defined by the timestamps output in the last arguments
+ // * @param[in] start1,end1 Temporal instants defining the first segment
+ // * @param[in] start2,end2 Temporal instants defining the second segment
+ // * @param[in] lower,upper Timestamps defining the segments
+ // * @param[out] t1,t2 
+ // * @return Number of timestamps in the result, between 0 and 2. In the case
+ // * of a single result both t1 and t2 are set to the unique timestamp
+ // */
 // int
 // tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   // TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)

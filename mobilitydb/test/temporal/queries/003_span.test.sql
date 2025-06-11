@@ -159,12 +159,21 @@ SELECT datespan '(2000-01-01,2000-01-02]';
 -- Transformation functions
 -------------------------------------------------------------------------------
 
+SELECT expand(floatspan '[1,1]', 1);
+SELECT expand(floatspan '[1,2]', 1);
+SELECT expand(floatspan '(1,4]', -1);
+SELECT expand(floatspan '[1,3]', -1);
+-- NULL
+SELECT expand(floatspan '[1,3)', -1);
+SELECT expand(floatspan '(1,2)', -2);
+
 SELECT expand(tstzspan '[2000-01-01,2000-01-01]', '1 day');
 SELECT expand(tstzspan '[2000-01-01,2000-01-02]', '1 day');
-SELECT expand(tstzspan '(2000-01-01,2000-01-03]', '-1 day');
+SELECT expand(tstzspan '(2000-01-01,2000-01-04]', '-1 day');
+SELECT expand(tstzspan '[2000-01-01,2000-01-03]', '-1 day');
+-- NULL
 SELECT expand(tstzspan '[2000-01-01,2000-01-03)', '-1 day');
 SELECT expand(tstzspan '(2000-01-01,2000-01-02)', '-2 days');
-
 
 SELECT shift(intspan '[1,2)', 2);
 SELECT shift(datespan '[2000-01-01,2000-01-02)', 2);

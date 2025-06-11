@@ -23,7 +23,9 @@ set(MOBILITYDB_DATAGEN_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}_datagen--${P
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-  add_definitions(-DDEBUG_BUILD)
+  add_definitions(-DDEBUG_BUILD=1)
+else()
+  add_definitions(-DDEBUG_BUILD=0)
 endif()
 
 # Option to show debug messages for analyzing the selectivity estimation

@@ -130,7 +130,7 @@ bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
   return;
 }
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Print a 2D bit matrix
  * @note This function is only used for debugging purposes

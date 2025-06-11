@@ -240,7 +240,7 @@ set_bbox_size(meosType settype)
   return SIZE_MAX;
 }
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence
  */

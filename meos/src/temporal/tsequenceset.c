@@ -258,7 +258,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
   return true;
 }
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Function version of the the macro of the same name for debugging
  * purposes

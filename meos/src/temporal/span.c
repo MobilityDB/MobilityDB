@@ -46,11 +46,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/meos_catalog.h"
 #include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_parser.h"
+#include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 
 /*****************************************************************************
@@ -950,42 +952,80 @@ span_expand(const Span *s1, Span *s2)
   return;
 }
 
+/*****************************************************************************/
+
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a timestamptz span expanded/decreased by an interval
- * @param[inout] s Span
+ * @brief Return a number span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] value Value
+ * @csqlfn #Tstzspan_expand()
+ * @note This function can be seen as a 1-dimensional version of the PostGIS
+ * function `ST_Buffer`
+ */
+Span *
+numspan_expand(const Span *s, Datum value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NUMSPAN(s, NULL);
+  /* When the value is negative, return NULL if the span resulting by
+   * shifting the bounds with the value is empty */ 
+  if (datum_cmp(value, (Datum) 0, s->basetype) <= 0)
+  {
+    Datum width = numspan_width(s);
+    Datum value2 = datum_add(value, value, s->basetype);
+    /* We avoid taking the absolute value by adding the two values */
+    Datum add = datum_add(value2, width, s->basetype);
+    int cmp = datum_cmp(add, (Datum) 0, s->basetype);
+    if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
+      return NULL;
+  }
+  Span *result = span_copy(s);
+  result->lower = datum_sub(s->lower, value, s->basetype);
+  result->upper = datum_add(s->upper, value, s->basetype);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span with its bounds expanded/decreased by an
+ * interval
+ * @param[in] s Span
  * @param[in] interv Interval
  * @csqlfn #Tstzspan_expand()
+ * @note This function can be seen as a 1-dimensional version of the PostGIS
+ * function `ST_Buffer`
  */
 Span *
 tstzspan_expand(const Span *s, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(interv, NULL);
-  /* When the interval is negative, ensure that its absolute value is less than
-   * the duration of the span */ 
+  /* When the interval is negative, return NULL if the span resulting by
+   * shifting the bounds with the interval is empty */ 
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
-  Interval *duration = tstzspan_duration(s);
-  /* Negate the interval */
   Interval interv_neg;
-  interval_negate(interv, &interv_neg);
-  bool smaller = pg_interval_cmp(&interv_neg, duration) < 0;
-  pfree(duration);
-  if (negative && ! smaller)
+  if (negative)
   {
-    char *str = pg_interval_out(interv);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The duration of the time span must be greater than the interval to decrease: %s",
-      str);
-    pfree(str);
-    return NULL;
+    Interval *duration = tstzspan_duration(s);
+    /* Negate the interval */
+    interval_negate(interv, &interv_neg);
+    Interval *interv_neg2 = mul_interval_double(&interv_neg, 2.0);
+    int cmp = pg_interval_cmp(duration, interv_neg2);
+    pfree(duration); pfree(interv_neg2);
+    if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
+      return NULL;
   }
 
   Span *result = span_copy(s);
-  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(
-    s->upper), interv);
+  TimestampTz tmin = negative ?
+    add_timestamptz_interval(DatumGetTimestampTz(s->lower), &interv_neg) :
+    minus_timestamptz_interval(DatumGetTimestampTz(s->lower), interv);
+  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(s->upper),
+    interv);
+  result->lower = TimestampTzGetDatum(tmin);
   result->upper = TimestampTzGetDatum(tmax);
   return result;
 }

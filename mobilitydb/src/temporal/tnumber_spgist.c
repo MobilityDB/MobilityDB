@@ -553,7 +553,7 @@ before4D(const TboxNode *nodebox, const TBox *query)
 
 /**
  * @brief Can any box from nodebox be not after the query?
- * @note See above the explanations for #overleft4D
+ * @note See above the explanations for #overLeft4D
  */
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
@@ -575,7 +575,7 @@ after4D(const TboxNode *nodebox, const TBox *query)
 
 /**
  * @brief Can any box from nodebox be not before the query?
- * @note See above the explanations for #overright4D
+ * @note See above the explanations for #overRight4D
  */
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)

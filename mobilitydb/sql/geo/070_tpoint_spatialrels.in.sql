@@ -266,12 +266,12 @@ CREATE FUNCTION eTouches(tgeompoint, geometry)
 
 CREATE FUNCTION aTouches(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_geo_tgeo'
+  AS 'MODULE_PATHNAME', 'Atouches_geo_tpoint'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aTouches(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Atouches_tpoint_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

@@ -402,9 +402,9 @@ ea_spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * spatial relationship, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] func Spatial relationship function to be called
- * @param[in] ever True if a bounding text can be used for filtering
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Econtains_tcbuffer_tcbuffer(), #Ecovers_tcbuffer_tcbuffer(), ...
+ * @param[in] bbox_test True if a bounding text can be used for filtering
+ * @csqlfn #Aintersects_tcbuffer_tcbuffer(), #Ecovers_tcbuffer_tcbuffer(), ...
  */
 int
 ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -808,7 +808,7 @@ acovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * one, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Ecovers_tcbuffer_tcbuffer()
+ * @csqlfn #Ecovers_tcbuffer_tcbuffer(), #Acovers_tcbuffer_tcbuffer()
  */
 int
 ea_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,

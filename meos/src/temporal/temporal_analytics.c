@@ -884,7 +884,7 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 /* Maximum length of the typmod string */
 #define MAX_MATRIX_LEN 65536
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Print a distance matrix in tabular form
  */

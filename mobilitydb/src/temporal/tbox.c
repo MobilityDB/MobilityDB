@@ -717,35 +717,22 @@ Tbox_shift_scale_time(PG_FUNCTION_ARGS)
   PG_RETURN_TBOX_P(tbox_shift_scale_time(box, shift, duration));
 }
 
-PGDLLEXPORT Datum Tbox_expand_int(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_expand_int);
+PGDLLEXPORT Datum Tbox_expand_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_expand_value);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span expanded by an integer
+ * @brief Return a temporal box with the value span expanded by a value
  * @sqlfn expandValue()
  */
 Datum
-Tbox_expand_int(PG_FUNCTION_ARGS)
+Tbox_expand_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  int i = PG_GETARG_INT32(1);
-  PG_RETURN_TBOX_P(tbox_expand_int(box, i));
-}
-
-PGDLLEXPORT Datum Tbox_expand_float(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_expand_float);
-/**
- * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span expanded/shrinked by a
- * double
- * @sqlfn expandValue()
- */
-Datum
-Tbox_expand_float(PG_FUNCTION_ARGS)
-{
-  TBox *box = PG_GETARG_TBOX_P(0);
-  double d = PG_GETARG_FLOAT8(1);
-  TBox *result = tbox_expand_float(box, d);
+  Datum value = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  TBox *result = tbox_expand_value(box, value, basetype);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 
@@ -763,6 +750,8 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   TBox *result = tbox_expand_time(box, interval);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 

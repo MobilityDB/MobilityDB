@@ -139,7 +139,7 @@ tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
- * @param[in] d Distance threshold
+ * @param[in] dist Distance
  * @param[out] lower,upper Timestamps defining the segments
  * @param[out] t1,t2 Timestamps at turning points
  * @pre The segments are not constant.
@@ -240,13 +240,14 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
+ * @param[in] dist Distance, unused parameter
  * @param[out] lower,upper Timestamps defining the segments
  * @param[out] t1,t2 Timestamps at turning points
  * @pre The segments are not constant.
  */
 int
 tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
- Datum dist UNUSED, Datum end2, TimestampTz lower, TimestampTz upper,
+ Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
  TimestampTz *t1, TimestampTz *t2)
 {
   return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,

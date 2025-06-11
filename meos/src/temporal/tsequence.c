@@ -863,7 +863,7 @@ tsequence_out(const TSequence *seq, int maxdd)
  * an iteration for computing it.
  *****************************************************************************/
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Function version of the the macro of the same name for
  * debugging purposes

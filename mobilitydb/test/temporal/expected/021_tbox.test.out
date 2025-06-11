@@ -570,8 +570,8 @@ SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
 (1 row)
 
 /* Errors */
-SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -2.0);
-ERROR:  The value must be strictly positive: -2.000000
+SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
+ERROR:  The value must be strictly positive: -1.000000
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day');
                                      scaletime                                     
 -----------------------------------------------------------------------------------
@@ -584,6 +584,9 @@ SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 hour
  TBOXFLOAT XT([1, 2],[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 01:00:00 2000 PST])
 (1 row)
 
+/* Errors */
+SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 hour');
+ERROR:  The interval must be positive: -01:00:00
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 1.0, 2.0);
                                   shiftscalevalue                                  
 -----------------------------------------------------------------------------------
@@ -623,38 +626,64 @@ SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
                                     expandtime                                     
 -----------------------------------------------------------------------------------
- TBOXFLOAT XT([1, 2],[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST])
+ TBOXFLOAT XT([1, 2],[Fri Dec 31 00:00:00 1999 PST, Mon Jan 03 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-12 hours');
                                     expandtime                                     
 -----------------------------------------------------------------------------------
- TBOXFLOAT XT([1, 2],[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 12:00:00 2000 PST])
+ TBOXFLOAT XT([1, 2],[Sat Jan 01 12:00:00 2000 PST, Sat Jan 01 12:00:00 2000 PST])
 (1 row)
 
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1);
+ expandvalue 
+-------------
+ 
+(1 row)
+
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
+ expandvalue 
+-------------
+ 
+(1 row)
+
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
+ expandvalue 
+-------------
+ 
+(1 row)
+
+SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02))', interval '-12 hours');
+ expandtime 
+------------
+ 
+(1 row)
+
+SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day');
+ expandtime 
+------------
+ 
+(1 row)
+
+SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-2 days');
+ expandtime 
+------------
+ 
+(1 row)
+
+/* Errors */
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
+ERROR:  Invalid value to expand box: -1.000000
+SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
+ERROR:  The tbox must have X dimension
+SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
+ERROR:  The tbox must have T dimension
 SELECT round(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 2);
                                           round                                          
 -----------------------------------------------------------------------------------------
  TBOXFLOAT XT([1.12, 2.12],[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
-/* Errors */
-SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
-ERROR:  The value must be strictly positive: -1.000000
-SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 hour');
-ERROR:  The interval must be positive: -01:00:00
-SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
-ERROR:  The tbox must have X dimension
-SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
-ERROR:  invalid input syntax for type integer: "1.0"
-LINE 1: SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,20...
-                                ^
-SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
-ERROR:  The span must be of type intspan
-SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
-ERROR:  The tbox must have T dimension
-SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-2 days');
-ERROR:  The duration of the time span must be greater than the interval to decrease: -2 days
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' && tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])';

@@ -266,17 +266,20 @@ SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-
 SELECT shiftScaleTime(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-02])', '-1 day', '1 hour');
 
 SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+/* Errors */
+SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
 
 SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
 SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-01])', -0.5);
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-12 hours');
-/* Errors */
-SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
-SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+-- NULL
 SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2000-01-01,2000-01-01])', -0.5);
-SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02))', '-12 hours');
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+/* Errors */
+SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 
 -------------------------------------------------------------------------------
 -- Topological operators

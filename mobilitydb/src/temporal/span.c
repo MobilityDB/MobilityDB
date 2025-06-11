@@ -590,6 +590,25 @@ Tstzspan_duration(PG_FUNCTION_ARGS)
  * also used for datespans and datespansets
  *****************************************************************************/
 
+PGDLLEXPORT Datum Numspan_expand(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_expand);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a number span with its bounds expanded or shrinded by a value
+ * @note This function is also used for `datespan`
+ * @sqlfn shift()
+ */
+Datum
+Numspan_expand(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum value = PG_GETARG_DATUM(1);
+  Span *result = numspan_expand(s, value);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPAN_P(result);
+}
+
 PGDLLEXPORT Datum Tstzspan_expand(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_expand);
 /**
@@ -603,6 +622,8 @@ Tstzspan_expand(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   Span *result = tstzspan_expand(s, interval);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_SPAN_P(result);
 }
 

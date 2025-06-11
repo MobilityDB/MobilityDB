@@ -238,7 +238,7 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_tnpoint_tbox()
+ * @csqlfn #NAD_tnpoint_stbox()
  */
 double
 nad_tnpoint_stbox(const Temporal *temp, const STBox *box)

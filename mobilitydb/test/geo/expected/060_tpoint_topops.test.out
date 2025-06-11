@@ -1522,37 +1522,43 @@ SELECT expandSpace(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', 0.5);
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
                                       expandtime                                      
 --------------------------------------------------------------------------------------
- STBOX XT(((1,2),(1,2)),[Mon Jan 03 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST])
+ STBOX XT(((1,2),(1,2)),[Sun Jan 02 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
                                         expandtime                                        
 ------------------------------------------------------------------------------------------
- STBOX ZT(((1,2,3),(1,2,3)),[Tue Jan 04 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+ STBOX ZT(((1,2,3),(1,2,3)),[Mon Jan 03 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
                                                expandtime                                               
 --------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Tue Jan 04 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+ SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Mon Jan 03 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-03])', '-1 day');
                                       expandtime                                      
 --------------------------------------------------------------------------------------
- STBOX XT(((1,2),(1,2)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX XT(((1,2),(1,2)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
                                         expandtime                                        
 ------------------------------------------------------------------------------------------
- STBOX ZT(((1,2,3),(1,2,3)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ STBOX ZT(((1,2,3),(1,2,3)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
                                                expandtime                                               
 --------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+ SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-02,2000-01-03])', '-1 day');
+ expandtime 
+------------
+ 
 (1 row)
 
 /* Errors */
@@ -1562,8 +1568,6 @@ SELECT expandTime(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
 ERROR:  The stbox must have T dimension
 SELECT expandTime(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
 ERROR:  The stbox must have T dimension
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-02,2000-01-03])', '-1 day');
-ERROR:  The duration of the time span must be greater than the interval to decrease: -1 days
 SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
          expandspace          
 ------------------------------

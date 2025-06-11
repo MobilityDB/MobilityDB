@@ -240,7 +240,7 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_expand"><varname>expand</varname></link>: Desplazar con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_expand"><varname>expand</varname></link>: Extender o reducir los límites con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -505,14 +505,10 @@
 
 				<listitem>
 					<para><link linkend="box_getSpace"><varname>getSpace</varname></link>: Devuelve la dimensión espacial de un cuadro delimitador, eliminando la dimensión temporal, si existe</para>
-					</listitem>
+				</listitem>
 
 				<listitem>
-					<para><link linkend="box_expandValue"><varname>expandValue</varname>, <varname>expandSpace</varname></link>: Extender la dimensión numérica o espacial de un cuadro delimitador con un valor flotante</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="box_expandTime"><varname>expandTime</varname></link>: Extender la dimensión temporal de un cuadro delimitador con un intervalo de tiempo</para>
+					<para><link linkend="box_expand"><varname>expandValue</varname>, <varname>expandSpace</varname>, <varname>expandTime</varname></link>: Extender la dimensión numérica, espacial, o temporal de un cuadro delimitador con un valor o un intervalo</para>
 				</listitem>
 
 				<listitem>

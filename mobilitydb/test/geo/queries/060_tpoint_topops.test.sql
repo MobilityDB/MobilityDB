@@ -465,14 +465,15 @@ SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-03])', '-1 day');
 SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
 SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
+-- NULL
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-02,2000-01-03])', '-1 day');
 /* Errors */
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 SELECT expandTime(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
 SELECT expandTime(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
-SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-02,2000-01-03])', '-1 day');
 
 SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
--- Empty geometry
+-- NULL
 SELECT expandSpace(geometry 'Linestring empty', 0.5);
 SELECT expandSpace(geography 'Linestring empty', 0.5);
 

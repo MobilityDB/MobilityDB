@@ -1218,11 +1218,7 @@ tbox_expand_int(const TBox *box, const int i)
   if (i < 0 && abs(i) >=
         /* Integer spans are always canonicalized */
         (DatumGetInt32(box->span.upper) - DatumGetInt32(box->span.lower) - 1))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the width of the span: %d", i);
     return NULL;
-  }
 
   TBox *result = tbox_copy(box);
   result->span.lower = Int32GetDatum(DatumGetInt32(result->span.lower) - i);
@@ -1250,17 +1246,45 @@ tbox_expand_float(const TBox *box, const double d)
    * the width of the span */ 
   if (d < 0.0 && fabs(d) >=
         (DatumGetFloat8(box->span.upper) - DatumGetFloat8(box->span.lower)))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the width of the value span: %lf",
-      d);
     return NULL;
-  }
 
   TBox *result = tbox_copy(box);
   result->span.lower = Float8GetDatum(DatumGetFloat8(result->span.lower) - d);
   result->span.upper = Float8GetDatum(DatumGetFloat8(result->span.upper) + d);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_box_transf
+ * @brief Return a temporal box with the value span expanded/decreased by a
+ * value
+ * @param[in] box Temporal box
+ * @param[in] i Value
+ * @csqlfn #Tbox_expand_int()
+ */
+TBox *
+tbox_expand_value(const TBox *box, Datum value, meosType basetype)
+{
+  /* Ensure the validity of the arguments */
+  assert(box); assert(tnumber_basetype(basetype));
+  if (box->span.basetype == T_INT4)
+  {
+    if (basetype == T_INT4)
+      return tbox_expand_int(box, DatumGetInt32(value));
+    else /* basetype == T_FLOAT8 */
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid value to expand box: %lf", DatumGetFloat8(value));
+      return NULL;
+    }
+  }
+  else
+  {
+    if (basetype == T_INT4)
+      return tbox_expand_float(box, (double) DatumGetInt32(value));
+    else /* basetype == T_FLOAT8 */
+      return tbox_expand_float(box, DatumGetFloat8(value));
+  }
 }
 
 /**

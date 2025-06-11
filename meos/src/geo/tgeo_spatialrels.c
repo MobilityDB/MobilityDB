@@ -446,6 +446,7 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] func Spatial relationship
  * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] invert True if the arguments should be inverted
  * @note Mixed 2D/3D allowed
  * @note The function assumes that all validity tests have been previously done
  */

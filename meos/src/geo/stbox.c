@@ -1527,11 +1527,7 @@ stbox_expand_space(const STBox *box, double d)
        fabs(d) >= (box->xmax - box->xmin) ||
        fabs(d) >= (box->ymax - box->ymin) ||
        (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value to decrease must be smaller than the size of the box: %lf", d);
     return NULL;
-  }
 
   STBox *result = stbox_copy(box);
   result->xmin -= d;

@@ -894,7 +894,7 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Restrict a temporal rigid geometry transformed to an interpolation
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *

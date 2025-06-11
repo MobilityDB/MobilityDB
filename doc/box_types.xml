@@ -501,40 +501,37 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 			The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
 		</para>
 		<itemizedlist>
-			<listitem xml:id="box_expandValue">
+			<listitem xml:id="box_expand">
 				<indexterm significance="normal"><primary><varname>expandValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
-				<para>Expand the numeric or spatial dimension of a bounding box by a value</para>
+				<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
+				<para>Expand the numeric, spatial, or temporal dimension of a bounding box by a value or an interval</para>
 				<para><varname>expandValue(tbox,{integer,float}) → tbox</varname></para>
 				<para><varname>expandSpace(stbox,float) → stbox</varname></para>
+				<para><varname>expandTime(box,interval) → box</varname></para>
+				<para>The function returns NULL if the value or interval given as second argument is negative and the span resulting from shifting the bounds with the argument is empty.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1.0);
 -- TBOXFLOAT XT((0,3),[2001-01-01,2001-01-03])
+SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', -1.0);
+-- NULL
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
 </programlisting>
-
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT expandSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01,2001-01-03])
 SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have space dimension
 </programlisting>
-			</listitem>
-
-			<listitem xml:id="box_expandTime">
-				<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
-				<para>Expand or shrink the temporal dimension of the bounding box by a time interval</para>
-				<para><varname>expandTime(box,interval) → box</varname></para>
-				<para>The function returns an error if the interval is negative and its absolute duration is greater than the duration of the span.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT expandTime(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
--- TBOXFLOAT XT((1,2),[2001-01-01,2001-01-04])
+-- TBOXFLOAT XT((1,2),[2000-12-31,2001-01-04])
 SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
   interval '-1 day');
--- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
+-- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02,2001-01-02])
 SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '-2 days');
--- The duration of the time span must be greater than the interval to decrease: -2 days
+-- NULL
 </programlisting>
 			</listitem>
 
@@ -548,6 +545,8 @@ SELECT round(tbox 'TBOXFLOAT XT((1.12345,2.12345),[2001-01-01,2001-01-02])', 2);
 SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
   [2001-01-01,2001-01-02])', 2);
 -- STBOX XT(((1.12,1.12),(2.12,2.12)),[2001-01-01, 2001-01-02])
+SELECT round(tstzspan '[2000-01-01, 2001-01-02]'::tbox);
+-- The tbox must have X dimension
 </programlisting>
 			</listitem>
 		</itemizedlist>
