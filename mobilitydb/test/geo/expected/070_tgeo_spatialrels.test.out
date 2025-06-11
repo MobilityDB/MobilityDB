@@ -77,6 +77,85 @@ SELECT eContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 ERROR:  The tgeometry cannot have Z dimension
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeometry '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ ecovers 
+---------
+ 
+(1 row)
+
+/* Errors */
+SELECT eCovers(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT eCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+ERROR:  The tgeometry cannot have Z dimension
 SELECT eDisjoint(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
  edisjoint 
 -----------

@@ -3014,7 +3014,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
   return geo_as_wkt(gs, precision, false);
 }
 
-#if MEOS
+#if MEOS || DEBUG_BUILD
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
@@ -3030,7 +3030,9 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
 {
   return geo_as_wkt(gs, precision, true);
 }
+#endif /* MEOS || DEBUG_BUILD */
 
+#if MEOS 
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary

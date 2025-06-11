@@ -52,6 +52,30 @@ SELECT eContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
+-- eCovers
+-------------------------------------------------------------------------------
+
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeometry '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+
+SELECT eCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT eCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT eCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+/* Errors */
+SELECT eCovers(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
 -- eDisjoint
 -------------------------------------------------------------------------------
 

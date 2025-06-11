@@ -1768,15 +1768,6 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
 
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    if (tpointinst_restrict_geom_iter(TSEQUENCE_INST_N(seq, 0), gs, NULL,
-        REST_AT))
-      return tsequence_to_tsequenceset(seq);
-    return NULL;
-  }
-
   /* Bounding box test */
   STBox box1, box2;
   tspatialseq_set_stbox(seq, &box1);

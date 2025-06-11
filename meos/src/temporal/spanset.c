@@ -184,7 +184,7 @@ tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
 }
 #endif /* MEOS */
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Return the n-th span of a span set
  * @pre The argument @p index is less than the number of spans in the span set

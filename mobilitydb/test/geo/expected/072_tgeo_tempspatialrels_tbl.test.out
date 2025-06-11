@@ -43,7 +43,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tCovers(t1.temp, t
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tCovers(g, temp) ?= true <> eCovers(g, temp);
  count 
 -------
-   574
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tDisjoint(g, temp) IS NOT NULL;

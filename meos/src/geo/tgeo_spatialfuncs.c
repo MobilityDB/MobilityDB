@@ -538,7 +538,7 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
-
+#if MEOS
 /**
  * @brief Ensure that the spatiotemporal argument and the geometry/geography
  * have the same type of coordinates, either planar or geodetic
@@ -557,6 +557,7 @@ ensure_same_geodetic_tspatial_base(const Temporal *temp, Datum base)
   }
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure that the SRID is known
@@ -627,6 +628,7 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that two geometries/geographies have the same dimensionality
  */
@@ -639,6 +641,7 @@ ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     "Operation on mixed 2D/3D dimensions");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if a spatiotemporal value and a geometry/geography have

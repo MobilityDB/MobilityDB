@@ -451,7 +451,7 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  */
 int
 ea_spatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
-  datum_func2 func, bool ever)
+  datum_func2 func, bool ever, bool invert)
 {
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs)); assert(func);
@@ -460,15 +460,15 @@ ea_spatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    if (func(datumarr[i], PointerGetDatum(gs)))
+    result = invert ?  func(PointerGetDatum(gs), datumarr[i]) :
+      func(datumarr[i], PointerGetDatum(gs));
+    if (result)
     {
-      result = 1;
       if (ever)
         break;
     }
     else
     {
-      result = 0;
       if (! ever)
         break;
     }
@@ -760,7 +760,7 @@ ea_covers_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
     return -1;
   int result = ever ?
     /* Iterate for each composing geometry */
-    ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_covers, EVER) :
+    ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_covers, EVER, invert) :
     /* Compute the result from the traversed area and the geometry */
     spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geom_covers,
       2, invert);
@@ -1325,7 +1325,8 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
 
-  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever);
+  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
+    INVERT_NO);
 }
 
 #if MEOS
