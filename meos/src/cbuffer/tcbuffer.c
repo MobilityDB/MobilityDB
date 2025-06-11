@@ -114,6 +114,26 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Compute the temporal distance between two circular buffers at time t.
+ * @param[in] dx0,dy0 Initial spatial offset between the buffer centres.
+ * @param[in] vx,vy Relative velocities in the x and y directions.
+ * @param[in] r0 Initial sum of the radii.
+ * @param[in] vr Rate of change of the sum of the radii.
+ * @param[in] t Time offset from the lower bound of the segment.
+ * @return The temporal distance at time t, i.e., the Euclidean distance between 
+ * the centres minus the sum of the radii.
+ */
+static inline double
+tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
+  double r0, double vr, double t)
+{
+  double dx = dx0 + vx * t;
+  double dy = dy0 + vy * t;
+  double sum_r = r0 + vr * t;
+  return sqrt(dx * dx + dy * dy) - sum_r;
+}
+
+/**
  * @brief Return the TWO timestamps at which two temporal circular buffers 
  * segments are at the distance d
  * @details These are the turning points when computing the temporal distance.
@@ -144,123 +164,73 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 
   double duration = (double)(upper - lower);
 
-  /* Initial and final relative positions */
+  /* Tolerance threshold for floating-point comparison */
+  double epsilon = 1e-12;
+
+  if (duration <= epsilon){
+    *t1 = *t2 = 0;
+    return 0;
+  }
+
+  /* Initial relative positions and combined radii */
   double dx0 = spt1->x - spt2->x;
   double dy0 = spt1->y - spt2->y;
-  double dx1 = ept1->x - ept2->x;
-  double dy1 = ept1->y - ept2->y;
-
-  /* Initial and final combined radii */
   double r0 = sv1->radius + sv2->radius;
-  double r1 = ev1->radius + ev2->radius;
 
   /* Relative velocities */
   double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
   double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
-    duration;
+  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /  duration;
 
   /* Quadratic derivative coefficients of f(t) = (distance - d)^2 */
-  double a = vx * vx + vy * vy - vr * vr;
-  double b = dx0 * vx + dy0 * vy - r0 * vr;
+  double a = vx*vx + vy*vy - vr*vr;
+  double b = 2*(dx0*vx + dy0*vy - (r0+d)*vr);
+  double c = dx0*dx0 + dy0*dy0 - (r0+d)*(r0+d);
+  double delta = b*b - 4*a*c;
 
-  double t_rel = (a == 0.0 || b == 0.0) ? 0.0 : -b / a;
-  t_rel = fmax(0.0, fmin(duration, t_rel));  /* Clamp to [0, duration] */
+  double roots[2];
+  int nroots = 0;
 
-  /* Interpolation at turning point */
-  double cx1 = spt1->x + (ept1->x - spt1->x) * t_rel / duration;
-  double cy1 = spt1->y + (ept1->y - spt1->y) * t_rel / duration;
-  double rbuf1 = sv1->radius + (ev1->radius - sv1->radius) * t_rel /
-    duration;
-
-  double cx2 = spt2->x + (ept2->x - spt2->x) * t_rel / duration;
-  double cy2 = spt2->y + (ept2->y - spt2->y) * t_rel / duration;
-  double rbuf2 = sv2->radius + (ev2->radius - sv2->radius) * t_rel /
-    duration;
-
-  /* Distance between buffer edges at turning point */
-  double dist_turn = sqrt((cx1 - cx2) * (cx1 - cx2) +
-    (cy1 - cy2) * (cy1 - cy2)) - rbuf1 - rbuf2;
-
-  /* Distance between edges at lower and upper bounds */
-  double dist0 = sqrt(dx0 * dx0 + dy0 * dy0) - r0;
-  double dist1 = sqrt(dx1 * dx1 + dy1 * dy1) - r1;
-
-  /* Shift distances by d (target threshold) */
-  double dist0_shift = dist0 - d;
-  double dist1_shift = dist1 - d;
-  double dist_turn_shift = dist_turn - d;
-
-  /* No crossing if all are on the same side of d */
-  if ((dist0_shift * dist1_shift > 0.0) && 
-    (dist0_shift * dist_turn_shift > 0.0))
-  {
-    *t1 = *t2 = (TimestampTz) 0;
+  /* Linear case */
+  if (delta >= -epsilon){
+    double t_cand1, t_cand2;
+    if (a==0 && fabs(b) >= epsilon){
+      t_cand1 = -c / b;
+      if (t_cand1 >= -epsilon && t_cand1 <= duration + epsilon){
+        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand1;
+      }
+    }
+    /* Quadratic case */
+    else{
+      double sqrt_delta = sqrt(fmax(0.0, delta));
+      t_cand1 = (-b - sqrt_delta) / (2*a);
+      t_cand2 = (-b + sqrt_delta) / (2*a);
+      if (t_cand1 >= -epsilon && t_cand1 <= duration + epsilon){
+        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand1;
+      }
+      if (fabs(t_cand2 - t_cand1) > epsilon && t_cand2 >= -epsilon && t_cand2 <= duration + epsilon){
+        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
+        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand2;
+      }
+    }
+  }
+  if (nroots == 0){
+    *t1 = *t2 = (TimestampTz)0;
     return 0;
   }
-
-  TimestampTz t_tp = lower + (TimestampTz)t_rel;
-
-  /* Contact exactly at turning point */
-  if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
-  {
-    *t1 = *t2 = t_tp;
+  else if (nroots == 1){
+    *t1 = *t2 = lower + (TimestampTz)roots[0];
     return 1;
   }
-
-  /* Estimate entry and exit times by linear interpolation */
-  TimestampTz t_in = 0;
-  TimestampTz t_out = 0;
-
-  if (fabs(dist_turn_shift - dist0_shift) < __DBL_EPSILON__)
-  {
-    if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
-    {
-      *t1 = *t2 = t_tp;
-      return 1;
+  else{
+    if (roots[0] > roots[1]){
+      double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
     }
-    *t1 = *t2 = 0;
-    return 0;
-  }
-
-  double alpha_in = (0.0 - dist0_shift) / (dist_turn_shift - dist0_shift);
-  t_in = lower + (TimestampTz)(t_rel * alpha_in);
-
-  if (fabs(dist1_shift - dist_turn_shift) < __DBL_EPSILON__)
-  {
-    if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
-    {
-      *t1 = *t2 = t_tp;
-      return 1;
-    }
-    *t1 = *t2 = 0;
-    return 0;
-  }
-
-  double alpha_out = (0.0 - dist_turn_shift) / (dist1_shift - dist_turn_shift);
-  t_out = lower + (TimestampTz)(t_rel + (duration - t_rel) * alpha_out);
-
-  /* Return valid internal times */
-  if (t_in > lower && t_out < upper)
-  {
-    *t1 = t_in;
-    *t2 = t_out;
+    *t1 = lower + (TimestampTz)roots[0];
+    *t2 = lower + (TimestampTz)roots[1];
     return 2;
-  }
-  else if (t_in > lower && t_out >= upper)
-  {
-    *t1 = *t2 = t_in;
-    return 1;
-  }
-  else if (t_in <= lower && t_out < upper)
-  {
-    *t1 = *t2 = t_out;
-    return 1;
-  }
-  else
-  {
-    *t1 = *t2 = 0;
-    return 0;
   }
 }
 

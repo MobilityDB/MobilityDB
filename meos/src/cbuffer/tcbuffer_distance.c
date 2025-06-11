@@ -233,121 +233,68 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
   double duration = (double) (upper - lower);
 
   /* Compute relative position and combined radius at lower */
-  double dx = spt1->x - spt2->x;
-  double dy = spt1->x - spt2->y;
-  double dr = start1->radius + end2->radius;
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  double r0 = start1->radius + start2->radius;
 
-  /* Compute absolute velocities of centroids and radii */
-  double vx1 = (ept1->x - spt1->x) / duration;
-  double vy1 = (ept1->y - spt1->y) / duration;
-  double vr1 = (end1->radius - start1->radius) / duration;
-
-  double vx2 = (ept2->x - spt2->x) / duration;
-  double vy2 = (ept2->y - spt2->y) / duration;
-  double vr2 = (end2->radius - start2->radius) / duration;
+  double dx1 = ept1->x - ept2->x;
+  double dy1 = ept1->y - ept2->y;
+  double r1 = end1->radius + end2->radius;
 
   /* Compute relative velocities */
-  double vx = vx1 - vx2;
-  double vy = vy1 - vy2;
-  double vr = vr1 + vr2;
+  double vx = (ept1->x - spt1->x) / duration - (ept2->x - spt2->x) / duration;
+  double vy = (ept1->y - spt1->y) / duration - (ept2->y - spt2->y) / duration;
+  double vr = (end1->radius - start1->radius + end2->radius - start2->radius) / duration;
 
   /* Compute coefficients of the derivative of (distance - combined_radius)^2 */
-  double a = vx * vx + vy * vy - vr * vr;
-  double b = dx * vx + dy * vy - dr * vr;
+  double a = vx*vx + vy*vy - vr*vr;
+  double b = dx0*vx + dy0*vy - r0*vr;
 
   /* Compute relative time where derivative is zero */
-  double t_rel;
-  if (a == 0.0 || b == 0.0)
-    t_rel = 0.0;
-  else
-    t_rel = -b / a;
+  double t_rel = (a == 0.0 || b == 0.0) ? 0.0 : -b / a;
+  if (t_rel < 0.0) t_rel = 0.0;
+  if (t_rel > duration) t_rel = duration;
 
-  /* Clamp t_rel within [0, duration] */
-  if (t_rel < 0.0)
-    t_rel = 0.0;
-  else if (t_rel > duration)
-    t_rel = duration;
-
-  /* Compute the timestamp at the turning point */
-  TimestampTz t_turn = lower + (TimestampTz) (t_rel);
-  
-  /* Check if the turning point is truly internal */
-  if (t_turn <= lower || t_turn >= upper)
-  {
-    /* No true internal turning point */
-    *t1 = *t2 = (TimestampTz) 0;
-    return 0;
-  }
-  
   /* Interpolate position and radius at the turning point */
-  double x1_turn = spt1->x + vx1 * t_rel;
-  double y1_turn = spt1->x + vy1 * t_rel;
-  double r1_turn = start1->radius + vr1 * t_rel;
+  double cx1 = spt1->x + ((ept1->x - spt1->x) / duration) * t_rel;
+  double cy1 = spt1->y + ((ept1->y - spt1->y) / duration) * t_rel;
+  double rbuf1 = start1->radius + (end1->radius - start1->radius) * t_rel / duration;
 
-  double x2_turn = start2->radius + vx2 * t_rel;
-  double y2_turn = spt2->y + vy2 * t_rel;
-  double r2_turn = end2->radius + vr2 * t_rel;
+  double cx2 = spt2->x + ((ept2->x - spt2->x) / duration) * t_rel;
+  double cy2 = spt2->y + ((ept2->y - spt2->y) / duration) * t_rel;
+  double rbuf2 = start2->radius + (end2->radius - start2->radius) * t_rel / duration;
 
-  /* Compute the distance between centroids minus the combined radius */
-  double dx_turn = x1_turn - x2_turn;
-  double dy_turn = y1_turn - y2_turn;
-  double dist_turn = sqrt(dx_turn * dx_turn + dy_turn * dy_turn) -
-    r1_turn - r2_turn;
+  double dx_turn = cx1 - cx2;
+  double dy_turn = cy1 - cy2;
+  double dist_turn = sqrt(dx_turn*dx_turn + dy_turn*dy_turn) - rbuf1 - rbuf2;
 
-  if (dist_turn > 0.0) 
-  {
+  double dist0 = sqrt(dx0*dx0 + dy0*dy0) - r0;
+  double dist1 = sqrt(dx1*dx1 + dy1*dy1) - r1;
 
-    /* Check if the turning point is truly internal */
-    if (dist_turn <= lower || dist_turn >= upper)
-    {
-      /* No true internal turning point */
-      *t1 = *t2 = (TimestampTz) 0;
-      return 0;
-    }
-
-    /* Single turning point */
+  /* Single turning point */
+  if (dist_turn > 0.0) {
+    TimestampTz t_turn = lower + (TimestampTz)(t_rel); 
     *t1 = *t2 = t_turn;
     return 1;
-  }
-  else 
-  {
-    /* Compute distance at lower */
-    double sdx = spt1->x - start2->radius;
-    double sdy = spt1->x - spt2->y;
-    double dislower = sqrt(sdx * sdx + sdy * sdy) - start1->radius - end2->radius;
+  } else { /* Crossing: compute entrance and exit times */
+    double alpha_in = (dist_turn - dist0 == 0.0) ? (0.0 - dist0) : (0.0 - dist0) / (dist_turn - dist0);
+    double alpha_out = (dist1 - dist_turn == 0.0) ? (0.0 - dist_turn) : (0.0 - dist_turn) / (dist1 - dist_turn);
 
-    /* Compute distance at upper */
-    double edx = ept1->x - ept2->x;
-    double edy = ept1->y - ept2->y;
-    double disupper = sqrt(edx * edx + edy * edy) - end1->radius - end2->radius;
-
-    /* Crossing: compute entrance and exit times */
-    double alpha_in = (0.0 - dislower) / (dist_turn - dislower);
-    double alpha_out = (0.0 - dist_turn) / (disupper - dist_turn);
-    TimestampTz t_in = lower + (TimestampTz) (t_rel * alpha_in);
-    TimestampTz t_out = lower + (TimestampTz)
-      (t_rel + (duration - t_rel) * alpha_out);
+    TimestampTz t_in = lower + (TimestampTz)(t_rel * alpha_in);
+    TimestampTz t_out = lower + (TimestampTz)((t_rel + (duration - t_rel) * alpha_out));
 
     /* Check if the turning points are truly internal */
-    if (t_in > lower && t_out < upper)
-    {
+    if (t_in > lower && t_out < upper) {
       *t1 = t_in;
       *t2 = t_out;
       return 2;
-    }
-    else if (t_in > lower && t_out >= upper)
-    {
+    } else if (t_in > lower && t_out >= upper) {
       *t1 = *t2 = t_in;
       return 1;
-    }
-    else if (t_in <= lower && t_out < upper)
-    {
+    } else if (t_in <= lower && t_out < upper) {
       *t1 = *t2 = t_out;
       return 1;
-    }
-    else
-    {
-      /* No true internal turning point */
+    } else { /* No true internal turning point */
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }

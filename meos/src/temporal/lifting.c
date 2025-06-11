@@ -1053,7 +1053,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
         tpvalue2 = tsegment_value_at_timestamptz(start2, end2, prev1->temptype,
           prev1->t, inst1->t, tpt2);
         tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
-        instants[ninsts++] = tinstant_make_free(tpvalue2, lfinfo->restype,
+        instants[ninsts++] = tinstant_make_free(tpresult, lfinfo->restype,
           tpt2);
         DATUM_FREE(tpvalue1, basetype); DATUM_FREE(tpvalue2, basetype);
         DATUM_FREE(tpresult, basetype_res);
