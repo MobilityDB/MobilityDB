@@ -56,7 +56,6 @@
 /* Functions on generic bounding boxes of temporal types */
 
 extern bool bbox_type(meosType bboxtype);
-extern bool ensure_bbox_type(meosType bboxtype);
 extern size_t bbox_get_size(meosType bboxtype);
 extern int bbox_max_dims(meosType bboxtype);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,

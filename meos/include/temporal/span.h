@@ -85,7 +85,6 @@ extern bool ensure_valid_span_span(const Span *s1, const Span *s2);
 
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
-extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *s1, const void *s2);
 extern int span_lower_cmp(const Span *s1, const Span *s2);

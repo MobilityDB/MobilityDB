@@ -31,8 +31,8 @@
  * @brief Functions for parsing temporal types.
  */
 
-#ifndef __TEMPORAL_PARSER_H__
-#define __TEMPORAL_PARSER_H__
+#ifndef __TYPE_PARSER_H__
+#define __TYPE_PARSER_H__
 
 /* MEOS */
 #include <meos.h>
@@ -75,4 +75,4 @@ extern Temporal *temporal_parse(const char **str, meosType temptype);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TYPE_PARSER_H__ */

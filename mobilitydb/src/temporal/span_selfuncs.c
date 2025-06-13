@@ -61,7 +61,7 @@
  * don't have statistics or cannot use them for some reason
  */
 float8
-span_sel_default(meosOper oper __attribute__((unused)))
+span_sel_default(meosOper oper UNUSED)
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_SEL;
@@ -72,7 +72,7 @@ span_sel_default(meosOper oper __attribute__((unused)))
  * we don't have statistics or cannot use them for some reason
  */
 float8
-span_joinsel_default(meosOper oper __attribute__((unused)))
+span_joinsel_default(meosOper oper UNUSED)
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
@@ -82,7 +82,7 @@ span_joinsel_default(meosOper oper __attribute__((unused)))
  * @brief Determine whether we can estimate selectivity for the operator
  */
 static bool
-value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+value_oper_sel(Oid operid UNUSED, meosType ltype,
   meosType rtype)
 {
   if ((numset_type(ltype) || numspan_basetype(ltype) || numspan_type(ltype) ||
@@ -97,7 +97,7 @@ value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
+time_oper_sel(meosOper oper UNUSED, meosType ltype,
   meosType rtype)
 {
   if ((timeset_type(ltype) || timespan_basetype(ltype) || timespan_type(ltype) ||
@@ -1099,7 +1099,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
  */
 static Selectivity
 span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
-  int nhist2, bool equal __attribute__((unused)))
+  int nhist2, bool equal UNUSED)
 {
   /* A histogram will never have less than 2 values (1 bin) */
   assert(nhist1 > 1);
@@ -1411,7 +1411,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  */
 Selectivity
 span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
-  JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
+  JoinType jointype UNUSED, SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
   bool join_is_reversed;

@@ -41,7 +41,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"

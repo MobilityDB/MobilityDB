@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
@@ -56,20 +57,15 @@ typedef enum
 
 /*****************************************************************************/
 
-extern bool tnumber_mult_tp_at_timestamptz(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  Datum *value, TimestampTz *t);
-extern bool tnumber_div_tp_at_timestamptz(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  Datum *value, TimestampTz *t);
+extern int tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2);
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   TArithmetic oper, Datum (*func)(Datum, Datum, meosType), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType),
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *, Datum *, TimestampTz *));
+  Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc);
 
 extern TSequence *tfloatseq_derivative(const TSequence *seq);
 extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);

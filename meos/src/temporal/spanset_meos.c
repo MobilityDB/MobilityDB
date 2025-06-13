@@ -47,7 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
@@ -218,7 +218,7 @@ tstzspanset_out(const SpanSet *ss)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-int_spanset(int i)
+int_to_spanset(int i)
 {
   return value_spanset(i, T_INT4);
 }
@@ -230,7 +230,7 @@ int_spanset(int i)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-bigint_spanset(int i)
+bigint_to_spanset(int i)
 {
   return value_spanset(i, T_INT8);
 }
@@ -242,7 +242,7 @@ bigint_spanset(int i)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-float_spanset(double d)
+float_to_spanset(double d)
 {
   return value_spanset(d, T_FLOAT8);
 }
@@ -254,7 +254,7 @@ float_spanset(double d)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-date_spanset(DateADT d)
+date_to_spanset(DateADT d)
 {
   return value_spanset(d, T_DATE);
 }
@@ -266,7 +266,7 @@ date_spanset(DateADT d)
  * @csqlfn #Value_to_spanset()
  */
 SpanSet *
-timestamptz_spanset(TimestampTz t)
+timestamptz_to_spanset(TimestampTz t)
 {
   return value_spanset(t, T_TIMESTAMPTZ);
 }

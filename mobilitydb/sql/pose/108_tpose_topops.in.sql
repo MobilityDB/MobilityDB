@@ -63,8 +63,8 @@ CREATE CAST (tpose AS stbox) WITH FUNCTION stbox(tpose);
 
 CREATE FUNCTION expandSpace(tpose, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tspatial_expand_space'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************
  * Contains

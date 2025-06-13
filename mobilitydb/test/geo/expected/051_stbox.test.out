@@ -949,10 +949,19 @@ SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])')
  STBOX X((1,2),(1,2))
 (1 row)
 
+/* Errors */
+SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
+ERROR:  The stbox must have X dimension
 SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
                                       expandspace                                      
 ---------------------------------------------------------------------------------------
  STBOX XT(((-1,0),(3,4)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(2.0,2.0)),[2000-01-01,2000-01-01])', -0.5);
+                                         expandspace                                          
+----------------------------------------------------------------------------------------------
+ STBOX XT(((1.5,1.5),(1.5,1.5)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
@@ -961,9 +970,31 @@ SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])
  STBOX XT(((1,2),(1,2)),[Fri Dec 31 00:00:00 1999 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-12 hours');
+                                      expandtime                                      
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(1,2)),[Sat Jan 01 12:00:00 2000 PST, Sat Jan 01 12:00:00 2000 PST])
+(1 row)
+
+SELECT expandSpace(stbox 'STBOX XT(((1.0,1.0),(1.0,1.0)),[2000-01-01,2000-01-01])', -0.5);
+ expandspace 
+-------------
+ 
+(1 row)
+
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02))', '-12 hours');
+ expandtime 
+------------
+ 
+(1 row)
+
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-02])', '-1 day');
+ expandtime 
+------------
+ 
+(1 row)
+
 /* Errors */
-SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
-ERROR:  The stbox must have X dimension
 SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
 ERROR:  The stbox must have X dimension
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');

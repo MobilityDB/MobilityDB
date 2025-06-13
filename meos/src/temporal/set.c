@@ -50,11 +50,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/ttext_funcs.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_boxops.h"
 
@@ -240,7 +240,7 @@ set_bbox_size(meosType settype)
   return SIZE_MAX;
 }
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence
  */
@@ -538,7 +538,7 @@ value_set(Datum value, meosType basetype)
  * @csqlfn #Intset_to_floatset()
  */
 Set *
-intset_floatset(const Set *s)
+intset_to_floatset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
@@ -556,7 +556,7 @@ intset_floatset(const Set *s)
  * @csqlfn #Floatset_to_intset()
  */
 Set *
-floatset_intset(const Set *s)
+floatset_to_intset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
@@ -574,7 +574,7 @@ floatset_intset(const Set *s)
  * @csqlfn #Dateset_to_tstzset()
  */
 Set *
-dateset_tstzset(const Set *s)
+dateset_to_tstzset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
@@ -593,7 +593,7 @@ dateset_tstzset(const Set *s)
  * @csqlfn #Tstzset_to_dateset()
  */
 Set *
-tstzset_dateset(const Set *s)
+tstzset_to_dateset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
@@ -769,6 +769,22 @@ set_compact(const Set *s)
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
+/**
+ * @brief Return a float set obtained by applying a function to each element
+ */
+Set *
+floatset_func(const Set *s, Datum (*func)(Datum))
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSET(s, NULL);
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = func(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+}
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a float set rounded down to the nearest integer
@@ -777,12 +793,7 @@ set_compact(const Set *s)
 Set *
 floatset_floor(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_floor(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  return floatset_func(s, &datum_floor);
 }
 
 /**
@@ -793,12 +804,7 @@ floatset_floor(const Set *s)
 Set *
 floatset_ceil(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_ceil(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  return floatset_func(s, &datum_ceil);
 }
 
 /**
@@ -828,12 +834,23 @@ floatset_degrees(const Set *s, bool normalize)
 Set *
 floatset_radians(const Set *s)
 {
+  return floatset_func(s, &datum_radians);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a float set obtained by applying a function to each element
+ */
+Set *
+textset_func(const Set *s, Datum (*func)(Datum))
+{
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Set *result = set_copy(s);
+  VALIDATE_TEXTSET(s, NULL);
+  Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] = datum_radians(SET_VAL_N(s, i));
-  return result;
+    values[i] = func(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_TEXT, ORDER);
 }
 
 /**
@@ -845,12 +862,7 @@ floatset_radians(const Set *s)
 Set *
 textset_lower(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_lower(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_lower);
 }
 
 /**
@@ -862,12 +874,7 @@ textset_lower(const Set *s)
 Set *
 textset_upper(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_upper(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_upper);
 }
 
 /**
@@ -879,12 +886,7 @@ textset_upper(const Set *s)
 Set *
 textset_initcap(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_initcap(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_initcap);
 }
 
 /**
@@ -977,7 +979,7 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   Set *result = set_copy(s);

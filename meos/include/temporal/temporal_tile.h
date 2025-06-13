@@ -76,14 +76,11 @@ typedef struct TboxGridState
 
 /*****************************************************************************/
 
-extern int span_no_bins(const Span *s, Datum size, Datum origin, 
+extern int span_num_bins(const Span *s, Datum size, Datum origin, 
   Datum *start_bin, Datum *end_bin);
-extern SpanBinState *span_bin_state_make(const void *temp, const Span *s,
-  Datum size, Datum origin);
-extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,
-  meosType spantype, Span *span);
-extern bool span_bin_state_get(SpanBinState *state, Span *span);
-extern void span_bin_state_next(SpanBinState *state);
+
+extern Span *span_bins(const Span *s, Datum size, Datum origin, int *count);
+extern Span *spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count);
 
 extern SpanBinState *temporal_time_bin_init(const Temporal *temp,
   const Interval *duration, TimestampTz torigin, int *nbins);
@@ -98,7 +95,7 @@ extern void tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
 /*****************************************************************************/
 
 extern int64 interval_units(const Interval *interval);
-extern TimestampTz timestamptz_get_bin_int(TimestampTz timestamp, int64 tunits,
+extern TimestampTz timestamptz_bin_start(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bin(Datum value, Datum size, Datum offset,
   meosType basetype);

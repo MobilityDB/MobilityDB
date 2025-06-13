@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
 #include <lib/stringinfo.h>
 #include <utils/array.h>
@@ -45,17 +46,6 @@
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
-
-
-// #if POSTGRESQL_VERSION_NUMBER < 130000
-// #if USE_FLOAT4_BYVAL
-// #error Postgres needs to be configured with USE_FLOAT4_BYVAL
-// #endif
-// #endif
-
-// #if USE_FLOAT8_BYVAL
-// #error Postgres needs to be configured with USE_FLOAT8_BYVAL
-// #endif
 
 /* To avoid including fmgrprotos.h */
 extern Datum numeric_float8(PG_FUNCTION_ARGS);
@@ -199,6 +189,10 @@ extern uint32_t time_max_header_size(void);
 extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 
+/* Input an interpolation string and convert it to the interp enum */
+
+extern interpType input_interp_string(FunctionCallInfo fcinfo, int argno);
+
 /* Send/receive functions */
 
 extern Temporal *temporal_recv(StringInfo buf);
@@ -212,6 +206,16 @@ extern text *Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value,
 /* Parameter tests */
 
 extern bool ensure_not_empty_array(ArrayType *array);
+
+/* Comparison functions */
+
+extern Datum EAcomp_temporal_temporal(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const Temporal *));
+extern Datum Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, meosType));
+
+extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, meosType));
 
 /* Indexing functions */
 

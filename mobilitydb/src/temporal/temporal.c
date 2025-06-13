@@ -274,7 +274,7 @@ temporal_slice(Datum tempdatum)
  * Version functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
  * @ingroup mobilitydb_misc
@@ -282,14 +282,14 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
  * @sqlfn mobilitydb_version()
  */
 Datum
-Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
   text *result = cstring2text(version);
   PG_RETURN_TEXT_P(result);
 }
 
-PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_misc
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
  * @sqlfn mobilitydb_full_version()
  */
 Datum
-Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_full_version();
   text *result = cstring2text(version);
@@ -512,6 +512,22 @@ Temporal_send(PG_FUNCTION_ARGS)
  * Constructor functions
  ****************************************************************************/
 
+/**
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Return a temporal instant from a value and a timestamptz
+ * @sqlfn tint(), tfloat(), ...
+ */
+interpType
+input_interp_string(FunctionCallInfo fcinfo, int argno)
+{
+  text *interp_txt = PG_GETARG_TEXT_P(argno);
+  char *interp_str = text2cstring(interp_txt);
+  interpType result = interptype_from_string(interp_str);
+  pfree(interp_str);
+  PG_FREE_IF_COPY(interp_txt, argno);
+  return result;
+}
+  
 PGDLLEXPORT Datum Tinstant_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
@@ -543,12 +559,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    char *interp_str = text2cstring(interp_txt);
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 1);
   bool lower_inc = true, upper_inc = true;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     lower_inc = PG_GETARG_BOOL(2);
@@ -610,12 +621,8 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     maxdist = PG_GETARG_FLOAT8(2);
   if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(3);
-    char *interp_str = text2cstring(interp_txt);
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 3);
+
   /* Store fcinfo into a global variable */
   /* Needed for the distance function for temporal geography points */
   store_fcinfo(fcinfo);
@@ -665,12 +672,7 @@ Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(2);
-    char *interp_str = text2cstring(interp_txt);
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 2);
   PG_RETURN_TSEQUENCE_P(tsequence_from_base_tstzspan(value, temptype, s,
     interp));
 }
@@ -691,12 +693,8 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(2);
-    char *interp_str = text2cstring(interp_txt);
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 2);
+
   TSequenceSet *result = tsequenceset_from_base_tstzspanset(value, temptype,
     ss, interp);
   PG_FREE_IF_COPY(ss, 1);
@@ -719,7 +717,7 @@ Datum
 Tbool_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tbool_tint(temp);
+  Temporal *result = tbool_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -736,7 +734,7 @@ Datum
 Tint_to_tfloat(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tint_tfloat(temp);
+  Temporal *result = tint_to_tfloat(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -753,7 +751,7 @@ Datum
 Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tfloat_tint(temp);
+  Temporal *result = tfloat_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -788,7 +786,7 @@ Datum
 Tnumber_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = tnumber_span(temp);
+  Span *result = tnumber_to_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -806,7 +804,7 @@ Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   Temporal *temp = temporal_slice(tempdatum);
-  TBox *result =  palloc(sizeof(TBox));
+  TBox *result = palloc(sizeof(TBox));
   tnumber_set_tbox(temp, result);
   PG_RETURN_TBOX_P(result);
 }
@@ -1575,13 +1573,10 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *interp_str = NULL;
+  interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    interp_str = text2cstring(interp_txt);
-  }
-  TSequence *result = temporal_to_tsequence(temp, interp_str);
+    interp = input_interp_string(fcinfo, 1);
+  TSequence *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
@@ -1601,13 +1596,10 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *interp_str = NULL;
+  interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    interp_str = text2cstring(interp_txt);
-  }
-  TSequenceSet *result = temporal_to_tsequenceset(temp, interp_str);
+    interp = input_interp_string(fcinfo, 1);
+  TSequenceSet *result = temporal_to_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCESET_P(result);
 }
@@ -1623,15 +1615,13 @@ Datum
 Temporal_set_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *interp_txt = PG_GETARG_TEXT_P(1);
-  char *interp_str = text2cstring(interp_txt);
+  interpType interp = input_interp_string(fcinfo, 1);
 #if RGEO
   Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
-    trgeo_set_interp(temp, interp_str) : temporal_set_interp(temp, interp_str);
+    trgeo_set_interp(temp, interp) : temporal_set_interp(temp, interp);
 #else
-  Temporal *result = temporal_set_interp(temp, interp_str);
+  Temporal *result = temporal_set_interp(temp, interp);
 #endif /* RGEO */
-  pfree(interp_str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -1875,13 +1865,8 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
     interp = temptype_continuous(temptype) ? LINEAR : STEP;
   }
   else
-  {
-    /* Input interpolation */
-    text *interp_txt = PG_GETARG_TEXT_P(2);
-    char *interp_str = text2cstring(interp_txt);    
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 2);
+
 #if RGEO
   Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
     trgeo_append_tinstant(temp, inst, interp, 0.0, NULL, false) :

@@ -40,7 +40,6 @@
 #include <meos.h>
 #include <meos_npoint.h>
 #include "temporal/temporal.h"
-#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
@@ -49,20 +48,8 @@
 extern bool ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
-/* Functions for spatial reference systems */
+/* Restriction functions */
 
-extern int tnpointinst_srid(const TInstant *inst);
-extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
-extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
-extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ss);
-extern GSERIALIZED *tnpoint_trajectory(const Temporal *temp);
-
-extern bool npoint_same(const Npoint *np1, const Npoint *np2);
-
-extern double tnpoint_length(const Temporal *temp);
-extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
-extern Temporal *tnpoint_speed(const Temporal *temp);
-extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,

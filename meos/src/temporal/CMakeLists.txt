@@ -4,7 +4,7 @@ add_library(temporal OBJECT
   lifting.c
   meos.c
   meos_catalog.c
-  pg_types.c
+  postgres_types.c
   skiplist.c
   set.c
   set_ops.c

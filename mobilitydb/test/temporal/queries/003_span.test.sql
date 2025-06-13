@@ -89,6 +89,9 @@ SELECT span(tstzrange'(2000-01-01,2000-01-02)');
 SELECT span(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::tstzspan;
 
+SELECT (date '2000-01-01'::timestamptz)::tstzspan;
+SELECT span(date '2000-01-01'::timestamptz);
+
 /* Errors */
 SELECT tstzrange '[2000-01-01,]'::tstzspan;
 SELECT tstzrange '[,2000-01-01]'::tstzspan;
@@ -156,6 +159,22 @@ SELECT datespan '(2000-01-01,2000-01-02]';
 -- Transformation functions
 -------------------------------------------------------------------------------
 
+SELECT expand(floatspan '[1,1]', 1);
+SELECT expand(floatspan '[1,2]', 1);
+SELECT expand(floatspan '(1,4]', -1);
+SELECT expand(floatspan '[1,3]', -1);
+-- NULL
+SELECT expand(floatspan '[1,3)', -1);
+SELECT expand(floatspan '(1,2)', -2);
+
+SELECT expand(tstzspan '[2000-01-01,2000-01-01]', '1 day');
+SELECT expand(tstzspan '[2000-01-01,2000-01-02]', '1 day');
+SELECT expand(tstzspan '(2000-01-01,2000-01-04]', '-1 day');
+SELECT expand(tstzspan '[2000-01-01,2000-01-03]', '-1 day');
+-- NULL
+SELECT expand(tstzspan '[2000-01-01,2000-01-03)', '-1 day');
+SELECT expand(tstzspan '(2000-01-01,2000-01-02)', '-2 days');
+
 SELECT shift(intspan '[1,2)', 2);
 SELECT shift(datespan '[2000-01-01,2000-01-02)', 2);
 
@@ -187,9 +206,11 @@ SELECT floor(floatspan '[1.5,2.5]');
 SELECT ceil(floatspan '[1.5,2.5]');
 SELECT floor(floatspan '(1.5,1.6)');
 SELECT ceil(floatspan '(1.5,1.6)');
+SELECT round(floatspan '[1.123456789,1.123456789]',6);
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
 SELECT round(floatspan '[1.123456789,inf]',6);
+SELECT round(floatspan '[1.5,1.6]');
 
 -------------------------------------------------------------------------------
 -- Position functions

@@ -34,23 +34,6 @@
 
 /*****************************************************************************/
 
-CREATE FUNCTION SRID(stbox)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Stbox_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(stbox, integer)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION transform(stbox, integer)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_transform'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION transformPipeline(stbox, text, srid integer DEFAULT 0,
-    is_forward boolean DEFAULT true)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_transform_pipeline'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_round'
@@ -69,6 +52,24 @@ CREATE FUNCTION round(geography, integer DEFAULT 0)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+CREATE FUNCTION SRID(stbox)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Stbox_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(stbox, integer)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(stbox, integer)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(stbox, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION SRID(tgeompoint)
   RETURNS integer

@@ -46,8 +46,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/meos_catalog.h"
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -329,7 +330,7 @@ tnumberinst_valuespans(const TInstant *inst)
   meosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);
-  return span_spanset(&s);
+  return span_to_spanset(&s);
 }
 
 /**

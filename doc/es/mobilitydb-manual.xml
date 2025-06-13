@@ -61,7 +61,7 @@
 ]>
 <book xmlns="http://docbook.org/ns/docbook" 
   xmlns:xl="http://www.w3.org/1999/xlink"
-  xmlns:mml="https://www.w3.org/1998/Math/MathML" version="5.0" xml:lang="en">
+  xmlns:mml="https://www.w3.org/1998/Math/MathML" version="5.0" xml:lang="es">
 	<bookinfo>
 		<title>MobilityDB &last_release_version; Manual de usuario</title>
 		<author>

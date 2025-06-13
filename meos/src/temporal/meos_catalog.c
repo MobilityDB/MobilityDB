@@ -811,6 +811,7 @@ numset_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that the type is a number set type
  */
@@ -823,6 +824,7 @@ ensure_numset_type(meosType type)
     "The set value must be a number or a date set");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a time set type
@@ -919,6 +921,7 @@ spatialset_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a temporal value is a temporal number
  */
@@ -931,6 +934,7 @@ ensure_spatialset_type(meosType type)
     "The set value must be a spatial set");
   return false;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -971,15 +975,41 @@ span_type(meosType type)
 
 #ifndef NDEBUG
 /**
- * @brief Return true if the type is a span type
+ * @brief Return true if the type has a span type as bounding box
  * @note This function is only used in the asserts
  */
 bool
-span_bbox_type(meosType type)
+type_span_bbox(meosType type)
 {
   if (set_spantype(type) || span_type(type) || spanset_type(type) ||
     talpha_type(type))
     return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type can be converted to a temporal box
+ * @note This function is only used in the asserts
+ */
+bool
+span_tbox_type(meosType type)
+{
+  if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_TSTZSPAN)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type can be converted to a temporal box
+ * @note This function is only used in the asserts
+ */
+bool
+ensure_span_tbox_type(meosType type)
+{
+  if (span_tbox_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The span value must be an integer, a float, or a timestamptz span type");
   return false;
 }
 #endif
@@ -1254,19 +1284,6 @@ tnumber_spantype(meosType type)
   return false;
 }
 
-#if MEOS
-/**
- * @brief Return true if the type is a span set number type
- */
-bool
-tnumber_spansettype(meosType type)
-{
-  if (type == T_INTSPANSET || type == T_FLOATSPANSET)
-    return true;
-  return false;
-}
-#endif /* MEOS */
-
 /*****************************************************************************
  * Geo
  *****************************************************************************/
@@ -1299,6 +1316,7 @@ tspatial_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that attype is a spatiotemporal type
  */
@@ -1308,9 +1326,10 @@ ensure_tspatial_type(meosType type)
   if (tspatial_type(type))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "The value must be a temporal spatial value");
+    "The value must be a spatiotemporal value");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if a type is a temporal point type
@@ -1389,6 +1408,7 @@ ensure_tgeo_type_all(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Return true if a type is a temporal geometry type
  */
@@ -1412,6 +1432,7 @@ ensure_tgeometry_type(meosType type)
     "The temporal value must be a temporal geometry type");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if a type is a temporal geodetic type
@@ -1424,6 +1445,7 @@ tgeodetic_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a type is a temporal geodetic type
  */
@@ -1436,6 +1458,7 @@ ensure_tgeodetic_type(meosType type)
     "The temporal value must be a temporal geodetic type");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure that a type is a temporal number or a temporal point

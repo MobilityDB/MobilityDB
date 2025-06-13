@@ -56,90 +56,44 @@
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum
+ * float segments is at a local minimum/maximum
  * @details The function supposes that the instants are synchronized, that is,
  * `start1->t = start2->t` and `end1->t = end2->t`.
  * The function only return an intersection at the middle, that is, it
  * it returns false if the timestamp found is not at a bound
  * @note This function is called only when both sequences are linear
  */
-static bool
-tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+int
+tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum param UNUSED, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2)
 {
-  double x1 = tnumberinst_double(start1);
-  double x2 = tnumberinst_double(end1);
-  double x3 = tnumberinst_double(start2);
-  double x4 = tnumberinst_double(end2);
+  assert(lower < upper); assert(t1); assert(t2);
+  double x1 = Float8GetDatum(start1);
+  double x2 = Float8GetDatum(end1);
+  double x3 = Float8GetDatum(start2);
+  double x4 = Float8GetDatum(end2);
   /* Compute the instants t1 and t2 at which the linear functions of the two
    * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
    * minimum/maximum exactly at the middle between t1 and t2.
    * To reduce problems related to floating point arithmetic, t1 and t2
    * are shifted, respectively, to 0 and 1 before the computation */
   if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
-    return false;
+    return 0;
 
   long double d1 = (-1 * x1) / (x2 - x1);
   long double d2 = (-1 * x3) / (x4 - x3);
   long double min = Min(d1, d2);
   long double max = Max(d1, d2);
   long double fraction = min + (max - min) / 2;
-  long double duration = (long double) (end1->t - start1->t);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
-    return false;
+    return 0;
 
-  *t = start1->t + (TimestampTz) (duration * fraction);
-  return true;
-}
-
-/**
- * @brief Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum
- * @note This function is called only when both sequences are linear.
- */
-static bool
-tnumber_arithop_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TArithmetic op, Datum *value,
-  TimestampTz *t)
-{
-  if (! tnumber_arithop_tp_at_timestamp1(start1, end1, start2, end2, t))
-    return false;
-  Datum value1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
-  Datum value2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
-  assert (op == MULT || op == DIV);
-  assert (start1->temptype == start2->temptype);
-  meosType basetype = temptype_basetype(start1->temptype);
-  *value = (op == '*') ?
-    datum_mult(value1, value2, basetype) :
-    datum_div(value1, value2, basetype);
-  return true;
-}
-
-/**
- * @brief Find the single timestamptz at which the multiplication of two
- * temporal number segments is at a local minimum/maximum
- * @note This function is called only when both sequences are linear.
- */
-bool
-tnumber_mult_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
-{
-  return tnumber_arithop_tp_at_timestamptz(start1, end1, start2, end2, MULT,
-    value, t);
-}
-
-/**
- * @brief Find the single timestamptz at which the division of two temporal
- * number segments is at a local minimum/maximum
- * @note This function is called only when both sequences are linear.
- */
-bool
-tnumber_div_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
-{
-  return tnumber_arithop_tp_at_timestamptz(start1, end1, start2, end2, DIV,
-    value, t);
+  long double duration = (long double) (upper - lower);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  return 1;
 }
 
 /*****************************************************************************
@@ -191,12 +145,9 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = basetype;
   lfinfo.restype = temp->temptype;
-  /* This parameter is not used for temp <op> base */
-  lfinfo.reslinear = false;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -209,9 +160,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
  */
 Temporal *
 arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, meosType),
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *, Datum *, TimestampTz *))
+  TArithmetic oper, Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc)
 {
   assert(tnumber_type(temp1->temptype));
   assert(temp1->temptype == temp2->temptype);
@@ -220,18 +169,26 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
+  SpanSet *ss;
+  Temporal * projtemp2;
   if (oper == DIV)
   {
-    SpanSet *ss = temporal_time(temp1);
-    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
-    if (projtemp2 == NULL)
+    ss = temporal_time(temp1);
+    projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
+    if (! projtemp2)
+    {
+      pfree(ss);
       return NULL;
+    }
     if (ever_eq_temporal_base(projtemp2, Float8GetDatum(0.0)))
     {
       pfree(projtemp2);
+      pfree(ss);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
       return NULL;
     }
+    pfree(ss);
+    pfree(projtemp2);
   }
 
   /* Fill the lifted structure */
@@ -246,8 +203,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
+  lfinfo.tpfn_temp = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
@@ -726,52 +682,50 @@ tfloat_derivative(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_base_types
  * @brief Return the exponential of a double
  * @param[in] d Value
  * @note PostgreSQL function: dexp(PG_FUNCTION_ARGS)
  */
 
 double
-pg_exp(double d)
+float_exp(double d)
 {
   double result;
-
-	/*
-	 * Handle NaN and Inf cases explicitly.  This avoids needing to assume
-	 * that the platform's exp() conforms to POSIX for these cases, and it
-	 * removes some edge cases for the overflow checks below.
-	 */
-	if (isnan(d))
-		result = d;
-	else if (isinf(d))
-	{
-		/* Per POSIX, exp(-Inf) is 0 */
-		result = (d > 0.0) ? d : 0;
-	}
-	else
-	{
-		/*
-		 * On some platforms, exp() will not set errno but just return Inf or
-		 * zero to report overflow/underflow; therefore, test both cases.
-		 */
-		errno = 0;
-		result = exp(d);
-		if (unlikely(errno == ERANGE))
-		{
-			if (result != 0.0)
-				float_overflow_error();
-			else
-				float_underflow_error();
-		}
-		else if (unlikely(isinf(result)))
-			float_overflow_error();
-		else if (unlikely(result == 0.0))
-			float_underflow_error();
-	}
-
+  /*
+   * Handle NaN and Inf cases explicitly.  This avoids needing to assume
+   * that the platform's exp() conforms to POSIX for these cases, and it
+   * removes some edge cases for the overflow checks below.
+   */
+  if (isnan(d))
+    result = d;
+  else if (isinf(d))
+  {
+    /* Per POSIX, exp(-Inf) is 0 */
+    result = (d > 0.0) ? d : 0;
+  }
+  else
+  {
+    /*
+     * On some platforms, exp() will not set errno but just return Inf or
+     * zero to report overflow/underflow; therefore, test both cases.
+     */
+    errno = 0;
+    result = exp(d);
+    if (unlikely(errno == ERANGE))
+    {
+      if (result != 0.0)
+        float_overflow_error();
+      else
+        float_underflow_error();
+    }
+    else if (unlikely(isinf(result)))
+      float_overflow_error();
+    else if (unlikely(result == 0.0))
+      float_underflow_error();
+  }
   return result;
 }
-
 
 /**
  * @brief Return the exponential of a double
@@ -781,7 +735,7 @@ pg_exp(double d)
 static Datum
 datum_exp(Datum d)
 {
-  return Float8GetDatum(pg_exp(DatumGetFloat8(d)));
+  return Float8GetDatum(float_exp(DatumGetFloat8(d)));
 }
 
 /**
@@ -802,8 +756,6 @@ tfloat_exp(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -812,13 +764,13 @@ tfloat_exp(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_base_types
  * @brief Return the natural logarithm of a double
  * @param[in] d Value
  * @note PostgreSQL function: dlog1(PG_FUNCTION_ARGS)
  */
-
 double
-pg_ln(double d)
+float_ln(double d)
 {
   double result;
 
@@ -850,7 +802,7 @@ pg_ln(double d)
 static Datum
 datum_ln(Datum d)
 {
-  return Float8GetDatum(pg_ln(DatumGetFloat8(d)));
+  return Float8GetDatum(float_ln(DatumGetFloat8(d)));
 }
 
 /**
@@ -878,20 +830,19 @@ tfloat_ln(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_base_types
  * @brief Return the logarithm base 10 of a double
  * @param[in] d Value
  * @note PostgreSQL function: dlog10(PG_FUNCTION_ARGS)
  */
 double
-pg_log10(double d)
+float_log10(double d)
 {
   double result;
 
@@ -924,7 +875,7 @@ pg_log10(double d)
 static Datum
 datum_log10(Datum d)
 {
-  return Float8GetDatum(pg_log10(DatumGetFloat8(d)));
+  return Float8GetDatum(float_log10(DatumGetFloat8(d)));
 }
 
 /**
@@ -952,8 +903,6 @@ tfloat_log10(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 

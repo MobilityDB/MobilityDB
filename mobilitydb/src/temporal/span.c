@@ -173,7 +173,7 @@ PGDLLEXPORT Datum Span_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_from_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return a span from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return a span from its ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation
  * @sqlfn intspanFromHexWKB(), floatspanFromHexWKB(), ...
  */
@@ -209,7 +209,7 @@ PGDLLEXPORT Datum Span_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_hexwkb);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a span
  * @sqlfn asHexWKB()
  */
@@ -291,12 +291,9 @@ Set_spans(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Span *spans = set_spans(s);
-  int count = s->count;
-  PG_FREE_IF_COPY(s, 0);
-  if (! spans)
-    PG_RETURN_NULL();
-  ArrayType *result = spanarr_to_array(spans, count);
+  ArrayType *result = spanarr_to_array(spans, s->count);
   pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -314,11 +311,9 @@ Set_split_n_spans(PG_FUNCTION_ARGS)
   int span_count = PG_GETARG_INT32(1);
   int count;
   Span *spans = set_split_n_spans(s, span_count, &count);
-  PG_FREE_IF_COPY(s, 0);
-  if (! spans)
-    PG_RETURN_NULL();
   ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -337,11 +332,9 @@ Set_split_each_n_spans(PG_FUNCTION_ARGS)
   int elem_count = PG_GETARG_INT32(1);
   int count;
   Span *spans = set_split_each_n_spans(s, elem_count, &count);
-  PG_FREE_IF_COPY(s, 0);
-  if (! spans)
-    PG_RETURN_NULL();
   ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -357,7 +350,7 @@ Datum
 Intspan_to_floatspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(intspan_floatspan(s));
+  PG_RETURN_SPAN_P(intspan_to_floatspan(s));
 }
 
 PGDLLEXPORT Datum Floatspan_to_intspan(PG_FUNCTION_ARGS);
@@ -372,7 +365,7 @@ Datum
 Floatspan_to_intspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(floatspan_intspan(s));
+  PG_RETURN_SPAN_P(floatspan_to_intspan(s));
 }
 
 PGDLLEXPORT Datum Datespan_to_tstzspan(PG_FUNCTION_ARGS);
@@ -387,7 +380,7 @@ Datum
 Datespan_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(datespan_tstzspan(s));
+  PG_RETURN_SPAN_P(datespan_to_tstzspan(s));
 }
 
 PGDLLEXPORT Datum Tstzspan_to_datespan(PG_FUNCTION_ARGS);
@@ -402,7 +395,7 @@ Datum
 Tstzspan_to_datespan(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_SPAN_P(tstzspan_datespan(s));
+  PG_RETURN_SPAN_P(tstzspan_to_datespan(s));
 }
 
 /*****************************************************************************/
@@ -591,12 +584,63 @@ Tstzspan_duration(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Transformation functions
- *
  * Since in PostgreSQL the type date is defined as follows
  *   typedef int32 DateADT;
  * the functions #Numspan_shift, #Numspan_scale, and #Numspan_shift_scale are
  * also used for datespans and datespansets
  *****************************************************************************/
+
+PGDLLEXPORT Datum Numspan_expand(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numspan_expand);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a number span with its bounds expanded or shrinded by a value
+ * @note This function is also used for `datespan`
+ * @sqlfn shift()
+ */
+Datum
+Numspan_expand(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum value = PG_GETARG_DATUM(1);
+  Span *result = numspan_expand(s, value);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPAN_P(result);
+}
+
+PGDLLEXPORT Datum Tstzspan_expand(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_expand);
+/**
+ * @ingroup mobilitydb_geo_box_transf
+ * @brief Return a timstamptz span expanded/shrinked by an interval
+ * @sqlfn expand()
+ */
+Datum
+Tstzspan_expand(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *interval = PG_GETARG_INTERVAL_P(1);
+  Span *result = tstzspan_expand(s, interval);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SPAN_P(result);
+}
+
+PGDLLEXPORT Datum Timestamptz_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_shift);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a timestamptz shifted by an interval
+ * @sqlfn shift()
+ */
+Datum
+Timestamptz_shift(PG_FUNCTION_ARGS)
+{
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Interval *shift = PG_GETARG_INTERVAL_P(1);
+  PG_RETURN_TIMESTAMPTZ(timestamptz_shift(t, shift));
+}
 
 PGDLLEXPORT Datum Numspan_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Numspan_shift);

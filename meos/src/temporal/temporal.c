@@ -47,9 +47,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_tile.h"
 #include "temporal/tinstant.h"
@@ -607,7 +608,7 @@ ensure_valid_day_duration(const Interval *duration)
  * @brief Return true if an interval is a positive duration
  */
 bool
-valid_duration(const Interval *duration)
+positive_duration(const Interval *duration)
 {
   if (duration->month != 0)
     return false;
@@ -622,9 +623,9 @@ valid_duration(const Interval *duration)
  * @brief Ensure that an interval is a positive duration
  */
 bool
-ensure_valid_duration(const Interval *duration)
+ensure_positive_duration(const Interval *duration)
 {
-  if (valid_duration(duration))
+  if (positive_duration(duration))
     return true;
 
   if (! ensure_not_month_duration(duration))
@@ -911,7 +912,7 @@ tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
  * @note The interpolation of the result is step or linear depending on whether
  * the base type is continous or not.
  */
-static TSequenceSet *
+TSequenceSet *
 tsequenceset_from_base_temp(Datum value, meosType temptype,
   const TSequenceSet *ss)
 {
@@ -1001,7 +1002,7 @@ datum_float_to_int(Datum d)
  * @csqlfn #Tbool_to_tint()
  */
 Temporal *
-tbool_tint(const Temporal *temp)
+tbool_to_tint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBOOL(temp, NULL);
@@ -1012,8 +1013,6 @@ tbool_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1024,7 +1023,7 @@ tbool_tint(const Temporal *temp)
  * @csqlfn #Tint_to_tfloat()
  */
 Temporal *
-tint_tfloat(const Temporal *temp)
+tint_to_tfloat(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
@@ -1035,8 +1034,6 @@ tint_tfloat(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TINT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1047,7 +1044,7 @@ tint_tfloat(const Temporal *temp)
  * @csqlfn #Tfloat_to_tint()
  */
 Temporal *
-tfloat_tint(const Temporal *temp)
+tfloat_to_tint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
@@ -1064,8 +1061,6 @@ tfloat_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1102,7 +1097,7 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
  * @csqlfn #Temporal_to_tstzspan()
  */
 Span *
-temporal_tstzspan(const Temporal *temp)
+temporal_to_tstzspan(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -1146,7 +1141,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
  * @csqlfn #Tnumber_to_span()
  */
 Span *
-tnumber_span(const Temporal *temp)
+tnumber_to_span(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); 
@@ -1155,6 +1150,7 @@ tnumber_span(const Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_temporal_conversion
  * @brief Convert a temporal number into a temporal box
@@ -1162,7 +1158,7 @@ tnumber_span(const Temporal *temp)
  * @csqlfn #Tnumber_to_tbox()
  */
 TBox *
-tnumber_tbox(const Temporal *temp)
+tnumber_to_tbox(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); 
@@ -1170,6 +1166,7 @@ tnumber_tbox(const Temporal *temp)
   tnumber_set_tbox(temp, result);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -1209,7 +1206,7 @@ round_fn(meosType basetype)
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_temporal_transf
  * @brief Return a temporal value rounded to a given number of decimal places
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits to output
@@ -1227,13 +1224,11 @@ temporal_round(const Temporal *temp, int maxdd)
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_temporal_transf
  * @brief Return an array of temporal floats with the precision of the
  * coordinates set to a number of decimal places
  * @param[in] temparr Array of temporal values
@@ -1257,7 +1252,7 @@ temparr_round(const Temporal **temparr, int count, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_transf
+ * @ingroup meos_base_types
  * @brief Return a float number rounded to a given number of decimal places
  */
 double
@@ -1327,8 +1322,6 @@ tfloat_floor(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1350,8 +1343,6 @@ tfloat_ceil(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1417,8 +1408,6 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1440,8 +1429,6 @@ tfloat_radians(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1561,20 +1548,17 @@ temporal_tsequence(const Temporal *temp, interpType interp)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation string, may be NULL
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequence()
  */
 TSequence *
-temporal_to_tsequence(const Temporal *temp, const char *interp_str)
+temporal_to_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     if (temp->subtype == TSEQUENCE)
       interp = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1624,20 +1608,17 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence set
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation string
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
-temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
+temporal_to_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     interp = MEOS_FLAGS_GET_INTERP(temp->flags);
     if (interp == INTERP_NONE || interp == DISCRETE)
@@ -1650,16 +1631,15 @@ temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to an interpolation
  * @param[in] temp Temporal value
- * @param[in] interp_str Interpolation
+ * @param[in] interp Interpolation
  * @return On error return @p NULL
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-temporal_set_interp(const Temporal *temp, const char *interp_str)
+temporal_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  interpType interp = interptype_from_string(interp_str);
   if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
@@ -1736,7 +1716,7 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -2064,7 +2044,7 @@ temporal_max_value(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
  * value 
  * @param[in] temp Temporal value
@@ -2943,7 +2923,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   if (! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;
 
-  /* We cannot call #ensure_valid_duration since the duration may be zero */
+  /* We cannot call #ensure_positive_duration since the duration may be zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = pg_interval_cmp(minduration, &intervalzero);

@@ -1567,6 +1567,12 @@ SELECT tDwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@200
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(5 5)@2000-01-05, Point(7 7)@2000-01-07]}', tgeompoint '{Point(3 3)@2000-01-03, Point(4 4)@2000-01-04}', 1);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tDwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2, true);
             tdwithin            
 --------------------------------
@@ -1709,6 +1715,12 @@ SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  tdwithin 
 ----------
  
+(1 row)
+
+SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)}', tgeomPoint '{[Point(2.5 2.5)@2000-01-01, Point(2.5 2.5)@2000-01-02], [Point(2.5 2.5)@2000-01-03,Point(2.5 2.5)@2000-01-04]}', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST)}
 (1 row)
 
 /* Errors */

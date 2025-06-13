@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for parsing temporal spatial values
+ * @brief Functions for parsing spatiotemporal values
  */
 
 #include "geo/tspatial_parser.h"
@@ -37,6 +37,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -259,6 +260,7 @@ stbox_parse(const char **str)
 
 /*****************************************************************************/
 
+#if CBUFFER || POSE
 /**
  * @brief Parse a geometry/gegraphy from the buffer
  * @param[in] str Input string
@@ -307,6 +309,7 @@ geo_parse(const char **str, meosType basetype, char delim, int *srid,
     pfree(gs);
   return true;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************/
 
@@ -330,7 +333,7 @@ spatial_parse_elem(const char **str, meosType temptype, char delim,
   if (! basetype_parse(str, basetype, delim, &d))
     return false;
 
-  /* If one of the SRIDs of the temporal spatial value and of the base spatial
+  /* If one of the SRIDs of the spatiotemporal value and of the base spatial
    * value is SRID_UNKNOWN and the other not, copy the SRID */
   int base_srid = spatial_srid(d, basetype);
   if (*temp_srid == SRID_UNKNOWN && base_srid != SRID_UNKNOWN)
@@ -338,7 +341,7 @@ spatial_parse_elem(const char **str, meosType temptype, char delim,
   else if (*temp_srid != SRID_UNKNOWN &&
     ( base_srid == SRID_UNKNOWN || base_srid == SRID_DEFAULT ))
       spatial_set_srid(d, basetype, *temp_srid);
-  /* If the SRID of the temporal spatial value and of the spatial value
+  /* If the SRID of the spatiotemporal value and of the spatial value
    * do not match */
   else if (*temp_srid != SRID_UNKNOWN && base_srid != SRID_UNKNOWN &&
     *temp_srid != base_srid)
@@ -359,12 +362,12 @@ spatial_parse_elem(const char **str, meosType temptype, char delim,
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal spatial instant from the input buffer
+ * @brief Parse a spatiotemporal instant from the input buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the sequence
- * @param[in,out] temp_srid SRID of the temporal spatial value
+ * @param[in,out] temp_srid SRID of the spatiotemporal value
  * @param[out] result New instant, may be NULL
  */
 bool 
@@ -396,7 +399,7 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
  * @brief Parse a temporal discrete sequence spatial value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in,out] temp_srid SRID of the temporal spatial value
+ * @param[in,out] temp_srid SRID of the spatiotemporal value
  */
 TSequence *
 tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
@@ -441,7 +444,7 @@ tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
- * @param[in,out] temp_srid SRID of the temporal spatial value
+ * @param[in,out] temp_srid SRID of the spatiotemporal value
  * @param[out] result New sequence, may be NULL
  */
 bool
@@ -506,7 +509,7 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
- * @param[in,out] temp_srid SRID of the temporal spatial value
+ * @param[in,out] temp_srid SRID of the spatiotemporal value
  */
 TSequenceSet *
 tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
@@ -546,7 +549,7 @@ tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal spatial value from the input buffer
+ * @brief Parse a spatiotemporal value from the input buffer
  * @param[in] str Input string
   * @param[in] temptype Temporal type
 */
@@ -576,7 +579,7 @@ tspatial_parse(const char **str, meosType temptype)
   p_whitespace(str);
 
   Temporal *result = NULL; /* keep compiler quiet */
-  /* Determine the subtype of the temporal spatial value and call the
+  /* Determine the subtype of the spatiotemporal value and call the
    * function corresponding to the subtype passing the SRID */
   if (**str != '{' && **str != '[' && **str != '(')
   {

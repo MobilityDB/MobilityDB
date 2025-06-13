@@ -41,6 +41,32 @@ CREATE FUNCTION tContains(geometry, tgeometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcontains_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tContains(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcontains_tgeo_geo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tContains(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcontains_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/*****************************************************************************
+ * tContains
+ *****************************************************************************/
+
+-- ALL the following functions are not STRICT
+CREATE FUNCTION tCovers(geometry, tgeometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcovers_geo_tgeo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tCovers(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcovers_tgeo_geo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tCovers(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcovers_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
  * tDisjoint
@@ -100,6 +126,10 @@ CREATE FUNCTION tTouches(geometry, tgeometry, atvalue bool DEFAULT NULL)
 CREATE FUNCTION tTouches(tgeometry, geometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_tgeo_geo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tTouches(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Ttouches_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************

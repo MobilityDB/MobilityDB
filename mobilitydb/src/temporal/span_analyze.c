@@ -243,7 +243,7 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
+  int samplerows, double totalrows UNUSED)
 {
   int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
@@ -305,7 +305,11 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     non_null_cnt++;
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /* We can only compute real stats if we found some non-null values. */
@@ -353,7 +357,7 @@ Span_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a span as a bounding box */
-  assert(span_bbox_type(oid_type(stats->attrtypid)));
+  assert(type_span_bbox(oid_type(stats->attrtypid)));
 
   /*
    * Call the standard typanalyze function. It may fail to find needed

@@ -44,11 +44,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal_tile.h"
 #include "temporal/temporal_tile.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "geo/tpoint_tile.h"
+#include "geo/tgeo_tile.h"
 /* MobilityDB */
 #include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
@@ -94,7 +95,7 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
       /* If time arguments are given */
       ensure_has_T(T_STBOX, bounds->flags);
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
+      ensure_positive_duration(duration);
     }
     if (spacetiles)
     {

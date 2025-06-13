@@ -246,7 +246,7 @@ skiplist_free(SkipList *list)
  * @brief Output the skiplist in graphviz dot format for visualisation and
  * debugging purposes
  */
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /* Maximum length of the skiplist string */
 #define MAX_SKIPLIST_LEN 65536
 

@@ -287,7 +287,7 @@ SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02]' &lt;-
 
 		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y las relaciones de distancia como <varname>ST_DWithin</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal y un tipo base (es decir, un <varname>geometry</varname> o un <varname>geography</varname>) o dos puntos temporales. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten merzclar un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía).</para>
 
-		<para>Hay tres versiones de las relaciones espaciales:</para>
+		<para>Hay tres versiones de las relaciones:</para>
 		<itemizedlist>
 			<listitem>
 				<para>Las relaciones <emphasis>alguna vez</emphasis> determinan determinan si la relación topológica o de distancia se satisface alguna vez (ver <xref linkend="ever_always_comparison" />) y resultan en un <varname>boolean</varname>. Ejemplos son las funciones <varname>eIntersects</varname> y <varname>eDwithin</varname>.</para>
@@ -357,13 +357,13 @@ WHERE eIntersects(T.Trip, R.Geom)
 			que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador <varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.
 		</para>
 
-		<para>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <varname>eIntersects</varname>, <varname>eDisjoint</varname>, <varname>eDwithin</varname>, <varname>eContains</varname>, y <varname>eTouches</varname>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <varname>tContains(geometry,tpoint)</varname> es significativo, <varname>tContains(tpoint,geometry)</varname> es significativo solo cuando la geometría es un solo punto, y <varname>tContains(tpoint,tpoint)</varname> es equivalente a <varname>tIntersects(tpoint, geometry)</varname>. Por esta razón, solo se define la primera combinación de parámetros para <varname>eContains</varname>, <varname>aContains</varname> y <varname>tContains</varname>.</para>
+		<para>No todas las relaciones espaciales disponibles en PostGIS se han generalizado para geometrías temporales, solo las derivadas de las siguientes funciones: <varname>ST_Contains</varname>, <varname>ST_Covers</varname>, <varname>ST_Disjoint</varname>, <varname>ST_Intersects</varname>, <varname>ST_Touches</varname> y <varname>ST_DWithin</varname>. Estas funciones solo admiten geometrías 2D, y solo las funciones <varname>ST_Covers</varname>, <varname>ST_Intersects</varname> y <varname>ST_DWithin</varname> admiten geografías. Por lo tanto, esto mismo aplica a las funciones de MobilityDB derivadas de ellas, excepto que admiten 3D para puntos temporales, es decir, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Como se mencionó anteriormente, cada una de las funciones PostGIS mencionadas, como <varname>ST_Contains</varname>, tiene tres versiones generalizadas en MobilityDB: <varname>eContains</varname>, <varname>aContains</varname> y <varname>tContains</varname>. Además, no todas las combinaciones de parámetros son relevantes para las funciones generalizadas. Por ejemplo, <varname>tContains(tpoint, geometría)</varname> solo es relevante cuando la geometría es un solo punto, y <varname>tContains(tpoint, tpoint)</varname> es equivalente a <varname>tintersects(tpoint, geometría)</varname>.</para>
 
 		<para>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 
 		<sect2>
-			<title>Relaciones espaciales alguna vez o siempre</title>
-			<para>Presentamos a continuación las relaciones espaciales alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
+			<title>Relaciones alguna vez o siempre</title>
+			<para>Presentamos a continuación las relaciones alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
 
 			<itemizedlist>
 				<listitem xml:id="eContains">
@@ -384,6 +384,29 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
 -- false
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="eCovers">
+					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<para>Ever or always covers</para>
+					<para><varname>eCovers({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<para><varname>aCovers({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<para>Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> and the <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> function in PostGIS for detailed explanations about the difference between the two functions.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eCovers(geometry 'Linestring(1 1,3 3)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+-- false
+SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
+-- true
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+ tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+-- false
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
 </programlisting>
@@ -453,15 +476,15 @@ SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 		</sect2>
 
 		<sect2>
-			<title>Relaciones espaciales temporales</title>
+			<title>Relaciones espaciotemporales</title>
 
-			<para>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
+			<para>Presentamos a continuación las relaciones espaciotemporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(atValues(tIntersects(T.trip, M.geom), True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND atValues(tIntersects(T.trip, M.geom), True) IS NOT NULL;
 </programlisting>
-			<para>Para simplificar la escritura de consultas, las relaciones espaciales temporales tienen un último parámetro opcional, que si se proporciona aplica la función <varname>atValue</varname> (ver <xref linkend="ttype_restrictions" />) al resultado de la relación. De esta forma, la consulta anterior se puede escribir de la siguiente manera.</para>
+			<para>Para simplificar la escritura de consultas, las relaciones espaciotemporales tienen un último parámetro opcional, que si se proporciona aplica la función <varname>atValue</varname> (ver <xref linkend="ttype_restrictions" />) al resultado de la relación. De esta forma, la consulta anterior se puede escribir de la siguiente manera.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(tIntersects(T.trip, M.geom, True))
 FROM Trips T, Municipality M
@@ -507,8 +530,7 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 				<listitem xml:id="tDwithin">
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<para>Está a distancia de temporal &Z_support;</para>
-					<para><varname>tDwithin({geo,tgeo},{geo,tgeo},float,atValue boolean=NULL)</varname></para>
-					<para><varname>  → tbool</varname></para>
+					<para><varname>tDwithin({geo,tgeo},{geo,tgeo},float,atValue boolean=NULL) → tbool</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));

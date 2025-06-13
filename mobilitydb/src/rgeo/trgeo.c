@@ -412,7 +412,7 @@ Datum
 Trgeometry_to_tpose(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeo_tpose(temp);
+  Temporal *result = trgeo_to_tpose(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -428,7 +428,7 @@ Datum
 Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeo_tpoint(temp);
+  Temporal *result = trgeo_to_tpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

@@ -32,24 +32,15 @@
  * @brief General functions for temporal pose objects
  */
 
-#include "pose/tpose.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/array.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include <meos_pose.h>
-#include "temporal/meos_catalog.h"
-#include "temporal/pg_types.h"
 #include "temporal/set.h"
-#include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
-#include "pose/tpose_parser.h"
 /* MobilityDB */
-#include "pg_temporal/meos_catalog.h"
 #include "pg_geo/tspatial.h"
 
 /*****************************************************************************
@@ -143,7 +134,7 @@ Datum
 Tpose_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpose_tpoint(temp);
+  Temporal *result = tpose_to_tpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

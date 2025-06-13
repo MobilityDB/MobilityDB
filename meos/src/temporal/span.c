@@ -46,11 +46,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/meos_catalog.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_parser.h"
+#include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 
 /*****************************************************************************
@@ -565,7 +567,7 @@ set_set_span(const Set *s, Span *result)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a set into a span
  * @param[in] s Set
  * @csqlfn #Set_to_span()
@@ -574,14 +576,29 @@ Span *
 set_span(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
-  if (! ensure_set_spantype(s->settype))
-    return NULL;
-
+  assert(s); assert(set_spantype(s->settype));
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a set into a span
+ * @param[in] s Set
+ * @csqlfn #Set_to_span()
+ */
+Span *
+set_to_span(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  return set_span(s);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_conversion
@@ -606,7 +623,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
  * @return On error return @p NULL
  */
 Span *
-intspan_floatspan(const Span *s)
+intspan_to_floatspan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPAN(s, NULL);
@@ -632,13 +649,13 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_internal_setspan_conversion
+ * @ingroup meos_setspan_conversion
  * @brief Convert a float span into an integer span
  * @param[in] s Span
  * @return On error return @p NULL
  */
 Span *
-floatspan_intspan(const Span *s)
+floatspan_to_intspan(const Span *s)
 {
   VALIDATE_FLOATSPAN(s, NULL);
   Span *result = palloc(sizeof(Span));
@@ -672,7 +689,7 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
  * @return On error return @p NULL
  */
 Span *
-datespan_tstzspan(const Span *s)
+datespan_to_tstzspan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
@@ -714,7 +731,7 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
  * @return On error return @p NULL
  */
 Span *
-tstzspan_datespan(const Span *s)
+tstzspan_to_datespan(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
@@ -848,7 +865,7 @@ floatspan_floor_ceil_iter(Span *s, datum_func1 func)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span rounded down to the nearest integer
  * @csqlfn #Floatspan_floor()
  */
@@ -863,7 +880,7 @@ floatspan_floor(const Span *s)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span rounded up to the nearest integer
  * @csqlfn #Floatspan_ceil()
  */
@@ -938,6 +955,126 @@ span_expand(const Span *s1, Span *s2)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a number span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] value Value
+ * @csqlfn #Numspan_expand()
+ * @note This function can be seen as a 1-dimensional version of the PostGIS
+ * function `ST_Buffer`
+ */
+Span *
+numspan_expand(const Span *s, Datum value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NUMSPAN(s, NULL);
+  /* When the value is negative, return NULL if the span resulting by
+   * shifting the bounds with the value is empty */ 
+  if (datum_cmp(value, (Datum) 0, s->basetype) <= 0)
+  {
+    Datum width = numspan_width(s);
+    Datum value2 = datum_add(value, value, s->basetype);
+    /* We avoid taking the absolute value by adding the two values */
+    Datum add = datum_add(value2, width, s->basetype);
+    int cmp = datum_cmp(add, (Datum) 0, s->basetype);
+    if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
+      return NULL;
+  }
+  Span *result = span_copy(s);
+  result->lower = datum_sub(s->lower, value, s->basetype);
+  result->upper = datum_add(s->upper, value, s->basetype);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+intspan_expand(const Span *s, int i)
+{
+  return numspan_expand(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span with its bounds expanded/decreased by a
+ * value
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+bigintspan_expand(const Span *s, int64 i)
+{
+  return numspan_expand(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+floatspan_expand(const Span *s, double d)
+{
+  return numspan_expand(s, Float8GetDatum(d));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span with its bounds expanded/decreased by an
+ * interval
+ * @param[in] s Span
+ * @param[in] interv Interval
+ * @csqlfn #Tstzspan_expand()
+ * @note This function can be seen as a 1-dimensional version of the PostGIS
+ * function `ST_Buffer`
+ */
+Span *
+tstzspan_expand(const Span *s, const Interval *interv)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(interv, NULL);
+  /* When the interval is negative, return NULL if the span resulting by
+   * shifting the bounds with the interval is empty */ 
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
+  Interval interv_neg;
+  if (negative)
+  {
+    Interval *duration = tstzspan_duration(s);
+    /* Negate the interval */
+    interval_negate(interv, &interv_neg);
+    Interval *interv_neg2 = mul_interval_double(&interv_neg, 2.0);
+    int cmp = pg_interval_cmp(duration, interv_neg2);
+    pfree(duration); pfree(interv_neg2);
+    if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
+      return NULL;
+  }
+
+  Span *result = span_copy(s);
+  TimestampTz tmin = negative ?
+    add_timestamptz_interval(DatumGetTimestampTz(s->lower), &interv_neg) :
+    minus_timestamptz_interval(DatumGetTimestampTz(s->lower), interv);
+  TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(s->upper),
+    interv);
+  result->lower = TimestampTzGetDatum(tmin);
+  result->upper = TimestampTzGetDatum(tmax);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Shift and/or scale the span bounds by two values
  * @param[in] shift Value for shifting the bounds
  * @param[in] width Width of the result
@@ -983,7 +1120,7 @@ span_bounds_shift_scale_time(const Interval *shift, const Interval *duration,
   TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift || duration); assert(lower); assert(upper);
-  assert(! duration || valid_duration(duration));
+  assert(! duration || positive_duration(duration));
 
   bool instant = (*lower == *upper);
   if (shift)
@@ -1180,6 +1317,22 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
+ * @ingroup meos_base_types
+ * @brief Return a timestamptz shifted by an interval
+ * @param[in] t Timestamp
+ * @param[in] interv Interval to shift the instant
+ * @return On error return `DT_NOEND`
+ * @csqlfn #Timestamptz_shift()
+ */
+TimestampTz
+timestamptz_shift(TimestampTz t, const Interval *interv)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, DT_NOEND);
+  return add_timestamptz_interval(t, interv);
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
@@ -1194,7 +1347,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Copy the input period to the result */
@@ -1213,7 +1366,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from the values of a set
  * @param[in] s Set
  * @return On error return @p NULL
@@ -1232,7 +1385,7 @@ set_spans(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of N spans from the values of a set
  * @param[in] s Set
  * @param[in] span_count Number of spans
@@ -1278,17 +1431,17 @@ set_split_n_spans(const Set *s, int span_count, int *count)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from a set obtained by merging consecutive
  * elements
  * @param[in] s Set
- * @param[in] elems_per_span Number of elements merge into an ouput span
+ * @param[in] elems_per_span Number of elements merged into an ouput span
  * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_split_each_n_spans()
  */
 Span *
-set_split_each_n_spans(const Set *s, int32 elems_per_span, int *count)
+set_split_each_n_spans(const Set *s, int elems_per_span, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NUMSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);

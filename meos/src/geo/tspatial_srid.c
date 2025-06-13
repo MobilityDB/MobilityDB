@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/type_util.h"
 #include "geo/meos_transform.h"
@@ -186,14 +187,14 @@ spatialset_set_srid(const Set *s, int32_t srid)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems for temporal spatial types
+ * Functions for spatial reference systems for spatiotemporal values
  *****************************************************************************/
 
 /**
  * @ingroup meos_internal_geo_srid
- * @brief Return the SRID of a temporal spatial instant
+ * @brief Return the SRID of a spatiotemporal instant
  * @return On error return @p SRID_INVALID
- * @param[in] inst Temporal spatial instant
+ * @param[in] inst Spatiotemporal instant
  */
 int32_t
 tspatialinst_srid(const TInstant *inst)
@@ -205,9 +206,9 @@ tspatialinst_srid(const TInstant *inst)
 
 /**
  * @ingroup meos_geo_srid
- * @brief Return the SRID of a temporal spatial value
+ * @brief Return the SRID of a spatiotemporal value
  * @return On error return @p SRID_INVALID
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Tspatial_srid()
  */
 int32_t
@@ -234,8 +235,8 @@ tspatial_srid(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_geo_srid
- * @brief Set the coordinates of a temporal spatial instant to an SRID
- * @param[in] inst Temporal spatial instant
+ * @brief Set the coordinates of a spatiotemporal instant to an SRID
+ * @param[in] inst Spatiotemporal instant
  * @param[in] srid SRID
  */
 void
@@ -249,8 +250,8 @@ tspatialinst_set_srid(TInstant *inst, int32_t srid)
 
 /**
  * @ingroup meos_internal_geo_srid
- * @brief Set the coordinates of a temporal spatial sequence to an SRID
- * @param[in] seq Temporal spatial sequence
+ * @brief Set the coordinates of a spatiotemporal sequence to an SRID
+ * @param[in] seq Spatiotemporal sequence
  * @param[in] srid SRID
  */
 void
@@ -268,8 +269,8 @@ tspatialseq_set_srid(TSequence *seq, int32_t srid)
 
 /**
  * @ingroup meos_internal_geo_srid
- * @brief Set the coordinates of a temporal spatial sequence set to an SRID
- * @param[in] ss Temporal spatial sequence set
+ * @brief Set the coordinates of a spatiotemporal sequence set to an SRID
+ * @param[in] ss Spatiotemporal sequence set
  * @param[in] srid SRID
  */
 void
@@ -290,8 +291,8 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
 
 /**
  * @ingroup meos_geo_srid
- * @brief Return a temporal spatial value with the coordinates set to an SRID
- * @param[in] temp Temporal spatial value
+ * @brief Return a spatiotemporal value with the coordinates set to an SRID
+ * @param[in] temp Spatiotemporal value
  * @param[in] srid SRID
  * @return On error return @p NULL
  * @see #tspatialinst_set_srid()
@@ -323,10 +324,11 @@ tspatial_set_srid(const Temporal *temp, int32_t srid)
   return result;
 }
 
-/*****************************************************************************
+/*****************************************************************************Add commentMore actions
  * Defitions taken from file lwgeom_transform.c
  *****************************************************************************/
 
+#if CBUFFER || POSE
 /**
  * @brief Convert decimal degress to radians
  */
@@ -346,6 +348,7 @@ to_dec(POINT4D *pt)
   pt->x *= 180.0/M_PI;
   pt->y *= 180.0/M_PI;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************
  * Functions fetching an LWPROJ structure containing transform information
@@ -376,6 +379,7 @@ ensure_srid_is_latlong(int32_t srid)
   return false;
 }
 
+#if CBUFFER || POSE
 /**
  * @brief Transform the point to another SRID
  * @param[in] gs Point
@@ -423,6 +427,7 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   gserialized_set_srid(gs, srid_to);
   return true;
 }
+#endif /* CBUFFER || POSE */
 
 /*****************************************************************************
  * Generic functions
@@ -437,7 +442,7 @@ Datum
   datum_transf_pj(Datum d, meosType basetype, int32_t srid_to, const LWPROJ *pj)
 #else
   datum_transf_pj(Datum d, meosType basetype,
-    int32_t srid_to __attribute__((unused)), const LWPROJ *pj)
+    int32_t srid_to UNUSED, const LWPROJ *pj)
 #endif /* CBUFFER */
 {
   assert(spatial_basetype(basetype));
@@ -560,8 +565,8 @@ spatialset_transform_pipeline(const Set *s, const char *pipeline,
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal spatial type transformed to another SRID
- * @param[in] inst Temporal spatial instant
+ * @brief Return a spatiotemporal type transformed to another SRID
+ * @param[in] inst Spatiotemporal instant
  * @param[in] srid_to SRID, may be @p SRID_UNKNOWN for pipeline
  * transformations
  * @param[in] pj Information about the transformation
@@ -579,8 +584,8 @@ tspatialinst_transf_pj(const TInstant *inst, int32_t srid_to, const LWPROJ *pj)
 }
 
 /**
- * @brief Return a temporal spatial type transformed to another SRID
- * @param[in] seq Temporal spatial sequence
+ * @brief Return a spatiotemporal type transformed to another SRID
+ * @param[in] seq Spatiotemporal sequence
  * @param[in] srid_to SRID
  * @param[in] pj Information about the transformation
  */
@@ -603,8 +608,8 @@ tspatialseq_transf_pj(const TSequence *seq, int32_t srid_to, const LWPROJ *pj)
 }
 
 /**
- * @brief Return a temporal spatial type transformed to another SRID
- * @param[in] ss Temporal spatial sequence set
+ * @brief Return a spatiotemporal type transformed to another SRID
+ * @param[in] ss Spatiotemporal sequence set
  * @param[in] srid_to SRID
  * @param[in] pj Information about the transformation
  */
@@ -628,8 +633,8 @@ tspatialseqset_transf_pj(const TSequenceSet *ss, int32_t srid_to,
 }
 
 /**
- * @brief Return a temporal spatial value transformed to another SRID
- * @param[in] temp Temporal spatial
+ * @brief Return a spatiotemporal value transformed to another SRID
+ * @param[in] temp Spatiotemporal
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
  * transformation
  * @param[in] pj Information about the transformation
@@ -638,7 +643,7 @@ Temporal *
 tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 {
   assert(temp); assert(pj);
-  /* Copy the temporal spatial value to transform its points in place */
+  /* Copy the spatiotemporal value to transform its points in place */
   Temporal *result = temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -659,8 +664,8 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 
 /**
  * @ingroup meos_geo_srid
- * @brief Return a temporal spatial value transformed to another SRID
- * @param[in] temp Temporal spatial value
+ * @brief Return a spatiotemporal value transformed to another SRID
+ * @param[in] temp Spatiotemporal value
  * @param[in] srid_to Target SRID
  */
 Temporal *
@@ -685,15 +690,15 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
   if (tgeodetic_type(temp->temptype))
     pj->source_is_latlong = true;
 
-  /* Transform the temporal spatial type */
+  /* Transform the spatiotemporal value */
   return tspatial_transf_pj(temp, srid_to, pj);
 }
 
 /**
  * @ingroup meos_geo_srid
- * @brief Return a temporal spatial value transformed to another SRID using a
+ * @brief Return a spatiotemporal value transformed to another SRID using a
  * pipeline
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
@@ -715,7 +720,7 @@ tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,
   if (! pj)
     return NULL;
 
-  /* Transform the temporal spatial type */
+  /* Transform the spatiotemporal type */
   Temporal *result = tspatial_transf_pj(temp, srid_to, pj);
 
   /* Clean up and return */

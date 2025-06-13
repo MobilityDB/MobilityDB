@@ -57,7 +57,7 @@
  * @brief Return true if a spatiotemporal box is to the left of a temporal
  * point
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Left_stbox_tspatial()
  */
 inline bool
@@ -69,9 +69,9 @@ left_stbox_tspatial(const STBox *box, const Temporal *temp)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if a spatiotemporal box does not extend to the right of a
- * temporal spatial value
+ * spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overleft_stbox_tspatial()
  */
 inline bool
@@ -85,7 +85,7 @@ overleft_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @brief Return true if a spatiotemporal box is to the right of a temporal
  * point
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Right_stbox_tspatial()
  */
 inline bool
@@ -97,9 +97,9 @@ right_stbox_tspatial(const STBox *box, const Temporal *temp)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if a spatiotemporal box does not extend to the left of a
- * temporal spatial value
+ * spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overright_stbox_tspatial()
  */
 inline bool
@@ -110,9 +110,9 @@ overright_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is below a temporal spatial value
+ * @brief Return true if a spatiotemporal box is below a spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Below_stbox_tspatial()
  */
 inline bool
@@ -126,7 +126,7 @@ below_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @brief Return true if a spatiotemporal box does not extend above a temporal
  * point
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overbelow_stbox_tspatial()
  */
 inline bool
@@ -137,9 +137,9 @@ overbelow_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is above a temporal spatial value
+ * @brief Return true if a spatiotemporal box is above a spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Above_stbox_tspatial()
  */
 inline bool
@@ -153,7 +153,7 @@ above_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @brief Return true if a spatiotemporal box does not extend below a temporal
  * point
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overabove_stbox_tspatial()
  */
 inline bool
@@ -164,10 +164,10 @@ overabove_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is in front of a temporal spatial
+ * @brief Return true if a spatiotemporal box is in front of a spatiotemporal
  * value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Front_stbox_tspatial()
  */
 inline bool
@@ -179,9 +179,9 @@ front_stbox_tspatial(const STBox *box, const Temporal *temp)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if a spatiotemporal box does not extend to the back of a
- * temporal spatial value
+ * spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overfront_stbox_tspatial()
  */
 inline bool
@@ -195,7 +195,7 @@ overfront_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @brief Return true if a spatiotemporal box is at the back of a temporal
  * point
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Back_stbox_tspatial()
  */
 inline bool
@@ -207,9 +207,9 @@ back_stbox_tspatial(const STBox *box, const Temporal *temp)
 /**
  * @ingroup meos_geo_bbox_pos
  * @brief Return true if a spatiotemporal box does not extend to the front of a
- * temporal spatial value
+ * spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overback_stbox_tspatial()
  */
 inline bool
@@ -220,10 +220,10 @@ overback_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is before a temporal spatial
+ * @brief Return true if a spatiotemporal box is before a spatiotemporal
  * value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Before_stbox_tspatial()
  */
 inline bool
@@ -234,10 +234,10 @@ before_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is not after a temporal spatial
+ * @brief Return true if a spatiotemporal box is not after a spatiotemporal
  * value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overbefore_stbox_tspatial()
  */
 inline bool
@@ -248,9 +248,9 @@ overbefore_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is after a temporal spatial value
+ * @brief Return true if a spatiotemporal box is after a spatiotemporal value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #After_stbox_tspatial()
  */
 inline bool
@@ -261,10 +261,10 @@ after_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a spatiotemporal box is not before a temporal spatial
+ * @brief Return true if a spatiotemporal box is not before a spatiotemporal
  * value
  * @param[in] box Spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Overafter_stbox_tspatial()
  */
 inline bool
@@ -278,10 +278,10 @@ overafter_stbox_tspatial(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is to the left of a
+ * @brief Return true if a spatiotemporal value is to the left of a
  * spatiotemporal
  * box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
 box * @csqlfn #Left_tspatial_stbox()
  */
@@ -293,9 +293,9 @@ left_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend to the right
+ * @brief Return true if a spatiotemporal value does not extend to the right
  * of a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overleft_tspatial_stbox()
  */
@@ -307,9 +307,9 @@ overleft_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is to the right of a
+ * @brief Return true if a spatiotemporal value is to the right of a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Right_tspatial_stbox()
  */
@@ -321,9 +321,9 @@ right_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend to the left
+ * @brief Return true if a spatiotemporal value does not extend to the left
  * of a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overright_tspatial_stbox()
  */
@@ -335,8 +335,8 @@ overright_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is below a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @brief Return true if a spatiotemporal value is below a spatiotemporal box
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Below_tspatial_stbox()
  */
@@ -348,9 +348,9 @@ below_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend above a
+ * @brief Return true if a spatiotemporal value does not extend above a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overbelow_tspatial_stbox()
  */
@@ -362,8 +362,8 @@ overbelow_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is above a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @brief Return true if a spatiotemporal value is above a spatiotemporal box
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Above_tspatial_stbox()
  */
@@ -375,9 +375,9 @@ above_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend below a
+ * @brief Return true if a spatiotemporal value does not extend below a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overabove_tspatial_stbox()
  */
@@ -389,9 +389,9 @@ overabove_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is in front of a
+ * @brief Return true if a spatiotemporal value is in front of a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Front_tspatial_stbox()
  */
@@ -403,9 +403,9 @@ front_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend to the back
+ * @brief Return true if a spatiotemporal value does not extend to the back
  * of a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overfront_tspatial_stbox()
  */
@@ -417,9 +417,9 @@ overfront_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is at the back of a
+ * @brief Return true if a spatiotemporal value is at the back of a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Back_tspatial_stbox()
  */
@@ -431,9 +431,9 @@ back_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value does not extend to the front
+ * @brief Return true if a spatiotemporal value does not extend to the front
  * of a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overback_tspatial_stbox()
  */
@@ -445,9 +445,9 @@ overback_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is before a spatiotemporal
+ * @brief Return true if a spatiotemporal value is before a spatiotemporal
  * box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Before_tspatial_stbox()
  */
@@ -459,9 +459,9 @@ before_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is not after a spatiotemporal
+ * @brief Return true if a spatiotemporal value is not after a spatiotemporal
  * box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overbefore_tspatial_stbox()
  */
@@ -473,8 +473,8 @@ overbefore_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is after a spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @brief Return true if a spatiotemporal value is after a spatiotemporal box
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #After_tspatial_stbox()
  */
@@ -486,9 +486,9 @@ after_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if a temporal spatial value is not before a
+ * @brief Return true if a spatiotemporal value is not before a
  * spatiotemporal box
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overafter_tspatial_stbox()
  */
@@ -503,9 +503,9 @@ overafter_tspatial_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is to the left of the
+ * @brief Return true if the first spatiotemporal value is to the left of the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Left_tspatial_tspatial()
  */
 inline bool
@@ -516,9 +516,9 @@ left_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend to
+ * @brief Return true if the first spatiotemporal value does not extend to
  * the right of the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overleft_tspatial_tspatial()
  */
 inline bool
@@ -529,9 +529,9 @@ overleft_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is to the right of
+ * @brief Return true if the first spatiotemporal value is to the right of
  * the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Right_tspatial_tspatial()
  */
 inline bool
@@ -542,9 +542,9 @@ right_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend to
+ * @brief Return true if the first spatiotemporal value does not extend to
  * the left of the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overright_tspatial_tspatial()
  */
 inline bool
@@ -555,9 +555,9 @@ overright_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is below the second
+ * @brief Return true if the first spatiotemporal value is below the second
  * one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Below_tspatial_tspatial()
  */
 inline bool
@@ -568,9 +568,9 @@ below_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend above
+ * @brief Return true if the first spatiotemporal value does not extend above
  * the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overbelow_tspatial_tspatial()
  */
 inline bool
@@ -581,9 +581,9 @@ overbelow_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is above the second
+ * @brief Return true if the first spatiotemporal value is above the second
  * one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Above_tspatial_tspatial()
  */
 inline bool
@@ -594,10 +594,10 @@ above_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend below
+ * @brief Return true if the first spatiotemporal value does not extend below
  * the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overabove_tspatial_tspatial()
  */
 inline bool
@@ -608,9 +608,9 @@ overabove_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is in front of the
+ * @brief Return true if the first spatiotemporal value is in front of the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Front_tspatial_tspatial()
  */
 inline bool
@@ -621,9 +621,9 @@ front_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend to
+ * @brief Return true if the first spatiotemporal value does not extend to
  * the back of the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overfront_tspatial_tspatial()
  */
 inline bool
@@ -634,9 +634,9 @@ overfront_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is at the back of the
+ * @brief Return true if the first spatiotemporal value is at the back of the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Back_tspatial_tspatial()
  */
 inline bool
@@ -647,9 +647,9 @@ back_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value does not extend to
+ * @brief Return true if the first spatiotemporal value does not extend to
  * the front of the second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overback_tspatial_tspatial()
  */
 inline bool
@@ -660,9 +660,9 @@ overback_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is before the second
+ * @brief Return true if the first spatiotemporal value is before the second
  * one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Before_tspatial_tspatial()
  */
 inline bool
@@ -673,9 +673,9 @@ before_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is not after the
+ * @brief Return true if the first spatiotemporal value is not after the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overbefore_tspatial_tspatial()
  */
 inline bool
@@ -686,9 +686,9 @@ overbefore_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is after the second
+ * @brief Return true if the first spatiotemporal value is after the second
  * one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #After_tspatial_tspatial()
  */
 inline bool
@@ -699,9 +699,9 @@ after_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_pos
- * @brief Return true if the first temporal spatial value is not before the
+ * @brief Return true if the first spatiotemporal value is not before the
  * second one
- * @param[in] temp1,temp2 Temporal spatial values
+ * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overafter_tspatial_tspatial()
  */
 inline bool

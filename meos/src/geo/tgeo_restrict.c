@@ -45,12 +45,14 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/span.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 
@@ -179,8 +181,6 @@ tpoint_force2d(const Temporal *temp)
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -235,7 +235,7 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
  * point found by PostGIS is located. This function differs from function
  * #tpointsegm_intersection_value in particular since the latter is used for
  * finding crossings during synchronization and thus it is required that the
- * timestamp in strictly between the timestamps of a segment.
+ * timestamp is strictly between the timestamps of a segment.
  * @param[in] seq Temporal point sequence
  * @param[in] value Base value
  * @param[out] t Timestamp
@@ -550,14 +550,14 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  * @param[in] inst Temporal geo instant
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension and the arguments have the same SRID.
  * @note This function restricts only to the spatial dimension, the restriction
  * to the time dimension is made in function #tgeo_restrict_stbox
  */
 static TInstant *
 tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
-  bool border_inc __attribute__((unused)), bool atfunc)
+  bool border_inc UNUSED, bool atfunc)
 {
   assert(! MEOS_FLAGS_GET_T(box->flags));
 
@@ -589,7 +589,7 @@ tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  * @param[in] inst temporal geo instant
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension and the arguments have the same SRID.
  * @note This function restricts only to the spatial dimension, the restriction
  * to the time dimension is made in function #tgeo_restrict_stbox
@@ -613,7 +613,7 @@ tgeoinst_restrict_stbox(const TInstant *inst, const STBox *box,
  * @param[in] seq Temporal point discrete sequence
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension, the arguments have the same SRID, and
  * the sequence is not instantaneous.
  * @note The function only restricts to the spatial dimension, the restriction
@@ -654,7 +654,7 @@ tgeoseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] seq Temporal point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension, the arguments have the same SRID, and
  * the sequence is not instantaneous.
  * @note This function restricts only to the spatial dimension, the restriction
@@ -745,16 +745,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
 {
   assert(seq); assert(box); assert(tpoint_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
-  assert(! MEOS_FLAGS_GET_T(box->flags));
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box,
-        border_inc, REST_AT))
-      return tsequence_to_tsequenceset(seq);
-    return NULL;
-  }
+  assert(! MEOS_FLAGS_GET_T(box->flags)); assert(seq->count > 1);
 
   /* General case */
   bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
@@ -858,7 +849,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           }
           else if (t1 != inst2->t)
           {
-            inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
+            inter1 = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+              tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, t1);
             free1 = true;
             instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
             tofree[nfree++] = instants[ninsts++];
@@ -895,7 +887,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t2 != inst2->t)
           {
-            inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
+            inter2 = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+              tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, t2);
             free2 = true;
             /* Add the instant only if it is different from the previous one
              * Otherwise, assume that t1 == t2 and skip t2 */
@@ -964,7 +957,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
  * @param[in] seq temporal point sequence
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension, the arguments have the same SRID, and
  * the sequence is not instantaneous.
  * @note The function only restricts to the spatial dimension, the restriction
@@ -1002,7 +995,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] seq temporal geo sequence
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension and the arguments have the same SRID.
  * @note The function only restricts to the spatial dimension, the restriction
  * to the time dimension is made in function #tgeo_restrict_stbox.
@@ -1054,7 +1047,7 @@ tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[in] ss Temporal geo sequence set
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The box has only X dimension and the arguments have the same SRID.
  * @note The function only restricts to the spatial dimension, the restriction
  * to the time dimension is made in function #tgeo_restrict_stbox.
@@ -1110,7 +1103,7 @@ tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
  * considered if both the temporal geo and the box have Z dimension
  */
@@ -1439,7 +1432,7 @@ tpointinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] inst Temporal geo instant
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre The arguments have the same SRID. This is verified in
  * #tgeo_restrict_geom
  */
@@ -1447,7 +1440,7 @@ TInstant *
 tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
   assert(! gserialized_is_empty(gs));
   /* Execute the specialized function for temporal points */
   if (tpoint_type(inst->temptype))
@@ -1478,13 +1471,13 @@ tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] inst Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 TInstant *
 tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
   TInstant *res = tgeoinst_restrict_geom_iter(inst, gs, zspan, atfunc);
   if (! res)
     return NULL;
@@ -1497,14 +1490,14 @@ tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] seq Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre Instantaneous sequences have been managed in the calling function
  */
 TSequence *
 tgeoseq_disc_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
 
@@ -1535,7 +1528,7 @@ tgeoseq_disc_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] seq Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @pre Instantaneous sequences have been managed in the calling function
  * @note The function computes the "at" restriction on all dimensions. Then,
  * for the "minus" restriction, it computes the complement of the "at"
@@ -1545,7 +1538,7 @@ TSequenceSet *
 tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
    const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   assert(seq->count > 1);
 
@@ -1767,25 +1760,13 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
  * as stated in https://postgis.net/docs/ST_Intersection.html
  * After this computation, the Z values are recovered by restricting the
  * original sequence to the time span of the 2D result.
- * @note Instantaneous sequences must be managed since this function is called
- * after restricting to the time dimension
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
 static TSequenceSet *
 tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 {
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  TSequenceSet *result;
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    if (tpointinst_restrict_geom_iter(TSEQUENCE_INST_N(seq, 0), gs, NULL,
-        REST_AT))
-      return tsequence_to_tsequenceset(seq);
-    return NULL;
-  }
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
 
   /* Bounding box test */
   STBox box1, box2;
@@ -1869,7 +1850,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   assert(totalpers > 0);
   SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE, ORDER);
   /* Recover the Z values from the original sequence */
-  result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
+  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
   pfree(ss);
   return result;
 }
@@ -1886,7 +1867,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @note The function computes the "at" restriction on all dimensions. Then,
  * for the "minus" restriction, it computes the complement of the "at"
  * restriction with respect to the time dimension.
@@ -1957,13 +1938,13 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] seq Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
 tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Instantaneous sequence */
@@ -2004,13 +1985,13 @@ tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] ss Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 TSequenceSet *
 tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(ss, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(ss); assert(gs); assert(tgeo_type_all(ss->temptype));
 
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -2058,7 +2039,7 @@ tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension, may be `NULL`
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
 tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,

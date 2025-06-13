@@ -80,8 +80,6 @@ extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 extern LWGEOM *lwgeom_line_interpolate_point(LWGEOM *geom, double fraction,
   int32_t srid, char repeat);
 
-extern const char *geo_typename(int type);
-
 /*****************************************************************************/
 
 #endif /* __POSTGIS_FUNCS_H__ */

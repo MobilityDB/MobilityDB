@@ -43,10 +43,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
@@ -174,7 +176,7 @@ PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
 /**
  * @ingroup mobilitydb_geo_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a spatiotemporal box
  * @sqlfn asHexWKB()
  */
@@ -209,7 +211,7 @@ PGDLLEXPORT Datum Stbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_geo_box_inout
- * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * @brief Return a spatiotemporal box from its ASCII hex-encoded Well-Known
  * Binary (HexWKB) representation
  * @sqlfn stboxFromHexWKB()
  */
@@ -448,7 +450,7 @@ Datum
 Stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  GBOX *result = stbox_gbox(box);
+  GBOX *result = stbox_to_gbox(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -464,7 +466,7 @@ Datum
 Stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  BOX3D *result = stbox_box3d(box);
+  BOX3D *result = stbox_to_box3d(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -480,7 +482,7 @@ Datum
 Stbox_to_geo(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Datum result = PointerGetDatum(stbox_geo(box));
+  Datum result = PointerGetDatum(stbox_to_geo(box));
   PG_RETURN_DATUM(result);
 }
 
@@ -496,7 +498,7 @@ Datum
 Stbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Span *result = stbox_tstzspan(box);
+  Span *result = stbox_to_tstzspan(box);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -514,7 +516,7 @@ Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
 {
   GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  PG_RETURN_STBOX_P(gbox_stbox(box));
+  PG_RETURN_STBOX_P(gbox_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Box3d_to_stbox(PG_FUNCTION_ARGS);
@@ -529,7 +531,7 @@ Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
 {
   BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  PG_RETURN_STBOX_P(box3d_stbox(box));
+  PG_RETURN_STBOX_P(box3d_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);
@@ -544,28 +546,10 @@ Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  STBox *result = palloc(sizeof(STBox));
-  bool found = geo_set_stbox(gs, result);
+  STBox *result = geo_to_stbox(gs);
   PG_FREE_IF_COPY(gs, 0);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_STBOX_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_to_stbox);
-/**
- * @ingroup mobilitydb_geo_box_conversion
- * @brief Convert a geometry/geography set into a spatiotemporal box
- * @sqlfn stbox()
- * @sqlop @p ::
- */
-Datum
-Geoset_to_stbox(PG_FUNCTION_ARGS)
-{
-  Set *set = PG_GETARG_SET_P(0);
-  STBox *result = spatialset_stbox(set);
-  PG_FREE_IF_COPY(set, 0);
   PG_RETURN_STBOX_P(result);
 }
 
@@ -581,7 +565,24 @@ Datum
 Timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PG_RETURN_STBOX_P(timestamptz_stbox(t));
+  PG_RETURN_STBOX_P(timestamptz_to_stbox(t));
+}
+
+/**
+ * @brief Peek into a set datum to find the bounding box. If the datum
+ * needs to be detoasted, extract only the header and not the full object.
+ */
+void
+tstzset_stbox_slice(Datum sdatum, STBox *box)
+{
+  Set *s = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) sdatum))
+    s = (Set *) PG_DETOAST_DATUM_SLICE(sdatum, 0, TIME_MAX_HEADER_SIZE);
+  else
+    s = (Set *) sdatum;
+  tstzset_set_stbox(s, box);
+  PG_FREE_IF_COPY_P(s, DatumGetPointer(sdatum));
+  return;
 }
 
 PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
@@ -595,8 +596,10 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
-  Set *ts = PG_GETARG_SET_P(0);
-  PG_RETURN_STBOX_P(tstzset_stbox(ts));
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  STBox *result = palloc(sizeof(STBox));
+  tstzset_stbox_slice(tsdatum, result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tstzspan_to_stbox(PG_FUNCTION_ARGS);
@@ -611,7 +614,7 @@ Datum
 Tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
-  PG_RETURN_STBOX_P(tstzspan_stbox(p));
+  PG_RETURN_STBOX_P(tstzspan_to_stbox(p));
 }
 
 /**

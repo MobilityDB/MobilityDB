@@ -29,8 +29,12 @@
 
 /**
  * @file
- * @brief Temporal distance for temporal network points
+ * @brief Distance functions for temporal network points
  */
+
+/*****************************************************************************
+ * Temporal distance
+ *****************************************************************************/
 
 CREATE FUNCTION tDistance(geometry(Point), tnpoint)
   RETURNS tfloat
@@ -82,6 +86,102 @@ CREATE OPERATOR <-> (
   LEFTARG = tnpoint,
   RIGHTARG = tnpoint,
   COMMUTATOR = <->
+);
+
+/*****************************************************************************
+ * Nearest approach instant
+ *****************************************************************************/
+
+CREATE FUNCTION NearestApproachInstant(geometry, tnpoint)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'NAI_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION NearestApproachInstant(tnpoint, geometry)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'NAI_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION NearestApproachInstant(npoint, tnpoint)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'NAI_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION NearestApproachInstant(tnpoint, npoint)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'NAI_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION NearestApproachInstant(tnpoint, tnpoint)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'NAI_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Nearest approach distance
+ *****************************************************************************/
+
+CREATE FUNCTION nearestApproachDistance(geometry, tnpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tnpoint, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, tnpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tnpoint, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tnpoint_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION NearestApproachDistance(npoint, tnpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION NearestApproachDistance(tnpoint, npoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tnpoint, tnpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  LEFTARG = geometry, RIGHTARG = tnpoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tnpoint, RIGHTARG = geometry,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = tnpoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tnpoint, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = npoint, RIGHTARG = tnpoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tnpoint, RIGHTARG = tnpoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
 );
 
 /*****************************************************************************/

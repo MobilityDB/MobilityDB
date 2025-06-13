@@ -90,8 +90,6 @@ extern bool set_find_value(const Set *s, Datum, int *loc);
 extern SetUnnestState *set_unnest_state_make(const Set *set);
 extern void set_unnest_state_next(SetUnnestState *state);
 
-extern bool ensure_valid_set_set(const Set *s1, const Set *s2);
-
 /*****************************************************************************/
 
 #endif /* __SET_H__ */

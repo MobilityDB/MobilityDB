@@ -32,8 +32,6 @@
  * @brief Functions for temporal bounding boxes
  */
 
-#include "temporal/tbox.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -43,8 +41,10 @@
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "temporal/type_util.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
@@ -175,7 +175,7 @@ PGDLLEXPORT Datum Tbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Return a temporal box from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal box from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn tboxFromHexWKB()
  */
@@ -210,7 +210,7 @@ PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
 /**
  * @ingroup mobilitydb_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a temporal box
  * @sqlfn asHexWKB()
  */
@@ -333,7 +333,7 @@ Datum
 Timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PG_RETURN_TBOX_P(timestamptz_tbox(t));
+  PG_RETURN_TBOX_P(timestamptz_to_tbox(t));
 }
 
 PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);
@@ -347,8 +347,7 @@ Datum
 Set_to_tbox(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  TBox *result = set_tbox(s);
-  PG_FREE_IF_COPY_P(s, 0);
+  TBox *result = set_to_tbox(s);
   PG_RETURN_TBOX_P(result);
 }
 
@@ -417,7 +416,7 @@ Datum
 Tbox_to_intspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_intspan(box));
+  PG_RETURN_SPAN_P(tbox_to_intspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
@@ -431,7 +430,7 @@ Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_floatspan(box));
+  PG_RETURN_SPAN_P(tbox_to_floatspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
@@ -445,7 +444,7 @@ Datum
 Tbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_tstzspan(box));
+  PG_RETURN_SPAN_P(tbox_to_tstzspan(box));
 }
 
 /*****************************************************************************
@@ -718,35 +717,22 @@ Tbox_shift_scale_time(PG_FUNCTION_ARGS)
   PG_RETURN_TBOX_P(tbox_shift_scale_time(box, shift, duration));
 }
 
-PGDLLEXPORT Datum Tbox_expand_int(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_expand_int);
+PGDLLEXPORT Datum Tbox_expand_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_expand_value);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span expanded by an integer
+ * @brief Return a temporal box with the value span expanded by a value
  * @sqlfn expandValue()
  */
 Datum
-Tbox_expand_int(PG_FUNCTION_ARGS)
+Tbox_expand_value(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  int i = PG_GETARG_INT32(1);
-  PG_RETURN_TBOX_P(tbox_expand_int(box, i));
-}
-
-PGDLLEXPORT Datum Tbox_expand_float(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_expand_float);
-/**
- * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span expanded/shrinked by a
- * double
- * @sqlfn expandValue()
- */
-Datum
-Tbox_expand_float(PG_FUNCTION_ARGS)
-{
-  TBox *box = PG_GETARG_TBOX_P(0);
-  double d = PG_GETARG_FLOAT8(1);
-  TBox *result = tbox_expand_float(box, d);
+  Datum value = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  TBox *result = tbox_expand_value(box, value, basetype);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 
@@ -764,6 +750,8 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   TBox *result = tbox_expand_time(box, interval);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 

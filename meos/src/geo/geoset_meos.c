@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -107,6 +107,24 @@ geoset_make(const GSERIALIZED **values, int count)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_geo_set_conversion
+ * @brief Convert a geometry/geography into a geo set
+ * @param[in] gs Value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+geo_set(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (! ensure_not_empty(gs))
+    return NULL;
+
+  Datum v = PointerGetDatum(gs);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
+}
+
+/**
  * @ingroup meos_geo_set_conversion
  * @brief Convert a geometry/geography into a geo set
  * @param[in] gs Value
@@ -117,12 +135,7 @@ geo_to_set(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs))
-    return NULL;
-
-  Datum v = PointerGetDatum(gs);
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
+  return geo_set(gs);
 }
 
 /*****************************************************************************

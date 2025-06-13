@@ -50,7 +50,7 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
+#include "geo/tgeo.h"
 #include "geo/tspatial.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h" /* For oid_type() */
@@ -234,7 +234,7 @@ Datum
 Spatialset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *set = PG_GETARG_SET_P(0);
-  STBox *result = spatialset_stbox(set);
+  STBox *result = spatialset_to_stbox(set);
   PG_FREE_IF_COPY(set, 0);
   PG_RETURN_STBOX_P(result);
 }

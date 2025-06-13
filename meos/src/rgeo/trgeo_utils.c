@@ -230,8 +230,8 @@ geom_radius(const GSERIALIZED *gs)
   while (lwpointiterator_next(it, &p))
   {
     r = FLAGS_GET_Z(geom->flags) ?
-      fmax(r, sqrt(pow(p.x, 2) + pow(p.y, 2) + pow(p.z, 2))) :
-      fmax(r, sqrt(pow(p.x, 2) + pow(p.y, 2)));
+      fmax(r, sqrt(p.x * p.x + p.y * p.y + p.z * p.z)) :
+      fmax(r, sqrt(p.x * p.x + p.y * p.y));
   }
   lwpointiterator_destroy(it);
   lwgeom_free(geom);

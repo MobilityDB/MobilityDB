@@ -313,11 +313,11 @@ CREATE FUNCTION shiftScaleTime(tbox, interval, interval)
 
 CREATE FUNCTION expandValue(tbox, integer)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_expand_int'
+  AS 'MODULE_PATHNAME', 'Tbox_expand_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandValue(tbox, float)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_expand_float'
+  AS 'MODULE_PATHNAME', 'Tbox_expand_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandTime(tbox, interval)
   RETURNS tbox
@@ -520,9 +520,7 @@ CREATE FUNCTION tbox_extent_combinefn(tbox, tbox)
 CREATE AGGREGATE extent(tbox) (
   SFUNC = tbox_extent_transfn,
   STYPE = tbox,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tbox_extent_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 

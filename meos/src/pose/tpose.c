@@ -31,8 +31,6 @@
  * @brief General functions for temporal pose objects.
  */
 
-#include "pose/tpose.h"
-
 /* C */
 #include <assert.h>
 /* Postgres */
@@ -43,6 +41,7 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -51,6 +50,152 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
+
+/*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+/**
+ * @brief Ensure the validity of a temporal pose and a geometry
+ */
+bool
+ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal pose and a pose
+ */
+bool
+ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose)
+{
+  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(pose, false);
+  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal pose and a spatiotemporal box
+ */
+bool
+ensure_valid_tpose_stbox(const Temporal *temp, const STBox *box)
+{
+  VALIDATE_TPOSE(temp, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_has_X(T_STBOX, box->flags) || 
+      ! ensure_same_srid(tspatial_srid(temp), box->srid))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal poses
+ */
+bool
+ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
+{
+  VALIDATE_TPOSE(temp1, false); VALIDATE_TPOSE(temp2, false);
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+    return false;
+  return true;
+}
+
+/*****************************************************************************
+ * Interpolation functions defining functionality required by tsequence.c
+ * that must be implemented by each temporal type
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if a segment of a temporal pose value intersects a pose at
+ * the timestamp output in the last argument
+ * @param[in] start,end Base values defining the segment
+ * @param[in] value Base value
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Resulting timestamps, may be @p NULL
+ */
+int
+tposesegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  /* We are sure that the trajectory is a line */
+  Datum geom_start = datum_pose_point(start);
+  Datum geom_end = datum_pose_point(end);
+  Datum geom = datum_pose_point(value);
+  double dist;
+  /* Compute the value taking into account position only */
+  double fraction = (double) pointsegm_locate(geom_start, geom_end, geom,
+    &dist);
+  pfree(DatumGetPointer(geom_start)); pfree(DatumGetPointer(geom_end));
+  pfree(DatumGetPointer(geom));
+  if (fraction < 0.0)
+    return 0;
+  /* Compare value with interpolated pose to take into account orientation as
+   * well */
+  const Pose *pose1 = DatumGetPoseP(start);
+  const Pose *pose2 = DatumGetPoseP(end);
+  Pose *pose_interp = posesegm_interpolate(pose1, pose2, fraction);
+  Pose *pose = DatumGetPoseP(value);
+  bool same = pose_same(pose, pose_interp);
+  /* Temporal rigid geometries have poses as base values but are restricted
+   * to geometries */
+  // bool same;
+  // if (inst1->temptype == T_TRGEOMETRY)
+  // {
+    // const GSERIALIZED *gs1 = DatumGetGserializedP(start);
+    // const GSERIALIZED *gs2 = DatumGetGserializedP(value);
+    // LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+    // LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+    // LWGEOM *geom_interp = lwgeom_clone_deep(geom2);
+    // lwgeom_apply_pose(pose_interp, geom_interp);
+    // if (geom_interp->bbox)
+      // lwgeom_refresh_bbox(geom_interp);
+    // same = lwgeom_same(geom1, geom_interp);
+    // lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(geom_interp);
+  // }
+  // else
+  // {
+    // Pose *pose = DatumGetPoseP(value);
+    // same = pose_same(pose, pose_interp);
+  // }
+  pfree(pose_interp);
+  if (! same)
+    return 0;
+  if (t1)
+  {
+    double duration = (double) (upper - lower);
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t1 = lower + (TimestampTz) (duration * fraction);
+    if (t2)
+      *t2 = *t1;
+  }
+  return 1;
+}
+
+// /**
+ // * @brief Return 1 if the segments of two temporal poses intersect
+ // * during the period defined by the timestamps output in the last arguments
+ // * @param[in] start1,end1 Temporal instants defining the first segment
+ // * @param[in] start2,end2 Temporal instants defining the second segment
+ // * @param[in] lower,upper Timestamps defining the segments
+ // * @param[out] t1,t2 
+ // * @return Number of timestamps in the result, between 0 and 2. In the case
+ // * of a single result both t1 and t2 are set to the unique timestamp
+ // */
+// int
+// tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  // TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+// {
+  // assert(lower < upper); assert(t1); assert(t2);
+  // /* While waiting for this function we cheat and call the function below */
+  // return posesegm_distance_turnpt(DatumGetPoseP(start1), DatumGetPoseP(end1),
+    // DatumGetPoseP(start2), DatumGetPoseP(end2), lower, upper, t1, t2);
+// }
 
 /*****************************************************************************
  * Input/output in WKT, EWKT, and MFJSON format
@@ -92,7 +237,7 @@ tposeinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tposeseq_in(const char *str, interpType interp __attribute__((unused)))
+tposeseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tpose_in(str);
@@ -287,7 +432,7 @@ tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
  * @param[in] temp Temporal pose
  */
 Temporal *
-tpose_tpoint(const Temporal *temp)
+tpose_to_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
@@ -298,8 +443,6 @@ tpose_tpoint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -309,8 +452,8 @@ tpose_tpoint(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pose_conversion
- * @brief Return a geometry point from a temporal pose
+ * @ingroup meos_pose_accessor
+ * @brief Return a the rotation of a temporal pose as a temporal float
  * @param[in] temp Temporal pose
  */
 Temporal *
@@ -327,8 +470,6 @@ tpose_rotation(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TPOSE;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -416,7 +557,7 @@ Set *
 tposeinst_points(const TInstant *inst)
 {
   Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-  Datum value = PointerGetDatum(pose_point(pose));
+  Datum value = PointerGetDatum(pose_to_point(pose));
   return set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
 }
 
@@ -430,7 +571,7 @@ tposeseq_points(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
   {
     const Pose *pose = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-    values[i] = PointerGetDatum(pose_point(pose));
+    values[i] = PointerGetDatum(pose_to_point(pose));
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
   int count = datumarr_remove_duplicates(values, seq->count, T_GEOMETRY);
@@ -452,7 +593,7 @@ tposeseqset_points(const TSequenceSet *ss)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-      values[nvalues++] = PointerGetDatum(pose_point(pose));
+      values[nvalues++] = PointerGetDatum(pose_to_point(pose));
     }
   }
   datumarr_sort(values, ss->totalcount, T_GEOMETRY);
@@ -521,7 +662,7 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @csqlfn #Temporal_at_value()
  */
 Temporal *
-tpose_at_value(const Temporal *temp, Pose *pose)
+tpose_at_pose(const Temporal *temp, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
@@ -537,7 +678,7 @@ tpose_at_value(const Temporal *temp, Pose *pose)
  * @csqlfn #Temporal_minus_value()
  */
 Temporal *
-tpose_minus_value(const Temporal *temp, Pose *pose)
+tpose_minus_pose(const Temporal *temp, const Pose *pose)
 {
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(pose), REST_MINUS);

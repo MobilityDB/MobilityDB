@@ -47,7 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
@@ -184,7 +184,7 @@ tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
 }
 #endif /* MEOS */
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Return the n-th span of a span set
  * @pre The argument @p index is less than the number of spans in the span set
@@ -396,7 +396,7 @@ value_spanset(Datum value, meosType basetype)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a set into a span set
  * @param[in] s Set
  * @csqlfn #Set_to_spanset()
@@ -404,11 +404,7 @@ value_spanset(Datum value, meosType basetype)
 SpanSet *
 set_spanset(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
-  if (! ensure_set_spantype(s->settype))
-    return NULL;
-
+  assert(s); assert(set_spantype(s->settype));
   Span *spans = palloc(sizeof(Span) * s->count);
   meosType spantype = basetype_spantype(s->basetype);
   for (int i = 0; i < s->count; i++)
@@ -419,6 +415,24 @@ set_spanset(const Set *s)
   return spanset_make_free(spans, s->count, NORMALIZE, ORDER_NO);
 }
 
+#if MEOS
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a set into a span set
+ * @param[in] s Set
+ * @csqlfn #Set_to_spanset()
+ */
+SpanSet *
+set_to_spanset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_set_spantype(s->settype))
+    return NULL;
+  return set_spanset(s);
+}
+#endif /* MEOS */
+
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a span into a span set
@@ -426,7 +440,7 @@ set_spanset(const Set *s)
  * @csqlfn #Spanset_to_span()
  */
 SpanSet *
-span_spanset(const Span *s)
+span_to_spanset(const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL);
@@ -442,7 +456,7 @@ span_spanset(const Span *s)
  * @csqlfn #Intspanset_to_floatspanset()
  */
 SpanSet *
-intspanset_floatspanset(const SpanSet *ss)
+intspanset_to_floatspanset(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSPANSET(ss, NULL);
@@ -459,7 +473,7 @@ intspanset_floatspanset(const SpanSet *ss)
  * @csqlfn #Floatspanset_to_intspanset()
  */
 SpanSet *
-floatspanset_intspanset(const SpanSet *ss)
+floatspanset_to_intspanset(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
@@ -476,7 +490,7 @@ floatspanset_intspanset(const SpanSet *ss)
  * @csqlfn #Datespanset_to_tstzspanset()
  */
 SpanSet *
-datespanset_tstzspanset(const SpanSet *ss)
+datespanset_to_tstzspanset(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
@@ -493,7 +507,7 @@ datespanset_tstzspanset(const SpanSet *ss)
  * @csqlfn #Tstzspanset_to_datespanset()
  */
 SpanSet *
-tstzspanset_datespanset(const SpanSet *ss)
+tstzspanset_to_datespanset(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
@@ -1221,7 +1235,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_valid_duration(duration)))
+      (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
   /* Copy the input span set to the output span set */
@@ -1243,7 +1257,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return the array of spans of a spanset
  * @param[in] ss Span set
  * @return On error return @p NULL
@@ -1302,7 +1316,7 @@ spanarr_sort_size(Span *spans, int count)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of N spans from the composing spans of a spanset
  * @param[in] ss Span set
  * @param[in] span_count Number of spans
@@ -1354,7 +1368,7 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of N spans from a spanset obtained by merging
  * consecutive composing spans 
  * @param[in] ss SpanSet
@@ -1364,7 +1378,7 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
  * @csqlfn #Spanset_split_each_n_spans()
  */
 Span *
-spanset_split_each_n_spans(const SpanSet *ss, int32 elems_per_span, int *count)
+spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(count, NULL);

@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include <meos_cbuffer.h>
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
@@ -53,17 +53,6 @@ extern void tcbufferinst_set_stbox(const TInstant *inst, STBox *box);
 extern void tcbufferinstarr_set_stbox(const TInstant **instants, int count,
   STBox *box);
 extern void tcbufferseq_expand_stbox(const TSequence *seq, const TInstant *inst);
-
-/*****************************************************************************/
-
-extern int boxop_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern int boxop_tcbuffer_stbox(const Temporal *temp, const STBox *box,
-  bool (*func)(const STBox *, const STBox *), bool spatial, bool invert);
-extern bool boxop_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern bool boxop_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBox *, const STBox *));
 
 /*****************************************************************************/
 

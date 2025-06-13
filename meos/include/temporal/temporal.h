@@ -53,7 +53,7 @@
 #ifndef FMGR_H
   /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
-  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
+  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // ((text *) PG_DETOAST_DATUM(X))
 #endif /* FMGR_H */
 
 /**
@@ -71,6 +71,8 @@
  * Precision for distance operations
  */
 #define DIST_EPSILON    1.0e-06
+
+#define UNUSED          __attribute__((unused))
 
 /** Symbolic constants for lifting */
 #define DISCONTINUOUS   true
@@ -103,6 +105,10 @@
 /** Symbolic constants for the ever/always functions */
 #define EVER            true
 #define ALWAYS          false
+
+/** Symbolic constants for the temporal point/geo functions */
+#define TPOINT          true
+#define TGEO            false
 
 /** Symbolic constants for the restriction and the aggregation functions */
 #define GET_MIN          true
@@ -276,7 +282,16 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 /* Definition of a variadic function type for temporal lifting */
 typedef Datum (*varfunc) (Datum, ...);
 
-/* Definition of a binary function with two or three Datum arguments */
+/* Definition of a turning point function for a temporal and a base types */
+typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
+  TimestampTz *, TimestampTz *);
+
+/* Definition of a turning point function for two temporal types */
+typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
+  TimestampTz, TimestampTz *, TimestampTz *);
+
+/* Definition of a function with one to three Datum arguments and returning 
+ * a Datum */
 typedef Datum (*datum_func1) (Datum);
 typedef Datum (*datum_func2) (Datum, Datum);
 typedef Datum (*datum_func3) (Datum, Datum, Datum);
@@ -380,14 +395,13 @@ extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal
 extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
-extern bool ensure_less_equal(int i, int j);
 extern bool not_negative_datum(Datum size, meosType basetype);
 extern bool ensure_not_negative_datum(Datum size, meosType basetype);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
 extern bool ensure_valid_day_duration(const Interval *duration);
-extern bool valid_duration(const Interval *duration);
-extern bool ensure_valid_duration(const Interval *duration);
+extern bool positive_duration(const Interval *duration);
+extern bool ensure_positive_duration(const Interval *duration);
 
 /* General functions */
 
@@ -405,19 +419,9 @@ extern char *mobilitydb_full_version(void);
 
 extern datum_func2 round_fn(meosType basetype);
 
-/* Ever/always equal operators */
-
-extern bool ea_eq_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
-extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
-
 /* Restriction functions */
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
-extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
-  const Datum *values, int count, int *newcount);
-extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
-extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
-  bool atfunc);
 
 /*****************************************************************************/
 

@@ -40,7 +40,6 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
-#include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
 

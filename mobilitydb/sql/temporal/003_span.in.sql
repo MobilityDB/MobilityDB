@@ -619,6 +619,32 @@ CREATE FUNCTION duration(tstzspan)
  * Transformation functions
  *****************************************************************************/
 
+CREATE FUNCTION expand(intspan, integer)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Numspan_expand'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expand(bigintspan, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expand(floatspan, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Numspan_expand'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expand(datespan, integer)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Numspan_expand'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expand(tstzspan, interval)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Tstzspan_expand'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shift(timestamptz, interval)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Timestamptz_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION shift(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Numspan_shift'

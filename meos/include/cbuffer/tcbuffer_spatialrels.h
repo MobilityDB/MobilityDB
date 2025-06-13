@@ -31,23 +31,14 @@
  * @brief Spatial relationships for temporal points.
  */
 
-#ifndef __TPOINT_SPATIALRELS_H__
-#define __TPOINT_SPATIALRELS_H__
+#ifndef __TCBUFFER_SPATIALRELS_H__
+#define __TCBUFFER_SPATIALRELS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include <meos.h>
-#include <meos_cbuffer.h>
 #include "temporal/temporal.h"
-  
-/*****************************************************************************/
-
-extern int ea_disjoint_tcbuffer_geo(const Temporal *temp,
-  const GSERIALIZED *gs, bool ever);
-
-extern int ea_dwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
-  const Temporal *sync2, double dist, bool ever);
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
@@ -55,20 +46,61 @@ extern int ea_contains_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);
 extern int ea_contains_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
-
 extern int ea_contains_tcbuffer_cbuffer(const Temporal *temp,
   const Cbuffer *cb, bool ever);
 extern int ea_contains_cbuffer_tcbuffer(const Cbuffer *cb,
   const Temporal *temp, bool ever);
+// extern int ea_contains_tcbuffer_tcbuffer(const Temporal *temp1,
+//   const Temporal *temp2, bool ever);
+
+extern int ea_covers_geo_tcbuffer(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
+extern int ea_covers_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_covers_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_covers_cbuffer_tcbuffer(const Cbuffer *cb,
+  const Temporal *temp, bool ever);
+extern int ea_covers_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
 
 extern int ea_disjoint_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
+extern int ea_disjoint_geo_tcbuffer(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
+extern int ea_disjoint_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_disjoint_cbuffer_tcbuffer(const Cbuffer *cb,
+  const Temporal *temp, bool ever);
+extern int ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
+
+extern int ea_intersects_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_intersects_geo_tcbuffer(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
+extern int ea_intersects_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_intersects_cbuffer_tcbuffer(const Cbuffer *cb,
+  const Temporal *temp, bool ever);
+extern int ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
+  
+extern int ea_touches_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_touches_geo_tcbuffer(const GSERIALIZED *gs,
+  const Temporal *temp, bool ever);
+extern int ea_touches_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool ever);
+extern int ea_touches_cbuffer_tcbuffer(const Cbuffer *cb,
+  const Temporal *temp, bool ever);
+extern int ea_touches_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
 
 extern int edwithin_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, double dist);
 extern int adwithin_tcbuffer_tcbuffer(const Temporal *temp1, 
   const Temporal *temp2, double dist);
-
 
 /*****************************************************************************/
 

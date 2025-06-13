@@ -612,6 +612,13 @@ SELECT appendInstant(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', t
 SELECT appendInstant(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', ttext 'AAA@2000-01-04');
 SELECT appendInstant(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', ttext 'AAA@2000-01-06');
 
+-- Interpolation given
+SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-02', 'discrete');
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02', 'discrete');
+SELECT appendInstant(tfloat '1@2000-01-01', tfloat '1@2000-01-02', 'discrete');
+SELECT appendInstant(tfloat '1@2000-01-01', tfloat '1@2000-01-02', 'step');
+SELECT appendInstant(ttext 'AAA@2000-01-01', ttext 'AAA@2000-01-02', 'discrete');
+
 SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-01');
 SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-02');
 SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', tfloat '1@2000-01-02');

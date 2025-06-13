@@ -40,9 +40,7 @@ CREATE FUNCTION tcount_transfn(internal, trgeometry)
 CREATE AGGREGATE tcount(trgeometry) (
   SFUNC = tcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -57,9 +55,7 @@ CREATE FUNCTION wcount_transfn(internal, trgeometry, interval)
 CREATE AGGREGATE wcount(trgeometry, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -80,9 +76,7 @@ CREATE FUNCTION trgeometry_tagg_finalfn(internal)
 CREATE AGGREGATE merge(trgeometry) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = temporal_merge_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = trgeometry_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,

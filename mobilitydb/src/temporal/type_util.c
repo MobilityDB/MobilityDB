@@ -364,16 +364,16 @@ strarr_to_textarray(char **strarr, int count)
  * @brief Return a C array of circular buffers converted into a PostgreSQL array
  */
 ArrayType *
-cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
+cbufferarr_to_array(Cbuffer **cbarr, int count, bool free_all)
 {
   assert(count > 0);
   Oid cbuftypid = type_oid(T_CBUFFER);
-  ArrayType *result = construct_array((Datum *) cbufarr, count, cbuftypid, -1,
+  ArrayType *result = construct_array((Datum *) cbarr, count, cbuftypid, -1,
     false, 'd');
   if (free_all)
     for (int i = 0; i < count; i++)
-      pfree(cbufarr[i]);
-  pfree(cbufarr);
+      pfree(cbarr[i]);
+  pfree(cbarr);
   return result;
 }
 #endif /* CBUFFER */
@@ -546,7 +546,6 @@ multirange_make(const SpanSet *ss)
 
 #if DEBUG_BUILD
 /**
- * @ingroup meos_pg_types
  * @brief Return the string representation of a range
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
@@ -558,8 +557,8 @@ pg_range_out(RangeType *r)
   return DatumGetCString(call_function1(range_out, d));
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
- * @ingroup meos_pg_types
  * @brief Return the string representation of a multirange
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
@@ -570,6 +569,7 @@ pg_multirange_out(MultirangeType *mr)
   Datum d = PointerGetDatum(mr);
   return DatumGetCString(call_function1(multirange_out, d));
 }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************/

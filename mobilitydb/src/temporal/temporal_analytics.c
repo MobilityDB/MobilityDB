@@ -48,6 +48,7 @@
 #include "temporal/temporal.h"
 /* MobilityDB */
 #include "pg_temporal/skiplist.h" /* For store_fcinfo */
+#include "pg_temporal/temporal.h" /* For input_interp_string */
 
 /*****************************************************************************
  * Time precision functions for time types
@@ -155,10 +156,7 @@ Temporal_tsample(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  text *interp_txt = PG_GETARG_TEXT_P(3);
-  char *interp_str = text2cstring(interp_txt);
-  interpType interp = interptype_from_string(interp_str);
-  pfree(interp_str);
+  interpType interp = input_interp_string(fcinfo, 3);
   Temporal *result = temporal_tsample(temp, duration, origin, interp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)

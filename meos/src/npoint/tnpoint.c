@@ -39,15 +39,11 @@
 #include <limits.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_npoint.h>
-#include <meos_internal.h>
-#include "temporal/lifting.h"
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
-#include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
-#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Validity functions
@@ -77,21 +73,6 @@ common_rid_tnpoint_npointset(const Temporal *temp, const Set *s)
   assert(temp); assert(s); assert(s->settype == T_NPOINTSET);
   Set *routes1 = tnpoint_routes(temp);
   Set *routes2 = npointset_routes(s);
-  bool result = overlaps_set_set(routes1, routes2);
-  pfree(routes1); pfree(routes2);
-  return result;
-}
-
-/**
- * @brief Return true if two temporal network points have common route
- * identifiers
- */
-bool
-common_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  assert(temp1); assert(temp2);
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
   bool result = overlaps_set_set(routes1, routes2);
   pfree(routes1); pfree(routes2);
   return result;
@@ -250,7 +231,7 @@ tnpointinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tnpointseq_in(const char *str, interpType interp __attribute__((unused)))
+tnpointseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tnpoint_in(str);
@@ -285,7 +266,7 @@ TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TNPOINT);
-  GSERIALIZED *geom = npoint_geom(DatumGetNpointP(tinstant_value_p(inst)));
+  GSERIALIZED *geom = npoint_to_geom(DatumGetNpointP(tinstant_value_p(inst)));
   return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
 
@@ -354,7 +335,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
  * @csqlfn #Tnpoint_to_tgeompoint()
  */
 Temporal *
-tnpoint_tgeompoint(const Temporal *temp)
+tnpoint_to_tgeompoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
@@ -382,7 +363,7 @@ TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_value_p(inst)));
+  Npoint *np = geom_to_npoint(DatumGetGserializedP(tinstant_value_p(inst)));
   if (np == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);
@@ -438,7 +419,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
  * @csqlfn #Tgeompoint_to_tnpoint()
  */
 Temporal *
-tgeompoint_tnpoint(const Temporal *temp)
+tgeompoint_to_tnpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
@@ -722,7 +703,10 @@ tnpoint_routes(const Temporal *temp)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_set_accessor
  * @brief Return the routes of a network point set
+ * @param[in] s Set
+ * @csqlfn #Npointset_routes()
  */
 Set *
 npointset_routes(const Set *s)
@@ -748,7 +732,7 @@ npointset_routes(const Set *s)
  * @brief Restrict a temporal network point to (the complement of) a network point
  * @param[in] temp Temporal network point
  * @param[in] np Network point
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -802,7 +786,7 @@ tnpoint_minus_npoint(const Temporal *temp, const Npoint *np)
  * network points
  * @param[in] temp Temporal network point
  * @param[in] s Set of network points
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Tnpoint_restrict_npointset()
  */
 Temporal *

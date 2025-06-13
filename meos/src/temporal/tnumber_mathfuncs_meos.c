@@ -289,8 +289,10 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
+  meosType basetype = temptype_basetype(temp1->temptype);
+  assert(basetype == T_INT4 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
-    &tnumber_mult_tp_at_timestamptz);
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
 
 /*****************************************************************************
@@ -372,8 +374,10 @@ div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
+  meosType basetype = temptype_basetype(temp1->temptype);
+  assert(basetype == T_INT4 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
-    &tnumber_div_tp_at_timestamptz);
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
 
 /*****************************************************************************/

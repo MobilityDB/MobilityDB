@@ -60,7 +60,6 @@ struct Cbuffer
  * fmgr macros
  *****************************************************************************/
 
-/* Cbuffer */
 #define DatumGetCbufferP(X)         ((Cbuffer *) DatumGetPointer(X))
 #define CbufferPGetDatum(X)         PointerGetDatum(X)
 #define PG_GETARG_CBUFFER_P(X)      DatumGetCbufferP(PG_GETARG_DATUM(X))
@@ -68,34 +67,23 @@ struct Cbuffer
 
 /*****************************************************************************/
 
-/* Collinear functions */
-
-extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
-  const Cbuffer *cbuf3, double ratio);
-
-/* Interpolation functions */
-
-extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
-  const Cbuffer *value);
-extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
-  const Cbuffer *end, long double ratio);
-
 /* Validity functions */
 
+extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1,
+  const Cbuffer *cb2);
 extern bool ensure_valid_cbuffer_geo(const Cbuffer *cb,
   const GSERIALIZED *gs);
 extern bool ensure_valid_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
-extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1,
-  const Cbuffer *cb2);
 extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb);
-extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cb);
-extern bool ensure_valid_tcbuffer_geo(const Temporal *temp,
-  const GSERIALIZED *gs);
-extern bool ensure_valid_tcbuffer_stbox(const Temporal *temp,
-  const STBox *box);
-extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1,
-  const Temporal *temp2);
+
+/* Collinear and interpolation functions */
+
+extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
+  const Cbuffer *cbuf3, double ratio);
+extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
+  const Cbuffer *end, long double ratio);
+extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
+  const Cbuffer *value);
 
 /* Input/output functions */
 
@@ -107,13 +95,42 @@ extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cb);
 
 extern Datum datum_cbuffer_round(Datum buffer, Datum size);
-extern Cbuffer *cbuffer_round(const Cbuffer *cb, int maxdd);
-extern Cbuffer **cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd);
 
 /* Transformation functions */
 
 extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj);
-  
+
+/* Distance function */
+
+extern double cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2);
+extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
+extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
+  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
+
+/* Spatial relationship functions */
+
+extern int cbuffer_contains(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int cbuffer_covers(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int cbuffer_disjoint(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int cbuffer_intersects(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int cbuffer_dwithin(const Cbuffer *cb1, const Cbuffer *cb2, double dist);
+extern int cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2);
+
+extern int contains_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int covers_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int disjoint_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int intersects_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+extern int dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist);
+extern int touches_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+
+extern Datum datum_cbuffer_contains(Datum cb1, Datum cb2);
+extern Datum datum_cbuffer_covers(Datum cb1, Datum cb2);
+extern Datum datum_cbuffer_disjoint(Datum cb1, Datum cb2);
+extern Datum datum_cbuffer_intersects(Datum cb1, Datum cb2);
+extern Datum datum_cbuffer_dwithin(Datum cb1, Datum cb2, Datum dist);
+extern Datum datum_cbuffer_touches(Datum cb1, Datum cb2);
+
 /*****************************************************************************/
 
 #endif /* __CBUFFER_H__ */

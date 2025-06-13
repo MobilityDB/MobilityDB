@@ -109,7 +109,7 @@ SELECT round(npoint 'NPoint(1, 0.123456789)', 6);
 SELECT round(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
 
 -------------------------------------------------------------------------------
--- Cast functions between network and space
+-- Conversion functions between network and space
 -------------------------------------------------------------------------------
 
 SELECT ST_AsText(round(npoint 'npoint(1,0.2)'::geometry, 6));
@@ -127,6 +127,7 @@ SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.08071
 -- NULL
 SELECT geometry 'SRID=5676;LINESTRING(416.346567736997 528.335344322874,610.455019399524 528.508247341961,476.989195102204 642.550969672973)'::nsegment;
 /* Errors */
+SELECT geometry 'Point empty'::npoint;
 SELECT geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'::nsegment;
 
 -------------------------------------------------------------------------------

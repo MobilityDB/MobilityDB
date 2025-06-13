@@ -249,7 +249,7 @@ trgeo_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_tpose(const Temporal *temp)
+trgeo_to_tpose(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -272,7 +272,7 @@ trgeo_tpose(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_tpoint(const Temporal *temp)
+trgeo_to_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -283,8 +283,6 @@ trgeo_tpoint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -792,7 +790,7 @@ trgeo_round(const Temporal *temp, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   GSERIALIZED *res_geo = geo_round(trgeo_geom_p(temp), maxdd);
   Temporal *res_tpose = temporal_round(tpose, maxdd);
   Temporal *result = geo_tpose_to_trgeo(res_geo, res_tpose);
@@ -852,7 +850,7 @@ trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
     else
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequence *res = temporal_tsequence(tpose, interp);
   TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -883,7 +881,7 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
     if (interp == INTERP_NONE || interp == DISCRETE)
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequenceSet *res = temporal_tsequenceset(tpose, interp);
   TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -896,16 +894,16 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Restrict a temporal rigid geometry transformed to an interpolation
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-trgeo_set_interp(const Temporal *temp, const char *interp_str)
+trgeo_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(interp_str, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
-  Temporal *res = temporal_set_interp(tpose, interp_str);
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *res = temporal_set_interp(tpose, interp);
   if (! res)
     return NULL;
   /* We need to explicitly set the temporal type to T_TPOSE */
@@ -924,7 +922,7 @@ trgeo_set_interp(const Temporal *temp, const char *interp_str)
  * @brief Restrict a temporal rigid geometry to (the complement of) a geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] value Value
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -951,7 +949,7 @@ trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
  * @param[in] gs Geometry
  * @csqlfn #Temporal_at_value()
  */
-inline Temporal *
+Temporal *
 trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_AT);
@@ -964,7 +962,7 @@ trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Temporal_minus_value()
  */
-inline Temporal *
+Temporal *
 trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
@@ -978,7 +976,7 @@ trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
  * geometries
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Set of values
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_restrict_values()
  */
 Temporal *
@@ -1029,7 +1027,7 @@ trgeo_minus_values(const Temporal *temp, const Set *s)
  * timestamptz
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_restrict_timestamptz()
  */
 Temporal *
@@ -1038,7 +1036,7 @@ trgeo_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_timestamptz(tpose, t, atfunc);
   pfree(tpose); 
   if (! res)
@@ -1083,7 +1081,7 @@ trgeo_minus_timestamptz(const Temporal *temp, TimestampTz t)
  * timestamptz set
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Timestamp set
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_restrict_tstzset()
  */
 Temporal *
@@ -1091,7 +1089,7 @@ trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzset(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
@@ -1136,7 +1134,7 @@ trgeo_minus_tstzset(const Temporal *temp, const Set *s)
  * timestamptz span
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Span
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_restrict_tstzspan()
  */
 Temporal *
@@ -1144,7 +1142,7 @@ trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspan(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
@@ -1189,7 +1187,7 @@ trgeo_minus_tstzspan(const Temporal *temp, const Span *s)
  * timestamptz span set
  * @param[in] temp Temporal rigid geometry
  * @param[in] ss Span set
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_restrict_tstzspanset()
  */
 Temporal *
@@ -1198,7 +1196,7 @@ trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspanset(tpose, ss, atfunc);
   pfree(tpose);
   if (! res)
@@ -1267,7 +1265,7 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TInstant *tpose_inst = trgeoinst_tposeinst(inst);
   Temporal *res = temporal_append_tinstant(tpose, tpose_inst, interp, maxdist,
     maxt, expand);
@@ -1298,7 +1296,7 @@ trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
   Temporal *res = temporal_append_tsequence(tpose, tpose_seq, expand);
   if (! res)
@@ -1320,7 +1318,7 @@ trgeo_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_timestamptz(tpose, t, connect);
   pfree(tpose);
   if (! res)
@@ -1345,7 +1343,7 @@ trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzset(tpose, s, connect);
   pfree(tpose);
   if (! res)
@@ -1369,7 +1367,7 @@ trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspan(tpose, s, connect);
   pfree(tpose);
   if (! res)
@@ -1394,7 +1392,7 @@ trgeo_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspanset(tpose, ss, connect);
   pfree(tpose);
   if (! res)

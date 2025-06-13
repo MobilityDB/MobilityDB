@@ -48,19 +48,19 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/cbuffer.h"
 #endif
 #if NPOINT
-  #include <meos_pose.h>
+  // #include <meos_npoint.h>
   #include "npoint/tnpoint.h"
 #endif
 #if POSE
-  #include "pose/tpose.h"
+  #include "pose/pose.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"

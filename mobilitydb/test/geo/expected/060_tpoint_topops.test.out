@@ -1,9 +1,3 @@
-SELECT geometry 'Point empty'::stbox;
- stbox 
--------
- 
-(1 row)
-
 SELECT geometry 'Point(1 1)'::stbox;
         stbox         
 ----------------------
@@ -14,12 +8,6 @@ SELECT geometry 'Point(1 1 1)'::stbox;
           stbox           
 --------------------------
  STBOX Z((1,1,1),(1,1,1))
-(1 row)
-
-SELECT round(geography 'Point empty'::stbox, 13);
- round 
--------
- 
 (1 row)
 
 SELECT round(geography 'Point(1 1)'::stbox, 13);
@@ -58,12 +46,6 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::stbox;
  STBOX T([Sat Jan 01 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST])
 (1 row)
 
-SELECT stbox(geometry 'Point empty', timestamptz '2000-01-01');
- stbox 
--------
- 
-(1 row)
-
 SELECT stbox(geometry 'Point(1 1)', timestamptz '2000-01-01');
                                         stbox                                         
 --------------------------------------------------------------------------------------
@@ -74,12 +56,6 @@ SELECT stbox(geometry 'Point(1 1 1)', timestamptz '2000-01-01');
                                           stbox                                           
 ------------------------------------------------------------------------------------------
  STBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
-(1 row)
-
-SELECT stbox(geometry 'Point empty', tstzspan '[2000-01-01, 2000-01-02]');
- stbox 
--------
- 
 (1 row)
 
 SELECT stbox(geometry 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]');
@@ -94,12 +70,6 @@ SELECT stbox(geometry 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]');
  STBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
-SELECT round(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
- round 
--------
- 
-(1 row)
-
 SELECT round(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
                                                round                                                
 ----------------------------------------------------------------------------------------------------
@@ -112,12 +82,6 @@ SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
  SRID=4326;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
 (1 row)
 
-SELECT round(stbox(geography 'Point empty', tstzspan '[2000-01-01, 2000-01-02]'), 13);
- round 
--------
- 
-(1 row)
-
 SELECT round(stbox(geography 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]'), 13);
                                                round                                                
 ----------------------------------------------------------------------------------------------------
@@ -128,6 +92,42 @@ SELECT round(stbox(geography 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]'
                                                  round                                                  
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,1,1),(1,1,1)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT geometry 'Point empty'::stbox;
+ stbox 
+-------
+ 
+(1 row)
+
+SELECT geography 'Point empty'::stbox;
+ stbox 
+-------
+ 
+(1 row)
+
+SELECT stbox(geometry 'Point empty', timestamptz '2000-01-01');
+ stbox 
+-------
+ 
+(1 row)
+
+SELECT stbox(geometry 'Point empty', tstzspan '[2000-01-01, 2000-01-02]');
+ stbox 
+-------
+ 
+(1 row)
+
+SELECT stbox(geography 'Point empty', timestamptz '2000-01-01');
+ stbox 
+-------
+ 
+(1 row)
+
+SELECT stbox(geography 'Point empty', tstzspan '[2000-01-01, 2000-01-02]');
+ stbox 
+-------
+ 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01'::stbox;
@@ -178,6 +178,29 @@ SELECT round(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
  SRID=4326;GEODSTBOX XT(((1,1),(3,3)),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
 (1 row)
 
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
+                                            stboxes                                            
+-----------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))');
+                                                                                                      stboxes                                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))');
+                                                                                                                        stboxes                                                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+/* Errors */
+SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
+ERROR:  Only (multi)line geometries accepted
+SELECT stboxes(geometry 'Linestring empty');
+ERROR:  Only non-empty geometries accepted
 SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01]');
                                          stboxes                                          
 ------------------------------------------------------------------------------------------
@@ -208,18 +231,313 @@ SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
  {"STBOX XT(((1,1),(1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])"}
 (1 row)
 
-SELECT stboxes(geometry 'Linestring(1 1,2 2,1 1)');
-                     stboxes                     
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+      splitnstboxes       
+--------------------------
+ {"STBOX X((1,1),(5,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+                  splitnstboxes                  
 -------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((1,1),(2,2))"}
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
 (1 row)
 
-SELECT stboxes(geometry 'Multilinestring((1 1,2 2,1 1),(3 3,4 4))');
-                                stboxes                                 
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
+                             splitnstboxes                              
 ------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((1,1),(2,2))","STBOX X((3,3),(4,4))"}
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
 (1 row)
 
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
+                                         splitnstboxes                                         
+-----------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
+                                         splitnstboxes                                         
+-----------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
+                                         splitnstboxes                                         
+-----------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
+        splitnstboxes         
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
+                      splitnstboxes                      
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
+                                   splitnstboxes                                    
+------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
+        splitnstboxes         
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
+                      splitnstboxes                      
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
+                                   splitnstboxes                                    
+------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
+                                                 splitnstboxes                                                 
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+       splitnstboxes       
+---------------------------
+ {"STBOX X((1,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((6,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((4,1),(7,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+                                         splitnstboxes                                          
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((4,1),(6,2))","STBOX X((6,1),(8,2))","STBOX X((8,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+                                                     splitnstboxes                                                     
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+       splitnstboxes       
+---------------------------
+ {"STBOX X((1,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((8,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+                                                     splitnstboxes                                                     
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
+       splitnstboxes       
+---------------------------
+ {"STBOX X((1,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
+                                         splitnstboxes                                          
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+       splitnstboxes       
+---------------------------
+ {"STBOX X((1,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+                                         splitnstboxes                                          
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+                                                     splitnstboxes                                                     
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+       splitnstboxes       
+---------------------------
+ {"STBOX X((1,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+                  splitnstboxes                   
+--------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+                              splitnstboxes                              
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+                                         splitnstboxes                                          
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+                                                     splitnstboxes                                                     
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
+         splitnstboxes         
+-------------------------------
+ {"STBOX Z((1,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
+                      splitnstboxes                       
+----------------------------------------------------------
+ {"STBOX Z((1,1,1),(6,2,1))","STBOX Z((6,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
+                                    splitnstboxes                                    
+-------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
+                                                 splitnstboxes                                                  
+----------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(6,2,1))","STBOX Z((6,1,1),(8,2,1))","STBOX Z((8,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
+                                                               splitnstboxes                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
+                                                                            splitnstboxes                                                                             
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
+                                                                                                                     splitnstboxes                                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+/* Errors */
+SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
+ERROR:  Only (multi)line geometries accepted
+SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
+ERROR:  The value must be strictly positive: -1
+SELECT splitNStboxes(geometry 'Linestring empty', 1);
+ERROR:  Only non-empty geometries accepted
 SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
                                       splitnstboxes                                       
 ------------------------------------------------------------------------------------------
@@ -491,6 +809,313 @@ Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 /* Errors */
 SELECT splitNStboxes(tgeompoint 'Point(1 1)@2000-01-01', -1);
 ERROR:  The value must be strictly positive: -1
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+                                       spliteachnstboxes                                       
+-----------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+                spliteachnstboxes                
+-------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
+                spliteachnstboxes                
+-------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((4,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
+    spliteachnstboxes     
+--------------------------
+ {"STBOX X((1,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
+    spliteachnstboxes     
+--------------------------
+ {"STBOX X((1,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
+    spliteachnstboxes     
+--------------------------
+ {"STBOX X((1,1),(5,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
+                                               spliteachnstboxes                                               
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
+                    spliteachnstboxes                    
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
+                    spliteachnstboxes                    
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
+                                               spliteachnstboxes                                               
+---------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
+                    spliteachnstboxes                    
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
+                    spliteachnstboxes                    
+---------------------------------------------------------
+ {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
+      spliteachnstboxes       
+------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+                                                                                                 spliteachnstboxes                                                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((4,1),(7,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(5,2))","STBOX X((5,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+                spliteachnstboxes                 
+--------------------------------------------------
+ {"STBOX X((1,1),(6,2))","STBOX X((6,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+                                                                                     spliteachnstboxes                                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((8,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+                spliteachnstboxes                 
+--------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
+                                                                          spliteachnstboxes                                                                          
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
+                                       spliteachnstboxes                                        
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
+                            spliteachnstboxes                            
+-------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+                                                              spliteachnstboxes                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+                                       spliteachnstboxes                                        
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+                                       spliteachnstboxes                                        
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+                                       spliteachnstboxes                                        
+------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+                                                   spliteachnstboxes                                                   
+-----------------------------------------------------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
+                                                                                                                   spliteachnstboxes                                                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
+                                                             spliteachnstboxes                                                             
+-------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
+                                  spliteachnstboxes                                  
+-------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
+                                  spliteachnstboxes                                  
+-------------------------------------------------------------------------------------
+ {"STBOX Z((1,1,1),(5,2,1))","STBOX Z((5,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
+                    spliteachnstboxes                     
+----------------------------------------------------------
+ {"STBOX Z((1,1,1),(6,2,1))","STBOX Z((6,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
+                    spliteachnstboxes                     
+----------------------------------------------------------
+ {"STBOX Z((1,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
+(1 row)
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
+       spliteachnstboxes       
+-------------------------------
+ {"STBOX Z((1,1,1),(10,2,1))"}
+(1 row)
+
+/* Errors */
+SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
+ERROR:  Only (multi)line geometries accepted
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
+ERROR:  The value must be strictly positive: -1
+SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
+ERROR:  Only non-empty geometries accepted
 SELECT splitEachNStboxes(tgeompoint 'Point(1 1)@2000-01-01', 1);
                                     spliteachnstboxes                                     
 ------------------------------------------------------------------------------------------
@@ -822,643 +1447,6 @@ Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 /* Errors */
 SELECT splitEachNStboxes(tgeompoint 'Point(1 1)@2000-01-01', -1);
 ERROR:  The value must be strictly positive: -1
-SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
-                                            stboxes                                            
------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))');
-                                                                                                      stboxes                                                                                                      
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))');
-                                                                                                                        stboxes                                                                                                                        
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-/* Errors */
-SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
-ERROR:  Only (multi)line geometries accepted
-SELECT stboxes(geometry 'Linestring empty');
-ERROR:  Only non-empty geometries accepted
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
-      splitnstboxes       
---------------------------
- {"STBOX X((1,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
-                  splitnstboxes                  
--------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
-                             splitnstboxes                              
-------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
-                                         splitnstboxes                                         
------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
-                                         splitnstboxes                                         
------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
-                                         splitnstboxes                                         
------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
-        splitnstboxes         
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
-                      splitnstboxes                      
----------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
-                                   splitnstboxes                                    
-------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
-        splitnstboxes         
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
-                      splitnstboxes                      
----------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
-                                   splitnstboxes                                    
-------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
-                                                 splitnstboxes                                                 
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-       splitnstboxes       
----------------------------
- {"STBOX X((1,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((6,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(7,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-                                         splitnstboxes                                          
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(6,2))","STBOX X((6,1),(8,2))","STBOX X((8,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
-                                                     splitnstboxes                                                     
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-       splitnstboxes       
----------------------------
- {"STBOX X((1,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((8,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
-                                                     splitnstboxes                                                     
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
-       splitnstboxes       
----------------------------
- {"STBOX X((1,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
-                                         splitnstboxes                                          
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-       splitnstboxes       
----------------------------
- {"STBOX X((1,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-                                         splitnstboxes                                          
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
-                                                     splitnstboxes                                                     
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-       splitnstboxes       
----------------------------
- {"STBOX X((1,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-                  splitnstboxes                   
---------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-                              splitnstboxes                              
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-                                         splitnstboxes                                          
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
-                                                     splitnstboxes                                                     
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
-         splitnstboxes         
--------------------------------
- {"STBOX Z((1,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
-                      splitnstboxes                       
-----------------------------------------------------------
- {"STBOX Z((1,1,1),(6,2,1))","STBOX Z((6,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
-                                    splitnstboxes                                    
--------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
-                                                 splitnstboxes                                                  
-----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(6,2,1))","STBOX Z((6,1,1),(8,2,1))","STBOX Z((8,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
-                                                               splitnstboxes                                                               
--------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
-                                                                            splitnstboxes                                                                             
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
-                                                                                                                     splitnstboxes                                                                                                                     
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-/* Errors */
-SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
-ERROR:  Only (multi)line geometries accepted
-SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
-ERROR:  The value must be strictly positive: -1
-SELECT splitNStboxes(geometry 'Linestring empty', 1);
-ERROR:  Only non-empty geometries accepted
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
-                                       spliteachnstboxes                                       
------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
-                spliteachnstboxes                
--------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
-                spliteachnstboxes                
--------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
-    spliteachnstboxes     
---------------------------
- {"STBOX X((1,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
-    spliteachnstboxes     
---------------------------
- {"STBOX X((1,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
-    spliteachnstboxes     
---------------------------
- {"STBOX X((1,1),(5,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
-                                               spliteachnstboxes                                               
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
-                    spliteachnstboxes                    
----------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
-                    spliteachnstboxes                    
----------------------------------------------------------
- {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
-                                               spliteachnstboxes                                               
----------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
-                    spliteachnstboxes                    
----------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
-                    spliteachnstboxes                    
----------------------------------------------------------
- {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
-      spliteachnstboxes       
-------------------------------
- {"STBOX Z((1,1,1),(5,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-                                                                                                 spliteachnstboxes                                                                                                 
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((4,1),(7,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(5,2))","STBOX X((5,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
-                spliteachnstboxes                 
---------------------------------------------------
- {"STBOX X((1,1),(6,2))","STBOX X((6,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-                                                                                     spliteachnstboxes                                                                                      
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((6,1),(7,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(7,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(8,2))","STBOX X((8,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
-                spliteachnstboxes                 
---------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
-                                                                          spliteachnstboxes                                                                          
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((4,1),(5,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((8,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
-                                       spliteachnstboxes                                        
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(9,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
-                            spliteachnstboxes                            
--------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((4,1),(6,2))","STBOX X((7,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-                                                              spliteachnstboxes                                                               
-----------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-                                       spliteachnstboxes                                        
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-                                       spliteachnstboxes                                        
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
-                                       spliteachnstboxes                                        
-------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
-                                                   spliteachnstboxes                                                   
------------------------------------------------------------------------------------------------------------------------
- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))","STBOX X((7,1),(8,2))","STBOX X((9,1),(10,2))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
-                                                                                                                   spliteachnstboxes                                                                                                                   
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
-                                                             spliteachnstboxes                                                             
--------------------------------------------------------------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(3,2,1))","STBOX Z((3,1,1),(5,2,1))","STBOX Z((5,1,1),(7,2,1))","STBOX Z((7,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
-                                  spliteachnstboxes                                  
--------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(4,2,1))","STBOX Z((4,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
-                                  spliteachnstboxes                                  
--------------------------------------------------------------------------------------
- {"STBOX Z((1,1,1),(5,2,1))","STBOX Z((5,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
-                    spliteachnstboxes                     
-----------------------------------------------------------
- {"STBOX Z((1,1,1),(6,2,1))","STBOX Z((6,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
-                    spliteachnstboxes                     
-----------------------------------------------------------
- {"STBOX Z((1,1,1),(7,2,1))","STBOX Z((7,1,1),(10,2,1))"}
-(1 row)
-
-SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
-       spliteachnstboxes       
--------------------------------
- {"STBOX Z((1,1,1),(10,2,1))"}
-(1 row)
-
-/* Errors */
-SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
-ERROR:  Only (multi)line geometries accepted
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
-ERROR:  The value must be strictly positive: -1
-SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
-ERROR:  Only non-empty geometries accepted
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
  count 
 -------
@@ -1549,6 +1537,30 @@ SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,
  SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Mon Jan 03 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
 (1 row)
 
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-03])', '-1 day');
+                                      expandtime                                      
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(1,2)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
+                                        expandtime                                        
+------------------------------------------------------------------------------------------
+ STBOX ZT(((1,2,3),(1,2,3)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-01,2000-01-03])', '-1 day');
+                                               expandtime                                               
+--------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-02,2000-01-03])', '-1 day');
+ expandtime 
+------------
+ 
+(1 row)
+
 /* Errors */
 SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
 ERROR:  The stbox must have T dimension
@@ -1556,16 +1568,22 @@ SELECT expandTime(stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
 ERROR:  The stbox must have T dimension
 SELECT expandTime(stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))', '1 day');
 ERROR:  The stbox must have T dimension
+SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
+         expandspace          
+------------------------------
+ STBOX X((0.5,0.5),(2.5,2.5))
+(1 row)
+
 SELECT expandSpace(geometry 'Linestring empty', 0.5);
  expandspace 
 -------------
  
 (1 row)
 
-SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
-         expandspace          
-------------------------------
- STBOX X((0.5,0.5),(2.5,2.5))
+SELECT expandSpace(geography 'Linestring empty', 0.5);
+ expandspace 
+-------------
+ 
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint 'Point(1 1)@2000-01-01';

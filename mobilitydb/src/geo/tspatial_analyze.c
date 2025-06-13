@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from temporal spatial columns
+ * @brief Functions for gathering statistics from spatiotemporal columns
  * @details
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
@@ -66,6 +66,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 /* MobilityDB */
@@ -668,7 +669,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     notnull_cnt++;
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /*
@@ -872,7 +877,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     if (! nd_box) continue; /* Skip Null'ed out hard deviants */
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
 
     /* Find the cells that overlap with this box and put them into the ND_IBOX */
     nd_box_overlap(nd_stats, nd_box, &nd_ibox);
@@ -1006,7 +1015,11 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       pfree(set);
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /* We can only compute real stats if we found some non-null values. */
@@ -1043,7 +1056,7 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * @brief Compute the statistics for temporal spatial columns (callback function)
+ * @brief Compute the statistics for spatiotemporal columns (callback function)
  */
 void
 tspatial_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1100,7 +1113,11 @@ tspatial_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       pfree(temp);
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /* We can only compute real stats if we found some non-null values. */
@@ -1170,7 +1187,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_analyze);
 /**
- * @brief Compute the statistics for temporal spatial columns
+ * @brief Compute the statistics for spatiotemporal columns
  */
 Datum
 Tspatial_analyze(PG_FUNCTION_ARGS)

@@ -577,7 +577,7 @@ union_span_span(const Span *s1, const Span *s2)
     Span s;
     memcpy(&s, s1, sizeof(Span));
     span_expand(s2, &s);
-    return span_spanset(&s);
+    return span_to_spanset(&s);
   }
 
   Span spans[2];

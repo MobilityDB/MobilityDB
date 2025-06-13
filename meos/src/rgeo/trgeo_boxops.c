@@ -43,6 +43,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "geo/stbox.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_inst.h"

@@ -52,8 +52,16 @@
 	<para>
 		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
 	</para>
- 
-	<para>The <varname>pose</varname> type serves as base type for defining the temporal pose type <varname>tpose</varname>. The <varname>tpose</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname>. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tpose</varname> type. In addition, there are specific functions defined for the <varname>tpose</varname> type.</para>
+
+	<para>The <varname>pose</varname> type serves as base type for defining the temporal pose type <varname>tpose</varname>. The <varname>tpose</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname>. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tpose</varname> type. In addition, there are specific functions defined for the <varname>tpose</varname> type.</para> We cover these functions in this chapter.
+
+	<para>The <varname>tpose</varname> type is used for defining the type <varname>trgeometry</varname> (that is, temporal rigid geometry) defined in the next chapter. The implementation of the these types in MobilityDB has been studied in the following PhD thesis.</para>
+
+	<itemizedlist>
+		<listitem>
+			Maxime Schoemans, <ulink url="https://docs.mobilitydb.com/pub/maxime_schoemans_thesis.pdf"><emphasis>Managing Rigid Temporal Geometries in Moving Object Databases</emphasis></ulink>, PhD thesis, Université libre de Bruxelles, 2025.
+		</listitem>
+	</itemizedlist>
 
 	<sect1 xml:id="static_poses">
 		<title>Static Poses</title>
@@ -404,7 +412,7 @@ SELECT tpose 'Point(0 0)@NULL';
 -- Base type is not a pose
 SELECT tpose 'Point(0 0)@2001-01-01 08:05:00';
 </programlisting>
-		<para>We give next the functions and operators for temporal poses. Most functions and operators for temporal types and temporal spatial types described in the previous chapters can be applied for temporal pose types. Therefore, in the signatures of the functions, the type <varname>pose</varname> can be used whenever the types <varname>base</varname> and <varname>spatial</varname> are specified, and the type <varname>tpose</varname> can be used whenever the types <varname>ttype</varname> and <varname>tpatial</varname> are specified. To avoid redundancy, we only present some examples of these functions and operators for temporal poses and we refer to previous chapters for detailed explanations about them.</para>
+		<para>We give next the functions and operators for temporal poses. Most functions and operators for temporal types and spatiotemporal types described in the previous chapters can be applied for temporal pose types. Therefore, in the signatures of the functions, the type <varname>pose</varname> can be used whenever the types <varname>base</varname> and <varname>spatial</varname> are specified, and the type <varname>tpose</varname> can be used whenever the types <varname>ttype</varname> and <varname>tpatial</varname> are specified. To avoid redundancy, we only present some examples of these functions and operators for temporal poses and we refer to previous chapters for detailed explanations about them.</para>
 	</sect1>
 
 	<sect1 xml:id="tpose_inout">
@@ -988,12 +996,12 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 	<sect1 xml:id="tpose_spatial_rels">
 		<title>Spatial Relationships</title>
 		<para>
-			The spatial relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> only consider the location of the geometries, not their orientation. To be able to apply these spatial relationships to the temporal poses, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
+			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> only consider the location of the geometries, not their orientation. To be able to apply these spatial relationships to the temporal poses, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
 		</para>
 
 		<itemizedlist>
 			<listitem xml:id="tpose_espatialrels">
-				<para>Ever and always spatial relationships</para>
+				<para>Ever and always relationships</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
@@ -1009,7 +1017,7 @@ SELECT eIntersects(
 			</listitem>
 
 			<listitem xml:id="tpose_tspatialrels">
-				<para>Temporal spatial relationships</para>
+				<para>Spatiotemporal relationships</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
@@ -1134,7 +1142,7 @@ FROM Temp;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal poses, which is an <varname>stbox</varname>, as all temporal spatial types.</para>
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal poses, which is an <varname>stbox</varname>, as all spatiotemporal types.</para>
 
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
 		<itemizedlist>

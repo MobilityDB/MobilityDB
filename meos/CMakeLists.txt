@@ -146,15 +146,18 @@ endif()
 # Read files
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 # Generate meos_export.h
-string(REGEX REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
-string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_2_H}")
+string(REGEX REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H "${MEOS_H}")
+file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_H}")
 # Generate meos_internal_export.h
 string(REGEX REPLACE "#include \"temporal/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
+# Generate meos_geo_export.h
+string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
+file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
 # MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
@@ -218,11 +221,12 @@ install(
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   RENAME "meos_internal.h")
 install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  FILES "${CMAKE_BINARY_DIR}/meos_geo_export.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  RENAME "meos_geo.h")
 install(
   FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+  DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
 
 if(CBUFFER)
   install(
@@ -235,7 +239,7 @@ if(NPOINT)
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/src/npoint/ways.csv"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
 endif()
 if(POSE)
   install(

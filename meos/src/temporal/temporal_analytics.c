@@ -46,7 +46,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -73,7 +74,7 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, DT_NOEND);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return DT_NOEND;
   return timestamptz_get_bin(t, duration, torigin);
 }
@@ -90,7 +91,7 @@ tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   Datum *values = palloc(sizeof(Datum) * s->count);
@@ -113,7 +114,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -140,7 +141,7 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -184,7 +185,7 @@ TInstant *
 tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration); assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(positive_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
@@ -199,7 +200,7 @@ TSequence *
 tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(seq); assert(duration); assert(valid_duration(duration));
+  assert(seq); assert(duration); assert(positive_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
     seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
@@ -245,35 +246,37 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     {
       /* We have reached the end of the bin or beyond: Add or compute the value
        * the end of the bin ONLY for continuous interpolation */
-      assert(k > 0);
-      if (interp == STEP)
+      if (k > 0)
       {
-        /* For STEP interpolation ALWAYS generate the end of bin instant */
-        value = ininsts[k - 1]->value;
-        ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
-      }
-      else if (interp == LINEAR)
-      {
-        /* For LINEAR interpolation generate the end of bin instant ONLY if 
-         * the last instant read is beyond the end of the bin */
-        if (cmp == 0)
-          ininsts[k++] = inst;
-        else
+        if (interp == STEP)
         {
-          tsequence_value_at_timestamptz(seq, upper, false, &value);
-          ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
+          /* For STEP interpolation ALWAYS generate the end of bin instant */
+          value = ininsts[k - 1]->value;
+          ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
         }
+        else if (interp == LINEAR)
+        {
+          /* For LINEAR interpolation generate the end of bin instant ONLY if 
+           * the last instant read is beyond the end of the bin */
+          if (cmp == 0)
+            ininsts[k++] = inst;
+          else
+          {
+            tsequence_value_at_timestamptz(seq, upper, false, &value);
+            ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
+          }
+        }
+        /* Construct the sequence with the accumulated values */
+        seq1 = tsequence_make((const TInstant **) ininsts, k, true,
+          (k == 1) ? true : false, interp, NORMALIZE);
+        /* Compute the twAvg/twCentroid for the bin */
+        value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
+          PointerGetDatum(tpointseq_twcentroid(seq1));
+        outinsts[l++] = tinstant_make(value, temptype_out, lower);
+        pfree(seq1);
+        if (! twavg)
+          pfree(DatumGetPointer(value));
       }
-      /* Construct the sequence with the accumulated values */
-      seq1 = tsequence_make((const TInstant **) ininsts, k, true,
-        (k == 1) ? true : false, interp, NORMALIZE);
-      /* Compute the twAvg/twCentroid for the bin */
-      value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
-        PointerGetDatum(tpointseq_twcentroid(seq1));
-      outinsts[l++] = tinstant_make(value, temptype_out, lower);
-      pfree(seq1);
-      if (! twavg)
-        pfree(DatumGetPointer(value));
       /* Free the instant at the beginning of the bin if it was generated */
       if (start)
       {
@@ -345,7 +348,7 @@ TSequenceSet *
 tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
   assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
     ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
 
@@ -364,6 +367,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   meosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
+  meosType basetype_out = temptype_basetype(temptype_out);
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(ss->temptype);
   int ninsts = 0;
@@ -382,6 +386,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
       /* We keep only the first instant since the tprecision operation amounts
        * to a granularity change */
       instants[ninsts++] = tinstant_make(value, temptype_out, lower);
+      DATUM_FREE(value, basetype_out);
       pfree(proj);
     }
     else
@@ -411,6 +416,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     for (int j = 0; j < ninsts; j++)
       pfree(instants[j]);
   }
+  pfree(instants);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
@@ -428,7 +434,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -460,7 +466,7 @@ TInstant *
 tinstant_tsample(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration); assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(positive_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   if (timestamp_cmp_internal(lower, inst->t) == 0)
     return tinstant_copy(inst);
@@ -480,6 +486,7 @@ int
 tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
   TimestampTz upper_bin, int64 tunits, TInstant **result)
 {
+  meosType basetype = temptype_basetype(seq->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   TimestampTz lower = lower_bin;
@@ -530,8 +537,13 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
       if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
-        Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
+        Datum startvalue = tinstant_value_p(start);
+        Datum endvalue = (interp == LINEAR) ?
+          tinstant_value_p(end) : startvalue;
+        Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, lower);
         result[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        DATUM_FREE(value, basetype);
         /* Advance the bin */
         lower += tunits;
       }
@@ -563,7 +575,7 @@ TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  assert(seq); assert(duration); assert(valid_duration(duration));
+  assert(seq); assert(duration); assert(positive_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -590,7 +602,7 @@ TSequence *
 tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = tsequenceset_start_timestamptz(ss);
@@ -624,7 +636,7 @@ TSequenceSet *
 tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  assert(ss); assert(duration); assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(positive_duration(duration));
   assert(interp != DISCRETE);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -670,7 +682,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_valid_duration(duration))
+  if (! ensure_positive_duration(duration))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -705,7 +717,8 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   else if (tgeo_type_all(inst1->temptype))
-    return tgeoinst_distance(inst1, inst2, func);
+    return DatumGetFloat8(func(tinstant_value_p(inst1),
+      tinstant_value_p(inst2)));
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -871,7 +884,7 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 /* Maximum length of the typmod string */
 #define MAX_MATRIX_LEN 65536
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 /**
  * @brief Print a distance matrix in tabular form
  */
@@ -1376,7 +1389,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(mint, NULL);
   if (! ensure_tnumber_tpoint_type(temp->temptype) ||
-      ! ensure_valid_duration(mint))
+      ! ensure_positive_duration(mint))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1552,7 +1565,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   POINT2D *p2k, *p2_sync, *p2a, *p2b;
   POINT3DZ *p3k, *p3_sync, *p3a, *p3b;
   Datum value;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  // interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   double d = -1;
   *split = i1;
@@ -1563,6 +1576,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   /* Initialization of values wrt instants i1 and i2 */
   const TInstant *start = TSEQUENCE_INST_N(seq, i1);
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
+  Datum startvalue = tinstant_value_p(start);
+  Datum endvalue = tinstant_value_p(end);
   if (hasz)
   {
     p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(start));
@@ -1584,7 +1599,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
+        // TODO Should we take into account the interpolation ?
+        value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, inst->t);
         p3_sync = (POINT3DZ *) DATUM_POINT3DZ_P(value);
         d_tmp = dist3d_pt_pt(p3k, p3_sync);
         pfree(DatumGetPointer(value));
@@ -1597,7 +1614,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value_p(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
+        // TODO Should we take into account the interpolation ?
+        value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, inst->t);
         p2_sync = (POINT2D *) DATUM_POINT2D_P(value);
         d_tmp = dist2d_pt_pt(p2k, p2_sync);
         pfree(DatumGetPointer(value));

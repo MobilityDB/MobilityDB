@@ -488,6 +488,11 @@ SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'step'))) FROM tbl_ti
 SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tint_seq;
 SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tint_seqset;
 
+SELECT MAX(numInstants(tsample(inst, '15 minutes'))) FROM tbl_tint_inst;
+SELECT MAX(numInstants(tsample(ti, '15 minutes'))) FROM tbl_tint_discseq;
+SELECT MAX(numInstants(tsample(seq, '15 minutes'))) FROM tbl_tint_seq;
+SELECT MAX(numInstants(tsample(ss, '15 minutes'))) FROM tbl_tint_seqset;
+
 SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_inst;
 SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_discseq;
 SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_seq;

@@ -49,19 +49,43 @@ extern Temporal *tspatial_valid_typmod(Temporal *temp, int32_t typmod);
 extern uint32 tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic);
 extern Datum Spatialarr_as_text_ext(FunctionCallInfo fcinfo, bool extended);
 
+extern Datum EAcomp_tspatial_geo(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *));
+extern Datum EAcomp_geo_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const GSERIALIZED *, const Temporal *));
+  
+extern Datum Tcomp_geo_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *));
+extern Datum Tcomp_tspatial_geo(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const GSERIALIZED *));
+
 extern Datum EA_spatialrel_geo_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const GSERIALIZED *, const Temporal *, bool), bool ever);
 extern Datum EA_spatialrel_tspatial_geo(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever);
 extern Datum EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
-  datum_func2 func1, datum_func2 func2, bool ever);
+  int (*func)(const Temporal *, const Temporal *, bool), bool ever);
+
+extern Datum Tspatialrel_geo_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *, bool, bool));
+extern Datum Tspatialrel_tspatial_geo(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const GSERIALIZED *, bool, bool));
+extern Datum Tspatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const Temporal *, bool, bool));
 
 extern Datum EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
   bool ever);
 extern Datum EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
-  int (*func)(const GSERIALIZED *, const Temporal *, double dist, bool),
+  int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
   bool ever);
+
+extern Datum Tdwithin_geo_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *, double, bool, bool));
+extern Datum Tdwithin_tspatial_geo(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const GSERIALIZED *, double, bool, bool));
+extern Datum Tdwithin_tspatial_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const Temporal *, double, bool, bool));
 
 /*****************************************************************************/
 

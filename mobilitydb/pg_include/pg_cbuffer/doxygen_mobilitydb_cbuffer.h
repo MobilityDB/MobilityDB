@@ -99,9 +99,9 @@
  *   @ingroup mobilitydb_cbuffer_rel
  *   @brief Ever and always spatial relationship functions for temporal circular buffers
  *
- *   @defgroup mobilitydb_cbuffer_rel_temp Temporal spatial relationship functions
+ *   @defgroup mobilitydb_cbuffer_rel_temp Spatiotemporal relationship functions
  *   @ingroup mobilitydb_cbuffer_rel
- *   @brief Temporal spatial relationship functions for temporal circular buffers
+ *   @brief Spatiotemporal relationship functions for temporal circular buffers
  *
  * @defgroup mobilitydb_cbuffer_agg Aggregate functions
  * @ingroup mobilitydb_cbuffer

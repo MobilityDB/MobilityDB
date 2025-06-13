@@ -379,6 +379,12 @@ SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_int
  01:39:00
 (1 row)
 
+SELECT MAX(shift(t, '5 min')) FROM tbl_timestamptz;
+             max              
+------------------------------
+ Tue Dec 25 23:17:00 2001 PST
+(1 row)
+
 SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
              max              
 ------------------------------

@@ -238,8 +238,11 @@
 
 		<sect2>
 			<title>Transformaciones</title>
-
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="setspan_expand"><varname>expand</varname></link>: Extender o reducir los límites con un valor o intervalo de tiempo</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar con un valor o intervalo de tiempo</para>
 				</listitem>
@@ -502,14 +505,10 @@
 
 				<listitem>
 					<para><link linkend="box_getSpace"><varname>getSpace</varname></link>: Devuelve la dimensión espacial de un cuadro delimitador, eliminando la dimensión temporal, si existe</para>
-					</listitem>
+				</listitem>
 
 				<listitem>
-					<para><link linkend="box_expandValue"><varname>expandValue</varname>, <varname>expandSpace</varname></link>: Extender la dimensión numérica o espacial de un cuadro delimitador con un valor flotante</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="box_expandTime"><varname>expandTime</varname></link>: Extender la dimensión temporal de un cuadro delimitador con un intervalo de tiempo</para>
+					<para><link linkend="box_expand"><varname>expandValue</varname>, <varname>expandSpace</varname>, <varname>expandTime</varname></link>: Extender la dimensión numérica, espacial, o temporal de un cuadro delimitador con un valor o un intervalo</para>
 				</listitem>
 
 				<listitem>
@@ -1190,7 +1189,7 @@
 			<title>Relaciones espaciales</title>
 
 			<sect3>
-				<title>Relaciones espaciales alguna vez o siempre</title>
+				<title>Relaciones alguna vez o siempre</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1216,7 +1215,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Relaciones espaciales temporales</title>
+				<title>Relaciones espaciotemporales</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1279,23 +1278,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_hausdorffDistance"><varname>hausdorffDistance</varname></link>: Devuelve la distancia de Hausdorff discreta entre dos valores temporales</para>
+					<para><link linkend="ttype_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta o la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_frechetDistance"><varname>frechetDistance</varname></link>: Devuelve la distancia de Fréchet discreta entre dos valores temporales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_frechetDistancePath"><varname>frechetDistancePath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="ttype_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta o a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1370,11 +1357,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="timeSpans"><varname>timeSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un valor temporal con respecto a un mosaico de tiempo</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="valueSpans"><varname>valueSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores</para>
+						<para><link linkend="valueTimeBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Devuelve una matriz de intervalos de valores or de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
 					</listitem>
 
 					<listitem>

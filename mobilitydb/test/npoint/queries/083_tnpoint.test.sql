@@ -169,7 +169,7 @@ SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
 SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', tnpoint '[Npoint(2, 0.6)@2000-01-03]');
 
 -------------------------------------------------------------------------------
--- Cast functions
+-- Conversion functions
 -------------------------------------------------------------------------------
 
 SELECT asText(round(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));

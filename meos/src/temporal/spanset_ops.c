@@ -785,7 +785,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
 
   /* Is the span set fully contained in the span? */
   if (contains_span_span(s, &ss->span))
-    return span_spanset(s);
+    return span_to_spanset(s);
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   int i = 0, j = 0, nspans = 0;
@@ -1161,7 +1161,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
-    return span_spanset(s);
+    return span_to_spanset(s);
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   int count = mi_span_spanset(s, ss, 0, ss->count, spans);

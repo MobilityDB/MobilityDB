@@ -32,10 +32,10 @@
  * @brief Temporal distance for temporal circular buffers
  */
 
-#include "cbuffer/tcbuffer_distance.h"
-
 /* MEOS */
 #include <meos.h>
+#include "geo/stbox.h"
+#include "cbuffer/cbuffer.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
@@ -63,6 +63,27 @@ Distance_cbuffer_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Distance_geo_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the temporal distance between a circular buffer and a
+ * geometry
+ * @sqlfn tDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geo_cbuffer(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  double result = distance_cbuffer_geo(cb, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
 PGDLLEXPORT Datum Distance_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
 /**
@@ -80,6 +101,26 @@ Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
   double result = distance_cbuffer_stbox(cb, box);
   PG_RETURN_FLOAT8(result);
 }
+
+PGDLLEXPORT Datum Distance_stbox_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the temporal distance between a circular buffer and a
+ * spatiotemporal box
+ * @sqlfn tDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  double result = distance_cbuffer_stbox(cb, box);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
@@ -112,10 +153,10 @@ PG_FUNCTION_INFO_V1(Distance_geo_tcbuffer);
 Datum
 Distance_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tcbuffer_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  Temporal *result = distance_tcbuffer_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -135,14 +176,16 @@ Datum
 Distance_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tcbuffer_geo(temp, geo);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = distance_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_tcbuffer);
@@ -219,10 +262,10 @@ PG_FUNCTION_INFO_V1(NAI_geo_tcbuffer);
 Datum
 NAI_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = nai_tcbuffer_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  TInstant *result = nai_tcbuffer_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -240,15 +283,17 @@ PG_FUNCTION_INFO_V1(NAI_tcbuffer_geo);
 Datum
 NAI_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = nai_tcbuffer_geo(temp, geo);
+  TInstant *result = nai_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_cbuffer_tcbuffer);
@@ -285,6 +330,8 @@ NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tcbuffer_tcbuffer);
@@ -325,8 +372,8 @@ NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = nad_cbuffer_stbox(cb, box);
-  PG_RETURN_TEMPORAL_P(result);
+  double result = nad_cbuffer_stbox(cb, box);
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************/
@@ -387,32 +434,10 @@ PG_FUNCTION_INFO_V1(NAD_geo_tcbuffer);
 Datum
 NAD_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tcbuffer_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PGDLLEXPORT Datum NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_cbuffer_tcbuffer);
-/**
- * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the nearest approach distance between a circular buffer and a
- * temporal circular buffer
- * @sqlfn nearestApproachDistance()
- * @sqlop |=|
- */
-Datum
-NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
-{
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tcbuffer_cbuffer(temp, cb);
-  PG_FREE_IF_COPY(cb, 0);
+  double result = nad_tcbuffer_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -431,11 +456,35 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_geo);
 Datum
 NAD_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = nad_tcbuffer_geo(temp, geo);
+  double result = nad_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_cbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the nearest approach distance between a circular buffer and a
+ * temporal circular buffer
+ * @sqlfn nearestApproachDistance()
+ * @sqlop |=|
+ */
+Datum
+NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  double result = nad_tcbuffer_cbuffer(temp, cb);
+  PG_FREE_IF_COPY(cb, 0);
+  PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
@@ -462,6 +511,8 @@ NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_tcbuffer);
@@ -500,10 +551,10 @@ PG_FUNCTION_INFO_V1(Shortestline_geo_tcbuffer);
 Datum
 Shortestline_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result = shortestline_tcbuffer_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  GSERIALIZED *result = shortestline_tcbuffer_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -522,14 +573,16 @@ Datum
 Shortestline_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *result = shortestline_tcbuffer_geo(temp, geo);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *result = shortestline_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_cbuffer_tcbuffer);
@@ -572,6 +625,8 @@ Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+
+/*****************************************************************************/
 
 PGDLLEXPORT Datum Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_tcbuffer);
