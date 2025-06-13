@@ -761,6 +761,7 @@ extern void datespan_set_tstzspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Span *numspan_expand(const Span *s, Datum value);
 extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);

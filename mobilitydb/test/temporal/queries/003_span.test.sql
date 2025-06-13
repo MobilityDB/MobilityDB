@@ -210,6 +210,7 @@ SELECT round(floatspan '[1.123456789,1.123456789]',6);
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
 SELECT round(floatspan '[1.123456789,inf]',6);
+SELECT round(floatspan '[1.5,1.6]');
 
 -------------------------------------------------------------------------------
 -- Position functions

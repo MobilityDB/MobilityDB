@@ -1203,7 +1203,7 @@ tbox_expand(const TBox *box1, TBox *box2)
  * integer
  * @param[in] box Temporal box
  * @param[in] i Value
- * @csqlfn #Tbox_expand_int()
+ * @csqlfn #Tbox_expand_value()
  */
 TBox *
 tbox_expand_int(const TBox *box, const int i)
@@ -1232,7 +1232,7 @@ tbox_expand_int(const TBox *box, const int i)
  * double
  * @param[in] box Temporal box
  * @param[in] d Value
- * @csqlfn #Tbox_expand_float()
+ * @csqlfn #Tbox_expand_value()
  */
 TBox *
 tbox_expand_float(const TBox *box, const double d)
@@ -1259,8 +1259,9 @@ tbox_expand_float(const TBox *box, const double d)
  * @brief Return a temporal box with the value span expanded/decreased by a
  * value
  * @param[in] box Temporal box
- * @param[in] i Value
- * @csqlfn #Tbox_expand_int()
+ * @param[in] value Value
+ * @param[in] basetype Base type
+ * @csqlfn #Tbox_expand_value()
  */
 TBox *
 tbox_expand_value(const TBox *box, Datum value, meosType basetype)

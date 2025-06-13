@@ -955,11 +955,11 @@ span_expand(const Span *s1, Span *s2)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a number span with its bounds expanded/decreased by a value
  * @param[in] s Span
  * @param[in] value Value
- * @csqlfn #Tstzspan_expand()
+ * @csqlfn #Numspan_expand()
  * @note This function can be seen as a 1-dimensional version of the PostGIS
  * function `ST_Buffer`
  */
@@ -985,6 +985,48 @@ numspan_expand(const Span *s, Datum value)
   result->upper = datum_add(s->upper, value, s->basetype);
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return an integer span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+intspan_expand(const Span *s, int i)
+{
+  return numspan_expand(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a big integer span with its bounds expanded/decreased by a
+ * value
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+bigintspan_expand(const Span *s, int64 i)
+{
+  return numspan_expand(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span with its bounds expanded/decreased by a value
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Numspan_expand()
+ */
+Span *
+floatspan_expand(const Span *s, double d)
+{
+  return numspan_expand(s, Float8GetDatum(d));
+}
+#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_transf

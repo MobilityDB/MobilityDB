@@ -446,6 +446,9 @@ SELECT tDwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT tDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', 2, false);
 SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', 2, false);
 
+-- Coverage
+SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)}', tgeomPoint '{[Point(2.5 2.5)@2000-01-01, Point(2.5 2.5)@2000-01-02], [Point(2.5 2.5)@2000-01-03,Point(2.5 2.5)@2000-01-04]}', 1);
+
 /* Errors */
 SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);

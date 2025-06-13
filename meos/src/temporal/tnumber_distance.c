@@ -274,12 +274,12 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
-    return Float8GetDatum(DBL_MAX);
+    return DBL_MAX;
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-    return Float8GetDatum(DBL_MAX);
+    return DBL_MAX;
 
   Datum res = distance_span_span(&box1->span, &box2->span);
   return datum_double(res, spantype_basetype(box1->span.spantype));
@@ -308,7 +308,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
-    return Float8GetDatum(DBL_MAX);
+    return DBL_MAX;
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
@@ -318,7 +318,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   TBox box1;
   tnumber_set_tbox(temp1, &box1);
   if (overlaps_tbox_tbox(box, &box1))
-    return DatumGetFloat8(0.0);
+    return 0.0;
 
   /* Get the minimum distance between the values of the boxes */
   Datum res = distance_value_value(box->span.lower, box1.span.upper,
@@ -346,7 +346,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
   /* If the boxes do not intersect in the time dimension return infinity */
   if (dist == NULL)
-    return Float8GetDatum(DBL_MAX);
+    return DBL_MAX;
 
   Datum res = temporal_min_value(dist);
   pfree(dist);

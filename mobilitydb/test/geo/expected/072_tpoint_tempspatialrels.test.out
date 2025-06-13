@@ -1717,6 +1717,12 @@ SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  
 (1 row)
 
+SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)}', tgeomPoint '{[Point(2.5 2.5)@2000-01-01, Point(2.5 2.5)@2000-01-02], [Point(2.5 2.5)@2000-01-03,Point(2.5 2.5)@2000-01-04]}', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST)}
+(1 row)
+
 /* Errors */
 SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID

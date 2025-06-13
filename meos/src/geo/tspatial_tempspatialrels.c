@@ -544,7 +544,7 @@ tspatialrel_tspatial_base(const Temporal *temp, Datum base,
   Datum param, varfunc func, int numparam, bool invert)
 {
   assert(temp); assert(DatumGetPointer(base));
-  assert(tgeo_type_all(temp->temptype));
+  assert(tspatial_type(temp->temptype));
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
