@@ -82,18 +82,19 @@ $(function() {
 
 <p>Functions for spatial and spatiotemporal tiles.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="tgeo__tile_8h_source.html">geo/tgeo_tile.h</a>&quot;</code><br />
+<code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="temporal__tile_8h_source.html">temporal/temporal_tile.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tpoint__tile_8h_source.html">geo/tpoint_tile.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -139,6 +140,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a76226a890dcae291dbe124bb97c80aec"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__tile_8c_a76226a890dcae291dbe124bb97c80aec.html#a76226a890dcae291dbe124bb97c80aec">stbox_tile_state_set</a> (double x, double y, double z, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, double xsize, double ysize, double zsize, <a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a> tunits, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> hasx, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> hasz, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> hast, <a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a> srid, <a class="el" href="structSTBox.html">STBox</a> *result)</td></tr>
 <tr class="memdesc:a76226a890dcae291dbe124bb97c80aec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a tile from the current state of the multidimensional grid.  <a href="meos_2src_2geo_2tgeo__tile_8c_a76226a890dcae291dbe124bb97c80aec.html#a76226a890dcae291dbe124bb97c80aec">More...</a><br /></td></tr>
 <tr class="separator:a76226a890dcae291dbe124bb97c80aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c1d6117fdf3ffb330f1471a74023c9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__tile_ga3c1d6117fdf3ffb330f1471a74023c9a.html#ga3c1d6117fdf3ffb330f1471a74023c9a">stbox_time_tiles</a> (const <a class="el" href="structSTBox.html">STBox</a> *bounds, const <a class="el" href="structInterval.html">Interval</a> *duration, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> torigin, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> border_inc, int *count)</td></tr>
+<tr class="memdesc:ga3c1d6117fdf3ffb330f1471a74023c9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the spatiotemporal grid of a spatiotemporal box.  <a href="group__meos__geo__tile_ga3c1d6117fdf3ffb330f1471a74023c9a.html#ga3c1d6117fdf3ffb330f1471a74023c9a">More...</a><br /></td></tr>
+<tr class="separator:ga3c1d6117fdf3ffb330f1471a74023c9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9e9ef901c07ef11f96ecbc4fc0b07bd4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__tile_ga9e9ef901c07ef11f96ecbc4fc0b07bd4.html#ga9e9ef901c07ef11f96ecbc4fc0b07bd4">tgeo_space_boxes</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, double xsize, double ysize, double zsize, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *sorigin, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> bitmatrix, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> border_inc, int *count)</td></tr>
 <tr class="memdesc:ga9e9ef901c07ef11f96ecbc4fc0b07bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the spatiotemporal boxes of a temporal geo split with respect to a space grid.  <a href="group__meos__geo__tile_ga9e9ef901c07ef11f96ecbc4fc0b07bd4.html#ga9e9ef901c07ef11f96ecbc4fc0b07bd4">More...</a><br /></td></tr>
 <tr class="separator:ga9e9ef901c07ef11f96ecbc4fc0b07bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>

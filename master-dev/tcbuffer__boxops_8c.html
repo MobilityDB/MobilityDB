@@ -80,14 +80,13 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Bounding box operators for temporal circular buffer.  
+<p>Bounding box functions for temporal circular buffer.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;cbuffer/tcbuffer_boxops.h&quot;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="meos__cbuffer_8h_source.html">meos_cbuffer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="postgis__funcs_8h_source.html">geo/postgis_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="cbuffer_8h_source.html">cbuffer/cbuffer.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -115,8 +114,8 @@ Functions</h2></td></tr>
 <tr class="separator:a48394dcf7e187422d54583f6ecd73230"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Bounding box operators for temporal circular buffer. </p>
-<p >These operators test the bounding boxes of temporal circular buffers, which are <code><a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a></code> boxes. The following operators are defined: <code>overlaps</code>, <code>contains</code>, <code>contained</code>, <code>same</code> The operators consider as many dimensions as they are shared in both arguments: only the space dimension, only the time dimension, or both the space and the time dimensions. </p>
+<div class="textblock"><p >Bounding box functions for temporal circular buffer. </p>
+<p >These functions are used for computing the bounding boxes upon creation of the temporal circular buffers. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

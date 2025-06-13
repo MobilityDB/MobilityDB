@@ -153,7 +153,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Can any rectangle from nodebox contain this argument? </p>
+<p>Can any box from nodebox contain the query? </p>
+<p >A span <code>s1</code> contains a span <code>s2</code> if <code>s1.lower &lt;= s2.lower</code> and <code>s1.upper &gt;= s2.upper</code>. Therefore, given a query box and a node box, a box in the node box may contain the query box if for each dimension X and T</p><ul>
+<li><code>nodebox-&gt;left.span.lower</code> (the minimum of the lower bounds in the node box) &lt;= <code>query-&gt;span.lower</code> (the lower bound of the query).</li>
+<li><code>nodebox-&gt;right.span.upper</code> (the maximum of the upper bounds in the node box) &gt;= <code>query-&gt;span.upper</code> (the upper bound of the query).</li>
+</ul>
+<p >Continuing with the example at the top of this file, if <code><a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a></code> is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])</div>
+<div class="line">right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])</div>
+</div><!-- fragment --><p> a query `TBOXFLOAT XT([3, 4],[2001-01-02, 2001-01-04]) satisfies the above condition. </p>
 
 </div>
 </div>

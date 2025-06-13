@@ -166,8 +166,26 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Calculate the next traversal value. </p>
-<p >All centroids are bounded by <a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a>, but SP-GiST only keeps boxes. When we are traversing the tree, we must calculate <a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a>, using centroid and quadrant. </p>
-
+<p >All centroids are bounded by <a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a>, but SP-GiST only keeps boxes. When we are traversing the tree, we must calculate <a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a>, using centroid and quadrant.</p>
+<p >Continuing with the example at the top of this file </p><div class="fragment"><div class="line">             |      |</div>
+<div class="line">             | 1110 | 1111</div>
+<div class="line">             | -----+-----</div>
+<div class="line">             | 1100 | 1101</div>
+<div class="line">             |      |</div>
+<div class="line">-------------+-------------</div>
+<div class="line">             | <a class="code hl_function" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a></div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="ttc" id="apostgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_html_a3c50bb0dc24be98daf8640f9e4cc3191"><div class="ttname"><a href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a></div><div class="ttdeci">Datum centroid(PG_FUNCTION_ARGS)</div></div>
+</div><!-- fragment --><p> where <code>centroid</code> is as follows </p><div class="fragment"><div class="line">c1 = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])</div>
+<div class="line"><a class="code hl_function" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a> = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])</div>
+</div><!-- fragment --><p> The next traversal value of quadrant ´1111´ is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, +inf),[2001-01-03, +inf))</div>
+<div class="line">right = TBOXFLOAT XT([5, +inf),[2001-01-05, +inf))</div>
+</div><!-- fragment --><p> Also, the traversal value of quadrant ´1100´ is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, +inf),(-inf, 2001-01-03))</div>
+<div class="line">right = TBOXFLOAT XT([5, +inf),(-inf, 2001-01-05))</div>
+</div><!-- fragment --> 
 </div>
 </div>
     </td>

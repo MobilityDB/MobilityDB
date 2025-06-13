@@ -72,11 +72,11 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">Constructor functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__api.html">External API</a> &raquo; <a class="el" href="group__meos__box.html">Functions for box types</a></div></div></div>
+  <div class="headertitle"><div class="title">Constructor functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__api.html">External API</a> &raquo; <a class="el" href="group__meos__box.html">Functions for temporal boxes</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Constructor functions for box types.  
+<p>Constructor functions for temporal boxes.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -93,12 +93,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4b6cdb032fdd5fbde2d29430c513c443"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTBox.html">TBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__box__constructor_ga4b6cdb032fdd5fbde2d29430c513c443.html#ga4b6cdb032fdd5fbde2d29430c513c443">int_tstzspan_to_tbox</a> (int i, const <a class="el" href="structSpan.html">Span</a> *s)</td></tr>
 <tr class="memdesc:ga4b6cdb032fdd5fbde2d29430c513c443"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal box from an integer and a timestamptz span.  <a href="group__meos__box__constructor_ga4b6cdb032fdd5fbde2d29430c513c443.html#ga4b6cdb032fdd5fbde2d29430c513c443">More...</a><br /></td></tr>
 <tr class="separator:ga4b6cdb032fdd5fbde2d29430c513c443"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafb17bbdbedc6c9755fbaf38ac2128e96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__box__constructor_gafb17bbdbedc6c9755fbaf38ac2128e96.html#gafb17bbdbedc6c9755fbaf38ac2128e96">npoint_timestamptz_to_stbox</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
-<tr class="memdesc:gafb17bbdbedc6c9755fbaf38ac2128e96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal box constructed from a network point and a timestamptz.  <a href="group__meos__box__constructor_gafb17bbdbedc6c9755fbaf38ac2128e96.html#gafb17bbdbedc6c9755fbaf38ac2128e96">More...</a><br /></td></tr>
-<tr class="separator:gafb17bbdbedc6c9755fbaf38ac2128e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5f9d59593806d61f46593bae28925493"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__box__constructor_ga5f9d59593806d61f46593bae28925493.html#ga5f9d59593806d61f46593bae28925493">npoint_tstzspan_to_stbox</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, const <a class="el" href="structSpan.html">Span</a> *s)</td></tr>
-<tr class="memdesc:ga5f9d59593806d61f46593bae28925493"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal box constructed from a network point and a timestamptz.  <a href="group__meos__box__constructor_ga5f9d59593806d61f46593bae28925493.html#ga5f9d59593806d61f46593bae28925493">More...</a><br /></td></tr>
-<tr class="separator:ga5f9d59593806d61f46593bae28925493"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa42cf17a88b15879348d2e3734285a9b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTBox.html">TBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__box__constructor_gaa42cf17a88b15879348d2e3734285a9b.html#gaa42cf17a88b15879348d2e3734285a9b">numspan_timestamptz_to_tbox</a> (const <a class="el" href="structSpan.html">Span</a> *s, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
 <tr class="memdesc:gaa42cf17a88b15879348d2e3734285a9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal box from a number span and a timestamptz.  <a href="group__meos__box__constructor_gaa42cf17a88b15879348d2e3734285a9b.html#gaa42cf17a88b15879348d2e3734285a9b">More...</a><br /></td></tr>
 <tr class="separator:gaa42cf17a88b15879348d2e3734285a9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -113,7 +107,7 @@ Functions</h2></td></tr>
 <tr class="separator:gacbe14b1f5ca99b001e980f5226cdf569"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Constructor functions for box types. </p>
+<p >Constructor functions for temporal boxes. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

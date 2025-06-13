@@ -76,26 +76,26 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Spatial reference system functions for temporal geos.  
+<p>Spatial reference system functions for temporal geometries.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga0c5a941d9da42e52baf60bba9107beae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__srid_ga0c5a941d9da42e52baf60bba9107beae.html#ga0c5a941d9da42e52baf60bba9107beae">tspatial_set_srid</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int32_t srid)</td></tr>
-<tr class="memdesc:ga0c5a941d9da42e52baf60bba9107beae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal spatial value with the coordinates set to an SRID.  <a href="group__meos__geo__srid_ga0c5a941d9da42e52baf60bba9107beae.html#ga0c5a941d9da42e52baf60bba9107beae">More...</a><br /></td></tr>
+<tr class="memdesc:ga0c5a941d9da42e52baf60bba9107beae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal value with the coordinates set to an SRID.  <a href="group__meos__geo__srid_ga0c5a941d9da42e52baf60bba9107beae.html#ga0c5a941d9da42e52baf60bba9107beae">More...</a><br /></td></tr>
 <tr class="separator:ga0c5a941d9da42e52baf60bba9107beae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0e00e5b3e17ffec455bfd0e485b24d6e"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__srid_ga0e00e5b3e17ffec455bfd0e485b24d6e.html#ga0e00e5b3e17ffec455bfd0e485b24d6e">tspatial_srid</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:ga0e00e5b3e17ffec455bfd0e485b24d6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a temporal spatial value.  <a href="group__meos__geo__srid_ga0e00e5b3e17ffec455bfd0e485b24d6e.html#ga0e00e5b3e17ffec455bfd0e485b24d6e">More...</a><br /></td></tr>
+<tr class="memdesc:ga0e00e5b3e17ffec455bfd0e485b24d6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a spatiotemporal value.  <a href="group__meos__geo__srid_ga0e00e5b3e17ffec455bfd0e485b24d6e.html#ga0e00e5b3e17ffec455bfd0e485b24d6e">More...</a><br /></td></tr>
 <tr class="separator:ga0e00e5b3e17ffec455bfd0e485b24d6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga895a264ec147447fc5e92b044052d2e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__srid_ga895a264ec147447fc5e92b044052d2e8.html#ga895a264ec147447fc5e92b044052d2e8">tspatial_transform</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int32_t srid_to)</td></tr>
-<tr class="memdesc:ga895a264ec147447fc5e92b044052d2e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal spatial value transformed to another SRID.  <a href="group__meos__geo__srid_ga895a264ec147447fc5e92b044052d2e8.html#ga895a264ec147447fc5e92b044052d2e8">More...</a><br /></td></tr>
+<tr class="memdesc:ga895a264ec147447fc5e92b044052d2e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal value transformed to another SRID.  <a href="group__meos__geo__srid_ga895a264ec147447fc5e92b044052d2e8.html#ga895a264ec147447fc5e92b044052d2e8">More...</a><br /></td></tr>
 <tr class="separator:ga895a264ec147447fc5e92b044052d2e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3e0848cef8dbf6b1fb0f5603cc72b4ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__srid_ga3e0848cef8dbf6b1fb0f5603cc72b4ac.html#ga3e0848cef8dbf6b1fb0f5603cc72b4ac">tspatial_transform_pipeline</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const char *pipeline, int32_t srid_to, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> is_forward)</td></tr>
-<tr class="memdesc:ga3e0848cef8dbf6b1fb0f5603cc72b4ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal spatial value transformed to another SRID using a pipeline.  <a href="group__meos__geo__srid_ga3e0848cef8dbf6b1fb0f5603cc72b4ac.html#ga3e0848cef8dbf6b1fb0f5603cc72b4ac">More...</a><br /></td></tr>
+<tr class="memdesc:ga3e0848cef8dbf6b1fb0f5603cc72b4ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal value transformed to another SRID using a pipeline.  <a href="group__meos__geo__srid_ga3e0848cef8dbf6b1fb0f5603cc72b4ac.html#ga3e0848cef8dbf6b1fb0f5603cc72b4ac">More...</a><br /></td></tr>
 <tr class="separator:ga3e0848cef8dbf6b1fb0f5603cc72b4ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Spatial reference system functions for temporal geos. </p>
+<p >Spatial reference system functions for temporal geometries. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

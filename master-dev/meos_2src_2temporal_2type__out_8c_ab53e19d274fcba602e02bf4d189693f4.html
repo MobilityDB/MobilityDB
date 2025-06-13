@@ -149,7 +149,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a37a5e80077f2183c9e5b6bc5564bd793.html#a37a5e80077f2183c9e5b6bc5564bd793">temporal_to_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ac62a704b354ffed5e77178164d430e0d.html#ac62a704b354ffed5e77178164d430e0d">temptype_as_mfjson_sb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ad540968d04b9e09ee4ca6d4c60d7d6e3.html#ad540968d04b9e09ee4ca6d4c60d7d6e3">text_as_mfjson_sb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pg__types_ga442ea315b47dd0ee1161df81c250b3cc.html#ga442ea315b47dd0ee1161df81c250b3cc">text_out</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__base__types_ga442ea315b47dd0ee1161df81c250b3cc.html#ga442ea315b47dd0ee1161df81c250b3cc">text_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a5626fc51842277e448562da5850daf99.html#a5626fc51842277e448562da5850daf99">text_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ac4e89302144aee76304f4184b29995a4.html#ac4e89302144aee76304f4184b29995a4">timestamptz_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a24cddde492f46f97c3d66f915c7b125a.html#a24cddde492f46f97c3d66f915c7b125a">tinstant_as_mfjson_sb</a></td></tr>
@@ -212,8 +212,8 @@ $(function() {
 
 <p>Write into the buffer the flag containing the temporal type and other characteristics in the Well-Known Binary (WKB) representation. </p>
 <p >The output is a byte as follows </p><div class="fragment"><div class="line">xSGZxxxO</div>
-<div class="line">S = SRID, G = Geodetic, Z = has Z, O = ordered <a class="code hl_function" href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a>, x = unused bit</div>
-<div class="ttc" id="ameos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3_html_a3270654e8f083a33144aced11d28b9b3"><div class="ttname"><a href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a></div><div class="ttdeci">set(CBUFFER_SRCS cbuffer.c tcbuffer.c tcbuffer_boxops.c tcbuffer_compops.c tcbuffer_distance.c tcbuffer_spatialfuncs.c tcbuffer_spatialrels.c) if(1) list(APPEND CBUFFER_SRCS cbufferset_meos.c) endif() add_library(cbuffer OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="line">S = SRID, G = Geodetic, Z = has Z, O = ordered <a class="code hl_function" href="meos_2src_2cbuffer_2CMakeLists_8txt_a4f8060fff461ef48c45a3b2031f43be6.html#a4f8060fff461ef48c45a3b2031f43be6">set</a>, x = unused bit</div>
+<div class="ttc" id="ameos_2src_2cbuffer_2CMakeLists_8txt_a4f8060fff461ef48c45a3b2031f43be6_html_a4f8060fff461ef48c45a3b2031f43be6"><div class="ttname"><a href="meos_2src_2cbuffer_2CMakeLists_8txt_a4f8060fff461ef48c45a3b2031f43be6.html#a4f8060fff461ef48c45a3b2031f43be6">set</a></div><div class="ttdeci">set(CBUFFER_SRCS cbuffer.c tcbuffer.c tcbuffer_boxops.c tcbuffer_compops.c tcbuffer_distance.c tcbuffer_spatialfuncs.c tcbuffer_spatialrels.c tcbuffer_tempspatialrels.c) if(1) list(APPEND CBUFFER_SRCS cbufferset_meos.c) endif() add_library(cbuffer OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> 
 </div>
 </div>

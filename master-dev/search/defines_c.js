@@ -15,6 +15,6 @@ var searchData=
   ['lwflag_5fm_12',['LWFLAG_M',['../postgis__ext__defs_8in_8h_a4ab89f16958d130d26aadf3a4de39706.html#a4ab89f16958d130d26aadf3a4de39706',1,'postgis_ext_defs.in.h']]],
   ['lwflag_5freadonly_13',['LWFLAG_READONLY',['../postgis__ext__defs_8in_8h_a90b766f35d3f072c18fbc5fbe92a3292.html#a90b766f35d3f072c18fbc5fbe92a3292',1,'postgis_ext_defs.in.h']]],
   ['lwflag_5fsolid_14',['LWFLAG_SOLID',['../postgis__ext__defs_8in_8h_a5d34b5eef36ad2983f876098466a2e82.html#a5d34b5eef36ad2983f876098466a2e82',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5fversbit2_15',['LWFLAG_VERSBIT2',['../meos__internal_8h_ae19ecee039e42f3e042bc4667fdaf7d2.html#ae19ecee039e42f3e042bc4667fdaf7d2',1,'meos_internal.h']]],
+  ['lwflag_5fversbit2_15',['LWFLAG_VERSBIT2',['../meos__internal__geo_8h_ae19ecee039e42f3e042bc4667fdaf7d2.html#ae19ecee039e42f3e042bc4667fdaf7d2',1,'meos_internal_geo.h']]],
   ['lwflag_5fz_16',['LWFLAG_Z',['../postgis__ext__defs_8in_8h_a54418b6c4bdbaf46aee355e336d0dd4e.html#a54418b6c4bdbaf46aee355e336d0dd4e',1,'postgis_ext_defs.in.h']]]
 ];

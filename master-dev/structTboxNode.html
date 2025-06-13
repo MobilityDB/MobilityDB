@@ -88,7 +88,14 @@ Data Fields</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Structure to represent the bounding box of an inner node containing a set of temporal boxes. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<p >The left box keeps, for the X and T dimensions, the ranges of the lower bounds of the boxes in the quadrant, while the right box keeps the ranges of the upper boxes.</p>
+<p >As an example, suppose that a quadrant contains two boxes </p><div class="fragment"><div class="line">b1 = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])</div>
+<div class="line">b3 = TBOXFLOAT XT([7, 9],[2001-01-07, 2001-01-09])</div>
+</div><!-- fragment --><p> The corresponding <code><a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a></code> will be </p><div class="fragment"><div class="line"><a class="code hl_variable" href="structTboxNode_a1ff23fdf5c6ad8a9bf52ad5b3f063893.html#a1ff23fdf5c6ad8a9bf52ad5b3f063893">left</a> = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])</div>
+<div class="line"><a class="code hl_variable" href="structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe">right</a> = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])</div>
+<div class="ttc" id="astructTboxNode_a1ff23fdf5c6ad8a9bf52ad5b3f063893_html_a1ff23fdf5c6ad8a9bf52ad5b3f063893"><div class="ttname"><a href="structTboxNode_a1ff23fdf5c6ad8a9bf52ad5b3f063893.html#a1ff23fdf5c6ad8a9bf52ad5b3f063893">TboxNode::left</a></div><div class="ttdeci">TBox left</div><div class="ttdef"><b>Definition:</b> tnumber_spgist.c:143</div></div>
+<div class="ttc" id="astructTboxNode_ad320507fdac0871fecc5ad762e4cdbfe_html_ad320507fdac0871fecc5ad762e4cdbfe"><div class="ttname"><a href="structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe">TboxNode::right</a></div><div class="ttdeci">TBox right</div><div class="ttdef"><b>Definition:</b> tnumber_spgist.c:144</div></div>
+</div><!-- fragment --> </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>mobilitydb/src/temporal/<a class="el" href="tnumber__spgist_8c.html">tnumber_spgist.c</a></li>
 </ul>
 </div><!-- contents -->

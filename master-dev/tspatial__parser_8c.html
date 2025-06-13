@@ -80,20 +80,18 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Functions for parsing temporal spatial values.  
+<p>Functions for parsing spatiotemporal values.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tspatial__parser_8h_source.html">geo/tspatial_parser.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa4c256555ba357a10c86f897863b1d42"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__parser_8c_aa4c256555ba357a10c86f897863b1d42.html#aa4c256555ba357a10c86f897863b1d42">geo_parse</a> (const char **str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype, char delim, int *srid, <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **result)</td></tr>
-<tr class="memdesc:aa4c256555ba357a10c86f897863b1d42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a geometry/gegraphy from the buffer.  <a href="tspatial__parser_8c_aa4c256555ba357a10c86f897863b1d42.html#aa4c256555ba357a10c86f897863b1d42">More...</a><br /></td></tr>
-<tr class="separator:aa4c256555ba357a10c86f897863b1d42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac35546de903598460b25578eff8f3aa8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__parser_8c_ac35546de903598460b25578eff8f3aa8.html#ac35546de903598460b25578eff8f3aa8">spatial_parse_elem</a> (const char **str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, char delim, int *temp_srid, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *result)</td></tr>
 <tr class="memdesc:ac35546de903598460b25578eff8f3aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a spatial base value from the input buffer.  <a href="tspatial__parser_8c_ac35546de903598460b25578eff8f3aa8.html#ac35546de903598460b25578eff8f3aa8">More...</a><br /></td></tr>
 <tr class="separator:ac35546de903598460b25578eff8f3aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -119,10 +117,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:a9276d281836475f6e0125c764a4b1934"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a temporal point value from the buffer.  <a href="tspatial__parser_8c_a9276d281836475f6e0125c764a4b1934.html#a9276d281836475f6e0125c764a4b1934">More...</a><br /></td></tr>
 <tr class="separator:a9276d281836475f6e0125c764a4b1934"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57576a08266cc311033c2988d317e549"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__parser_8c_a57576a08266cc311033c2988d317e549.html#a57576a08266cc311033c2988d317e549">tspatial_parse</a> (const char **str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype)</td></tr>
-<tr class="memdesc:a57576a08266cc311033c2988d317e549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a temporal spatial value from the input buffer.  <a href="tspatial__parser_8c_a57576a08266cc311033c2988d317e549.html#a57576a08266cc311033c2988d317e549">More...</a><br /></td></tr>
+<tr class="memdesc:a57576a08266cc311033c2988d317e549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a spatiotemporal value from the input buffer.  <a href="tspatial__parser_8c_a57576a08266cc311033c2988d317e549.html#a57576a08266cc311033c2988d317e549">More...</a><br /></td></tr>
 <tr class="separator:a57576a08266cc311033c2988d317e549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0303fb18178675c90a0baa581960ccb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__parser_8c_a0303fb18178675c90a0baa581960ccb2.html#a0303fb18178675c90a0baa581960ccb2">tspatialinst_parse</a> (const char **str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> end, int *temp_srid, <a class="el" href="structTInstant.html">TInstant</a> **result)</td></tr>
-<tr class="memdesc:a0303fb18178675c90a0baa581960ccb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a temporal spatial instant from the input buffer.  <a href="tspatial__parser_8c_a0303fb18178675c90a0baa581960ccb2.html#a0303fb18178675c90a0baa581960ccb2">More...</a><br /></td></tr>
+<tr class="memdesc:a0303fb18178675c90a0baa581960ccb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a spatiotemporal instant from the input buffer.  <a href="tspatial__parser_8c_a0303fb18178675c90a0baa581960ccb2.html#a0303fb18178675c90a0baa581960ccb2">More...</a><br /></td></tr>
 <tr class="separator:a0303fb18178675c90a0baa581960ccb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb571ce40e31e5bbe6579fe7cff7bd56"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__parser_8c_abb571ce40e31e5bbe6579fe7cff7bd56.html#abb571ce40e31e5bbe6579fe7cff7bd56">tspatialseq_cont_parse</a> (const char **str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> end, int *temp_srid, <a class="el" href="structTSequence.html">TSequence</a> **result)</td></tr>
 <tr class="memdesc:abb571ce40e31e5bbe6579fe7cff7bd56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a temporal sequence spatial value from the input buffer.  <a href="tspatial__parser_8c_abb571ce40e31e5bbe6579fe7cff7bd56.html#abb571ce40e31e5bbe6579fe7cff7bd56">More...</a><br /></td></tr>
@@ -135,7 +133,7 @@ Functions</h2></td></tr>
 <tr class="separator:a7c2f0d6e6f20be46cafcb8ce7573bd8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Functions for parsing temporal spatial values. </p>
+<div class="textblock"><p >Functions for parsing spatiotemporal values. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

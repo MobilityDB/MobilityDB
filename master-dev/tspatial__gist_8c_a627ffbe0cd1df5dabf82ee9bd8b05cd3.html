@@ -111,7 +111,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>GiST picksplit method for temporal spatial values. </p>
+<p>GiST picksplit method for spatiotemporal values. </p>
 <p >The algorithm finds split of boxes by considering splits along each axis. Each entry is first projected as an interval on the X-axis, and different ways to split the intervals into two groups are considered, trying to minimize the overlap of the groups. Then the same is repeated for the Y-axis and the Z-axis, and the overall best split is chosen. The quality of a split is determined by overlap along that axis and some other criteria (see bbox_gist_consider_split).</p>
 <p >After that, all the entries are divided into three groups:</p>
 <ol type="1">

@@ -86,6 +86,7 @@ $(function() {
 <div class="textblock"><code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_temporal/tnumber_gist.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
+<code>#include &lt;limits.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;access/gist.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
@@ -161,9 +162,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aefc45d504ed9f9532967c67fc85a9617"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_aefc45d504ed9f9532967c67fc85a9617.html#aefc45d504ed9f9532967c67fc85a9617">Tnumber_gist_consistent</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:aefc45d504ed9f9532967c67fc85a9617"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST consistent method for temporal numbers.  <a href="tnumber__gist_8c_aefc45d504ed9f9532967c67fc85a9617.html#aefc45d504ed9f9532967c67fc85a9617">More...</a><br /></td></tr>
 <tr class="separator:aefc45d504ed9f9532967c67fc85a9617"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d2f8b6cb7b0935fa004d23d8166793a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_a9d2f8b6cb7b0935fa004d23d8166793a.html#a9d2f8b6cb7b0935fa004d23d8166793a">tnumber_gist_get_tbox</a> (FunctionCallInfo fcinfo, <a class="el" href="structTBox.html">TBox</a> *result, <a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> typid)</td></tr>
-<tr class="memdesc:a9d2f8b6cb7b0935fa004d23d8166793a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform the query argument into a box initializing the dimensions that must not be taken into account by the operators to infinity.  <a href="tnumber__gist_8c_a9d2f8b6cb7b0935fa004d23d8166793a.html#a9d2f8b6cb7b0935fa004d23d8166793a">More...</a><br /></td></tr>
-<tr class="separator:a9d2f8b6cb7b0935fa004d23d8166793a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0c54c89f88c8a9f4b5b6ae38a42809e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_ab0c54c89f88c8a9f4b5b6ae38a42809e.html#ab0c54c89f88c8a9f4b5b6ae38a42809e">tnumber_gist_get_tbox</a> (FunctionCallInfo fcinfo, <a class="el" href="structTBox.html">TBox</a> *result, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
+<tr class="memdesc:ab0c54c89f88c8a9f4b5b6ae38a42809e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform the query argument into a box initializing the dimensions that must not be taken into account by the operators to infinity.  <a href="tnumber__gist_8c_ab0c54c89f88c8a9f4b5b6ae38a42809e.html#ab0c54c89f88c8a9f4b5b6ae38a42809e">More...</a><br /></td></tr>
+<tr class="separator:ab0c54c89f88c8a9f4b5b6ae38a42809e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >R-tree GiST index for temporal integers and temporal floats. </p>

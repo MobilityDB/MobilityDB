@@ -153,8 +153,18 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Lower bound for the distance between query and nodebox. </p>
-<dl class="section note"><dt>Note</dt><dd>The temporal dimension is not taken into the account since it is not possible to mix different units in the computation. As a consequence, the filtering is not very restrictive. </dd></dl>
+<p>Return the lower bound for the distance between query and nodebox. </p>
+<p >The distance between two spans <code>s1</code> and <code>s2</code> is</p><ul>
+<li><code>s1.upper - s2.lower</code> if <code>s1</code> is to the left of <code>s2</code>: <code>s1.upper &gt; s2.lower</code></li>
+<li><code>s1.lower - s2.upper</code> if <code>s1</code> is to the right of <code>s2</code>: <code>s1.lower &gt; s2.upper</code></li>
+<li>0 if the <code>s1</code> and <code>s2</code> overlap Therefore, given a query box and a node box, the minimum distance between a box in the node box and the query will be</li>
+<li><code>nodebox-&gt;left.span.lower - query-&gt;span.upper</code> (the distance between the upper bound of the query and the minimum of the lower bounds in the node box).</li>
+<li><code>query-&gt;span.lower - nodebox-&gt;right.span.upper</code> (the distance between the lower bound of the query and the maximum of the upper bounds in the node box).</li>
+<li>0 otherwise.</li>
+</ul>
+<p >Continuing with the example at the top of this file, if <code><a class="el" href="structTboxNode.html" title="Structure to represent the bounding box of an inner node containing a set of temporal boxes.">TboxNode</a></code> is </p><div class="fragment"><div class="line">left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])</div>
+<div class="line">right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])</div>
+</div><!-- fragment --><p> the distance with a query `TBOXFLOAT XT([10, 12],[2001-01-10, 2001-01-12]) is 10 - 9 = 1 since the query is to the right of the node box condition. </p><dl class="section note"><dt>Note</dt><dd>The distance is computed only on the value dimension. The temporal dimension is taken into account for setting the distance to infinity when the time spans of the node box and the query do not overlap. </dd></dl>
 
 </div>
 </div>

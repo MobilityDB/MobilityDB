@@ -154,8 +154,9 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Initialize the traversal value. </p>
-<p >In the beginning, we don't have any restrictions. We have to initialize the struct to cover the whole 4D space. </p>
-
+<p >In the beginning, we don't have any restrictions. We initialize the node box to cover the whole 4D space as follows </p><div class="fragment"><div class="line">left = TBOXFLOAT XT((-inf, +inf),(-inf, +inf))</div>
+<div class="line">right = TBOXFLOAT XT((-inf, +inf),(-inf, +inf))</div>
+</div><!-- fragment --> 
 </div>
 </div>
     </td>

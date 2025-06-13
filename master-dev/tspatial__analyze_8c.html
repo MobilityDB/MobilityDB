@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Functions for gathering statistics from temporal spatial columns.  
+<p>Functions for gathering statistics from spatiotemporal columns.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tspatial__analyze_8h_source.html">pg_geo/tspatial_analyze.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
@@ -90,6 +90,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
@@ -177,14 +178,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:a7342fc3f5ca049017cd7c886aa6c97b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of values of a double array.  <a href="tspatial__analyze_8c_a7342fc3f5ca049017cd7c886aa6c97b8.html#a7342fc3f5ca049017cd7c886aa6c97b8">More...</a><br /></td></tr>
 <tr class="separator:a7342fc3f5ca049017cd7c886aa6c97b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf9fe07b4f9de3967f689f54d84904f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8c_adf9fe07b4f9de3967f689f54d84904f2.html#adf9fe07b4f9de3967f689f54d84904f2">Tspatial_analyze</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:adf9fe07b4f9de3967f689f54d84904f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the statistics for temporal spatial columns.  <a href="tspatial__analyze_8c_adf9fe07b4f9de3967f689f54d84904f2.html#adf9fe07b4f9de3967f689f54d84904f2">More...</a><br /></td></tr>
+<tr class="memdesc:adf9fe07b4f9de3967f689f54d84904f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the statistics for spatiotemporal columns.  <a href="tspatial__analyze_8c_adf9fe07b4f9de3967f689f54d84904f2.html#adf9fe07b4f9de3967f689f54d84904f2">More...</a><br /></td></tr>
 <tr class="separator:adf9fe07b4f9de3967f689f54d84904f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab226d6985c1c08bfe84abff3884d7c0f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8c_ab226d6985c1c08bfe84abff3884d7c0f.html#ab226d6985c1c08bfe84abff3884d7c0f">tspatial_compute_stats</a> (VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc, int sample_rows, double total_rows)</td></tr>
-<tr class="memdesc:ab226d6985c1c08bfe84abff3884d7c0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the statistics for temporal spatial columns (callback function)  <a href="tspatial__analyze_8c_ab226d6985c1c08bfe84abff3884d7c0f.html#ab226d6985c1c08bfe84abff3884d7c0f">More...</a><br /></td></tr>
+<tr class="memdesc:ab226d6985c1c08bfe84abff3884d7c0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the statistics for spatiotemporal columns (callback function)  <a href="tspatial__analyze_8c_ab226d6985c1c08bfe84abff3884d7c0f.html#ab226d6985c1c08bfe84abff3884d7c0f">More...</a><br /></td></tr>
 <tr class="separator:ab226d6985c1c08bfe84abff3884d7c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Functions for gathering statistics from temporal spatial columns. </p>
+<div class="textblock"><p >Functions for gathering statistics from spatiotemporal columns. </p>
 <p >Various kind of statistics are collected for both the value and the time dimensions of temporal types. The kind of statistics depends on the subtype of the temporal type, which is defined in the table schema by the <code>typmod</code> attribute. Please refer to the PostgreSQL file <code>pg_statistic_d.h</code> and the PostGIS file <code>gserialized_estimate.c</code> for more information about the statistics collected.</p>
 <p >For the spatial dimension, the statistics collected are the same for all subtypes. These statistics are obtained by calling the PostGIS function <code>gserialized_analyze_nd</code>.</p><ul>
 <li>Slot 1<ul>

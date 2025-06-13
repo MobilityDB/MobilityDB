@@ -79,7 +79,6 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8c_aa4c256555ba357a10c86f897863b1d42.html#aa4c256555ba357a10c86f897863b1d42">geo_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8c_ac35546de903598460b25578eff8f3aa8.html#ac35546de903598460b25578eff8f3aa8">spatial_parse_elem</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8c_a5d15c48b47ec0fcc67d8d030d39a80bc.html#a5d15c48b47ec0fcc67d8d030d39a80bc">srid_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8c_a09d1b9067863b96c22171ecbb59cdbc6.html#a09d1b9067863b96c22171ecbb59cdbc6">stbox_parse</a></td></tr>
@@ -141,13 +140,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Parse a temporal spatial instant from the input buffer. </p>
+<p>Parse a spatiotemporal instant from the input buffer. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Input string </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> to true when reading a single instant to ensure there is no more input after the sequence </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">temp_srid</td><td>SRID of the temporal spatial value </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">temp_srid</td><td>SRID of the spatiotemporal value </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>New instant, may be NULL </td></tr>
   </table>
   </dd>

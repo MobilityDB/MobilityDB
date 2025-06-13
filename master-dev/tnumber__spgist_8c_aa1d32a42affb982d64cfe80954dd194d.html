@@ -154,7 +154,27 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Calculate the quadrant. </p>
-<p >The quadrant is 8 bit unsigned integer with 4 least bits in use. This function accepts BOXes as input. All 4 bits are set by comparing a corner of the box. This makes 16 quadrants in total. </p>
+<p >The quadrant is 8 bit unsigned integer with 4 least bits in use. This function accepts temporal boxes as input. All 4 bits are set by comparing a corner of the box. This makes 16 quadrants in total.</p>
+<p >Continuing with the example at the top of this file </p><div class="fragment"><div class="line">             |      |</div>
+<div class="line">             |      |</div>
+<div class="line">             | -----+-----</div>
+<div class="line">             |      | inbox</div>
+<div class="line">             |      |</div>
+<div class="line">-------------+-------------</div>
+<div class="line">             | <a class="code hl_function" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a></div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="line">             |</div>
+<div class="ttc" id="apostgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_html_a3c50bb0dc24be98daf8640f9e4cc3191"><div class="ttname"><a href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a></div><div class="ttdeci">Datum centroid(PG_FUNCTION_ARGS)</div></div>
+</div><!-- fragment --><p> where <code>centroid</code> and <code>inbox</code> are as follows </p><div class="fragment"><div class="line"><a class="code hl_function" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a> = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])</div>
+<div class="line">inbox = TBOXFLOAT XT([7, 9],[2001-01-07, 2001-01-09])</div>
+</div><!-- fragment --><p> Then</p><ul>
+<li><code>quadrant |= 0x8</code> since 7 &gt; 3</li>
+<li><code>quadrant |= 0x4</code> since 9 &gt; 5</li>
+<li><code>quadrant |= 0x2</code> since 2001-01-07 &gt; 2001-01-03</li>
+<li><code>quadrant |= 0x1</code> since 2001-01-09 &gt; 2001-01-05 </li>
+</ul>
 
 </div>
 </div>

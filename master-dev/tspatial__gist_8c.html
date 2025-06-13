@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>R-tree GiST index for temporal spatial values.  
+<p>R-tree GiST index for spatiotemporal values.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
@@ -88,6 +88,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="include_2temporal_2stratnum_8h_source.html">temporal/stratnum.h</a>&quot;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
@@ -103,22 +104,22 @@ Functions</h2></td></tr>
 <tr class="memdesc:a255fe776f42e516281ecaee758dc28fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increase the first box to include the second one.  <a href="tspatial__gist_8c_a255fe776f42e516281ecaee758dc28fc.html#a255fe776f42e516281ecaee758dc28fc">More...</a><br /></td></tr>
 <tr class="separator:a255fe776f42e516281ecaee758dc28fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48e300cd6568018f3344c8c66604af47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a48e300cd6568018f3344c8c66604af47.html#a48e300cd6568018f3344c8c66604af47">Stbox_gist_consistent</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a48e300cd6568018f3344c8c66604af47"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST consistent method for temporal spatial values.  <a href="tspatial__gist_8c_a48e300cd6568018f3344c8c66604af47.html#a48e300cd6568018f3344c8c66604af47">More...</a><br /></td></tr>
+<tr class="memdesc:a48e300cd6568018f3344c8c66604af47"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST consistent method for spatiotemporal values.  <a href="tspatial__gist_8c_a48e300cd6568018f3344c8c66604af47.html#a48e300cd6568018f3344c8c66604af47">More...</a><br /></td></tr>
 <tr class="separator:a48e300cd6568018f3344c8c66604af47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e415b27cfd774d80e9cb710a0aa2360"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a1e415b27cfd774d80e9cb710a0aa2360.html#a1e415b27cfd774d80e9cb710a0aa2360">Stbox_gist_distance</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a1e415b27cfd774d80e9cb710a0aa2360"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST distance for temporal spatial values.  <a href="tspatial__gist_8c_a1e415b27cfd774d80e9cb710a0aa2360.html#a1e415b27cfd774d80e9cb710a0aa2360">More...</a><br /></td></tr>
+<tr class="memdesc:a1e415b27cfd774d80e9cb710a0aa2360"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST distance for spatiotemporal values.  <a href="tspatial__gist_8c_a1e415b27cfd774d80e9cb710a0aa2360.html#a1e415b27cfd774d80e9cb710a0aa2360">More...</a><br /></td></tr>
 <tr class="separator:a1e415b27cfd774d80e9cb710a0aa2360"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a677e5e730d96a78816c3cb67b6e63dc5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a677e5e730d96a78816c3cb67b6e63dc5.html#a677e5e730d96a78816c3cb67b6e63dc5">Stbox_gist_penalty</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a677e5e730d96a78816c3cb67b6e63dc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST penalty method for temporal spatial values.  <a href="tspatial__gist_8c_a677e5e730d96a78816c3cb67b6e63dc5.html#a677e5e730d96a78816c3cb67b6e63dc5">More...</a><br /></td></tr>
+<tr class="memdesc:a677e5e730d96a78816c3cb67b6e63dc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST penalty method for spatiotemporal values.  <a href="tspatial__gist_8c_a677e5e730d96a78816c3cb67b6e63dc5.html#a677e5e730d96a78816c3cb67b6e63dc5">More...</a><br /></td></tr>
 <tr class="separator:a677e5e730d96a78816c3cb67b6e63dc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a627ffbe0cd1df5dabf82ee9bd8b05cd3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a627ffbe0cd1df5dabf82ee9bd8b05cd3.html#a627ffbe0cd1df5dabf82ee9bd8b05cd3">Stbox_gist_picksplit</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a627ffbe0cd1df5dabf82ee9bd8b05cd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST picksplit method for temporal spatial values.  <a href="tspatial__gist_8c_a627ffbe0cd1df5dabf82ee9bd8b05cd3.html#a627ffbe0cd1df5dabf82ee9bd8b05cd3">More...</a><br /></td></tr>
+<tr class="memdesc:a627ffbe0cd1df5dabf82ee9bd8b05cd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST picksplit method for spatiotemporal values.  <a href="tspatial__gist_8c_a627ffbe0cd1df5dabf82ee9bd8b05cd3.html#a627ffbe0cd1df5dabf82ee9bd8b05cd3">More...</a><br /></td></tr>
 <tr class="separator:a627ffbe0cd1df5dabf82ee9bd8b05cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1569a0e794add49b9db43d44f72110a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_ac1569a0e794add49b9db43d44f72110a.html#ac1569a0e794add49b9db43d44f72110a">Stbox_gist_same</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ac1569a0e794add49b9db43d44f72110a"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST same method for temporal spatial values.  <a href="tspatial__gist_8c_ac1569a0e794add49b9db43d44f72110a.html#ac1569a0e794add49b9db43d44f72110a">More...</a><br /></td></tr>
+<tr class="memdesc:ac1569a0e794add49b9db43d44f72110a"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST same method for spatiotemporal values.  <a href="tspatial__gist_8c_ac1569a0e794add49b9db43d44f72110a.html#ac1569a0e794add49b9db43d44f72110a">More...</a><br /></td></tr>
 <tr class="separator:ac1569a0e794add49b9db43d44f72110a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6af1d0120589beb8fa832b4b45b7e7d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a6af1d0120589beb8fa832b4b45b7e7d4.html#a6af1d0120589beb8fa832b4b45b7e7d4">Stbox_gist_union</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a6af1d0120589beb8fa832b4b45b7e7d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST union method for temporal spatial values.  <a href="tspatial__gist_8c_a6af1d0120589beb8fa832b4b45b7e7d4.html#a6af1d0120589beb8fa832b4b45b7e7d4">More...</a><br /></td></tr>
+<tr class="memdesc:a6af1d0120589beb8fa832b4b45b7e7d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST union method for spatiotemporal values.  <a href="tspatial__gist_8c_a6af1d0120589beb8fa832b4b45b7e7d4.html#a6af1d0120589beb8fa832b4b45b7e7d4">More...</a><br /></td></tr>
 <tr class="separator:a6af1d0120589beb8fa832b4b45b7e7d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e444b3d49f98f3599332471b1844624"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a6e444b3d49f98f3599332471b1844624.html#a6e444b3d49f98f3599332471b1844624">stbox_penalty</a> (void *bbox1, void *bbox2)</td></tr>
 <tr class="memdesc:a6e444b3d49f98f3599332471b1844624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the amount by which the union of the two boxes is larger than the original <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a>'s volume.  <a href="tspatial__gist_8c_a6e444b3d49f98f3599332471b1844624.html#a6e444b3d49f98f3599332471b1844624">More...</a><br /></td></tr>
@@ -130,14 +131,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:adfa90c6d9af3f56916077485ad410b4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the union of two spatiotemporal boxes.  <a href="tspatial__gist_8c_adfa90c6d9af3f56916077485ad410b4a.html#adfa90c6d9af3f56916077485ad410b4a">More...</a><br /></td></tr>
 <tr class="separator:adfa90c6d9af3f56916077485ad410b4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32b033d53fe1525afc0537ced47b20b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">Tspatial_gist_compress</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:a32b033d53fe1525afc0537ced47b20b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST compress methods for temporal spatial values.  <a href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">More...</a><br /></td></tr>
+<tr class="memdesc:a32b033d53fe1525afc0537ced47b20b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST compress methods for spatiotemporal values.  <a href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">More...</a><br /></td></tr>
 <tr class="separator:a32b033d53fe1525afc0537ced47b20b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad4f98705ef53688697e4b6abf55648f1"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_ad4f98705ef53688697e4b6abf55648f1.html#ad4f98705ef53688697e4b6abf55648f1">tspatial_gist_get_stbox</a> (FunctionCallInfo fcinfo, <a class="el" href="structSTBox.html">STBox</a> *result, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
 <tr class="memdesc:ad4f98705ef53688697e4b6abf55648f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a query argument into a box initializing the dimensions that must not be taken into account by the operators to infinity.  <a href="tspatial__gist_8c_ad4f98705ef53688697e4b6abf55648f1.html#ad4f98705ef53688697e4b6abf55648f1">More...</a><br /></td></tr>
 <tr class="separator:ad4f98705ef53688697e4b6abf55648f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >R-tree GiST index for temporal spatial values. </p>
+<div class="textblock"><p >R-tree GiST index for spatiotemporal values. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

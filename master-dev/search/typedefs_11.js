@@ -8,5 +8,7 @@ var searchData=
   ['timestamptz_5',['TimestampTz',['../postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe',1,'TimestampTz():&#160;postgres_ext_defs.in.h'],['../timestamp__def_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe',1,'TimestampTz():&#160;timestamp_def.h']]],
   ['timezoneabbrevtable_6',['TimeZoneAbbrevTable',['../datetime_8h_a8623bc07850080176a7394865238094c.html#a8623bc07850080176a7394865238094c',1,'datetime.h']]],
   ['tmtochar_7',['TmToChar',['../formatting_8c_af7605c63b90f01758a655ad2749c7072.html#af7605c63b90f01758a655ad2749c7072',1,'formatting.c']]],
-  ['transactionid_8',['TransactionId',['../c_8h_ae3813a982afe84a2d46d97dfe694f021.html#ae3813a982afe84a2d46d97dfe694f021',1,'c.h']]]
+  ['tpfunc_5fbase_8',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a14e8d51921d33d20867929767d50f51d.html#a14e8d51921d33d20867929767d50f51d',1,'temporal.h']]],
+  ['tpfunc_5ftemp_9',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_a73d8710f730e73a0865d3d6200b6910c.html#a73d8710f730e73a0865d3d6200b6910c',1,'temporal.h']]],
+  ['transactionid_10',['TransactionId',['../c_8h_ae3813a982afe84a2d46d97dfe694f021.html#ae3813a982afe84a2d46d97dfe694f021',1,'c.h']]]
 ];
