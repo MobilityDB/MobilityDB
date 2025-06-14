@@ -178,7 +178,6 @@ extern long double pointsegm_locate(Datum start, Datum end, Datum point,
 
 /* Intersection functions */
 
-// There is no function tpointsegm_intersection_value since it is not needed
 extern int tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,

@@ -2733,54 +2733,51 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 {
   assert(lower < upper); assert(t1); assert(t2);
   meosType basetype = temptype_basetype(temptype);
+  /* If one of the segments is constant */
+  if (datum_eq(start1, end1, basetype))
+    return tsegment_intersection_value(start2, end2, start1, temptype,
+      lower, upper, t1, t2);
+  else if (datum_eq(start2, end2, basetype))
+    return tsegment_intersection_value(start1, end1, start2, temptype,
+      lower, upper, t1, t2);
+
+  /* Both segments have linear interpolation */
   int result = 0; /* Make compiler quiet */
-  bool segm1_const = datum_eq(start1, end1, basetype);
-  bool segm2_const = datum_eq(start2, end2, basetype);
-  if (segm1_const)
-    result = tsegment_intersection_value(start2, end2, start1, temptype,
-      lower, upper, t1, t2);
-  else if (segm2_const)
-    result = tsegment_intersection_value(start1, end1, start2, temptype,
-      lower, upper, t1, t2);
-  else
+  assert(temporal_type(temptype));
+  if (tnumber_type(temptype))
   {
-    /* Both segments have linear interpolation */
-    assert(temporal_type(temptype));
-    if (tnumber_type(temptype))
-    {
-      result = tnumbersegm_intersection(start1, end1, start2, end2, basetype,
-        lower, upper, t1);
-      if (t2) *t2 = *t1;
-    }
-    else if (temptype == T_TGEOMPOINT)
-    {
-      result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
-        upper, t1);
-      if (t2) *t2 = *t1;
-    }
-    else if (temptype == T_TGEOGPOINT)
-    {
-      result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
-        upper, t1);
-      if (t2) *t2 = *t1;
-    }
+    result = tnumbersegm_intersection(start1, end1, start2, end2, basetype,
+      lower, upper, t1);
+    if (t2) *t2 = *t1;
+  }
+  else if (temptype == T_TGEOMPOINT)
+  {
+    result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1);
+    if (t2) *t2 = *t1;
+  }
+  else if (temptype == T_TGEOGPOINT)
+  {
+    result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1);
+    if (t2) *t2 = *t1;
+  }
 #if CBUFFER
-    else if (temptype == T_TCBUFFER)
-      result = tcbuffersegm_intersection(start1, end1, start2, end2, lower,
-        upper, t1, t2);
+  else if (temptype == T_TCBUFFER)
+    result = tcbuffersegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1, t2);
 #endif
 #if NPOINT
-    else if (temptype == T_TNPOINT)
-      result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
-        upper, t1, t2);
+  else if (temptype == T_TNPOINT)
+    result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1, t2);
 #endif
-    else 
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown intersection function for type: %s",
-        meostype_name(temptype));
-      return -1;
-    }
+  else 
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown intersection function for type: %s",
+      meostype_name(temptype));
+    return -1;
   }
   return result;
 }

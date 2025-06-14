@@ -544,61 +544,37 @@ stbox_tile_state_next(STboxGridState *state)
   state->i++;
   /* Advance the current values for the available dimensions.
    * Notice that the dimensions are "compacted", that is, for both XYZ and XYT
-   * the last dimension Z or T are in coords[2], while for only T only
-   * coords[0] is used */
-  if (state->hasx)
+   * the last dimension Z or T are in coords[2] */
+  assert(state->hasx);
+
+  /* X dimension */
+  state->x += state->xsize;
+  state->coords[0]++;
+  if (state->coords[0] >= state->max_coords[0])
   {
-    /* X dimension */
-    state->x += state->xsize;
-    state->coords[0]++;
-    if (state->coords[0] >= state->max_coords[0])
+    state->x = state->box.xmin;
+    state->coords[0] = 0;
+    state->y += state->ysize;
+    state->coords[1]++;
+    if (state->coords[1] >= state->max_coords[1])
     {
-      state->x = state->box.xmin;
-      state->coords[0] = 0;
-      state->y += state->ysize;
-      state->coords[1]++;
-      if (state->coords[1] >= state->max_coords[1])
+      if (state->hasz)
       {
-        if (state->hasz)
-        {
-          /* has Z */
-          state->y = state->box.ymin;
-          state->coords[1] = 0;
-          state->z += state->zsize;
-          state->coords[2]++;
-          if (state->coords[2] >= state->max_coords[2])
-          {
-            if (state->hast)
-            {
-              /* has Z and has T */
-              state->z = state->box.zmin;
-              state->coords[2] = 0;
-              state->t += state->tunits;
-              state->coords[3]++;
-              if (state->coords[3] >= state->max_coords[3])
-              {
-                state->done = true;
-                return;
-              }
-            }
-            else
-            {
-              /* has Z and does not have T */
-              state->done = true;
-              return;
-            }
-          }
-        }
-        else
+        /* has Z */
+        state->y = state->box.ymin;
+        state->coords[1] = 0;
+        state->z += state->zsize;
+        state->coords[2]++;
+        if (state->coords[2] >= state->max_coords[2])
         {
           if (state->hast)
           {
-            /* does not have Z and has T */
-            state->y = state->box.ymin;
-            state->coords[1] = 0;
+            /* has Z and has T */
+            state->z = state->box.zmin;
+            state->coords[2] = 0;
             state->t += state->tunits;
-            state->coords[2]++;
-            if (state->coords[2] >= state->max_coords[2])
+            state->coords[3]++;
+            if (state->coords[3] >= state->max_coords[3])
             {
               state->done = true;
               return;
@@ -606,23 +582,34 @@ stbox_tile_state_next(STboxGridState *state)
           }
           else
           {
-            /* does not have Z and does not have T */
+            /* has Z and does not have T */
             state->done = true;
             return;
           }
         }
       }
-    }
-  }
-  else
-  {
-    /* Only T dimension */
-    state->t += state->tunits;
-    state->coords[0]++;
-    if (state->coords[0] >= state->max_coords[0])
-    {
-      state->done = true;
-      return;
+      else
+      {
+        if (state->hast)
+        {
+          /* does not have Z and has T */
+          state->y = state->box.ymin;
+          state->coords[1] = 0;
+          state->t += state->tunits;
+          state->coords[2]++;
+          if (state->coords[2] >= state->max_coords[2])
+          {
+            state->done = true;
+            return;
+          }
+        }
+        else
+        {
+          /* does not have Z and does not have T */
+          state->done = true;
+          return;
+        }
+      }
     }
   }
   return;

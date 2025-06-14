@@ -977,6 +977,7 @@ lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
 GSERIALIZED *
 geopointarr_make_trajectory(GSERIALIZED **points, int count, interpType interp)
 {
+  assert(points); assert(count > 0);
   if (count == 1)
     return geo_copy(points[0]);
 
