@@ -292,7 +292,6 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  /* While waiting for this function we cheat and call the function below */
   return tcbuffersegm_distance_turnpt(start1, end1, start2, end2, (Datum) 0.0,
     lower, upper, t1, t2);
 }

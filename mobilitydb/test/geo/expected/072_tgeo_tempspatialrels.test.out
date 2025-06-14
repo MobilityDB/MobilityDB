@@ -121,6 +121,339 @@ SELECT tContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 ERROR:  The tgeometry cannot have Z dimension
 SELECT tContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
+SELECT tCovers(NULL::geometry, tgeometry 'Point(1 1)@2000-01-01');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', NULL::tgeometry);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                                               tcovers                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
+                             tcovers                              
+------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
+                                               tcovers                                                
+------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
+                                               tcovers                                                
+------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
+             tcovers              
+----------------------------------
+ {f@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
+                              tcovers                               
+--------------------------------------------------------------------
+ {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
+(1 row)
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST), [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+                             tcovers                              
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+/* Errors */
+SELECT tCovers(geometry 'SRID=5676;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'SRID=5676;Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+ERROR:  The tgeometry cannot have Z dimension
+SELECT tCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', NULL::geometry);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(NULL::tgeometry, geometry 'Point(1 1)');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+                                                                               tcovers                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
+                             tcovers                              
+------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
+                                               tcovers                                                
+------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
+                                               tcovers                                                
+------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
+             tcovers              
+----------------------------------
+ {f@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
+                              tcovers                               
+--------------------------------------------------------------------
+ {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST), [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT tCovers(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The tgeometry cannot have Z dimension
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  The geometry cannot have Z dimension
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', NULL::tgeometry);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(NULL::tgeometry, tgeometry 'Point(1 1)@2000-01-01');
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01', true);
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01', false);
+ tcovers 
+---------
+ 
+(1 row)
+
+/* Errors */
+SELECT tCovers(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'SRID=5676;Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tCovers(tgeometry 'Point(1 1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+ERROR:  The tgeometry cannot have Z dimension
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1 1)@2000-01-01');
+ERROR:  The tgeometry cannot have Z dimension
 SELECT tDisjoint(NULL::geometry, tgeometry 'Point(1 1)@2000-01-01');
  tdisjoint 
 -----------

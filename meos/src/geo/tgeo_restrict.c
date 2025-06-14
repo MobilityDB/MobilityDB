@@ -190,11 +190,11 @@ tpoint_force2d(const Temporal *temp)
  * @brief Return the timestamp at which a segment of a temporal point takes a
  * base value (iterator function)
  * @details To take into account roundoff errors, the function considers that
- * two values are equal even if their coordinates may differ by @p MEOS_EPSILON.
+ * two values are equal even if their coordinates may differ by `MEOS_EPSILON`.
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
  * @param[out] t Timestamp
- * @return Return true if the point is found in the temporal point
+ * @return Return true if the point is found in the temporal point segment
  * @pre The segment is not constant and has linear interpolation
  * @note The resulting timestamptz may be at an exclusive bound
  */
@@ -214,9 +214,8 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
   else
   {
     double dist;
-    double fraction = (double) pointsegm_locate_point(value1, value2, value,
-      &dist);
-    if (fabs(dist) >= MEOS_EPSILON)
+    double fraction = (double) pointsegm_locate(value1, value2, value, &dist);
+    if (fraction < 0 || fabs(dist) >= MEOS_EPSILON)
       result = false;
     else
     {
@@ -232,10 +231,7 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
  * point
  * @details This function is called by the #tpointseq_interperiods function
  * while computing atGeometry to find the timestamp at which an intersection
- * point found by PostGIS is located. This function differs from function
- * #tpointsegm_intersection_value in particular since the latter is used for
- * finding crossings during synchronization and thus it is required that the
- * timestamp is strictly between the timestamps of a segment.
+ * point found by PostGIS is located.
  * @param[in] seq Temporal point sequence
  * @param[in] value Base value
  * @param[out] t Timestamp

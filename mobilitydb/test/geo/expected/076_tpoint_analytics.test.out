@@ -341,6 +341,12 @@ SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-
  POINT M (1 1 1)
 (1 row)
 
+SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01]', tfloat '[1@2000-01-01]'));
+    st_astext    
+-----------------
+ POINT M (1 1 1)
+(1 row)
+
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1 1)@2000-01-01', '5@2000-01-01'));
      st_astext      
 --------------------

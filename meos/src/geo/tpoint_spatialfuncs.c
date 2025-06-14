@@ -464,82 +464,6 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
 }
 
 /**
- * @brief Return a float between 0 and 1 representing the location of the
- * closest point on the geometry segment to the given point, as a fraction of
- * total segment length
- * @param[in] start,end Points defining the segment
- * @param[in] point Reference point
- * @param[out] dist Distance
- * @note This is the previous version of the function that is kept here while
- * recovering the CI tests. This function should be merged with the function
- * #pointsegm_locate below
- */
-long double
-pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(start);
-  long double result;
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-  {
-    POINT4D p1, p2, p, closest;
-    datum_point4d(start, &p1);
-    datum_point4d(end, &p2);
-    datum_point4d(point, &p);
-    double dist1;
-    /* Get the closest point and the distance */
-    result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
-    /* For robustness, force 0/1 when closest point ~= start/end point */
-    if (p4d_same(&p1, &closest))
-      result = 0.0;
-    else if (p4d_same(&p2, &closest))
-      result = 1.0;
-    /* Return the distance between the closest point and the point if requested */
-    if (dist)
-    {
-      dist1 = WGS84_RADIUS * dist1;
-      /* Add to the distance the vertical displacement if we're in 3D */
-      if (FLAGS_GET_Z(gs->gflags))
-        dist1 = sqrt((closest.z - p.z) * (closest.z - p.z) + dist1 * dist1);
-      *dist = dist1;
-    }
-  }
-  else
-  {
-    if (FLAGS_GET_Z(gs->gflags))
-    {
-      const POINT3DZ *p1 = DATUM_POINT3DZ_P(start);
-      const POINT3DZ *p2 = DATUM_POINT3DZ_P(end);
-      const POINT3DZ *p = DATUM_POINT3DZ_P(point);
-      POINT3DZ proj;
-      result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
-      /* For robustness, force 0/1 when closest point ~= start/end point */
-      if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
-        result = 0.0;
-      else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
-        result = 1.0;
-      if (dist)
-        *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
-    }
-    else
-    {
-      const POINT2D *p1 = DATUM_POINT2D_P(start);
-      const POINT2D *p2 = DATUM_POINT2D_P(end);
-      const POINT2D *p = DATUM_POINT2D_P(point);
-      POINT2D proj;
-      result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
-      if (p2d_same(p1, &proj))
-        result = 0.0;
-      else if (p2d_same(p2, &proj))
-        result = 1.0;
-     /* Return the distance between the closest point and the point if requested */
-     if (dist)
-        *dist = distance2d_pt_pt((POINT2D *) p, &proj);
-    }
-  }
-  return result;
-}
-
-/**
  * @brief Return a float in (0,1) representing the location of the closest
  * point on the line segment to the given point, as a fraction of the total
  * segment length, return -1.0 if the point is not located in the segment or
@@ -569,12 +493,11 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
     if (fabs(dist1) >= MEOS_EPSILON || p4d_same(&p1, &closest) ||
         p4d_same(&p2, &closest))
       return -1.0;
-    /* Return the distance between the closest point and the point if
-     * requested */
+    /* Return the distance between the closest point and the point */
     if (dist)
     {
       dist1 = WGS84_RADIUS * dist1;
-      /* Add to the distance the vertical displacement if we're in 3D */
+      /* Add to the distance the vertical displacement if we are in 3D */
       if (FLAGS_GET_Z(gs->gflags))
         dist1 = sqrt( (closest.z - p.z) * (closest.z - p.z) + dist1 * dist1 );
       *dist = dist1;
@@ -594,8 +517,7 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
           p3d_same((POINT3D *) p1, (POINT3D *) &proj) ||
           p3d_same((POINT3D *) p2, (POINT3D *) &proj))
         return -1.0;
-      /* Return the distance between the closest point and the point if
-       * requested */
+      /* Return the distance between the closest point and the point */
       if (dist)
         *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
     }
@@ -610,8 +532,7 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
       if (fabs(dist1) >= MEOS_EPSILON || p2d_same(p1, &proj) ||
           p2d_same(p2, &proj))
         return -1.0;
-      /* Return the distance between the closest point and the segment if
-       * requested */
+      /* Return the distance between the closest point and the segment */
       if (dist)
         *dist = dist1;
     }
@@ -622,38 +543,12 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
 /*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
  * that must be implemented by each temporal type
+ * N.B. There is no function `tpointsegm_intersection_value` since the
+ * function tinterrel_tgeo_geo for computing e.g., tintersects(tpoint, point)
+ * is computed by a single call to PostGIS by (1) splitting the temporal point
+ * sequence into an array of non self-intersecting fragments and (2) computing
+ * the intersection of the trajectory of the fragment and the point.
  *****************************************************************************/
-
-/**
- * @brief Return 1 if a segment of a temporal point value intersects a point
- * at the timestamp output in the last argument
- * @param[in] start,end Base values defining the segment
- * @param[in] value Base value
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
- * @pre The geometry is not empty
- */
-int
-tpointsegm_intersection_value(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t)
-{
-  assert(lower < upper); assert(t);
-  assert(! gserialized_is_empty(DatumGetGserializedP(value)));
-
-  /* We are sure that the trajectory is a line */
-  double dist;
-  double fraction = (double) pointsegm_locate(start, end, value, &dist);
-  if (fraction < 0.0)
-    return 0;
-  if (t)
-  {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = lower + (TimestampTz) (duration * fraction);
-  }
-  return 1;
-}
 
 /**
  * @brief Return 1 if the segments of two temporal geometry points intersect
@@ -3354,7 +3249,7 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
   const POINT2D *q;
   long double fraction;
   Datum proj = 0; /* make compiler quiet */
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(DatumGetGserializedP(start)->gflags);
+  bool geodetic = FLAGS_GET_GEODETIC(DatumGetGserializedP(start)->gflags);
   if (geodetic)
   {
     GEOGRAPHIC_EDGE e, e1;
