@@ -80,73 +80,15 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @post As there is a single turning point, `t2` is set to `t1`
  */
 int
-tnumber_distance_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param UNUSED, meosType basetype, TimestampTz lower,
+tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum param UNUSED, TimestampTz lower,
   TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  if (! tnumbersegm_intersection(start1, end1, start2, end2, basetype,
+  if (! tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
       lower, upper, t1))
     return 0;
   *t2 = *t1;
   return 1;
-}
-
-/**
- * @brief Return true if the segments of two temporal integers intersect at a
- * timestamptz
- * @param[in] start1,end1 Values defining the first segment
- * @param[in] start2,end2 Values defining the second segment
- * @param[in] param Additional parameter
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
- * @note This function is passed to the lifting infrastructure when computing
- * the temporal distance
- */
-int
-tint_distance_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
-{
-  return tnumber_distance_turnpt(start1, end1, start2, end2, param,
-    T_INT4, lower, upper, t1, t2);
-}
-
-/**
- * @brief Return true if the segments of two temporal floats intersect at a
- * timestamptz
- * @param[in] start1,end1 Values defining the first segment
- * @param[in] start2,end2 Values defining the second segment
- * @param[in] param Additional parameter
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
- * @note This function is passed to the lifting infrastructure when computing
- * the temporal distance
- */
-int
-tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
-{
-  return tnumber_distance_turnpt(start1, end1, start2, end2, param,
-    T_FLOAT8, lower, upper, t1, t2);
-}
-
-/**
- * @brief Return true if the segment of a temporal integer intersects a value
- * at a timestamptz
- * @param[in] start,end Values defining the first segment
- * @param[in] value Values to locate
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Resulting imestamps
- * @note This function is passed to the lifting infrastructure when computing
- * the temporal distance
- */
-int
-tint_base_distance_turnpt(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  return tnumber_distance_turnpt(start, end, value, value, value,
-    T_INT4, lower, upper, t1, t2);
 }
 
 /**
@@ -163,9 +105,10 @@ int
 tfloat_base_distance_turnpt(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  return tnumber_distance_turnpt(start, end, value, value, value,
-    T_FLOAT8, lower, upper, t1, t2);
+  return tfloat_distance_turnpt(start, end, value, value, value, lower, upper,
+    t1, t2);
 }
+
 
 /*****************************************************************************/
 
@@ -192,9 +135,8 @@ distance_tnumber_number(const Temporal *temp, Datum value)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_base = ! lfinfo.reslinear ? NULL : (
-    (basetype == T_INT4) ? &tint_base_distance_turnpt :
-      &tfloat_base_distance_turnpt );
+  lfinfo.tpfn_base = (! lfinfo.reslinear || basetype == T_INT4) ? NULL :
+    &tfloat_base_distance_turnpt;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -224,8 +166,8 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_temp = ! lfinfo.reslinear ? NULL : (
-    (basetype == T_INT4) ? &tint_distance_turnpt : &tfloat_distance_turnpt );
+  lfinfo.tpfn_temp = (! lfinfo.reslinear || basetype == T_INT4) ? NULL :
+    &tfloat_distance_turnpt;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
