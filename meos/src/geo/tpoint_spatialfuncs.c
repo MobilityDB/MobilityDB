@@ -298,9 +298,7 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
     return 0.0;
   }
 
-  /*
-   * Function #closest_point2d_on_segment_ratio explains how r is computed
-   */
+  /* Function #closest_point2d_on_segment_ratio explains how r is computed */
   long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
       (p->z-A->z) * (B->z-A->z) ) /
     ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
@@ -3174,6 +3172,7 @@ geom_bearing(Datum point1, Datum point2)
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
     return Float8GetDatum(0.0);
+
   if (fabs(p1->y - p2->y) > MEOS_EPSILON)
   {
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
@@ -3689,7 +3688,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(insts, end - start,
       true, true, LINEAR, NORMALIZE_NO);
   }
-
   return nseqs;
 }
 

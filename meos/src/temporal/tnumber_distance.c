@@ -72,7 +72,6 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
- * @param[in] basetype Type of the values
  * @param[in] lower,upper Timestamps defining the segment
  * @param[out] t1,t2
  * @note This function is passed to the lifting infrastructure when computing
@@ -80,9 +79,9 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @post As there is a single turning point, `t2` is set to `t1`
  */
 int
-tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param UNUSED, TimestampTz lower,
-  TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2)
 {
   if (! tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
       lower, upper, t1))
@@ -108,7 +107,6 @@ tfloat_base_distance_turnpt(Datum start, Datum end, Datum value,
   return tfloat_distance_turnpt(start, end, value, value, value, lower, upper,
     t1, t2);
 }
-
 
 /*****************************************************************************/
 

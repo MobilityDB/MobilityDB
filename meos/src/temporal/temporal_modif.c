@@ -63,6 +63,50 @@
 #endif
 
 /*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that two temporal instants have the same value
+ */
+bool
+ensure_tinstant_same_value(const TInstant *inst1, const TInstant *inst2,
+  meosType basetype)
+{
+  assert(inst1->t == inst2->t);
+  if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
+  {
+    char *str1 = pg_timestamptz_out(inst1->t);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The temporal values have different value at their common timestamp %s",
+      str1);
+    pfree(str1);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that the first temporal instant is before the second one
+ * @note This function is a variant of function #ensure_increasing_timestamps
+ * since we must take into account inclusive/exclusive bounds
+ */
+bool
+ensure_tinstant_increasing_time(const TInstant *inst1, const TInstant *inst2)
+{
+  if (inst1->t > inst2->t)
+  {
+    char *str1 = pg_timestamptz_out(inst1->t);
+    char *str2 = pg_timestamptz_out(inst2->t);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Timestamps for temporal value must be increasing: %s, %s", str1, str2);
+    pfree(str1); pfree(str2);
+    return false;
+  }
+  return true;
+}
+
+/*****************************************************************************
  * Merge functions
  *****************************************************************************/
 
@@ -397,15 +441,8 @@ tcontseq_merge_array_iter(const TSequence **sequences, int count,
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
       seq2->period.lower_inc)
     {
-      if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
-      {
-        str1 = pg_timestamptz_out(inst1->t);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The temporal values have different value at their common timestamp %s",
-          str1);
-        pfree(str1);
+      if (! ensure_tinstant_same_value(inst1, inst2, basetype))
         return NULL;
-      }
     }
     seq1 = seq2;
   }
@@ -772,16 +809,8 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   else /* overlap on the boundary */
   {
     meosType basetype = temptype_basetype(seq1->temptype);
-    if (! datum_eq(tinstant_value_p(instants[0]), tinstant_value_p(instants[1]),
-      basetype))
-    {
-      char *str = pg_timestamptz_out(instants[0]->t);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values have different value at their common timestamp %s",
-        str);
-      pfree(str);
+    if (! ensure_tinstant_same_value(instants[0], instants[1], basetype))
       return NULL;
-    }
   }
   sequences[nseqs++] = (TSequence *) seq2;
 
@@ -1242,29 +1271,15 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         inst1 = TSEQUENCE_INST_N(sequences[nseqs - 1],
           sequences[nseqs - 1]->count - 1);
         inst2 = TSEQUENCE_INST_N(seq2, 0);
-        if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
-        {
-          str = pg_timestamptz_out(inst1->t);
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "The temporal values have different value at their common timestamp %s",
-            str);
-          pfree(str);
+        if (! ensure_tinstant_same_value(inst1, inst2, basetype))
           return NULL;
-        }
       }
       if (cmp2 == 0 && seq2->period.upper_inc && seq1->period.lower_inc)
       {
         inst1 = TSEQUENCE_INST_N(seq2, seq2->count - 1);
         inst2 = TSEQUENCE_INST_N(seq1, 0);
-        if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
-        {
-          str = pg_timestamptz_out(inst1->t);
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "The temporal values have different value at their common timestamp %s",
-            str);
-          pfree(str);
+        if (! ensure_tinstant_same_value(inst1, inst2, basetype))
           return NULL;
-        }
       }
       /* Fill the gap between the last sequence added and seq2 */
       if (sequences[nseqs - 1]->period.upper_inc && seq2->period.lower_inc)
@@ -1737,40 +1752,22 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       ! ensure_same_rid_tnpointinst(inst, last))
     return NULL;
 #endif
-  char *str1;
-  /* We cannot call ensure_increasing_timestamps since we must take into
-   * account inclusive/exclusive bounds */
-  if (last->t > inst->t)
-  {
-    str1 = pg_timestamptz_out(last->t);
-    char *str2 = pg_timestamptz_out(inst->t);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Timestamps for temporal value must be increasing: %s, %s", str1, str2);
-    pfree(str1); pfree(str2);
+  if (! ensure_tinstant_increasing_time(last, inst))
     return NULL;
-  }
 
   Datum value1 = tinstant_value_p(last);
   Datum value = tinstant_value_p(inst);
   if (last->t == inst->t)
   {
-    bool eqv1v = datum_eq(value1, value, basetype);
     if (seq->period.upper_inc)
     {
-      if (! eqv1v)
-      {
-        str1 = pg_timestamptz_out(last->t);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "The temporal values have different value at their common timestamp %s",
-          str1);
-        pfree(str1);
+      if (! ensure_tinstant_same_value(last, inst, basetype))
         return NULL;
-      }
       /* Do not add the new instant if new instant is equal to be last one */
       return (Temporal *) tsequence_copy(seq);
     }
     /* Exclusive upper bound and different value => result is a sequence set */
-    else if (interp == LINEAR && ! eqv1v)
+    else if (interp == LINEAR && ! datum_eq(value1, value, basetype))
     {
       TSequence *sequences[2];
       sequences[0] = (TSequence *) seq;
@@ -1918,33 +1915,14 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
   assert(interp1 == MEOS_FLAGS_GET_INTERP(seq2->flags));
   const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
-  /* We cannot call ensure_increasing_timestamps since we must take into
-   * account inclusive/exclusive bounds */
-  char *str1;
-  if (inst1->t > inst2->t)
-  {
-    str1 = pg_timestamptz_out(inst1->t);
-    char *str2 = pg_timestamptz_out(inst2->t);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Timestamps for temporal value must be increasing: %s, %s", str1, str2);
-    pfree(str1); pfree(str2);
+  if (! ensure_tinstant_increasing_time(inst1, inst2))
     return NULL;
-  }
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
   {
     meosType basetype = temptype_basetype(seq1->temptype);
-    Datum value1 = tinstant_value_p(inst1);
-    Datum value2 = tinstant_value_p(inst2);
-    if (! datum_eq(value1, value2, basetype))
-    {
-      str1 = pg_timestamptz_out(inst1->t);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values have different value at their common timestamp %s",
-        str1);
-      pfree(str1);
+    if (! ensure_tinstant_same_value(inst1, inst2, basetype))
       return NULL;
-    }
   }
 #if NPOINT
   if (inst1->temptype == T_TNPOINT && interp1 != DISCRETE &&
@@ -2105,33 +2083,14 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   TSequence *last = (TSequence *) TSEQUENCESET_SEQ_N(ss, ss->count - 1);
   const TInstant *inst1 = TSEQUENCE_INST_N(last, last->count - 1);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq, 0);
-  /* We cannot call #ensure_increasing_timestamps since we must take into
-   * account inclusive/exclusive bounds */
-  char *str1;
-  if (inst1->t > inst2->t)
-  {
-    str1 = pg_timestamptz_out(inst1->t);
-    char *str2 = pg_timestamptz_out(inst2->t);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Timestamps for temporal value must be increasing: %s, %s", str1, str2);
-    pfree(str1); pfree(str2);
+  if (! ensure_tinstant_increasing_time(inst1, inst2))
     return NULL;
-  }
   else if (inst1->t == inst2->t && ss->period.upper_inc &&
     seq->period.lower_inc)
   {
     meosType basetype = temptype_basetype(ss->temptype);
-    Datum value1 = tinstant_value_p(inst1);
-    Datum value2 = tinstant_value_p(inst2);
-    if (! datum_eq(value1, value2, basetype))
-    {
-      str1 = pg_timestamptz_out(inst1->t);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The temporal values have different value at their common timestamp %s",
-        str1);
-      pfree(str1);
+    if (! ensure_tinstant_same_value(inst1, inst2, basetype))
       return NULL;
-    }
   }
 
   bool removelast, removefirst;

@@ -405,9 +405,9 @@ tnpointseqset_speed(const TSequenceSet *ss)
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *seq = tnpointseq_speed(TSEQUENCESET_SEQ_N(ss, i));
-    if (seq)
-      sequences[nseqs++] = seq;
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    if (seq->count > 1)
+      sequences[nseqs++] = tnpointseq_speed(seq);
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);
