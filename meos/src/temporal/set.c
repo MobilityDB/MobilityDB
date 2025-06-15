@@ -230,14 +230,10 @@ set_out(const Set *s, int maxdd)
 static size_t
 set_bbox_size(meosType settype)
 {
+  assert(alphanumset_type(settype) || spatialset_type(settype));
   if (alphanumset_type(settype))
     return 0;
-  if (spatialset_type(settype))
-    return sizeof(STBox);
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown set type when determining the size of the bounding box: %s",
-    meostype_name(settype));
-  return SIZE_MAX;
+  return sizeof(STBox);
 }
 
 #if DEBUG_BUILD

@@ -961,6 +961,7 @@ date2timestamp_opt_overflow(DateADT dateVal, int *overflow)
   return result;
 }
 
+#if MEOS
 /*
  * Promote date to timestamp, throwing error for overflow.
  */
@@ -970,7 +971,6 @@ date2timestamp(DateADT dateVal)
   return date2timestamp_opt_overflow(dateVal, NULL);
 }
 
-#if MEOS
 /**
  * @ingroup meos_base_types
  * @brief Convert a date into a timestamp 
@@ -2109,14 +2109,6 @@ interval_cmp_value(const Interval *interval)
   int128_add_int64_mul_int64(&span, days, USECS_PER_DAY);
 
   return span;
-}
-
-static int
-interval_sign(const Interval *interval)
-{
-  INT128 span = interval_cmp_value(interval);
-  INT128 zero = int64_to_int128(0);
-  return int128_compare(span, zero);
 }
 
 /**

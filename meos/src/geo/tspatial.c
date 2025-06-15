@@ -114,9 +114,8 @@ spatialbase_as_text(Datum value, meosType type, int maxdd)
 char *
 spatialbase_as_ewkt(Datum value, meosType type, int maxdd)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_negative(maxdd))
-    return NULL;
+  assert(spatial_basetype(type)); assert(maxdd >= 0);
+
 
   /* Get the text representation of the value */
   char *base_str = spatialbase_as_text(value, type, maxdd);
@@ -334,12 +333,12 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
   {
     if (temporal_type(elemtype))
       result[i] = extended ?
-          tspatial_as_ewkt(DatumGetTemporalP(spatialarr[i]), maxdd) :
-          tspatial_as_text(DatumGetTemporalP(spatialarr[i]), maxdd);
+        tspatial_as_ewkt(DatumGetTemporalP(spatialarr[i]), maxdd) :
+        tspatial_as_text(DatumGetTemporalP(spatialarr[i]), maxdd);
     else
       result[i] = extended ?
-          spatialbase_as_ewkt(spatialarr[i], elemtype, maxdd) :
-          spatialbase_as_text(spatialarr[i], elemtype, maxdd);
+        spatialbase_as_ewkt(spatialarr[i], elemtype, maxdd) :
+        spatialbase_as_text(spatialarr[i], elemtype, maxdd);
   }
   return result;
 }

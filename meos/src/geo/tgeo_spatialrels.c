@@ -941,7 +941,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* EVER */
 
   /* Temporal point case */
-  if (tpoint_type(temp->flags))
+  if (tpoint_type(temp->temptype))
   {
     datum_func2 func = &datum_geom_covers;
     result = spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,

@@ -1364,6 +1364,7 @@ static int
 tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
   datum_func3 func, tpfunc_temp tpfn, TSequence **result)
 {
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   Datum startvalue = tinstant_value_p(start);
   if (seq->count == 1)
@@ -1396,17 +1397,11 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 
     /* Segment is constant or has step interpolation */
-    if (datum_eq(startvalue, endvalue, basetype) || ! linear)
+    if (datum_eq(startvalue, endvalue, basetype))
     {
       Datum value = func(startvalue, point, dist);
       tinstant_set(instants[0], value, lower);
-      if (! linear && upper_inc)
-      {
-        Datum value1 = func(endvalue, point, dist);
-        tinstant_set(instants[1], value1, upper);
-      }
-      else
-        tinstant_set(instants[1], value, upper);
+      tinstant_set(instants[1], value, upper);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEP, NORMALIZE_NO);
     }

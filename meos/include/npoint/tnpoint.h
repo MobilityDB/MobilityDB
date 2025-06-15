@@ -71,6 +71,10 @@ extern bool ensure_valid_tnpoint_stbox(const Temporal *temp, const STBox *box);
 extern bool ensure_valid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 
+extern int tnpointsegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
+
 extern bool common_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
 extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,

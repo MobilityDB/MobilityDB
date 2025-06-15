@@ -86,6 +86,12 @@ SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
  {"POINT Z (1 1 1)"}
 (1 row)
 
+SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
+                asewkt                 
+---------------------------------------
+ {"POINT(1 1)","SRID=5676;POINT(1 1)"}
+(1 row)
+
 SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  memsize 
 ---------

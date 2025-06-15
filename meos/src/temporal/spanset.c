@@ -283,8 +283,10 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
         char *str2 = span_out(&spans[i + 1], OUT_MAX_DIGITS);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The spans composing a span set must be increasing: %s, %s", str1, str2);
+#if MEOS
         pfree(str1); pfree(str2);
         return NULL;
+#endif
       }
     }
   }

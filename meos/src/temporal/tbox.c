@@ -164,7 +164,7 @@ tbox_make(const Span *s, const Span *p)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_one_not_null((void *) s, (void *) p) ||
-      (s &&  ! ensure_numspan_type(s->spantype)) || 
+      (s && ! ensure_numspan_type(s->spantype)) || 
       (p && ! ensure_span_isof_type(p, T_TSTZSPAN)))
     return NULL;
   /* Note: zero-fill is done in function tbox_set */
@@ -1493,7 +1493,6 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-
   return right_span_span(&box1->span, &box2->span);
 }
 
@@ -1512,7 +1511,6 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
-
   return overright_span_span(&box1->span, &box2->span);
 }
 

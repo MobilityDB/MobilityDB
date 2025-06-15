@@ -393,6 +393,12 @@ SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 4326
  f
 (1 row)
 
+SELECT asEWKT(transform(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]',7844));
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=7844;[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
 WITH test(geoset, pipeline) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}',
    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )

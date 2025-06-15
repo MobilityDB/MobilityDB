@@ -51,7 +51,7 @@ CREATE FUNCTION tContains(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
- * tContains
+ * tCovers
  *****************************************************************************/
 
 -- ALL the following functions are not STRICT
