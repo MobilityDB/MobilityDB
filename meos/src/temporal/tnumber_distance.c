@@ -83,11 +83,8 @@ tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2)
 {
-  if (! tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
-      lower, upper, t1))
-    return 0;
-  *t2 = *t1;
-  return 1;
+  return tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8,
+    lower, upper, t1, t2);
 }
 
 /**

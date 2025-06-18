@@ -198,9 +198,8 @@ tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   GSERIALIZED *ev2 = npoint_to_geom(DatumGetNpointP(end2));
   int result = tgeompointsegm_intersection(PointerGetDatum(sv1),
     PointerGetDatum(ev1), PointerGetDatum(sv2), PointerGetDatum(ev2),
-    lower, upper, t1);
+    lower, upper, t1, t2);
   pfree(sv1); pfree(ev1); pfree(sv2); pfree(ev2);
-  *t2 = *t1;
   return result;
 }
 

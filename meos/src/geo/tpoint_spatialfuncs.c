@@ -554,127 +554,14 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
+ * @param[out] t1,t2 Resulting timestamps
  */
 int
-tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t)
+tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  assert(lower < upper); assert(t);
-  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
-  bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
-  if (hasz)
-  {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(start1);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(end1);
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(start2);
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(end2);
-    x1 = p1->x; y1 = p1->y; z1 = p1->z;
-    x2 = p2->x; y2 = p2->y; z2 = p2->z;
-    x3 = p3->x; y3 = p3->y; z3 = p3->z;
-    x4 = p4->x; y4 = p4->y; z4 = p4->z;
-    /* Segments intersecting in the boundaries */
-    if ((float8_eq(x1, x3) && float8_eq(y1, y3) && float8_eq(z1, z3)) ||
-        (float8_eq(x2, x4) && float8_eq(y2, y4) && float8_eq(z2, z4)))
-      return 0;
-  }
-  else
-  {
-    const POINT2D *p1 = DATUM_POINT2D_P(start1);
-    const POINT2D *p2 = DATUM_POINT2D_P(end1);
-    const POINT2D *p3 = DATUM_POINT2D_P(start2);
-    const POINT2D *p4 = DATUM_POINT2D_P(end2);
-    x1 = p1->x; y1 = p1->y;
-    x2 = p2->x; y2 = p2->y;
-    x3 = p3->x; y3 = p3->y;
-    x4 = p4->x; y4 = p4->y;
-    /* Segments intersecting in the boundaries */
-    if ((float8_eq(x1, x3) && float8_eq(y1, y3)) ||
-        (float8_eq(x2, x4) && float8_eq(y2, y4)))
-      return 0;
-  }
-
-  long double xdenom = x2 - x1 - x4 + x3;
-  long double ydenom = y2 - y1 - y4 + y3;
-  long double zdenom = 0.0;
-  if (hasz)
-    zdenom = z2 - z1 - z4 + z3;
-  if (xdenom == 0 && ydenom == 0 && zdenom == 0)
-    /* Parallel segments */
-    return 0;
-
-  /* Potentially avoid the division based on
-   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
-   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c */
-  long double fraction, xfraction = 0, yfraction = 0, zfraction = 0;
-  if (xdenom != 0)
-  {
-    long double xnum = x3 - x1;
-    if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
-        (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
-      return 0;
-    xfraction = xnum / xdenom;
-    if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (ydenom != 0)
-  {
-    long double ynum = y3 - y1;
-    if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
-        (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
-      return 0;
-    yfraction = ynum / ydenom;
-    if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (hasz && zdenom != 0)
-  {
-    long double znum = z3 - z1;
-    if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
-        (zdenom < 0 && (znum > 0 || znum < zdenom)))
-      return 0;
-    zfraction = znum / zdenom;
-    if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (hasz)
-  {
-    /* If intersection occurs at different timestamps on each dimension */
-    if ((xdenom != 0 && ydenom != 0 && zdenom != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom == 0 && ydenom != 0 && zdenom != 0 &&
-        fabsl(yfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom != 0 && ydenom == 0 && zdenom != 0 &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom != 0 && ydenom != 0 && zdenom == 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON))
-      return 0;
-    if (xdenom != 0)
-      fraction = xfraction;
-    else if (ydenom != 0)
-      fraction = yfraction;
-    else
-      fraction = zfraction;
-  }
-  else /* 2D */
-  {
-    /* If intersection occurs at different timestamps on each dimension */
-    if (xdenom != 0 && ydenom != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON)
-      return 0;
-    fraction = xdenom != 0 ? xfraction : yfraction;
-  }
-  double duration = (double) (upper - lower);
-  *t = lower + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= lower || *t >= upper)
-    return 0;
-  return 1;
+  return tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, t1, t2);
 }
 
 /**
@@ -683,61 +570,14 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
+ * @param[out] t1,t2 Resulting timestamps
  */
 int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t)
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  const POINT2D *p1 = DATUM_POINT2D_P(start1);
-  const POINT2D *p2 = DATUM_POINT2D_P(end1);
-  const POINT2D *q1 = DATUM_POINT2D_P(start2);
-  const POINT2D *q2 = DATUM_POINT2D_P(end2);
-  GEOGRAPHIC_EDGE e1, e2;
-  GEOGRAPHIC_POINT close1, close2;
-  POINT3D A1, A2, B1, B2;
-  geographic_point_init(p1->x, p1->y, &(e1.start));
-  geographic_point_init(p2->x, p2->y, &(e1.end));
-  geographic_point_init(q1->x, q1->y, &(e2.start));
-  geographic_point_init(q2->x, q2->y, &(e2.end));
-  geog2cart(&(e1.start), &A1);
-  geog2cart(&(e1.end), &A2);
-  geog2cart(&(e2.start), &B1);
-  geog2cart(&(e2.end), &B2);
-  // TODO: The next computation should be done on geodetic coordinates
-  // The value found by the linear approximation below could be the starting
-  // point for an iterative method such as gradient descent or Newton's method
-  double fraction;
-  bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
-    (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
-  if (! found)
-    return 0;
-
-  /* Calculate distance and direction for the edges */
-  double dist1 = sphere_distance(&(e1.start), &(e1.end));
-  double dir1 = sphere_direction(&(e1.start), &(e1.end), dist1);
-  double dist2 = sphere_distance(&(e2.start), &(e2.end));
-  double dir2 = sphere_direction(&(e2.start), &(e2.end), dist2);
-  /* Compute minimum distance */
-  int res = sphere_project(&(e1.start), dist1 * fraction, dir1, &close1);
-  if (res == LW_FAILURE)
-    return 0;
-  res = sphere_project(&(e2.start), dist2 * fraction, dir2, &close2);
-  if (res == LW_FAILURE)
-    return 0;
-  double dist = sphere_distance(&close1, &close2);
-  /* Ensure robustness */
-  if (fabs(dist) < FP_TOLERANCE)
-    dist = 0.0;
-  if (DatumGetFloat8(dist) > MEOS_EPSILON)
-    return 0;
-  double duration = (double) (upper - lower);
-  *t = upper + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= lower || *t >= upper)
-    return 0;
-  return 1;
+  return tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, t1, t2);
 }
 
 /**
@@ -3342,7 +3182,6 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   long double fraction = min + (max - min)/2;
   long double duration = (long double) (upper - lower);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
     return 0;
 

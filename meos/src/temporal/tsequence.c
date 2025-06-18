@@ -87,9 +87,9 @@
 /**
  * @brief Return true if the three values are collinear
  * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `x1` and `x2` divided by the duration
- * of the timestamps associated to `x1` and `x3`
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `x1` and `x2` divided by the duration of the timestamps
+ * associated to `x1` and `x3`
  */
 bool
 float_collinear(double x1, double x2, double x3, double ratio)
@@ -101,8 +101,8 @@ float_collinear(double x1, double x2, double x3, double ratio)
 /**
  * @brief Return true if the three double2 values are collinear
  * @param[in] x1,x2,x3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `x1` and `x2` divided by the duration
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `x1` and `x2` divided by the duration
  * of the timestamps associated to `x1` and `x3`
  */
 static bool
@@ -155,6 +155,8 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
     fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON &&
     fabs(x2->d - x.d) <= MEOS_EPSILON);
 }
+
+/*****************************************************************************/
 
 /**
  * @brief Return true if the three values are collinear
@@ -235,7 +237,7 @@ floatsegm_locate(double start, double end, double value)
   double span = (max - min);
   double partial = (value - min);
   long double fraction = start < end ? partial / span : 1 - partial / span;
-  if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return -1.0;
   return fraction;
 }
@@ -2662,9 +2664,10 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
  */
 int
 tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
-  meosType basetype, TimestampTz lower, TimestampTz upper, TimestampTz *t)
+  meosType basetype, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2)
 {
-  assert(lower < upper); assert(t);
+  assert(lower < upper); assert(t1); assert(t2);
   double x1 = datum_double(start1, basetype);
   double x2 = datum_double(end1, basetype);
   double x3 = datum_double(start2, basetype);
@@ -2702,16 +2705,15 @@ tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   }
 
   long double fraction = num / denom;
-  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction )
-  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     /* Intersection occurs out of the period */
     return 0;
 
   double duration = (double) (upper - lower);
-  *t = lower + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= lower || *t >= upper)
+  if (*t1 <= lower || *t2 >= upper)
     return 0;
   return 1;
 }
@@ -2745,23 +2747,14 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   int result = 0; /* Make compiler quiet */
   assert(temporal_type(temptype));
   if (tnumber_type(temptype))
-  {
     result = tnumbersegm_intersection(start1, end1, start2, end2, basetype,
-      lower, upper, t1);
-    if (t2) *t2 = *t1;
-  }
+      lower, upper, t1, t2);
   else if (temptype == T_TGEOMPOINT)
-  {
     result = tgeompointsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1);
-    if (t2) *t2 = *t1;
-  }
+      upper, t1, t2);
   else if (temptype == T_TGEOGPOINT)
-  {
     result = tgeogpointsegm_intersection(start1, end1, start2, end2, lower,
-      upper, t1);
-    if (t2) *t2 = *t1;
-  }
+      upper, t1, t2);
 #if CBUFFER
   else if (temptype == T_TCBUFFER)
     result = tcbuffersegm_intersection(start1, end1, start2, end2, lower,

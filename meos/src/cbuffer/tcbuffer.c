@@ -35,6 +35,8 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+/* PostGIS */
+#include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
@@ -88,7 +90,7 @@ bool
 ensure_valid_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 {
   VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(box, false);
-  if (! ensure_has_X(T_STBOX, box->flags) || 
+  if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), box->srid))
     return false;
   return true;
@@ -114,13 +116,13 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Compute the temporal distance between two circular buffers at time t.
+ * @brief Compute the temporal distance between two circular buffers at time t
  * @param[in] dx0,dy0 Initial spatial offset between the buffer centres.
  * @param[in] vx,vy Relative velocities in the x and y directions.
  * @param[in] r0 Initial sum of the radii.
  * @param[in] vr Rate of change of the sum of the radii.
  * @param[in] t Time offset from the lower bound of the segment.
- * @return The temporal distance at time t, i.e., the Euclidean distance between 
+ * @return The temporal distance at time t, i.e., the Euclidean distance between
  * the centres minus the sum of the radii.
  */
 static inline double
@@ -134,7 +136,7 @@ tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * @brief Return the TWO timestamps at which two temporal circular buffers
  * segments are at the distance d
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
@@ -165,9 +167,8 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   double duration = (double)(upper - lower);
 
   /* Tolerance threshold for floating-point comparison */
-  double epsilon = 1e-12;
-
-  if (duration <= epsilon){
+  if (duration <= FP_TOLERANCE)
+  {
     *t1 = *t2 = 0;
     return 0;
   }
@@ -180,62 +181,75 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   /* Relative velocities */
   double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
   double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
-  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /  duration;
+  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
+    duration;
 
   /* Quadratic derivative coefficients of f(t) = (distance - d)^2 */
-  double a = vx*vx + vy*vy - vr*vr;
-  double b = 2*(dx0*vx + dy0*vy - (r0+d)*vr);
-  double c = dx0*dx0 + dy0*dy0 - (r0+d)*(r0+d);
-  double delta = b*b - 4*a*c;
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = 2*(dx0 * vx + dy0 * vy - (r0 + d) * vr);
+  double c = dx0 * dx0 + dy0 * dy0 - (r0 + d) * (r0+d);
+  double delta = b * b - 4 * a * c;
 
   double roots[2];
   int nroots = 0;
 
   /* Linear case */
-  if (delta >= -epsilon){
+  double d1;
+  if (delta >= -FP_TOLERANCE)
+  {
     double t_cand1, t_cand2;
-    if (a==0 && fabs(b) >= epsilon){
+    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    {
       t_cand1 = -c / b;
-      if (t_cand1 >= -epsilon && t_cand1 <= duration + epsilon){
-        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand1;
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
       }
     }
     /* Quadratic case */
-    else{
+    else
+    {
       double sqrt_delta = sqrt(fmax(0.0, delta));
       t_cand1 = (-b - sqrt_delta) / (2*a);
       t_cand2 = (-b + sqrt_delta) / (2*a);
-      if (t_cand1 >= -epsilon && t_cand1 <= duration + epsilon){
-        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand1;
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
       }
-      if (fabs(t_cand2 - t_cand1) > epsilon && t_cand2 >= -epsilon && t_cand2 <= duration + epsilon){
-        double dist = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(dist - d) < epsilon) roots[nroots++] = t_cand2;
+      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
+          t_cand2 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand2;
       }
     }
   }
-  if (nroots == 0){
-    *t1 = *t2 = (TimestampTz)0;
+  if (nroots == 0)
+  {
+    *t1 = *t2 = (TimestampTz) 0;
     return 0;
   }
-  else if (nroots == 1){
-    *t1 = *t2 = lower + (TimestampTz)roots[0];
+  else if (nroots == 1)
+  {
+    *t1 = *t2 = lower + (TimestampTz) roots[0];
     return 1;
   }
-  else{
-    if (roots[0] > roots[1]){
+  else
+  {
+    if (roots[0] > roots[1])
+    {
       double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
     }
-    *t1 = lower + (TimestampTz)roots[0];
-    *t2 = lower + (TimestampTz)roots[1];
+    *t1 = lower + (TimestampTz) roots[0];
+    *t2 = lower + (TimestampTz) roots[1];
     return 2;
   }
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * @brief Return the TWO timestamps at which two temporal circular buffers
  * segments are at the minimum distance
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
@@ -263,7 +277,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] start,end Temporal instants defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2
  * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp.
  */
@@ -283,7 +297,7 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2
  * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
  */
@@ -316,7 +330,7 @@ tcbuffer_in(const char *str)
 
 /**
  * @ingroup meos_internal_cbuffer_inout
- * @brief Return a temporal circular buffer instant from its Well-Known Text 
+ * @brief Return a temporal circular buffer instant from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
  */
@@ -331,7 +345,7 @@ tcbufferinst_in(const char *str)
 
 /**
  * @ingroup meos_internal_cbuffer_inout
- * @brief Return a temporal circular buffer sequence from its Well-Known Text 
+ * @brief Return a temporal circular buffer sequence from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
  * @param[in] interp Interpolation
@@ -367,9 +381,9 @@ tcbufferseqset_in(const char *str)
 
 /**
  * @ingroup meos_internal_cbuffer_constructor
- * @brief Return a temporal circular buffer from a temporal point and a 
+ * @brief Return a temporal circular buffer from a temporal point and a
  * temporal float
- * @note This function is called after the synchronization done in function 
+ * @note This function is called after the synchronization done in function
  * #tcbuffer_make
  */
 TInstant *
@@ -378,15 +392,15 @@ tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
   assert(inst1->t == inst2->t);
-  Cbuffer *cb = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst1)), 
+  Cbuffer *cb = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst1)),
     DatumGetFloat8(tinstant_value_p(inst2)));
   return tinstant_make_free(PointerGetDatum(cb), T_TCBUFFER, inst1->t);
 }
 
 /**
- * @brief Return a temporal circular buffer from a temporal point and a 
+ * @brief Return a temporal circular buffer from a temporal point and a
  * temporal float
- * @note This function is called after the synchronization done in function 
+ * @note This function is called after the synchronization done in function
  * #tcbuffer_make
  */
 TSequence *
@@ -399,14 +413,14 @@ tcbufferseq_make(const TSequence *seq1, const TSequence *seq2)
   for (int i = 0; i < seq1->count; i++)
     instants[i] = tcbufferinst_make(TSEQUENCE_INST_N(seq1, i),
       TSEQUENCE_INST_N(seq2, i));
-  return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc, 
+  return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc,
     seq1->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
 }
 
 /**
- * @brief Return a temporal circular buffer from a temporal point and a 
+ * @brief Return a temporal circular buffer from a temporal point and a
  * temporal float
- * @note This function is called after the synchronization done in function 
+ * @note This function is called after the synchronization done in function
  * #tcbuffer_make
  */
 TSequenceSet *
@@ -424,7 +438,7 @@ tcbufferseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
 
 /**
  * @ingroup meos_cbuffer_constructor
- * @brief Return a temporal circular buffer from a temporal point and a 
+ * @brief Return a temporal circular buffer from a temporal point and a
  * temporal float
  * @csqlfn #Tcbuffer_constructor()
  */
@@ -446,7 +460,7 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tcbufferinst_make((TInstant *) sync1, 
+      result = (Temporal *) tcbufferinst_make((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
@@ -454,7 +468,7 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
         (TSequence *) sync2);
       break;
     default: /* TSEQUENCESET */
-      result = (Temporal *) tcbufferseqset_make((TSequenceSet *) sync1, 
+      result = (Temporal *) tcbufferseqset_make((TSequenceSet *) sync1,
         (TSequenceSet *) sync2);
   }
   pfree(sync1); pfree(sync2);
@@ -466,7 +480,7 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
  *****************************************************************************/
 
 /**
- * @brief Return a temporal geometry point constructed from the points of a 
+ * @brief Return a temporal geometry point constructed from the points of a
  * temporal circular buffer
  */
 TInstant *
@@ -479,7 +493,7 @@ tcbufferinst_tgeompointinst(const TInstant *inst)
 }
 
 /**
- * @brief Return a temporal geometry point constructed from the points of a 
+ * @brief Return a temporal geometry point constructed from the points of a
  * temporal circular buffer
  */
 TSequence *
@@ -489,12 +503,12 @@ tcbufferseq_tgeompointseq(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tcbufferinst_tgeompointinst(TSEQUENCE_INST_N(seq, i));
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
- * @brief Return a temporal geometry point constructed from the points of a 
+ * @brief Return a temporal geometry point constructed from the points of a
  * temporal circular buffer
  */
 TSequenceSet *
@@ -509,7 +523,7 @@ tcbufferseqset_tgeompointseqset(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_cbuffer_conversion
- * @brief Return a temporal geometry point constructed from the points of a 
+ * @brief Return a temporal geometry point constructed from the points of a
  * temporal circular buffer
  * @param[in] temp Temporal point
  * @csqlfn #Tcbuffer_to_tgeompoint()
@@ -557,7 +571,7 @@ tcbufferseq_tfloatseq(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tcbufferinst_tfloatinst(TSEQUENCE_INST_N(seq, i));
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
@@ -769,7 +783,7 @@ static Set *
 tcbufferinst_members(const TInstant *inst, bool point)
 {
   Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
-  Datum value = point ? 
+  Datum value = point ?
     PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   return set_make_exp(&value, 1, 1, point ? T_GEOMETRY : T_TFLOAT, ORDER_NO);
 }
@@ -785,7 +799,7 @@ tcbufferseq_members(const TSequence *seq, bool point)
   {
     const Cbuffer *cb = DatumGetCbufferP(
       tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-    values[i] = point ? 
+    values[i] = point ?
       PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
@@ -809,7 +823,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
     for (int j = 0; j < seq->count; j++)
     {
       Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
-      values[i] = point ? 
+      values[i] = point ?
         PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
     }
   }
@@ -952,7 +966,7 @@ tcbuffer_at_cbuffer(const Temporal *temp, const Cbuffer *cb)
 
 /**
  * @ingroup meos_cbuffer_restrict
- * @brief Return a temporal circular buffer restricted to the complement of a 
+ * @brief Return a temporal circular buffer restricted to the complement of a
  * circular buffer
  * @param[in] temp Temporal value
  * @param[in] cb Value
@@ -1018,7 +1032,7 @@ tcbuffer_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 
 /**
  * @ingroup meos_cbuffer_restrict
- * @brief Return a temporal circular buffer restricted to the complement of a 
+ * @brief Return a temporal circular buffer restricted to the complement of a
  * geometry
  * @param[in] temp Temporal value
  * @param[in] box Value
@@ -1085,7 +1099,7 @@ tcbuffer_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_cbuffer_restrict
- * @brief Return a temporal circular buffer restricted to the complement of a 
+ * @brief Return a temporal circular buffer restricted to the complement of a
  * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Value

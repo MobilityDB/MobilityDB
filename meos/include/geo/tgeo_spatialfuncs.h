@@ -179,9 +179,11 @@ extern long double pointsegm_locate(Datum start, Datum end, Datum point,
 /* Intersection functions */
 
 extern int tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
 extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
 
 extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
   double ratio, bool hasz, bool geodetic);

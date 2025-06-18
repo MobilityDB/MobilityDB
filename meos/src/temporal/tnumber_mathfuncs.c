@@ -87,7 +87,6 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   long double max = Max(d1, d2);
   long double fraction = min + (max - min) / 2;
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
     return 0;
 
