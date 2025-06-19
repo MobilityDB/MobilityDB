@@ -452,7 +452,7 @@ geo_is_unitary(const GSERIALIZED *gs)
 }
 #endif /* CBUFFER */
 
-#if MEOS 
+#if MEOS
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry

@@ -59,9 +59,9 @@ typedef struct struct_PROJSRSCacheItem
 #define PROJ_CACHE_ITEMS 128
 
 /**
- * @brief The proj4 cache holds a fixed number of reprojection entries.
- * In normal usage we don't expect it to have many entries, so we always
- * linearly scanthe list.
+ * @brief The proj4 cache holds a fixed number of reprojection entries
+ * @details In normal usage we don't expect it to have many entries, so we
+ * always linearly scan the list.
  * @note The structure removes the context field from PostGIS PROJSRSCache
  */
 typedef struct struct_MEOSPROJSRSCache

@@ -482,28 +482,6 @@ Tgeo_convex_hull(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Speed functions
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tpoint_speed(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_speed);
-/**
- * @ingroup mobilitydb_geo_accessor
- * @brief Return the speed of a temporal point
- * @sqlfn speed()
- */
-Datum
-Tpoint_speed(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_derivative(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/*****************************************************************************
  * Direction function
  *****************************************************************************/
 

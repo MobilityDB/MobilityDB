@@ -192,10 +192,10 @@ tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 {
   assert(lower < upper); assert(t1); assert(t2);
   /* Convert the network points into geometric points */
-  GSERIALIZED *sv1 = npoint_to_geom(DatumGetNpointP(start1));
-  GSERIALIZED *ev1 = npoint_to_geom(DatumGetNpointP(end1));
-  GSERIALIZED *sv2 = npoint_to_geom(DatumGetNpointP(start2));
-  GSERIALIZED *ev2 = npoint_to_geom(DatumGetNpointP(end2));
+  GSERIALIZED *sv1 = npoint_to_geompoint(DatumGetNpointP(start1));
+  GSERIALIZED *ev1 = npoint_to_geompoint(DatumGetNpointP(end1));
+  GSERIALIZED *sv2 = npoint_to_geompoint(DatumGetNpointP(start2));
+  GSERIALIZED *ev2 = npoint_to_geompoint(DatumGetNpointP(end2));
   int result = tgeompointsegm_intersection(PointerGetDatum(sv1),
     PointerGetDatum(ev1), PointerGetDatum(sv2), PointerGetDatum(ev2),
     lower, upper, t1, t2);
@@ -285,6 +285,26 @@ tnpointseqset_in(const char *str)
 #endif /* MEOS */
 
 /*****************************************************************************
+ * Construction functions
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point instant from a network point and a
+ * timestamptz
+ * @param[in] np Network point
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tnpointinst_make(const Npoint *np, TimestampTz t)
+{
+  return tinstant_make(PointerGetDatum(np), T_TNPOINT, t);
+}
+#endif /* MEOS */
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
@@ -295,7 +315,8 @@ TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TNPOINT);
-  GSERIALIZED *geom = npoint_to_geom(DatumGetNpointP(tinstant_value_p(inst)));
+  GSERIALIZED *geom =
+    npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
   return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
 
@@ -392,7 +413,8 @@ TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Npoint *np = geom_to_npoint(DatumGetGserializedP(tinstant_value_p(inst)));
+  Npoint *np = geompoint_to_npoint(DatumGetGserializedP(
+    tinstant_value_p(inst)));
   if (np == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);

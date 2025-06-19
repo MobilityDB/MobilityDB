@@ -238,7 +238,10 @@ if(NPOINT)
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/src/npoint/ways.csv"
+    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways.csv"
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways1000.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
 endif()
 if(POSE)

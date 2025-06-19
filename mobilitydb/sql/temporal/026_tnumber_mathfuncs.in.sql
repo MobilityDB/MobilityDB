@@ -389,7 +389,7 @@ CREATE FUNCTION radians(tfloat)
 
 CREATE FUNCTION derivative(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tfloat_derivative'
+  AS 'MODULE_PATHNAME', 'Temporal_derivative'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION exp(tfloat)

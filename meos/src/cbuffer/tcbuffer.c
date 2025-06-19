@@ -271,13 +271,14 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 /*****************************************************************************/
 
 /**
- * @brief Return 1 if a segment of a temporal circular buffer and a circular
- * buffer intersect during the period defined by the timestamps output in the
- * last arguments
+ * @brief Return 1 or 2 if a segment of a temporal circular buffer and a
+ * circular buffer intersect during the period defined by the timestamps output
+ * in the last arguments, return 0 otherwise
  * @param[in] start,end Temporal instants defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the intersection period, may be
+ * equal if the segment intersects the value at a single timestamp
  * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp.
  */
@@ -292,12 +293,14 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return 1 if the segments of two temporal circular buffers intersect
- * during the period defined by the timestamps output in the last arguments
+ * @brief Return 1 or 2 if the segments of two temporal circular buffers
+ * intersect during the period defined by the timestamps output in the last
+ * arguments, return 0 if they do not intersect
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the intersection period, may be
+ * equal if the segments intersect at a single timestamp
  * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
  */

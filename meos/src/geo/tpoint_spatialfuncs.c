@@ -3305,7 +3305,7 @@ multipoint_make(const TSequence *seq, int start, int end)
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)));
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
-      gs = npoint_to_geom(DatumGetNpointP(
+      gs = npoint_to_geompoint(DatumGetNpointP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
 #endif
     else
@@ -3334,7 +3334,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
     gs = DatumGetGserializedP(tinstant_value_p(inst));
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
-    gs = npoint_to_geom(DatumGetNpointP(tinstant_value_p(inst)));
+    gs = npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
 #endif
   else
   {

@@ -579,6 +579,10 @@ meos_finalize(void)
   meos_finalize_timezone();
   /* Finalize PROJ SRS cache */
   meos_finalize_projsrs();
+#if NPOINT
+  /* Finalize Ways cache */
+  meos_finalize_ways();
+#endif
   /* Finalize PROJ */
   proj_finalize();
   /* Finalize GSL */
