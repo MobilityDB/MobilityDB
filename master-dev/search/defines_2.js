@@ -1,12 +1,12 @@
 var searchData=
 [
-  ['b_5fc_5fstr_0',['b_c_STR',['../formatting_8c_a9bd23a4b5fa8c3d3de9fd237f28af19b.html#a9bd23a4b5fa8c3d3de9fd237f28af19b',1,'formatting.c']]],
-  ['b_5fc_5fstr_1',['B_C_STR',['../formatting_8c_a6b3d8a8136ae73ea20b57ea524d09156.html#a6b3d8a8136ae73ea20b57ea524d09156',1,'formatting.c']]],
+  ['b_5fc_5fstr_0',['B_C_STR',['../formatting_8c_a6b3d8a8136ae73ea20b57ea524d09156.html#a6b3d8a8136ae73ea20b57ea524d09156',1,'formatting.c']]],
+  ['b_5fc_5fstr_1',['b_c_STR',['../formatting_8c_a9bd23a4b5fa8c3d3de9fd237f28af19b.html#a9bd23a4b5fa8c3d3de9fd237f28af19b',1,'formatting.c']]],
   ['bbox_5ftest_2',['BBOX_TEST',['../meos_2include_2temporal_2temporal_8h_a992e328527bba8d82568f9fcd8debdc9.html#a992e328527bba8d82568f9fcd8debdc9',1,'temporal.h']]],
   ['bbox_5ftest_5fno_3',['BBOX_TEST_NO',['../meos_2include_2temporal_2temporal_8h_a9203a90a170ee73d4681f4fe94c34b49.html#a9203a90a170ee73d4681f4fe94c34b49',1,'temporal.h']]],
   ['bc_4',['BC',['../datetime_8h_a7c79586e3adaf552d11e7bfc28e1d5e6.html#a7c79586e3adaf552d11e7bfc28e1d5e6',1,'datetime.h']]],
-  ['bc_5fstr_5',['BC_STR',['../formatting_8c_a3a62308ee79775b615e1750f759cd79b.html#a3a62308ee79775b615e1750f759cd79b',1,'formatting.c']]],
-  ['bc_5fstr_6',['bc_STR',['../formatting_8c_a03a3f4ebb37c73f194c1736ddc91661f.html#a03a3f4ebb37c73f194c1736ddc91661f',1,'formatting.c']]],
+  ['bc_5fstr_5',['bc_STR',['../formatting_8c_a03a3f4ebb37c73f194c1736ddc91661f.html#a03a3f4ebb37c73f194c1736ddc91661f',1,'formatting.c']]],
+  ['bc_5fstr_6',['BC_STR',['../formatting_8c_a3a62308ee79775b615e1750f759cd79b.html#a3a62308ee79775b615e1750f759cd79b',1,'formatting.c']]],
   ['biggest_7',['BIGGEST',['../pgtz_8h_a6e9e18edc0c8109871120828962d3f90.html#a6e9e18edc0c8109871120828962d3f90',1,'pgtz.h']]],
   ['bind_8',['bind',['../win32__port_8h_a3334fec13410b20401c9e57482684b67.html#a3334fec13410b20401c9e57482684b67',1,'win32_port.h']]],
   ['bits_5fper_5fbyte_9',['BITS_PER_BYTE',['../pg__config__manual_8h_a369ecd38b3ab077fc235f892354bb46f.html#a369ecd38b3ab077fc235f892354bb46f',1,'pg_config_manual.h']]],
