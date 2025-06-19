@@ -2767,6 +2767,101 @@ temporal_timestamps(const Temporal *temp, int *count)
 }
 
 /*****************************************************************************
+ * Derivative functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_math
+ * @brief Return the derivative of a temporal sequence
+ * @param[in] seq Temporal sequence
+ * @csqlfn #Tfloat_derivative(), ...
+ */
+TSequence *
+tsequence_derivative(const TSequence *seq)
+{
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  meosType basetype = temptype_basetype(seq->temptype);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Datum value1 = tinstant_value_p(inst1);
+  double derivative = 0.0; /* make compiler quiet */
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    Datum value2 = tinstant_value_p(inst2);
+    derivative = datum_eq(value1, value2, basetype) ? 0.0 :
+      datum_distance(value1, value2, basetype, seq->flags) / 
+        ((double)(inst2->t - inst1->t) / 1000000);
+    instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
+    T_TFLOAT, seq->period.upper);
+  /* The resulting sequence has step interpolation */
+  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  pfree_array((void **) instants, seq->count - 1);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_math
+ * @brief Return the derivative of a temporal sequence set
+ * @param[in] ss Temporal sequence set
+ * @csqlfn #Tfloat_derivative()
+ */
+TSequenceSet *
+tsequenceset_derivative(const TSequenceSet *ss)
+{
+  assert(ss); assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    if (seq->count > 1)
+      sequences[nseqs++] = tsequence_derivative(seq);
+  }
+  /* The resulting sequence set has step interpolation */
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the derivative of a temporal value
+ * @param[in] temp Temporal value
+ * @see #tsequence_derivative()
+ * @see #tsequenceset_derivative()
+ * @csqlfn #Tfloat_derivative(), ...
+ */
+Temporal *
+temporal_derivative(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tsequence_derivative((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_derivative((TSequenceSet *) temp);
+  }
+}
+
+/*****************************************************************************
  * Stops functions
  *****************************************************************************/
 

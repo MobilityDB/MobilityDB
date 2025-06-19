@@ -67,9 +67,6 @@ extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc);
 
-extern TSequence *tfloatseq_derivative(const TSequence *seq);
-extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);
-
 /*****************************************************************************/
 
 #endif

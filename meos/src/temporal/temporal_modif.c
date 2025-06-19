@@ -1746,7 +1746,6 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
   TInstant *last = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
-  int16 flags = seq->flags;
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE &&
       ! ensure_same_rid_tnpointinst(inst, last))
@@ -1785,7 +1784,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     bool split = false;
     if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
     {
-      double dist = datum_distance(value1, value, basetype, flags);
+      double dist = datum_distance(value1, value, basetype, seq->flags);
       if (dist > maxdist)
         split = true;
     }
