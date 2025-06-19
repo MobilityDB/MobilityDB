@@ -941,7 +941,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* EVER */
 
   /* Temporal point case */
-  if (tpoint_type(temp->flags))
+  if (tpoint_type(temp->temptype))
   {
     datum_func2 func = &datum_geom_covers;
     result = spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
@@ -1447,7 +1447,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 {
   VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) ||
+  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -1461,9 +1461,8 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 
   /* ALWAYS */
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
-  datum_func2 func = &datum_geom_covers;
   int result = spatialrel_tgeo_geo(temp, buffer, (Datum) NULL,
-    (varfunc) func, 2, INVERT);
+    (varfunc) &datum_geom_covers, 2, INVERT);
   pfree(buffer);
   return result;
 }

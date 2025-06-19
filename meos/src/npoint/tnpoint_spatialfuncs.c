@@ -44,65 +44,6 @@
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
- * Interpolation functions required by tsequence.c that must be implemented
- * for each base type that supports linear interpolation
- *****************************************************************************/
-
-/**
- * @brief Return a network point interpolated from a network point segment
- * with respect to a fraction of its total length
- * @param[in] start,end Network points defining the segment
- * @param[in] ratio Float between 0 and 1 representing the fraction of the
- * total length of the segment where the interpolated network point is located
- */
-Npoint *
-npointsegm_interpolate(const Npoint *start, const Npoint *end,
-  long double ratio)
-{
-  assert(ratio >= 0.0 && ratio <= 1.0);
-  double pos = start->pos + 
-    (double) ((long double)(end->pos - start->pos) * ratio);
-  Npoint *result = npoint_make(start->rid, pos);
-  return result;
-}
-
-/**
- * @brief Return a float in (0,1) if a network point segment intersects a 
- * network point, return -1.0 if the network point is not located in the
- * segment or if it is approximately equal to the start or the end valuess
- * @param[in] start,end Values defining the segment
- * @param[in] value Value to locate
- * @note The function returns -1.0 if the network point is approximately equal 
- * to the start or the end network points since it is used in the lifting
- * infrastructure for determining the crossings or the turning points after
- * verifying that the bounds of the segment are not equal to the value.
- */
-long double
-npointsegm_locate(const Npoint *start, const Npoint *end, const Npoint *value)
-{
-  /* This function is called for temporal sequences and thus the start and
-   * end values have the same road identifier */
-  assert(start->rid == end->rid); 
-   /* Return if the value to locate has a different road identifier */
-  if (start->rid != value->rid)
-    return -1.0;
-  double min = Min(start->pos, end->pos);
-  double max = Max(start->pos, end->pos);
-  /* If value is to the left or to the right of the position range */
-  if ((value->pos < start->pos && value->pos < end->pos) ||
-      (value->pos > start->pos && value->pos > end->pos))
-    return -1.0;
-
-  double range = (max - min);
-  double partial = (value->pos - min);
-  double fraction = start->pos < end->pos ? 
-    partial / range : 1 - partial / range;
-  if (fabs(fraction) < MEOS_EPSILON || fabs(fraction - 1.0) < MEOS_EPSILON)
-    return -1.0;
-  return fraction;
-}
-
-/*****************************************************************************
  * NPoints Functions
  * Return the network points covered by a temporal network point
  *****************************************************************************/
@@ -464,9 +405,9 @@ tnpointseqset_speed(const TSequenceSet *ss)
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *seq = tnpointseq_speed(TSEQUENCESET_SEQ_N(ss, i));
-    if (seq)
-      sequences[nseqs++] = seq;
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    if (seq->count > 1)
+      sequences[nseqs++] = tnpointseq_speed(seq);
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, nseqs, STEP);

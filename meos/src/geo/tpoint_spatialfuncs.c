@@ -298,9 +298,7 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
     return 0.0;
   }
 
-  /*
-   * Function #closest_point2d_on_segment_ratio explains how r is computed
-   */
+  /* Function #closest_point2d_on_segment_ratio explains how r is computed */
   long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
       (p->z-A->z) * (B->z-A->z) ) /
     ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
@@ -464,82 +462,6 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
 }
 
 /**
- * @brief Return a float between 0 and 1 representing the location of the
- * closest point on the geometry segment to the given point, as a fraction of
- * total segment length
- * @param[in] start,end Points defining the segment
- * @param[in] point Reference point
- * @param[out] dist Distance
- * @note This is the previous version of the function that is kept here while
- * recovering the CI tests. This function should be merged with the function
- * #pointsegm_locate below
- */
-long double
-pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(start);
-  long double result;
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-  {
-    POINT4D p1, p2, p, closest;
-    datum_point4d(start, &p1);
-    datum_point4d(end, &p2);
-    datum_point4d(point, &p);
-    double dist1;
-    /* Get the closest point and the distance */
-    result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
-    /* For robustness, force 0/1 when closest point ~= start/end point */
-    if (p4d_same(&p1, &closest))
-      result = 0.0;
-    else if (p4d_same(&p2, &closest))
-      result = 1.0;
-    /* Return the distance between the closest point and the point if requested */
-    if (dist)
-    {
-      dist1 = WGS84_RADIUS * dist1;
-      /* Add to the distance the vertical displacement if we're in 3D */
-      if (FLAGS_GET_Z(gs->gflags))
-        dist1 = sqrt((closest.z - p.z) * (closest.z - p.z) + dist1 * dist1);
-      *dist = dist1;
-    }
-  }
-  else
-  {
-    if (FLAGS_GET_Z(gs->gflags))
-    {
-      const POINT3DZ *p1 = DATUM_POINT3DZ_P(start);
-      const POINT3DZ *p2 = DATUM_POINT3DZ_P(end);
-      const POINT3DZ *p = DATUM_POINT3DZ_P(point);
-      POINT3DZ proj;
-      result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
-      /* For robustness, force 0/1 when closest point ~= start/end point */
-      if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
-        result = 0.0;
-      else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
-        result = 1.0;
-      if (dist)
-        *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
-    }
-    else
-    {
-      const POINT2D *p1 = DATUM_POINT2D_P(start);
-      const POINT2D *p2 = DATUM_POINT2D_P(end);
-      const POINT2D *p = DATUM_POINT2D_P(point);
-      POINT2D proj;
-      result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
-      if (p2d_same(p1, &proj))
-        result = 0.0;
-      else if (p2d_same(p2, &proj))
-        result = 1.0;
-     /* Return the distance between the closest point and the point if requested */
-     if (dist)
-        *dist = distance2d_pt_pt((POINT2D *) p, &proj);
-    }
-  }
-  return result;
-}
-
-/**
  * @brief Return a float in (0,1) representing the location of the closest
  * point on the line segment to the given point, as a fraction of the total
  * segment length, return -1.0 if the point is not located in the segment or
@@ -569,12 +491,11 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
     if (fabs(dist1) >= MEOS_EPSILON || p4d_same(&p1, &closest) ||
         p4d_same(&p2, &closest))
       return -1.0;
-    /* Return the distance between the closest point and the point if
-     * requested */
+    /* Return the distance between the closest point and the point */
     if (dist)
     {
       dist1 = WGS84_RADIUS * dist1;
-      /* Add to the distance the vertical displacement if we're in 3D */
+      /* Add to the distance the vertical displacement if we are in 3D */
       if (FLAGS_GET_Z(gs->gflags))
         dist1 = sqrt( (closest.z - p.z) * (closest.z - p.z) + dist1 * dist1 );
       *dist = dist1;
@@ -594,8 +515,7 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
           p3d_same((POINT3D *) p1, (POINT3D *) &proj) ||
           p3d_same((POINT3D *) p2, (POINT3D *) &proj))
         return -1.0;
-      /* Return the distance between the closest point and the point if
-       * requested */
+      /* Return the distance between the closest point and the point */
       if (dist)
         *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
     }
@@ -610,8 +530,7 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
       if (fabs(dist1) >= MEOS_EPSILON || p2d_same(p1, &proj) ||
           p2d_same(p2, &proj))
         return -1.0;
-      /* Return the distance between the closest point and the segment if
-       * requested */
+      /* Return the distance between the closest point and the segment */
       if (dist)
         *dist = dist1;
     }
@@ -622,38 +541,12 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
 /*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
  * that must be implemented by each temporal type
+ * N.B. There is no function `tpointsegm_intersection_value` since the
+ * function tinterrel_tgeo_geo for computing e.g., tintersects(tpoint, point)
+ * is computed by a single call to PostGIS by (1) splitting the temporal point
+ * sequence into an array of non self-intersecting fragments and (2) computing
+ * the intersection of the trajectory of the fragment and the point.
  *****************************************************************************/
-
-/**
- * @brief Return 1 if a segment of a temporal point value intersects a point
- * at the timestamp output in the last argument
- * @param[in] start,end Base values defining the segment
- * @param[in] value Base value
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
- * @pre The geometry is not empty
- */
-int
-tpointsegm_intersection_value(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t)
-{
-  assert(lower < upper); assert(t);
-  assert(! gserialized_is_empty(DatumGetGserializedP(value)));
-
-  /* We are sure that the trajectory is a line */
-  double dist;
-  double fraction = (double) pointsegm_locate(start, end, value, &dist);
-  if (fraction < 0.0)
-    return 0;
-  if (t)
-  {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = lower + (TimestampTz) (duration * fraction);
-  }
-  return 1;
-}
 
 /**
  * @brief Return 1 if the segments of two temporal geometry points intersect
@@ -661,127 +554,14 @@ tpointsegm_intersection_value(Datum start, Datum end, Datum value,
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
+ * @param[out] t1,t2 Resulting timestamps
  */
 int
-tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t)
+tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  assert(lower < upper); assert(t);
-  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
-  bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
-  if (hasz)
-  {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(start1);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(end1);
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(start2);
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(end2);
-    x1 = p1->x; y1 = p1->y; z1 = p1->z;
-    x2 = p2->x; y2 = p2->y; z2 = p2->z;
-    x3 = p3->x; y3 = p3->y; z3 = p3->z;
-    x4 = p4->x; y4 = p4->y; z4 = p4->z;
-    /* Segments intersecting in the boundaries */
-    if ((float8_eq(x1, x3) && float8_eq(y1, y3) && float8_eq(z1, z3)) ||
-        (float8_eq(x2, x4) && float8_eq(y2, y4) && float8_eq(z2, z4)))
-      return 0;
-  }
-  else
-  {
-    const POINT2D *p1 = DATUM_POINT2D_P(start1);
-    const POINT2D *p2 = DATUM_POINT2D_P(end1);
-    const POINT2D *p3 = DATUM_POINT2D_P(start2);
-    const POINT2D *p4 = DATUM_POINT2D_P(end2);
-    x1 = p1->x; y1 = p1->y;
-    x2 = p2->x; y2 = p2->y;
-    x3 = p3->x; y3 = p3->y;
-    x4 = p4->x; y4 = p4->y;
-    /* Segments intersecting in the boundaries */
-    if ((float8_eq(x1, x3) && float8_eq(y1, y3)) ||
-        (float8_eq(x2, x4) && float8_eq(y2, y4)))
-      return 0;
-  }
-
-  long double xdenom = x2 - x1 - x4 + x3;
-  long double ydenom = y2 - y1 - y4 + y3;
-  long double zdenom = 0.0;
-  if (hasz)
-    zdenom = z2 - z1 - z4 + z3;
-  if (xdenom == 0 && ydenom == 0 && zdenom == 0)
-    /* Parallel segments */
-    return 0;
-
-  /* Potentially avoid the division based on
-   * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
-   * https://github.com/erich666/GraphicsGems/blob/master/gemsiii/insectc.c */
-  long double fraction, xfraction = 0, yfraction = 0, zfraction = 0;
-  if (xdenom != 0)
-  {
-    long double xnum = x3 - x1;
-    if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
-        (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
-      return 0;
-    xfraction = xnum / xdenom;
-    if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (ydenom != 0)
-  {
-    long double ynum = y3 - y1;
-    if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
-        (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
-      return 0;
-    yfraction = ynum / ydenom;
-    if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (hasz && zdenom != 0)
-  {
-    long double znum = z3 - z1;
-    if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
-        (zdenom < 0 && (znum > 0 || znum < zdenom)))
-      return 0;
-    zfraction = znum / zdenom;
-    if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
-      /* Intersection occurs out of the period */
-      return 0;
-  }
-  if (hasz)
-  {
-    /* If intersection occurs at different timestamps on each dimension */
-    if ((xdenom != 0 && ydenom != 0 && zdenom != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom == 0 && ydenom != 0 && zdenom != 0 &&
-        fabsl(yfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom != 0 && ydenom == 0 && zdenom != 0 &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
-      (xdenom != 0 && ydenom != 0 && zdenom == 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON))
-      return 0;
-    if (xdenom != 0)
-      fraction = xfraction;
-    else if (ydenom != 0)
-      fraction = yfraction;
-    else
-      fraction = zfraction;
-  }
-  else /* 2D */
-  {
-    /* If intersection occurs at different timestamps on each dimension */
-    if (xdenom != 0 && ydenom != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON)
-      return 0;
-    fraction = xdenom != 0 ? xfraction : yfraction;
-  }
-  double duration = (double) (upper - lower);
-  *t = lower + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= lower || *t >= upper)
-    return 0;
-  return 1;
+  return tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, t1, t2);
 }
 
 /**
@@ -790,61 +570,14 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
+ * @param[out] t1,t2 Resulting timestamps
  */
 int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t)
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  const POINT2D *p1 = DATUM_POINT2D_P(start1);
-  const POINT2D *p2 = DATUM_POINT2D_P(end1);
-  const POINT2D *q1 = DATUM_POINT2D_P(start2);
-  const POINT2D *q2 = DATUM_POINT2D_P(end2);
-  GEOGRAPHIC_EDGE e1, e2;
-  GEOGRAPHIC_POINT close1, close2;
-  POINT3D A1, A2, B1, B2;
-  geographic_point_init(p1->x, p1->y, &(e1.start));
-  geographic_point_init(p2->x, p2->y, &(e1.end));
-  geographic_point_init(q1->x, q1->y, &(e2.start));
-  geographic_point_init(q2->x, q2->y, &(e2.end));
-  geog2cart(&(e1.start), &A1);
-  geog2cart(&(e1.end), &A2);
-  geog2cart(&(e2.start), &B1);
-  geog2cart(&(e2.end), &B2);
-  // TODO: The next computation should be done on geodetic coordinates
-  // The value found by the linear approximation below could be the starting
-  // point for an iterative method such as gradient descent or Newton's method
-  double fraction;
-  bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
-    (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
-  if (! found)
-    return 0;
-
-  /* Calculate distance and direction for the edges */
-  double dist1 = sphere_distance(&(e1.start), &(e1.end));
-  double dir1 = sphere_direction(&(e1.start), &(e1.end), dist1);
-  double dist2 = sphere_distance(&(e2.start), &(e2.end));
-  double dir2 = sphere_direction(&(e2.start), &(e2.end), dist2);
-  /* Compute minimum distance */
-  int res = sphere_project(&(e1.start), dist1 * fraction, dir1, &close1);
-  if (res == LW_FAILURE)
-    return 0;
-  res = sphere_project(&(e2.start), dist2 * fraction, dir2, &close2);
-  if (res == LW_FAILURE)
-    return 0;
-  double dist = sphere_distance(&close1, &close2);
-  /* Ensure robustness */
-  if (fabs(dist) < FP_TOLERANCE)
-    dist = 0.0;
-  if (DatumGetFloat8(dist) > MEOS_EPSILON)
-    return 0;
-  double duration = (double) (upper - lower);
-  *t = upper + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= lower || *t >= upper)
-    return 0;
-  return 1;
+  return tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
+    (Datum) 0.0, lower, upper, t1, t2);
 }
 
 /**
@@ -1082,6 +815,7 @@ lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
 GSERIALIZED *
 geopointarr_make_trajectory(GSERIALIZED **points, int count, interpType interp)
 {
+  assert(points); assert(count > 0);
   if (count == 1)
     return geo_copy(points[0]);
 
@@ -2752,103 +2486,6 @@ tpoint_cumulative_length(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Speed functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_geo_accessor
- * @brief Return the speed of a temporal point sequence
- * @param[in] seq Temporal sequence
- * @pre The temporal point has linear interpolation
- * @csqlfn #Tpoint_speed()
- */
-TSequence *
-tpointseq_speed(const TSequence *seq)
-{
-  assert(seq); assert(tpoint_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return NULL;
-
-  /* General case */
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  datum_func2 func = pt_distance_fn(seq->flags);
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value_p(inst1);
-  double speed = 0.0; /* make compiler quiet */
-  for (int i = 0; i < seq->count - 1; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    Datum value2 = tinstant_value_p(inst2);
-    speed = datum_point_eq(value1, value2) ? 0.0 :
-      DatumGetFloat8(func(value1, value2)) /
-        ((double)(inst2->t - inst1->t) / 1000000.0);
-    instants[i] = tinstant_make(Float8GetDatum(speed), T_TFLOAT, inst1->t);
-    inst1 = inst2;
-    value1 = value2;
-  }
-  instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed), T_TFLOAT,
-    seq->period.upper);
-  /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
-  pfree_array((void **) instants, seq->count);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_geo_accessor
- * @brief Return the speed of a temporal point sequence set
- * @param[in] ss Temporal sequence set
- * @csqlfn #Tpoint_speed()
- */
-TSequenceSet *
-tpointseqset_speed(const TSequenceSet *ss)
-{
-  assert(ss); assert(tpoint_type(ss->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int nseqs = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (seq->count > 1)
-      sequences[nseqs++] = tpointseq_speed(seq);
-  }
-  /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/**
- * @ingroup meos_geo_accessor
- * @brief Return the speed of a temporal point
- * @param[in] temp Temporal point
- * @return On error return @p NULL
- * @csqlfn #Tpoint_speed()
- */
-Temporal *
-tpoint_speed(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, false);
-  if (! ensure_linear_interp(temp->flags))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return NULL;
-    case TSEQUENCE:
-      return (Temporal *) tpointseq_speed((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_speed((TSequenceSet *) temp);
-  }
-}
-
-/*****************************************************************************
  * Time-weighed centroid for temporal geometry points
  *****************************************************************************/
 
@@ -3278,6 +2915,7 @@ geom_bearing(Datum point1, Datum point2)
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
     return Float8GetDatum(0.0);
+
   if (fabs(p1->y - p2->y) > MEOS_EPSILON)
   {
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
@@ -3354,7 +2992,7 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
   const POINT2D *q;
   long double fraction;
   Datum proj = 0; /* make compiler quiet */
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(DatumGetGserializedP(start)->gflags);
+  bool geodetic = FLAGS_GET_GEODETIC(DatumGetGserializedP(start)->gflags);
   if (geodetic)
   {
     GEOGRAPHIC_EDGE e, e1;
@@ -3447,7 +3085,6 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   long double fraction = min + (max - min)/2;
   long double duration = (long double) (upper - lower);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
     return 0;
 
@@ -3793,7 +3430,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(insts, end - start,
       true, true, LINEAR, NORMALIZE_NO);
   }
-
   return nseqs;
 }
 

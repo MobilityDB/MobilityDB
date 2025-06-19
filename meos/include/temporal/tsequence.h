@@ -56,7 +56,7 @@ extern long double floatsegm_locate(double value1, double value2,
 
 extern int tnumbersegm_intersection(Datum start1, Datum end1, Datum start2,
   Datum end2, meosType basetype, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t);
+  TimestampTz *t1, TimestampTz *t2);
 
 /* Normalization functions */
 

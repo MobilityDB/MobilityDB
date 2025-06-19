@@ -93,11 +93,11 @@ CREATE FUNCTION tnpointFromHexWKB(text)
 
 CREATE FUNCTION asText(tnpoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tnpoint[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tnpoint, endianenconding text DEFAULT '')

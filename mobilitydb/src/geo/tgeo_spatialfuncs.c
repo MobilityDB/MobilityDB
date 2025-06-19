@@ -496,7 +496,7 @@ Datum
 Tpoint_speed(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_speed(temp);
+  Temporal *result = temporal_derivative(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

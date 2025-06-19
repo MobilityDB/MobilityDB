@@ -300,7 +300,8 @@ box3d_to_lwgeom(BOX3D *box)
   pa = ptarray_construct_empty(LW_TRUE, LW_FALSE, 5);
 
   /* BOX3D is a point */
-  if ((box->xmin == box->xmax) && (box->ymin == box->ymax) && (box->zmin == box->zmax))
+  if ((box->xmin == box->xmax) && (box->ymin == box->ymax) && 
+      (box->zmin == box->zmax))
   {
     LWPOINT *lwpt = lwpoint_construct(SRID_UNKNOWN, NULL, pa);
 
@@ -338,7 +339,8 @@ box3d_to_lwgeom(BOX3D *box)
     points[1] = (POINT4D){box->xmin, box->ymax, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmin, box->ymax, box->zmax, 0.0};
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
-    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
+    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0],
+      &points[1], &points[2], &points[3]);
     result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polygon in the Y plane */
@@ -352,7 +354,8 @@ box3d_to_lwgeom(BOX3D *box)
     points[1] = (POINT4D){box->xmax, box->ymin, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmax, box->ymin, box->zmax, 0.0};
     points[3] = (POINT4D){box->xmin, box->ymin, box->zmax, 0.0};
-    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
+    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0],
+      &points[1], &points[2], &points[3]);
     result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polygon in the Z plane */
@@ -366,7 +369,8 @@ box3d_to_lwgeom(BOX3D *box)
     points[1] = (POINT4D){box->xmin, box->ymax, box->zmin, 0.0};
     points[2] = (POINT4D){box->xmax, box->ymax, box->zmin, 0.0};
     points[3] = (POINT4D){box->xmax, box->ymin, box->zmin, 0.0};
-    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]);
+    lwpoly = lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0],
+      &points[1], &points[2], &points[3]);
     result = lwpoly_as_lwgeom(lwpoly);
   }
   /* BOX3D is a polyhedron */
@@ -388,24 +392,31 @@ box3d_to_lwgeom(BOX3D *box)
 
     /* add bottom polygon */
     geoms[0] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1], &points[2], &points[3]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[1],
+        &points[2], &points[3]));
     /* add top polygon */
     geoms[1] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[4], &points[7], &points[6], &points[5]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[4], &points[7],
+        &points[6], &points[5]));
     /* add left polygon */
     geoms[2] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[4], &points[5], &points[1]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[4],
+        &points[5], &points[1]));
     /* add right polygon */
     geoms[3] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[3], &points[2], &points[6], &points[7]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[3], &points[2],
+        &points[6], &points[7]));
     /* add front polygon */
     geoms[4] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[3], &points[7], &points[4]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[0], &points[3],
+        &points[7], &points[4]));
     /* add back polygon */
     geoms[5] = lwpoly_as_lwgeom(
-        lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[1], &points[5], &points[6], &points[2]));
+      lwpoly_construct_rectangle(LW_TRUE, LW_FALSE, &points[1], &points[5],
+        &points[6], &points[2]));
 
-    result = (LWGEOM *) lwcollection_construct(POLYHEDRALSURFACETYPE, SRID_UNKNOWN, NULL, ngeoms, geoms);
+    result = (LWGEOM *) lwcollection_construct(POLYHEDRALSURFACETYPE,
+      SRID_UNKNOWN, NULL, ngeoms, geoms);
     FLAGS_SET_SOLID(result->flags, 1);
   }
 
@@ -420,7 +431,7 @@ box3d_to_lwgeom(BOX3D *box)
 #if CBUFFER
 /**
  * @ingroup meos_geo_base_accessor
- * @note Inspired from PostGIS function: @p lwgeom_is_unitary(const LWGEOM *geom)
+ * @note Derived from PostGIS function: @p lwgeom_is_unitary(const LWGEOM *geom)
  */
 bool
 geo_is_unitary(const GSERIALIZED *gs)
@@ -1038,7 +1049,8 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
        if ( polytype == POLYGONTYPE )
         pip_result = point_in_polygon(lwgeom_as_lwpoly(poly), mpoint->geoms[i]);
       else /* polytype == MULTIPOLYGONTYPE */
-        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly), mpoint->geoms[i]);
+        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
+          mpoint->geoms[i]);
       /* Since we use the same function for intersects and contains we cannot
        * break on pip_result != -1 for intersects or pip_presult == 1 for
        * contains */
@@ -2481,10 +2493,9 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
 
   /* Only return for area features. */
   type = gserialized_get_type(gs);
-  if ( ! (type == POLYGONTYPE || type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
-  {
+  if (type != POLYGONTYPE && type != MULTIPOLYGONTYPE &&
+      type != COLLECTIONTYPE)
     return 0.0;
-  }
 
   lwgeom = lwgeom_from_gserialized(gs);
 
@@ -2534,7 +2545,7 @@ geog_length(const GSERIALIZED *gs, bool use_spheroid)
   /* EMPTY things have no length */
   int32 geo_type = gserialized_get_type(gs);
   if (gserialized_is_empty(gs) || geo_type == POLYGONTYPE ||
-    geo_type == MULTIPOLYGONTYPE)
+      geo_type == MULTIPOLYGONTYPE)
     return 0.0;
 
   /* Get our geometry object loaded into memory. */

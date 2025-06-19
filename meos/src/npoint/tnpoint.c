@@ -175,6 +175,35 @@ ensure_valid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
+ * Intersection functions
+ *****************************************************************************/
+
+/**
+ * @brief Return 1 if the segments of two temporal network points intersect
+ * during the period defined by the timestamps output in the last arguments
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 
+ */
+int
+tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  /* Convert the network points into geometric points */
+  GSERIALIZED *sv1 = npoint_to_geom(DatumGetNpointP(start1));
+  GSERIALIZED *ev1 = npoint_to_geom(DatumGetNpointP(end1));
+  GSERIALIZED *sv2 = npoint_to_geom(DatumGetNpointP(start2));
+  GSERIALIZED *ev2 = npoint_to_geom(DatumGetNpointP(end2));
+  int result = tgeompointsegm_intersection(PointerGetDatum(sv1),
+    PointerGetDatum(ev1), PointerGetDatum(sv2), PointerGetDatum(ev2),
+    lower, upper, t1, t2);
+  pfree(sv1); pfree(ev1); pfree(sv2); pfree(ev2);
+  return result;
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 

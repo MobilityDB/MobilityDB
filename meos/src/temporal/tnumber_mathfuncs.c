@@ -87,7 +87,6 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   long double max = Max(d1, d2);
   long double fraction = min + (max - min) / 2;
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
     return 0;
 
@@ -576,104 +575,6 @@ tnumber_angular_difference(const Temporal *temp)
       return (Temporal *) tnumberseq_angular_difference((TSequence *) temp);
     default: /* TSEQUENCESET */
       return (Temporal *) tnumberseqset_angular_difference((TSequenceSet *) temp);
-  }
-}
-
-/*****************************************************************************
- * Derivative functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_math
- * @brief Return the derivative of a temporal float sequence
- * @param[in] seq Temporal sequence
- * @csqlfn #Tfloat_derivative()
- */
-TSequence *
-tfloatseq_derivative(const TSequence *seq)
-{
-  assert(seq); assert(seq->temptype == T_TFLOAT);
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return NULL;
-
-  /* General case */
-  meosType basetype = temptype_basetype(seq->temptype);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value_p(inst1);
-  double dvalue1 = datum_double(value1, basetype);
-  double derivative = 0.0; /* make compiler quiet */
-  for (int i = 0; i < seq->count - 1; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    Datum value2 = tinstant_value_p(inst2);
-    double dvalue2 = datum_double(value2, basetype);
-    derivative = datum_eq(value1, value2, basetype) ? 0.0 :
-      (dvalue1 - dvalue2) / ((double)(inst2->t - inst1->t) / 1000000);
-    instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
-    inst1 = inst2;
-    value1 = value2;
-    dvalue1 = dvalue2;
-  }
-  instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
-    T_TFLOAT, seq->period.upper);
-  /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
-  pfree_array((void **) instants, seq->count - 1);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_math
- * @brief Return the derivative of a temporal float sequence set
- * @param[in] ss Temporal sequence set
- * @csqlfn #Tfloat_derivative()
- */
-TSequenceSet *
-tfloatseqset_derivative(const TSequenceSet *ss)
-{
-  assert(ss); assert(ss->temptype == T_TFLOAT);
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  int nseqs = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (seq->count > 1)
-      sequences[nseqs++] = tfloatseq_derivative(seq);
-  }
-  /* The resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/**
- * @ingroup meos_temporal_math
- * @brief Return the derivative of a temporal number
- * @param[in] temp Temporal value
- * @see #tfloatseq_derivative()
- * @see #tfloatseqset_derivative()
- * @csqlfn #Tfloat_derivative()
- */
-Temporal *
-tfloat_derivative(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL);
-
-  if (! ensure_linear_interp(temp->flags))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return NULL;
-    case TSEQUENCE:
-      return (Temporal *) tfloatseq_derivative((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tfloatseqset_derivative((TSequenceSet *) temp);
   }
 }
 

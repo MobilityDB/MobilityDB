@@ -301,7 +301,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       /* If the last instant READ is the after the bin and the interpolation
        * is continuous and thus the start of the bin has been generated */
-      else if(start)
+      else if (start)
       {
         k = 0;
         ininsts[k++] = start;
@@ -1654,10 +1654,10 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *prev = NULL;
   const TInstant *cur = NULL;
-  uint32_t start = 0, /* Lower index for finding the split */
-           ninsts = 0;     /* Number of instants in the result */
-  int split;          /* Index of the split */
-  double d;           /* Distance */
+  uint32_t start = 0,   /* Lower index for finding the split */
+           ninsts = 0;  /* Number of instants in the result */
+  int split;            /* Index of the split */
+  double d;             /* Distance */
   for (int i = 0; i < seq->count; i++)
   {
     cur = TSEQUENCE_INST_N(seq, i);

@@ -138,6 +138,8 @@ SELECT startValue(transform(tgeompoint 'SRID=5676;{[Point(1 2 3)@2000-01-01, Poi
 -- Noop
 SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 5676)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 5676);
 SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 4326)) = st_transform(geometry 'SRID=4326;Point(1 2 3)', 4326);
+-- Coverage
+SELECT asEWKT(transform(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]',7844));
 
 -------------------------------------------------------------------------------
 -- Transform with pipeline

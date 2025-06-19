@@ -65,6 +65,106 @@ SELECT tContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 SELECT tContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
+-- tCovers
+-------------------------------------------------------------------------------
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tCovers(NULL::geometry, tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point(1 1)', NULL::tgeometry);
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+-- Empty geometry
+SELECT tCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT tCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT tCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+-- Additional parameter
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01', true);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
+
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01', false);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
+SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
+
+SELECT tCovers(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
+/* Errors */
+SELECT tCovers(geometry 'SRID=5676;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'SRID=5676;Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+SELECT tCovers(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', NULL::geometry);
+SELECT tCovers(NULL::tgeometry, geometry 'Point(1 1)');
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+-- Empty geometry
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty');
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty');
+
+-- Additional parameter
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
+
+/* Errors */
+SELECT tCovers(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+SELECT tCovers(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+
+-------------------------------------------------------------------------------
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', NULL::tgeometry);
+SELECT tCovers(NULL::tgeometry, tgeometry 'Point(1 1)@2000-01-01');
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01');
+
+-- Additional parameter
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', true);
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01', true);
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01', true);
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01', true);
+
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', false);
+SELECT tCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry 'Point(1 1)@2000-01-01', false);
+SELECT tCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry 'Point(1 1)@2000-01-01', false);
+SELECT tCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeometry 'Point(1 1)@2000-01-01', false);
+
+/* Errors */
+SELECT tCovers(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'SRID=5676;Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry 'Point(1 1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT tCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
 -- tDisjoint
 -------------------------------------------------------------------------------
 

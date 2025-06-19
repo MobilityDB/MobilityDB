@@ -323,13 +323,12 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   geog2cart(&(e1.end), &A2);
   geog2cart(&(e2.start), &B1);
   geog2cart(&(e2.end), &B2);
-  double fraction;
   // TODO: The next computation should be done on geodetic coordinates
   // The value found by the linear approximation below could be the starting
   // point for an iterative method such as gradient descent or Newton's method
-  bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
-    (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
-  if (! found)
+  double fraction;
+  if (! point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
+      (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction))
     return 0;
 
   /* Compute the timestamp of intersection */
