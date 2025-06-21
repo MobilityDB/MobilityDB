@@ -97,8 +97,8 @@ Tpose_typmod_in(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpoint_tfloat_to_tpose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_tpose);
+PGDLLEXPORT Datum Tpose_make(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_make);
 /**
  * @ingroup mobilitydb_pose_constructor
  * @brief Construct a temporal 2D pose from a temporal point and a temporal
@@ -106,11 +106,11 @@ PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_tpose);
  * @sqlfn tpose()
  */
 Datum
-Tpoint_tfloat_to_tpose(PG_FUNCTION_ARGS)
+Tpose_make(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *tradius = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = tpoint_tfloat_to_tpose(tpoint, tradius);
+  Temporal *result = tpose_make(tpoint, tradius);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_FREE_IF_COPY(tradius, 1);
   if (! result)

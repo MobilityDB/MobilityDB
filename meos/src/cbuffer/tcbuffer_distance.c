@@ -47,13 +47,14 @@
  *****************************************************************************/
 
 /**
- * @brief Return the two timestamps at which a temporal circular buffer segment
- * and a geometry point are at the minimum distance
+ * @brief Return 1 or 3 if a temporal circular buffer segment and a geometry
+ * point are at the minimum distance during the period defined by the output
+ * timestamps, return 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestampts defining the segment
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant.
  */
 int
@@ -206,13 +207,14 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
- * segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal circular buffers segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[out] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps at turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not constant.
  */
 int
@@ -302,14 +304,15 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
- * segment are at the minimum distance
+ * @brief Return 1 or 2 if two temporal circular buffers segments are at a
+ * minimum distance during the periods defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Minimum distances at turning points
- * @param[out] t1,t2 Timestamps of the turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tcbuffer_tcbuffer_distance_turnpt(Datum start1, Datum end1, Datum start2,

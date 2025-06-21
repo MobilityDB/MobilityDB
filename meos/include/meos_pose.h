@@ -219,7 +219,7 @@ Temporal *tpose_in(const char *str);
  * Conversion functions
  *****************************************************************************/
 
-extern Temporal *tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius);
+extern Temporal *tpose_make(const Temporal *tpoint, const Temporal *tradius);
 extern Temporal *tpose_to_tpoint(const Temporal *temp);
 
 /*****************************************************************************

@@ -136,14 +136,15 @@ tcbuffersegm_distance_at_time(double dx0, double dy0, double vx, double vy,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers
- * segments are at the distance d
+ * @brief Return 1 or 2 if two temporal circular buffer segments are within a
+ * distance during the period defined by the output timestampos, return 0
+ * otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance
  * @param[out] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps at turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not constant.
  */
 int
@@ -249,14 +250,15 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers
- * segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal circular buffer segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[in] dist Distance, unused parameter
  * @param[out] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps at turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not constant.
  */
 int
@@ -271,16 +273,13 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 /*****************************************************************************/
 
 /**
- * @brief Return 1 or 2 if a segment of a temporal circular buffer and a
- * circular buffer intersect during the period defined by the timestamps output
- * in the last arguments, return 0 otherwise
+ * @brief Return 1 or 2 if a temporal circular buffer segment and a circular
+ * buffer intersect during the period defined by the output timestamps, return
+ * 0 otherwise
  * @param[in] start,end Temporal instants defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the intersection period, may be
- * equal if the segment intersects the value at a single timestamp
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp.
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
@@ -293,16 +292,12 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return 1 or 2 if the segments of two temporal circular buffers
- * intersect during the period defined by the timestamps output in the last
- * arguments, return 0 if they do not intersect
+ * @brief Return 1 or 2 if two temporal circular buffer segments intersect
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the intersection period, may be
- * equal if the segments intersect at a single timestamp
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -314,7 +309,7 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /*****************************************************************************
- * Input/output
+ * Input/output functions
  *****************************************************************************/
 
 #if MEOS
@@ -1060,7 +1055,8 @@ tcbuffer_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @csqlfn #Tcbuffer_at_geom()
  */
 Temporal *
-tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
+tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
+  atfunc)
 {
   VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */

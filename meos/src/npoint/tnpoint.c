@@ -179,12 +179,12 @@ ensure_valid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return 1 if the segments of two temporal network points intersect
- * during the period defined by the timestamps output in the last arguments
+ * @brief Return 1 or 2 if two temporal network point segments intersect
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -285,7 +285,7 @@ tnpointseqset_in(const char *str)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Construction functions
+ * Constructor functions
  *****************************************************************************/
 
 #if MEOS

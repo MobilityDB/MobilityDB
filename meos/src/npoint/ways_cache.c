@@ -329,13 +329,13 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
  * @ingroup meos_npoint_base_route
  * @brief Return true if the ways cache contains a route with the route
  * identifier
- * @param[in] gid Route identifier
+ * @param[in] rid Route identifier
  */
 bool
-route_exists(int64 gid)
+route_exists(int64 rid)
 {
   ways_record rec;
-  if (route_lookup(gid, false, &rec) == LW_FAILURE)
+  if (route_lookup(rid, false, &rec) == LW_FAILURE)
     return false;
   return true;
 }
@@ -347,10 +347,10 @@ route_exists(int64 gid)
  * @return On error return @p NULL
  */
 GSERIALIZED *
-route_geom(int64 gid)
+route_geom(int64 rid)
 {
   ways_record rec;
-  if (route_lookup(gid, false, &rec) == LW_FAILURE)
+  if (route_lookup(rid, false, &rec) == LW_FAILURE)
     return NULL;
   return rec.the_geom;
 }
@@ -359,14 +359,14 @@ route_geom(int64 gid)
  * @ingroup meos_npoint_base_route
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
- * @param[in] gid Route identifier
+ * @param[in] rid Route identifier
  * @return On error return -1.0
  */
 double
-route_length(int64 gid)
+route_length(int64 rid)
 {
   ways_record rec;
-  if (route_lookup(gid, false, &rec) == LW_FAILURE)
+  if (route_lookup(rid, false, &rec) == LW_FAILURE)
     return -1.0;
   return rec.length;
 }

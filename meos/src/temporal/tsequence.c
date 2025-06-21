@@ -2481,13 +2481,13 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return 1 or 2 if a segment of a temporal sequence intersects a base
- * value during the period defined by the timestamps output in the last arguments
+ * @brief Return 1 or 2 if a temporal segment intersects a base value during
+ * the period defined by the output timestamps, return 0 otherwise
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] temptype Temporal type
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @result Return 0 if the value is equal to the first or the last instant
  * @note The function is used in the lifting infrastructure for determining
  * whether a temporal segment intersects a value
@@ -2540,13 +2540,13 @@ tsegment_intersection_value(Datum start, Datum end, Datum value,
  */
 
 /**
- * @brief Return true if two segments of two temporal numbers intersect at a
- * timestamptz
+ * @brief Return 1 or 2 if two temporal number segments intersect during the
+ * the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] basetype Base type of the values
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t Resulting timestamp
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note Only the intersection inside the segments is considered
  */
 int
@@ -2606,13 +2606,13 @@ tnumbersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
- * @brief Return true if two segments of a temporal sequence intersect at a
- * timestamptz
+ * @brief Return 1 or 2 if two temporal segments intersect during the period 
+ * defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Base values defining the first segment
  * @param[in] start2,end2 Base values defining the second segment
  * @param[in] temptype Temporal type
  * @param[in] lower, upper Timestampts defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The instants are synchronized
  */
 int

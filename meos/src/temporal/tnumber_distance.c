@@ -67,13 +67,13 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * @brief Return true if the segments of twp temporal number intersects at a
- * timestamptz
+ * @brief Return 1 if two temporal number segments intersect during the
+ * period defined by the output timestampts, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  * @post As there is a single turning point, `t2` is set to `t1`
@@ -88,12 +88,12 @@ tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
- * @brief Return true if the segment of a temporal floats intersects a value at
- * a timestamptz
+ * @brief Return 1 if a temporal float segment intersects a value during the
+ * period defined by the output timestampts, return 0 otherwise
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  */
