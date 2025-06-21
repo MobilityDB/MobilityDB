@@ -422,15 +422,15 @@ Tfloat_radians(PG_FUNCTION_ARGS)
  * Derivative functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tfloat_derivative(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tfloat_derivative);
+PGDLLEXPORT Datum Temporal_derivative(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_derivative);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the derivative of a temporal number
  * @sqlfn derivative()
  */
 Datum
-Tfloat_derivative(PG_FUNCTION_ARGS)
+Temporal_derivative(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = temporal_derivative(temp);

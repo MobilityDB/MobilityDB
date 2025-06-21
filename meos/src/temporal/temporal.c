@@ -2774,7 +2774,7 @@ temporal_timestamps(const Temporal *temp, int *count)
  * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence
  * @param[in] seq Temporal sequence
- * @csqlfn #Tfloat_derivative(), ...
+ * @csqlfn #Temporal_derivative()
  */
 TSequence *
 tsequence_derivative(const TSequence *seq)
@@ -2815,7 +2815,7 @@ tsequence_derivative(const TSequence *seq)
  * @ingroup meos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set
  * @param[in] ss Temporal sequence set
- * @csqlfn #Tfloat_derivative()
+ * @csqlfn #Temporal_derivative()
  */
 TSequenceSet *
 tsequenceset_derivative(const TSequenceSet *ss)
@@ -2839,7 +2839,7 @@ tsequenceset_derivative(const TSequenceSet *ss)
  * @param[in] temp Temporal value
  * @see #tsequence_derivative()
  * @see #tsequenceset_derivative()
- * @csqlfn #Tfloat_derivative(), ...
+ * @csqlfn #Temporal_derivative()
  */
 Temporal *
 temporal_derivative(const Temporal *temp)

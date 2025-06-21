@@ -52,7 +52,7 @@
 #include "pose/pose.h"
 
 /*****************************************************************************
- * Utility functions
+ * Validity functions
  *****************************************************************************/
 
 /**
@@ -105,17 +105,16 @@ ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * Interpolation functions defining functionality required by tsequence.c
- * that must be implemented by each temporal type
+ * Intersection functions
  *****************************************************************************/
 
 /**
- * @brief Return 1 if a segment of a temporal pose value intersects a pose at
- * the timestamp output in the last argument
+ * @brief Return 1 or 0 if a temporal pose segment intersects a pose during the
+ * period defined by the output timestamps, return 0 otherwise
  * @param[in] start,end Base values defining the segment
  * @param[in] value Base value
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Resulting timestamps, may be @p NULL
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tposesegm_intersection_value(Datum start, Datum end, Datum value,
@@ -178,14 +177,12 @@ tposesegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 // /**
- // * @brief Return 1 if the segments of two temporal poses intersect
- // * during the period defined by the timestamps output in the last arguments
+ // * @brief Return 1 if two temporal pose segments intersect during the period
+ // * defined by the output timestamps, return 0 otherwise
  // * @param[in] start1,end1 Temporal instants defining the first segment
  // * @param[in] start2,end2 Temporal instants defining the second segment
  // * @param[in] lower,upper Timestamps defining the segments
- // * @param[out] t1,t2 
- // * @return Number of timestamps in the result, between 0 and 2. In the case
- // * of a single result both t1 and t2 are set to the unique timestamp
+ // * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  // */
 // int
 // tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -198,7 +195,7 @@ tposesegm_intersection_value(Datum start, Datum end, Datum value,
 // }
 
 /*****************************************************************************
- * Input/output in WKT, EWKT, and MFJSON format
+ * Input/output functions
  *****************************************************************************/
 
 #if MEOS
@@ -287,7 +284,7 @@ tpose_from_mfjson(const char *mfjson)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TInstant *
-tpoint_tfloat_inst_to_tpose(const TInstant *inst1, const TInstant *inst2)
+tposeinst_make(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
@@ -308,7 +305,7 @@ tpoint_tfloat_inst_to_tpose(const TInstant *inst1, const TInstant *inst2)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TSequence *
-tpoint_tfloat_seq_to_tpose(const TSequence *seq1, const TSequence *seq2)
+tposeseq_make(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2); assert(seq1->temptype == T_TGEOMPOINT);
   assert(seq2->temptype == T_TFLOAT);
@@ -320,7 +317,7 @@ tpoint_tfloat_seq_to_tpose(const TSequence *seq1, const TSequence *seq2)
   /* Instantaneous sequence */
   if (seq1->count == 1)
   {
-    TInstant *inst = tpoint_tfloat_inst_to_tpose(inst1, inst2);
+    TInstant *inst = tposeinst_make(inst1, inst2);
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
@@ -332,7 +329,7 @@ tpoint_tfloat_seq_to_tpose(const TSequence *seq1, const TSequence *seq2)
   {
     inst1 = TSEQUENCE_INST_N(seq1, i);
     inst2 = TSEQUENCE_INST_N(seq2, i);
-    instants[i] = tpoint_tfloat_inst_to_tpose(inst1, inst2);
+    instants[i] = tposeinst_make(inst1, inst2);
   }
   TSequence *result = tsequence_make((const TInstant **) instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
@@ -347,7 +344,7 @@ tpoint_tfloat_seq_to_tpose(const TSequence *seq1, const TSequence *seq2)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TSequenceSet *
-tpoint_tfloat_seqset_to_tpose(const TSequenceSet *ss1, const TSequenceSet *ss2)
+tposeseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
 {
   assert(ss1); assert(ss2); assert(ss1->temptype == T_TGEOMPOINT);
   assert(ss2->temptype == T_TFLOAT);
@@ -358,7 +355,7 @@ tpoint_tfloat_seqset_to_tpose(const TSequenceSet *ss1, const TSequenceSet *ss2)
   /* Instantaneous sequence */
   if (ss1->count == 1)
   {
-    TSequence *seq = tpoint_tfloat_seq_to_tpose(seq1, seq2);
+    TSequence *seq = tposeseq_make(seq1, seq2);
     TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
@@ -370,7 +367,7 @@ tpoint_tfloat_seqset_to_tpose(const TSequenceSet *ss1, const TSequenceSet *ss2)
   {
     seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    sequences[i] = tpoint_tfloat_seq_to_tpose(seq1, seq2);
+    sequences[i] = tposeseq_make(seq1, seq2);
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     ss1->count, NORMALIZE);
@@ -384,10 +381,10 @@ tpoint_tfloat_seqset_to_tpose(const TSequenceSet *ss1, const TSequenceSet *ss2)
  * @brief Return a temporal pose from a temporal point and a temporal float
  * @param[in] tpoint Temporal point
  * @param[in] tradius Temporal float
- * @csqlfn #Tpoint_tfloat_to_tpose()
+ * @csqlfn #Tpose_make()
  */
 Temporal *
-tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
+tpose_make(const Temporal *tpoint, const Temporal *tradius)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(tpoint, NULL); VALIDATE_TFLOAT(tradius, NULL);
@@ -407,16 +404,16 @@ tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tpoint_tfloat_inst_to_tpose((TInstant *) sync1,
+      result = (Temporal *) tposeinst_make((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
-      result = (Temporal *) tpoint_tfloat_seq_to_tpose(
-        (TSequence *) sync1, (TSequence *) sync2);
+      result = (Temporal *) tposeseq_make((TSequence *) sync1, 
+        (TSequence *) sync2);
       break;
     default: /* TSEQUENCESET */
-      result = (Temporal *) tpoint_tfloat_seqset_to_tpose(
-        (TSequenceSet *) sync1, (TSequenceSet *) sync2);
+      result = (Temporal *) tposeseqset_make((TSequenceSet *) sync1,
+        (TSequenceSet *) sync2);
   }
   pfree(sync1); pfree(sync2);
   return result;

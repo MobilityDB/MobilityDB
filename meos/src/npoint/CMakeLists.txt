@@ -12,7 +12,12 @@ set(NPOINT_SRCS
 if(MEOS)
   list(APPEND NPOINT_SRCS
   npointset_meos.c
-)
+  ways_meos.c
+  )
+else()
+  list(APPEND NPOINT_SRCS
+  ways.c
+  )
 endif()
 
 add_library(npoint OBJECT ${NPOINT_SRCS})

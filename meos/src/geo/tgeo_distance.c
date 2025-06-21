@@ -150,13 +150,14 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  *****************************************************************************/
 
 /**
- * @brief Return the distance and timestamp at which a temporal geo segment
- * and a point are at the minimum distance
+ * @brief Return 1 or 2 if a temporal point segment and a point are at a 
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start,end Values defining the first segment
  * @param[in] point Point to locate
  * @param[in] lower,upper Minimum distance at turning point
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant
  * @post As there is a single turning point, `t2` is set to `t1`
  */
@@ -241,14 +242,15 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
 }
 
 /**
- * @brief Return 1 the timestamp at which two temporal geometry
- * point segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal geometry point segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note The PostGIS functions @p lw_dist2d_seg_seg and @p lw_dist3d_seg_seg
  * cannot be used since they do not take time into consideration and would
  * return, e.g., that the minimum distance between the two following segments
@@ -292,14 +294,15 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @brief Return 1 if the single timestamp at which the two temporal geography
- * point segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal geography point segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants
  * @post As there is a single turning point, `t2` is  set to `t1`
  */
@@ -340,13 +343,14 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @brief Return the value and timestamp at which the two temporal geo
- * segments are at the minimum distance.
+ * @brief Return 1 or 2 if two temporal point segments are at a minimum
+ * distance during the period defined by the output timestamps, return 0
+ * otherwise
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants.
  */
 int
