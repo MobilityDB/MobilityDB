@@ -92,53 +92,53 @@ CREATE OPERATOR <-> (
  * Temporal distance functions
  *****************************************************************************/
 
-CREATE FUNCTION tDistance(geometry(Point), tcbuffer)
+CREATE FUNCTION distance(geometry(Point), tcbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_geo_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(cbuffer, tcbuffer)
+CREATE FUNCTION distance(cbuffer, tcbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tcbuffer, geometry(Point))
+CREATE FUNCTION distance(tcbuffer, geometry(Point))
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tcbuffer_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tcbuffer, cbuffer)
+CREATE FUNCTION distance(tcbuffer, cbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tcbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tcbuffer, tcbuffer)
+CREATE FUNCTION distance(tcbuffer, tcbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tcbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = distance,
   LEFTARG = geometry,
   RIGHTARG = tcbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = distance,
   LEFTARG = cbuffer,
   RIGHTARG = tcbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = distance,
   LEFTARG = tcbuffer,
   RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = distance,
   LEFTARG = tcbuffer,
   RIGHTARG = cbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = distance,
   LEFTARG = tcbuffer,
   RIGHTARG = tcbuffer,
   COMMUTATOR = <->

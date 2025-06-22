@@ -389,13 +389,12 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return NULL;
 
-  meosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) geo_distance_fn(temp->flags);
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
-  lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
