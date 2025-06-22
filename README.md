@@ -57,13 +57,13 @@ Benefits
 
 *   Adopted by the [Open Source Geospatial Foundation](https://www.osgeo.org/) (OSGeo) as a [community project](https://www.osgeo.org/projects/mobilitydb/)
 
-*   Database adapters to access MobilityDB from Python are provided by the [PyMEOS](https://github.com/MobilityDB/PyMEOS) package, supporting [psycopg2](https://www.psycopg.org/docs/), [psycopg](https://www.psycopg.org/psycopg3/docs/) and [asyncpg](https://magicstack.github.io/asyncpg/current/) libraries.
+*   Database adapters to access MobilityDB from Python are provided by the [PyMEOS](https://github.com/MobilityDB/PyMEOS) package, supporting [psycopg](https://www.psycopg.org/psycopg3/docs/) and [asyncpg](https://magicstack.github.io/asyncpg/current/) libraries.
 
 *   Data generator and benchmark tool based on the [BerlinMOD](https://secondo-database.github.io/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
-*   [MOVE plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
+*   [MOVE plugin](https://github.com/MobilityDB/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
 *   An extensive [workshop](https://github.com/MobilityDB/MobilityDB-workshop) illustrating various usage scenarios of MobilityDB
 
