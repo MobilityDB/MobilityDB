@@ -418,6 +418,22 @@ Tfloat_radians(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Float_angular_difference(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Float_angular_difference);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the angular difference, i.e., the smaller angle between the
+ * two degree values
+ * @sqlfn angularDifference()
+ */
+Datum
+Float_angular_difference(PG_FUNCTION_ARGS)
+{
+  double degrees1 = PG_GETARG_FLOAT8(0);
+  double degrees2 = PG_GETARG_FLOAT8(1);
+  PG_RETURN_FLOAT8(float_angular_difference(degrees1, degrees2));
+}
+
 /*****************************************************************************
  * Derivative functions
  *****************************************************************************/

@@ -480,6 +480,19 @@ angular_difference(Datum degrees1, Datum degrees2)
 }
 
 /**
+ * @ingroup meos_temporal_math
+ * @brief Return the angular difference, i.e., the smaller angle between the
+ * two degree values
+ * @param[in] degrees1,degrees2 Values
+ */
+double
+float_angular_difference(double degrees1, double degrees2)
+{
+  return DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
+    Float8GetDatum(degrees2)));
+}
+
+/**
  * @brief Return the temporal angular difference of a temporal number
  */
 static int

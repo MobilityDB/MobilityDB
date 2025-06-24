@@ -387,6 +387,11 @@ CREATE FUNCTION radians(tfloat)
   AS 'MODULE_PATHNAME', 'Tfloat_radians'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION angularDifference(float, float)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Float_angular_difference'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION derivative(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_derivative'
