@@ -627,6 +627,7 @@ extern Temporal *tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *te
 extern TInstant *tpointinst_make(const GSERIALIZED *gs, TimestampTz t);
 extern TSequence *tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s);
 extern TSequence *tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
+extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss, interpType interp);
 
 /* Conversion functions */

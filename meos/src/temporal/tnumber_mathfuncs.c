@@ -480,7 +480,7 @@ angular_difference(Datum degrees1, Datum degrees2)
 }
 
 /**
- * @ingroup meos_temporal_math
+ * @ingroup meos_base_types
  * @brief Return the angular difference, i.e., the smaller angle between the
  * two degree values
  * @param[in] degrees1,degrees2 Values
@@ -601,7 +601,6 @@ tnumber_angular_difference(const Temporal *temp)
  * @param[in] d Value
  * @note PostgreSQL function: dexp(PG_FUNCTION_ARGS)
  */
-
 double
 float_exp(double d)
 {

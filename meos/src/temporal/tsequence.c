@@ -1112,7 +1112,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 
 #if MEOS
 /**
- * @ingroup meos_internal_temporal_constructor
+ * @ingroup meos_geo_constructor
  * @brief Return a temporal sequence from arrays of coordinates, one per
  * dimension, and timestamps
  * @param[in] xcoords Array of x coordinates
