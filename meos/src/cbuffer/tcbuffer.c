@@ -614,31 +614,37 @@ tcbuffer_to_tfloat(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @brief Convert a temporal geometry point into a temporal circular buffer
- * with a zero radius
+ * @brief Convert a temporal geometry into a temporal circular buffer
  */
 TInstant *
-tgeompointinst_tcbufferinst(const TInstant *inst)
+tgeominst_tcbufferinst(const TInstant *inst)
 {
-  assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Cbuffer *cb = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst)), 0.0);
+  assert(inst); assert(tgeo_type_all(inst->temptype));
+  GSERIALIZED *value = (GSERIALIZED *) DatumGetGserializedP(
+    tinstant_value_p(inst));
+  double radius = 0.0;
+  uint32_t geotype = gserialized_get_type(value);
+  if (geotype != POINTTYPE)
+    value = geom_min_bounding_radius(value, &radius);
+  Cbuffer *cb = cbuffer_make(value, radius);
+  if (geotype != POINTTYPE)
+    pfree(value);
   if (cb == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(cb), T_TCBUFFER, inst->t);
 }
 
 /**
- * @brief Convert a temporal geometry point into a temporal circular buffer
- * with a zero radius
+ * @brief Convert a temporal geometry into a temporal circular buffer
  */
 TSequence *
-tgeompointseq_tcbufferseq(const TSequence *seq)
+tgeomseq_tcbufferseq(const TSequence *seq)
 {
-  assert(seq); assert(seq->temptype == T_TGEOMPOINT);
+  assert(seq); assert(tgeo_type_all(seq->temptype));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tgeompointinst_tcbufferinst(TSEQUENCE_INST_N(seq, i));
+    TInstant *inst = tgeominst_tcbufferinst(TSEQUENCE_INST_N(seq, i));
     if (inst == NULL)
     {
       pfree_array((void **) instants, i);
@@ -651,17 +657,16 @@ tgeompointseq_tcbufferseq(const TSequence *seq)
 }
 
 /**
- * @brief Convert a temporal geometry point into a temporal circular buffer
- * with a zero radius
+ * @brief Convert a temporal geometry into a temporal circular buffer
  */
 TSequenceSet *
-tgeompointseqset_tcbufferseqset(const TSequenceSet *ss)
+tgeomseqset_tcbufferseqset(const TSequenceSet *ss)
 {
-  assert(ss); assert(ss->temptype == T_TGEOMPOINT);
+  assert(ss); assert(tgeo_type_all(ss->temptype));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *seq = tgeompointseq_tcbufferseq(TSEQUENCESET_SEQ_N(ss, i));
+    TSequence *seq = tgeomseq_tcbufferseq(TSEQUENCESET_SEQ_N(ss, i));
     if (seq == NULL)
     {
       pfree_array((void **) sequences, i);
@@ -674,26 +679,25 @@ tgeompointseqset_tcbufferseqset(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_cbuffer_conversion
- * @brief Return a temporal geometry point transformed to a temporal circular
- * buffer with a zero radius
+ * @brief Convert a temporal geometry into a temporal circular buffer
  * @param[in] temp Temporal point
- * @csqlfn #Tgeompoint_to_tcbuffer()
+ * @csqlfn #Tgeometry_to_tcbuffer()
  */
 Temporal *
-tgeompoint_to_tcbuffer(const Temporal *temp)
+tgeometry_to_tcbuffer(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEOMPOINT(temp, NULL);
+  VALIDATE_TGEOMETRY(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tgeompointinst_tcbufferinst((TInstant *) temp);
+      return (Temporal *) tgeominst_tcbufferinst((TInstant *) temp);
     case TSEQUENCE:
-      return (Temporal *) tgeompointseq_tcbufferseq((TSequence *) temp);
+      return (Temporal *) tgeomseq_tcbufferseq((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return (Temporal *) tgeompointseqset_tcbufferseqset((TSequenceSet *) temp);
+      return (Temporal *) tgeomseqset_tcbufferseqset((TSequenceSet *) temp);
   }
 }
 

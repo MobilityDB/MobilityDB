@@ -51,9 +51,6 @@
 
 #define SQL_ROUTE_MAXLEN  64
 
-/* Global variable saving the SRID of the ways table */
-static int32_t SRID_WAYS = SRID_INVALID;
-
 /*****************************************************************************
  * Definitions for reading the ways.csv file
  * Notice that the file does not have header and the separator are tabs

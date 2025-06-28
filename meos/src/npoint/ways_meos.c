@@ -45,9 +45,6 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"
 
-/* Global variable saving the SRID of the ways CSV file */
-static int32_t SRID_WAYS = SRID_INVALID;
-
 /*****************************************************************************
  * Definitions for reading the ways CSV file
  * Notice that the CSV file does not have header and the separator are commas

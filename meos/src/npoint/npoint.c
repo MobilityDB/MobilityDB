@@ -72,9 +72,6 @@
 
 #define SQL_ROUTE_MAXLEN  64
 
-/* Global variable saving the SRID of the ways table */
-static int32_t SRID_WAYS = SRID_INVALID;
-
 /*****************************************************************************
  * Collinear and interpolation function
  *****************************************************************************/

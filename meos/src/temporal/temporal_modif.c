@@ -1262,7 +1262,6 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
     /* If seq2 is between the last sequence added and seq1 */
     if (cmp1 <= 0 && cmp2 <= 0)
     {
-      char *str;
       /* Verify that the two sequences have the same value at common instants */
       const TInstant *inst1, *inst2;
       if (cmp1 == 0 && sequences[nseqs - 1]->period.upper_inc &&
