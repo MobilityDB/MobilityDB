@@ -147,7 +147,7 @@ extern GSERIALIZED *stbox_geo(const STBox *box);
  * Functions for temporal types
  *****************************************************************************/
 
-/* Input and output functions for temporal types */
+/* Input and output functions */
 
 extern TInstant *tgeogpointinst_from_mfjson(json_object *mfjson, int32_t srid);
 extern TInstant *tgeogpointinst_in(const char *str);
@@ -176,29 +176,29 @@ extern TSequenceSet *tgeometryseqset_in(const char *str);
 
 /*****************************************************************************/
 
-/* Constructor functions for temporal types */
+/* Constructor functions */
 
 extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 
 /*****************************************************************************/
 
-/* Conversion functions for temporal types */
+/* Conversion functions */
 
 /*****************************************************************************/
 
-/* Accessor functions for temporal types */
+/* Accessor functions */
 
 /*****************************************************************************/
 
-/* Transformation functions for temporal types */
+/* Transformation functions */
 
 /*****************************************************************************/
 
-/* Modification functions for temporal types */
+/* Modification functions */
 
 /*****************************************************************************/
 
-/* Bounding box functions for temporal types */
+/* Bounding box functions */
 
 extern void tspatial_set_stbox(const Temporal *temp, STBox *box);
 extern void tgeoinst_set_stbox(const TInstant *inst, STBox *box);
@@ -207,7 +207,7 @@ extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);
 
 /*****************************************************************************/
 
-/* Restriction functions for temporal types */
+/* Restriction functions */
 
 extern Temporal *tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 extern Temporal *tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
@@ -220,19 +220,19 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 /*****************************************************************************/
 
-/* Traditional comparison functions for temporal types */
+/* Traditional comparison functions */
 
 /*****************************************************************************/
 
-/* Ever/always functions for temporal types */
+/* Ever/always functions */
 
 /*****************************************************************************/
 
-/* Mathematical functions for temporal types */
+/* Mathematical functions */
 
 /*****************************************************************************/
 
-/* Distance functions for temporal types */
+/* Distance functions */
 
 /*****************************************************************************
  * Spatial functions for temporal points
@@ -277,7 +277,7 @@ extern void tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid);
 
 /*****************************************************************************/
 
-/* Local aggregate functions for temporal types */
+/* Local aggregate functions */
 
 extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);
 extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
@@ -289,7 +289,7 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /*****************************************************************************/
 
-/* Aggregate functions for temporal types */
+/* Aggregate functions */
 
 
 /*****************************************************************************/
@@ -299,7 +299,7 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /*****************************************************************************/
 
-/* Similarity functions for temporal types */
+/* Similarity functions */
 
 
 /*****************************************************************************/

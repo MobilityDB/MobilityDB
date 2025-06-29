@@ -468,8 +468,8 @@ Npoint_to_nsegment(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Npoint_to_geom(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_to_geom);
+PGDLLEXPORT Datum Npoint_to_geompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_to_geompoint);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
  * @brief Convert a network point into a geometry
@@ -477,14 +477,14 @@ PG_FUNCTION_INFO_V1(Npoint_to_geom);
  * @sqlop @p ::
  */
 Datum
-Npoint_to_geom(PG_FUNCTION_ARGS)
+Npoint_to_geompoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_GSERIALIZED_P(npoint_to_geom(np));
+  PG_RETURN_GSERIALIZED_P(npoint_to_geompoint(np));
 }
 
-PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geom_to_npoint);
+PGDLLEXPORT Datum Geompoint_to_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geompoint_to_npoint);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
  * @brief Convert a geometry into a network point
@@ -492,10 +492,10 @@ PG_FUNCTION_INFO_V1(Geom_to_npoint);
  * @sqlop @p ::
  */
 Datum
-Geom_to_npoint(PG_FUNCTION_ARGS)
+Geompoint_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Npoint *result = geom_to_npoint(gs);
+  Npoint *result = geompoint_to_npoint(gs);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_NPOINT_P(result);

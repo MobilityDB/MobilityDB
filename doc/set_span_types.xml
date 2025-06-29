@@ -822,18 +822,18 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="floatset_degrees">
+			<listitem xml:id="floatsetspan_degrees">
 				<indexterm significance="normal"><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>radians</varname></primary></indexterm>
 				<para>Convert to degrees or radians</para>
-				<para><varname>degrees(floatset, normalize=false) → floatset</varname></para>
-				<para><varname>radians(floatset) → floatset</varname></para>
+				<para><varname>degrees({floatset,floatspans}, normalize=false) → {floatset,floatspans}</varname></para>
+				<para><varname>radians({floatset,floatspans}) → {floatset,floatspans}</varname></para>
 				<para>The additional parameter in the <varname>degrees</varname> function can be used to normalize the values between 0 and 360 degrees.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
 -- {0, 28.648, 40.107, 57.296}
-SELECT round(radians(floatset '{0, 45, 90}'), 3);
--- {0, 0.785, 1.571}
+SELECT round(radians(floatspanset '{[0, 45], [90, 135]}'), 3);
+-- {[0, 0.785], [1.571, 2.356]}
 </programlisting>
 			</listitem>
 

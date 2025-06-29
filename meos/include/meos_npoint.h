@@ -131,9 +131,9 @@ extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 
 /* Conversion functions */
 
-extern Npoint *geom_to_npoint(const GSERIALIZED *gs);
+extern Npoint *geompoint_to_npoint(const GSERIALIZED *gs);
 extern Nsegment *geom_to_nsegment(const GSERIALIZED *gs);
-extern GSERIALIZED *npoint_to_geom(const Npoint *np);
+extern GSERIALIZED *npoint_to_geompoint(const Npoint *np);
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 extern STBox *npoint_to_stbox(const Npoint *np);
 extern GSERIALIZED *nsegment_to_geom(const Nsegment *ns);
@@ -238,14 +238,20 @@ extern Temporal *tnpoint_in(const char *str);
 extern char *tnpoint_out(const Temporal *temp, int maxdd);
 
 /*****************************************************************************
- * Conversion function
+ * Constructor functions
+ *****************************************************************************/
+
+extern TInstant *tnpointinst_make(const Npoint *np, TimestampTz t);
+
+/*****************************************************************************
+ * Conversion functions
  *****************************************************************************/
 
 extern Temporal *tgeompoint_to_tnpoint(const Temporal *temp);
 extern Temporal *tnpoint_to_tgeompoint(const Temporal *temp);
 
 /*****************************************************************************
- * Accessor function
+ * Accessor functions
  *****************************************************************************/
 
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);

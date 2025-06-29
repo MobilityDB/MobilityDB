@@ -646,23 +646,20 @@ ea_dwithin_trgeoseq_trgeoseq_discstep(const TSequence *seq1,
 }
 
 /**
- * @brief Return the timestamps at which EITHER the segments of the two
- * temporal points OR a segment of a temporal point and a point are within a
- * distance
+ * @brief Return 1 or 2 if two temporal geometry segments are within a distance
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] sv1,ev1 Points defining the first segment
  * @param[in] sv2,ev2 Points defining the second segment
  * @param[in] lower,upper Timestamps associated to the segments
  * @param[in] dist Distance
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
  */
 int
-tdwithin_trgeosegm_trgeosegm(Datum sv1 UNUSED, 
-  Datum ev1 UNUSED, Datum sv2 UNUSED, 
-  Datum ev2 UNUSED, TimestampTz lower UNUSED, 
-  TimestampTz upper UNUSED, 
-  double dist UNUSED, TimestampTz *t1 UNUSED, 
+tdwithin_trgeosegm_trgeosegm(Datum sv1 UNUSED, Datum ev1 UNUSED,
+  Datum sv2 UNUSED, Datum ev2 UNUSED, TimestampTz lower UNUSED, 
+  TimestampTz upper UNUSED, double dist UNUSED, TimestampTz *t1 UNUSED, 
   TimestampTz *t2 UNUSED)
 {
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

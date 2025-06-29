@@ -119,10 +119,6 @@ extern Datum datum_npoint_round(Datum npoint, Datum size);
 
 /* Conversion functions */
 
-/** Symbolic constants for transforming tnpoint <-> tgeompoint */
-#define NPOINT_TO_GEOM        true
-#define GEOM_TO_NPOINT        false
-
 extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
 extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
 extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);

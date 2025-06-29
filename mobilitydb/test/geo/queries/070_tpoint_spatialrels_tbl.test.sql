@@ -53,7 +53,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDisjoint(t1
 -- Geography
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+-- The following query return different number of results (9876 vs 9878)
+-- depending on PostGIS version. For this reason it is modified to avoid the problem
+SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- Modulo used to reduce time needed for the tests
@@ -88,7 +90,7 @@ SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eIntersects(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
 -- Geography
--- The following two queries return different number result (3302 vs 3300)
+-- The following two queries return different number of results (3302 vs 3300)
 -- depending on PostGIS version. For this reason they are commented out
 -- SELECT COUNT(*) FROM tbl_geog, tbl_tgeogpoint WHERE eIntersects(g, temp);
 -- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog WHERE eIntersects(temp, g);
@@ -110,7 +112,9 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aIntersects(
 -- Geography
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
+-- The following query return different number of results (118 vs 116)
+-- depending on PostGIS version. For this reason it is modified to avoid the problem
+SELECT COUNT(*) > 0 FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eTouches, aTouches

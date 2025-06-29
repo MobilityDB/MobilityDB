@@ -90,6 +90,20 @@ extern void double4_set(double a, double b, double c, double d, double4 *result)
 extern double4 *double4_add(const double4 *d1, const double4 *d2);
 extern bool double4_eq(const double4 *d1, const double4 *d2);
 
+extern bool double2_collinear(const double2 *x1, const double2 *x2,
+  const double2 *x3, double ratio);
+extern bool double3_collinear(const double3 *x1, const double3 *x2,
+  const double3 *x3, double ratio);
+extern bool double4_collinear(const double4 *x1, const double4 *x2,
+  const double4 *x3, double ratio);
+
+extern double2 *double2segm_interpolate(const double2 *start,
+  const double2 *end, long double ratio);
+extern double3 *double3segm_interpolate(const double3 *start,
+  const double3 *end, long double ratio);
+extern double4 *double4segm_interpolate(const double4 *start,
+  const double4 *end, long double ratio);
+
 /*****************************************************************************/
 
 #endif /* __DOUBLEN_H__ */

@@ -215,13 +215,18 @@ CREATE FUNCTION tfloat(tcbuffer)
 
 CREATE FUNCTION tcbuffer(tgeompoint)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tcbuffer'
+  AS 'MODULE_PATHNAME', 'Tgeometry_to_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbuffer(tgeometry)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tgeometry_to_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
+CREATE CAST (tgeometry AS tcbuffer) WITH FUNCTION tcbuffer(tgeometry);
 
 /*****************************************************************************
  * Accessor functions

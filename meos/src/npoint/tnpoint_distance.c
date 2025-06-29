@@ -54,8 +54,8 @@
 Datum
 datum_npoint_distance(Datum np1, Datum np2)
 {
-  Datum geom1 = PointerGetDatum(npoint_to_geom(DatumGetNpointP(np1)));
-  Datum geom2 = PointerGetDatum(npoint_to_geom(DatumGetNpointP(np2)));
+  Datum geom1 = PointerGetDatum(npoint_to_geompoint(DatumGetNpointP(np1)));
+  Datum geom2 = PointerGetDatum(npoint_to_geompoint(DatumGetNpointP(np2)));
   return datum_pt_distance2d(geom1, geom2);
 }
 
@@ -98,7 +98,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   if (! ensure_valid_tnpoint_npoint(temp, np))
     return NULL;
 
-  GSERIALIZED *geom = npoint_to_geom(np);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *result = distance_tgeo_geo(tpoint, geom);
   pfree(geom);
@@ -170,7 +170,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   if (! ensure_valid_tnpoint_npoint(temp, np))
     return NULL;
 
-  GSERIALIZED *geom = npoint_to_geom(np);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
@@ -270,7 +270,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   if (! ensure_valid_tnpoint_npoint(temp, np))
     return DBL_MAX;
 
-  GSERIALIZED *geom = npoint_to_geom(np);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, geom);
   pfree(traj); pfree(geom);
@@ -336,7 +336,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   if (! ensure_valid_tnpoint_npoint(temp, np))
     return NULL;
 
-  GSERIALIZED *geom = npoint_to_geom(np);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   GSERIALIZED *result = geom_shortestline2d(traj, geom);
   pfree(geom); pfree(traj);

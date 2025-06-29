@@ -24,6 +24,8 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.3)';
 SELECT cbuffer 'Cbuffer(Point(1 1), 10.0)';
 </programlisting>
 
+		<para>The <varname>cbuffer</varname> type corresponds to the result of the PostGIS function <ulink url="https://postgis.net/docs/ST_MinimumBoundingRadius.html">ST_MinimumBoundingRadius</ulink>.</para>
+
 		<para>Values of the circular buffer type must satisfy several constraints so that they are well defined. Examples of incorrect circular buffer type values are as follows.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- incorrect point value
@@ -52,20 +54,20 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.3));
 
 		<sect2 xml:id="cbuffer_conversions">
 			<title>Conversions</title>
-			<para>Values of the <varname>cbuffer</varname> type can be converted to the <varname>geometry</varname> point type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown below. Similarly, a <varname>geometry</varname> that define a circle can be converted to a <varname>cbuffer</varname> values. For this, the geometry must be a curve polygon with three points. If this is not the case, an error is returned.</para>
+			<para>Values of the <varname>cbuffer</varname> type can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown below. Similarly, a <varname>geometry</varname> can be converted to a <varname>cbuffer</varname> value using the <ulink url="https://postgis.net/docs/ST_MinimumBoundingRadius.html"><varname>ST_MinimumBoundingRadius</varname></ulink> function in PostGIS.</para>
 			<itemizedlist>
 				<listitem xml:id="cbuffer_geometry">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-					<para>Convert between a circular buffer and a geometry point</para>
-					<para><varname>cbuffer::geompoint</varname></para>
-					<para><varname>geompoint::cbuffer</varname></para>
+					<para>Convert between a circular buffer and a geometry</para>
+					<para><varname>geometry::cbuffer</varname></para>
+					<para><varname>cbuffer::geometry</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
--- CURVEPOLYGON(CIRCULARSTRING(0 0,2 2,0 0))
-SELECT asText(geometry 'SRID=5676;CURVEPOLYGON(CIRCULARSTRING(0 0,2 2,0 0))'::cbuffer);
+-- CURVEPOLYGON(CIRCULARSTRING(0 1,2 1,0 1))
+SELECT asText(geometry 'SRID=5676;CIRCULARSTRING(0 1,2 1,0 1)'::cbuffer);
 -- Cbuffer(POINT(1 1),1)
-SELECT asText(geometry 'SRID=5676;CIRCULARSTRING(0 0,2 2,0 0)'::cbuffer);
--- Only circle geometries accepted
+SELECT asText(geometry 'SRID=5676;LINESTRING(0 0,2 2)'::cbuffer);
+-- Cbuffer(POINT(1 1),1.414213562373095)
 </programlisting>
 				</listitem>
 

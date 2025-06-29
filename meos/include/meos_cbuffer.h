@@ -37,12 +37,10 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-/* PostgreSQL */
-#include <postgres.h>
-/* PostGIS */
-#include <liblwgeom.h>
+
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 
 /*****************************************************************************
  * Type definitions
@@ -241,7 +239,7 @@ extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp);
 
 extern Temporal *tcbuffer_to_tfloat(const Temporal *temp);
 extern Temporal *tcbuffer_to_tgeompoint(const Temporal *temp);
-extern Temporal *tgeompoint_to_tcbuffer(const Temporal *temp);
+extern Temporal *tgeometry_to_tcbuffer(const Temporal *temp);
 
 /*****************************************************************************
  * Transformation functions

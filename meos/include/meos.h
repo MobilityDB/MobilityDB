@@ -342,6 +342,7 @@ extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
 extern void meos_finalize_timezone(void);
 extern void meos_finalize_projsrs(void);
+extern void meos_finalize_ways(void);
 
 extern bool meos_set_datestyle(const char *newval, void *extra);
 extern bool meos_set_intervalstyle(const char *newval, int extra);
@@ -1696,6 +1697,7 @@ extern Temporal *tfloat_exp(const Temporal *temp);
 extern Temporal *tfloat_ln(const Temporal *temp);
 extern Temporal *tfloat_log10(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
+extern double float_angular_difference(double degrees1, double degrees2);
 extern Temporal *tnumber_angular_difference(const Temporal *temp);
 extern Temporal *tnumber_delta_value(const Temporal *temp);
 

@@ -1502,13 +1502,13 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 /*****************************************************************************/
 
 /**
- * @brief Return the value and timestamp at which the two temporal geo
- * segments are at the minimum distance.
+ * @brief Return 1 or 2 if two temporal point segments are within a distance
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Base values defining the first segment
  * @param[in] start2,end2 Base values defining the second segment
  * @param[in] value Base value
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants.
  */
 int

@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Create a cache of metadata information about temporal types and
- * span types in global constant arrays
+ * @brief Create a cache of metadata information about MEOS types in global
+ * constant arrays
  */
 
 #include "temporal/meos_catalog.h"

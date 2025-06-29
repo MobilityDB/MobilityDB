@@ -264,7 +264,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
+					<para><link linkend="floatspanset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 				<listitem>

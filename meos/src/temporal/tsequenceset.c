@@ -175,13 +175,13 @@ datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
 {
   if (tnumber_basetype(type))
     return datum_double(distance_value_value(value1, value2, type), type);
-  else if (geo_basetype(type))
+  if (geo_basetype(type))
   {
     datum_func2 point_distance = pt_distance_fn(flags);
     return DatumGetFloat8(point_distance(value1, value2));
   }
 #if NPOINT
-  else if (type == T_NPOINT)
+  if (type == T_NPOINT)
     return DatumGetFloat8(datum_npoint_distance(value1, value2));
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

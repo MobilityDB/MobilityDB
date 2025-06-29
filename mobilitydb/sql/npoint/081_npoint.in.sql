@@ -188,12 +188,12 @@ CREATE CAST (npoint AS nsegment) WITH FUNCTION nsegment(npoint);
 
 CREATE FUNCTION geometry(npoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Npoint_to_geom'
+  AS 'MODULE_PATHNAME', 'Npoint_to_geompoint'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION npoint(geometry)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Geom_to_npoint'
+  AS 'MODULE_PATHNAME', 'Geompoint_to_npoint'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);

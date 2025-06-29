@@ -129,6 +129,8 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL;
 
+SELECT COUNT(*) FROM tbl_float t1, tbl_float t2 WHERE angularDifference(t1.f, t2.f) IS NOT NULL;
+
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE angularDifference(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
 
