@@ -225,6 +225,9 @@ install(
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   RENAME "meos_geo.h")
 install(
+  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(
   FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
   DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
 

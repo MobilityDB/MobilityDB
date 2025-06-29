@@ -880,6 +880,9 @@ extern STBox *stbox_time_tiles(const STBox *bounds, const Interval *duration, Ti
 extern Temporal **tgeo_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
 extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count);
 
+/* Clustering functions */
+
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k);
 
 /*****************************************************************************/
 
