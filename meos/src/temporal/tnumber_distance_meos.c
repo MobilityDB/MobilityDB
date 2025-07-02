@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal numbers
+ * @brief Temporal distance functions for temporal numbers
  */
 
 /* C */
@@ -58,14 +58,14 @@
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @return On error return @p NULL
- * @csqlfn #Distance_tnumber_number()
+ * @csqlfn #Tdistance_tnumber_number()
  */
 Temporal *
-distance_tint_int(const Temporal *temp, int i)
+tdistance_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
-  return distance_tnumber_number(temp, Int32GetDatum(i));
+  return tdistance_tnumber_number(temp, Int32GetDatum(i));
 }
 
 /**
@@ -74,14 +74,14 @@ distance_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @return On error return @p NULL
- * @csqlfn #Distance_tnumber_number()
+ * @csqlfn #Tdistance_tnumber_number()
  */
 Temporal *
-distance_tfloat_float(const Temporal *temp, double d)
+tdistance_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
-  return distance_tnumber_number(temp, Int32GetDatum(d));
+  return tdistance_tnumber_number(temp, Int32GetDatum(d));
 }
 
 /*****************************************************************************

@@ -48,8 +48,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_point_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_point_tnpoint);
+PGDLLEXPORT Datum Tdistance_point_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_point_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the temporal distance between a geometry point and a
@@ -58,11 +58,11 @@ PG_FUNCTION_INFO_V1(Distance_point_tnpoint);
  * @sqlop @p <->
  */
 Datum
-Distance_point_tnpoint(PG_FUNCTION_ARGS)
+Tdistance_point_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnpoint_point(temp, gs);
+  Temporal *result = tdistance_tnpoint_point(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -70,8 +70,8 @@ Distance_point_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tnpoint_point(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnpoint_point);
+PGDLLEXPORT Datum Tdistance_tnpoint_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tnpoint_point);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the temporal distance between a temporal network point and
@@ -80,11 +80,11 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_point);
  * @sqlop @p <->
  */
 Datum
-Distance_tnpoint_point(PG_FUNCTION_ARGS)
+Tdistance_tnpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tnpoint_point(temp, gs);
+  Temporal *result = tdistance_tnpoint_point(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -92,8 +92,8 @@ Distance_tnpoint_point(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_npoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
+PGDLLEXPORT Datum Tdistance_npoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the temporal distance between a network point and a
@@ -102,17 +102,17 @@ PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
  * @sqlop @p <->
  */
 Datum
-Distance_npoint_tnpoint(PG_FUNCTION_ARGS)
+Tdistance_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnpoint_npoint(temp, np);
+  Temporal *result = tdistance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tnpoint_npoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnpoint_npoint);
+PGDLLEXPORT Datum Tdistance_tnpoint_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the temporal distance between a temporal network point and
@@ -121,17 +121,17 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_npoint);
  * @sqlop @p <->
  */
 Datum
-Distance_tnpoint_npoint(PG_FUNCTION_ARGS)
+Tdistance_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  Temporal *result = distance_tnpoint_npoint(temp, np);
+  Temporal *result = tdistance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnpoint_tnpoint);
+PGDLLEXPORT Datum Tdistance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the temporal distance between a temporal network point and
@@ -140,11 +140,11 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_tnpoint);
  * @sqlop @p <->
  */
 Datum
-Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+Tdistance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnpoint_tnpoint(temp1, temp2);
+  Temporal *result = tdistance_tnpoint_tnpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

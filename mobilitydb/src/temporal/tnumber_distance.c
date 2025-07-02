@@ -50,8 +50,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_number_tnumber(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_number_tnumber);
+PGDLLEXPORT Datum Tdistance_number_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between a number and a temporal number
@@ -59,17 +59,17 @@ PG_FUNCTION_INFO_V1(Distance_number_tnumber);
  * @sqlop @p <->
  */
 Datum
-Distance_number_tnumber(PG_FUNCTION_ARGS)
+Tdistance_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnumber_number(temp, value);
+  Temporal *result = tdistance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tnumber_number(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnumber_number);
+PGDLLEXPORT Datum Tdistance_tnumber_number(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number
@@ -77,17 +77,17 @@ PG_FUNCTION_INFO_V1(Distance_tnumber_number);
  * @sqlop @p <->
  */
 Datum
-Distance_tnumber_number(PG_FUNCTION_ARGS)
+Tdistance_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Temporal *result = distance_tnumber_number(temp, value);
+  Temporal *result = tdistance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tnumber_tnumber(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tnumber_tnumber);
+PGDLLEXPORT Datum Tdistance_tnumber_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
@@ -95,11 +95,11 @@ PG_FUNCTION_INFO_V1(Distance_tnumber_tnumber);
  * @sqlop @p <->
  */
 Datum
-Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
+Tdistance_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tnumber_tnumber(temp1, temp2);
+  Temporal *result = tdistance_tnumber_tnumber(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

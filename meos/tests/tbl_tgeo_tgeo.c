@@ -147,7 +147,7 @@ int main(void)
             // false, false);
           Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10,
             false, false);
-          // Temporal *rest = distance_tgeo_tgeo(temp1, temp2);
+          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
           if (rest)
           {
             /* Increment the number of non-empty answers found */

@@ -44,8 +44,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_cbuffer_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_cbuffer_geo);
+PGDLLEXPORT Datum Tdistance_cbuffer_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_cbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_geo);
  * @sqlop @p <->
  */
 Datum
-Distance_cbuffer_geo(PG_FUNCTION_ARGS)
+Tdistance_cbuffer_geo(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -63,8 +63,8 @@ Distance_cbuffer_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Distance_geo_cbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_cbuffer);
+PGDLLEXPORT Datum Tdistance_geo_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_geo_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
@@ -73,7 +73,7 @@ PG_FUNCTION_INFO_V1(Distance_geo_cbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_geo_cbuffer(PG_FUNCTION_ARGS)
+Tdistance_geo_cbuffer(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
@@ -84,8 +84,8 @@ Distance_geo_cbuffer(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_cbuffer_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
+PGDLLEXPORT Datum Tdistance_cbuffer_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_cbuffer_stbox);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
  * @sqlop @p <->
  */
 Datum
-Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
+Tdistance_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
@@ -102,8 +102,8 @@ Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Distance_stbox_cbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
+PGDLLEXPORT Datum Tdistance_stbox_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_stbox_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
@@ -112,7 +112,7 @@ PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
+Tdistance_stbox_cbuffer(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
@@ -122,8 +122,8 @@ Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
+PGDLLEXPORT Datum Tdistance_cbuffer_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_cbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between two circular buffers
@@ -131,7 +131,7 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
+Tdistance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
   Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
@@ -141,8 +141,8 @@ Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_geo_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_tcbuffer);
+PGDLLEXPORT Datum Tdistance_geo_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a geometry and a temporal
@@ -151,11 +151,11 @@ PG_FUNCTION_INFO_V1(Distance_geo_tcbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_geo_tcbuffer(PG_FUNCTION_ARGS)
+Tdistance_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tcbuffer_geo(temp, gs);
+  Temporal *result = tdistance_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -163,8 +163,8 @@ Distance_geo_tcbuffer(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tcbuffer_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tcbuffer_geo);
+PGDLLEXPORT Datum Tdistance_tcbuffer_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
@@ -173,11 +173,11 @@ PG_FUNCTION_INFO_V1(Distance_tcbuffer_geo);
  * @sqlop @p <->
  */
 Datum
-Distance_tcbuffer_geo(PG_FUNCTION_ARGS)
+Tdistance_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tcbuffer_geo(temp, gs);
+  Temporal *result = tdistance_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -187,8 +187,8 @@ Distance_tcbuffer_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_cbuffer_tcbuffer);
+PGDLLEXPORT Datum Tdistance_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
@@ -197,17 +197,17 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_tcbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
+Tdistance_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
+  Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tcbuffer_cbuffer);
+PGDLLEXPORT Datum Tdistance_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
@@ -216,17 +216,17 @@ PG_FUNCTION_INFO_V1(Distance_tcbuffer_cbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
+Tdistance_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
+  Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tcbuffer_tcbuffer);
+PGDLLEXPORT Datum Tdistance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
@@ -235,11 +235,11 @@ PG_FUNCTION_INFO_V1(Distance_tcbuffer_tcbuffer);
  * @sqlop @p <->
  */
 Datum
-Distance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+Tdistance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tcbuffer_tcbuffer(temp1, temp2);
+  Temporal *result = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

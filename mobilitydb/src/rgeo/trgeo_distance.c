@@ -64,22 +64,22 @@
  * Temporal distance
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Distance_trgeo_geo);
+PG_FUNCTION_INFO_V1(Tdistance_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between a temporal rigid geometry and a
  * geometry
- * @sqlfn temporal_distance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_trgeo_geo(PG_FUNCTION_ARGS)
+Tdistance_trgeo_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_trgeo_geo(temp, gs);
+  Temporal *result = tdistance_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -87,22 +87,22 @@ Distance_trgeo_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_geo_trgeo);
+PG_FUNCTION_INFO_V1(Tdistance_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between a geometry and a temporal rigid
  * geometry
- * @sqlfn temporal_distance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_geo_trgeo(PG_FUNCTION_ARGS)
+Tdistance_geo_trgeo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_trgeo_geo(temp, gs);
+  Temporal *result = tdistance_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -110,21 +110,21 @@ Distance_geo_trgeo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_trgeo_tpoint);
+PG_FUNCTION_INFO_V1(Tdistance_trgeo_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn temporal_distance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_trgeo_tpoint(PG_FUNCTION_ARGS)
+Tdistance_trgeo_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_trgeo_tpoint(temp1, temp2);
+  Temporal *result = tdistance_trgeo_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
@@ -132,21 +132,21 @@ Distance_trgeo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_tpoint_trgeo);
+PG_FUNCTION_INFO_V1(Tdistance_tpoint_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn temporal_distance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_tpoint_trgeo(PG_FUNCTION_ARGS)
+Tdistance_tpoint_trgeo(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_trgeo_tpoint(temp2, temp1);
+  Temporal *result = tdistance_trgeo_tpoint(temp2, temp1);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
@@ -154,21 +154,21 @@ Distance_tpoint_trgeo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_trgeo_trgeo);
+PG_FUNCTION_INFO_V1(Tdistance_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn temporal_distance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_trgeo_trgeo(PG_FUNCTION_ARGS)
+Tdistance_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = distance_trgeo_trgeo(temp1, temp2);
+  Temporal *result = tdistance_trgeo_trgeo(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

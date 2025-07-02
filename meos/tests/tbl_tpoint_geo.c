@@ -150,7 +150,7 @@ int main(void)
         // Temporal *rest = tintersects_tgeo_geo(temp, gs, false, false);
         // Temporal *rest = tdwithin_tgeo_geo(temp, gs, 10, false, false);
         // Temporal *rest = tcontains_tgeo_geo(temp, gs, false, false);
-        Temporal *rest = distance_tgeo_geo(temp, gs);
+        Temporal *rest = tdistance_tgeo_geo(temp, gs);
         if (rest)
         {
           /* Get the number of instants of the result */

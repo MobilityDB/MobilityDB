@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal geos
+ * @brief Temporal distance functions for temporal geos
  */
 
 #include "geo/tgeo_distance.h"
@@ -375,10 +375,10 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
- * @csqlfn #Distance_tgeo_geo()
+ * @csqlfn #Tdistance_tgeo_geo()
  */
 Temporal *
-distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -407,10 +407,10 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_geo_distance
  * @brief Return the temporal distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
- * @csqlfn #Distance_tgeo_tgeo()
+ * @csqlfn #Tdistance_tgeo_tgeo()
  */
 Temporal *
-distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
@@ -703,7 +703,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
   /* Compute the temporal distance, it may be NULL if the points do not
    * intersect on time */
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -875,7 +875,7 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return DBL_MAX;
 
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
 
@@ -973,7 +973,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return NULL;
 
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);

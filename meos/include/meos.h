@@ -1727,9 +1727,9 @@ extern Temporal *ttext_lower(const Temporal *temp);
  * Distance functions for temporal types
  *****************************************************************************/
 
-extern Temporal *distance_tfloat_float(const Temporal *temp, double d);
-extern Temporal *distance_tint_int(const Temporal *temp, int i);
-extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tfloat_float(const Temporal *temp, double d);
+extern Temporal *tdistance_tint_int(const Temporal *temp, int i);
+extern Temporal *tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2);
 extern int nad_tboxint_tboxint(const TBox *box1, const TBox *box2);
 extern double nad_tfloat_float(const Temporal *temp, double d);

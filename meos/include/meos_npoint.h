@@ -280,9 +280,9 @@ extern Temporal *tnpoint_minus_stbox(const Temporal *temp, const STBox *box, boo
  * Distance functions
  *****************************************************************************/
 
-extern Temporal *distance_tnpoint_npoint(const Temporal *temp, const Npoint *np);
-extern Temporal *distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern Temporal *tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern double nad_tnpoint_stbox(const Temporal *temp, const STBox *box);

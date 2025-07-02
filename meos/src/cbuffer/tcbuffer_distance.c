@@ -336,10 +336,10 @@ tcbuffer_tcbuffer_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a circular buffer
- * @csqlfn #Distance_tcbuffer_cbuffer()
+ * @csqlfn #Tdistance_tcbuffer_cbuffer()
  */
 Temporal *
-distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
+tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
@@ -364,17 +364,17 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a geometry
- * @csqlfn #Distance_tcbuffer_geo()
+ * @csqlfn #Tdistance_tcbuffer_geo()
  */
 Temporal *
-distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Cbuffer *cb = geom_to_cbuffer(gs);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
+  Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   pfree(cb);
   return result;
 }
@@ -385,10 +385,10 @@ distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
- * @csqlfn #Distance_tcbuffer_tcbuffer()
+ * @csqlfn #Tdistance_tcbuffer_tcbuffer()
  */
 Temporal *
-distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
@@ -479,7 +479,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
+  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -597,7 +597,7 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1.0;
 
-  Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
+  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
     return -1.0;
   return DatumGetFloat8(temporal_min_value(dist));

@@ -262,9 +262,9 @@ extern Temporal *tcbuffer_minus_stbox(const Temporal *temp, const STBox *box, bo
  * Distance functions
  *****************************************************************************/
 
-extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
-extern Temporal *distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
+extern Temporal *tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tcbuffer_stbox(const Temporal *temp, const STBox *box);

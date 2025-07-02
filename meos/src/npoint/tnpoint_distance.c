@@ -67,10 +67,10 @@ datum_npoint_distance(Datum np1, Datum np2)
  * @ingroup meos_npoint_dist
  * @brief Return the temporal distance between a geometry point and a temporal
  * network point
- * @csqlfn #Distance_tnpoint_point()
+ * @csqlfn #Tdistance_tnpoint_point()
  */
 Temporal *
-distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs) || 
@@ -78,7 +78,7 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
-  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
+  Temporal *result = tdistance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
 }
@@ -89,10 +89,10 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
  * a network point
  * @param[in] temp Temporal point
  * @param[in] np Network point
- * @csqlfn #Distance_tnpoint_npoint()
+ * @csqlfn #Tdistance_tnpoint_npoint()
  */
 Temporal *
-distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_npoint(temp, np))
@@ -100,7 +100,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 
   GSERIALIZED *geom = npoint_to_geompoint(np);
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
-  Temporal *result = distance_tgeo_geo(tpoint, geom);
+  Temporal *result = tdistance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -109,10 +109,10 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @ingroup meos_npoint_dist
  * @brief Return the temporal distance between two temporal network points
  * @param[in] temp1,temp2 Temporal points
- * @csqlfn #Distance_tnpoint_tnpoint()
+ * @csqlfn #Tdistance_tnpoint_tnpoint()
  */
 Temporal *
-distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
@@ -120,7 +120,7 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 
   Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_to_tgeompoint(temp2);
-  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
+  Temporal *result = tdistance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -195,7 +195,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
     return NULL;
 
-  Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
+  Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -290,7 +290,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
     return DBL_MAX;
 
-  Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
+  Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
   return DatumGetFloat8(temporal_min_value(dist));
