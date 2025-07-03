@@ -180,18 +180,19 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a segment of a temporal sequence intersects a base value at a timestamptz. </p>
+<p>Return 1 or 2 if a temporal segment intersects a base value during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Values defining the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to locate </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segment </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Return false if the value is equal to the first or the last instant. The reason is that the function is used in the lifting infrastructure for determining the crossings after testing whether the bounds of the segments are equal to the given value. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Return 0 if the value is equal to the first or the last instant </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The function is used in the lifting infrastructure for determining whether a temporal segment intersects a value </dd></dl>
 
 </div>
 </div>

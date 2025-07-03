@@ -29,5 +29,8 @@ var searchData=
   ['stboxgridstate_26',['STboxGridState',['../structSTboxGridState.html',1,'']]],
   ['stboxnode_27',['STboxNode',['../structSTboxNode.html',1,'']]],
   ['struct_5fmeosprojsrscache_28',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
-  ['struct_5fprojsrscacheitem_29',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]]
+  ['struct_5fprojsrscacheitem_29',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
+  ['struct_5fwayscache_30',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
+  ['struct_5fwayscacheentry_31',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]],
+  ['struct_5fwayscacheitem_32',['struct_WaysCacheItem',['../structstruct__WaysCacheItem.html',1,'']]]
 ];

@@ -145,13 +145,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a segment of a temporal pose value intersects a pose at the timestamp output in the last argument. </p>
+<p>Return 1 or 0 if a temporal pose segment intersects a pose during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Base values defining the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Base value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Resulting timestamps, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

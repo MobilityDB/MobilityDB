@@ -75,10 +75,8 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">npoint.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -108,26 +106,15 @@ $(function() {
 <code>#include &quot;<a class="el" href="tspatial__parser_8h_source.html">geo/tspatial_parser.h</a>&quot;</code><br />
 <code>#include &quot;npoint/tnpoint_parser.h&quot;</code><br />
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structways__record.html">ways_record</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a94f3ff32b6ca0f8131e9b060d648158e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a94f3ff32b6ca0f8131e9b060d648158e.html#a94f3ff32b6ca0f8131e9b060d648158e">MAX_LENGTH_GEOM</a>&#160;&#160;&#160;100001</td></tr>
-<tr class="separator:a94f3ff32b6ca0f8131e9b060d648158e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d331396057d91a1547294e9aa97e8a8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a1d331396057d91a1547294e9aa97e8a8.html#a1d331396057d91a1547294e9aa97e8a8">NPOINT_MAXLEN</a>&#160;&#160;&#160;128</td></tr>
 <tr class="memdesc:a1d331396057d91a1547294e9aa97e8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffer size for input and output of npoint and nsegment values.  <a href="meos_2src_2npoint_2npoint_8c_a1d331396057d91a1547294e9aa97e8a8.html#a1d331396057d91a1547294e9aa97e8a8">More...</a><br /></td></tr>
 <tr class="separator:a1d331396057d91a1547294e9aa97e8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdefd36fcfd200c832353d85db163f50"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_acdefd36fcfd200c832353d85db163f50.html#acdefd36fcfd200c832353d85db163f50">NSEGMENT_MAXLEN</a>&#160;&#160;&#160;128</td></tr>
 <tr class="separator:acdefd36fcfd200c832353d85db163f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8254240319496e7cd79545f0a5a77568"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a8254240319496e7cd79545f0a5a77568.html#a8254240319496e7cd79545f0a5a77568">SQL_MAXLEN</a>&#160;&#160;&#160;1024</td></tr>
-<tr class="separator:a8254240319496e7cd79545f0a5a77568"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf84d55aa210ab3bf0bbb864c21fb36a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_acf84d55aa210ab3bf0bbb864c21fb36a.html#acf84d55aa210ab3bf0bbb864c21fb36a">SQL_ROUTE_MAXLEN</a>&#160;&#160;&#160;64</td></tr>
 <tr class="separator:acf84d55aa210ab3bf0bbb864c21fb36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e76b87191f8e5fd30f9bcd5fc1ab8d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a9e76b87191f8e5fd30f9bcd5fc1ab8d0.html#a9e76b87191f8e5fd30f9bcd5fc1ab8d0">WAYS_CSV</a>&#160;&#160;&#160;&quot;/usr/local/share/ways.csv&quot;</td></tr>
-<tr class="separator:a9e76b87191f8e5fd30f9bcd5fc1ab8d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -140,15 +127,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a00a1a84976e5013c84ced1a91b5b05bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a00a1a84976e5013c84ced1a91b5b05bc.html#a00a1a84976e5013c84ced1a91b5b05bc">ensure_valid_position</a> (double pos)</td></tr>
 <tr class="memdesc:a00a1a84976e5013c84ced1a91b5b05bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure valid position.  <a href="meos_2src_2npoint_2npoint_8c_a00a1a84976e5013c84ced1a91b5b05bc.html#a00a1a84976e5013c84ced1a91b5b05bc">More...</a><br /></td></tr>
 <tr class="separator:a00a1a84976e5013c84ced1a91b5b05bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6b99cab1e957888901fdd9f47966fc25"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNpoint.html">Npoint</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga6b99cab1e957888901fdd9f47966fc25.html#ga6b99cab1e957888901fdd9f47966fc25">geom_to_npoint</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="el" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)</td></tr>
-<tr class="memdesc:ga6b99cab1e957888901fdd9f47966fc25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a geometry into a network point.  <a href="group__meos__npoint__base__conversion_ga6b99cab1e957888901fdd9f47966fc25.html#ga6b99cab1e957888901fdd9f47966fc25">More...</a><br /></td></tr>
-<tr class="separator:ga6b99cab1e957888901fdd9f47966fc25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga45960847cbdb958dbd708b642b98da05"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNsegment.html">Nsegment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga45960847cbdb958dbd708b642b98da05.html#ga45960847cbdb958dbd708b642b98da05">geom_to_nsegment</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="el" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)</td></tr>
 <tr class="memdesc:ga45960847cbdb958dbd708b642b98da05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a geometry into a network segment.  <a href="group__meos__npoint__base__conversion_ga45960847cbdb958dbd708b642b98da05.html#ga45960847cbdb958dbd708b642b98da05">More...</a><br /></td></tr>
 <tr class="separator:ga45960847cbdb958dbd708b642b98da05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae58943a3dbef640c6a8777667cf2f659"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_gae58943a3dbef640c6a8777667cf2f659.html#gae58943a3dbef640c6a8777667cf2f659">get_srid_ways</a> ()</td></tr>
-<tr class="memdesc:gae58943a3dbef640c6a8777667cf2f659"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of the routes in the ways table.  <a href="group__meos__npoint__base__srid_gae58943a3dbef640c6a8777667cf2f659.html#gae58943a3dbef640c6a8777667cf2f659">More...</a><br /></td></tr>
-<tr class="separator:gae58943a3dbef640c6a8777667cf2f659"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9f9e668e1d36b60ef9674eb0666675b4"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__inout_ga9f9e668e1d36b60ef9674eb0666675b4.html#ga9f9e668e1d36b60ef9674eb0666675b4">npoint_as_ewkt</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, int maxdd)</td></tr>
 <tr class="memdesc:ga9f9e668e1d36b60ef9674eb0666675b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Extended Well-Known Text (EWKT) representation of a network point.  <a href="group__meos__npoint__base__inout_ga9f9e668e1d36b60ef9674eb0666675b4.html#ga9f9e668e1d36b60ef9674eb0666675b4">More...</a><br /></td></tr>
 <tr class="separator:ga9f9e668e1d36b60ef9674eb0666675b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -233,9 +214,9 @@ Functions</h2></td></tr>
 <tr class="memitem:afb17bbdbedc6c9755fbaf38ac2128e96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_afb17bbdbedc6c9755fbaf38ac2128e96.html#afb17bbdbedc6c9755fbaf38ac2128e96">npoint_timestamptz_to_stbox</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
 <tr class="memdesc:afb17bbdbedc6c9755fbaf38ac2128e96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal box constructed from a network point and a timestamptz.  <a href="meos_2src_2npoint_2npoint_8c_afb17bbdbedc6c9755fbaf38ac2128e96.html#afb17bbdbedc6c9755fbaf38ac2128e96">More...</a><br /></td></tr>
 <tr class="separator:afb17bbdbedc6c9755fbaf38ac2128e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad46b59affddba317b0705fe6113766e1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_gad46b59affddba317b0705fe6113766e1.html#gad46b59affddba317b0705fe6113766e1">npoint_to_geom</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np)</td></tr>
-<tr class="memdesc:gad46b59affddba317b0705fe6113766e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a network point into a geometry.  <a href="group__meos__npoint__base__conversion_gad46b59affddba317b0705fe6113766e1.html#gad46b59affddba317b0705fe6113766e1">More...</a><br /></td></tr>
-<tr class="separator:gad46b59affddba317b0705fe6113766e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga58adc6bffb2a00164c7082f3078fec4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f">npoint_to_geompoint</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np)</td></tr>
+<tr class="memdesc:ga58adc6bffb2a00164c7082f3078fec4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a network point into a geometry.  <a href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f">More...</a><br /></td></tr>
+<tr class="separator:ga58adc6bffb2a00164c7082f3078fec4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9617872c0054f0747cde61d2d8349c06"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNsegment.html">Nsegment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga9617872c0054f0747cde61d2d8349c06.html#ga9617872c0054f0747cde61d2d8349c06">npoint_to_nsegment</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np)</td></tr>
 <tr class="memdesc:ga9617872c0054f0747cde61d2d8349c06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a network point into a network segment.  <a href="group__meos__npoint__base__conversion_ga9617872c0054f0747cde61d2d8349c06.html#ga9617872c0054f0747cde61d2d8349c06">More...</a><br /></td></tr>
 <tr class="separator:ga9617872c0054f0747cde61d2d8349c06"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -335,20 +316,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a79b2f2f0ce64a36aac7f05f83c987041"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a79b2f2f0ce64a36aac7f05f83c987041.html#a79b2f2f0ce64a36aac7f05f83c987041">nsegmentarr_sort</a> (<a class="el" href="structNsegment.html">Nsegment</a> **segments, int count)</td></tr>
 <tr class="memdesc:a79b2f2f0ce64a36aac7f05f83c987041"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sort function for network segments.  <a href="meos_2src_2npoint_2npoint_8c_a79b2f2f0ce64a36aac7f05f83c987041.html#a79b2f2f0ce64a36aac7f05f83c987041">More...</a><br /></td></tr>
 <tr class="separator:a79b2f2f0ce64a36aac7f05f83c987041"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga85e9e6cdc65ca795c3456e3d88bba3c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__route_ga85e9e6cdc65ca795c3456e3d88bba3c3.html#ga85e9e6cdc65ca795c3456e3d88bba3c3">route_exists</a> (<a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a> rid)</td></tr>
-<tr class="memdesc:ga85e9e6cdc65ca795c3456e3d88bba3c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the edge table contains a route with the route identifier.  <a href="group__meos__npoint__base__route_ga85e9e6cdc65ca795c3456e3d88bba3c3.html#ga85e9e6cdc65ca795c3456e3d88bba3c3">More...</a><br /></td></tr>
-<tr class="separator:ga85e9e6cdc65ca795c3456e3d88bba3c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadd2f0f95b55c2dba68d672b191a05bae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__route_gadd2f0f95b55c2dba68d672b191a05bae.html#gadd2f0f95b55c2dba68d672b191a05bae">route_geom</a> (<a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a> rid)</td></tr>
-<tr class="memdesc:gadd2f0f95b55c2dba68d672b191a05bae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the edge table to get the route geometry from corresponding route identifier.  <a href="group__meos__npoint__base__route_gadd2f0f95b55c2dba68d672b191a05bae.html#gadd2f0f95b55c2dba68d672b191a05bae">More...</a><br /></td></tr>
-<tr class="separator:gadd2f0f95b55c2dba68d672b191a05bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga604734ff210d5485e1c98e7274582f31"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__route_ga604734ff210d5485e1c98e7274582f31.html#ga604734ff210d5485e1c98e7274582f31">route_length</a> (<a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a> rid)</td></tr>
-<tr class="memdesc:ga604734ff210d5485e1c98e7274582f31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the edge table to return the route length from the corresponding route identifier.  <a href="group__meos__npoint__base__route_ga604734ff210d5485e1c98e7274582f31.html#ga604734ff210d5485e1c98e7274582f31">More...</a><br /></td></tr>
-<tr class="separator:ga604734ff210d5485e1c98e7274582f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a9ce3f08a59492fdb794fc859853aeaa8"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a9ce3f08a59492fdb794fc859853aeaa8.html#a9ce3f08a59492fdb794fc859853aeaa8">SRID_WAYS</a> = SRID_INVALID</td></tr>
-<tr class="separator:a9ce3f08a59492fdb794fc859853aeaa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Network-based static point and segment types. </p>

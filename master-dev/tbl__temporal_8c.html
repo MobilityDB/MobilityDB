@@ -81,11 +81,12 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program that a CSV file containing temporal alphanumeric values and applies a function to them.  
+<p>A simple program that a CSV file containing temporal values and applies a function to them.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__cbuffer_8h_source.html">meos_cbuffer.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -101,7 +102,7 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program that a CSV file containing temporal alphanumeric values and applies a function to them. </p>
+<div class="textblock"><p >A simple program that a CSV file containing temporal values and applies a function to them. </p>
 <p >The corresponding SQL query would be </p><div class="fragment"><div class="line">SELECT k, numInstants(shiftScaleValue(temp, 5, 10))</div>
 <div class="line">FROM tbl_tfloat;</div>
 </div><!-- fragment --><p >The program can be tested with several functions such as simplification with Douglas-Peucker ... reduction such as <code>tsample</code>, <code>tprecision</code>, ...</p>

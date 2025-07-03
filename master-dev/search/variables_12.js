@@ -15,7 +15,7 @@ var searchData=
   ['right_12',['RIGHT',['../tgeo__restrict_8c_a088fe0153a918af361dc8f4e775d020e.html#a088fe0153a918af361dc8f4e775d020e',1,'tgeo_restrict.c']]],
   ['right_5flower_13',['right_lower',['../structConsiderSplitContext_a162416d9eb39cd01736aa3ae1d46ac23.html#a162416d9eb39cd01736aa3ae1d46ac23',1,'ConsiderSplitContext']]],
   ['rightlower_14',['rightLower',['../structConsiderSplitContext_a429305c1628a73ce14433a3ff20bc673.html#a429305c1628a73ce14433a3ff20bc673',1,'ConsiderSplitContext']]],
-  ['rings_15',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()']]],
+  ['rings_15',['rings',['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()'],['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()']]],
   ['rm1_16',['rm1',['../formatting_8c_ae1fa4855cff73b3469559e0e1b9380e5.html#ae1fa4855cff73b3469559e0e1b9380e5',1,'formatting.c']]],
   ['rm10_17',['rm10',['../formatting_8c_ab025520dc2472c2177fa9300c3feaa1e.html#ab025520dc2472c2177fa9300c3feaa1e',1,'formatting.c']]],
   ['rm100_18',['rm100',['../formatting_8c_a94db252f2a0107404a6cfafbc670e279.html#a94db252f2a0107404a6cfafbc670e279',1,'formatting.c']]],
@@ -25,7 +25,8 @@ var searchData=
   ['rotx_22',['rotx',['../projection__gk_8c_a48691d48226a83de51fef2037fd39bf2.html#a48691d48226a83de51fef2037fd39bf2',1,'projection_gk.c']]],
   ['roty_23',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
   ['rotz_24',['rotz',['../projection__gk_8c_a3bc522161034a64098cc55f6798ecc39.html#a3bc522161034a64098cc55f6798ecc39',1,'projection_gk.c']]],
-  ['rtype_25',['rtype',['../structoid__oper__entry_a193fbb28456423d1e77553574df95032.html#a193fbb28456423d1e77553574df95032',1,'oid_oper_entry']]],
-  ['ru_5fstime_26',['ru_stime',['../structrusage_a7776ee7a6ec11f32ad4c8d1b0862ceb8.html#a7776ee7a6ec11f32ad4c8d1b0862ceb8',1,'rusage']]],
-  ['ru_5futime_27',['ru_utime',['../structrusage_a42c294483743ea16b9a77f22a2e7660a.html#a42c294483743ea16b9a77f22a2e7660a',1,'rusage']]]
+  ['routes_25',['routes',['../structstruct__WaysCache_a79168e4429af6ae479077e3839db84ab.html#a79168e4429af6ae479077e3839db84ab',1,'struct_WaysCache::routes()'],['../structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6',1,'struct_WaysCache::routes()']]],
+  ['rtype_26',['rtype',['../structoid__oper__entry_a193fbb28456423d1e77553574df95032.html#a193fbb28456423d1e77553574df95032',1,'oid_oper_entry']]],
+  ['ru_5fstime_27',['ru_stime',['../structrusage_a7776ee7a6ec11f32ad4c8d1b0862ceb8.html#a7776ee7a6ec11f32ad4c8d1b0862ceb8',1,'rusage']]],
+  ['ru_5futime_28',['ru_utime',['../structrusage_a42c294483743ea16b9a77f22a2e7660a.html#a42c294483743ea16b9a77f22a2e7660a',1,'rusage']]]
 ];

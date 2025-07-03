@@ -147,17 +147,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a segment of a temporal circular buffer and a circular buffer intersect during the period defined by the timestamps output in the last arguments. </p>
+<p>Return 1 or 2 if a temporal circular buffer segment and a circular buffer intersect during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to locate </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Number of timestamps in the result, between 0 and 2. In the case of a single result both t1 and t2 are set to the unique timestamp. </dd></dl>
 
 </div>
 </div>

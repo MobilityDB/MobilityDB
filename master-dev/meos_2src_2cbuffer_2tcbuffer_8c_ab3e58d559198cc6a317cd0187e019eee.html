@@ -125,10 +125,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a985913aef8373ae614d9eb68edf60187.html#a985913aef8373ae614d9eb68edf60187">tcbufferseqset_members</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a23ac712602c4c17e810d01505b771e31.html#a23ac712602c4c17e810d01505b771e31">tcbufferseqset_tfloatseqset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a5d86f18e1f5c47793171398421eae4ed.html#a5d86f18e1f5c47793171398421eae4ed">tcbufferseqset_tgeompointseqset</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__conversion_ga9ad8daef03425cc3afd3de4fadc1f8ba.html#ga9ad8daef03425cc3afd3de4fadc1f8ba">tgeompoint_to_tcbuffer</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a5ccd944690e2eb1dc8616a1eff769474.html#a5ccd944690e2eb1dc8616a1eff769474">tgeompointinst_tcbufferinst</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a4a9ab0eddf60b87eef21e8e132a16675.html#a4a9ab0eddf60b87eef21e8e132a16675">tgeompointseq_tcbufferseq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a5fc0d43bf460d92d52d3d00ecc6fc113.html#a5fc0d43bf460d92d52d3d00ecc6fc113">tgeompointseqset_tcbufferseqset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__conversion_ga2aa2a5cc2d7e77c40b3d0a3e714831ca.html#ga2aa2a5cc2d7e77c40b3d0a3e714831ca">tgeometry_to_tcbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a81789f6900898a040034087138c7280d.html#a81789f6900898a040034087138c7280d">tgeominst_tcbufferinst</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af225f6b3f628f2d1732bffe0d488aad8.html#af225f6b3f628f2d1732bffe0d488aad8">tgeomseq_tcbufferseq</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a26419ed841d48d9ad2107ce15de4b2df.html#a26419ed841d48d9ad2107ce15de4b2df">tgeomseqset_tcbufferseqset</a></td></tr>
         </table>
       </div>
    </td>
@@ -201,14 +201,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the TWO timestamps at which two temporal circular buffers segments are at the distance d. </p>
+<p>Return 1 or 2 if two temporal circular buffer segments are within a distance during the period defined by the output timestampos, return 0 otherwise. </p>
 <p >These are the turning points when computing the temporal distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Circular buffers defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Circular buffers the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps at turning points </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

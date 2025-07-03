@@ -184,14 +184,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the timestamps at which EITHER the segments of the two temporal points OR a segment of a temporal point and a point are within a distance. </p>
+<p>Return 1 or 2 if two temporal geometry segments are within a distance during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sv1,ev1</td><td>Points defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sv2,ev2</td><td>Points defining the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps associated to the segments </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

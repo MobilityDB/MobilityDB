@@ -159,14 +159,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the TWO timestamps at which two temporal circular buffers segments are at the minimum distance. </p>
+<p>Return 1 or 2 if two temporal circular buffer segments are at a minimum distance during the period defined by the output timestamps, return 0 otherwise. </p>
 <p >These are the turning points when computing the temporal distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Circular buffers defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Circular buffers the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance, unused parameter </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps at turning points </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

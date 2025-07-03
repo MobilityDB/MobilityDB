@@ -80,9 +80,6 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_adf9616ebb3c4691b5e4e6a1d2128a8af.html#adf9616ebb3c4691b5e4e6a1d2128a8af">cbuffersegm_distance_turnpt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaacc42b224085178c99d0931a63b77b5b.html#gaacc42b224085178c99d0931a63b77b5b">distance_tcbuffer_cbuffer</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gae1330d40cbfaab2ecd3aec600113f2f0.html#gae1330d40cbfaab2ecd3aec600113f2f0">distance_tcbuffer_geo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaf5c6c073b877e73e57d25df19b8e5dcb.html#gaf5c6c073b877e73e57d25df19b8e5dcb">distance_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__base__dist_gad0324d8fefcbd3140fa66bfacf81ca4d.html#gad0324d8fefcbd3140fa66bfacf81ca4d">nad_cbuffer_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_ga430689361e686387f0597d2e60c9b69c.html#ga430689361e686387f0597d2e60c9b69c">nad_tcbuffer_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaf99ed4bf225ebcbafeb06261026b20a6.html#gaf99ed4bf225ebcbafeb06261026b20a6">nad_tcbuffer_geo</a></td></tr>
@@ -96,6 +93,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gabac1839e590edad0b9808d1197c39ac0.html#gabac1839e590edad0b9808d1197c39ac0">shortestline_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a459fea86e8cf06713463c25ebceba203.html#a459fea86e8cf06713463c25ebceba203">tcbuffer_cbuffer_distance_turnpt</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a462e66e5e03c3931fb641d3e06081ebd.html#a462e66e5e03c3931fb641d3e06081ebd">tcbuffer_tcbuffer_distance_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaa71971787eef52a340de2bd2b673655e.html#gaa71971787eef52a340de2bd2b673655e">tdistance_tcbuffer_cbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_ga671bd076c9e657dfb3195478619b4201.html#ga671bd076c9e657dfb3195478619b4201">tdistance_tcbuffer_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gae1bf382a41ea4af259d50d18c407ce49.html#gae1bf382a41ea4af259d50d18c407ce49">tdistance_tcbuffer_tcbuffer</a></td></tr>
         </table>
       </div>
    </td>
@@ -168,14 +168,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the TWO timestamps at which two temporal circular buffers segment are at the minimum distance. </p>
+<p>Return 1 or 2 if two temporal circular buffers segments are at a minimum distance during the periods defined by the output timestamps, return 0 otherwise. </p>
 <p >These are the turning points when computing the temporal distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Instants defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Instants defining the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">param</td><td>Additional parameter </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Minimum distances at turning points </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps of the turning points </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

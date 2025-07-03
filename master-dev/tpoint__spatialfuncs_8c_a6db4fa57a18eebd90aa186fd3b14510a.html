@@ -265,13 +265,13 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the value and timestamptz at which the a temporal point segment and a point are at the minimum bearing. </p>
+<p>Return 1 or 2 if a temporal point segment and a point are at the minimum bearing during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Values defining the segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">point</td><td>Geometric/geography point to locate </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestampts defining the segment </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

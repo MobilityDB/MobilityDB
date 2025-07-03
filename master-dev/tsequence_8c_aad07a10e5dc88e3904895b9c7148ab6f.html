@@ -83,12 +83,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_afe2b8a09b5f751f2a2fd416388dad762.html#afe2b8a09b5f751f2a2fd416388dad762">datum_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a878d58a86cf0642e4783c680667fa28a.html#a878d58a86cf0642e4783c680667fa28a">datumsegm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a5c6c9de6986ee27a6535d9d72c02fc7a.html#a5c6c9de6986ee27a6535d9d72c02fc7a">datumsegm_locate</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a4587dbf0c53ef69201a6248e78ae04ea.html#a4587dbf0c53ef69201a6248e78ae04ea">double2_collinear</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_acbf24f3ded5490f3955b6ef14da41610.html#acbf24f3ded5490f3955b6ef14da41610">double2segm_interpolate</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a8f384b2a8b25b3268fe57babe355df0c.html#a8f384b2a8b25b3268fe57babe355df0c">double3_collinear</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_aad948f23f2608e62d700b1e2a88c95cb.html#aad948f23f2608e62d700b1e2a88c95cb">double3segm_interpolate</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a4c6f93e20720871d416b8503ab844497.html#a4c6f93e20720871d416b8503ab844497">double4_collinear</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tsequence_8c_aeffb9400628b281fc37a562d3463e529.html#aeffb9400628b281fc37a562d3463e529">double4segm_interpolate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_af686b9d58cfbd3f457235685f0dba9b6.html#af686b9d58cfbd3f457235685f0dba9b6">ensure_increasing_timestamps</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_aefe88a8f2310464911beef07c6228641.html#aefe88a8f2310464911beef07c6228641">ensure_valid_tinstarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_afb1ae48b5a98784c33c62b991e525776.html#afb1ae48b5a98784c33c62b991e525776">ensure_valid_tinstarr_common</a></td></tr>
@@ -119,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a49323b54dea49e7a794ea4204a86298a.html#a49323b54dea49e7a794ea4204a86298a">tnumberseq_shift_scale_value_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__accessor_ga7c3cf460980388a3c5e7b9ff52b0b888.html#ga7c3cf460980388a3c5e7b9ff52b0b888">tnumberseq_twavg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__accessor_ga4531b099ab1b7a3384b6aa76e43f04d8.html#ga4531b099ab1b7a3384b6aa76e43f04d8">tnumberseq_valuespans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__constructor_ga534701d5eac78a2053e6d687114e5071.html#ga534701d5eac78a2053e6d687114e5071">tpointseq_make_coords</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_ga534701d5eac78a2053e6d687114e5071.html#ga534701d5eac78a2053e6d687114e5071">tpointseq_make_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_affee78b1595301871830481487bba6a2.html#affee78b1595301871830481487bba6a2">tsegment_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a3f0cbe0964fcc9ecddb23c7a43954126.html#a3f0cbe0964fcc9ecddb23c7a43954126">tsegment_intersection_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a99343d1535f6b4463e2346f85c47ab82.html#a99343d1535f6b4463e2346f85c47ab82">tsegment_value_at_timestamptz</a></td></tr>
@@ -242,13 +236,13 @@ $(function() {
 
 <p>Compute the intersection, if any, of two segments of temporal sequences. </p>
 <p >These functions suppose that the instants are synchronized, i.e., <code>start1-&gt;t = start2-&gt;t</code> and <code>end1-&gt;t = end2-&gt;t</code>. The functions return true if there is an intersection at the middle of the segments, i.e., they return false if they intersect at a bound. If they return true, they also return in the output parameter t the intersection timestamp. The two values taken by the segments at the intersection timestamp t are equal up to the floating point precision. For the temporal point case we cannot use the PostGIS functions <code>lw_dist2d_seg_seg</code> and <code>lw_dist3d_seg_seg</code> since they do not take time into consideration and would return, e.g., that the two segments <code>[Point(1 1)@t1, Point(3 3)@t2]</code> and <code>[Point(3 3)@t1, Point(1 1)@t2]</code> intersect at <code>Point(1 1)</code>, instead of <code>Point(2 2)</code>. These functions are used to add intermediate points when lifting operators, in particular for temporal comparisons such as <code>tfloat &lt;comp&gt; tfloat</code> where <code>&lt;comp&gt;</code> is <code>&lt;</code>, <code>&lt;=</code>, ... since the comparison changes its value before/at/after the intersection point.</p>
-<p >Return true if two segments of two temporal numbers intersect at a timestamptz </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Return 1 or 2 if two temporal number segments intersect during the the period defined by the output timestamps, return 0 otherwise </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Values defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Values defining the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">basetype</td><td>Base type of the values </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t</td><td>Resulting timestamp </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>

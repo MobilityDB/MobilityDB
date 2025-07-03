@@ -105,6 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__accessor_ga27675c6e4a00faf75bd92b5cf993699b.html#ga27675c6e4a00faf75bd92b5cf993699b">tnpoint_routes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__conversion_ga4fd4157beccecc8420da32f9567ad0af.html#ga4fd4157beccecc8420da32f9567ad0af">tnpoint_to_tgeompoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__npoint__inout_gab22fd0674ef957f7cf4041d1809ea9e3.html#gab22fd0674ef957f7cf4041d1809ea9e3">tnpointinst_in</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_af099318ac059dae6a05da423ff3e55f2.html#af099318ac059dae6a05da423ff3e55f2">tnpointinst_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_ab402f610f2c7076ac2556aafa7ec95cc.html#ab402f610f2c7076ac2556aafa7ec95cc">tnpointinst_positions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a87e3784e850f200523f3009fc3c8140f.html#a87e3784e850f200523f3009fc3c8140f">tnpointinst_route</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2npoint_2tnpoint_8c_a9e58cbec6dc1b14dd509c21d1041bd97.html#a9e58cbec6dc1b14dd509c21d1041bd97">tnpointinst_routes</a></td></tr>
@@ -190,13 +191,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if the segments of two temporal network points intersect during the period defined by the timestamps output in the last arguments. </p>
+<p>Return 1 or 2 if two temporal network point segments intersect during the period defined by the output timestamps, return 0 otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the first segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
   </table>
   </dd>
 </dl>
