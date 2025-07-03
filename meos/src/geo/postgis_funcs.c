@@ -452,7 +452,7 @@ geo_is_unitary(const GSERIALIZED *gs)
 }
 #endif /* CBUFFER */
 
-#if MEOS 
+#if MEOS
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry
@@ -3714,6 +3714,55 @@ line_substring(const GSERIALIZED *gs, double from, double to)
   lwgeom_free(olwgeom);
   return result;
 }
+
+#if CBUFFER
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the center point and radius of the smallest circle that
+ * contains a geometry
+ * @param[in] geom Geometry
+ * @param[out] radius Radius
+ */
+GSERIALIZED *
+geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
+{
+  if (! geom)
+    return NULL;
+
+  LWGEOM *lwcenter = NULL;
+  /* Empty geometry?  Return POINT EMPTY with zero radius */
+  if (gserialized_is_empty(geom))
+  {
+    lwcenter = (LWGEOM*) lwpoint_construct_empty(
+      gserialized_get_srid(geom), LW_FALSE, LW_FALSE);
+  }
+  else
+  {
+    LWGEOM *input = lwgeom_from_gserialized(geom);
+    LWBOUNDINGCIRCLE *mbc = lwgeom_calculate_mbc(input);
+
+    if (!(mbc && mbc->center))
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error calculating minimum bounding circle");
+      lwgeom_free(input);
+      return NULL;
+    }
+
+    lwcenter = (LWGEOM*) lwpoint_make2d(input->srid, mbc->center->x,
+      mbc->center->y);
+    *radius = mbc->radius;
+
+    lwboundingcircle_destroy(mbc);
+    lwgeom_free(input);
+  }
+
+  GSERIALIZED *result = geo_serialize(lwcenter);
+  lwgeom_free(lwcenter);
+
+  return result;
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_lrs.c

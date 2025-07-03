@@ -173,7 +173,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_to_tfloat);
 /**
  * @ingroup mobilitydb_cbuffer_conversion
  * @brief Convert a temporal circular buffer into a temporal float
- * @sqlfn tgeompoint()
+ * @sqlfn tfloat()
  * @sqlop @p ::
  */
 Datum
@@ -185,20 +185,21 @@ Tcbuffer_to_tfloat(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tgeompoint_to_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeompoint_to_tcbuffer);
+PGDLLEXPORT Datum Tgeometry_to_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeometry_to_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_conversion
- * @brief Convert a temporal geometry point into a temporal circular buffer
- * with a zero radius
- * @sqlfn tgeompoint()
+ * @brief Convert a temporal geometry into a temporal circular buffer
+ * @details The function applies the PostGIS function ST_MinimumBoundingRadius
+ * to each composing geometry
+ * @sqlfn tcbuffer()
  * @sqlop @p ::
  */
 Datum
-Tgeompoint_to_tcbuffer(PG_FUNCTION_ARGS)
+Tgeometry_to_tcbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tcbuffer_to_tfloat(temp);
+  Temporal *result = tgeometry_to_tcbuffer(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -276,7 +277,8 @@ Datum
 Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tcbuffer_trav_area(temp);
+  bool merge_union = PG_GETARG_BOOL(1);
+  GSERIALIZED *result = tcbuffer_trav_area(temp, merge_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

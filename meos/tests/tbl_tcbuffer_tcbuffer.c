@@ -148,7 +148,7 @@ int main(void)
             // false, false);
           // Temporal *rest = tdwithin_tcbuffer_tcbuffer(temp1, temp2, 10,
             // false, false);
-          Temporal *rest = distance_tcbuffer_tcbuffer(temp1, temp2);
+          Temporal *rest = tdistance_tcbuffer_tcbuffer(temp1, temp2);
           if (rest)
           {
             /* Increment the number of non-empty answers found */

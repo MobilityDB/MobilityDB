@@ -37,12 +37,10 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-/* PostgreSQL */
-#include <postgres.h>
-/* PostGIS */
-#include <liblwgeom.h>
+
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 
 /*****************************************************************************
  * Type definitions
@@ -233,7 +231,7 @@ extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 
 extern Set *tcbuffer_points(const Temporal *temp);
 extern Set *tcbuffer_radius(const Temporal *temp);
-extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp);
+extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp, bool merge_union);
 
 /*****************************************************************************
  * Conversion functions
@@ -241,7 +239,7 @@ extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp);
 
 extern Temporal *tcbuffer_to_tfloat(const Temporal *temp);
 extern Temporal *tcbuffer_to_tgeompoint(const Temporal *temp);
-extern Temporal *tgeompoint_to_tcbuffer(const Temporal *temp);
+extern Temporal *tgeometry_to_tcbuffer(const Temporal *temp);
 
 /*****************************************************************************
  * Transformation functions
@@ -264,9 +262,9 @@ extern Temporal *tcbuffer_minus_stbox(const Temporal *temp, const STBox *box, bo
  * Distance functions
  *****************************************************************************/
 
-extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
-extern Temporal *distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
+extern Temporal *tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tcbuffer_stbox(const Temporal *temp, const STBox *box);

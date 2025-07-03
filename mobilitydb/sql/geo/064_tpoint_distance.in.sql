@@ -36,62 +36,62 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION tDistance(geometry(Point), tgeompoint)
+CREATE FUNCTION tdistance(geometry(Point), tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_tgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeompoint, geometry(Point))
+CREATE FUNCTION tdistance(tgeompoint, geometry(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeompoint, tgeompoint)
+CREATE FUNCTION tdistance(tgeompoint, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tgeo_tgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = geometry, RIGHTARG = tgeompoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = tgeompoint, RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   COMMUTATOR = <->
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tDistance(geography(Point), tgeogpoint)
+CREATE FUNCTION tdistance(geography(Point), tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_tgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeogpoint, geography(Point))
+CREATE FUNCTION tdistance(tgeogpoint, geography(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tDistance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION tdistance(tgeogpoint, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tgeo_tgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = geography, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = tgeogpoint, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tDistance,
+  PROCEDURE = tdistance,
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );

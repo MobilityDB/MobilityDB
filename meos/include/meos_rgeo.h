@@ -151,9 +151,9 @@ extern Temporal *trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet 
  * Distance functions
  *****************************************************************************/
 
-extern Temporal *distance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *distance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_trgeo(const STBox *box, const Temporal *temp);
 extern double nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_trgeo_stbox(const Temporal *temp, const STBox *box);

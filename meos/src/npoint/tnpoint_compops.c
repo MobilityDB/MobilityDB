@@ -83,6 +83,7 @@ eacomp_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup meos_npoint_comp_ever
  * @brief Return true if a network point is ever equal to a temporal network
@@ -96,6 +97,7 @@ ever_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, EVER);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_comp_ever
@@ -111,6 +113,7 @@ ever_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, EVER);
 }
 
+#if MEOS
 /**
  * @ingroup meos_npoint_comp_ever
  * @brief Return true if a network point is ever different from a temporal
@@ -124,6 +127,7 @@ ever_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, EVER);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_comp_ever
@@ -139,6 +143,7 @@ ever_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, EVER);
 }
 
+#if MEOS
 /**
  * @ingroup meos_npoint_comp_ever
  * @brief Return true if a network point is always equal to a temporal network
@@ -152,6 +157,7 @@ always_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, ALWAYS);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_comp_ever
@@ -167,6 +173,7 @@ always_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, ALWAYS);
 }
 
+#if MEOS
 /**
  * @ingroup meos_npoint_comp_ever
  * @brief Return true if a network point is always different from a temporal
@@ -180,6 +187,7 @@ always_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, ALWAYS);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_comp_ever

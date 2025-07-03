@@ -539,8 +539,7 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
 }
 
 /*****************************************************************************
- * Interpolation functions defining functionality required by tsequence.c
- * that must be implemented by each temporal type
+ * Intersection functions
  * N.B. There is no function `tpointsegm_intersection_value` since the
  * function tinterrel_tgeo_geo for computing e.g., tintersects(tpoint, point)
  * is computed by a single call to PostGIS by (1) splitting the temporal point
@@ -549,12 +548,12 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * @brief Return 1 if the segments of two temporal geometry points intersect
- * at the timestamptz output in the last argument
+ * @brief Return 1 or 2 if two temporal geometry point segments intersect
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Resulting timestamps
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -565,12 +564,12 @@ tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
- * @brief Return 1 if the segments of two temporal geography points intersect
- * at the timestamptz output in the last argument
+ * @brief Return 1 or 2 if two temporal geography point segments intersect
+ * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Resulting timestamps
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
@@ -579,6 +578,10 @@ tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   return tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
     (Datum) 0.0, lower, upper, t1, t2);
 }
+
+/*****************************************************************************
+ * Collinear functions
+ *****************************************************************************/
 
 /**
  * @brief Return true if the three values are collinear
@@ -2972,12 +2975,13 @@ geo_bearing_fn(int16 flags)
 }
 
 /**
- * @brief Return the value and timestamptz at which the a temporal point
- * segment and a point are at the minimum bearing
+ * @brief Return 1 or 2 if a temporal point segment and a point are at the 
+ * minimum bearing during the period defined by the output timestamps, return
+ * 0 otherwise
  * @param[in] start,end Values defining the segment
  * @param[in] point Geometric/geography point to locate
  * @param[in] lower,upper Timestampts defining the segment
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant and has linear interpolation
  * @post As there is a single turning point, `t2` is set to `t1`
  */
@@ -3037,13 +3041,14 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
 }
 
 /**
- * @brief Return the value and timestamptz at which two temporal point
- * segments are at the minimum bearing
- * @param[in] start1,end1 Instants defining the first segment
- * @param[in] start2,end2 Instants defining the second segment
+ * @brief Return 1 or 2 if two temporal point segments are at the minimum
+ * bearing during the period defined by the output timestamps, return 0
+ * otherwise
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamp
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
  * points
@@ -3305,7 +3310,7 @@ multipoint_make(const TSequence *seq, int start, int end)
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)));
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
-      gs = npoint_to_geom(DatumGetNpointP(
+      gs = npoint_to_geompoint(DatumGetNpointP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
 #endif
     else
@@ -3334,7 +3339,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
     gs = DatumGetGserializedP(tinstant_value_p(inst));
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
-    gs = npoint_to_geom(DatumGetNpointP(tinstant_value_p(inst)));
+    gs = npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
 #endif
   else
   {

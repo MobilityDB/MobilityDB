@@ -38,10 +38,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* MEOS */
-#include <meos.h>
 /* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************
  * Type definitions
@@ -395,6 +395,7 @@ extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_unary_union(GSERIALIZED *gs, double prec);
@@ -627,6 +628,7 @@ extern Temporal *tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *te
 extern TInstant *tpointinst_make(const GSERIALIZED *gs, TimestampTz t);
 extern TSequence *tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s);
 extern TSequence *tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
+extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss, interpType interp);
 
 /* Conversion functions */
@@ -849,8 +851,8 @@ extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2
 
 /* Distance */
 
-extern Temporal *distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern double nad_stbox_stbox(const STBox *box1, const STBox *box2);
 extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
@@ -878,6 +880,9 @@ extern STBox *stbox_time_tiles(const STBox *bounds, const Interval *duration, Ti
 extern Temporal **tgeo_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
 extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count);
 
+/* Clustering functions */
+
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k);
 
 /*****************************************************************************/
 

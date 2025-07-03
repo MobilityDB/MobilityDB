@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal numbers
+ * @brief Temporal distance functions for temporal numbers
  */
 
 /* C */
@@ -67,13 +67,13 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * @brief Return true if the segments of twp temporal number intersects at a
- * timestamptz
+ * @brief Return 1 if two temporal number segments intersect during the
+ * period defined by the output timestampts, return 0 otherwise
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segment
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  * @post As there is a single turning point, `t2` is set to `t1`
@@ -88,12 +88,12 @@ tfloat_distance_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
- * @brief Return true if the segment of a temporal floats intersects a value at
- * a timestamptz
+ * @brief Return 1 if a temporal float segment intersects a value during the
+ * period defined by the output timestampts, return 0 otherwise
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note This function is passed to the lifting infrastructure when computing
  * the temporal distance
  */
@@ -114,7 +114,7 @@ tfloat_base_distance_turnpt(Datum start, Datum end, Datum value,
  * @param[in] value Value
  */
 Temporal *
-distance_tnumber_number(const Temporal *temp, Datum value)
+tdistance_tnumber_number(const Temporal *temp, Datum value)
 {
   assert(temp);
   /* Fill the lifted structure */
@@ -139,10 +139,10 @@ distance_tnumber_number(const Temporal *temp, Datum value)
  * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
  * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Distance_tnumber_tnumber()
+ * @csqlfn #Tdistance_tnumber_tnumber()
  */
 Temporal *
-distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
@@ -280,7 +280,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
   assert(tnumber_type(temp1->temptype));
-  Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
+  Temporal *dist = tdistance_tnumber_tnumber(temp1, temp2);
   /* If the boxes do not intersect in the time dimension return infinity */
   if (dist == NULL)
     return DBL_MAX;

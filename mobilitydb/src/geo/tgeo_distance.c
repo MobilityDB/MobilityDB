@@ -49,8 +49,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_geo_tgeo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_tgeo);
+PGDLLEXPORT Datum Tdistance_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a geometry/geography and a
@@ -59,11 +59,11 @@ PG_FUNCTION_INFO_V1(Distance_geo_tgeo);
  * @sqlop @p <->
  */
 Datum
-Distance_geo_tgeo(PG_FUNCTION_ARGS)
+Tdistance_geo_tgeo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tgeo_geo(temp, gs);
+  Temporal *result = tdistance_tgeo_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -71,8 +71,8 @@ Distance_geo_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tgeo_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tgeo_geo);
+PGDLLEXPORT Datum Tdistance_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
@@ -81,11 +81,11 @@ PG_FUNCTION_INFO_V1(Distance_tgeo_geo);
  * @sqlop @p <->
  */
 Datum
-Distance_tgeo_geo(PG_FUNCTION_ARGS)
+Tdistance_tgeo_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tgeo_geo(temp, gs);
+  Temporal *result = tdistance_tgeo_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -93,8 +93,8 @@ Distance_tgeo_geo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tgeo_tgeo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tgeo_tgeo);
+PGDLLEXPORT Datum Tdistance_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between two temporal geos
@@ -102,11 +102,11 @@ PG_FUNCTION_INFO_V1(Distance_tgeo_tgeo);
  * @sqlop @p <->
  */
 Datum
-Distance_tgeo_tgeo(PG_FUNCTION_ARGS)
+Tdistance_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *result = tdistance_tgeo_tgeo(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

@@ -50,6 +50,7 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/postgres_types.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Double2
@@ -262,6 +263,141 @@ bool
 double4_eq(const double4 *d1, const double4 *d2)
 {
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && d1->d == d2->d);
+}
+
+/*****************************************************************************
+ * Collinear functions
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the three double2 values are collinear
+ * @param[in] x1,x2,x3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `x1` and `x2` divided by the duration of the timestamps
+ * associated to `x1` and `x3`
+ * @pre The function supposes that the segments are not constant
+ * @note Function used for normalizing temporal values by removing redundant
+ * instants
+ */
+bool
+double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
+  double ratio)
+{
+  double2 x;
+  x.a = x1->a + (x3->a - x1->a) * ratio;
+  x.b = x1->b + (x3->b - x1->b) * ratio;
+  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON);
+}
+
+/**
+ * @brief Return true if the three values are collinear
+ * @param[in] x1,x2,x3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `x1` and `x2` divided by the duration of the timestamps
+ * associated to `x1` and `x3`
+ * @pre The function supposes that the segments are not constant
+ * @note Function used for normalizing temporal values by removing redundant
+ * instants
+ */
+bool
+double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
+  double ratio)
+{
+  double3 x;
+  x.a = x1->a + (x3->a - x1->a) * ratio;
+  x.b = x1->b + (x3->b - x1->b) * ratio,
+  x.c = x1->c + (x3->c - x1->c) * ratio;
+  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON);
+}
+
+/**
+ * @brief Return true if the three values are collinear
+ * @param[in] x1,x2,x3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `x1` and `x2` divided by the duration of the timestamps
+ * associated to `x1` and `x3`
+ * @pre The function supposes that the segments are not constant
+ * @note Function used for normalizing temporal values by removing redundant
+ * instants
+ */
+bool
+double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
+  double ratio)
+{
+  double4 x;
+  x.a = x1->a + (x3->a - x1->a) * ratio;
+  x.b = x1->b + (x3->b - x1->b) * ratio;
+  x.c = x1->c + (x3->c - x1->c) * ratio;
+  x.d = x1->d + (x3->d - x1->d) * ratio;
+  return (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON &&
+    fabs(x2->d - x.d) <= MEOS_EPSILON);
+}
+
+/*****************************************************************************
+ * Interpolate functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a double2 interpolated from a double2 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ * @note Function used for determining the value of a segment at a timestamp
+ */
+double2 *
+double2segm_interpolate(const double2 *start, const double2 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double2 *result = palloc(sizeof(double2));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  return result;
+}
+
+/**
+ * @brief Return a double3 interpolated from a double3 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ * @note Function used for determining the value of a segment at a timestamp
+ */
+double3 *
+double3segm_interpolate(const double3 *start, const double3 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double3 *result = palloc(sizeof(double3));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+  return result;
+}
+
+/**
+ * @brief Return a double4 interpolated from a double4 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ * @note Function used for determining the value of a segment at a timestamp
+ */
+double4 *
+double4segm_interpolate(const double4 *start, const double4 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double4 *result = palloc(sizeof(double4));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+  result->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
+  return result;
 }
 
 /*****************************************************************************/

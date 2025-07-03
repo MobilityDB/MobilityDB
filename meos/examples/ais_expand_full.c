@@ -64,6 +64,7 @@
 #include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 
 /*
  * IMPORTANT !!!

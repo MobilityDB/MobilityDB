@@ -342,6 +342,7 @@ extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
 extern void meos_finalize_timezone(void);
 extern void meos_finalize_projsrs(void);
+extern void meos_finalize_ways(void);
 
 extern bool meos_set_datestyle(const char *newval, void *extra);
 extern bool meos_set_intervalstyle(const char *newval, int extra);
@@ -374,6 +375,17 @@ extern DateADT minus_date_int(DateADT d, int32 days);
 extern TimestampTz minus_timestamptz_interval(TimestampTz t, const Interval *interv);
 extern Interval *minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2);
 extern Interval *mul_interval_double(const Interval *interv, double factor);
+extern DateADT pg_date_in(const char *str);
+extern char *pg_date_out(DateADT d);
+extern int pg_interval_cmp(const Interval *interv1, const Interval *interv2);
+extern Interval *pg_interval_in(const char *str, int32 typmod);
+extern char *pg_interval_out(const Interval *interv);
+extern TimeADT pg_time_in(const char *str, int32 typmod);
+extern char *pg_time_out(TimeADT t);
+extern Timestamp pg_timestamp_in(const char *str, int32 typmod);
+extern char *pg_timestamp_out(Timestamp t);
+extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
+extern char *pg_timestamptz_out(TimestampTz t);
 extern char *text2cstring(const text *txt);
 extern int text_cmp(const text *txt1, const text *txt2);
 extern text *text_copy(const text *txt);
@@ -1696,6 +1708,7 @@ extern Temporal *tfloat_exp(const Temporal *temp);
 extern Temporal *tfloat_ln(const Temporal *temp);
 extern Temporal *tfloat_log10(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
+extern double float_angular_difference(double degrees1, double degrees2);
 extern Temporal *tnumber_angular_difference(const Temporal *temp);
 extern Temporal *tnumber_delta_value(const Temporal *temp);
 
@@ -1714,9 +1727,9 @@ extern Temporal *ttext_lower(const Temporal *temp);
  * Distance functions for temporal types
  *****************************************************************************/
 
-extern Temporal *distance_tfloat_float(const Temporal *temp, double d);
-extern Temporal *distance_tint_int(const Temporal *temp, int i);
-extern Temporal *distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tfloat_float(const Temporal *temp, double d);
+extern Temporal *tdistance_tint_int(const Temporal *temp, int i);
+extern Temporal *tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2);
 extern int nad_tboxint_tboxint(const TBox *box1, const TBox *box2);
 extern double nad_tfloat_float(const Temporal *temp, double d);

@@ -36,49 +36,49 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION temporal_distance(trgeometry, geometry)
+CREATE FUNCTION tdistance(trgeometry, geometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(geometry, trgeometry)
+CREATE FUNCTION tdistance(geometry, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_geo_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(trgeometry, tgeompoint)
+CREATE FUNCTION tdistance(trgeometry, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_trgeo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeompoint, trgeometry)
+CREATE FUNCTION tdistance(tgeompoint, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpoint_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tpoint_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(trgeometry, trgeometry)
+CREATE FUNCTION tdistance(trgeometry, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tdistance,
   LEFTARG = trgeometry, RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tdistance,
   LEFTARG = geometry, RIGHTARG = trgeometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tdistance,
   LEFTARG = trgeometry, RIGHTARG = tgeompoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tdistance,
   LEFTARG = tgeompoint, RIGHTARG = trgeometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tdistance,
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   COMMUTATOR = <->
 );

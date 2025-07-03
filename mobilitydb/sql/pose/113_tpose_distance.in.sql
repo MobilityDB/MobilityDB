@@ -34,23 +34,23 @@
 
 CREATE FUNCTION tDistance(geometry(Point), tpose)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_point_tpose'
+  AS 'MODULE_PATHNAME', 'Tdistance_point_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(pose, tpose)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_pose_tpose'
+  AS 'MODULE_PATHNAME', 'Tdistance_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tpose, geometry(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpose_point'
+  AS 'MODULE_PATHNAME', 'Tdistance_tpose_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tpose, pose)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpose_pose'
+  AS 'MODULE_PATHNAME', 'Tdistance_tpose_pose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tpose, tpose)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tpose_tpose'
+  AS 'MODULE_PATHNAME', 'Tdistance_tpose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

@@ -45,8 +45,8 @@
  * Temporal distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Distance_point_tpose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_point_tpose);
+PGDLLEXPORT Datum Tdistance_point_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_point_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
  * @brief Return the temporal distance between a geometry point and a temporal
@@ -55,11 +55,11 @@ PG_FUNCTION_INFO_V1(Distance_point_tpose);
  * @sqlop @p <->
  */
 Datum
-Distance_point_tpose(PG_FUNCTION_ARGS)
+Tdistance_point_tpose(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tpose_point(temp, gs);
+  Temporal *result = tdistance_tpose_point(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -67,8 +67,8 @@ Distance_point_tpose(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tpose_point(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tpose_point);
+PGDLLEXPORT Datum Tdistance_tpose_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tpose_point);
 /**
  * @ingroup mobilitydb_pose_dist
  * @brief Return the temporal distance between a temporal pose and a geometry
@@ -77,11 +77,11 @@ PG_FUNCTION_INFO_V1(Distance_tpose_point);
  * @sqlop @p <->
  */
 Datum
-Distance_tpose_point(PG_FUNCTION_ARGS)
+Tdistance_tpose_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tpose_point(temp, gs);
+  Temporal *result = tdistance_tpose_point(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -89,8 +89,8 @@ Distance_tpose_point(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_pose_tpose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_pose_tpose);
+PGDLLEXPORT Datum Tdistance_pose_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_pose_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
  * @brief Return the temporal distance between a pose and a temporal pose
@@ -98,17 +98,17 @@ PG_FUNCTION_INFO_V1(Distance_pose_tpose);
  * @sqlop @p <->
  */
 Datum
-Distance_pose_tpose(PG_FUNCTION_ARGS)
+Tdistance_pose_tpose(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tpose_pose(temp, pose);
+  Temporal *result = tdistance_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tpose_pose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tpose_pose);
+PGDLLEXPORT Datum Tdistance_tpose_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tpose_pose);
 /**
  * @ingroup mobilitydb_pose_dist
  * @brief Return the temporal distance between a temporal pose and a pose
@@ -116,17 +116,17 @@ PG_FUNCTION_INFO_V1(Distance_tpose_pose);
  * @sqlop @p <->
  */
 Datum
-Distance_tpose_pose(PG_FUNCTION_ARGS)
+Tdistance_tpose_pose(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Pose *pose = PG_GETARG_POSE_P(1);
-  Temporal *result = distance_tpose_pose(temp, pose);
+  Temporal *result = tdistance_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Distance_tpose_tpose(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_tpose_tpose);
+PGDLLEXPORT Datum Tdistance_tpose_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tpose_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
  * @brief Return the temporal distance between two temporal poses
@@ -134,11 +134,11 @@ PG_FUNCTION_INFO_V1(Distance_tpose_tpose);
  * @sqlop @p <->
  */
 Datum
-Distance_tpose_tpose(PG_FUNCTION_ARGS)
+Tdistance_tpose_tpose(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tpose_tpose(temp1, temp2);
+  Temporal *result = tdistance_tpose_tpose(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

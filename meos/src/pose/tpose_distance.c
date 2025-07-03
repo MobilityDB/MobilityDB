@@ -51,17 +51,17 @@
  * @brief Return the temporal distance between a geometry and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #Distance_tpose_point()
+ * @csqlfn #Tdistance_tpose_point()
  */
 Temporal *
-distance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Temporal *tpoint = tpose_to_tpoint(temp);
-  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
+  Temporal *result = tdistance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
 }
@@ -71,10 +71,10 @@ distance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the temporal distance between a temporal pose and a pose
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
- * @csqlfn #Distance_tpose_pose()
+ * @csqlfn #Tdistance_tpose_pose()
  */
 Temporal *
-distance_tpose_pose(const Temporal *temp, const Pose *pose)
+tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_pose(temp, pose))
@@ -82,7 +82,7 @@ distance_tpose_pose(const Temporal *temp, const Pose *pose)
 
   GSERIALIZED *geom = pose_to_point(pose);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  Temporal *result = distance_tgeo_geo(tpoint, geom);
+  Temporal *result = tdistance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -91,10 +91,10 @@ distance_tpose_pose(const Temporal *temp, const Pose *pose)
  * @ingroup meos_pose_distance
  * @brief Return the temporal distance between two temporal poses
  * @param[in] temp1,temp2 Temporal poses
- * @csqlfn #Distance_tpose_tpose()
+ * @csqlfn #Tdistance_tpose_tpose()
  */
 Temporal *
-distance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
+tdistance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_tpose(temp1, temp2))
@@ -102,7 +102,7 @@ distance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 
   Temporal *tpoint1 = tpose_to_tpoint(temp1);
   Temporal *tpoint2 = tpose_to_tpoint(temp2);
-  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
+  Temporal *result = tdistance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -176,7 +176,7 @@ nai_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tpose_tpose(temp1, temp2))
     return NULL;
 
-  Temporal *dist = distance_tpose_tpose(temp1, temp2);
+  Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -270,7 +270,7 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tpose_tpose(temp1, temp2))
     return -1.0;
 
-  Temporal *dist = distance_tpose_tpose(temp1, temp2);
+  Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
     return -1.0;
   return DatumGetFloat8(temporal_min_value(dist));

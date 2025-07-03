@@ -1646,5 +1646,48 @@ tgeo_centroid(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/*****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return an array of integers specifying the cluster number assigned to
+ * the input geometries using the k-means algorithm
+ * contains a geometry
+ * @param[in] geoms Geometries
+ * @param[in] n Number of elements in the input array
+ * @param[in] k Number of clusters
+ */
+int *
+geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geoms, NULL);
+  if (! ensure_positive(n) || ! ensure_positive(k))
+    return NULL;
+  if (n < k)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "K (%d) must be smaller than the number of input geometries (%d)",
+      k, n);
+    return NULL;
+  }
+
+  /* Read all the input geometries into a list */
+  LWGEOM **lwgeoms = palloc(sizeof(LWGEOM *) * n);
+  for (uint32_t i = 0; i < n; i++)
+    lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
+
+  /* Calculate k-means on the list */
+  int *result = lwgeom_cluster_kmeans((const LWGEOM **) lwgeoms, n, k, 0.0);
+
+  /* Clean up and return */
+  for (uint32_t i = 0; i < n; i++)
+    if (lwgeoms[i])
+      lwgeom_free(lwgeoms[i]);
+  pfree(lwgeoms);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

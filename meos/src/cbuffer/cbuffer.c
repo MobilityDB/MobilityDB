@@ -546,36 +546,41 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
   uint32_t type = gserialized_get_type(gs);
-  if (type != POINTTYPE && type != CURVEPOLYTYPE )
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only points or circle polygons accepted");
-    return NULL;
-  }
 
   /* POINTTYPE */
   if (type == POINTTYPE)
     return cbuffer_make(gs, 0.0);
 
   /* CURVEPOLYTYPE */
-  int32_t srid = gserialized_get_srid(gs);
-  LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
-  LWLINE *ring = (LWLINE *) poly->rings[0];
-  POINT4D p1, p2;
-  getPoint4d_p(ring->points, 0, &p1);
-  getPoint4d_p(ring->points, 1, &p2);
-  /* Compute the radius. We cannot call the PostGIS function
-   * interpolate_point4d(&p1, &p2, &p, ratio);
-   * since it uses a double and not a long double for the interpolation */
-  double x = p1.x + (double) ((long double) (p2.x - p1.x) * 0.5);
-  double y = p1.y + (double) ((long double) (p2.y - p1.y) * 0.5);
-  double radius = fabs(p2.x - p1.x) / 2;
-  LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, x, y);
-  GSERIALIZED *gscenter = geom_serialize(center);
-  lwgeom_free((LWGEOM *) poly);
+  GSERIALIZED *gscenter;
+  double radius;
+  if (type == POINTTYPE)
+  {
+    int32_t srid = gserialized_get_srid(gs);
+    LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
+    LWLINE *ring = (LWLINE *) poly->rings[0];
+    POINT4D p1, p2;
+    getPoint4d_p(ring->points, 0, &p1);
+    getPoint4d_p(ring->points, 1, &p2);
+    /* Compute the radius. We cannot call the PostGIS function
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
+    double x = p1.x + (double) ((long double) (p2.x - p1.x) * 0.5);
+    double y = p1.y + (double) ((long double) (p2.y - p1.y) * 0.5);
+    radius = fabs(p2.x - p1.x) / 2;
+    LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, x, y);
+    gscenter = geom_serialize(center);
+    lwgeom_free((LWGEOM *) poly); lwgeom_free(center); 
+  }
+  else
+  /* geotype != POINTTYPE && geotype != CURVEPOLYTYPE */
+  {
+    gscenter = geom_min_bounding_radius(gs, &radius);
+  }
   Cbuffer *result = cbuffer_make(gscenter, radius);
-  lwgeom_free(center); pfree(gscenter);
+  pfree(gscenter);
   return result;
+  
 }
 
 /**

@@ -47,7 +47,7 @@
  * Struct definitions
  *****************************************************************************/
 
-/** Symbolic constants for temporal_distance */
+/** Symbolic constants for temporal distance */
 #define MEOS_ANY             0
 #define MEOS_RIGHT           1
 #define MEOS_LEFT            2

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal geos
+ * @brief Temporal distance functions for temporal geos
  */
 
 #include "geo/tgeo_distance.h"
@@ -150,13 +150,14 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  *****************************************************************************/
 
 /**
- * @brief Return the distance and timestamp at which a temporal geo segment
- * and a point are at the minimum distance
+ * @brief Return 1 or 2 if a temporal point segment and a point are at a 
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start,end Values defining the first segment
  * @param[in] point Point to locate
  * @param[in] lower,upper Minimum distance at turning point
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant
  * @post As there is a single turning point, `t2` is set to `t1`
  */
@@ -241,14 +242,15 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
 }
 
 /**
- * @brief Return 1 the timestamp at which two temporal geometry
- * point segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal geometry point segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @note The PostGIS functions @p lw_dist2d_seg_seg and @p lw_dist3d_seg_seg
  * cannot be used since they do not take time into consideration and would
  * return, e.g., that the minimum distance between the two following segments
@@ -292,14 +294,15 @@ tgeompointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @brief Return 1 if the single timestamp at which the two temporal geography
- * point segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal geography point segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants
  * @post As there is a single turning point, `t2` is  set to `t1`
  */
@@ -340,13 +343,14 @@ tgeogpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @brief Return the value and timestamp at which the two temporal geo
- * segments are at the minimum distance.
+ * @brief Return 1 or 2 if two temporal point segments are at a minimum
+ * distance during the period defined by the output timestamps, return 0
+ * otherwise
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants.
  */
 int
@@ -371,10 +375,10 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
- * @csqlfn #Distance_tgeo_geo()
+ * @csqlfn #Tdistance_tgeo_geo()
  */
 Temporal *
-distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -385,13 +389,12 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return NULL;
 
-  meosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) geo_distance_fn(temp->flags);
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
-  lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
@@ -404,10 +407,10 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_geo_distance
  * @brief Return the temporal distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
- * @csqlfn #Distance_tgeo_tgeo()
+ * @csqlfn #Tdistance_tgeo_tgeo()
  */
 Temporal *
-distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
@@ -700,7 +703,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
   /* Compute the temporal distance, it may be NULL if the points do not
    * intersect on time */
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -872,7 +875,7 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return DBL_MAX;
 
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
 
@@ -970,7 +973,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return NULL;
 
-  Temporal *dist = distance_tgeo_tgeo(temp1, temp2);
+  Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);

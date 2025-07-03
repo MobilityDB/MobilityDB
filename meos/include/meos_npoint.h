@@ -131,9 +131,9 @@ extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 
 /* Conversion functions */
 
-extern Npoint *geom_to_npoint(const GSERIALIZED *gs);
+extern Npoint *geompoint_to_npoint(const GSERIALIZED *gs);
 extern Nsegment *geom_to_nsegment(const GSERIALIZED *gs);
-extern GSERIALIZED *npoint_to_geom(const Npoint *np);
+extern GSERIALIZED *npoint_to_geompoint(const Npoint *np);
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 extern STBox *npoint_to_stbox(const Npoint *np);
 extern GSERIALIZED *nsegment_to_geom(const Nsegment *ns);
@@ -238,14 +238,20 @@ extern Temporal *tnpoint_in(const char *str);
 extern char *tnpoint_out(const Temporal *temp, int maxdd);
 
 /*****************************************************************************
- * Conversion function
+ * Constructor functions
+ *****************************************************************************/
+
+extern TInstant *tnpointinst_make(const Npoint *np, TimestampTz t);
+
+/*****************************************************************************
+ * Conversion functions
  *****************************************************************************/
 
 extern Temporal *tgeompoint_to_tnpoint(const Temporal *temp);
 extern Temporal *tnpoint_to_tgeompoint(const Temporal *temp);
 
 /*****************************************************************************
- * Accessor function
+ * Accessor functions
  *****************************************************************************/
 
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
@@ -274,9 +280,9 @@ extern Temporal *tnpoint_minus_stbox(const Temporal *temp, const STBox *box, boo
  * Distance functions
  *****************************************************************************/
 
-extern Temporal *distance_tnpoint_npoint(const Temporal *temp, const Npoint *np);
-extern Temporal *distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern Temporal *tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern double nad_tnpoint_stbox(const Temporal *temp, const STBox *box);

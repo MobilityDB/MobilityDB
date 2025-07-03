@@ -240,9 +240,9 @@ int main(void)
           // Temporal *rest = sub_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = mult_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = div_tnumber_tnumber(temp1, temp2);
-          // Temporal *rest = distance_tnumber_tnumber(temp1, temp2);
+          // Temporal *rest = tdistance_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = textcat_ttext_ttext(temp1, temp2);
-          // Temporal *rest = distance_tgeo_tgeo(temp1, temp2);
+          // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
           // Temporal *rest = tdwithin_tspatial_tspatial(temp1, temp2, 5, false, false);
           // Temporal *rest = temporal_append_tinstant(temp1, inst, LINEAR, 0.0,
           // Temporal *rest = temporal_append_tsequence(temp1, seq, false);

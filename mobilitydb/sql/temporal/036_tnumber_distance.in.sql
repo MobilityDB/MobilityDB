@@ -40,7 +40,7 @@
 
 CREATE FUNCTION tDistance(integer, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Tdistance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -55,7 +55,7 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION tDistance(float, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Tdistance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -69,11 +69,11 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION tDistance(tint, integer)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Tdistance_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tint, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Tdistance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -92,11 +92,11 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION tDistance(tfloat, float)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Tdistance_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tfloat, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Tdistance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

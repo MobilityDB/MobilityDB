@@ -47,13 +47,14 @@
  *****************************************************************************/
 
 /**
- * @brief Return the two timestamps at which a temporal circular buffer segment
- * and a geometry point are at the minimum distance
+ * @brief Return 1 or 3 if a temporal circular buffer segment and a geometry
+ * point are at the minimum distance during the period defined by the output
+ * timestamps, return 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
  * @param[in] lower,upper Timestampts defining the segment
- * @param[out] t1,t2 
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant.
  */
 int
@@ -206,13 +207,14 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
- * segments are at the minimum distance
+ * @brief Return 1 or 2 if two temporal circular buffers segments are at a
+ * minimum distance during the period defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
  * @param[out] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps at turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not constant.
  */
 int
@@ -302,14 +304,15 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
 }
 
 /**
- * @brief Return the TWO timestamps at which two temporal circular buffers 
- * segment are at the minimum distance
+ * @brief Return 1 or 2 if two temporal circular buffers segments are at a
+ * minimum distance during the periods defined by the output timestamps, return
+ * 0 otherwise
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Minimum distances at turning points
- * @param[out] t1,t2 Timestamps of the turning points
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  */
 int
 tcbuffer_tcbuffer_distance_turnpt(Datum start1, Datum end1, Datum start2,
@@ -333,10 +336,10 @@ tcbuffer_tcbuffer_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a circular buffer
- * @csqlfn #Distance_tcbuffer_cbuffer()
+ * @csqlfn #Tdistance_tcbuffer_cbuffer()
  */
 Temporal *
-distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
+tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
@@ -361,17 +364,17 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a geometry
- * @csqlfn #Distance_tcbuffer_geo()
+ * @csqlfn #Tdistance_tcbuffer_geo()
  */
 Temporal *
-distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Cbuffer *cb = geom_to_cbuffer(gs);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
+  Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   pfree(cb);
   return result;
 }
@@ -382,10 +385,10 @@ distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
- * @csqlfn #Distance_tcbuffer_tcbuffer()
+ * @csqlfn #Tdistance_tcbuffer_tcbuffer()
  */
 Temporal *
-distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
@@ -476,7 +479,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
+  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
     return NULL;
 
@@ -531,7 +534,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1.0;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   double result = geom_distance2d(trav, gs);
   pfree(trav);
   return result;
@@ -552,7 +555,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return -1.0;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav);
@@ -575,7 +578,7 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return -1.0;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   double result = geom_distance2d(trav, geom);
   pfree(trav); pfree(geom);
   return result;
@@ -594,7 +597,7 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1.0;
 
-  Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
+  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
     return -1.0;
   return DatumGetFloat8(temporal_min_value(dist));
@@ -619,7 +622,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, gs);
   pfree(trav);
   return result;
@@ -641,7 +644,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return NULL;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, geom);
   pfree(geom); pfree(trav);
   return result;
