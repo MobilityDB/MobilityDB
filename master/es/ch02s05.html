@@ -76,11 +76,11 @@ SELECT round(floatspan '[1.123456789, inf)', 3);
 -- [1.123,Infinity)
 SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]}', 3);
 -- {[1.123, 2.123], [3.123, 4.123]}
-</pre></li><li class="listitem"><a name="floatset_degrees"></a><a class="indexterm" name="id2010"></a><a class="indexterm" name="id2013"></a><p>Convertir a grados o radianes</p><p><code class="varname">degrees(floatset, normalize=false) → floatset</code></p><p><code class="varname">radians(floatset) → floatset</code></p><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="floatspanset_degrees"></a><a class="indexterm" name="id2010"></a><a class="indexterm" name="id2013"></a><p>Convertir a grados o radianes</p><p><code class="varname">degrees({floatset,floatspans}, normalize=false) → {floatset,floatspans}</code></p><p><code class="varname">radians({floatset,floatspans}) → {floatset,floatspans}</code></p><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
 SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
 -- {0, 28.648, 40.107, 57.296}
-SELECT round(radians(floatset '{0, 45, 90}'), 3);
--- {0, 0.785, 1.571}
+SELECT round(radians(floatspanset '{[0, 45], [90, 135]}'), 3);
+-- {[0, 0.785], [1.571, 2.356]}
 </pre></li><li class="listitem"><a name="textset_lower"></a><a class="indexterm" name="id2025"></a><a class="indexterm" name="id2028"></a><a class="indexterm" name="id2031"></a><p>Transformar en minúsculas, majúsculas o initcap</p><p><code class="varname">lower(textset) → textset</code></p><p><code class="varname">upper(textset) → textset</code></p><p><code class="varname">initcap(textset) → textset</code></p><pre class="programlisting">
 SELECT lower(textset '{"AAA", "BBB", "CCC"}');
 -- {"aaa", "bbb", "ccc"}
