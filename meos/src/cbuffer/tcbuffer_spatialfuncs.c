@@ -535,10 +535,12 @@ tcbufferseq_linear_trav_area(const TSequence *seq, GSERIALIZED **result)
  * @ingroup meos_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer sequence
  * @param[in] seq Temporal circular buffer
+ * @param[in] merge_union True when the traversed area is a single geometry
+ * obtained by applying spatial union to the geometries of the segments
  * @csqlfn #Tcbuffer_traversed_area()
  */
 GSERIALIZED *
-tcbufferseq_trav_area(const TSequence *seq)
+tcbufferseq_trav_area(const TSequence *seq, bool merge_union)
 {
   assert(seq);
 
@@ -563,7 +565,14 @@ tcbufferseq_trav_area(const TSequence *seq)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  result = geo_collect_garray(geoms, newcount);
+  GSERIALIZED *res = geo_collect_garray(geoms, newcount);
+  if (merge_union)
+  {
+    result = geom_unary_union(res, -1);
+    pfree(res);
+  }
+  else
+    result = res;
   pfree(geoms);
   return result;
 }
@@ -612,16 +621,18 @@ tcbufferseqset_linear_trav_area(const TSequenceSet *ss, GSERIALIZED **result)
  * @ingroup meos_internal_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer
  * @param[in] ss Temporal circular buffer
+ * @param[in] merge_union True when the traversed area is a single geometry
+ * obtained by applying spatial union to the geometries of the segments
  * @csqlfn #Tcbuffer_traversed_area()
  */
 GSERIALIZED *
-tcbufferseqset_trav_area(const TSequenceSet *ss)
+tcbufferseqset_trav_area(const TSequenceSet *ss, bool merge_union)
 {
   assert(ss); assert(MEOS_FLAGS_GET_INTERP(ss->flags) == LINEAR);
   
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tcbufferseq_trav_area(TSEQUENCESET_SEQ_N(ss, 0));
+    return tcbufferseq_trav_area(TSEQUENCESET_SEQ_N(ss, 0), merge_union);
 
   /* General case */
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
@@ -640,7 +651,14 @@ tcbufferseqset_trav_area(const TSequenceSet *ss)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  result = geo_collect_garray(geoms, newcount);
+  GSERIALIZED *res = geo_collect_garray(geoms, newcount);
+  if (merge_union)
+  {
+    result = geom_unary_union(res, -1);
+    pfree(res);
+  }
+  else
+    result = res;
   pfree(geoms);
   return result;
 }
@@ -649,10 +667,12 @@ tcbufferseqset_trav_area(const TSequenceSet *ss)
  * @ingroup meos_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer
  * @param[in] temp Temporal circular buffer
+ * @param[in] merge_union True when the traversed area is a single geometry
+ * obtained by applying spatial union to the geometries of the segments
  * @csqlfn #Tcbuffer_traversed_area()
  */
 GSERIALIZED *
-tcbuffer_trav_area(const Temporal *temp)
+tcbuffer_trav_area(const Temporal *temp, bool merge_union)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
@@ -664,10 +684,10 @@ tcbuffer_trav_area(const Temporal *temp)
       return tcbufferinst_trav_area((TInstant *) temp);
       break;
     case TSEQUENCE:
-      return tcbufferseq_trav_area((TSequence *) temp);
+      return tcbufferseq_trav_area((TSequence *) temp, merge_union);
       break;
     default: /* TSEQUENCESET */
-      return tcbufferseqset_trav_area((TSequenceSet *) temp);
+      return tcbufferseqset_trav_area((TSequenceSet *) temp, merge_union);
   }
 }
 

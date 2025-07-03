@@ -231,7 +231,7 @@ extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 
 extern Set *tcbuffer_points(const Temporal *temp);
 extern Set *tcbuffer_radius(const Temporal *temp);
-extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp);
+extern GSERIALIZED *tcbuffer_trav_area(const Temporal *temp, bool merge_union);
 
 /*****************************************************************************
  * Conversion functions

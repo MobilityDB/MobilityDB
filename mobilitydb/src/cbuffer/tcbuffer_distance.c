@@ -67,9 +67,8 @@ PGDLLEXPORT Datum Tdistance_geo_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_geo_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a circular buffer and a
- * geometry
- * @sqlfn tDistance()
+ * @brief Return the distance between a circular buffer and a geometry
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum

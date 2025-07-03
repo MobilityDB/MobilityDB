@@ -61,7 +61,7 @@ CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
  * Traversed area
  *****************************************************************************/
 
-CREATE FUNCTION traversedArea(tcbuffer)
+CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT true)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
