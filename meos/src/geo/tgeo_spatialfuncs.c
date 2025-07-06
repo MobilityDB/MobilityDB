@@ -42,6 +42,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
+#include <lwgeom_log.h>
 #include <lwgeodetic.h>
 #include <lwgeom_geos.h>
 /* MEOS */
@@ -1687,6 +1688,68 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
       lwgeom_free(lwgeoms[i]);
   pfree(lwgeoms);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return an array of integers specifying the cluster number assigned to
+ * the input geometries using the DBSCAN algorithm
+ * contains a geometry
+ * @param[in] geoms Geometries
+ * @param[in] ngeoms Number of elements in the input array
+ * @param[in] tolerance Tolerance
+ * @param[in] minpoints Minimum number of points
+ */
+uint32_t *
+geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
+  double tolerance, int minpoints)
+{
+  uint32_t i;
+  uint32_t* result_ids;
+  LWGEOM** lwgeoms;
+  char* is_in_cluster = NULL;
+  UNIONFIND* uf;
+
+  /* Validate input parameters */
+  if (tolerance < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Tolerance must be a positive number, got %g", tolerance);
+    return NULL;
+  }
+  if (minpoints < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Minpoints must be a positive number, got %d", minpoints);
+    return NULL;
+  }
+
+  initGEOS(lwnotice, lwgeom_geos_error);
+  lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
+  uf = UF_create(ngeoms);
+  for (i = 0; i < ngeoms; i++)
+  {
+    lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
+  }
+
+  bool success = union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
+      minpoints > 1 ? &is_in_cluster : NULL);
+
+  for (i = 0; i < ngeoms; i++)
+    lwgeom_free(lwgeoms[i]);
+  lwfree(lwgeoms);
+
+  if (! success)
+  {
+    UF_destroy(uf);
+    if (is_in_cluster)
+      lwfree(is_in_cluster);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error during clustering");
+    return NULL;
+  }
+
+  result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
+  return result_ids;
 }
 #endif /* MEOS */
 

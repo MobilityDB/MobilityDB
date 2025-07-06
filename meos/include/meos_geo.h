@@ -882,7 +882,8 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 
 /* Clustering functions */
 
-extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k);
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
+extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints);
 
 /*****************************************************************************/
 
