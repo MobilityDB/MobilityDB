@@ -1658,6 +1658,7 @@ tgeo_centroid(const Temporal *temp)
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
+ * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
  */
 int *
 geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
@@ -1699,11 +1700,16 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
  * @param[in] minpoints Minimum number of points
+ * @note PostGIS function: @p ST_ClusterDBSCAN(PG_FUNCTION_ARGS)
  */
 uint32_t *
 geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int minpoints)
 {
+  /* Ensure validity of arguments */
+  if (! ensure_not_null(geoms))
+    return NULL;
+
   uint32_t i;
   uint32_t* result_ids;
   LWGEOM** lwgeoms;
@@ -1728,9 +1734,7 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
   uf = UF_create(ngeoms);
   for (i = 0; i < ngeoms; i++)
-  {
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
-  }
 
   bool success = union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
       minpoints > 1 ? &is_in_cluster : NULL);
@@ -1750,6 +1754,86 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
 
   result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
   return result_ids;
+}
+
+/**
+  * @ingroup meos_geo_base_spatial
+  * @brief Return an array of GeometryCollections partitioning the input
+  * geometries into connected clusters that are disjoint
+  * @details Each geometry in a cluster intersects at least one other geometry
+  * in the cluster, and does not intersect any geometry in other clusters
+  * @param[in] geoms Geometries
+  * @param[in] ngeoms Number of elements in the input array
+  * @param[out] count Number of elements in the output array
+  * @note PostGIS function: @p ST_ClusterIntersectingWin(PG_FUNCTION_ARGS)
+  */
+GSERIALIZED ** 
+geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
+  int *count)
+{
+  int is3d = 0;
+  uint32_t nclusters, i, j;
+  int32_t srid = SRID_UNKNOWN;
+  bool gotsrid = false;
+
+  /* Ensure validity of arguments */
+  if (! ensure_not_null(geoms) || ngeoms == 0)
+    return NULL;
+
+  /* TODO short-circuit for one element? */
+
+  /* Ok, we really need geos now ;) */
+  initGEOS(lwnotice, lwgeom_geos_error);
+  GEOSGeometry **geos_inputs = palloc(ngeoms * sizeof(GEOSGeometry *));
+  for (i = 0; i < ngeoms; i++)
+  {
+    is3d = is3d || gserialized_has_z(geoms[i]);
+    geos_inputs[i] = POSTGIS2GEOS(geoms[i]);
+    if (! geos_inputs[i])
+    {
+      lwerror("Geometry could not be converted to GEOS");
+      for (j = 0; j < i; j++)
+        GEOSGeom_destroy(geos_inputs[j]);
+      return NULL;
+    }
+
+    if (! gotsrid)
+    {
+      srid = gserialized_get_srid(geoms[i]);
+      gotsrid = true;
+    }
+    else if (! ensure_same_srid(srid, gserialized_get_srid(geoms[i])))
+    {
+      for (j = 0; j <= i; j++)
+        GEOSGeom_destroy(geos_inputs[j]);
+      return NULL;
+    }
+  }
+
+  /* Perform the clustering */
+  GEOSGeometry **geos_results;
+  if (cluster_intersecting(geos_inputs, ngeoms, &geos_results, &nclusters) !=
+    LW_SUCCESS)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "clusterintersecting: Error performing clustering");
+    return NULL;
+  }
+  /* Don't need to destroy items because GeometryCollections have taken ownership */
+  pfree(geos_inputs);
+
+  if (!geos_results)
+    return NULL;
+
+  GSERIALIZED **result = palloc(nclusters * sizeof(GSERIALIZED *));
+  for (i = 0; i < nclusters; ++i)
+  {
+    result[i] = GEOS2POSTGIS(geos_results[i], is3d);
+    GEOSGeom_destroy(geos_results[i]);
+  }
+  lwfree(geos_results);
+  *count = nclusters;
+  return result;
 }
 #endif /* MEOS */
 
