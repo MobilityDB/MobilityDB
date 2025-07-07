@@ -887,6 +887,7 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
 extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints);
 extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
+extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);
 
 /*****************************************************************************/
 

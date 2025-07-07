@@ -32,14 +32,25 @@
  * @brief A simple program that reads from the regions.csv file obtained from
  * the BerlinMOD benchmark
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
- * and applies the PostGIS function `ST_ClusterIntersecting` to the entire file.
+ * and applies one of the PostGIS functions `ST_ClusterIntersecting`
+ * or `ST_ClusterWithin` to the entire file.
  *
- * The program corresponds to the following SQL query
+ * The program corresponds to one of the following SQL queries
  * @code
-   DROP TABLE IF EXISTS ClustRegions;
-   CREATE TABLE ClustRegions AS
+   DROP TABLE IF EXISTS RegionsIntersecting;
+   CREATE TABLE RegionsIntersecting AS
    WITH Temp1 AS (
      SELECT unnest(ST_ClusterIntersecting(geom)) geom FROM Regions ),
+   Temp2 AS (
+     SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
+   SELECT cluster, (rec).geom FROM Temp2;
+ * @endcode
+ * or
+ * @code
+   DROP TABLE IF EXISTS RegionsWithin;
+   CREATE TABLE RegionsWithin AS
+   WITH Temp1 AS (
+     SELECT unnest(ST_ClusterWithin(geom, 1000)) geom FROM Regions ),
    Temp2 AS (
      SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )
    SELECT cluster, (rec).geom FROM Temp2;
@@ -78,6 +89,8 @@
 #define MAX_ROWS 100
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LINE_LENGTH 4096
+/* Define whether `ST_ClusterIntersecting` or `ST_ClusterWithin` is applied */
+#define CLUSTER_INTERSECTING false
 
 /* Main program */
 int main(void)
@@ -140,16 +153,19 @@ int main(void)
     /* Advance number of records to be clustered */
     no_records++;
   } while (!feof(input_file));
-  printf("\n\nClustering intersecting geometries\n");
-  printf("----------------------------------\n");
+  printf("\n\nClustering geometries\n");
+  printf("---------------------\n");
 
   /* Close the input file */
   fclose(input_file);
 
   /* Perform the clustering */
   int no_clusters;
-  GSERIALIZED **clusters = geo_cluster_intersecting(
-    (const GSERIALIZED **) geoms, no_records, &no_clusters);
+  GSERIALIZED **clusters = CLUSTER_INTERSECTING ?
+    geo_cluster_intersecting((const GSERIALIZED **) geoms, no_records,
+      &no_clusters) :
+    geo_cluster_within((const GSERIALIZED **) geoms, no_records, 1000.0,
+      &no_clusters);
 
   /* Fill the array of cluster numbers */
   for (i = 0; i < no_clusters; i++)
@@ -192,7 +208,7 @@ int main(void)
   printf(
     "\n%d records read from file 'regions.csv'.\n"
     "%d incomplete records ignored.\n"
-    "%d records clustered.\n", 
+    "%d clusters obtained.\n", 
     no_records, no_nulls, no_clusters);
 
   /* Calculate the elapsed time */

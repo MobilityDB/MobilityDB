@@ -1709,14 +1709,6 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   /* Ensure validity of arguments */
   if (! ensure_not_null(geoms))
     return NULL;
-
-  uint32_t i;
-  uint32_t* result_ids;
-  LWGEOM** lwgeoms;
-  char* is_in_cluster = NULL;
-  UNIONFIND* uf;
-
-  /* Validate input parameters */
   if (tolerance < 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1730,14 +1722,16 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
     return NULL;
   }
 
+  uint32_t i;
+  char *is_in_cluster = NULL;
   initGEOS(lwnotice, lwgeom_geos_error);
-  lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
-  uf = UF_create(ngeoms);
+  LWGEOM **lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
+  UNIONFIND *uf = UF_create(ngeoms);
   for (i = 0; i < ngeoms; i++)
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
 
   bool success = union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
-      minpoints > 1 ? &is_in_cluster : NULL);
+    minpoints > 1 ? &is_in_cluster : NULL);
 
   for (i = 0; i < ngeoms; i++)
     lwgeom_free(lwgeoms[i]);
@@ -1752,7 +1746,7 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
     return NULL;
   }
 
-  result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
+  uint32_t *result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
   return result_ids;
 }
 
@@ -1777,7 +1771,7 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   bool gotsrid = false;
 
   /* Ensure validity of arguments */
-  if (! ensure_not_null(geoms) || ngeoms == 0)
+  if (! ensure_not_null(geoms) || ! ensure_not_null(count) || ngeoms == 0)
     return NULL;
 
   /* TODO short-circuit for one element? */
@@ -1832,6 +1826,64 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
     GEOSGeom_destroy(geos_results[i]);
   }
   lwfree(geos_results);
+  *count = nclusters;
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+  * @brief Return an array of GeometryCollections partitioning the input
+  * geometries into clusters in which each geometry is within the specified
+  * distance of at least one other geometry in the same cluster.
+ * @param[in] geoms Geometries
+ * @param[in] ngeoms Number of elements in the input array
+ * @param[in] tolerance Tolerance
+  * @param[out] count Number of elements in the output array
+ * @note PostGIS function: @p ST_ClusterWithin(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED **
+geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
+  double tolerance, int *count)
+{
+  /* Ensure validity of arguments */
+  /* Ensure validity of arguments */
+  if (! ensure_not_null(geoms) || ! ensure_not_null(count) || ngeoms == 0)
+    return NULL;
+  if (tolerance < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Tolerance must be a positive number, got %g", tolerance);
+    return NULL;
+  }
+
+  uint32_t i;
+  initGEOS(lwnotice, lwgeom_geos_error);
+  LWGEOM **lwgeoms = lwalloc(ngeoms * sizeof(LWGEOM *));
+  for (i = 0; i < ngeoms; i++)
+    lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
+
+  LWGEOM **lw_results;
+  uint32_t nclusters;
+  bool success = cluster_within_distance(lwgeoms, ngeoms, tolerance,
+    &lw_results, &nclusters);
+  /* don't need to destroy items because GeometryCollections have taken ownership */
+  pfree(lwgeoms);
+
+  if (! success)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Error during clustering");
+    return NULL;
+  }
+  if (!lw_results)
+    return NULL;
+
+  GSERIALIZED **result = palloc(nclusters * sizeof(GSERIALIZED *));
+  for (i = 0; i < nclusters; ++i)
+  {
+    result[i] = geo_serialize(lw_results[i]);
+    lwgeom_free(lw_results[i]);
+  }
+  lwfree(lw_results);
   *count = nclusters;
   return result;
 }
