@@ -307,7 +307,7 @@ Floatset_to_intset(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
-PGDLLEXPORT Datum Dateset_to_tstzsset(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum Dateset_to_tstzset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Dateset_to_tstzset);
 /**
  * @ingroup mobilitydb_setspan_conversion
