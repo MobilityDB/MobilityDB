@@ -961,6 +961,84 @@ geo_npoints(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return(npoints);
 }
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the number of composing geometries of a geometry
+ * @param[in] gs Geometry/geography
+ * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
+ */
+int
+geo_ngeos(const GSERIALIZED *geo)
+{
+  /* Ensure validity of arguments */
+  if (! ensure_not_null((void *) geo))
+    return -1;
+
+  int result = 0;
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
+  if (lwgeom_is_empty(lwgeom))
+    result = 0;
+  else if (lwgeom_is_unitary(lwgeom))
+    result = 1;
+  else
+  {
+    LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
+    result = col->ngeoms;
+  }
+  lwgeom_free(lwgeom);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return a copy of the n-th composing geometry of a geometry
+ * @param[in] gs Geometry/geography
+ * @param[in] n Number (1-based)
+ * @note PostGIS function: @p LWGEOM_geometryn_collection(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geo_geoN(const GSERIALIZED *geom, int n)
+{
+  /* Ensure validity of arguments */
+  if (!ensure_not_null((void *) geom))
+    return NULL;
+
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+
+  /* Empty returns NULL */
+  if (lwgeom_is_empty(lwgeom))
+    return NULL;
+  /* Unitary geometries just reflect back */
+  if (lwgeom_is_unitary(lwgeom))
+  {
+    if (n == 1)
+      return geo_copy(geom);
+    else
+      return NULL;
+  }
+
+  LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom);
+  if (! coll)
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unable to handle type %d in ST_GeometryN", lwgeom->type);
+
+  /* Handle out-of-range index value */
+  n -= 1;
+  if (n < 0 || n >= (int32) coll->ngeoms)
+    return NULL;
+
+  LWGEOM *subgeom = coll->geoms[n];
+  subgeom->srid = coll->srid;
+
+  /* COMPUTE_BBOX==TAINTING */
+  if (coll->bbox)
+    lwgeom_add_bbox(subgeom);
+
+  GSERIALIZED *result = geo_serialize(subgeom);
+  lwgeom_free(lwgeom);
+  return result;
+}
 #endif /* MEOS */
 
 /*****************************************************************************

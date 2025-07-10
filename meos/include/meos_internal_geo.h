@@ -178,8 +178,6 @@ extern TSequenceSet *tgeometryseqset_in(const char *str);
 
 /* Constructor functions */
 
-extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-
 /*****************************************************************************/
 
 /* Conversion functions */
