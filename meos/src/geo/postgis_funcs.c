@@ -1222,7 +1222,7 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
- * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_NumPoints(PG_FUNCTION_ARGS)
  */
 int
 geo_num_points(const GSERIALIZED *gs)
@@ -1232,6 +1232,7 @@ geo_num_points(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return(npoints);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -1315,7 +1316,6 @@ geo_geo_n(const GSERIALIZED *gs, int n)
   lwgeom_free(lwgeom);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
@@ -4201,7 +4201,7 @@ line_point_n(const GSERIALIZED *gs, int n)
  * @return On error return -1
 */
 int
-line_numpoints(const GSERIALIZED *gs)
+line_num_points(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   int count = -1;

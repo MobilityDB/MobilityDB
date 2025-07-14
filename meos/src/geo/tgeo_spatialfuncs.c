@@ -1843,6 +1843,7 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   finishGEOS();
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -1851,24 +1852,19 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   * distance of at least one other geometry in the same cluster.
  * @param[in] geoms Geometries
  * @param[in] ngeoms Number of elements in the input array
- * @param[in] tolerance Tolerance
+ * @param[in] dist Distance
   * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterWithin(PG_FUNCTION_ARGS)
  */
 GSERIALIZED **
 geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
-  double tolerance, int *count)
+  double dist, uint32_t *count)
 {
   /* Ensure validity of arguments */
-  /* Ensure validity of arguments */
-  if (! ensure_not_null(geoms) || ! ensure_not_null(count) || ngeoms == 0)
+  VALIDATE_NOT_NULL(geoms, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_positive(ngeoms) || 
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
-  if (tolerance < 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Tolerance must be a positive number, got %g", tolerance);
-    return NULL;
-  }
 
   uint32_t i;
   initGEOS(lwnotice, lwgeom_geos_error);
@@ -1877,9 +1873,9 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
 
   LWGEOM **lw_results;
-  uint32_t nclusters;
-  bool success = cluster_within_distance(lwgeoms, ngeoms, tolerance,
-    &lw_results, &nclusters);
+  uint32_t nclusters = 0;
+  bool success = cluster_within_distance(lwgeoms, ngeoms, dist, &lw_results,
+    &nclusters);
   /* don't need to destroy items because GeometryCollections have taken ownership */
   pfree(lwgeoms);
 
@@ -1902,6 +1898,5 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   *count = nclusters;
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

@@ -460,7 +460,7 @@ int main(void)
   printf("geom_perimeter(%s): %lf\n", geom1_out, float8_result);
 
   /* int line_numpoints(const GSERIALIZED *gs); */
-  int32_result = line_numpoints(line1);
+  int32_result = line_num_points(line1);
   printf("line_numpoints(%s): %d\n", line1_out, int32_result);
 
   /* GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n); */
