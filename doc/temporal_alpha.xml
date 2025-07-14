@@ -11,6 +11,19 @@
 <chapter xml:id="temporal_types_alpha">
 	<title>Temporal Alphanumeric Types</title>
 
+	<para>MobilityDB provides a set of temporal alphanumeric types, namely <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>. Conceptually, these types are organized into the hierarchy shown in <xref linkend="talpha_fig" />.</para>
+
+	<figure xml:id="talpha_fig" float="start">
+		<title>Hierarchy of temporal alphanumeric types in MobilityDB.</title>
+		<mediaobject>
+			<imageobject><imagedata format="PDF" scale='100' fileref="images/talphanum.pdf"/></imageobject>
+			<imageobject><imagedata format="SVG" scale='100' fileref="images/talphanum.svg"/></imageobject>
+			<imageobject><imagedata format="PNG" scale='100' fileref="images/talphanum.png"/></imageobject>
+		</mediaobject>
+	</figure>
+
+	<para>In the previous chapter, we covered the <varname>Temporal</varname> type, which is the supertype of all temporal types. Consequently, all the functions described so far are available for all temporal subtypes. In this chapter, we cover the temporal alphanumeric types. The hierarchy of spatiotemporal types derived from the <varname>TSpatial</varname> type will be described in the following chapters.</para>
+
 	<sect1 xml:id="talpha_notation">
 		<title>Notation</title>
 		<para>We presented in <xref linkend="ttype_notation"/> the notation used for defining the signature of the functions and operators for temporal alphanumeric types. We extend next this notations for temporal alphanumeric types.</para>

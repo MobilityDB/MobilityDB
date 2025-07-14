@@ -276,6 +276,57 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="ttype_outlier">
+		<title>Outlier detection</title>
+		<itemizedlist>
+			<listitem xml:id="geo_wlof">
+				<indexterm significance="normal"><primary><varname>localOutlierFactor</varname></primary></indexterm>
+				<para>Return the weighted local outlier factor (WLOF) of an array of geometries &SRF;</para>
+				<para><varname>localOutlierFactor(geo[],k integer, distance float=0.0) → {(geom,score)}</varname></para>
+				<para>The <ulink url="https://en.wikipedia.org/wiki/Local_outlier_factor">Local Outlier Factor</ulink> is commonly used for finding anomalous data points by measuring the local density of a given data point with respect to its neighbors, for example, in <ulink url="https://scikit-learn.org/stable/auto_examples/neighbors/plot_lof_outlier_detection.html">scikit-learn</ulink>. When there are duplicates in the data points, the Weighted Local Outlier Factor (WLOF) algorithm can be used, as implemented for example in <ulink url="https://www.mathworks.com/help/stats/lof.html">Matlab</ulink>. In these algorithms, the local density of a data point is given by its <emphasis>k</emphasis> nearest neighbors, whose distance is used to estimate the density. The PostGIS function <ulink url="https://postgis.net/docs/ST_ClusterWithin.html"><varname>ST_ClusterWithin</varname></ulink> is used with the <varname>distance</varname> parameter to group equal or close geometries into clusters. If the distance is not give it is assumed as 0. The function returns a set of records <varname>(geom,score)</varname>, where the first column is a cluster and the second one is its score.</para>
+				<programlisting language="sql" xml:space="preserve">
+WITH Points(Id, Geom) AS (
+  SELECT 'A', ST_Makepoint(7,6) UNION
+  SELECT 'B', ST_Makepoint(1,5) UNION
+  SELECT 'C', ST_Makepoint(1,4) UNION
+  SELECT 'D', ST_Makepoint(4,1) UNION
+  SELECT 'E', ST_Makepoint(3,1) UNION
+  SELECT 'F', ST_Makepoint(3,0) UNION
+  SELECT 'G', ST_Makepoint(4,0) UNION
+  -- Duplicate points so the distance to all their K nearest neighbors is 0
+  SELECT 'H', ST_Makepoint(5,5) UNION
+  SELECT 'I', ST_Makepoint(5,5) UNION
+  SELECT 'J', ST_Makepoint(5,5) UNION
+  SELECT 'K', ST_Makepoint(5,5) ),
+PointArr(GeomArr) AS (
+  SELECT array_agg(Geom) FROM Points )
+SELECT (rec).Score, ST_AsText((rec).Geom) AS Geom
+FROM ( SELECT wLocalOutlierFactor(GeomArr, 3) AS rec FROM PointArr ) T
+ORDER BY Score DESC;
+/* 1.8429962788294536 | GEOMETRYCOLLECTION(POINT(5 5),POINT(5 5),POINT(5 5),POINT(5 5))  
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(1 4))
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(3 1))
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(3 0))
+   1.5554302084968223 | GEOMETRYCOLLECTION(POINT(4 1))
+   1                  | GEOMETRYCOLLECTION(POINT(4 0))
+   1                  | GEOMETRYCOLLECTION(POINT(1 5))
+   1                  | GEOMETRYCOLLECTION(POINT(7 6)) */
+</programlisting>
+				<para>
+					<xref linkend="wlof" /> illustrates the example points to which the <varname>wlocalOutlierFactor</varname> function is applied in the preceding query. 
+				</para>
+				<figure xml:id="wlof" float="start">
+					<title>Example of points for estimating the weighted local outlier factor.</title>
+					<mediaobject>
+						<imageobject role="html"><imagedata format="SVG" fileref='images/WLOF.svg'/></imageobject>
+						<imageobject role="dblatex"><imagedata format="PDF" fileref='images/WLOF.pdf'/></imageobject>
+						<imageobject role="dbtoepub"><imagedata format="PDF" fileref='images/WLOF.pdf'/></imageobject>
+					</mediaobject>
+				</figure>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="ttype_splitting">
 		<title>Splitting Operations</title>
 

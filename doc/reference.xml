@@ -1272,6 +1272,18 @@
 
 				<listitem>
 					<para><link linkend="ttype_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance or the Dynamic Time Warp distance</para>
+<<<<<<< HEAD
+=======
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Outlier Detection</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geo_wlof"><varname>wlocalOutlierFactor</varname></link>: Return the weighted local outlier factor (WLOF) of an array of geometries</para>
+>>>>>>> 70885cdfd (Add Weighted Local Outlier Factor function)
 				</listitem>
 			</itemizedlist>
 		</sect2>
