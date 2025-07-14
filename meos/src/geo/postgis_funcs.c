@@ -946,15 +946,14 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
 }
 #endif /* CBUFFER */
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
  * @param[in] gs Geometry/geography
- * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_NumPoints(PG_FUNCTION_ARGS)
  */
 int
-geo_npoints(const GSERIALIZED *gs)
+geo_num_points(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   int npoints = lwgeom_count_vertices(lwgeom);
@@ -969,7 +968,7 @@ geo_npoints(const GSERIALIZED *gs)
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
  */
 int
-geo_ngeos(const GSERIALIZED *geo)
+geo_coll_num_geos(const GSERIALIZED *geo)
 {
   /* Ensure validity of arguments */
   if (! ensure_not_null((void *) geo))
@@ -998,7 +997,7 @@ geo_ngeos(const GSERIALIZED *geo)
  * @note PostGIS function: @p LWGEOM_geometryn_collection(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geo_geoN(const GSERIALIZED *geom, int n)
+geo_coll_geo_n(const GSERIALIZED *geom, int n)
 {
   /* Ensure validity of arguments */
   if (!ensure_not_null((void *) geom))
@@ -1039,7 +1038,6 @@ geo_geoN(const GSERIALIZED *geom, int n)
   lwgeom_free(lwgeom);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c

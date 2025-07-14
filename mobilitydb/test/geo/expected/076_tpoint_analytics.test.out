@@ -777,3 +777,32 @@ ERROR:  Mapbox Vector Tiles: Geometric bounds are too small
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX X((40,40),(60,60))', 0);
 ERROR:  Mapbox Vector Tiles: Extent must be greater than 0
+WITH Points(Geom) AS (
+  SELECT ST_Makepoint(7,6) UNION ALL
+  SELECT ST_Makepoint(1,5) UNION ALL
+  SELECT ST_Makepoint(1,4) UNION ALL
+  SELECT ST_Makepoint(4,1) UNION ALL
+  SELECT ST_Makepoint(3,1) UNION ALL
+  SELECT ST_Makepoint(3,0) UNION ALL
+  SELECT ST_Makepoint(4,0) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) ),
+PointArr(GeomArr) AS (
+  SELECT array_agg(Geom) FROM Points )
+SELECT ST_AsText((rec).Geom) AS Geom, (rec).Score
+FROM ( SELECT wLocalOutlierFactor(GeomArr, 3) AS rec FROM PointArr ) T
+ORDER BY Score DESC;
+                              geom                               |       score        
+-----------------------------------------------------------------+--------------------
+ GEOMETRYCOLLECTION(POINT(7 6))                                  | 2.0444699495695966
+ GEOMETRYCOLLECTION(POINT(5 5),POINT(5 5),POINT(5 5),POINT(5 5)) | 1.8429962788294536
+ GEOMETRYCOLLECTION(POINT(1 5))                                  | 1.6355510497418748
+ GEOMETRYCOLLECTION(POINT(1 4))                                  | 1.5554302084968223
+ GEOMETRYCOLLECTION(POINT(4 1))                                  |                  1
+ GEOMETRYCOLLECTION(POINT(3 1))                                  |                  1
+ GEOMETRYCOLLECTION(POINT(3 0))                                  |                  1
+ GEOMETRYCOLLECTION(POINT(4 0))                                  |                  1
+(8 rows)
+

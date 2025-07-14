@@ -1019,4 +1019,3 @@ SELECT trip = merge(atStbox(trip, box), minusStbox(trip,box))
 FROM temp;
 
 --------------------------------------------------------
-

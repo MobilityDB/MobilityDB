@@ -1321,7 +1321,7 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
-inline Timestamp
+Timestamp
 timestamp_in(const char *str, int32 prec)
 {
   return (Timestamp) timestamp_in_common(str, prec, false);

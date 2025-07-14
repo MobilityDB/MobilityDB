@@ -98,11 +98,13 @@ extern Pose **posearr_extract(ArrayType *array, int *count);
 extern ArrayType *posearr_to_array(const Pose **posearr, int count);
 #endif
 extern Span *spanarr_extract(ArrayType *array, int *count);
+extern GSERIALIZED **geoarr_extract(ArrayType *array, int *count);
 extern STBox *stboxarr_extract(ArrayType *array, int *count);
 extern Temporal **temparr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);
-extern ArrayType *int64arr_to_array(int64 *longints, int count);
+extern ArrayType *doublearr_to_array(double *values, int count);
+extern ArrayType *int64arr_to_array(int64 *values, int count);
 extern ArrayType *datearr_to_array(DateADT *dates, int count);
 extern ArrayType *tstzarr_to_array(TimestampTz *times, int count);
 extern ArrayType *spanarr_to_array(const Span *spans, int count);

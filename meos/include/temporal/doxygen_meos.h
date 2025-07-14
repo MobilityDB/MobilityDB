@@ -269,17 +269,17 @@
  * @ingroup meos_temporal
  * @brief Comparison functions for temporal types
  *
- * @defgroup meos_temporal_comp_trad Traditional comparison functions
- * @ingroup meos_temporal_comp
- * @brief Traditional comparison functions for temporal types
+ *   @defgroup meos_temporal_comp_trad Traditional comparison functions
+ *   @ingroup meos_temporal_comp
+ *   @brief Traditional comparison functions for temporal types
  *
- * @defgroup meos_temporal_comp_ever Ever and always comparison functions
- * @ingroup meos_temporal_comp
- * @brief Ever and always comparison functions for temporal types
+ *   @defgroup meos_temporal_comp_ever Ever and always comparison functions
+ *   @ingroup meos_temporal_comp
+ *   @brief Ever and always comparison functions for temporal types
  *
- * @defgroup meos_temporal_comp_temp Temporal comparison functions
- * @ingroup meos_temporal_comp
- * @brief Temporal comparison functions for temporal types
+ *   @defgroup meos_temporal_comp_temp Temporal comparison functions
+ *   @ingroup meos_temporal_comp
+ *   @brief Temporal comparison functions for temporal types
  *
  * @defgroup meos_temporal_bbox Bounding box functions
  * @ingroup meos_temporal
@@ -321,21 +321,25 @@
  * @ingroup meos_temporal
  * @brief Analytics functions for temporal types
  *
- * @defgroup meos_temporal_analytics_simplify Simplification functions
- * @ingroup meos_temporal_analytics
- * @brief Simplification functions for temporal types
+ *   @defgroup meos_temporal_analytics_simplify Simplification functions
+ *   @ingroup meos_temporal_analytics
+ *   @brief Simplification functions for temporal types
  *
- * @defgroup meos_temporal_analytics_reduction Reduction functions
- * @ingroup meos_temporal_analytics
- * @brief Reduction functions for temporal types
+ *   @defgroup meos_temporal_analytics_reduction Reduction functions
+ *   @ingroup meos_temporal_analytics
+ *   @brief Reduction functions for temporal types
  *
- * @defgroup meos_temporal_analytics_similarity Similarity functions
- * @ingroup meos_temporal_analytics
- * @brief Similarity functions for temporal types
+ *   @defgroup meos_temporal_analytics_outlier Outlier detection functions
+ *   @ingroup meos_temporal_analytics
+ *   @brief Outlier detection functions for temporal types
  *
- * @defgroup meos_temporal_analytics_tile Tile functions
- * @ingroup meos_temporal_analytics
- * @brief Tile functions for temporal types
+ *   @defgroup meos_temporal_analytics_similarity Similarity functions
+ *   @ingroup meos_temporal_analytics
+ *   @brief Similarity functions for temporal types
+ *
+ *   @defgroup meos_temporal_analytics_tile Tile functions
+ *   @ingroup meos_temporal_analytics
+ *   @brief Tile functions for temporal types
  */
 
 /*****************************************************************************/

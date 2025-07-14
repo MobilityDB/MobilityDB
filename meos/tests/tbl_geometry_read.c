@@ -98,7 +98,7 @@ int main(void)
     GSERIALIZED *gs = geom_in(geo_buffer, -1);
 
     /* Add the number of points of the geometry to the total number */
-    int npoints = geo_npoints(gs);
+    int npoints = geo_num_points(gs);
     total_points += npoints;
     free(gs);
 

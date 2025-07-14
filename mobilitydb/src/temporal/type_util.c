@@ -270,6 +270,18 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
+ * @brief Extract a C array from a PostgreSQL array containing geometries
+ */
+GSERIALIZED **
+geoarr_extract(ArrayType *array, int *count)
+{
+  GSERIALIZED **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+
+/**
  * @brief Extract a C array from a PostgreSQL array containing spatiotemporal
  * boxes
  */
@@ -312,6 +324,21 @@ datumarr_to_array(Datum *values, int count, meosType type)
   Oid typid = type_oid(type);
   get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
   return construct_array(values, count, typid, elmlen, elmbyval, elmalign);
+}
+
+/**
+ * @brief Return a C array of doubles converted into a PostgreSQL array
+ */
+ArrayType *
+doublearr_to_array(double *values, int count)
+{
+  assert(count > 0);
+  Datum *dvalues = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    dvalues[i] = Float8GetDatum(values[i]);
+  ArrayType *result = construct_array(dvalues, count, FLOAT8OID, 8, true, 'd');
+  pfree(dvalues); pfree(values);
+  return result;
 }
 
 /**

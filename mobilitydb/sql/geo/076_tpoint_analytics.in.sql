@@ -193,6 +193,8 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************/
+
 CREATE TYPE geom_times AS (
   geom geometry,
   times bigint[]
@@ -204,5 +206,19 @@ CREATE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
 RETURNS geom_times
 AS 'MODULE_PATHNAME','Tpoint_AsMVTGeom'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE TYPE geom_wlof AS (
+  geom geometry,
+  score float 
+);
+
+CREATE FUNCTION wlocalOutlierFactor(geometry[], k integer, 
+    distance float DEFAULT 0.0)
+  RETURNS SETOF geom_wlof
+  AS 'MODULE_PATHNAME', 'Geo_wlof'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
 
 /*****************************************************************************/
