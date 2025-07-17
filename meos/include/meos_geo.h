@@ -385,6 +385,8 @@ extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline
 extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
 extern int geo_npoints(const GSERIALIZED *gs);
+extern int geo_ngeos(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
@@ -882,7 +884,10 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 
 /* Clustering functions */
 
-extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k);
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
+extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints);
+extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
+extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);
 
 /*****************************************************************************/
 
