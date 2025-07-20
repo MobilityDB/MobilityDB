@@ -49,7 +49,7 @@
 /* MobilityDB */
 #include "pg_temporal/skiplist.h"  /* For store_fcinfo */
 #include "pg_temporal/temporal.h"  /* For input_interp_string */
-#include "pg_temporal/type_util.h" /* For doublearr_to_array */
+#include "pg_temporal/type_util.h" /* For geoarr_extract */
 
 /*****************************************************************************
  * Time precision functions for time types

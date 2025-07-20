@@ -327,21 +327,6 @@ datumarr_to_array(Datum *values, int count, meosType type)
 }
 
 /**
- * @brief Return a C array of doubles converted into a PostgreSQL array
- */
-ArrayType *
-doublearr_to_array(double *values, int count)
-{
-  assert(count > 0);
-  Datum *dvalues = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
-    dvalues[i] = Float8GetDatum(values[i]);
-  ArrayType *result = construct_array(dvalues, count, FLOAT8OID, 8, true, 'd');
-  pfree(dvalues); pfree(values);
-  return result;
-}
-
-/**
  * @brief Return a C array of timestamps converted into a PostgreSQL array
  */
 ArrayType *
