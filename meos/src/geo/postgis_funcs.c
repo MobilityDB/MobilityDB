@@ -946,6 +946,7 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
 }
 #endif /* CBUFFER */
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
@@ -960,6 +961,7 @@ geo_num_points(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return(npoints);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_spatial
