@@ -54,10 +54,21 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
+/* Specific skiplist functions for temporal aggregations */
+
+extern int temporal_skiplist_common(SkipList *list, void **values, int count,
+  int *lower, int *upper, int update[SKIPLIST_MAXLEVEL]);
+extern void **temporal_skiplist_merge(void **spliced, int spliced_count,
+  void **values, int count, datum_func2 func, bool crossings, int *newcount,
+  void ***tofree, int *nfree);
+extern void temporal_skiplist_splice(SkipList *list, void **values, int count,
+  datum_func2 func, bool crossings);
+
 /* Generic aggregation functions */
 
 extern TInstant **tinstant_tagg(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, datum_func2 func, int *newcount);
+  const TInstant **instants2, int count2, datum_func2 func, int *newcount,
+  void ***tofree, int *nfree);
 extern TSequence **tsequence_tagg(const TSequence **sequences1, int count1,
   const TSequence **sequences2, int count2, datum_func2 func,
   bool crossings, int *newcount);

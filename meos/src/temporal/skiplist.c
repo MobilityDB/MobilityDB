@@ -72,34 +72,6 @@
 #define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
 #define SKIPLIST_INITIAL_FREELIST 32
 
-/**
- * @brief Enumeration for the relative position of a given element into a
- * skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativeTimePos;
-
-/*****************************************************************************
- * Parameter tests
- *****************************************************************************/
-
-bool
-ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
-{
-  Temporal *head = (Temporal *) skiplist_headval(state);
-  if (head->subtype != subtype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot aggregate temporal values of different subtype");
-    return false;
-  }
-  return true;
-}
-
 /*****************************************************************************
  * Functions manipulating skip lists
  *****************************************************************************/
@@ -133,6 +105,139 @@ random_level()
 {
   return ffsl(~(gsl_random48() & ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1)));
 }
+
+/**
+ * @brief Constructs an empty skiplist
+ */
+SkipList *
+skiplist_make(size_t key_size, size_t value_size,
+  int (*comp_fn)(void *, void *), void *(*merge_fn)(void *, void *))
+{
+#if ! MEOS
+  MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+  SkipList *result = palloc0(sizeof(SkipList));
+  result->key_size = key_size;
+  result->value_size = value_size;
+  int capacity = SKIPLIST_INITIAL_CAPACITY;
+  result->capacity = capacity;
+  result->next = 2;
+  result->tail = 1;
+  result->comp_fn = comp_fn;
+  result->merge_fn = merge_fn;
+  result->elems = palloc0(sizeof(SkipListElem) * capacity);
+  /* Set head and tail elements */
+  SkipListElem *head = &result->elems[0];
+  SkipListElem *tail = &result->elems[1];
+  head->height = 0;
+  head->next[0] = 1;
+  tail->height = 0;
+  tail->next[0] = -1;
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
+  return result;
+}
+
+/**
+ * @brief Constructs an empty skiplist
+ */
+SkipList *
+temporal_skiplist_make()
+{
+  return skiplist_make(0, 0, NULL, NULL);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Reads the state value from the buffer
+ * @param[in] list Skiplist
+ * @param[in] data Structure containing the data
+ * @param[in] size Size of the structure
+ */
+void
+skiplist_set_extra(SkipList *list, void *data, size_t size)
+{
+#if ! MEOS
+  MemoryContext ctx;
+  if(! AggCheckCallContext(fetch_fcinfo(), &ctx))
+    elog(ERROR, "Transition function called in non-aggregate context");
+  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+#endif /* ! MEOS */
+  list->extra = palloc(size);
+  list->extrasize = size;
+  memcpy(list->extra, data, size);
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
+  return;
+}
+
+/**
+ * @brief Return the value at the head of the skiplist
+ */
+void *
+skiplist_headval(SkipList *list)
+{
+  return list->elems[list->elems[0].next[0]].value;
+}
+
+#if MEOS
+/**
+ * @brief Comparison function used for skiplist elements
+ * @param[in,out] list Skiplist
+ * @param[in] key Key
+ * @param[in] value Value
+ * @param[in] cur Array index of the element to compare
+ */
+static int
+skiplist_elempos(const SkipList *list, void *key, void *value, int cur)
+{
+  assert(list); assert(value); assert(cur > 0);
+  if (cur == 0)
+    return 1; /* Head is -inf */
+  if (cur == -1 || cur == list->tail)
+    return -1; /* Tail is +inf */
+
+  void *key_cur = list->elems[cur].key;
+  void *value_cur = list->elems[cur].value;
+  /* Apply the comparison function to either the key (if given) or the value */
+  return key ? list->comp_fn(key, key_cur) : list->comp_fn(value, value_cur);
+}
+
+/**
+ * @brief Search an element in the skiplist
+ * @param[in] list Skiplist
+ * @param[in] key Key
+ * @param[in] value Value
+ * @return If the element is not found 
+ */
+int
+skiplist_search(SkipList *list, void *key, void *value)
+{
+  /* Find the list values that are strictly before the element */
+  int height = list->elems[0].height;
+  SkipListElem *elem = &list->elems[0];
+  int cur = 0;
+  for (int level = height - 1; level >= 0; level--)
+  {
+    while (elem->next[level] != -1 &&
+      skiplist_elempos(list, key, value, elem->next[level]) == 1)
+    {
+      cur = elem->next[level];
+      elem = &list->elems[cur];
+    }
+  }
+  cur = elem->next[0];
+  elem = &list->elems[cur];
+
+  /* If the element is found */
+  if (skiplist_elempos(list, key, value, cur) == 0)
+    return cur;
+  return -1;
+}
+#endif /* MEOS */
 
 /**
  * @brief Return the position to store an additional element in the skiplist
@@ -226,14 +331,16 @@ skiplist_free(SkipList *list)
     pfree(list->freed);
   if (list->elems)
   {
-    /* Free the element values of the skiplist if they are not NULL */
+    /* Free the keys and values of the elements if they are not NULL */
     int cur = 0;
     while (cur != -1)
     {
-      SkipListElem *e = &list->elems[cur];
-      if (e->value)
-        pfree(e->value);
-      cur = e->next[0];
+      SkipListElem *elem = &list->elems[cur];
+      if (elem->key)
+        pfree(elem->key);
+      if (elem->value)
+        pfree(elem->value);
+      cur = elem->next[0];
     }
     /* Free the element list */
     pfree(list->elems);
@@ -263,28 +370,28 @@ skiplist_print(const SkipList *list)
   int cur = 0;
   while (cur != -1)
   {
-    SkipListElem *e = &list->elems[cur];
+    SkipListElem *elem = &list->elems[cur];
     len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
       "\telm%d [label=\"", cur);
-    for (int l = e->height - 1; l > 0; l--)
+    for (int l = elem->height - 1; l > 0; l--)
       len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p%d>|", l);
-    if (! e->value)
+    if (! elem->value)
       len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>\"];\n");
     else
     {
       Span s;
-      temporal_set_tstzspan(e->value, &s);
+      temporal_set_tstzspan(elem->value, &s);
       /* The second argument of span_out is not used for spans */
       char *val = span_out(&s, Int32GetDatum(0));
       len +=  snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>%s\"];\n",
         val);
       pfree(val);
     }
-    if (e->next[0] != -1)
+    if (elem->next[0] != -1)
     {
-      for (int l = 0; l < e->height; l++)
+      for (int l = 0; l < elem->height; l++)
       {
-        int next = e->next[l];
+        int next = elem->next[l];
         len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
           "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
         if (l == 0)
@@ -294,7 +401,7 @@ skiplist_print(const SkipList *list)
           len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, ";\n");
       }
     }
-    cur = e->next[0];
+    cur = elem->next[0];
   }
   snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "}\n");
   meos_error(WARNING, 0, "SKIPLIST: %s", buf);
@@ -302,114 +409,147 @@ skiplist_print(const SkipList *list)
 }
 #endif
 
-/*****************************************************************************/
+/****************************************************************************/
 
+#if MEOS
 /**
- * @brief Reads the state value from the buffer
- * @param[in] state State
- * @param[in] data Structure containing the data
- * @param[in] size Size of the structure
- */
-void
-aggstate_set_extra(SkipList *state, void *data, size_t size)
-{
-#if ! MEOS
-  MemoryContext ctx;
-  if(! AggCheckCallContext(fetch_fcinfo(), &ctx))
-    elog(ERROR, "Transition function called in non-aggregate context");
-  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-#endif /* ! MEOS */
-  state->extra = palloc(size);
-  state->extrasize = size;
-  memcpy(state->extra, data, size);
-#if ! MEOS
-  MemoryContextSwitchTo(oldctx);
-#endif /* ! MEOS */
-  return;
-}
-
-/**
- * @brief Return the value at the head of the skiplist
- */
-void *
-skiplist_headval(SkipList *list)
-{
-  return list->elems[list->elems[0].next[0]].value;
-}
-
-/**
- * @brief Constructs a skiplist from the array of values values
+ * @brief Determine the segment of the list that overlaps with the new set of
+ * key-value pairs
+ * @param[in] list Skiplist
+ * @param[in] keys Array of keys, may be `NULL` when the comparison is done
+ * with the values
  * @param[in] values Array of values
- * @param[in] count Number of elements in the array
+ * @param[in] count Number of elements in the arrays
+ * @param[out] lower Array index of the start of the segment 
+ * @param[out] upper Array index of the end of the segment 
+ * @result Number of elements in the list that will be merged with the new
+ * values, on error return -1
  */
-SkipList *
-skiplist_make()
+int
+keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
+  int *lower, int *upper, int update[SKIPLIST_MAXLEVEL])
 {
-#if ! MEOS
-  MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
-  SkipList *result = palloc0(sizeof(SkipList));
-  int capacity = SKIPLIST_INITIAL_CAPACITY;
-  result->capacity = capacity;
-  result->next = 2;
-  result->tail = 1;
-  result->elems = palloc0(sizeof(SkipListElem) * capacity);
-  /* Set head and tail elements */
-  SkipListElem *head = &result->elems[0];
-  SkipListElem *tail = &result->elems[1];
-  head->height = 0;
-  head->next[0] = 1;
-  tail->height = 0;
-  tail->next[0] = -1;
-#if ! MEOS
-  MemoryContextSwitchTo(oldctx);
-#endif /* ! MEOS */
+  /* Compute the min and max of the new values */
+  void *min_key = NULL, *max_key = NULL;
+  if (keys)
+  {
+    min_key = keys[0];
+    max_key = keys[count - 1];
+  }
+  void *min_value = values[0];
+  void *max_value = values[count - 1];
+
+  /* Find the list values that are strictly before the span of new values */
+  memset(update, 0, sizeof(&update));
+  int height = list->elems[0].height;
+  SkipListElem *elem = &list->elems[0];
+  int cur = 0;
+  for (int level = height - 1; level >= 0; level--)
+  {
+    while (elem->next[level] != -1 &&
+      skiplist_elempos(list, min_key, min_value, elem->next[level]) == 1)
+    {
+      cur = elem->next[level];
+      elem = &list->elems[cur];
+    }
+    update[level] = cur;
+  }
+  int lower1, upper1;
+  cur = lower1 = elem->next[0];
+  elem = &list->elems[cur];
+
+  int result = 0;
+  /* Count the number of elements that will be merged with the new values */
+  while (skiplist_elempos(list, max_key, max_value, cur) == 0)
+  {
+    cur = elem->next[0];
+    elem = &list->elems[cur];
+    result++;
+  }
+  upper1 = cur;
+  /* Write output parameters and return */
+  *lower = lower1;
+  *upper = upper1;
   return result;
 }
 
 /**
- * @brief Determine the relative position of a span and a timestamptz
+ * @brief Generic aggregate function for temporal values
+ * @param[in] values1 Accumulated state
+ * @param[in] values2 New values
+ * @note Return new values that must be freed by the calling function.
+ * @param[in] values1,values2 Arrays of values
+ * @param[in] count1,count2 Number of values in the input arrays
+ * @param[in] func Function, may be NULL for the merge aggregate function
+ * @param[out] newcount Number of values in the output array
  */
-static RelativeTimePos
-pos_span_timestamptz(const Span *s, TimestampTz t)
+void **
+keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
+  int count1, void **keys2, void **values2, int count2, int *newcount,
+  void ***newkeys, void ***tofree, int *nfree)
 {
-  if (left_span_value(s, TimestampTzGetDatum(t)))
-    return BEFORE;
-  if (right_span_value(s, TimestampTzGetDatum(t)))
-    return AFTER;
-  return DURING;
+  void **result = palloc(sizeof(void *) * (count1 + count2));
+  void **newkeys1 = palloc(sizeof(void *) * (count1 + count2));
+  void **tofree1 = palloc(sizeof(void *) * Max(count1, count2));
+  int i = 0, j = 0, count = 0, nfree1 = 0;
+  while (i < count1 && j < count2)
+  {
+    void *key1, *key2, *val1, *val2;
+    if (keys1)
+    {
+      key1 = keys1[i];
+      key2 = keys2[j];
+      val1 = values1[i];
+      val2 = values2[j];
+    }
+    else
+    {
+      key1 = val1 = values1[i];
+      key2 = val2 = values2[j];
+    }
+    int cmp = list->comp_fn(key1, key1);
+    if (cmp == 0)
+    {
+      newkeys1[count] = key1;
+      result[count++] = list->merge_fn(val1, val2);
+      if (tofree)
+        tofree1[nfree1++] = result[count - 1];
+      i++; j++;
+    }
+    else if (cmp < 0)
+    {
+      newkeys1[count] = key1;
+      result[count++] = val1;
+      i++;
+    }
+    else
+    {
+      newkeys1[count] = key2;
+      result[count++] = val2;
+      j++;
+    }
+  }
+  /* We finished to aggregate state1 */
+  assert (i == count1);
+  /* Copy the values from state2 that are after the end of state1 */
+  while (j < count2)
+  {
+    result[count] = keys2[j];
+    result[count++] = values2[j++];
+  }
+  /* Set output parameters and return */
+  *newcount = count;
+  *newkeys = newkeys1;
+  if (tofree)
+  {
+    *tofree = tofree1;
+    *nfree = nfree1;
+  }
+  return result;
 }
+#endif /* MEOS */
 
-/**
- * @brief Determine the relative position of two periods
- */
-static RelativeTimePos
-pos_span_span(const Span *s1, const Span *s2)
-{
-  if (left_span_span(s1, s2))
-    return BEFORE;
-  if (left_span_span(s2, s1))
-    return AFTER;
-  return DURING;
-}
-
-/**
- * @brief Comparison function used for skiplists
- */
-static RelativeTimePos
-skiplist_elempos(const SkipList *list, Span *s, int cur)
-{
-  if (cur == 0)
-    return AFTER; /* Head is -inf */
-  if (cur == -1 || cur == list->tail)
-    return BEFORE; /* Tail is +inf */
-
-  Temporal *temp = (Temporal *) list->elems[cur].value;
-  if (temp->subtype == TINSTANT)
-    return pos_span_timestamptz(s, ((TInstant *) temp)->t);
-  else /* temp->subtype == TSEQUENCE */
-    return pos_span_span(s, &((TSequence *) temp)->period);
-}
+/****************************************************************************/
 
 /**
  * @brief Insert a new set of values to the skiplist while performing the 
@@ -427,94 +567,47 @@ skiplist_elempos(const SkipList *list, Span *s, int cur)
  * aggregating temporal value
  */
 void
-skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
-  bool crossings)
-{
-#if ! MEOS
-  MemoryContext oldctx;
+skiplist_splice(SkipList *list, void **keys, void **values, int count,
+#if MEOS
+  datum_func2 func, bool crossings, SkipListType sktype)
+#else
+  datum_func2 func, bool crossings, SkipListType sktype UNUSED)
 #endif /* ! MEOS */
-
-  /* Count the number of elements that will be merged with the new values */
+{
+  /* Number of elements that will be merged with the new values */
   int spliced_count = 0;
   /* Height of the element at which the new values will be merged, initialized
    * to the root for an empty list */
   int height = list->elems[0].height;
+  /* Array indices for keeping the levels of the element to insert */
   int update[SKIPLIST_MAXLEVEL];
   SkipListElem *head, *tail;
+  /* Array keeping the new aggregated values that must be freed */
+  void **tofree = NULL;
+  int nfree = 0;
 
-  /* Remove from the list the values that overlap with the new values (if any)
-   * and compute their aggregation */
+  /* Remove from the list the elements that overlap with the new elements
+   * (if any) and compute their aggregation */
   if (list->length > 0)
   {
-    /* Temporal aggregation cannot mix instants and sequences */
-    Temporal *temp1 = (Temporal *) skiplist_headval(list);
-    Temporal *temp2 = (Temporal *) values[0];
-    if (temp1->subtype != temp2->subtype)
-    {
-      meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
-        "Cannot aggregate temporal values of different subtype");
-      return;
-    }
-    if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) !=
-        MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
-    {
-      meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
-        "Cannot aggregate temporal values of different interpolation");
-      return;
-    }
-
-    /* Compute the span of the new values */
-    Span s;
-    uint8 subtype = ((Temporal *) values[0])->subtype;
-    if (subtype == TINSTANT)
-    {
-      TInstant *first = (TInstant *) values[0];
-      TInstant *last = (TInstant *) values[count - 1];
-      span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
-        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-    }
-    else /* subtype == TSEQUENCE */
-    {
-      TSequence *first = (TSequence *) values[0];
-      TSequence *last = (TSequence *) values[count - 1];
-      span_set(first->period.lower, last->period.upper, first->period.lower_inc,
-        last->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
-    }
-
-    /* Find the list values that are strictly before the span of new values */
-    memset(update, 0, sizeof(update));
-    height = list->elems[0].height;
-    SkipListElem *e = &list->elems[0];
-    int cur = 0;
-    for (int level = height - 1; level >= 0; level--)
-    {
-      while (e->next[level] != -1 &&
-        skiplist_elempos(list, &s, e->next[level]) == AFTER)
-      {
-        cur = e->next[level];
-        e = &list->elems[cur];
-      }
-      update[level] = cur;
-    }
+    /* Determine the elements that will be spliced-out (if any) */
     int lower, upper;
-    cur = lower = e->next[0];
-    e = &list->elems[cur];
-
-    /* Count the number of elements that will be merged with the new values */
-    while (skiplist_elempos(list, &s, cur) == DURING)
-    {
-      cur = e->next[0];
-      e = &list->elems[cur];
-      spliced_count++;
-    }
-    upper = cur;
-
-    /* Delete spliced-out elements (if any) but remember their values for later */
-    void **spliced = NULL;
+#if MEOS
+    spliced_count = (sktype == TEMPORAL) ?
+      temporal_skiplist_common(list, values, count, &lower, &upper, update) :
+      keyval_skiplist_common(list, keys, values, count, &lower, &upper, update);
+#else
+    spliced_count = temporal_skiplist_common(list, values, count, &lower,
+      &upper, update);
+#endif /* MEOS */
+    /* Delete spliced-out elements (if any) but save their keys and values for later */
+    void **spliced_keys = NULL;
+    void **spliced_vals = NULL;
     if (spliced_count != 0)
     {
-      cur = lower;
-      spliced = palloc(sizeof(void *) * spliced_count);
+      int cur = lower;
+      spliced_keys = palloc(sizeof(void *) * spliced_count);
+      spliced_vals = palloc(sizeof(void *) * spliced_count);
       spliced_count = 0;
       while (cur != upper && cur != -1)
       {
@@ -525,7 +618,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
             break;
           prev->next[level] = list->elems[cur].next[level];
         }
-        spliced[spliced_count++] = list->elems[cur].value;
+        spliced_keys[spliced_count  ] = list->elems[cur].key;
+        spliced_vals[spliced_count++] = list->elems[cur].value;
         skiplist_delete(list, cur);
         cur = list->elems[cur].next[0];
       }
@@ -541,24 +635,36 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       height--;
     }
 
-    /* If we are not in a gap, compute the aggregation */
+    /* If we are not in a gap, merge the spliced values with the new values */
     if (spliced_count != 0)
     {
       int newcount = 0;
-      void **newvalues;
-      if (subtype == TINSTANT)
-        newvalues = (void **) tinstant_tagg((const TInstant **) spliced,
-          spliced_count, (const TInstant **) values, count, func, &newcount);
-      else /* subtype == TSEQUENCE */
-        newvalues = (void **) tsequence_tagg((const TSequence **) spliced,
-          spliced_count, (const TSequence **) values, count, func, crossings,
-          &newcount);
+      void **newkeys = NULL;
+#if MEOS
+      void **newvalues = (sktype == TEMPORAL) ?
+        temporal_skiplist_merge(spliced_vals, spliced_count, values, count,
+          func, crossings, &newcount, &tofree, &nfree) :
+        keyval_skiplist_merge(list, spliced_keys, spliced_vals, spliced_count,
+          keys, values, count, &newcount, &newkeys, &tofree, &nfree);
+#else
+      void **newvalues = temporal_skiplist_merge(spliced_vals, spliced_count,
+        values, count, func, crossings, &newcount, &tofree, &nfree);
+#endif /* MEOS */
 
       /* Delete the spliced-out values */
       for (int i = 0; i < spliced_count; i++)
-        pfree(spliced[i]);
-      pfree(spliced);
+      {
+#if MEOS
+        if (spliced_keys[i])
+          pfree(spliced_keys[i]);
+#endif /* MEOS */
+        pfree(spliced_vals[i]);
+      }
+      if (spliced_keys)
+        pfree(spliced_keys);
+      pfree(spliced_vals);
 
+      keys = newkeys;
       values = newvalues;
       count = newcount;
     }
@@ -582,22 +688,38 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     }
     /* Get the location for the new element and store it */
     int new = skiplist_alloc(list);
-    SkipListElem *newelm = &list->elems[new];
+    SkipListElem *newelem = &list->elems[new];
 #if ! MEOS
-    oldctx = set_aggregation_context(fetch_fcinfo());
+    MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    newelm->value = temporal_copy(values[i]);
+    if (sktype == TEMPORAL)
+    {
+      newelem->value = temporal_copy(values[i]);
+    }
+    else
+    {
+      if (keys)
+      {
+        void *newkey = palloc(list->key_size);
+        memcpy(newkey, keys[i], list->key_size);
+      }
+      else
+        newelem->key = NULL;
+      void *newvalue = palloc(list->value_size);
+      memcpy(newvalue, values[i], list->value_size);
+      newelem->value = newvalue;
+    }
 #if ! MEOS
     unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
-    newelm->height = rheight;
+    newelem->height = rheight;
 
     for (int level = 0; level < rheight; level++)
     {
-      newelm->next[level] = list->elems[update[level]].next[level];
+      newelem->next[level] = list->elems[update[level]].next[level];
       list->elems[update[level]].next[level] = new;
       if (level >= height && update[0] != list->tail)
-        newelm->next[level] = list->tail;
+        newelem->next[level] = list->tail;
     }
     if (rheight > height)
       height = rheight;
@@ -605,13 +727,13 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Free memory */
   if (spliced_count != 0)
-    pfree_array((void **) values, count);
+    pfree_array((void **) tofree, nfree);
   return;
 }
 
 /**
  * @brief Return the values contained in the skiplist
- * @note The values are not freed from the skiplist
+ * @note The elements are not freed from the skiplist
  */
 void **
 skiplist_values(SkipList *list)
@@ -621,10 +743,10 @@ skiplist_values(SkipList *list)
 #endif /* ! MEOS */
   void **result = palloc(sizeof(void *) * list->length);
   int cur = list->elems[0].next[0];
-  int count = 0;
+  int count1 = 0;
   while (cur != list->tail)
   {
-    result[count++] = list->elems[cur].value;
+    result[count1++] = list->elems[cur].value;
     cur = list->elems[cur].next[0];
   }
 #if ! MEOS
@@ -633,21 +755,25 @@ skiplist_values(SkipList *list)
   return result;
 }
 
+#if MEOS
 /**
- * @brief Return a copy of the temporal values contained in the skiplist
+ * @brief Return the keys and the values contained in the skiplist
+ * @note The elements are not freed from the skiplist
  */
-Temporal **
-skiplist_temporal_values(SkipList *list)
+void **
+skiplist_keys_values(SkipList *list, void **values)
 {
-  Temporal **result = palloc(sizeof(Temporal *) * list->length);
+  void **result = palloc(sizeof(void *) * list->length);
   int cur = list->elems[0].next[0];
-  int count = 0;
+  int count1 = 0;
   while (cur != list->tail)
   {
-    result[count++] = temporal_copy(list->elems[cur].value);
+    result[count1] = list->elems[cur].key;
+    values[count1++] = list->elems[cur].value;
     cur = list->elems[cur].next[0];
   }
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

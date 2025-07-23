@@ -260,6 +260,7 @@ typedef struct
 
 typedef struct
 {
+  void *key;
   void *value;
   int height;
   int next[SKIPLIST_MAXLEVEL];
@@ -270,17 +271,31 @@ typedef struct
  */
 typedef struct
 {
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  SkipListElem *elems;
+  size_t key_size;     /**< Size in bytes of the keys */
+  size_t value_size;   /**< Size in bytes of the values */
+  int capacity;        /**< Maximum number of elements */
+  int length;          /**< Number of elements */
+  int next;            /**< Index of the next free element */
+  int tail;            /**< Index of the tail element  */
+  int *freed;          /**< Array of index values of deleted elements */
+  int freecount;       /**< Number of deleted elements */
+  int freecap;         /**< Maximum number of deleted elements */
+  void *extra;         /**< Pointer to additional data needed for processing */
+  size_t extrasize;    /**< Size of additional data needed for processing */
+  int (*comp_fn)(void *, void *); /**< Comparison function for the elements */
+  void *(*merge_fn)(void *, void *); /**< Merge function for the elements */
+  SkipListElem *elems; /**< Array of elements */
 } SkipList;
+
+/**
+ * @brief Enumeration for the relative position of a given element into a
+ * skiplist
+ */
+typedef enum
+{
+  TEMPORAL,
+  KEYVALUE
+} SkipListType;
 
 /*****************************************************************************/
 
@@ -371,6 +386,8 @@ extern double float_exp(double d);
 extern double float_ln(double d);
 extern double float_log10(double d);
 extern double float_round(double d, int maxdd);
+extern int int32_cmp(int32 l, int32 r);
+extern int int64_cmp(int64 l, int64 r);
 extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, double secs);
 extern Interval *minus_date_date(DateADT d1, DateADT d2);
 extern DateADT minus_date_int(DateADT d, int32 days);

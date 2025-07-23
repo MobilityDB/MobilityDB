@@ -73,15 +73,15 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (! state)
   {
-    state = skiplist_make();
+    state = temporal_skiplist_make();
     struct GeoAggregateState extra =
     {
       .srid = tspatial_srid(temp1),
       .hasz = MEOS_FLAGS_GET_Z(temp1->flags) != 0
     };
-    aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
+    skiplist_set_extra(state, &extra, sizeof(struct GeoAggregateState));
   }
-  skiplist_splice(state, (void **) temparr, count, func, false);
+  temporal_skiplist_splice(state, (void **) temparr, count, func, false);
 
   pfree_array((void **) temparr, count);
   pfree(temp1);
