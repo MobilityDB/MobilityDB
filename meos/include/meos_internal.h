@@ -674,6 +674,15 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************
+ * Definition of a function with one to three Datum arguments and returning 
+ * a Datum
+ *****************************************************************************/
+
+typedef Datum (*datum_func1) (Datum);
+typedef Datum (*datum_func2) (Datum, Datum);
+typedef Datum (*datum_func3) (Datum, Datum, Datum);
+
+/*****************************************************************************
  * Internal function accessing the Gnu Scientic Library (GSL)
  *****************************************************************************/
 
@@ -1248,7 +1257,16 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 
 /* Aggregate functions for temporal types */
 
+extern SkipList *temporal_skiplist_make();
+extern SkipList *skiplist_make(size_t key_size, size_t value_size,
+  int (*comp_fn)(void *, void *), void *(*merge_fn)(void *, void *));
+extern int skiplist_search(SkipList *list, void *key, void *value);
 extern void skiplist_free(SkipList *list);
+extern void skiplist_splice(SkipList *list, void **keys, void **values, int count, datum_func2 func, bool crossings, SkipListType sktype);
+extern void temporal_skiplist_splice(SkipList *list, void **values, int count, datum_func2 func, bool crossings);
+extern void **skiplist_values(SkipList *list);
+extern void **skiplist_keys_values(SkipList *list, void **values);
+
 extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 
