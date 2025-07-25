@@ -40,7 +40,7 @@
 
 #include <stdio.h>    /* for printf */
 #include <stdlib.h>   /* for free */
-/* Include the MEOS API header */
+/* Include the MEOS API header files */
 #include <meos.h>
 #include <meos_geo.h>
 
@@ -136,5 +136,5 @@ int main()
   meos_finalize();
 
   /* Return */
-  return 0;
+  return EXIT_SUCCESS;
 }

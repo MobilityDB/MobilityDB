@@ -61,7 +61,7 @@
 #include <meos_geo.h>
 
 /* Maximum number of instants in an input trip */
-#define MAX_INSTANTS 50000
+#define MAX_INSTANTS 64000
 /* Number of instants in a batch for printing a marker */
 #define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
@@ -113,17 +113,15 @@ int main(void)
   int no_trips = 0;
   /* Iterator variables */
   int i, j;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value initialized to failure to quickly exit upon error */
+  int exit_value = EXIT_FAILURE;
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_instants.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    meos_finalize();
-    return 1;
+    goto cleanup;
   }
 
   trip_input_record rec;
@@ -146,6 +144,25 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%99[^,],%31[^\n]\n",
       &rec.tripid, &rec.vehid, date_buffer, &rec.seq, point_buffer,
       timestamp_buffer);
+    if (ferror(file))
+    {
+      printf("Error reading input file");
+      goto cleanup;
+    }
+    if (read != 6)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+    if (no_records % NO_INSTANTS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
+
     /* Transform the string representing the date into a date value */
     rec.day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
@@ -156,29 +173,6 @@ int main(void)
     TInstant *inst = tpointinst_make(rec.point, rec.t);
     /* Free the point as it is not needed anymore */
     free(rec.point);
-
-    if (read == 6)
-    {
-      no_records++;
-      if (no_records % NO_INSTANTS_BATCH == 0)
-      {
-        printf("*");
-        fflush(stdout);
-      }
-    }
-
-    if (read != 6 && ! feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
-    if (ferror(file))
-    {
-      printf("Error reading input file");
-      return_value = 1;
-      goto cleanup;
-    }
 
     /* Find the place to store the new instant */
     int trip = -1;
@@ -195,11 +189,18 @@ int main(void)
       trip = no_trips++;
       if (trip == MAX_TRIPS)
       {
-        printf("The maximum number of trips in the input file is bigger than %d",
+        printf("\nThe maximum number of trips in the input file is bigger than %d\n",
           MAX_TRIPS);
-        return_value = 1;
+        fclose(file);
         goto cleanup;
       }
+    }
+
+    if (trips[trip].no_instants == MAX_INSTANTS)
+    {
+      printf("\nThe maximum number of instants for trips in the input file is bigger than %d\n",
+        MAX_INSTANTS);
+      goto cleanup;
     }
 
     /*
@@ -231,6 +232,12 @@ int main(void)
 
   /* Open the output file */
   file = fopen("data/berlinmod_trips_new.csv", "w+");
+  if (ferror(file))
+  {
+    printf("Error reading output file");
+    goto cleanup;
+  }
+
   printf("Assembled trips written to file 'berlinmod_trips_new.csv'\n");
 
   /* Write the header line */
@@ -257,6 +264,8 @@ int main(void)
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
+  exit_value = EXIT_SUCCESS;
+
 /* Clean up */
 cleanup:
 
@@ -271,5 +280,5 @@ cleanup:
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

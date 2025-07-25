@@ -108,8 +108,8 @@ int main(void)
   int clusterNos[MAX_ROWS] = {0};
   /* Iterator variables */
   int i, j, k;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value */
+  int exit_value = 0;
 
   /* Open the input file */
   FILE *input_file = fopen("data/regions.csv", "r");
@@ -117,7 +117,7 @@ int main(void)
   {
     printf("Error opening input file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   int no_records = 0;
@@ -134,7 +134,7 @@ int main(void)
     if (ferror(input_file))
     {
       printf("Error reading input file");
-      return_value = 1;
+      exit_value = EXIT_FAILURE;
       goto cleanup;
     }
 
@@ -188,7 +188,7 @@ int main(void)
   {
     printf("Error opening output file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   /* Write the header line in the output file */
@@ -220,11 +220,14 @@ int main(void)
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < no_clusters; i++)
+  for (i = 0; i < no_records; i++)
     free(geoms[i]);
+  for (i = 0; i < no_clusters; i++)
+    free(clusters[i]);
+  free(clusters);
 
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

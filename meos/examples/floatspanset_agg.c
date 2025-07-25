@@ -77,7 +77,7 @@ int main(void)
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   floatspanset_record rec;
@@ -93,18 +93,16 @@ int main(void)
   do
   {
     int read = fscanf(file, "%d,\"%1023[^\"]\"\n", &rec.k, spanset_buffer);
-
-    if (read != 2 && ! feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-      continue;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
+    }
+    if (read != 2)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
     }
 
     no_records++;
@@ -122,11 +120,11 @@ int main(void)
     free(rec.ss);
   } while (!feof(file));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
-
   /* Close the file */
   fclose(file);
+
+  printf("\n%d records read.\n%d incomplete records ignored.\n",
+    no_records, no_nulls);
 
   /* Compute the final result */
   for (int i = 0; i < NUMBER_GROUPS; i++)
@@ -151,5 +149,5 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

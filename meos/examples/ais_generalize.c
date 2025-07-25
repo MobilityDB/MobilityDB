@@ -76,7 +76,7 @@ int main(void)
   /* Iterator variable */
   int i;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  int exit_value = EXIT_FAILURE;
 
   /* Initialize MEOS */
   meos_initialize();
@@ -264,7 +264,7 @@ int main(void)
   printf("The program took %f seconds to execute\n", time_taken);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
 
 /* Clean up */
 cleanup:

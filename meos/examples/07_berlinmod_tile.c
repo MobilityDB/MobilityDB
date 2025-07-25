@@ -96,6 +96,8 @@ int main(void)
   int no_nulls = 0;
   /* Iterator variables */
   int i, k;
+  /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
+  int exit_value = EXIT_FAILURE;
 
   /* Get start time */
   clock_t t;
@@ -123,22 +125,14 @@ int main(void)
   speed_record *speed_splits = malloc(sizeof(speed_record) * no_speed_tiles);
   memset(speed_splits, 0, sizeof(speed_record) * no_speed_tiles);
 
-  free(trip_extent);
-  free(sorigin);
-  free(speed_extent);
-  free(duration);
+  free(trip_extent); free(sorigin); free(speed_extent); free(duration);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_trips.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    free(trip_tiles);
-    free(trip_splits);
-    free(speed_tiles);
-    free(speed_splits);
-    return 1;
+    goto cleanup;
   }
 
   /* Read the first line of the file with the headers */
@@ -151,35 +145,28 @@ int main(void)
     int tripId, vehId, seq;
     int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &tripId, &vehId, date_buffer, &seq, trip_buffer);
+    if (ferror(file))
+    {
+      printf("Error reading input file\n");
+      fclose(file);
+      goto cleanup;
+    }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+    printf("*");
+    fflush(stdout);
+
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
     Temporal *speed = tpoint_speed(trip);
     Temporal *split;
     Interval *dur1, *dur2;
-
-    if (read == 5)
-    {
-      no_records++;
-      printf("*");
-      fflush(stdout);
-    }
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
-    if (ferror(file))
-    {
-      printf("Error reading input file\n");
-      fclose(file);
-      free(trip_tiles);
-      free(trip_splits);
-      free(speed_tiles);
-      free(speed_splits);
-      return 1;
-    }
 
     /* Split the trip by the tiles and accumulate aggregate values */
     k = 0;
@@ -218,6 +205,9 @@ int main(void)
     free(speed);
 
   } while (!feof(file));
+
+  /* Close the file */
+  fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
@@ -261,22 +251,20 @@ int main(void)
     k++;
   }
 
-  /* Free memory */
-  free(trip_tiles);
-  free(trip_splits);
-  free(speed_tiles);
-  free(speed_splits);
-
-  /* Close the file */
-  fclose(file);
-
-  /* Finalize MEOS */
-  meos_finalize();
-
   /* Calculate the elapsed time */
   t = clock() - t;
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
-  return 0;
+  exit_value = EXIT_SUCCESS;
+
+cleanup:
+
+  /* Free memory */
+  free(trip_tiles); free(trip_splits); free(speed_tiles); free(speed_splits);
+
+  /* Finalize MEOS */
+  meos_finalize();
+
+  return exit_value;
 }

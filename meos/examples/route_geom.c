@@ -81,8 +81,8 @@ int main(void)
   long int route = ROUTE;
   /* Whether the route was found */
   bool found = false;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value */
+  int exit_value = 0;
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ways.csv", "r");
@@ -91,7 +91,7 @@ int main(void)
   {
     printf("Error opening input file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   ways_record rec;
@@ -111,41 +111,37 @@ int main(void)
   {
     int read = fscanf(file, "%ld,%100000[^\n]\n",
       &rec.gid, geo_buffer);
-
     if (ferror(file))
     {
       printf("Error reading input file");
-      return_value = 1;
+      exit_value = EXIT_FAILURE;
       goto cleanup;
     }
-
-    if (read == 2)
-    {
-      no_records++;
-      if (no_records % NO_WAYS_BATCH == 0)
-      {
-        printf("*");
-        fflush(stdout);
-      }
-      if (rec.gid == route)
-      {
-        /* Transform the string representing the geometry into a geometry value */
-        rec.the_geom = geom_in(geo_buffer, -1);
-        if (geo_is_empty(rec.the_geom))
-        {
-          printf("The geometry is empty");
-          return_value = 1;
-          goto cleanup;
-        }
-        found = true;
-        break;
-      }
-    }
-
-    if (read != 2 && ! feof(file))
+    if (read != 2)
     {
       printf("Record with missing values ignored\n");
       no_nulls++;
+      continue;
+    }
+
+    no_records++;
+    if (no_records % NO_WAYS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
+    if (rec.gid == route)
+    {
+      /* Transform the string representing the geometry into a geometry value */
+      rec.the_geom = geom_in(geo_buffer, -1);
+      if (geo_is_empty(rec.the_geom))
+      {
+        printf("The geometry is empty");
+        exit_value = 1;
+        goto cleanup;
+      }
+      found = true;
+      break;
     }
   } while (!feof(file));
 
@@ -179,5 +175,5 @@ cleanup:
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

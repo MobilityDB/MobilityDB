@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 
 /*
@@ -138,5 +139,6 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

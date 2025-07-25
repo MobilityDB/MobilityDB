@@ -91,8 +91,8 @@ int main(void)
   GSERIALIZED *geom[MAX_ROWS] = {0};
   /* Iterator variable */
   int i;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value */
+  int exit_value = 0;
 
   /* Open the input file */
   FILE *input_file = fopen("data/popplaces.csv", "r");
@@ -100,7 +100,7 @@ int main(void)
   {
     printf("Error opening input file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   int no_records = 0;
@@ -120,7 +120,7 @@ int main(void)
     if (ferror(input_file))
     {
       printf("Error reading input file");
-      return_value = 1;
+      exit_value = EXIT_FAILURE;
       goto cleanup;
     }
 
@@ -175,7 +175,7 @@ int main(void)
   {
     printf("Error opening output file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   /* Write the header line in the output file */
@@ -212,9 +212,10 @@ cleanup:
     free(geom[i]);
     free(name[i]);
   }
+  free(cluster);
   
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

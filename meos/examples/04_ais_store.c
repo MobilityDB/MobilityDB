@@ -119,8 +119,8 @@ main(int argc, char **argv)
   char text_buffer[MAX_LENGTH_HEADER];
   /* Maximum length in characters of the string for the bulk insert */
   char insert_buffer[MAX_LENGTH_SQL];
-  /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  /* Exit value initialized to failure to quickly exit upon error */
+  int exit_value = EXIT_FAILURE;
 
   /* Get start time */
   clock_t t;
@@ -147,14 +147,19 @@ main(int argc, char **argv)
   if (PQstatus(conn) != CONNECTION_OK)
   {
     fprintf(stderr, "%s", PQerrorMessage(conn));
-    goto cleanup;
+    PQfinish(conn);
+    return EXIT_FAILURE;
   }
 
   /* Set always-secure search path, so malicious users can't take control. */
   res_sql = exec_sql(conn, "SELECT pg_catalog.set_config('search_path', '', false)",
     PGRES_TUPLES_OK);
   if (res_sql < 0)
-    goto cleanup;
+  {
+    fprintf(stderr, "%s", PQerrorMessage(conn));
+    PQfinish(conn);
+    return EXIT_FAILURE;
+  }
 
   /***************************************************************************
    * Section 2: Initialize MEOS and open the input AIS file
@@ -165,7 +170,6 @@ main(int argc, char **argv)
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ais_instants.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
@@ -182,16 +186,25 @@ main(int argc, char **argv)
   res_sql = exec_sql(conn, "DROP TABLE IF EXISTS public.AISInstants;",
     PGRES_COMMAND_OK);
   if (res_sql < 0)
+  {
+    fclose(file);
     goto cleanup;
+  }
   res_sql = exec_sql(conn, "CREATE TABLE public.AISInstants(MMSI integer, "
     "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
   if (res_sql < 0)
+  {
+    fclose(file);
     goto cleanup;
+  }
 
   /* Start a transaction block */
   res_sql = exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
   if (res_sql < 0)
+  {
+    fclose(file);
     goto cleanup;
+  }
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
@@ -205,31 +218,28 @@ main(int argc, char **argv)
   {
     int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
       text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
-    /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = timestamp_in(text_buffer, -1);
-
-    if (read == 5)
-    {
-      no_records++;
-      if (no_records % NO_INSTANTS_BATCH == 0)
-      {
-        printf("*");
-        fflush(stdout);
-      }
-    }
-
-    if (read != 5 && ! feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
       goto cleanup;
     }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+    if (no_records % NO_INSTANTS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
+
+    /* Transform the string representing the timestamp into a timestamp value */
+    rec.T = timestamp_in(text_buffer, -1);
 
     /* Create the INSERT command with the values read */
     if ((no_records - 1) % NO_BULK_INSERT == 0)
@@ -248,7 +258,10 @@ main(int argc, char **argv)
       insert_buffer[len - 1] = ';';
       res_sql = exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
       if (res_sql < 0)
+      {
+        fclose(file);
         goto cleanup;
+      }
       len = 0;
     }
   } while (!feof(file));
@@ -287,7 +300,7 @@ main(int argc, char **argv)
   PQclear(res);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
 
   /* Calculate the elapsed time */
   t = clock() - t;
@@ -297,11 +310,11 @@ main(int argc, char **argv)
 /* Clean up */
 cleanup:
 
-  /* Finalize MEOS */
-  meos_finalize();
-
   /* Close the connection to the database and cleanup */
   PQfinish(conn);
+
+  /* Finalize MEOS */
+  meos_finalize();
 
   return exit_value;
 }

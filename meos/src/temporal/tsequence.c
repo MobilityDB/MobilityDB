@@ -162,7 +162,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
  * segment or if it is approximately equal to the start or the end value
  * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
- * @result The function returns -1.0 if the value is approximately equal to the
+ * @return The function returns -1.0 if the value is approximately equal to the
  * start or the end value
  * @note The function is used in the lifting infrastructure for
  * determining the crossings or the turning points after verifying that the
@@ -191,7 +191,7 @@ floatsegm_locate(double start, double end, double value)
  * @param[in] value1,value2 Values defining the segment
  * @param[in] value Value to locate
  * @param[in] basetype Type of the values
- * @result Return -1.0 if the value is not located in the segment or if the
+ * @return Return -1.0 if the value is not located in the segment or if the
  * value is equal to the first or the last value. The reason is that the
  * function is used in the lifting infrastructure for determining the crossings
  * after testing whether the bounds of the segments are equal to a value.
@@ -2488,7 +2488,7 @@ tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
  * @param[in] temptype Temporal type
  * @param[in] lower,upper Timestamps defining the segment
  * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
- * @result Return 0 if the value is equal to the first or the last instant
+ * @return Return 0 if the value is equal to the first or the last instant
  * @note The function is used in the lifting infrastructure for determining
  * whether a temporal segment intersects a value
  */

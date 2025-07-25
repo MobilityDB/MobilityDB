@@ -110,5 +110,6 @@ int main(void)
   printf("The program took %f seconds to execute\n", time_taken);
   printf("It appends each instant to the output sequence automatically expanding it when more space is needed\n");
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

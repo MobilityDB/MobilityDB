@@ -103,7 +103,6 @@ GetProjStringsSPI(int32_t srid)
     /* Read each line from the file */
     int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
             auth_name, &auth_srid, proj4text, srtext);
-
     if (ferror(file))
     {
       printf("Error reading the spatial_ref_sys.csv file");
@@ -152,8 +151,13 @@ int main()
   /* Finalize MEOS */
   meos_finalize();
 
+  /* Free memory */
+  free(srs.authtext);
+  free(srs.proj4text);
+  free(srs.srtext);
+
   /* Return */
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /*****************************************************************************/

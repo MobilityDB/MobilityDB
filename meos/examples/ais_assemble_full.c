@@ -124,7 +124,7 @@ int main(void)
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  int exit_value = EXIT_FAILURE;
 
   /* Initialize MEOS */
   meos_initialize();
@@ -309,9 +309,8 @@ int main(void)
         trips[j].free_trip_instants = trips[j].no_trip_instants;
       }
       /* Ignore the instant if has the same timestamp as the last one */
-      int no_trip_instants = trips[j].no_trip_instants;
-      last = no_trip_instants ?
-        trips[j].trip_instants[no_trip_instants - 1] : NULL;
+      last = trips[j].no_trip_instants ?
+        trips[j].trip_instants[trips[j].no_trip_instants - 1] : NULL;
       if (last && last->t == inst->t)
       {
         free(inst);
@@ -322,8 +321,7 @@ int main(void)
       }
       else
       {
-        trips[j].trip_instants[no_trip_instants] = inst;
-        trips[j].no_trip_instants++;
+        trips[j].trip_instants[trips[j].no_trip_instants++] = inst;
         trips[j].free_trip_instants--;
       }
     }
@@ -353,8 +351,8 @@ int main(void)
         trips[j].free_SOG_instants = trips[j].no_SOG_instants;
       }
       /* Ignore the instant if has the same timestamp as the last one */
-      int no_SOG_instants = trips[j].no_SOG_instants;
-      last = no_SOG_instants ? trips[j].SOG_instants[no_SOG_instants - 1] : NULL;
+      last = trips[j].no_SOG_instants ? 
+        trips[j].SOG_instants[trips[j].no_SOG_instants - 1] : NULL;
       if (last && last->t == inst->t)
       {
         free(inst);
@@ -365,8 +363,7 @@ int main(void)
       }
       else
       {
-        trips[j].SOG_instants[no_SOG_instants] = inst;
-        trips[j].no_SOG_instants++;
+        trips[j].SOG_instants[trips[j].no_SOG_instants++] = inst;
         trips[j].free_SOG_instants--;
       }
     }
@@ -417,7 +414,7 @@ int main(void)
   printf("The program took %f seconds to execute\n", time_taken);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
 
 /* Clean up */
 cleanup:
@@ -427,8 +424,10 @@ cleanup:
   {
     for (j = 0; j < trips[i].no_trip_instants; j++)
       free(trips[i].trip_instants[j]);
+    free(trips[i].trip_instants);
     for (j = 0; j < trips[i].no_SOG_instants; j++)
       free(trips[i].SOG_instants[j]);
+    free(trips[i].SOG_instants);
   }
 
   /* Finalize MEOS */

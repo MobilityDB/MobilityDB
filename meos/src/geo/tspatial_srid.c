@@ -457,7 +457,7 @@ Datum
         return PointerGetDatum(NULL);
       geo->srid = srid_to;
       Datum result = PointerGetDatum(geo_serialize(geo));
-      pfree(geo);
+      lwgeom_free(geo);
       return result;
     }
 #if CBUFFER
@@ -644,20 +644,19 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 {
   assert(temp); assert(pj);
   /* Copy the spatiotemporal value to transform its points in place */
-  Temporal *result = temporal_copy(temp);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tspatialinst_transf_pj((TInstant *) result, srid_to,
+      return (Temporal *) tspatialinst_transf_pj((TInstant *) temp, srid_to,
         pj);
       break;
     case TSEQUENCE:
-      return (Temporal *) tspatialseq_transf_pj((TSequence *) result, srid_to,
+      return (Temporal *) tspatialseq_transf_pj((TSequence *) temp, srid_to,
         pj);
       break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tspatialseqset_transf_pj((TSequenceSet *) result,
+      return (Temporal *) tspatialseqset_transf_pj((TSequenceSet *) temp,
         srid_to, pj);
   }
 }

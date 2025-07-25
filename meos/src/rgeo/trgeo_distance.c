@@ -264,7 +264,7 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 
 // /**
  // * @brief Tests if a polygon is defined in counter-clockwise order (ccw)
- // * @result Returns True if it is the case
+ // * @return Returns True if it is the case
  // * @note The polygon must be convex
  // */
 // static bool

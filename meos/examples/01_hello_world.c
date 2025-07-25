@@ -135,5 +135,5 @@ int main()
   meos_finalize();
 
   /* Return */
-  return 0;
+  return EXIT_SUCCESS;
 }

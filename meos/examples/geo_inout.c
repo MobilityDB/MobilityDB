@@ -161,6 +161,9 @@ int main()
     "-------\n%s\n", polygon_wkt, polygon_text, polygon_geojson, polygon_hexwkb);
 
 
+  /* Finalize MEOS */
+  meos_finalize();
+
   /* Clean up allocated objects */
   free(point); free(point1); free(point2); free(point3);
   free(point_text); free(point_geojson); free(point_hexwkb);
@@ -169,9 +172,6 @@ int main()
   free(polygon); free(polygon1); free(polygon2); free(polygon3);
   free(polygon_text); free(polygon_geojson); free(polygon_hexwkb);
 
-  /* Finalize MEOS */
-  meos_finalize();
-
   /* Return */
-  return 0;
+  return EXIT_SUCCESS;
 }

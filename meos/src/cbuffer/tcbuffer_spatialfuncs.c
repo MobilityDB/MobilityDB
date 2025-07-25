@@ -383,7 +383,7 @@ cbuffer_trav_area(const Cbuffer *cb)
  * @param[in] instants Array of instants of a temporal circular buffer
  * @param[in] count Number of instants in the array
  * @param[out] result Array of resulting geometries
- * @result Number of elements in the output array
+ * @return Number of elements in the output array
  */
 int
 cbufferarr_circles(const TInstant **instants, int count, GSERIALIZED **result)
@@ -416,7 +416,7 @@ tcbufferinst_trav_area(const TInstant *inst)
  * discrete or step interpolation
  * @param[in] seq Temporal circular buffer
  * @param[out] result Array of resulting geometries
- * @result Number of elements in the output array
+ * @return Number of elements in the output array
  * @csqlfn #Tcbuffer_traversed_area()
  */
 int
@@ -583,7 +583,7 @@ tcbufferseq_trav_area(const TSequence *seq, bool merge_union)
  * with step interpolation
  * @param[in] ss Temporal circular buffer
  * @param[out] result Array of resulting geometries
- * @result Number of elements in the output array
+ * @return Number of elements in the output array
  * @csqlfn #Tcbuffer_traversed_area()
  */
 int
@@ -601,7 +601,7 @@ tcbufferseqset_step_trav_area(const TSequenceSet *ss, GSERIALIZED **result)
  * with linear interpolation
  * @param[in] ss Temporal circular buffer
  * @param[out] result Array of resulting geometries
- * @result Number of elements in the output array
+ * @return Number of elements in the output array
  * @csqlfn #Tcbuffer_traversed_area()
  */
 int

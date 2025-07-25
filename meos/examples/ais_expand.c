@@ -104,7 +104,8 @@ int main(void)
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   AIS_record rec;
@@ -121,18 +122,6 @@ int main(void)
   {
     int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
       timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
-    /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = timestamp_in(timestamp_buffer, -1);
-
-    if (read == 5)
-      no_records++;
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
@@ -143,8 +132,20 @@ int main(void)
         free(trips[i].trip);
         free(trips[i].SOG);
       }
-      return 1;
+      meos_finalize();
+      return EXIT_FAILURE;
     }
+    if (read != 5 && !feof(file))
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+
+    /* Transform the string representing the timestamp into a timestamp value */
+    rec.T = timestamp_in(timestamp_buffer, -1);
 
     /* Find the place to store the new instant */
     int ship = -1;
@@ -171,6 +172,7 @@ int main(void)
      */
     GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
     TInstant *inst1 = tpointinst_make(gs, rec.T);
+    free(gs);
     if (! trips[ship].trip)
       trips[ship].trip = (Temporal *) tsequence_make_exp(
         (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
@@ -184,9 +186,11 @@ int main(void)
     else
       trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2,
         LINEAR, 0.0, NULL, true);
-    free(inst1);
-    free(inst2);
+    free(inst1); free(inst2);
   } while (!feof(file));
+
+  /* Close the file */
+  fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
@@ -210,9 +214,6 @@ int main(void)
     free(trips[i].SOG);
   }
 
-  /* Close the file */
-  fclose(file);
-
   /* Calculate the elapsed time */
   t = clock() - t;
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
@@ -221,5 +222,6 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

@@ -170,8 +170,8 @@ int main(void)
   int noadmin1 = 0;
   /* Iterator variables */
   int i, j;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value */
+  int exit_value = 0;
 
   /* Open the input file */
   FILE *input_file = fopen("data/US.txt", "r");
@@ -179,7 +179,7 @@ int main(void)
   {
     printf("Error opening input file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   int no_records = 0;
@@ -198,14 +198,14 @@ int main(void)
     if (ferror(input_file))
     {
       printf("Error reading input file");
-      return_value = 1;
+      exit_value = EXIT_FAILURE;
       goto cleanup;
     }
 
     /* Remove newline characters */
     line_buffer[strcspn(line_buffer, "\r\n")] = 0;
-    /* Splitting the data */
-    int nofields = parse_csv_line(line_buffer, fields);
+    /* Split the line ignoring the result of the function below */
+    parse_csv_line(line_buffer, fields);
 
     no_records++;
     if (no_records % NO_INSTANTS_BATCH == 0)
@@ -266,7 +266,7 @@ int main(void)
   {
     printf("Error opening output file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   /* Write the header line in the output file */
@@ -310,5 +310,5 @@ cleanup:
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

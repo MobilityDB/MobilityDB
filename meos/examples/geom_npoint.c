@@ -81,18 +81,16 @@ int main(void)
   /* Distances */
   double dist, min_dist = DBL_MAX;
   /* Position in the geometry with the shortest distance */
-  double pos;
-  /* Return value */
-  int return_value = 0;
+  double pos = 0;
+  /* Exit value initialized to failure to quickly exit upon error */
+  int exit_value = EXIT_FAILURE;
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ways.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    meos_finalize();
-    return 1;
+    goto cleanup;
   }
 
   ways_record rec;
@@ -112,17 +110,13 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
-      &rec.gid, geo_buffer);
-
+    int read = fscanf(file, "%ld,%100000[^\n]\n", &rec.gid, geo_buffer);
     if (ferror(file))
     {
       printf("Error reading input file");
-      return_value = 1;
       goto cleanup;
     }
-
-    if (read != 3 && ! feof(file))
+    if (read != 2)
     {
       printf("Record with missing values ignored\n");
       no_nulls++;
@@ -141,7 +135,7 @@ int main(void)
     if (geo_is_empty(rec.the_geom))
     {
       printf("The geometry is empty");
-      return_value = 1;
+      fclose(file);
       goto cleanup;
     }
 
@@ -161,6 +155,7 @@ int main(void)
     dist = geom_distance2d(rec.the_geom, point);
     if (dist < min_dist)
       min_dist = dist;
+    free(rec.the_geom);
   } while (! feof(file));
 
   /* Close the input file */
@@ -173,7 +168,6 @@ int main(void)
   if (! point)
   {
     printf("The geometry point cannot be transformed into a network point");
-    return_value = 1;
     goto cleanup;
   }
   
@@ -187,6 +181,8 @@ int main(void)
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
+  exit_value = EXIT_SUCCESS;
+
 /* Clean up */
 cleanup:
 
@@ -196,5 +192,5 @@ cleanup:
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

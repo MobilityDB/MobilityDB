@@ -52,6 +52,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 
 /*
 * GEOS requires two message handlers to return
@@ -88,9 +89,9 @@ int main()
   /* Check for parse success */
   if (! tpoint)
   {
-    meos_finalize();
     finishGEOS();
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   /* A polygon (actually a rectangle) */
@@ -103,9 +104,9 @@ int main()
   /* Check for parse success */
   if (! poly)
   {
-    meos_finalize();
     finishGEOS();
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   /* Prepare the geometry */
@@ -183,6 +184,6 @@ int main()
   /* Finalize MEOS */
   meos_finalize();
 
-  /* Done */
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

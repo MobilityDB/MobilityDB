@@ -74,11 +74,11 @@ int main(void)
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ais_instants.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   AIS_record rec;
@@ -95,24 +95,24 @@ int main(void)
   {
     int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
       timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
-    /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = timestamp_in(timestamp_buffer, -1);
-
-    if (read == 5)
-      no_records++;
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
-      return 1;
+      meos_finalize();
+      return EXIT_FAILURE;
     }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+
+    /* Transform the string representing the timestamp into a timestamp value */
+    rec.T = timestamp_in(timestamp_buffer, -1);
 
     /* Print only 1 out of 1000 records */
     if (no_records % 1000 == 0)
@@ -134,14 +134,14 @@ int main(void)
 
   } while (!feof(file));
 
-  printf("\n%d no_records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
-
   /* Close the file */
   fclose(file);
+
+  printf("\n%d no_records read.\n%d incomplete records ignored.\n",
+    no_records, no_nulls);
 
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

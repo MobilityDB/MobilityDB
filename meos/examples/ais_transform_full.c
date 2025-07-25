@@ -56,13 +56,14 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 
+/* Maximum number of records read in the CSV file */
+#define MAX_NO_RECORDS 20000000
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LENGTH_LINE 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LENGTH_POINT 64
-/* Maximum number of records read in the CSV file */
-#define MAX_NO_RECORDS 20000000
 /* Number of instants in a batch for printing a marker */
 #define NO_RECORDS_BATCH 100000
 
@@ -257,7 +258,7 @@ cleanup:
 
   /* Finalize MEOS */
   meos_finalize();
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /*****************************************************************************/

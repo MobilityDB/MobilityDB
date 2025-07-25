@@ -77,8 +77,8 @@ int main(void)
 
   /* SRID */
   int32_t srid = 0;
-  /* Return value */
-  int return_value = 0;
+  /* Exit value */
+  int exit_value = 0;
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ways.csv", "r");
@@ -87,7 +87,7 @@ int main(void)
   {
     printf("Error opening input file\n");
     meos_finalize();
-    return 1;
+    return EXIT_FAILURE;
   }
 
   ways_record rec;
@@ -105,28 +105,24 @@ int main(void)
   {
     int read = fscanf(file, "%ld,%100000[^\n]\n",
       &rec.gid, geo_buffer);
-
     if (ferror(file))
     {
       printf("Error reading input file");
-      return_value = 1;
+      exit_value = 1;
       goto cleanup;
     }
-
-    if (read == 2)
-    {
-      /* Transform the string representing the geometry into a geometry value */
-      rec.the_geom = geom_in(geo_buffer, -1);
-
-      /* Find the SRID */
-      srid = geo_srid(rec.the_geom);
-      break;
-    }
-
-    if (read != 2 && ! feof(file))
+    if (read != 2)
     {
       printf("Record with missing values ignored\n");
+      continue;
     }
+
+    /* Transform the string representing the geometry into a geometry value */
+    rec.the_geom = geom_in(geo_buffer, -1);
+
+    /* Find the SRID */
+    srid = geo_srid(rec.the_geom);
+    break;
   } while (!feof(file));
 
   /* Close the input file */
@@ -149,5 +145,5 @@ cleanup:
   /* Finalize MEOS */
   meos_finalize();
 
-  return return_value;
+  return exit_value;
 }

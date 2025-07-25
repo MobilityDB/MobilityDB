@@ -87,6 +87,7 @@ int main(void)
     int gid = random() % 1000;
     Npoint *np = npoint_make(gid, 1);
     instants[i] = tnpointinst_make(np, t);
+    free(np);
   }
 
   /* Print information about the instants */
@@ -107,5 +108,6 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

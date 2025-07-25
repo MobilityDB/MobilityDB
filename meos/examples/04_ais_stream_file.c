@@ -96,7 +96,7 @@ main(int argc, char **argv)
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  int exit_value = EXIT_FAILURE;
 
   /***************************************************************************
    * Section 1: Open the output file
@@ -105,7 +105,6 @@ main(int argc, char **argv)
   /* Open/create the output file */
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file_out = fopen("data/ais_trips_new.csv", "w+");
-
   if (! file_out)
   {
     printf("Error creating/opening the output file\n");
@@ -121,7 +120,6 @@ main(int argc, char **argv)
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file_in = fopen("data/ais_instants.csv", "r");
-
   if (! file_in)
   {
     printf("Error opening input file\n");
@@ -144,24 +142,20 @@ main(int argc, char **argv)
   {
     int read = fscanf(file_in, "%32[^,],%ld,%lf,%lf,%lf\n",
       text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
-    /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = timestamp_in(text_buffer, -1);
-
-    if (read == 5)
-      no_records++;
-
-    if (read != 5 && ! feof(file_in))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
     if (ferror(file_in))
     {
       printf("Error reading input file\n");
       fclose(file_in);
-      fclose(file_out);
+      goto cleanup;
     }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
 
     /* Find the place to store the new instant */
     j = -1;
@@ -178,7 +172,9 @@ main(int argc, char **argv)
       j = no_ships++;
       if (j == MAX_TRIPS)
       {
-        printf("The maximum number of ships in the input file is bigger than %d",MAX_TRIPS);
+        printf("The maximum number of ships in the input file is bigger than %d",
+          MAX_TRIPS);
+        fclose(file_in);
         goto cleanup;
       }
       trips[j].MMSI = rec.MMSI;
@@ -197,6 +193,9 @@ main(int argc, char **argv)
       /* Restart the sequence by only keeping the last instants */
       tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
     }
+
+    /* Transform the string representing the timestamp into a timestamp value */
+    rec.T = timestamp_in(text_buffer, -1);
 
     /*
      * Append the latest observation to the corresponding ship.
@@ -222,10 +221,13 @@ main(int argc, char **argv)
   fclose(file_in);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
   
 /* Clean up */
 cleanup:
+
+  /* Close the connection to the output file */
+  fclose(file_out);
 
  /* Free memory */
   for (i = 0; i < no_ships; i++)
@@ -233,9 +235,6 @@ cleanup:
 
   /* Finalize MEOS */
   meos_finalize();
-
-  /* Close the connection to the output file */
-  fclose(file_out);
 
   return exit_value;
 }
