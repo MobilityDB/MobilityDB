@@ -95,7 +95,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_acae844ff2cd54b1c9b5c5b784f8727c4.html#acae844ff2cd54b1c9b5c5b784f8727c4">skiplist_headval</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a22b24c37824b6bf62a37c7b6701d799f.html#a22b24c37824b6bf62a37c7b6701d799f">SKIPLIST_INITIAL_CAPACITY</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a3b23c012ac3323d89082cda86e815197.html#a3b23c012ac3323d89082cda86e815197">SKIPLIST_INITIAL_FREELIST</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a97433762c3835c53d9e36fb436d76cb1.html#a97433762c3835c53d9e36fb436d76cb1">skiplist_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a3cbf52cef6431da8631453653394d142.html#a3cbf52cef6431da8631453653394d142">skiplist_make</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_ac91c0d8afc3c9e1fe759a1c4bfae3582.html#ac91c0d8afc3c9e1fe759a1c4bfae3582">skiplist_splice</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a0e32b439649d04a033f1c3c529022a3f.html#a0e32b439649d04a033f1c3c529022a3f">skiplist_temporal_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2skiplist_8c_a6d151fa654af5ca2a7f748c2a4f9f28a.html#a6d151fa654af5ca2a7f748c2a4f9f28a">skiplist_values</a></td></tr>
@@ -147,13 +147,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Splice the skiplist with the array of values using the aggregation function. </p>
-<dl class="section note"><dt>Note</dt><dd>The complexity of this function is<ul>
-<li>average: O(count*log(n)) (unless I'm mistaken)</li>
-<li>worst case: O(n + count*log(n)) (when period spans the whole list so everything has to be deleted)</li>
-</ul>
-</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Insert a new set of values to the skiplist while performing the aggregation between the new values that overlap with the values in the list. </p>
+<p >The complexity of this function is</p><ul>
+<li>average: O(count*log(n))</li>
+<li>worst case: O(n + count*log(n)) (when period spans the whole list so everything has to be deleted) <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">list</td><td>Skiplist </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Array of values </td></tr>
@@ -163,6 +160,8 @@ $(function() {
   </table>
   </dd>
 </dl>
+</li>
+</ul>
 
 </div>
 </div>
