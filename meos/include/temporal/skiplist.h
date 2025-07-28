@@ -55,10 +55,11 @@ extern bool ensure_same_skiplist_subtype(SkipList *state, uint8 subtype);
 
 extern void aggstate_set_extra(SkipList *state, void *data, size_t size);
 
-extern SkipList *skiplist_make(void **values, int count);
-extern void *skiplist_headval(SkipList *list);
+extern SkipList *skiplist_make();
 extern void skiplist_splice(SkipList *list, void **values, int count,
   datum_func2 func, bool crossings);
+
+extern void *skiplist_headval(SkipList *list);
 extern void **skiplist_values(SkipList *list);
 extern Temporal **skiplist_temporal_values(SkipList *list);
 

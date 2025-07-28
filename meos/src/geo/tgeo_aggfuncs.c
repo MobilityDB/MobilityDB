@@ -223,11 +223,9 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 
   int count;
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
-  if (state)
-    skiplist_splice(state, (void **) temparr, count, func, false);
-  else
+  if (! state)
   {
-    state = skiplist_make((void **) temparr, count);
+    state = skiplist_make();
     struct GeoAggregateState extra =
     {
       .srid = tspatial_srid(temp),
@@ -235,6 +233,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
   }
+  skiplist_splice(state, (void **) temparr, count, func, false);
 
   pfree_array((void **) temparr, count);
   return state;

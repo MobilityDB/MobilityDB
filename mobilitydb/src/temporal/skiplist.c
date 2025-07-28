@@ -112,7 +112,8 @@ aggstate_read(StringInfo buf)
   for (int i = 0; i < length; i ++)
     values[i] = temporal_recv(buf);
   size_t extrasize = (size_t) pq_getmsgint64(buf);
-  result = skiplist_make(values, length);
+  result = skiplist_make();
+  skiplist_splice(result, values, length, NULL, false);
   if (extrasize)
   {
     const char *extra = pq_getmsgbytes(buf, (int) extrasize);

@@ -507,18 +507,13 @@ SkipList *
 tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 {
   assert(inst);
-  SkipList *result;
   const TInstant **instants = palloc(sizeof(TInstant *));
   instants[0] = inst;
   if (! state)
-    result = skiplist_make((void **) instants, 1);
-  else
-  {
-    skiplist_splice(state, (void **) instants, 1, func, false);
-    result = state;
-  }
+    state = skiplist_make();
+  skiplist_splice(state, (void **) instants, 1, func, false);
   pfree(instants);
-  return result;
+  return state;
 }
 
 /**
@@ -533,17 +528,13 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
   const TInstant **instants = tsequence_insts_p(seq);
-  SkipList *result;
   if (! state)
-    result = skiplist_make((void **) instants, seq->count);
-  else
-  {
-    skiplist_splice(state, (void **) instants, seq->count, func, false);
-    result = state;
-  }
+    state = skiplist_make();
+  skiplist_splice(state, (void **) instants, seq->count, func, false);
   pfree(instants);
-  return result;
+  return state;
 }
+
 
 /**
  * @brief Generic transition function for aggregating temporal values
@@ -558,15 +549,10 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool crossings)
 {
   assert(seq);
-  SkipList *result;
   if (! state)
-    result = skiplist_make((void **) &seq, 1);
-  else
-  {
-    skiplist_splice(state, (void **) &seq, 1, func, crossings);
-    result = state;
-  }
-  return result;
+    state = skiplist_make();
+  skiplist_splice(state, (void **) &seq, 1, func, crossings);
+  return state;
 }
 
 /**
@@ -583,16 +569,11 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
 {
   assert(ss);
   const TSequence **sequences = tsequenceset_sequences_p(ss);
-  SkipList *result;
   if (! state)
-    result = skiplist_make((void **) sequences, ss->count);
-  else
-  {
-    skiplist_splice(state, (void **) sequences, ss->count, func, crossings);
-    result = state;
-  }
+    state = skiplist_make();
+  skiplist_splice(state, (void **) sequences, ss->count, func, crossings);
   pfree(sequences);
-  return result;
+  return state;
 }
 
 /**
@@ -786,9 +767,7 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (! state)
     state = skiplist_make((void **) temparr, count);
-  else
-    skiplist_splice(state, (void **) temparr, count, func, crossings);
-
+  skiplist_splice(state, (void **) temparr, count, func, crossings);
   pfree_array((void **) temparr, count);
   return state;
 }
@@ -991,15 +970,14 @@ timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
 {
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
-    state = skiplist_make((void **) instants, 1);
+    state = skiplist_make();
   else
   {
     if (! ensure_same_skiplist_subtype(state, TINSTANT))
       return NULL;
-    skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
-      CROSSINGS_NO);
   }
-
+  skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
+    CROSSINGS_NO);
   pfree_array((void **) instants, 1);
   return state;
 }
@@ -1023,15 +1001,14 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
 
   TInstant **instants = tstzset_transform_tcount(s);
   if (! state)
-    state = skiplist_make((void **) instants, s->count);
+    state = skiplist_make();
   else
   {
     if (! ensure_same_skiplist_subtype(state, TINSTANT))
       return NULL;
-    skiplist_splice(state, (void **) instants, s->count, &datum_sum_int32,
-      CROSSINGS_NO);
   }
-
+  skiplist_splice(state, (void **) instants, s->count, &datum_sum_int32,
+    CROSSINGS_NO);
   pfree_array((void **) instants, s->count);
   return state;
 }
@@ -1055,14 +1032,13 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
 
   TSequence *seq = tstzspan_transform_tcount(s);
   if (! state)
-    state = skiplist_make((void **) &seq, 1);
+    state = skiplist_make();
   else
   {
     if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
       return NULL;
-    skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32, CROSSINGS_NO);
   }
-
+  skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32, CROSSINGS_NO);
   pfree(seq);
   return state;
 }
@@ -1086,23 +1062,18 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
     return NULL;
 
   TSequence **sequences = tstzspanset_transform_tcount(ss);
-  int start = 0;
   if (! state)
-  {
-    state = skiplist_make((void **) &sequences[0], 1);
-    start++;
-  }
+    state = skiplist_make();
   else
   {
     if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
       return NULL;
   }
-  for (int i = start; i < ss->count; i++)
+  for (int i = 0; i < ss->count; i++)
   {
     skiplist_splice(state, (void **) &sequences[i], 1, &datum_sum_int32,
       CROSSINGS_NO);
   }
-
   pfree_array((void **) sequences, ss->count);
   return state;
 }
@@ -1126,9 +1097,8 @@ temporal_tcount_transfn(SkipList *state, const Temporal *temp)
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   /* Null state: create a new state */
   if (! state)
-    state = skiplist_make((void **) temparr, count);
-  else
-    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32, false);
+    state = skiplist_make();
+  skiplist_splice(state, (void **) temparr, count, &datum_sum_int32, false);
   pfree_array((void **) temparr, count);
   return state;
 }
