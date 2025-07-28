@@ -55,7 +55,7 @@
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Location of the spatial_ref_sys.csv file */
-#define SPATIAL_REF_SYS "/usr/local/lib/spatial_ref_sys.csv"
+#define SPATIAL_REF_SYS "/usr/local/share/spatial_ref_sys.csv"
 
 /**
  * @brief Utility structure to get many potential string representations

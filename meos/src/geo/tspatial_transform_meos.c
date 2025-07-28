@@ -101,7 +101,13 @@ typedef struct
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_SRS_RECORD 5120
 /* Location of the spatial_ref_sys.csv file */
-#define SPATIAL_REF_SYS_CSV "/usr/local/lib/spatial_ref_sys.csv"
+
+char* SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
+
+void meos_set_spatial_ref_sys_csv(const char* path) {
+    SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
+    strcpy(SPATIAL_REF_SYS_CSV, path);
+}
 
 typedef struct
 {
@@ -240,7 +246,7 @@ GetProjStringsSPI(int32_t srid)
 
   if (! file)
   {
-    printf("Cannot open the spatial_ref_sys.csv file");
+    printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n", SPATIAL_REF_SYS_CSV);
     return strs;
   }
 
