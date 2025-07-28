@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['a_5fd_5fstr_0',['A_D_STR',['../formatting_8c_a4302d43d32bab7ad5bed96a1e25f8432.html#a4302d43d32bab7ad5bed96a1e25f8432',1,'formatting.c']]],
-  ['a_5fd_5fstr_1',['a_d_STR',['../formatting_8c_a25f67557d030782ce693c63ebd2f700a.html#a25f67557d030782ce693c63ebd2f700a',1,'formatting.c']]],
+  ['a_5fd_5fstr_0',['a_d_STR',['../formatting_8c_a25f67557d030782ce693c63ebd2f700a.html#a25f67557d030782ce693c63ebd2f700a',1,'formatting.c']]],
+  ['a_5fd_5fstr_1',['A_D_STR',['../formatting_8c_a4302d43d32bab7ad5bed96a1e25f8432.html#a4302d43d32bab7ad5bed96a1e25f8432',1,'formatting.c']]],
   ['a_5fm_5fstr_2',['a_m_STR',['../formatting_8c_a41ba4eca5e288975490dfe68f833945e.html#a41ba4eca5e288975490dfe68f833945e',1,'formatting.c']]],
   ['a_5fm_5fstr_3',['A_M_STR',['../formatting_8c_acc209ac85e4441598dfdf265b5342507.html#acc209ac85e4441598dfdf265b5342507',1,'formatting.c']]],
   ['abs_4',['Abs',['../c_8h_aa6e7032f5dccdc69d2946c33a916b323.html#aa6e7032f5dccdc69d2946c33a916b323',1,'c.h']]],
@@ -18,8 +18,8 @@ var searchData=
   ['alignof_5fbuffer_15',['ALIGNOF_BUFFER',['../pg__config__manual_8h_ad191feeb14c5e6b3b30c254c449025e1.html#ad191feeb14c5e6b3b30c254c449025e1',1,'pg_config_manual.h']]],
   ['always_16',['ALWAYS',['../meos_2include_2temporal_2temporal_8h_afaa4e46bb91ebf05695f7a8c1bf63abe.html#afaa4e46bb91ebf05695f7a8c1bf63abe',1,'temporal.h']]],
   ['am_17',['AM',['../datetime_8h_ad301e6a88b1c01108f4867f2ea6f683c.html#ad301e6a88b1c01108f4867f2ea6f683c',1,'datetime.h']]],
-  ['am_5fstr_18',['am_STR',['../formatting_8c_ad64b00f2b5880b4ee517f1099fc2be1e.html#ad64b00f2b5880b4ee517f1099fc2be1e',1,'formatting.c']]],
-  ['am_5fstr_19',['AM_STR',['../formatting_8c_ae6923c3990a6188e90216808b4c09759.html#ae6923c3990a6188e90216808b4c09759',1,'formatting.c']]],
+  ['am_5fstr_18',['AM_STR',['../formatting_8c_ae6923c3990a6188e90216808b4c09759.html#ae6923c3990a6188e90216808b4c09759',1,'formatting.c']]],
+  ['am_5fstr_19',['am_STR',['../formatting_8c_ad64b00f2b5880b4ee517f1099fc2be1e.html#ad64b00f2b5880b4ee517f1099fc2be1e',1,'formatting.c']]],
   ['ampm_20',['AMPM',['../datetime_8h_a15b1c4477a3e0d6db3ff2e50b3c00753.html#a15b1c4477a3e0d6db3ff2e50b3c00753',1,'datetime.h']]],
   ['append_5fchar_21',['APPEND_CHAR',['../datetime_8c_a0e4de8cacd385c2aba7c386864f62fa6.html#a0e4de8cacd385c2aba7c386864f62fa6',1,'datetime.c']]],
   ['assert_22',['Assert',['../c_8h_a706ac5b1a53bd04067f81924b92cb9f6.html#a706ac5b1a53bd04067f81924b92cb9f6',1,'c.h']]],

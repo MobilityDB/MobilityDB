@@ -120,8 +120,6 @@ Macros</h2></td></tr>
 <tr class="separator:ad8e31c7538ca2209879225906e91c2e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71e496f86477ddfc96590abdef724dbd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_a71e496f86477ddfc96590abdef724dbd.html#a71e496f86477ddfc96590abdef724dbd">PROJ_CACHE_ITEMS</a>&#160;&#160;&#160;128</td></tr>
 <tr class="separator:a71e496f86477ddfc96590abdef724dbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addd600115cd3d4926f19372d846e20c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_addd600115cd3d4926f19372d846e20c0.html#addd600115cd3d4926f19372d846e20c0">SPATIAL_REF_SYS_CSV</a>&#160;&#160;&#160;&quot;/usr/local/lib/spatial_ref_sys.csv&quot;</td></tr>
-<tr class="separator:addd600115cd3d4926f19372d846e20c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a764e1dc319d89bdb6bd66b9198b9db7d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_a764e1dc319d89bdb6bd66b9198b9db7d.html#a764e1dc319d89bdb6bd66b9198b9db7d">spibufferlen</a>&#160;&#160;&#160;512</td></tr>
 <tr class="separator:a764e1dc319d89bdb6bd66b9198b9db7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -159,6 +157,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a0faeaa24559f5a1a311cb84905efa90e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_a0faeaa24559f5a1a311cb84905efa90e.html#a0faeaa24559f5a1a311cb84905efa90e">meos_finalize_projsrs</a> (void)</td></tr>
 <tr class="memdesc:a0faeaa24559f5a1a311cb84905efa90e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy all the malloc'ed PROJ objects stored in the PROJSRSCache.  <a href="tspatial__transform__meos_8c_a0faeaa24559f5a1a311cb84905efa90e.html#a0faeaa24559f5a1a311cb84905efa90e">More...</a><br /></td></tr>
 <tr class="separator:a0faeaa24559f5a1a311cb84905efa90e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47ce3a65f4d1fea9fc82dbf351fa7edc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_a47ce3a65f4d1fea9fc82dbf351fa7edc.html#a47ce3a65f4d1fea9fc82dbf351fa7edc">meos_set_spatial_ref_sys_csv</a> (const char *path)</td></tr>
+<tr class="separator:a47ce3a65f4d1fea9fc82dbf351fa7edc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afffbbbfd45e5d3707e1e4857440195fd"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_afffbbbfd45e5d3707e1e4857440195fd.html#afffbbbfd45e5d3707e1e4857440195fd">pgstrs_get_entry</a> (const <a class="el" href="structPjStrs.html">PjStrs</a> *strs, int n)</td></tr>
 <tr class="memdesc:afffbbbfd45e5d3707e1e4857440195fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the n-th string of a PROJ strings structure.  <a href="tspatial__transform__meos_8c_afffbbbfd45e5d3707e1e4857440195fd.html#afffbbbfd45e5d3707e1e4857440195fd">More...</a><br /></td></tr>
 <tr class="separator:afffbbbfd45e5d3707e1e4857440195fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,6 +179,8 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:ab519a4503174b823f7cff6e42ee31baa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tspatial__transform__meos_8c_ab0bb703c710af522ac54701c9c414d80.html#ab0bb703c710af522ac54701c9c414d80">MEOSPROJSRSCache</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_ab519a4503174b823f7cff6e42ee31baa.html#ab519a4503174b823f7cff6e42ee31baa">MEOS_PROJ_CACHE</a> = NULL</td></tr>
 <tr class="separator:ab519a4503174b823f7cff6e42ee31baa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6eaa14207e312534bf8c6306578ee7c7"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__transform__meos_8c_a6eaa14207e312534bf8c6306578ee7c7.html#a6eaa14207e312534bf8c6306578ee7c7">SPATIAL_REF_SYS_CSV</a> = &quot;/usr/local/share/spatial_ref_sys.csv&quot;</td></tr>
+<tr class="separator:a6eaa14207e312534bf8c6306578ee7c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Functions for transforming coordinates from one SRID to another one. </p>
