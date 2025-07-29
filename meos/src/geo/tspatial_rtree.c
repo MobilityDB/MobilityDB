@@ -699,7 +699,7 @@ rtree_insert(RTree *rtree, STBox *box, int64 id)
  * @brief Creates an RTree index for STBoxes.
  * @return RTree initialized for STBoxes.
  */
-inline RTree *
+RTree *
 rtree_create_stbox()
 {
   return rtree_create(T_STBOX);
