@@ -1403,7 +1403,7 @@ timestamp_out_common(TimestampTz t, bool withtz)
  * @param[in] t Timestamp
  * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
  */
-inline char *
+char *
 timestamp_out(Timestamp t)
 {
   return timestamp_out_common((TimestampTz) t, false);
