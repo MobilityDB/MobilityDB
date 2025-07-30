@@ -601,10 +601,10 @@ extern bool stbox_ne(const STBox *box1, const STBox *box2);
 
 /* RTree functions */
 
-extern RTree *rtree_create_stbox();
-extern void rtree_free(RTree *rtree);
-extern void rtree_insert(RTree *rtree, STBox *box, int64 id);
-extern int *rtree_search(const RTree *rtree,const STBox *query, int *count);
+// extern RTree *rtree_create_stbox();
+// extern void rtree_free(RTree *rtree);
+// extern void rtree_insert(RTree *rtree, STBox *box, int64 id);
+// extern int *rtree_search(const RTree *rtree,const STBox *query, int *count);
 
 /*****************************************************************************
  * Functions for temporal geometries/geographies

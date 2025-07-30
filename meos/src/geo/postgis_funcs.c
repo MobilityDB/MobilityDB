@@ -2080,7 +2080,7 @@ geo_serialize(const LWGEOM *geom)
 #if MEOS
 /**
  * @ingroup meos_geo_base_srid
- * @brief Returns the geometry/geography transformed to an SRID
+ * @brief Return the geometry/geography transformed to an SRID
  * @return On error return @p NULL
  * @param[in] gs Geometry/geography
  * @param[in] srid_to Target SRID
@@ -2491,7 +2491,7 @@ geog_centroid(const GSERIALIZED *g, bool use_spheroid)
 
 /**
  * @ingroup meos_geo_base_accessor
- * @brief Returns the area of a geography in square meters
+ * @brief Return the area of a geography in square meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
  * @return On error return @p DBL_MAX
@@ -2562,7 +2562,7 @@ geog_area(const GSERIALIZED *gs, bool use_spheroid)
 
 /**
  * @ingroup meos_geo_base_accessor
- * @brief Returns the perimeter of a geography in meters
+ * @brief Return the perimeter of a geography in meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
  * @return On error return @p DBL_MAX

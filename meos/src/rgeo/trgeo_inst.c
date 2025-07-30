@@ -49,7 +49,7 @@
  *****************************************************************************/
 
 /**
- * @brief Returns the reference geometry of the temporal value
+ * @brief Return the reference geometry of the temporal value
  */
 const GSERIALIZED *
 trgeoinst_geom_p(const TInstant *inst)
@@ -63,7 +63,7 @@ trgeoinst_geom_p(const TInstant *inst)
 /*****************************************************************************/
 
 /**
- * @brief Returns the size of the trgeometry instant without reference geometry
+ * @brief Return the size of the trgeometry instant without reference geometry
  */
 size_t
 trgeoinst_pose_varsize(const TInstant *inst)
@@ -89,7 +89,7 @@ trgeoinst_set_pose(TInstant *inst)
 }
 
 /**
- * @brief Returns a new temporal pose instant obtained by removing the 
+ * @brief Return a new temporal pose instant obtained by removing the 
  * reference geometry of a temporal rigid geometry instant
  */
 TInstant *

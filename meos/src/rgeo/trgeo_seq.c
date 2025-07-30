@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * @brief Returns the reference geometry of the temporal value
+ * @brief Return the reference geometry of the temporal value
  */
 const GSERIALIZED *
 trgeoseq_geom_p(const TSequence *seq)
@@ -72,7 +72,7 @@ trgeoseq_geom_p(const TSequence *seq)
 /*****************************************************************************/
 
 /**
- * @brief Returns the size of the trgeometryseq without reference geometry
+ * @brief Return the size of the trgeometryseq without reference geometry
  */
 size_t
 trgeoseq_pose_varsize(const TSequence *seq)
@@ -93,7 +93,7 @@ trgeoseq_set_pose(TSequence *seq)
 }
 
 /**
- * @brief Returns a new temporal pose sequence obtained by removing the 
+ * @brief Return a new temporal pose sequence obtained by removing the 
  * reference geometry of a temporal rigid geometry
  */
 TSequence *
