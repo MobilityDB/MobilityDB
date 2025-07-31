@@ -348,9 +348,16 @@ pg_tzset(const char *name)
 
   /* MEOS: Look for timezone in the cache */
   tzentry *entry = tzcache_lookup(timezone_cache, uppername);
-  if (entry)
-    /* Timezone found in cache, nothing more to do */
-    return (pg_tz *) entry->data;
+  if (entry) {
+    /* Timezone found in cache, create copy and return */
+    pg_tz *cached = (pg_tz *) entry->data;
+
+    pg_tz *tz = palloc(sizeof(pg_tz));
+    strcpy(tz->TZname, cached->TZname);
+    memcpy(&tz->state, &cached->state, sizeof(tzstate));
+
+    return tz;
+  }
 
   /*
    * "GMT" is always sent to tzparse(), as per discussion above.
@@ -378,10 +385,15 @@ pg_tzset(const char *name)
     strcpy(canonname, uppername);
   }
 
-  /* Save timezone in the cache */
+  /* Create timezone object */
   pg_tz *tz = palloc(sizeof(pg_tz));
   strcpy(tz->TZname, canonname);
   memcpy(&tz->state, &tzstate, sizeof(tzstate));
+
+  /* Create copy for cache */
+  pg_tz *cached_tz = palloc(sizeof(pg_tz));
+  strcpy(cached_tz->TZname, canonname);
+  memcpy(&cached_tz->state, &tzstate, sizeof(tzstate));
 
   /* MEOS: Fill the struct to be added to the hash table */
   bool found;
@@ -389,8 +401,8 @@ pg_tzset(const char *name)
   if (! found)
   {
     entry->key = strdup(uppername);
-    entry->data = tz;
-    return (pg_tz *) entry->data;
+    entry->data = cached_tz;
+    return tz;
   }
 
   return NULL;
