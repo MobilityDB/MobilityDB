@@ -673,6 +673,53 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
   (sizeof(size_t) * (ss)->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[index] ) )
 #endif /* DEBUG_BUILD */
 
+/*****************************************************************************/
+
+/**
+ * Structure to represent skiplist elements
+ */
+
+#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
+
+typedef struct
+{
+  void *key;
+  void *value;
+  int height;
+  int next[SKIPLIST_MAXLEVEL];
+} SkipListElem;
+
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
+struct SkipList
+{
+  size_t key_size;     /**< Size in bytes of the keys */
+  size_t value_size;   /**< Size in bytes of the values */
+  int capacity;        /**< Maximum number of elements */
+  int length;          /**< Number of elements */
+  int next;            /**< Index of the next free element */
+  int tail;            /**< Index of the tail element  */
+  int *freed;          /**< Array of index values of deleted elements */
+  int freecount;       /**< Number of deleted elements */
+  int freecap;         /**< Maximum number of deleted elements */
+  void *extra;         /**< Pointer to additional data needed for processing */
+  size_t extrasize;    /**< Size of additional data needed for processing */
+  int (*comp_fn)(void *, void *); /**< Comparison function for the elements */
+  void *(*merge_fn)(void *, void *); /**< Merge function for the elements */
+  SkipListElem *elems; /**< Array of elements */
+};
+
+/**
+ * @brief Enumeration for the relative position of a given element into a
+ * skiplist
+ */
+typedef enum
+{
+  TEMPORAL,
+  KEYVALUE
+} SkipListType;
+
 /*****************************************************************************
  * Definition of a function with one to three Datum arguments and returning 
  * a Datum
