@@ -55,6 +55,7 @@ add_library(temporal_meos OBJECT
   temporal_meos.c
   temporal_posops_meos.c
   temporal_restrict_meos.c
+  temporal_rtree.c
   temporal_tile_meos.c
   tinstant_meos.c
   tnumber_distance_meos.c
