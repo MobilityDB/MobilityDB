@@ -682,7 +682,7 @@ bool
 floatset_value_n(const Set *s, int n, double *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSET(s, false); VALIDATE_NOT_NULL(result, false);
+  VALIDATE_FLOATSET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
   *result = DatumGetFloat8(SET_VAL_N(s, n - 1));
