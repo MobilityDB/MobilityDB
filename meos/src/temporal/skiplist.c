@@ -135,7 +135,7 @@ random_level()
 }
 
 /**
- * @brief Return the position to store an additional element in the skiplist
+ * @brief Return the position to store a new element in the skiplist
  * @return On error return @p INT_MAX
  */
 static int

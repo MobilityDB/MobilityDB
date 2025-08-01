@@ -166,7 +166,7 @@ typedef enum
 } interpType;
 
 /**
- * Structure to represent the common structure of temporal values of
+ * @brief Structure to represent the common structure of temporal values of
  * any temporal subtype
  */
 typedef struct
@@ -179,7 +179,7 @@ typedef struct
 } Temporal;
 
 /**
- * Structure to represent temporal values of instant subtype
+ * @brief Structure to represent temporal values of instant subtype
  */
 typedef struct
 {
@@ -196,7 +196,7 @@ typedef struct
 } TInstant;
 
 /**
- * Structure to represent temporal values of sequence subtype
+ * @brief Structure to represent temporal values of sequence subtype
  */
 typedef struct
 {
@@ -218,7 +218,7 @@ typedef struct
 #define TSEQUENCE_BBOX_PTR(seq)      ((void *)(&(seq)->period))
 
 /**
- * Structure to represent temporal values of sequence set subtype
+ * @brief Structure to represent temporal values of sequence set subtype
  */
 typedef struct
 {
@@ -242,7 +242,7 @@ typedef struct
 #define TSEQUENCESET_BBOX_PTR(ss)      ((void *)(&(ss)->period))
 
 /**
- * Struct for storing a similarity match
+ * @brief Structure for storing a similarity match
  */
 typedef struct
 {
@@ -253,7 +253,7 @@ typedef struct
 /*****************************************************************************/
 
 /**
- * Structure to represent skiplist elements
+ * @brief Structure to represent skiplist elements
  */
 
 #define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
@@ -266,26 +266,27 @@ typedef struct
 } SkipListElem;
 
 /**
- * Structure to represent skiplists that keep the current state of an aggregation
+ * @brief Structure to represent skiplists that keep the current state of an
+ * aggregation
  */
 typedef struct
 {
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  SkipListElem *elems;
+  int capacity;        /**< Maximum number of elements */
+  int length;          /**< Number of elements */
+  int next;            /**< Index of the next free element */
+  int tail;            /**< Index of the tail element  */
+  int *freed;          /**< Array of index values of deleted elements */
+  int freecount;       /**< Number of deleted elements */
+  int freecap;         /**< Maximum number of deleted elements */
+  void *extra;         /**< Pointer to additional data needed for processing */
+  size_t extrasize;    /**< Size of additional data needed for processing */
+  SkipListElem *elems; /**< Array of elements */
 } SkipList;
 
 /*****************************************************************************/
 
 /**
- * Structure for the in-memory Rtree index
+ * @brief Structure for the in-memory Rtree index
  */
 typedef struct RTree RTree;
 
