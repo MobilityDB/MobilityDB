@@ -475,7 +475,7 @@ text *
 ttext_start_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL);
+  VALIDATE_TTEXT(temp, NULL);
   return DatumGetTextP(temporal_start_value(temp));
 }
 
