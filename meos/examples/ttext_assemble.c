@@ -99,6 +99,7 @@ int main(void)
     instants[i] = ttextinst_make(txt, t);
     free(value); free(txt);
   }
+  free(oneday);
 
   seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
     true, true, STEP, true);
@@ -125,5 +126,5 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

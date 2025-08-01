@@ -128,11 +128,11 @@ int read_communes(void)
 {
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/brussels_communes.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file 'brussels_communes.csv'\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   int no_records = 0;
@@ -146,28 +146,28 @@ int read_communes(void)
     int read = fscanf(file, "%d,%100[^,],%d,%100000[^\n]\n",
       &communes[no_records].id, communes[no_records].name,
       &communes[no_records].population, geo_buffer);
-    /* Transform the string representing the geometry into a geometry value */
-    communes[no_records++].geom = geom_in(geo_buffer, -1);
-
-    if (read != 4 && !feof(file))
-    {
-      printf("Commune record with missing values\n");
-      return 1;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file 'brussels_communes.csv'\n");
-      return 1;
+      meos_finalize();
+      return EXIT_FAILURE;
     }
-  } while (!feof(file));
+    if (read != 4)
+    {
+      printf("Commune record with missing values\n");
+      meos_finalize();
+      return EXIT_FAILURE;
+    }
 
-  printf("%d commune records read\n", no_records);
+    /* Transform the string representing the geometry into a geometry value */
+    communes[no_records++].geom = geom_in(geo_buffer, -1);
+  } while (!feof(file));
 
   /* Close the file */
   fclose(file);
 
-  return 0;
+  printf("%d commune records read\n", no_records);
+  return EXIT_SUCCESS;
 }
 
 /* Read Brussels region from file */
@@ -175,11 +175,11 @@ int read_brussels_region(void)
 {
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/brussels_region.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file 'brussels_region.csv'\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   /* Read the first line of the file with the headers */
@@ -188,29 +188,25 @@ int read_brussels_region(void)
   /* Continue reading the file */
   int read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
     geo_buffer);
+  if (ferror(file) || read != 2)
+  {
+    if (ferror(file))
+      printf("Error reading file\n");
+    else
+      printf("Region record with missing values\n");
+    fclose(file);
+    meos_finalize();
+    return EXIT_FAILURE;
+  }
+
   /* Transform the string representing the geometry into a geometry value */
   brussels_region.geom = geom_in(geo_buffer, -1);
-
-  if (read != 2 && !feof(file))
-  {
-    printf("Region record with missing values\n");
-    fclose(file);
-    return 1;
-  }
-
-  if (ferror(file))
-  {
-    printf("Error reading file\n");
-    fclose(file);
-    return 1;
-  }
-
-  printf("Brussels region record read\n");
 
   /* Close the file */
   fclose(file);
 
-  return 0;
+  printf("Brussels region record read\n");
+  return EXIT_SUCCESS;
 }
 
 /**
@@ -333,7 +329,8 @@ int main(void)
   if (! file)
   {
     printf("Error opening input file 'berlinmod_trips.csv'\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   trip_record trip_rec;
@@ -349,34 +346,23 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq,
       trip_buffer);
-    if (! read)
+    if (ferror(file) || read != 5)
     {
-      printf("Error reading line from input file 'berlinmod_trips.csv'\n");
-      return 1;
+      if (ferror(file))
+        printf("Error reading line from input file 'berlinmod_trips.csv'\n");
+      else
+        printf("Trip record with missing values\n");
+      fclose(file);
+      meos_finalize();
+      return EXIT_FAILURE;
     }
+
+    no_records++;
+    printf("*");
+    fflush(stdout);
+
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
-
-    if (read == 5)
-    {
-      no_records++;
-      printf("*");
-      fflush(stdout);
-    }
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Trip record with missing values\n");
-      fclose(file);
-      return 1;
-    }
-
-    if (ferror(file))
-    {
-      printf("Error reading file\n");
-      fclose(file);
-      return 1;
-    }
 
     /* Compute the total distance */
     double d = tpoint_length(trip_rec.trip) / 1000;
@@ -439,5 +425,5 @@ int main(void)
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
-  return 0;
+  return EXIT_SUCCESS;
 }

@@ -107,11 +107,11 @@ int main(void)
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_trips.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   int i = 0;
@@ -125,6 +125,27 @@ int main(void)
     int tripid, vehid, seq;
     int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &tripid, &vehid, date_buffer, &seq, trip_buffer);
+    if (ferror(file))
+    {
+      printf("Error reading input file\n");
+      fclose(file);
+      meos_finalize();
+      /* Free memory */
+      for (int j = 0; j < i; j++)
+        free(trips[j].trip);
+      return EXIT_FAILURE;
+    }
+    if (read != 5)
+    {
+      printf("Trip record with missing values\n");
+      fclose(file);
+      meos_finalize();
+      /* Free memory */
+      for (int j = 0; j < i; j++)
+        free(trips[j].trip);
+      return EXIT_FAILURE;
+    }
+
     /* Transform the string representing the date into a date value */
     DateADT day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
@@ -135,36 +156,13 @@ int main(void)
     trips[i].tripid = tripid;
     trips[i].seq = seq;
     trips[i].day = day;
-    trips[i].trip = trip;
-
-    if (read == 5)
-      i++;
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Trip record with missing values\n");
-      fclose(file);
-      /* Free memory */
-      for (int j = 0; j < i; j++)
-        free(trips[j].trip);
-      return 1;
-    }
-
-    if (ferror(file))
-    {
-      printf("Error reading input file\n");
-      fclose(file);
-      /* Free memory */
-      for (int j = 0; j < i; j++)
-        free(trips[j].trip);
-      return 1;
-    }
+    trips[i++].trip = trip;
   } while (!feof(file));
-
-  int records_in = i;
 
   /* Close the input file */
   fclose(file);
+
+  int records_in = i;
 
   /* Open the output file */
   file = fopen("data/berlinmod_instants.csv", "w+");
@@ -230,15 +228,15 @@ int main(void)
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
+  /* Close the ouput file */
+  fclose(file);
+
   /* Free memory */
   for (i = 0; i < records_in; i++)
     free(trips[i].trip);
 
-  /* Close the ouput file */
-  fclose(file);
-
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

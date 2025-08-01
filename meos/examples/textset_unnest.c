@@ -77,7 +77,8 @@ int main(void)
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   textset_record rec;
@@ -93,18 +94,16 @@ int main(void)
   do
   {
     int read = fscanf(file, "%10d,'%1023[^']'\n", &rec.k, set_buffer);
-
-    if (read != 2 && ! feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-      continue;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
+    }
+    if (read != 2)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
     }
 
     no_records++;
@@ -148,5 +147,6 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

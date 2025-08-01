@@ -146,7 +146,7 @@ main(int argc, char **argv)
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  int exit_value = EXIT_FAILURE;
 
   /* Get start time */
   clock_t t;
@@ -178,20 +178,29 @@ main(int argc, char **argv)
 
   /* Set always-secure search path, so malicious users can't take control. */
   res_sql = exec_sql(conn, "SELECT pg_catalog.set_config('search_path', '', false)",
-      PGRES_TUPLES_OK);
+    PGRES_TUPLES_OK);
   if (res_sql < 0)
+  {
+    fprintf(stderr, "%s", PQerrorMessage(conn));
     goto cleanup;
+  }
 
   /* Create the table that will hold the data */
   printf("Creating the table AISTrips in the database\n");
   res_sql = exec_sql(conn, "DROP TABLE IF EXISTS public.AISTrips;",
-      PGRES_COMMAND_OK);
+    PGRES_COMMAND_OK);
   if (res_sql < 0)
+  {
+    fprintf(stderr, "%s", PQerrorMessage(conn));
     goto cleanup;
+  }
   res_sql = exec_sql(conn, "CREATE TABLE public.AISTrips("
     "MMSI integer PRIMARY KEY, trip public.tgeogpoint);", PGRES_COMMAND_OK);
   if (res_sql < 0)
+  {
+    fprintf(stderr, "%s", PQerrorMessage(conn));
     goto cleanup;
+  }
 
   /***************************************************************************
    * Section 2: Initialize MEOS and open the input AIS file
@@ -202,7 +211,6 @@ main(int argc, char **argv)
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ais_instants.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
@@ -225,24 +233,23 @@ main(int argc, char **argv)
   {
     int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
       text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
-    /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = timestamp_in(text_buffer, -1);
-
-    if (read == 5)
-      no_records++;
-
-    if (read != 5 && ! feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      no_nulls++;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
       goto cleanup;
     }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      no_nulls++;
+      continue;
+    }
+
+    no_records++;
+    
+    /* Transform the string representing the timestamp into a timestamp value */
+    rec.T = timestamp_in(text_buffer, -1);
 
     /* Find the place to store the new instant */
     j = -1;
@@ -281,7 +288,10 @@ main(int argc, char **argv)
 
       res_sql = exec_sql(conn, query_buffer, PGRES_COMMAND_OK);
       if (res_sql < 0)
+      {
+        fclose(file);
         goto cleanup;
+      }
 
       /* Free memory */
       free(temp_out);
@@ -334,7 +344,7 @@ main(int argc, char **argv)
   PQclear(res);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
   
   /* Calculate the elapsed time */
   t = clock() - t;
@@ -348,11 +358,11 @@ cleanup:
   for (i = 0; i < no_ships; i++)
     free(trips[i].trip);
 
-  /* Finalize MEOS */
-  meos_finalize();
-
   /* Close the connection to the database and cleanup */
   PQfinish(conn);
+
+  /* Finalize MEOS */
+  meos_finalize();
 
   return exit_value;
 }

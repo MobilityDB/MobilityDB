@@ -41,6 +41,7 @@
 #include <stdio.h>  /* for printf */
 
 #include <meos.h>
+#include <meos_geo.h>
 /* Include the MEOS API internal header for assembling the coordinates */
 #include <meos_internal.h>
 
@@ -85,5 +86,5 @@ int main()
   meos_finalize();
 
   /* Return */
-  return 0;
+  return EXIT_SUCCESS;
 }

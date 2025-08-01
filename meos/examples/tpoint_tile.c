@@ -51,6 +51,7 @@
 int main(void)
 {
   char output_buffer[MAX_LINE_LENGTH];
+  int i;
 
   /* Initialize MEOS */
   meos_initialize();
@@ -77,6 +78,7 @@ int main(void)
   else
     result = temporal_time_split(tpoint, interv, torigin, &time_bins,
       &count);
+  free(sorigin); free(interv);
 
   /* Print the input value to split */
   char *tpoint_str = tspatial_as_ewkt(tpoint, 3);
@@ -84,13 +86,13 @@ int main(void)
   printf("| Value to split |\n");
   printf("------------------\n\n");
   printf("%s\n\n", tpoint_str);
-  free(tpoint_str);
+  free(tpoint_str); free(tpoint);
 
   /* Output the resulting fragments */
   printf("-------------\n");
   printf("| Fragments |\n");
   printf("-------------\n\n");
-  for (int i = 0; i < count; i++)
+  for (i = 0; i < count; i++)
   {
     char *space_str = spacesplit ?
       geo_as_ewkt(space_bins[i], 3) : "";
@@ -110,8 +112,19 @@ int main(void)
   if (bitmatrix)
     printf("Using a bitmatrix for the fragmentation\n");
 
+  /* Clean up */
+  for (i = 0; i < count; i++)
+  {
+    free(space_bins[i]);
+    free(result[i]);
+  }
+  free(result);
+  free(space_bins);
+  free(time_bins);
+
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

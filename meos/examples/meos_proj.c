@@ -39,6 +39,7 @@
 
 #include <proj.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <meos.h>
 #include <meos_geo.h>
 
@@ -54,21 +55,23 @@ int main(void)
   C = proj_context_create();
 
   P = proj_create_crs_to_crs(
-      C, "EPSG:4326", "+proj=utm +zone=32 +datum=WGS84", /* or EPSG:32632 */
-      NULL);
+    C, "EPSG:4326", "+proj=utm +zone=32 +datum=WGS84", /* or EPSG:32632 */
+    NULL);
 
-  if (0 == P) {
-      fprintf(stderr, "Failed to create transformation object.\n");
-      return 1;
+  if (0 == P)
+  {
+    fprintf(stderr, "Failed to create transformation object.\n");
+    return EXIT_FAILURE;
   }
 
   /* This will ensure that the order of coordinates for the input CRS */
   /* will be longitude, latitude, whereas EPSG:4326 mandates latitude, */
   /* longitude */
   norm = proj_normalize_for_visualization(C, P);
-  if (0 == norm) {
-      fprintf(stderr, "Failed to normalize transformation object.\n");
-      return 1;
+  if (0 == norm)
+  {
+    fprintf(stderr, "Failed to normalize transformation object.\n");
+    return EXIT_FAILURE;
   }
   proj_destroy(P);
   P = norm;
@@ -89,5 +92,5 @@ int main(void)
   /* Clean up */
   proj_destroy(P);
   proj_context_destroy(C); /* may be omitted in the single threaded case */
-  return 0;
+  return EXIT_SUCCESS;
 }

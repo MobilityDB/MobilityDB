@@ -105,11 +105,11 @@ int main(void)
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_trips.csv", "r");
-
   if (! file)
   {
     printf("Error opening input file\n");
-    return 1;
+    meos_finalize();
+    return EXIT_FAILURE;
   }
 
   /* Read the first line of the file with the headers */
@@ -122,20 +122,6 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq,
         trip_buffer);
-    /* Transform the string representing the date into a date value */
-    trips[i].day = date_in(date_buffer);
-    /* Transform the string representing the trip into a temporal value */
-    trips[i].trip = temporal_from_hexwkb(trip_buffer);
-
-    if (read == 5)
-      i++;
-
-    if (read != 5 && !feof(file))
-    {
-      printf("Record with missing values ignored\n");
-      nulls++;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
@@ -143,9 +129,24 @@ int main(void)
       /* Free memory */
       for (j = 0; j < i; j++)
         free(trips[j].trip);
-      return 1;
+      return EXIT_FAILURE;
     }
+    if (read != 5)
+    {
+      printf("Record with missing values ignored\n");
+      nulls++;
+      continue;
+    }
+
+    /* Transform the string representing the date into a date value */
+    trips[i].day = date_in(date_buffer);
+    /* Transform the string representing the trip into a temporal value */
+    trips[i].trip = temporal_from_hexwkb(trip_buffer);
+    i++;
   } while (!feof(file));
+
+  /* Close the file */
+  fclose(file);
 
   no_records = i;
   printf("\n%d records read.\n%d incomplete records ignored.\n",
@@ -174,16 +175,14 @@ int main(void)
     free(trips_sed[i]);
   }
 
-  /* Close the file */
-  fclose(file);
-
-  /* Finalize MEOS */
-  meos_finalize();
-
   /* Calculate the elapsed time */
   t = clock() - t;
   double time_taken = ((double) t) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
-  return 0;
+  /* Finalize MEOS */
+  meos_finalize();
+
+  /* Return */
+  return EXIT_SUCCESS;
 }

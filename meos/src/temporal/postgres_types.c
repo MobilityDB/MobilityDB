@@ -59,6 +59,7 @@
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 
@@ -462,7 +463,6 @@ char *
 float8_out(double num, int maxdd)
 {
   assert(maxdd >= 0);
-
   char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
   lwprint_double(num, maxdd, ascii);
   return ascii;
@@ -686,7 +686,7 @@ pg_date_in(const char *str)
   return date;
 }
 
-inline DateADT
+DateADT
 date_in(const char *str)
 {
   return pg_date_in(str);
@@ -725,7 +725,7 @@ pg_date_out(DateADT d)
   return pstrdup(buf);
 }
 
-inline char *
+char *
 date_out(DateADT d)
 {
   return pg_date_out(d);
@@ -1321,12 +1321,12 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
-inline Timestamp
+Timestamp
 timestamp_in(const char *str, int32 prec)
 {
   return (Timestamp) timestamp_in_common(str, prec, false);
 }
-inline Timestamp
+Timestamp
 pg_timestamp_in(const char *str, int32 prec)
 {
   return (Timestamp) timestamp_in_common(str, prec, false);
@@ -1342,12 +1342,12 @@ pg_timestamp_in(const char *str, int32 prec)
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
-inline TimestampTz
+TimestampTz
 timestamptz_in(const char *str, int32 prec)
 {
   return timestamp_in_common(str, prec, true);
 }
-inline TimestampTz
+TimestampTz
 pg_timestamptz_in(const char *str, int32 prec)
 {
   return timestamp_in_common(str, prec, true);
@@ -1403,12 +1403,12 @@ timestamp_out_common(TimestampTz t, bool withtz)
  * @param[in] t Timestamp
  * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
  */
-inline char *
+char *
 timestamp_out(Timestamp t)
 {
   return timestamp_out_common((TimestampTz) t, false);
 }
-inline char *
+char *
 pg_timestamp_out(Timestamp t)
 {
   return timestamp_out_common((TimestampTz) t, false);
@@ -1420,7 +1420,7 @@ pg_timestamp_out(Timestamp t)
  * @param[in] t Timestamp
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
-inline char *
+char *
 timestamptz_out(TimestampTz t)
 {
   return timestamp_out_common(t, true);
@@ -1728,7 +1728,7 @@ pg_interval_in(const char *str, int32 prec)
   return result;
 }
 
-inline Interval *
+Interval *
 interval_in(const char *str, int32 prec)
 {
   return pg_interval_in(str, prec);
@@ -1820,7 +1820,7 @@ pg_interval_out(const Interval *interv)
   return pstrdup(buf);
 }
 
-inline char *
+char *
 interval_out(const Interval *interv)
 {
   return pg_interval_out(interv);
@@ -2217,7 +2217,7 @@ pg_interval_cmp(const Interval *interv1, const Interval *interv2)
  * @param[in] interv1,interv2 Intervals
  * @note PostgreSQL function: @p interval_cmp(PG_FUNCTION_ARGS)
  */
-inline int
+int
 interval_cmp(const Interval *interv1, const Interval *interv2)
 {
   return pg_interval_cmp(interv1, interv2);

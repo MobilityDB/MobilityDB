@@ -92,6 +92,12 @@ int main(void)
   printf("Number of generated instants: %d, Time-weighted average: %f\n",
     temporal_num_instants(seq), tnumber_twavg(seq));
 
+  /* Calculate the elapsed time */
+  tm = clock() - tm;
+  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+  printf("It accumulates the generated instants and constructs the ouput sequence at the end\n");
+
   /* Free memory */
   free(oneday);
   free(seq);
@@ -99,11 +105,6 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  /* Calculate the elapsed time */
-  tm = clock() - tm;
-  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
-  printf("The program took %f seconds to execute\n", time_taken);
-  printf("It accumulates the generated instants and constructs the ouput sequence at the end\n");
-
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

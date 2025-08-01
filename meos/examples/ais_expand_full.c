@@ -125,7 +125,7 @@ int main(void)
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
-  int exit_value = 1;
+  int exit_value = EXIT_FAILURE;
 
   /* Initialize MEOS */
   meos_initialize();
@@ -319,6 +319,7 @@ int main(void)
           // printf("Trip %d -> %d ", new_seq->maxcount / 2, new_seq->maxcount);
           // fflush(stdout);
         // }
+        free(inst);
         trips[j].trip = new_seq;
         trips[j].no_trip_instants++;
       }
@@ -368,6 +369,7 @@ int main(void)
           // printf("SOG %d -> %d ", new_seq->maxcount / 2, new_seq->maxcount);
           // fflush(stdout);
         // }
+        free(inst);
         trips[j].SOG = new_seq;
         trips[j].no_SOG_instants++;
       }
@@ -410,7 +412,7 @@ int main(void)
   printf("The program took %f seconds to execute\n", time_taken);
 
   /* State that the program executed successfully */
-  exit_value = 0;
+  exit_value = EXIT_SUCCESS;
 
 /* Clean up */
 cleanup:

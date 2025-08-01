@@ -48,6 +48,7 @@
 #include <string.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 
 typedef struct
@@ -97,7 +98,7 @@ int main(void)
   if (! file)
   {
     printf("Error opening intput file\n");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   int no_records = 0, i;
@@ -116,32 +117,30 @@ int main(void)
   {
     int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
-    /* Transform the string representing the date into a date value */
-    DateADT day = date_in(date_buffer);
-    trip_rec.day = day;
-    /* Transform the string representing the trip into a temporal value */
-    trip_rec.trip = temporal_from_hexwkb(trip_buffer);
-
-    if (read == 5)
-      no_records++;
-
-    if (read != 5 && ! feof(file))
-    {
-      printf("Trip record with missing values\n");
-      fclose(file);
-      /* Free memory */
-      free(trip_rec.trip);
-      return 1;
-    }
-
     if (ferror(file))
     {
       printf("Error reading input file\n");
       fclose(file);
       /* Free memory */
       free(trip_rec.trip);
-      return 1;
+      return EXIT_FAILURE;
     }
+    if (read != 5)
+    {
+      printf("Trip record with missing values\n");
+      fclose(file);
+      /* Free memory */
+      free(trip_rec.trip);
+      return EXIT_FAILURE;
+    }
+
+    no_records++;
+    
+    /* Transform the string representing the date into a date value */
+    DateADT day = date_in(date_buffer);
+    trip_rec.day = day;
+    /* Transform the string representing the trip into a temporal value */
+    trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     /* Add the current value to the running aggregates */
     STBox *new_extent = tspatial_extent_transfn(extent, trip_rec.trip);
@@ -154,11 +153,11 @@ int main(void)
     /* Aggregate the time of the trip */
     state = tstzspanset_tcount_transfn(state, ps);
     /* Free memory */
-    free(trip_rec.trip);
-    free(temptime);
-    free(ps);
-
+    free(trip_rec.trip); free(temptime); free(ps);
   } while (!feof(file));
+
+  /* Close the input file */
+  fclose(file);
 
   printf("\n%d trip records read\n\n", no_records);
 
@@ -182,6 +181,11 @@ int main(void)
     free(out_str);
   }
 
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+
   /* Free memory */
   free(extent);
   free(interval);
@@ -190,16 +194,8 @@ int main(void)
     free(tcount_seqs[i]);
   free(tcount_seqs);
 
-  /* Close the input file */
-  fclose(file);
-
   /* Finalize MEOS */
   meos_finalize();
 
-  /* Calculate the elapsed time */
-  t = clock() - t;
-  double time_taken = ((double) t) / CLOCKS_PER_SEC;
-  printf("The program took %f seconds to execute\n", time_taken);
-
-  return 0;
+  return EXIT_SUCCESS;
 }

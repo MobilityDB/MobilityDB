@@ -75,7 +75,7 @@
 /* Maximum number of instants in a sequence */
 #define MAX_INSTANTS_SEQ 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 50000
+#define NO_INSTANTS_BATCH 500000
 /* Maximum length in characters of the text values in the instants */
 #define MAX_LENGTH_TEXT 10
 /* State whether a message is shown every time a sequence set is expanded */
@@ -99,7 +99,7 @@ int main(void)
   clock_t tm;
   tm = clock();
 
-  /* Sequence and sequence set for accumulating the input instants */
+  /* Sequence and sequence set values for accumulating the input instants */
   TSequence *seq = NULL, *seq1 = NULL;
   TSequenceSet *ss = NULL;
   /* Interval to add */
@@ -199,18 +199,17 @@ int main(void)
   printf("Number of instants in the last sequence: %d, Last value : %s\n",
     seq->count, str);
 
-  /* Free memory */
-  free(ss1); free(onehour);
-  free(txt); free(str);
-  free(seq);
-
   /* Calculate the elapsed time */
   tm = clock() - tm;
   double time_taken = ((double) tm) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
+  /* Free memory */
+  free(ss1); free(onehour); free(txt); free(str); free(seq);
+
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

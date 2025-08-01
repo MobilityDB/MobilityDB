@@ -93,10 +93,10 @@ int main(void)
     }
     t = add_timestamptz_interval(t, oneday);
     int value = i % 2 + 1;
-#if GEODETIC == true
+#if GEODETIC
     GSERIALIZED *gs = geogpoint_make2d(4326, value, value);
 #else
-    GSERIALIZED *gs = geogpoint_make2d(5676, value, value);
+    GSERIALIZED *gs = geompoint_make2d(5676, value, value);
 #endif
     instants[i] = tpointinst_make(gs, t);
     free(gs);
@@ -125,5 +125,5 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

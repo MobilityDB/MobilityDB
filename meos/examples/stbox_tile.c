@@ -68,7 +68,7 @@ int main(void)
   {
     printf("At least one of 'spacesplit' or 'timesplit' must be true\n");
     meos_finalize();
-    return 0;
+    return EXIT_FAILURE;
   }
 
   /* Initialize values for tiling */
@@ -123,5 +123,5 @@ int main(void)
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

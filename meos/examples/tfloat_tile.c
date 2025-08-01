@@ -104,14 +104,15 @@ int main(void)
   /* Print information about the result */
   printf("\nNumber of fragments: %d\n", count);
 
+  /* Finalize MEOS */
+  meos_finalize();
+
   /* Free memory */
   free(tfloat); free(interv); free(result);
   if (valuesplit)
     free(value_bins);
   free(time_bins);
 
-  /* Finalize MEOS */
-  meos_finalize();
-
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

@@ -90,7 +90,7 @@ int main(void)
 
   /* Finalize MEOS */
   meos_finalize();
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 /*****************************************************************************/

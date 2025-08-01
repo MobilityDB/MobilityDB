@@ -67,7 +67,7 @@ int main(void)
   {
     printf("At least one of 'valuesplit' or 'timesplit' must be true\n");
     meos_finalize();
-    return 0;
+    return EXIT_FAILURE;
   }
 
   /* Initialize values for tiling */
@@ -114,6 +114,9 @@ int main(void)
   /* Print information about the result */
   printf("\nNumber of tiles: %d\n", count);
 
+  /* Finalize MEOS */
+  meos_finalize();
+
   /* Clean up allocated objects */
   free(box); free(interv);
   if (valuesplit)
@@ -121,8 +124,6 @@ int main(void)
   else
     free(spans);
 
-  /* Finalize MEOS */
-  meos_finalize();
-
-  return 0;
+  /* Return */
+  return EXIT_SUCCESS;
 }

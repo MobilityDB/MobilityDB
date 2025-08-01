@@ -436,12 +436,41 @@ SELECT asText(transformPipeline(tgeompoint 'POINT(426857.9877165967 5427937.5233
 WITH test1(pipeline) AS (
   SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
 test2(temp) AS (
-  SELECT tgeompoint 'SRID=4326;POINT(2.123456 49.123456)@2000-01-01' UNION
-  SELECT tgeompoint 'SRID=4326;{POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02}' UNION
-  SELECT tgeompoint 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]' UNION
+  SELECT tgeompoint 'SRID=4326;POINT(2.123456 49.123456)@2000-01-01' )
+SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
+FROM test1, test2;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH test1(pipeline) AS (
+  SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
+test2(temp) AS (
+  SELECT tgeompoint 'SRID=4326;{POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02}' )
+SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
+FROM test1, test2;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH test1(pipeline) AS (
+  SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
+test2(temp) AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]' )
+SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
+FROM test1, test2;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH test1(pipeline) AS (
+  SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
+test2(temp) AS (
   SELECT tgeompoint 'SRID=4326;{[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02],'
-    '[POINT(2.123456 49.123456)@2000-01-03, POINT(3.123456 50.123456)@2000-01-04]}'
-    )
+    '[POINT(2.123456 49.123456)@2000-01-03, POINT(3.123456 50.123456)@2000-01-04]}' )
 SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
 FROM test1, test2;
  ?column? 
