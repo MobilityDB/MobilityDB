@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpoint_get_z</title>
+<title>MobilityDB: tpoint_speed</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,24 +96,24 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gad725294d2bca03ef0b81e5d5066ed11a.html#gad725294d2bca03ef0b81e5d5066ed11a">tpoint_direction</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gac285f0eadd899dd15b0b60bf912b6faa.html#gac285f0eadd899dd15b0b60bf912b6faa">tpoint_get_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gaa8f1cbfd138657910dba453780d624e6.html#gaa8f1cbfd138657910dba453780d624e6">tpoint_get_y</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_gabc99b2d852510d2310da92e1dab0e34e.html#gabc99b2d852510d2310da92e1dab0e34e">tpoint_get_z</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gabc99b2d852510d2310da92e1dab0e34e.html#gabc99b2d852510d2310da92e1dab0e34e">tpoint_get_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gabd229c1305c3fe57fa0984181a2551e5.html#gabd229c1305c3fe57fa0984181a2551e5">tpoint_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga0cbc8b565faa16540ba155c7f3486c03.html#ga0cbc8b565faa16540ba155c7f3486c03">tpoint_length</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga28e95ebddf05433f62e40d656c41f2b9.html#ga28e95ebddf05433f62e40d656c41f2b9">tpoint_speed</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_ga28e95ebddf05433f62e40d656c41f2b9.html#ga28e95ebddf05433f62e40d656c41f2b9">tpoint_speed</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga2f7acd28f0e2f4cfcf142bc0877345fb.html#ga2f7acd28f0e2f4cfcf142bc0877345fb">tpoint_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga247c57db37e2fd570535dd45744be159.html#ga247c57db37e2fd570535dd45744be159">tpoint_twcentroid</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gabc99b2d852510d2310da92e1dab0e34e" name="gabc99b2d852510d2310da92e1dab0e34e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabc99b2d852510d2310da92e1dab0e34e">&#9670;&#160;</a></span>tpoint_get_z()</h2>
+<a id="ga28e95ebddf05433f62e40d656c41f2b9" name="ga28e95ebddf05433f62e40d656c41f2b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga28e95ebddf05433f62e40d656c41f2b9">&#9670;&#160;</a></span>tpoint_speed()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpoint_get_z </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpoint_speed </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em></td><td>)</td>
@@ -122,13 +122,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the Z coordinates of a temporal point as a temporal float. </p>
+<p>Return the speed of a temporal point sequence (set) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_gaa0e45340e1b7917ea1228d8a14f21976.html#gaa0e45340e1b7917ea1228d8a14f21976" title="Return the Z coordinates of a temporal point as a temporal float @sqlfn getZ()">Tpoint_get_z()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return -1.0 @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_gaebc216bc940f533487968cb715618330.html#gaebc216bc940f533487968cb715618330" title="Return the length traversed by a temporal sequence (set) point @sqlfn length()">Tpoint_length()</a> </dd></dl>
 
 </div>
 </div>
