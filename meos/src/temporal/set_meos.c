@@ -486,7 +486,6 @@ floatset_start_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, DBL_MAX);
-    return DBL_MAX;
   return DatumGetFloat8(SET_VAL_N(s, 0));
 }
 
