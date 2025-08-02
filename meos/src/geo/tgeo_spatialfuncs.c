@@ -1061,7 +1061,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
 Temporal *
 tgeometry_to_tgeography(const Temporal *temp)
 {
-  VALIDATE_TGEOMETRY(temp, NULL);
+  VALIDATE_TGEOM(temp, NULL);
   return tgeom_tgeog(temp, TGEOM_TO_TGEOG);
 }
 
@@ -1075,7 +1075,7 @@ Temporal *
 tgeography_to_tgeometry(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGRAPHY(temp, NULL);
+  VALIDATE_TGEOG(temp, NULL);
   return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
 }
 #endif /* MEOS */
