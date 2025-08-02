@@ -661,7 +661,7 @@ tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp,
   bool ispoint)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
   meosType tgeotype;
