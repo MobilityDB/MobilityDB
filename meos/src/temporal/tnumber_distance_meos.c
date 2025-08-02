@@ -102,7 +102,7 @@ nad_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, -1.0);
-  return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i)));
+  return (int) nad_tnumber_number(temp, Int32GetDatum(i));
 }
 
 /**
@@ -119,7 +119,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1.0);
-  return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
+  return nad_tnumber_number(temp, Float8GetDatum(d));
 }
 
 /**
@@ -137,7 +137,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return -1;
-  return DatumGetInt32(nad_tnumber_tbox(temp, box));
+  return (int) nad_tnumber_tbox(temp, box);
 }
 
 /**
@@ -155,7 +155,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return -1;
-  return DatumGetFloat8(nad_tnumber_tbox(temp, box));
+  return nad_tnumber_tbox(temp, box);
 }
 
 /**
@@ -172,7 +172,7 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
       ! ensure_span_isof_type(&box2->span, T_INTSPAN))
     return -1;
 
-  return DatumGetInt32(nad_tbox_tbox(box1, box2));
+  return (int) nad_tbox_tbox(box1, box2);
 }
 
 /**
@@ -189,7 +189,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
       ! ensure_span_isof_type(&box2->span, T_FLOATSPAN))
     return -1;
 
-  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
+  return nad_tbox_tbox(box1, box2);
 }
 
 /**
@@ -204,8 +204,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp1, -1); VALIDATE_TINT(temp2, -1);
-  Datum result = nad_tnumber_tnumber(temp1, temp2);
-  return Int32GetDatum(result);
+    return (int) nad_tnumber_tnumber(temp1, temp2);
 }
 
 /**
@@ -220,8 +219,7 @@ nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp1, -1.0); VALIDATE_TFLOAT(temp2, -1.0);
-  Datum result = nad_tnumber_tnumber(temp1, temp2);
-  return Float8GetDatum(result);
+    return nad_tnumber_tnumber(temp1, temp2);
 }
 
 /*****************************************************************************/
