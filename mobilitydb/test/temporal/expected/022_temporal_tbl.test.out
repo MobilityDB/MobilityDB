@@ -1738,6 +1738,30 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_ttext, tbl_interval;
   9504
 (1 row)
 
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tbool_inst;
+             max              
+------------------------------
+ Sun Jun 10 10:30:00 2001 PDT
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tbool_discseq;
+             max              
+------------------------------
+ Thu Nov 22 06:30:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tbool_seq;
+             max              
+------------------------------
+ Fri Dec 28 03:00:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tbool_seqset;
+             max              
+------------------------------
+ Sun Dec 23 01:45:00 2001 PST
+(1 row)
+
 SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tint_inst;
              max              
 ------------------------------
@@ -1856,6 +1880,30 @@ SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'linear'))) FROM tbl_
  max 
 -----
   15
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_ttext_inst;
+             max              
+------------------------------
+ Fri Nov 16 00:15:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_ttext_discseq;
+             max              
+------------------------------
+ Sun Dec 30 05:00:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_ttext_seq;
+             max              
+------------------------------
+ Thu Dec 13 10:00:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_ttext_seqset;
+             max              
+------------------------------
+ Mon Dec 24 00:45:00 2001 PST
 (1 row)
 
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tfloat_seq;

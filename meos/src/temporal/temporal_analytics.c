@@ -538,7 +538,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
         Datum startvalue = tinstant_value_p(start);
-        Datum endvalue = (interp == LINEAR) ?
+        Datum endvalue = (interp == LINEAR || cmp2 == 0) ?
           tinstant_value_p(end) : startvalue;
         Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
           start->temptype, start->t, end->t, lower);

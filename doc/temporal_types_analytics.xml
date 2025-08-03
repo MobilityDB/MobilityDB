@@ -96,10 +96,12 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 			<listitem xml:id="ttype_tsample">
 				<indexterm significance="normal"><primary><varname>tsample</varname></primary></indexterm>
 				<para>Sample a temporal value with respect to an interval</para>
-				<para><varname>tsample({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03',</varname></para>
-				<para><varname>  interp='discrete') →{tnumber,tgeompoint}</varname></para>
+				<para><varname>tsample(temporal,duration interval,torigin timestamptz='2000-01-03',</varname></para>
+				<para><varname>  interp='discrete') → temporal</varname></para>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tsample(tbool '[true@2001-01-01,false@2001-01-02]', '12 hours', '2001-01-01', 'step');
+-- [t@2001-01-01, f@2001-01-02]
 SELECT tsample(tint '{1@2001-01-01,5@2001-01-05}', '3 days', '2001-01-01');
 -- {1@2001-01-01}
 SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '1 day', '2001-01-01');
