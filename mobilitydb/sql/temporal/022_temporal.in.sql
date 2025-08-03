@@ -1170,7 +1170,7 @@ CREATE FUNCTION tprecision(tfloat, duration interval,
 
 CREATE FUNCTION tsample(tbool, duration interval,
   origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
-  RETURNS tint
+  RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tint, duration interval,
@@ -1185,7 +1185,7 @@ CREATE FUNCTION tsample(tfloat, duration interval,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(ttext, duration interval,
   origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
-  RETURNS tint
+  RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
