@@ -473,6 +473,11 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_ttext, tbl_interval;
 -------------------------------------------------------------------------------
 -- Granularity modification with tprecision and tsample
 
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tbool_inst;
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tbool_discseq;
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tbool_seq;
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tbool_seqset;
+
 SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tint_inst;
 SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tint_discseq;
 SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tint_seq;
@@ -497,6 +502,11 @@ SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'linear'))) FROM tb
 SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_discseq;
 SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_seq;
 SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'linear'))) FROM tbl_tfloat_seqset;
+
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_ttext_inst;
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_ttext_discseq;
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_ttext_seq;
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------
 -- stop function

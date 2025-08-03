@@ -6338,6 +6338,13 @@ SELECT scaleTime(tfloat '1@2000-01-01', '0');
 ERROR:  The interval must be positive: 00:00:00
 SELECT scaleTime(tfloat '1@2000-01-01', '-1 day');
 ERROR:  The interval must be positive: -1 days
+SELECT tsample(tbool '[True@2001-01-01, False@2001-01-02]', interval '12 hours',
+timestamptz '2001-01-01');
+                                             tsample                                              
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
 SELECT tsample(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
 3@2001-01-02 12:00:00, 4@2001-01-03 00:00:00, 5@2001-01-04 00:00:00,
 6@2001-01-04 12:00:00}', '1 day', '2001-01-01');
@@ -6354,7 +6361,7 @@ SELECT round(tsample(tfloat 'Interp=step;[1@2001-01-01 00:00:00, 2@2001-01-01 12
  {1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 4@Wed Jan 03 00:00:00 2001 PST, 5@Thu Jan 04 00:00:00 2001 PST}
 (1 row)
 
-SELECT round(tsample(tfloat'[1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
+SELECT round(tsample(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 12:00:00,
 3@2001-01-02 12:00:00, 4@2001-01-03 00:00:00, 5@2001-01-04 00:00:00,
 6@2001-01-04 12:00:00]', '1 day', '2001-01-01'), 4);
                                                                round                                                                
