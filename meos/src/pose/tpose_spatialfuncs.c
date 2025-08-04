@@ -63,7 +63,7 @@ tpose_trajectory(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
   Temporal *tpoint = tpose_to_tpoint(temp);
-  GSERIALIZED *result = tpoint_trajectory(tpoint);
+  GSERIALIZED *result = tpoint_trajectory(tpoint, UNARY_UNION_NO);
   pfree(tpoint);
   return result;
 }

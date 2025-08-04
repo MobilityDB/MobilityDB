@@ -355,13 +355,13 @@ SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
-    66
+    79
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
-    71
+    79
 (1 row)
 
 SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint;

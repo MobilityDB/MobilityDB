@@ -177,12 +177,12 @@ CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION trajectory(tgeompoint)
+CREATE FUNCTION trajectory(tgeompoint, bool DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION trajectory(tgeogpoint)
+CREATE FUNCTION trajectory(tgeogpoint, bool DEFAULT FALSE)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

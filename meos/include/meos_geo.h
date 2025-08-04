@@ -657,7 +657,7 @@ extern Temporal *tgeo_centroid(const Temporal *temp);
 extern GSERIALIZED *tgeo_convex_hull(const Temporal *temp);
 extern GSERIALIZED *tgeo_end_value(const Temporal *temp);
 extern GSERIALIZED *tgeo_start_value(const Temporal *temp);
-extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp);
+extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp, bool unary_union);
 extern bool tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value);
 extern bool tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED **tgeo_values(const Temporal *temp, int *count);
@@ -671,7 +671,7 @@ extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
-extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
+extern GSERIALIZED *tpoint_trajectory(const Temporal *temp, bool unary_union);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
 /* Transformation functions */

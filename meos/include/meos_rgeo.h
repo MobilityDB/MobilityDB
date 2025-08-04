@@ -112,7 +112,7 @@ extern TInstant *trgeo_start_instant(const Temporal *temp);
 extern TSequence *trgeo_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeo_start_value(const Temporal *temp);
 extern bool trgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
-extern GSERIALIZED *trgeo_traversed_area(const Temporal *temp);
+extern GSERIALIZED *trgeo_traversed_area(const Temporal *temp, bool unary_union);
 
 /*****************************************************************************
  * Transformation functions

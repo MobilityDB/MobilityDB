@@ -874,9 +874,8 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
  * @ingroup meos_internal_geo_accessor
  * @brief Return the trajectory of a temporal point sequence
  * @param[in] seq Temporal sequence
- * @param[in] unary_union True when the ST_UnaryUnion function is applied to
- * the result to remove redundant geometry components. When computing the
- * length of a trajectory we CANNOT apply the ST_UnaryUnion function. 
+ * @param[in] unary_union True when the `ST_UnaryUnion` function is applied to
+ * the result to remove redundant geometry components
  * @note Since the sequence has been already validated there is no verification
  * of the input in this function, in particular for geographies it is supposed
  * that the composing points are geodetic
@@ -904,8 +903,7 @@ tpointseq_linear_trajectory(const TSequence *seq, bool unary_union)
     GSERIALIZED *gs =
       DatumGetGserializedP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     /* If linear interpolation, remove two equal consecutive points */
-    if (npoints == 0 || unary_union || 
-        ! geopoint_same(gs, points[npoints - 1]))
+    if (unary_union || ! geopoint_same(gs, points[npoints - 1]))
       points[npoints++] = gs;
   }
   GSERIALIZED *res = geopointarr_make_trajectory(points, npoints, LINEAR);
@@ -921,9 +919,8 @@ tpointseq_linear_trajectory(const TSequence *seq, bool unary_union)
  * @ingroup meos_internal_geo_accessor
  * @brief Return the trajectory of a temporal point sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] unary_union True when the ST_UnaryUnion function is applied to
- * the result to remove redundant geometry components. When computing the
- * length of a trajectory we CANNOT apply the ST_UnaryUnion function. 
+ * @param[in] unary_union True when the `ST_UnaryUnion` function is applied to
+ * the result to remove redundant geometry components
  * @csqlfn #Tpoint_trajectory()
  */
 GSERIALIZED *
@@ -951,7 +948,7 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
   GSERIALIZED *coll;
   /* Only points */
   if (npoints > 0 && nlines == 0)
-    /* We force the interpolation to STEP since the points are obtained from 
+    /* We force the interpolation to STEP since the points are obtained from
      * difference sequences and thus the result should be a (multi) point */
     coll = geopointarr_make_trajectory(points, npoints, STEP);
   else
@@ -965,19 +962,22 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
  * @ingroup meos_geo_accessor
  * @brief Return the trajectory of a temporal point
  * @param[in] temp Temporal point
+ * @param[in] unary_union True when the `ST_UnaryUnion` function is applied to
+ * the result to remove redundant geometry components. Note that using the
+ * `ST_UnaryUnion` function is EXTREMELY slow as reported by Issue #679.
  * @csqlfn #Tpoint_trajectory()
- * @note The function sets by default the UNARY_UNION flag (i.e., true) to
- * optimize the resulting geometry by removing redundant components.
+ * @note Setting the UNARY_UNION flag to false since it
+ * is extremely slow as reported by Issue #679.
  */
 GSERIALIZED *
-tpoint_trajectory(const Temporal *temp)
+tpoint_trajectory(const Temporal *temp, bool unary_union)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
 
   /* Call the traversed area function for discrete or step interpolation */
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    return tgeo_traversed_area(temp);
+    return tgeo_traversed_area(temp, unary_union);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -985,9 +985,10 @@ tpoint_trajectory(const Temporal *temp)
     case TINSTANT:
       return DatumGetGserializedP(tinstant_value((TInstant *) temp));
     case TSEQUENCE:
-      return tpointseq_linear_trajectory((TSequence *) temp, UNARY_UNION);
+      return tpointseq_linear_trajectory((TSequence *) temp, unary_union);
     default: /* TSEQUENCESET */
-      return tpointseqset_linear_trajectory((TSequenceSet *) temp, UNARY_UNION);
+      return tpointseqset_linear_trajectory((TSequenceSet *) temp,
+        unary_union);
   }
 }
 
@@ -1428,9 +1429,9 @@ tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(tpoint, NULL); 
+  VALIDATE_TPOINT(tpoint, NULL);
   if (meas)
-    VALIDATE_TFLOAT(meas, NULL); 
+    VALIDATE_TFLOAT(meas, NULL);
 
   Temporal *sync1, *sync2;
   if (meas)
@@ -2988,7 +2989,7 @@ geo_bearing_fn(int16 flags)
 }
 
 /**
- * @brief Return 1 or 2 if a temporal point segment and a point are at the 
+ * @brief Return 1 or 2 if a temporal point segment and a point are at the
  * minimum bearing during the period defined by the output timestamps, return
  * 0 otherwise
  * @param[in] start,end Values defining the segment
@@ -2999,10 +3000,10 @@ geo_bearing_fn(int16 flags)
  * @post As there is a single turning point, `t2` is set to `t1`
  */
 static int
-tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point, 
+tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  assert(lower < upper); assert(t1); assert(t2); 
+  assert(lower < upper); assert(t1); assert(t2);
   const POINT2D *p1 = DATUM_POINT2D_P(start);
   const POINT2D *p2 = DATUM_POINT2D_P(end);
   const POINT2D *p = DATUM_POINT2D_P(point);
@@ -3837,9 +3838,9 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
  * a temporal point into an array of temporal points that are simple.
  * A temporal point is simple if all its components are non self-intersecting.
  * - a temporal point instant is simple
- * - a temporal point discrete sequence is simple if it is non 
+ * - a temporal point discrete sequence is simple if it is non
  *   self-intersecting
- * - a temporal point continuous sequence is simple if it is non 
+ * - a temporal point continuous sequence is simple if it is non
  *   self-intersecting and do not have stationary segments
  * - a temporal point sequence set is simple if every composing sequence is
  *   simple even if two composing sequences intersect

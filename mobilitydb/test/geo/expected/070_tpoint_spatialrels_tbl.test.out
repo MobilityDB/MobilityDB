@@ -79,13 +79,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aDisjoint(t1.tem
 SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE aDisjoint(g, temp);
  count 
 -------
-  8378
+  8384
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE aDisjoint(temp, g);
  count 
 -------
-  8378
+  8384
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
@@ -97,13 +97,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDisjoint(t1
 SELECT COUNT(*) FROM tbl_geog t1, tbl_tgeogpoint t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
  count 
 -------
-  1995
+  1997
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_geog t2 WHERE t2.k % 3 = 0 AND aDisjoint(temp, g);
  count 
 -------
-  1995
+  1997
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDisjoint(t1.temp, t2.temp);
@@ -115,13 +115,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDisjoint(t1.tem
 SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(g, temp);
  count 
 -------
-   748
+   750
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(temp, g);
  count 
 -------
-   748
+   750
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
@@ -151,13 +151,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eIntersects(t1.t
 SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eIntersects(g, temp);
  count 
 -------
-  1022
+  1016
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eIntersects(temp, g);
  count 
 -------
-  1022
+  1016
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
@@ -175,13 +175,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eIntersects(t1.t
 SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(g, temp);
  count 
 -------
-   275
+   273
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(temp, g);
  count 
 -------
-   275
+   273
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
@@ -301,13 +301,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE eDwithi
 SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE eDwithin(g, temp, 10);
  count 
 -------
-   953
+   976
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE eDwithin(temp, g, 10);
  count 
 -------
-   953
+   976
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);

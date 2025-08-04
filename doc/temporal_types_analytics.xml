@@ -76,7 +76,8 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
   Point(6 1)@2001-01-06, Point(7 4)@2001-01-07]', 2.3, true));
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
-				<para>The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed"/>. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
+				<para>
+					The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed"/>. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
 				<figure xml:id="dist_vs_sed" float="start">
 					<title>Difference between the spatial and the synchronous distance.</title>
 					<mediaobject>
@@ -85,7 +86,8 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 						<imageobject><imagedata scale="100" fileref="images/dist_vs_sed.png"/></imageobject>
 					</mediaobject>
 				</figure>
-				<para>A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
+				<para>
+					A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

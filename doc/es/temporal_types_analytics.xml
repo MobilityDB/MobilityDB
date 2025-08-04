@@ -74,25 +74,22 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6
   Point(7 4)@2001-01-07]', 2.3, true));
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
+				<para>
+					La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2001-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.
+				</para>
+				<figure xml:id="dist_vs_sed">
+					<title>Diferencia entre la distancia espacial y la distancia sincronizada.</title>
+					<mediaobject>
+						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.pdf' /></imageobject>
+						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.svg' /></imageobject>
+						<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.png' /></imageobject>
+					</mediaobject>
+				</figure>
+				<para>
+					Un uso típico de la función <varname>douglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.
+				</para>
 			</listitem>
 		</itemizedlist>
-
-		<para>
-			La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2001-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.
-		</para>
-
-		<figure xml:id="dist_vs_sed">
-			<title>Diferencia entre la distancia espacial y la distancia sincronizada.</title>
-			<mediaobject>
-				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.pdf' /></imageobject>
-				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.svg' /></imageobject>
-				<imageobject><imagedata scale='100' fileref='../images/dist_vs_sed.png' /></imageobject>
-			</mediaobject>
-		</figure>
-
-		<para>
-			Un uso típico de la función <varname>douglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.
-		</para>
 	</sect1>
 
 	<sect1 xml:id="ttype_reduction">

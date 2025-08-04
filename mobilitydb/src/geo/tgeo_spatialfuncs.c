@@ -70,7 +70,10 @@ Datum
 Tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tpoint_trajectory(temp);
+  bool unary_union = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    unary_union = PG_GETARG_BOOL(1);
+  GSERIALIZED *result = tpoint_trajectory(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -86,7 +89,10 @@ Datum
 Tgeo_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tgeo_traversed_area(temp);
+  bool unary_union = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    unary_union = PG_GETARG_BOOL(1);
+  GSERIALIZED *result = tgeo_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

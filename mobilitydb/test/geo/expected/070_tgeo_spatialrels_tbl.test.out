@@ -7,7 +7,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eContains(g, temp);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
  count 
 -------
-   709
+   705
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eContains(temp, g);
@@ -31,7 +31,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eContains(t1.temp,
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aContains(t1.temp, t2.temp);
  count 
 -------
-    41
+    33
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eCovers(g, temp);
@@ -43,7 +43,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eCovers(g, temp);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aCovers(g, temp);
  count 
 -------
-   670
+   574
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eCovers(temp, g);
@@ -67,7 +67,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eCovers(t1.temp, t
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aCovers(t1.temp, t2.temp);
  count 
 -------
-    41
+    33
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eDisjoint(g, temp);
@@ -145,7 +145,7 @@ SELECT COUNT(*) FROM tbl_geometry3D t1, tbl_tgeometry3D t2 WHERE t1.k % 3 = 0 AN
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_geometry3D t2 WHERE t1.k % 3 = 0 AND aDisjoint(temp, g);
  count 
 -------
-  3094
+  3097
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDisjoint(t1.temp, t2.temp);
@@ -211,13 +211,13 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eIntersects(t1.tem
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eIntersects(g, temp);
  count 
 -------
-    22
+    19
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eIntersects(temp, g);
  count 
 -------
-    22
+    19
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eIntersects(t1.temp, t2.temp);
@@ -373,13 +373,13 @@ SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE eDwithin(t1.se
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDwithin(g, temp, 10);
  count 
 -------
-  1090
+  1059
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDwithin(temp, g, 10);
  count 
 -------
-  1090
+  1059
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
@@ -427,13 +427,13 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDwithin(t1.
 SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, temp, 10);
  count 
 -------
-   302
+   271
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(temp, g, 10);
  count 
 -------
-   302
+   271
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, t2.temp, 10);
@@ -445,13 +445,13 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, 
 SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seq t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, seq, 10);
  count 
 -------
-   300
+   265
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry_seqset t2 WHERE t1.k % 3 = 0 AND t1.k % 3 = 0 AND aDwithin(g, ss, 10);
  count 
 -------
-  1876
+  1815
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE aDwithin(t1.seq, t2.temp, 10);
@@ -599,7 +599,7 @@ SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(temp, tgeometry 'SRID=3812;[Po
 SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(temp, geometry 'SRID=3812;Linestring(0 0,15 15)', 5);
  count 
 -------
-     5
+     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(geometry 'SRID=3812;Linestring(0 0,5 5)', temp, 5);
