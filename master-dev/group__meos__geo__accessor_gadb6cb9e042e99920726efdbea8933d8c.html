@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeo_traversed_area</title>
+<title>MobilityDB: tpoint_trajectory</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,7 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga15d8c6fb7a7d79273085a5fd5a012c35.html#ga15d8c6fb7a7d79273085a5fd5a012c35">tgeo_convex_hull</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga4dae58caa9b4f45c88188da9db28fe7d.html#ga4dae58caa9b4f45c88188da9db28fe7d">tgeo_end_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gabf1aa6dfe8bf84078496889a3e65724f.html#gabf1aa6dfe8bf84078496889a3e65724f">tgeo_start_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_ga1de49ea5a0b8a51c8e504265c948ef04.html#ga1de49ea5a0b8a51c8e504265c948ef04">tgeo_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga85bfc1a02e93198d7537e8b6b5a8b20c.html#ga85bfc1a02e93198d7537e8b6b5a8b20c">tgeo_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga0e89e09b430a0f019855bd1c92996240.html#ga0e89e09b430a0f019855bd1c92996240">tgeo_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga93e0ed41f56080d6d28994d4fbfc145f.html#ga93e0ed41f56080d6d28994d4fbfc145f">tgeo_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga6f890f3328f6faa4fe1dfe5e5f335d05.html#ga6f890f3328f6faa4fe1dfe5e5f335d05">tgeo_values</a></td></tr>
@@ -100,32 +100,43 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_gabd229c1305c3fe57fa0984181a2551e5.html#gabd229c1305c3fe57fa0984181a2551e5">tpoint_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga0cbc8b565faa16540ba155c7f3486c03.html#ga0cbc8b565faa16540ba155c7f3486c03">tpoint_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga28e95ebddf05433f62e40d656c41f2b9.html#ga28e95ebddf05433f62e40d656c41f2b9">tpoint_speed</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga2f7acd28f0e2f4cfcf142bc0877345fb.html#ga2f7acd28f0e2f4cfcf142bc0877345fb">tpoint_trajectory</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__accessor_gadb6cb9e042e99920726efdbea8933d8c.html#gadb6cb9e042e99920726efdbea8933d8c">tpoint_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__accessor_ga247c57db37e2fd570535dd45744be159.html#ga247c57db37e2fd570535dd45744be159">tpoint_twcentroid</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga1de49ea5a0b8a51c8e504265c948ef04" name="ga1de49ea5a0b8a51c8e504265c948ef04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1de49ea5a0b8a51c8e504265c948ef04">&#9670;&#160;</a></span>tgeo_traversed_area()</h2>
+<a id="gadb6cb9e042e99920726efdbea8933d8c" name="gadb6cb9e042e99920726efdbea8933d8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadb6cb9e042e99920726efdbea8933d8c">&#9670;&#160;</a></span>tpoint_trajectory()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * tgeo_traversed_area </td>
+          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * tpoint_trajectory </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em></td><td>)</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td>
+          <td class="paramname"><em>unary_union</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the traversed area of a temporal geo or the trajectory for a temporal point with discrete or step interpolation. </p>
+<p>Return the trajectory of a temporal point. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_ga2a5ab4b2c833c4535f39fc3553eef363.html#ga2a5ab4b2c833c4535f39fc3553eef363" title="Return the area traversed by a temporal geo @sqlfn traversedArea()">Tgeo_traversed_area()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">unary_union</td><td>True when the <code>ST_UnaryUnion</code> function is applied to the result to remove redundant geometry components. Note that applying the <code>ST_UnaryUnion</code> function is EXTREMELY slow as reported by Issue #679. @csqlfn <a class="el" href="group__mobilitydb__geo__accessor_gab3926cb52c012903c3d5a62912e409e5.html#gab3926cb52c012903c3d5a62912e409e5" title="Return the trajectory of a temporal point @sqlfn trajectory()">Tpoint_trajectory()</a> </td></tr>
   </table>
   </dd>
 </dl>
