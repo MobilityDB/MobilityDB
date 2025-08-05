@@ -1790,7 +1790,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, nsimple);
-    traj = tpointseq_linear_trajectory(seq2d, UNARY_UNION);
+    traj = tpointseq_linear_trajectory(seq2d, UNARY_UNION_NO);
     inter = geom_intersection2d(traj, gs);
     if (! gserialized_is_empty(inter))
       allperiods = tpointseq_interperiods(seq2d, inter, &totalpers);
@@ -1812,7 +1812,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* Loop for every simple fragment of the sequence */
     for (int i = 0; i < nsimple; i++)
     {
-      traj = tpointseq_linear_trajectory(simpleseqs[i], UNARY_UNION);
+      traj = tpointseq_linear_trajectory(simpleseqs[i], UNARY_UNION_NO);
       inter = geom_intersection2d(traj, gs);
       if (! gserialized_is_empty(inter))
       {

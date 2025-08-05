@@ -963,11 +963,9 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
  * @brief Return the trajectory of a temporal point
  * @param[in] temp Temporal point
  * @param[in] unary_union True when the `ST_UnaryUnion` function is applied to
- * the result to remove redundant geometry components. Note that using the
+ * the result to remove redundant geometry components. Note that applying the
  * `ST_UnaryUnion` function is EXTREMELY slow as reported by Issue #679.
  * @csqlfn #Tpoint_trajectory()
- * @note Setting the UNARY_UNION flag to false since it
- * is extremely slow as reported by Issue #679.
  */
 GSERIALIZED *
 tpoint_trajectory(const Temporal *temp, bool unary_union)

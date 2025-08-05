@@ -848,7 +848,7 @@ geo_collect_garray(GSERIALIZED **gsarr, int nelems)
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return a line from an array of geometries/geographies
- * @details Array elements that are not points are discarded.
+ * @details Array elements that are not points or linestrings are discarded
  * @param[in] gsarr Array of geometries/geographies
  * @param[in] count Number of elements in the array
  * @note PostGIS function: @p LWGEOM_makeline_garray(PG_FUNCTION_ARGS)

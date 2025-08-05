@@ -196,7 +196,7 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
     return result;
   }
 
-  GSERIALIZED *traj = tpointseq_linear_trajectory(seq, UNARY_UNION);
+  GSERIALIZED *traj = tpointseq_linear_trajectory(seq, UNARY_UNION_NO);
   GSERIALIZED *inter = geom_intersection2d(traj, gs);
   pfree(traj);
   if (gserialized_is_empty(inter))
