@@ -127,11 +127,11 @@ CREATE FUNCTION round(tgeography[], integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION traversedArea(tgeometry)
+CREATE FUNCTION traversedArea(tgeometry, bool DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION traversedArea(tgeography)
+CREATE FUNCTION traversedArea(tgeography, bool DEFAULT FALSE)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

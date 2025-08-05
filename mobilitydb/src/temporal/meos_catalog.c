@@ -502,13 +502,11 @@ fill_oid_cache(PG_FUNCTION_ARGS)
  * @brief Return true if the type is a base type of a built-in PostgreSQL range
  * type
  */
-bool
+inline bool
 range_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
-      type == T_INT8)
-    return true;
-  return false;
+  return (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
+    type == T_INT8);
 }
 
 /**

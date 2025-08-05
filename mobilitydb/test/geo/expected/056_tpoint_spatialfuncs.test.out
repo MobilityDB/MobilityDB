@@ -1323,9 +1323,9 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-      st_astext      
----------------------
- LINESTRING(1 1,2 2)
+        st_astext        
+-------------------------
+ LINESTRING(1 1,2 2,1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
@@ -1365,9 +1365,9 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-          st_astext          
------------------------------
- LINESTRING(1.5 1.5,2.5 2.5)
+              st_astext              
+-------------------------------------
+ LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
@@ -1385,7 +1385,7 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::geometry)) AS t(dp);
                       array_agg                       
 ------------------------------------------------------
- {"POINT(1.5 1.5)","POINT(2.5 2.5)","POINT(3.5 3.5)"}
+ {"POINT(1.5 1.5)","POINT(3.5 3.5)","POINT(2.5 2.5)"}
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1 1)@2000-01-01'));
@@ -1401,9 +1401,9 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
-         st_astext          
-----------------------------
- LINESTRING Z (1 1 1,2 2 2)
+            st_astext             
+----------------------------------
+ LINESTRING Z (1 1 1,2 2 2,1 1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
@@ -1425,9 +1425,9 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'));
-               st_astext                
-----------------------------------------
- LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5)
+                     st_astext                      
+----------------------------------------------------
+ LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5,1.5 1.5 1.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'));

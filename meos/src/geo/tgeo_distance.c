@@ -741,7 +741,8 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   datum_func2 func = geo_distance_fn(temp->flags);
   GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
-    tpoint_trajectory(temp) : tgeo_traversed_area(temp);
+    tpoint_trajectory(temp, UNARY_UNION_NO) :
+    tgeo_traversed_area(temp, UNARY_UNION_NO);
   double result = DatumGetFloat8(
     func(PointerGetDatum(traj), PointerGetDatum(gs)));
   pfree(traj);
@@ -847,8 +848,8 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
     (Temporal *) temp;
   /* Compute the result */
   Datum traj = tpoint_type(temp->temptype) ? 
-    PointerGetDatum(tpoint_trajectory(temp)) :
-    PointerGetDatum(tgeo_traversed_area(temp));
+    PointerGetDatum(tpoint_trajectory(temp, UNARY_UNION_NO)) :
+    PointerGetDatum(tgeo_traversed_area(temp, UNARY_UNION_NO));
   double result = DatumGetFloat8(func(traj, geo));
 
   pfree(DatumGetPointer(traj));
@@ -943,7 +944,8 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
-    tpoint_trajectory(temp) : tgeo_traversed_area(temp);
+    tpoint_trajectory(temp, UNARY_UNION_NO) :
+    tgeo_traversed_area(temp, UNARY_UNION_NO);
   GSERIALIZED *result;
   if (geodetic)
     result = geography_shortestline_internal(traj, gs, true);

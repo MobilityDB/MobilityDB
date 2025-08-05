@@ -317,7 +317,8 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   GSERIALIZED *trav = tpoint_type(temp->temptype) ?
-    tpoint_trajectory(temp) : tgeo_traversed_area(temp);
+    tpoint_trajectory(temp, UNARY_UNION_NO) : 
+    tgeo_traversed_area(temp, UNARY_UNION_NO);
   Datum dtrav, result;
 
   /* Call the GEOS function if the traversed area is not a collection */
@@ -386,9 +387,11 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 
   assert(numparam == 2 || numparam == 3);
   GSERIALIZED *trav1 = tpoint_type(temp1->temptype) ?
-    tpoint_trajectory(temp1) : tgeo_traversed_area(temp1);
+    tpoint_trajectory(temp1, UNARY_UNION_NO) :
+    tgeo_traversed_area(temp1, UNARY_UNION_NO);
   GSERIALIZED *trav2 = tpoint_type(temp2->temptype) ?
-    tpoint_trajectory(temp2) : tgeo_traversed_area(temp2);
+    tpoint_trajectory(temp2, UNARY_UNION_NO) :
+    tgeo_traversed_area(temp2, UNARY_UNION_NO);
   Datum dtrav1 = PointerGetDatum(trav1);
   Datum dtrav2 = PointerGetDatum(trav2);
   Datum result;
@@ -1230,7 +1233,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (ever)
   {
     datum_func2 func = geo_intersects_fn_geo(temp->flags, gs->gflags);
-    GSERIALIZED *traj = tpoint_trajectory(temp);
+    GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
     GSERIALIZED *gsbound = geom_boundary(gs);
     bool result = false;
     if (gsbound && ! gserialized_is_empty(gsbound))

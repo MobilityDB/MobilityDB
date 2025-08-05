@@ -1584,7 +1584,8 @@ tgeo_convex_hull(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
   GSERIALIZED *traj = tpoint_type(temp->temptype) ?
-    tpoint_trajectory(temp) : tgeo_traversed_area(temp);
+    tpoint_trajectory(temp, UNARY_UNION_NO) :
+    tgeo_traversed_area(temp, UNARY_UNION_NO);
   GSERIALIZED *result = geom_convex_hull(traj);
   pfree(traj);
   return result;
@@ -1602,7 +1603,7 @@ tgeo_convex_hull(const Temporal *temp)
  * @csqlfn #Tgeo_traversed_area()
  */
 GSERIALIZED *
-tgeo_traversed_area(const Temporal *temp)
+tgeo_traversed_area(const Temporal *temp, bool unary_union)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
@@ -1618,9 +1619,12 @@ tgeo_traversed_area(const Temporal *temp)
   GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * newcount);
   for (int i = 0; i < newcount; i++)
     gsarr[i] = DatumGetGserializedP(values[i]);
-  GSERIALIZED *coll = geo_collect_garray(gsarr, newcount);
-  GSERIALIZED *result = geom_unary_union(coll, -1);
-  pfree(coll); pfree(values); pfree(gsarr);
+  GSERIALIZED *res = geo_collect_garray(gsarr, newcount);
+  pfree(values); pfree(gsarr);
+  if (! unary_union)
+    return res;
+  GSERIALIZED *result = geom_unary_union(res, -1);
+  pfree(res); 
   return result;
 }
 
