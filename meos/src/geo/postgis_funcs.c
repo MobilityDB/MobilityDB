@@ -863,9 +863,9 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   int32_t srid = SRID_UNKNOWN;
   for (int i = 0; i < count; i++)
   {
-    if (gserialized_get_type(gsarr[i]) != POINTTYPE && 
-        gserialized_get_type(gsarr[i]) != LINETYPE &&
-        gserialized_get_type(gsarr[i]) != MULTIPOINTTYPE)
+    uint32_t geotype = gserialized_get_type(gsarr[i]);
+    if (geotype != POINTTYPE && geotype != LINETYPE && 
+        geotype != MULTIPOINTTYPE)
       continue;
     geoms[ngeoms++] = lwgeom_from_gserialized(gsarr[i]);
     /* Check SRID homogeneity */
