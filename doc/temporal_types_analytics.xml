@@ -45,8 +45,7 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 			<listitem xml:id="ttype_douglasPeuckerSimplify">
 				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
-				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;
-</para>
+				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
 				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
 				<para><varname>douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
@@ -77,7 +76,8 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
 				<para>
-					The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed"/>. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
+					The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed" />. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.
+				</para>
 				<figure xml:id="dist_vs_sed" float="start">
 					<title>Difference between the spatial and the synchronous distance.</title>
 					<mediaobject>
@@ -87,7 +87,8 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 					</mediaobject>
 				</figure>
 				<para>
-					A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
+					A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.
+				</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -124,7 +125,7 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
   [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01', 'step'));
 -- Interp=Step;[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07]
 </programlisting>
-				<para><xref linkend="fig_tsample"/> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
+				<para><xref linkend="fig_tsample" /> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
 				<figure xml:id="fig_tsample" float="start">
 					<title>Sampling of temporal floats with discrete, step, and linear interpolation.</title>
 					<mediaobject>
@@ -168,7 +169,7 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
   Point(1 1)@2001-01-09)', '4 days', '2001-01-01'));
 -- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
 </programlisting>
-				<para>Changing the precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision"/> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
+				<para>Changing the precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision" /> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
 				<figure xml:id="fig_tprecision" float="start">
 					<title>Changing the precision of temporal floats with discrete, step, and linear interpolation.</title>
 					<mediaobject>
@@ -525,7 +526,7 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 		</figure>
 
 		<para>
-			<xref linkend="tiling"/> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
+			<xref linkend="tiling" /> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
 		</para>
 
 		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF;
@@ -744,7 +745,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 
 		<sect2 xml:id="boxes_functions">
 			<title>Bounding Box Operations</title>
-			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="ttype_splitting"/> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
+			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="ttype_splitting" /> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
 			<itemizedlist>
 				<listitem xml:id="valueTimeBins">
 					<indexterm significance="normal"><primary><varname>valueBins</varname></primary></indexterm>
@@ -846,7 +847,7 @@ SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 
 		<sect2 xml:id="split_functions">
 			<title>Splitting Operations</title>
-			<para>These functions split a temporal value with respect to a sequence of bins (see <xref linkend="bin_functions"/>) or tiles (see <xref linkend="tile_functions"/>).</para>
+			<para>These functions split a temporal value with respect to a sequence of bins (see <xref linkend="bin_functions" />) or tiles (see <xref linkend="tile_functions" />).</para>
 			<itemizedlist>
 				<listitem xml:id="valueSplit">
 					<indexterm significance="normal"><primary><varname>valueSplit</varname></primary></indexterm>
