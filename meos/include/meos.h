@@ -1819,7 +1819,7 @@ extern TBox *tfloatbox_value_time_tiles(const TBox *box, double vsize, const Int
 extern TBox *tint_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
 extern Span *tint_value_bins(const Temporal *temp, int vsize, int vorigin, int *count);
 extern TBox *tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count);
-extern Temporal **tint_value_split(const Temporal *temp, int vsize, int vorigin, int **value_bins, int *count);
+extern Temporal **tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins, int *count);
 extern TBox *tint_value_time_boxes(const Temporal *temp, int vsize, const Interval *duration, int vorigin, TimestampTz torigin, int *count);
 extern Temporal **tint_value_time_split(const Temporal *temp, int size, const Interval *duration, int vorigin, TimestampTz torigin, int **value_bins, TimestampTz **time_bins, int *count);
 extern TBox *tintbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, int *count);
