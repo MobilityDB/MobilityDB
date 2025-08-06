@@ -953,8 +953,11 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
     coll = geopointarr_make_trajectory(points, npoints, STEP);
   else
     coll = geopointlinearr_make_trajectory(points, npoints, lines, nlines);
+  pfree(points); pfree_array((void **) lines, nlines);
+  if (! unary_union)
+    return coll;
   GSERIALIZED *result = geom_unary_union(coll, -1);
-  pfree(points); pfree_array((void **) lines, nlines); pfree(coll);
+  pfree(coll);
   return result;
 }
 
