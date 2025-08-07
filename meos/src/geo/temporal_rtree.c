@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief In-memory index for STBox based on RTree
+ * @brief In-memory RTree index for MEOS bounding boxes, i.e., for Span, TBox,
+ * and STBox 
  */
 
 /* C */
@@ -40,7 +41,66 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "geo/tspatial_rtree.h"
+
+/*****************************************************************************
+ * Functions passed as parameters in the creation of an RTree
+ *****************************************************************************/
+
+/**
+ * @brief Retrieves the value of a specific axis from a Span.
+ * @details Returns the coordinate or temporal value of a specified axis
+ * from the tbox. The axis is determined by the `axis` parameter,
+ * and whether the value is from the lower or upper bound of that axis is
+ * specified by the `upper` parameter. The function supports the X value axis
+ * and the temporal axis.
+ * @param[in] box The TBox structure from which the axis value is to be
+ * retrieved.
+ * @param[in] axis The axis to retrieve (0 = X, 1 = time).
+ * @param[in] upper A boolean indicating whether to retrieve the upper (`true`) 
+ * or lower (`false`) bound of the specified axis.
+ * @return The value of the specified axis and bound as a double. Returns 0.0
+ * if the axis is invalid.
+ */
+static double
+get_axis_span(const void *box, int axis, bool upper)
+{
+  Span *span = (Span *) box;
+  if (axis == 0 && upper)
+    return span->upper;
+  if (axis == 0 && ! upper)
+    return span->lower;
+  return 0.0;
+}
+
+/**
+ * @brief Retrieves the value of a specific axis from a TBox.
+ * @details Returns the coordinate or temporal value of a specified axis
+ * from the tbox. The axis is determined by the `axis` parameter,
+ * and whether the value is from the lower or upper bound of that axis is
+ * specified by the `upper` parameter. The function supports the X value axis
+ * and the temporal axis.
+ * @param[in] box The TBox structure from which the axis value is to be
+ * retrieved.
+ * @param[in] axis The axis to retrieve (0 = X, 1 = time).
+ * @param[in] upper A boolean indicating whether to retrieve the upper (`true`) 
+ * or lower (`false`) bound of the specified axis.
+ * @return The value of the specified axis and bound as a double. Returns 0.0
+ * if the axis is invalid.
+ */
+static double
+get_axis_tbox(const void *box, int axis, bool upper)
+{
+  TBox *tbox = (TBox *) box;
+  if (axis == 0 && upper)
+    return tbox->span.upper;
+  if (axis == 0 && ! upper)
+    return tbox->span.lower;
+  if (axis == 1 && upper)
+    return (double)((int64) tbox->period.upper);
+  if (axis == 1 && ! upper)
+    return (double)((int64) tbox->period.lower);
+  return 0.0;
+}
 
 /**
  * @brief Retrieves the value of a specific axis from an STBox.
@@ -58,39 +118,83 @@
  * if the axis is invalid.
  */
 static double
-get_axis_stbox(const STBox *box, int axis, bool upper)
+get_axis_stbox(const void *box, int axis, bool upper)
 {
+  STBox *stbox = (STBox *) box;
   if (axis == 0 && upper)
-    return box->xmax;
+    return stbox->xmax;
   if (axis == 0 && ! upper)
-    return box->xmin;
+    return stbox->xmin;
   if (axis == 1 && upper)
-    return box->ymax;
+    return stbox->ymax;
   if (axis == 1 && ! upper)
-    return box->ymin;
+    return stbox->ymin;
   if (axis == 2 && upper)
-    return (double)((int64) box->period.upper);
+    return (double)((int64) stbox->period.upper);
   if (axis == 2 && ! upper)
-    return (double)((int64) box->period.lower);
+    return (double)((int64) stbox->period.lower);
   if (axis == 3 && upper)
-    return box->zmax;
+    return stbox->zmax;
   if (axis == 3 && ! upper)
-    return box->zmin;
+    return stbox->zmin;
   return 0.0;
 }
+
+/*****************************************************************************/
+
+static inline void
+bbox_expand_span(const void *box1, void *box2)
+{
+  return span_expand((Span *) box1, (Span *) box2);
+}
+
+static inline void
+bbox_expand_tbox(const void *box1, void *box2)
+{
+  return tbox_expand((TBox *) box1, (TBox *) box2);
+}
+
+static inline void
+bbox_expand_stbox(const void *box1, void *box2)
+{
+  return stbox_expand((STBox *) box1, (STBox *) box2);
+}
+
+/*****************************************************************************/
+
+static inline bool
+bbox_contains_span(const void *box1, const void *box2)
+{
+  return contains_span_span((Span *) box1, (Span *) box2);
+}
+
+static inline bool
+bbox_contains_tbox(const void *box1, const void *box2)
+{
+  return contains_tbox_tbox((TBox *) box1, (TBox *) box2);
+}
+
+static inline bool
+bbox_contains_stbox(const void *box1, const void *box2)
+{
+  return contains_stbox_stbox((STBox *) box1, (STBox *) box2);
+}
+
+/*****************************************************************************
+ * RtreeNode and Rtree creation
+ *****************************************************************************/
 
 /**
  * @brief Creates a new RTree node.
  * @details This function initializes a new RTree node.
- * @param[in] kind Boolean flag indicating the type of node (e.g.,inner node
- * or not inner node).
+ * @param[in] isRoot True when the node is a root node, False otherwise
  * @return Pointer to the newly created RTreeNode structure.
  */
 static RTreeNode *
-node_new(bool kind)
+node_new(bool isRoot)
 {
   RTreeNode *node = palloc(sizeof(RTreeNode));
-  node->kind = kind;
+  node->isRoot = isRoot;
   node->count = 0;
   return node;
 }
@@ -104,14 +208,15 @@ node_new(bool kind)
  * retrieve axis values.
  * @param[in] box Pointer to the STBox structure for which the axis length is 
  * to be calculated.
- * @param[in] axis The specific axis (e.g. 0, 1, 2) along which to compute 
+ * @param[in] axis The specific axis (e.g., 0, 1, 2) along which to compute 
  * the length.
  * @return The length of the STBox as a double along the specified axis.
  */
 static inline double
-get_axis_length(const RTree *rtree, const STBox *box, int axis)
+get_axis_length(const RTree *rtree, const void *box, int axis)
 {
-  return rtree->get_axis(box, axis, true) - rtree->get_axis(box, axis, false);
+  return rtree->get_axis(box, axis, true) - 
+    rtree->get_axis(box, axis, false);
 }
 
 /**
@@ -126,7 +231,7 @@ get_axis_length(const RTree *rtree, const STBox *box, int axis)
  * @return The computed area or volume of the STBox.
  */
 static double
-box_area(const STBox *box, const RTree *rtree)
+box_area(const RTree *rtree, const void *box)
 {
   double result = 1.0;
   for (int i = 0; i < rtree->dims; ++i)
@@ -148,12 +253,12 @@ box_area(const STBox *box, const RTree *rtree)
  * @return The area or volume of the unioned STBox.
  */
 static double
-box_unioned_area(const STBox *box, const STBox *other_box, const RTree *rtree)
+unioned_area(const RTree *rtree, const void *box, const void *other_box)
 {
   STBox union_box;
-  memcpy(&union_box, box, sizeof(STBox));
-  stbox_expand(other_box, &union_box);
-  return box_area(&union_box, rtree);
+  memcpy(&union_box, box, rtree->bboxsize);
+  rtree->bbox_expand(other_box, &union_box);
+  return box_area(rtree, &union_box);
 }
 
 /**
@@ -173,16 +278,16 @@ box_unioned_area(const STBox *box, const STBox *other_box, const RTree *rtree)
  * @return The index of the child node that requires the least enlargement.
  */
 static int
-node_choose_least_enlargement(const RTreeNode *node, const STBox *box,
-  const RTree *rtree)
+node_choose_least_enlargement(const RTree *rtree, const RTreeNode *node,
+  const void *box)
 {
   int result = 0;
   double previous_enlargement = INFINITY;
-  for (int i = 0; i < node->count; ++i)
+  for (int i = 0; i < node->count; ++i) // TODO
   {
-    double unioned_area = box_unioned_area(&node->boxes[i], box, rtree);
-    double area = box_area(&node->boxes[i], rtree);
-    double enlarge_area = unioned_area - area;
+    double union_area = unioned_area(rtree, &node->boxes[i], box);
+    double area = box_area(rtree, &node->boxes[i]);
+    double enlarge_area = union_area - area;
     if (enlarge_area < previous_enlargement)
     {
       result = i;
@@ -193,13 +298,14 @@ node_choose_least_enlargement(const RTreeNode *node, const STBox *box,
 }
 
 /**
- * @brief Chooses the best child node for inserting a new STBox in an RTree.
+ * @brief Chooses the best child node for inserting a new bounding box
+ * in an RTree.
  * @details This function determines the most suitable child node within an 
- * RTree node for inserting a new STBox. It first checks if the new box can 
- * be added to any child node without requiring the expansion of its bounding 
- * box. If none of the child nodes can accommodate the new STBox without 
- * expansion, the function falls back to selecting the node that requires the 
- * least enlargement.
+ * RTree node for inserting a new bounding box. It first checks if the new box
+ * can be added to any child node without requiring the expansion of its
+ * bounding box. If none of the child nodes can accommodate the new STBox
+ * without expansion, the function falls back to selecting the node that
+ * requires the least enlargement.
  * @param[in] rtree Pointer to the RTree structure, providing access to the 
  * overall RTree configuration.
  * @param[in] box Pointer to the STBox structure that is being inserted.
@@ -208,16 +314,16 @@ node_choose_least_enlargement(const RTreeNode *node, const STBox *box,
  * @return The index of the chosen child node for insertion.
  */
 static int
-node_choose(const RTree *rtree, const STBox *box, const RTreeNode *node)
+node_choose(const RTree *rtree, const void *box, const RTreeNode *node)
 {
   /* Check if you can add without expanding any rectangle */
   for (int i = 0; i < node->count; ++i)
   {
-    if (contains_stbox_stbox(&rtree->box, box))
+    if (rtree->bbox_contains(&rtree->box, box))
       return i;
   }
   /* Fallback to "least enlargement" */
-  return node_choose_least_enlargement(node, box, rtree);
+  return node_choose_least_enlargement(rtree, node, box);
 }
 
 /**
@@ -229,11 +335,12 @@ node_choose(const RTree *rtree, const STBox *box, const RTreeNode *node)
  * @param[out] box STBox that will be expanded
  */
 static void
-node_box_calculate(const RTreeNode *node, STBox *box)
+node_box_calculate(const RTree *rtree, const RTreeNode *node, void *box)
 {
-  memcpy(box, & node->boxes[0], sizeof(STBox));
+  memcpy(box, &node->boxes[0], rtree->bboxsize);
   for (int i = 1; i < node->count; ++i)
-    stbox_expand(&node->boxes[i], box);
+    rtree->bbox_expand((TBox *) &node->boxes[i], (TBox *) box);
+  return;
 }
 
 /**
@@ -249,7 +356,7 @@ node_box_calculate(const RTreeNode *node, STBox *box)
  * @return The index of the axis with the largest length.
  */
 static int
-stbox_largest_axis(const STBox *box, const RTree *rtree)
+box_largest_axis(const RTree *rtree, const void *box)
 {
   int largest_axis = 0;
   double previous_largest = get_axis_length(rtree, box, 0);
@@ -279,7 +386,7 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
 {
   into->boxes[into->count] = from->boxes[index];
   from->boxes[index] = from->boxes[from->count - 1];
-  if (from->kind == RTREE_INNER_NODE_NO)
+  if (from->isRoot == RTREE_ROOT_NODE)
   {
     into->ids[into->count] = from->ids[index];
     from->ids[index] = from->ids[from->count - 1];
@@ -291,6 +398,7 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
   }
   from->count--;
   into->count++;
+  return;
 }
 
 /**
@@ -310,7 +418,7 @@ node_swap(RTreeNode *node, int i, int j)
   STBox box = node->boxes[i];
   node->boxes[i] = node->boxes[j];
   node->boxes[j] = box;
-  if (node->kind == RTREE_INNER_NODE_NO)
+  if (node->isRoot == RTREE_ROOT_NODE)
   {
     int tmp = node->ids[i];
     node->ids[i] = node->ids[j];
@@ -322,6 +430,7 @@ node_swap(RTreeNode *node, int i, int j)
     node->nodes[i] = node->nodes[j];
     node->nodes[j] = tree;
   }
+  return;
 }
 
 /**
@@ -366,6 +475,7 @@ node_qsort(const RTree *rtree, RTreeNode *node, int index, bool upper, int s,
   node_swap(node, s + left, s + right);
   node_qsort(rtree, node, index, upper, s, s + left);
   node_qsort(rtree, node, index, upper, s + left + 1, e);
+  return;
 }
 
 /**
@@ -384,6 +494,7 @@ static void
 node_sort_axis(const RTree *rtree, RTreeNode *node, int index, bool upper)
 {
   node_qsort(rtree, node, index, upper, 0, node->count);
+  return;
 }
 
 /**
@@ -403,17 +514,19 @@ node_sort_axis(const RTree *rtree, RTreeNode *node, int index, bool upper)
  * node) will be stored.
  */
 static void
-node_split(RTree *rtree, RTreeNode *node, STBox *box, RTreeNode ** right_out)
+node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
 {
   /* Split through the largest axis */
-  int largest_axis = stbox_largest_axis(box, rtree);
-  RTreeNode *right = node_new(node->kind);
+  int largest_axis = box_largest_axis(rtree, box);
+  RTreeNode *right = node_new(node->isRoot);
   for (int i = 0; i < node->count; ++i)
   {
-    double min_dist = rtree->get_axis(&node->boxes[i], largest_axis, false) -
+    double min_dist = 
+      rtree->get_axis(&node->boxes[i], largest_axis, false) -
       rtree->get_axis(box, largest_axis, false);
-    double max_dist = rtree->get_axis(box, largest_axis, true) -
-      rtree->get  _axis(&node->boxes[i], largest_axis, true);
+    double max_dist =
+      rtree->get_axis(box, largest_axis, true) -
+      rtree->get_axis(&node->boxes[i], largest_axis, true);
     /* Move to the right */
     if (max_dist < min_dist)
     {
@@ -422,8 +535,8 @@ node_split(RTree *rtree, RTreeNode *node, STBox *box, RTreeNode ** right_out)
     }
   }
 
-  /* Make sure that both left and right nodes have at least
-   * MINITEMS by moving data into underflowed nodes */
+  /* Make sure that both left and right nodes have at least MINITEMS by moving
+   * data into underflowed nodes */
   if (node->count < MINITEMS)
   {
     /* Reverse sort by min axis */
@@ -442,12 +555,13 @@ node_split(RTree *rtree, RTreeNode *node, STBox *box, RTreeNode ** right_out)
       node_move_box_at_index_into(node, node->count - 1, right);
     } while (right->count < MINITEMS);
   }
-  if (node->kind == RTREE_INNER_NODE)
+  if (node->isRoot == RTREE_INNER_NODE)
   {
     node_sort_axis(rtree, node, 0, false);
     node_sort_axis(rtree, right, 0, false);
   }
   *right_out = right;
+  return;
 }
 
 /**
@@ -472,29 +586,29 @@ node_split(RTree *rtree, RTreeNode *node, STBox *box, RTreeNode ** right_out)
  * split during insertion.
  */
 static void
-node_insert(RTree *rtree, STBox *node_bounding_box, RTreeNode *node,
-  STBox *new_box, int id, bool * split)
+node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
+  void *new_box, int id, bool *split)
 {
-  if (node->kind == RTREE_INNER_NODE_NO)
+  if (node->isRoot == RTREE_ROOT_NODE)
   {
     if (node->count == MAXITEMS)
     {
-      * split = true;
+      *split = true;
       return;
     }
     int index = node->count;
-    node->boxes[index] = * new_box;
+    memcpy(&node->boxes[index], new_box, rtree->bboxsize);
     node->ids[index] = id;
     node->count++;
-    * split = false;
+    *split = false;
     return;
   }
   int insertion_node = node_choose(rtree, new_box, node);
-  node_insert(rtree, & node->boxes[insertion_node],
+  node_insert(rtree, &node->boxes[insertion_node],
     (RTreeNode *) node->nodes[insertion_node], new_box, id, split);
   if (! *split)
   {
-    stbox_expand(new_box, & node->boxes[insertion_node]);
+    stbox_expand(new_box, &node->boxes[insertion_node]);
     *split = false;
     return;
   }
@@ -506,11 +620,12 @@ node_insert(RTree *rtree, STBox *node_bounding_box, RTreeNode *node,
   RTreeNode *right;
   node_split(rtree, node->nodes[insertion_node], &node->boxes[insertion_node],
     &right);
-  node_box_calculate(node->nodes[insertion_node], &node->boxes[insertion_node]);
-  node_box_calculate(right, &node->boxes[node->count]);
-  node->nodes[node->count] = right;;
+  node_box_calculate(rtree, node->nodes[insertion_node], &node->boxes[insertion_node]);
+  node_box_calculate(rtree, right, &node->boxes[node->count]);
+  node->nodes[node->count] = right;
   node->count++;
-  return node_insert(rtree, node_bounding_box, node, new_box, id, split);
+  node_insert(rtree, node_bounding_box, node, new_box, id, split);
+  return;
 }
 
 /**
@@ -542,6 +657,7 @@ add_answer(const int id, int **ids, int *count)
     *ids = repalloc(*ids, sizeof(int) * (*count) * 2);
   (*ids)[*count] = id;
   (*count)++;
+  return;
 }
 
 /**
@@ -557,12 +673,13 @@ add_answer(const int id, int **ids, int *count)
 static void
 node_free(RTreeNode *node)
 {
-  if (node->kind == RTREE_INNER_NODE)
+  if (node->isRoot == RTREE_INNER_NODE)
   {
     for (int i = 0; i < node->count; ++i)
       node_free(node->nodes[i]);
   }
   free(node);
+  return;
 }
 
 /**
@@ -579,12 +696,13 @@ void node_search(const RTreeNode *node, const STBox *query, int **ids,
   {
     if (overlaps_stbox_stbox(query, &node->boxes[i]))
     {
-      if (node->kind == RTREE_INNER_NODE_NO)
+      if (node->isRoot == RTREE_ROOT_NODE)
         add_answer(node->ids[i], ids, count);
       else
         node_search(node->nodes[i], query, ids, count);
     }
   }
+  return;
 }
 
 /**
@@ -595,62 +713,73 @@ void node_search(const RTreeNode *node, const STBox *query, int **ids,
  * @return `true` if the dimensions were successfully set; `false` otherwise.
  */
 static bool
-rtree_set_dims(RTree *rtree, const STBox *box)
+rtree_set_dims(RTree *rtree, const void *box)
 {
-  switch (rtree->basetype)
-  {
-    case T_STBOX:
-      rtree->dims = 3 + MEOS_FLAGS_GET_Z(box->flags);
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
-/**
- * @brief Sets the appropriate get axis function for the R-tree based on its
- * meosType.
- * @param[in,out] rtree The R-tree structure for which the function pointer is
- * to be set.
- * @return `true` if the function pointer was successfully set; `false`
- * otherwise.
- */
-static bool
-rtree_set_functions(RTree *rtree)
-{
-  switch (rtree->basetype)
-  {
-    case T_STBOX:
-      /* TODO: This should be deprecated when we start using picksplit since
-       * this function is only used in the splitting phase. */
-      rtree->get_axis = get_axis_stbox;
-      return true;
-    default:
-      break;
-  }
-  return false;
+  if (span_type(rtree->bboxtype))
+    rtree->dims = 1;
+  else if (rtree->bboxtype == T_TBOX)
+    rtree->dims = 2;
+  else if (rtree->bboxtype == T_STBOX)
+    rtree->dims = 3 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
+  else
+    return false;
+  return true;
 }
 
 /**
  * @brief Creates an RTree index.
- * @param[in] basetype The meosType of the elements to index.
- * Currently the only basetype supported is T_STBOX.
+ * @param[in] bboxtype The meosType of the elements to index.
+ * Currently the only bboxtype supported is T_STBOX.
  * @return RTree initialized.
  */
 RTree *
-rtree_create(meosType basetype)
+rtree_create(meosType bboxtype)
 {
+  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
   RTree *rtree = palloc0(sizeof(RTree));
-  rtree->basetype = basetype;
-  if (!rtree_set_functions(rtree))
+  size_t bboxsize;
+  if (span_type(bboxtype))
   {
-    pfree(rtree);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
-      "Unsupported base type for RTree %d", basetype);
-    return NULL;
+    bboxsize = sizeof(Span);
+    rtree->get_axis = &get_axis_span;
+    rtree->bbox_expand = &bbox_expand_span;
+    rtree->bbox_contains = &bbox_contains_span;
   }
+  else if (bboxtype == T_TBOX)
+  {
+    bboxsize =  sizeof(TBox);
+    rtree->get_axis = &get_axis_tbox;
+    rtree->bbox_expand = &bbox_expand_tbox;
+    rtree->bbox_contains = &bbox_contains_tbox;
+  }
+  else /* bboxtype == T_STBOX */
+  {
+    bboxsize = sizeof(STBox);
+    rtree->get_axis = &get_axis_stbox;
+    rtree->bbox_expand = &bbox_expand_stbox;
+    rtree->bbox_contains = &bbox_contains_stbox;
+  }
+  rtree->bboxtype = bboxtype;
+  rtree->bboxsize = bboxsize;
   return rtree;
+}
+
+/**
+ * @brief Creates an RTree index.
+ * @param[in] bboxtype The meosType of the elements to index.
+ * Currently the only bboxtype supported is T_STBOX.
+ * @return RTree initialized.
+ */
+RTree *
+rtree_create_tbox()
+{
+  return rtree_create(T_TBOX);
+}
+
+RTree *
+rtree_create_stbox()
+{
+  return rtree_create(T_STBOX);
 }
 
 /**
@@ -664,46 +793,36 @@ rtree_create(meosType basetype)
  * @param[in] id The id of the box being inserted
  */
 void
-rtree_insert(RTree *rtree, STBox *box, int64 id)
+rtree_insert(RTree *rtree, void *box, int64 id)
 {
   while (1)
   {
     if (! rtree->root)
     {
-      RTreeNode *new_root = node_new(RTREE_INNER_NODE_NO);
+      RTreeNode *new_root = node_new(RTREE_ROOT_NODE);
       rtree_set_dims(rtree, box);
       rtree->root = new_root;
-      rtree->box = *box;
+      memcpy(rtree->box, box, rtree->bboxsize);
     }
     bool split = false;
     node_insert(rtree, &rtree->box, rtree->root, box, id, &split);
     if (! split)
     {
-      stbox_expand(box, &rtree->box);
+      rtree->bbox_expand(box, &rtree->box);
       return;
     }
     RTreeNode *new_root = node_new(RTREE_INNER_NODE);
     RTreeNode *right;
     node_split(rtree, rtree->root, &rtree->box, &right);
 
-    node_box_calculate(rtree->root, &new_root->boxes[0]);
-    node_box_calculate(right, &new_root->boxes[1]);
+    node_box_calculate(rtree, rtree->root, &new_root->boxes[0]);
+    node_box_calculate(rtree, right, &new_root->boxes[1]);
     new_root->nodes[0] = rtree->root;
     new_root->nodes[1] = right;
     rtree->root = new_root;
     rtree->root->count = 2;
   }
-}
-
-/**
- * @ingroup meos_geo_box_index
- * @brief Creates an RTree index for STBoxes.
- * @return RTree initialized for STBoxes.
- */
-RTree *
-rtree_create_stbox()
-{
-  return rtree_create(T_STBOX);
+  return;
 }
 
 /**
@@ -717,7 +836,7 @@ rtree_create_stbox()
  * @return Array of ids that have a hit.
  */
 int *
-rtree_search(const RTree *rtree, const STBox *query, int *count)
+rtree_search(const RTree *rtree, const void *query, int *count)
 {
   int *ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
   *count = 0;
@@ -737,6 +856,7 @@ rtree_free(RTree *rtree)
   if (rtree->root)
     node_free(rtree->root);
   free(rtree);
+  return;
 }
 
 /*****************************************************************************/

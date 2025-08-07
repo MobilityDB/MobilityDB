@@ -26,7 +26,7 @@ if(MEOS)
   tgeo_meos.c
   tspatial_transform_meos.c
   tspatial_posops_meos.c
-  tspatial_rtree.c
+  # tspatial_rtree.c
   tspatial_topops_meos.c
 )
 endif()
