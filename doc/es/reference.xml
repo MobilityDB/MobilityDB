@@ -887,7 +887,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="talpha_minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Devuelve el valor mínimo o máximo</para>
+					<para><link linkend="talpha_minValue"><varname>minValue</varname>, <varname>maxValue</varname>, <varname>avgValue</varname></link>: Devuelve el valor mínimo, máximo, o promedio</para>
 				</listitem>
 
 				<listitem>
@@ -1061,19 +1061,14 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones de cuadro delimitador</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Devuelve el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
 			<title>Accesores</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tgeo_trajectory"><varname>trajectory</varname>, <varname>traversedArea</varname></link>: Devuelve la trayectoria or el área atravesada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeo_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -1094,10 +1089,6 @@
 
 				<listitem>
 					<para><link linkend="tgeo_speed"><varname>speed</varname></link>: Devuelve la velocidad del punto temporal en unidades por segundo </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeo_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 				</listitem>
 
 				<listitem>

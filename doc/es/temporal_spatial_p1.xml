@@ -446,17 +446,6 @@ SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeo_twCentroid">
-				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Devuelve el centroide ponderado en el tiempo &Z_support;</para>
-				<para><varname>twCentroid(tgeompoint) → point</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
-  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
--- POINT Z (0 0.666666666666667 0.666666666666667)
-</programlisting>
-			</listitem>
-
 			<listitem xml:id="tgeo_direction">
 				<indexterm significance="normal"><primary><varname>direction</varname></primary></indexterm>
 				<para>Devuelve la dirección, es decir, el acimut entre las ubicaciones inicial y final &Z_support; &geography_support;</para>

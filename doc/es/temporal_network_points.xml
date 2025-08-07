@@ -591,7 +591,7 @@ SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
 				<para><varname>shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry</varname></para>
-				<para>The function will only return the first line that it finds if there are more than one</para>
+				<para>La función devuelve la primera línea que encuentre si hay más de una.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));

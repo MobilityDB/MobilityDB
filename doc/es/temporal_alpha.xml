@@ -130,25 +130,35 @@ SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-
 			<listitem xml:id="talpha_minValue">
 				<indexterm significance="normal"><primary><varname>minValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>maxValue</varname></primary></indexterm>
-				<para>Return the minimum or maximum value</para>
+				<indexterm significance="normal"><primary><varname>avgValue</varname></primary></indexterm>
+				<para>Devuelve el valor mínimo, máximo, o promedio</para>
 				<para><varname>minValue(torder) → base</varname></para>
 				<para><varname>maxValue(torder) → base</varname></para>
-				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
+				<para><varname>avgValue(tnumber) → base</varname></para>
+				<para>Las funciones no tienen en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- 1
 SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5
+SELECT avgValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 2.75
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT minValue(ttext '{[A@2001-01-01, B@2001-01-02], [C@2001-01-03, E@2001-01-05]}');
+-- A
+SELECT maxValue(ttext '{[A@2001-01-01, B@2001-01-02], [C@2001-01-03, E@2001-01-05]}');
+-- E
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="talpha_minInstant">
 				<indexterm significance="normal"><primary><varname>minInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>maxInstant</varname></primary></indexterm>
-				<para>Return the instant with the minimum or maximum value</para>
+				<para>Devuelve el instante con el valor mínimo o máximo</para>
 				<para><varname>minInstant(torder) → base</varname></para>
 				<para><varname>maxInstant(torder) → base</varname></para>
-				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the minimum value, the first one is returned.</para>
+				<para>Las funciones no tienen en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- 1@2001-01-01
@@ -457,7 +467,7 @@ SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 				<indexterm significance="normal"><primary><varname>derivative</varname></primary></indexterm>
 				<para>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
 				<para><varname>derivative(tfloat) → tfloat</varname></para>
-				<para>El número flotante temporal debe tener interpolación linear</para>
+				<para>El número flotante temporal debe tener interpolación linear. Nótese que esta función corresponde a la función <link linkend="tgeo_speed"><varname>speed</varname></link> para los puntos temporales.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 0@2001-01-05]}') * 3600 * 24;

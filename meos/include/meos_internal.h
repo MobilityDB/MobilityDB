@@ -1021,7 +1021,9 @@ extern bool tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t, D
 extern Datum *tinstant_values_p(const TInstant *inst, int *count);
 extern void tnumber_set_span(const Temporal *temp, Span *span);
 extern SpanSet *tnumberinst_valuespans(const TInstant *inst);
+extern double tnumberseq_avg_val(const TSequence *seq);
 extern SpanSet *tnumberseq_valuespans(const TSequence *seq);
+extern double tnumberseqset_avg_val(const TSequenceSet *ss);
 extern SpanSet *tnumberseqset_valuespans(const TSequenceSet *ss);
 extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamptz(const TSequence *seq);

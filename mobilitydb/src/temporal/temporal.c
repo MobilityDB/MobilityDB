@@ -1007,6 +1007,22 @@ Temporal_max_value(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Tnumber_avg_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_avg_value);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the average value of a temporal number
+ * @sqlfn avgValue()
+ */
+Datum
+Tnumber_avg_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tnumber_avg_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
 PGDLLEXPORT Datum Temporal_min_instant(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_min_instant);
 /**
