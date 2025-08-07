@@ -19,7 +19,7 @@ SELECT eContains(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Poin
 SELECT eContains(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  econtains 
 -----------
- f
+ t
 (1 row)
 
 SELECT eContains(geometry 'Linestring(1 1,3 3)', tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
@@ -929,7 +929,7 @@ SELECT eTouches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
@@ -977,7 +977,7 @@ SELECT eTouches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT eTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
  etouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
@@ -1007,19 +1007,19 @@ SELECT eTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
  etouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'Triangle((1 1,1 2,2 1,1 1))');

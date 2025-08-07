@@ -319,25 +319,37 @@ SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeogpoint3D;
 SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint;
  max 
 -----
- 848
+  56
 (1 row)
 
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
  max 
 -----
- 843
+  47
 (1 row)
 
 SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
  max 
 -----
- 996
+  52
 (1 row)
 
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 712
+  52
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint;
+ max 
+-----
+ 848
+(1 row)
+
+SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint3D;
+ max 
+-----
+ 996
 (1 row)
 
 SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint;
@@ -355,13 +367,13 @@ SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
-    79
+   100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
  count 
 -------
-    79
+   100
 (1 row)
 
 SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint;

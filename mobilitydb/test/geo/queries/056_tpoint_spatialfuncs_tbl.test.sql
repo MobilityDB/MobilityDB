@@ -91,6 +91,9 @@ SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint;
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
 SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
+-- Apply ST_UnaryUnion to the result
+SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint;
+SELECT MAX(ST_NPoints(trajectory(temp, true))) FROM tbl_tgeompoint3D;
 
 SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint;
 SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;

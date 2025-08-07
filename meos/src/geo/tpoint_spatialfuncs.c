@@ -953,8 +953,11 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
     coll = geopointarr_make_trajectory(points, npoints, STEP);
   else
     coll = geopointlinearr_make_trajectory(points, npoints, lines, nlines);
+  pfree(points); pfree_array((void **) lines, nlines);
+  if (! unary_union)
+    return coll;
   GSERIALIZED *result = geom_unary_union(coll, -1);
-  pfree(points); pfree_array((void **) lines, nlines); pfree(coll);
+  pfree(coll);
   return result;
 }
 
@@ -978,16 +981,11 @@ tpoint_trajectory(const Temporal *temp, bool unary_union)
     return tgeo_traversed_area(temp, unary_union);
 
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return DatumGetGserializedP(tinstant_value((TInstant *) temp));
-    case TSEQUENCE:
-      return tpointseq_linear_trajectory((TSequence *) temp, unary_union);
-    default: /* TSEQUENCESET */
-      return tpointseqset_linear_trajectory((TSequenceSet *) temp,
-        unary_union);
-  }
+  /* The TINSTANT case is taken care by the call to #tgeo_traversed_area */
+  if (temp->subtype == TSEQUENCE)
+    return tpointseq_linear_trajectory((TSequence *) temp, unary_union);
+  else /* TSEQUENCESET */
+    return tpointseqset_linear_trajectory((TSequenceSet *) temp, unary_union);
 }
 
 /*****************************************************************************
