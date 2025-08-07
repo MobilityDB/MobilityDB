@@ -41,6 +41,7 @@
 #endif
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include <meos_geo.h>
 #include "temporal/doublen.h"
 #include "temporal/meos_catalog.h"
@@ -289,12 +290,6 @@ typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
 /* Definition of a turning point function for two temporal types */
 typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
   TimestampTz, TimestampTz *, TimestampTz *);
-
-/* Definition of a function with one to three Datum arguments and returning 
- * a Datum */
-typedef Datum (*datum_func1) (Datum);
-typedef Datum (*datum_func2) (Datum, Datum);
-typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /*****************************************************************************
  * fmgr macros temporal types
