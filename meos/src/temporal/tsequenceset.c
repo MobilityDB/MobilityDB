@@ -867,6 +867,22 @@ tsequenceset_max_val(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_internal_temporal_accessor
+ * @brief Return the average value of a temporal number
+ * @param[in] ss Temporal sequence set
+ * @csqlfn #Tnumber_avg_value()
+ */
+double
+tnumberseqset_avg_val(const TSequenceSet *ss)
+{
+  assert(ss); assert(tnumber_type(ss->temptype));
+  double result = 0;
+  for (int i = 0; i < ss->count; i++)
+    result += tnumberseq_avg_val(TSEQUENCESET_SEQ_N(ss, i));
+  return result / ss->count;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
  * sequence set
  * @param[in] ss Temporal sequence set

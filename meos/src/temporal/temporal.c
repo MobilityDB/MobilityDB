@@ -2045,6 +2045,30 @@ temporal_max_value(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_accessor
+ * @brief Return the average value of a temporal number
+ * @param[in] temp Temporal value
+ * @csqlfn #Tnumber_avg_value()
+ */
+double
+tnumber_avg_value(const Temporal *temp)
+{
+  assert(temp); assert(temp->subtype);
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return datum_double(tinstant_value((TInstant *) temp),
+        temptype_basetype(temp->temptype));
+      break;
+    case TSEQUENCE:
+      return tnumberseq_avg_val((TSequence *) temp);
+      break;
+    default: /* TSEQUENCESET */
+      return tnumberseqset_avg_val((TSequenceSet *) temp);
+  }
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
  * value 
  * @param[in] temp Temporal value

@@ -263,6 +263,9 @@ SELECT MAX(minValue(temp)) FROM tbl_tint;
 SELECT round(MAX(minValue(temp)), 6) FROM tbl_tfloat;
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
 
+SELECT round(MAX(avgValue(temp)), 6) FROM tbl_tint;
+SELECT round(MAX(avgValue(temp)), 6) FROM tbl_tfloat;
+
 SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_tint;
 SELECT round(MAX(valueN(temp, numInstants(temp))), 6) FROM tbl_tfloat;
 SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_ttext;

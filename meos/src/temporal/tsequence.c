@@ -1879,6 +1879,22 @@ tsequence_max_val(const TSequence *seq)
 }
 
 /**
+ * @brief Return the average value of a temporal discrete sequence number
+ * @param[in] seq Temporal sequence
+ */
+double
+tnumberseq_avg_val(const TSequence *seq)
+{
+  assert(seq); assert(tnumber_type(seq->temptype));
+
+  meosType basetype = temptype_basetype(seq->temptype);
+  double result = 0.0;
+  for (int i = 0; i < seq->count; i++)
+    result += datum_double(tinstant_value_p(TSEQUENCE_INST_N(seq, i)), basetype);
+  return result / seq->count;
+}
+
+/**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the duration of a temporal sequence
  * @param[in] seq Temporal sequence
@@ -2737,26 +2753,6 @@ tnumberseq_integral(const TSequence *seq)
 }
 
 /**
- * @brief Return the time-weighted average of a temporal discrete sequence
- * number
- * @note Since a discrete sequence does not have duration, the function returns
- * the traditional average of the values
- * @param[in] seq Temporal sequence
- */
-double
-tnumberseq_disc_twavg(const TSequence *seq)
-{
-  assert(seq); assert(tnumber_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
-
-  meosType basetype = temptype_basetype(seq->temptype);
-  double result = 0.0;
-  for (int i = 0; i < seq->count; i++)
-    result += datum_double(tinstant_value_p(TSEQUENCE_INST_N(seq, i)), basetype);
-  return result / seq->count;
-}
-
-/**
  * @brief Return the time-weighted average of a temporal sequence number
  */
 double
@@ -2786,7 +2782,7 @@ tnumberseq_twavg(const TSequence *seq)
 {
   assert(seq); assert(tnumber_type(seq->temptype));
   return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-    tnumberseq_disc_twavg(seq) : tnumberseq_cont_twavg(seq);
+    tnumberseq_avg_val(seq) : tnumberseq_cont_twavg(seq);
 }
 
 /*****************************************************************************

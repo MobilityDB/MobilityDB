@@ -862,15 +862,15 @@
 			<title>Conversión de tipos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_bbox"><varname>tnumber::span</varname>, <varname>tnumber::tbox</varname></link>: Convertir un número temporal en un rango o un cuadro delimitador temporal</para>
+					<para><link linkend="tnumber_bbox"><varname>tnumber::{span,tbox}</varname>, <varname>valueSpan(tnumber)</varname>, <varname>timeSpan(tnumber)</varname>, <varname>tbox(tnumber)</varname></link>: Convertir un número temporal en un rango o un cuadro delimitador temporal</para>
 				</listitem>
 
           <listitem>
-					<para><link linkend="tbool_tint"><varname>tbool::tint</varname></link>: Convertir entre un booleano temporal y un entero temporal</para>
+					<para><link linkend="tbool_tint"><varname>tbool::tint</varname>, <varname>tint(tbool)</varname></link>: Convertir entre un booleano temporal y un entero temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convertir entre un entero temporal y un flotante temporal</para>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname>, <varname>tfloat(tint)</varname>, <varname>tint(tfloat)</varname></link>: Convertir entre un entero temporal y un flotante temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -879,15 +879,11 @@
 			<title>Accessores</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="talpha_valueSpan"><varname>valueSpan</varname></link>: Devuelve el rango de valores</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="talpha_valueSet"><varname>valueSet</varname></link>: Devuelve el conjunto de valores de un número temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="talpha_minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Devuelve el valor mínimo o máximo</para>
+					<para><link linkend="talpha_minValue"><varname>minValue</varname>, <varname>maxValue</varname>, <varname>avgValue</varname></link>: Devuelve el valor mínimo, máximo, o promedio</para>
 				</listitem>
 
 				<listitem>
@@ -1038,6 +1034,10 @@
 			<title>Conversión de tipos</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="tspatial_bbox"><varname>::</varname>, <varname>stbox(tspatial)</varname></link>: Convertir un valor espaciotemporal a un cuadro delimitador espaciotemporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tgeometry_tgeography"><varname>tgeometry::tgeography</varname>, <varname>tgeography::tgeometry</varname>, <varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convertir entre una geometría temporal y una geografía temporal</para>
 				</listitem>
 
@@ -1061,19 +1061,14 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones de cuadro delimitador</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Devuelve el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
 			<title>Accesores</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tgeo_trajectory"><varname>trajectory</varname>, <varname>traversedArea</varname></link>: Devuelve la trayectoria or el área atravesada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeo_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -1094,10 +1089,6 @@
 
 				<listitem>
 					<para><link linkend="tgeo_speed"><varname>speed</varname></link>: Devuelve la velocidad del punto temporal en unidades por segundo </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeo_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 				</listitem>
 
 				<listitem>
