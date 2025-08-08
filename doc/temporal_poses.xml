@@ -194,8 +194,10 @@ SELECT asText(pose(ST_PointZ(1,1,1), 1, 0, 0, 0));
 			<para>Values of the <varname>pose</varname> type can be converted to the <varname>geometry</varname> point type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown below.</para>
 			<itemizedlist>
 				<listitem xml:id="pose_stbox">
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 					<para>Convert a pose and, optionally, a timestamp or a period, into a spatiotemporal box</para>
+					<para><varname>pose::stbox</varname></para>
 					<para><varname>stbox(pose) → stbox</varname></para>
 					<para><varname>stbox(pose,{timestamptz,tstzspan}) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

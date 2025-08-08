@@ -40,23 +40,26 @@
 
 	<sect1 xml:id="talpha_conversions">
 		<title>Conversión de tipos</title>
-
 		<para>Un valor temporal se puede convertir en un tipo compatible utilizando la notación <varname>CAST(ttype1 AS ttype2)</varname> o la notación <varname>ttype1::ttype2</varname>.</para>
 		<itemizedlist>
 			<listitem xml:id="tnumber_bbox">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valueSpan(tnumber)</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timeSpan(tnumber)</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox(tnumber)</varname></primary></indexterm>
 				<para>Convertir un número temporal en un rango o un cuadro delimitador temporal</para>
 				<para><varname>tnumber::{span,tbox}</varname></para>
+				<para><varname>valueSpan(tnumber) → numspan</varname></para>
+				<para><varname>timeSpan(tnumber) → tstzspan</varname></para>
+				<para><varname>tbox(tnumber) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- [1, 3)
 SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
 -- (1, 3]
-SELECT tfloat 'Interp=Step;(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
--- [1, 3]
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
-SELECT ttext '(A@2001-01-01, B@2001-01-03, C@2001-01-05]'::tstzspan;
+SELECT valueSpan(tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]');
+-- (1, 3]
+SELECT timeSpan(tfloat 'Interp=Step;(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]');
 -- (2001-01-01, 2001-01-05]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -64,17 +67,15 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
 -- TBOXINT XT((1,2),[2001-01-01,2001-01-03])
 SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 -- TBOXFLOAT XT((1,3),[2001-01-01,2001-01-05])
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
--- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
-SELECT tgeography '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
--- SRID=4326;GEODSTBOX ZT(((1,1,1),(3,3,3)),[2001-01-01, 2001-01-03])
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tbool_tint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tint(tbool)</varname></primary></indexterm>
 				<para>Convertir entre un booleano temporal y un entero temporal</para>
 				<para><varname>tbool::tint</varname></para>
+				<para><varname>tint(tbool) → tint</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 -- [1@2001-01-01, 0@2001-01-03]
@@ -83,9 +84,13 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 
 			<listitem xml:id="tint_tfloat">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloat(tint)</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tint(tfloat)</varname></primary></indexterm>
 				<para>Convertir entre un entero integer y un número flotante temporal</para>
 				<para><varname>tint::tfloat</varname></para>
 				<para><varname>tfloat::tint</varname></para>
+				<para><varname>tfloat(tint)</varname></para>
+				<para><varname>tint(tfloat)</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03]

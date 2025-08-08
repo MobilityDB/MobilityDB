@@ -231,13 +231,13 @@ SELECT asEWKT(tgeompointFromHexEWKB(
 	<sect1 xml:id="tgeo_conversions">
 		<title>Conversions</title>
 		<itemizedlist>
-			<listitem xml:id="tgeo_bbox">
+			<listitem xml:id="tspatial_bbox">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox(tspatial)</varname></primary></indexterm>
 				<para>Convert a spatiotemporal value to a spatiotemporal box</para>
 				<para><varname>tspatial::stbox</varname></para>
+				<para><varname>stbox(tspatial)</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 -- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
 SELECT tgeography '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
