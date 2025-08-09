@@ -298,6 +298,7 @@ CREATE FUNCTION tfloatSeq(tfloat[], text DEFAULT 'linear',
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION ttextSeq(ttext[], text DEFAULT 'step',
     lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)
   RETURNS ttext
@@ -2099,3 +2100,561 @@ CREATE OPERATOR CLASS ttext_hash_ops
     FUNCTION    1   temporal_hash(ttext);
 
 /******************************************************************************/
+
+
+
+
+--jsnb
+
+
+--******************************************************************************
+ -- Define the new temporal JSONB base type
+ --******************************************************************************/
+
+ 
+CREATE TYPE tjsonb;
+
+--******************************************************************************
+ --Input/Output, Send/Receive, Typmod, Analyze
+ --******************************************************************************/
+CREATE FUNCTION tjsonb_in(cstring, oid, integer)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temporal_out(tjsonb)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Temporal_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tjsonb_recv(internal, oid, integer)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temporal_send(tjsonb)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+CREATE TYPE tjsonb (
+  internallength = variable,
+  input = tjsonb_in,
+  output = temporal_out,
+  send = temporal_send,
+  receive = tjsonb_recv,
+  typmod_in = temporal_typmod_in,
+  typmod_out = temporal_typmod_out,
+  storage = extended,
+  alignment = double,
+  analyze = temporal_analyze
+);
+
+--******************************************************************************
+ -- Enforce typmod (cast to itself with a new typmod)
+ --******************************************************************************/
+CREATE FUNCTION tjsonb(tjsonb, integer)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_enforce_typmod'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tjsonb AS tjsonb)
+  WITH FUNCTION tjsonb(tjsonb, integer) AS IMPLICIT;
+
+--******************************************************************************
+ -- Instant constructors: JSONB + timestamp
+ --******************************************************************************/
+CREATE FUNCTION tjsonb(jsonb, timestamptz)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tinstant_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+--******************************************************************************
+ -- Sequence‐from‐span constructors
+ --******************************************************************************/
+CREATE FUNCTION tjsonb(jsonb, tstzset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tjsonb(jsonb, tstzspan)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tjsonb(jsonb, tstzspanset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+--******************************************************************************
+ --Sequence / SequenceSet constructors from arrays
+ --******************************************************************************/
+CREATE FUNCTION tjsonbSeq(tjsonb[], text DEFAULT 'step',
+    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tjsonbSeqSet(tjsonb[])
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Merge an array of tjsonb into a single sequence, inserting explicit gaps up to maxt
+CREATE FUNCTION tjsonbSeqSetGaps(tjsonb[], maxt interval DEFAULT NULL)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+
+--******************************************************************************
+ --* Conversion functions
+ --******************************************************************************/
+CREATE FUNCTION timeSpan(tjsonb)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tjsonb AS tstzspan)   WITH FUNCTION timeSpan(tjsonb);
+
+
+--******************************************************************************
+ -- Accessors: getValue, getValues, startValue, endValue, etc.
+ --******************************************************************************/
+CREATE FUNCTION tempSubtype(tjsonb)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_subtype'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION interp(tjsonb)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION memSize(tjsonb)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getValue(tjsonb)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getValues(tjsonb)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startValue(tjsonb)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(tjsonb)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(tjsonb, integer)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minInstant(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_min_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION maxInstant(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_max_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getTimestamp(tjsonb)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getTime(tjsonb)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION duration(tjsonb, boundspan boolean DEFAULT FALSE)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'Temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numSequences(tjsonb)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startSequence(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endSequence(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequenceN(tjsonb, integer)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequences(tjsonb)
+  RETURNS tjsonb[]
+  AS 'MODULE_PATHNAME', 'Temporal_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION segments(tjsonb)
+  RETURNS tjsonb[]
+  AS 'MODULE_PATHNAME', 'Temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION lowerInc(tjsonb)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION upperInc(tjsonb)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numInstants(tjsonb)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_instants'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startInstant(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_start_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endInstant(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_end_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION instantN(tjsonb, integer)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_instant_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION instants(tjsonb)
+  RETURNS tjsonb[]
+  AS 'MODULE_PATHNAME', 'Temporal_instants'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numTimestamps(tjsonb)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startTimestamp(tjsonb)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endTimestamp(tjsonb)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_end_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestampN(tjsonb, integer)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestamps(tjsonb)
+  RETURNS timestamptz[]
+  AS 'MODULE_PATHNAME', 'Temporal_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+-- 1) mirror the text one for JSONB
+CREATE TYPE jsonb_tstzspanset AS (
+  value jsonb,
+  time  tstzspanset
+);
+
+-- 2) then add the unnest() overload for tjsonb
+CREATE FUNCTION unnest(tjsonb)
+  RETURNS SETOF jsonb_tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+--Transformer functions
+
+CREATE FUNCTION tjsonbInst(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tjsonbSeq(tjsonb, text DEFAULT NULL)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION tjsonbSeqSet(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION setInterp(tjsonb, text)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+---------------------------------------------
+
+CREATE FUNCTION shiftTime(tjsonb, interval)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION scaleTime(tjsonb, interval)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScaleTime(tjsonb, interval, interval)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION appendInstant(tjsonb, tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION appendInstant(tjsonb, tjsonb, interp text)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION appendSequence(tjsonb, tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION merge(tjsonb, tjsonb)
+  RETURNS tjsonb
+    AS 'MODULE_PATHNAME', 'Temporal_merge'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION merge(tjsonb[])
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_merge_array'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+---------Restriction functions
+
+
+CREATE FUNCTION atValues(tjsonb, jsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValues(tjsonb, jsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atValues(tjsonb, jsonbset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValues(tjsonb, jsonbset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atMin(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_min'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION minusMin(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_min'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atMax(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_max'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusMax(tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_max'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atTime(tjsonb, timestamptz)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION minusTime(tjsonb, timestamptz)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tjsonb, timestamptz)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION atTime(tjsonb, tstzset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION minusTime(tjsonb, tstzset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atTime(tjsonb, tstzspan)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusTime(tjsonb, tstzspan)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atTime(tjsonb, tstzspanset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_at_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusTime(tjsonb, tstzspanset)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-----Modification functions ---------------
+CREATE FUNCTION insert(tjsonb, tjsonb, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION update(tjsonb, tjsonb, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION deleteTime(tjsonb, timestamptz, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION deleteTime(tjsonb, tstzset, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION deleteTime(tjsonb, tstzspan, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION deleteTime(tjsonb, tstzspanset, connect boolean DEFAULT TRUE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+--******************************************************************************
+ -- Comparison operators and B‐tree indexing
+ --******************************************************************************/
+-- Temporal equality for tjsonb: returns true if the two temporal JSONB values
+-- are equal at each corresponding instant.
+CREATE FUNCTION temporal_eq(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Temporal inequality for tjsonb: returns true if the two temporal JSONB values
+-- are not equal at any corresponding instant.
+CREATE FUNCTION temporal_ne(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+--------------------------------------------------------------------------------
+-- Operator “=” for tjsonb:
+--   LEFTARG  = tjsonb
+--   RIGHTARG = tjsonb
+--   PROCEDURE  = temporal_eq
+--   COMMUTATOR = =         (order of arguments can be swapped)
+--   NEGATOR    = <>        (NOT equal is the negator)
+--   RESTRICT   = eqsel     (selectivity estimation function)
+--   JOIN       = eqjoinsel (join planning support function)
+CREATE OPERATOR = (
+  LEFTARG    = tjsonb,
+  RIGHTARG   = tjsonb,
+  PROCEDURE  = temporal_eq,
+  COMMUTATOR = =,
+  NEGATOR    = <>,
+  RESTRICT   = eqsel,
+  JOIN       = eqjoinsel
+);
+
+-- Operator “<>” for tjsonb:
+--   LEFTARG    = tjsonb
+--   RIGHTARG   = tjsonb
+--   PROCEDURE  = temporal_ne
+--   COMMUTATOR = <>         (order can be swapped)
+--   NEGATOR    = =          (equal is the negator)
+--   RESTRICT   = neqsel     (selectivity estimation for inequality)
+--   JOIN       = neqjoinsel (join planning support)
+CREATE OPERATOR <> (
+  LEFTARG    = tjsonb,
+  RIGHTARG   = tjsonb,
+  PROCEDURE  = temporal_ne,
+  COMMUTATOR = <>,
+  NEGATOR    = =,
+  RESTRICT   = neqsel,
+  JOIN       = neqjoinsel
+);
+
+
+--******************************************************************************
+ -- Hash indexing
+ --******************************************************************************/
+CREATE FUNCTION temporal_hash(tjsonb)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS tjsonb_hash_ops
+  DEFAULT FOR TYPE tjsonb USING hash AS
+    OPERATOR    1   =,
+    FUNCTION    1   temporal_hash(tjsonb);
+
+
+
+
+--jsnb

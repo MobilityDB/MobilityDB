@@ -38,6 +38,7 @@
 #include <assert.h>
 #include <float.h>
 #include <limits.h>
+#include <utils/jsonb.h>
 /* PostgreSQL */
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -116,6 +117,23 @@ ttext_in(const char *str)
 }
 
 /*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal JSONB from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #TJSONB_in()
+ */
+Temporal *
+tjsonb_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return temporal_parse(&str, T_TJSONB);
+}
+
+//jsnb
+/*****************************************************************************/
 
 /**
  * @ingroup meos_temporal_inout
@@ -169,6 +187,23 @@ ttext_out(const Temporal *temp)
   VALIDATE_TTEXT(temp, NULL); 
   return temporal_out(temp, 0);
 }
+
+//jsnb
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal JSONB
+ * @param[in] temp Temporal JSONB
+ * @csqlfn #TJSONB_out()
+ */
+char *
+tjsonb_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  return temporal_out(temp, 0);
+}
+//jsnb
+
 
 /*****************************************************************************
  * Constructor functions
@@ -233,6 +268,26 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
   VALIDATE_NOT_NULL(txt, NULL); VALIDATE_NOT_NULL(temp, NULL); 
   return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
 }
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal JSONB from a JSONB and the time frame of
+ * another temporal value
+ * @param[in] jsonb Value
+ * @param[in] temp Temporal value
+ * @csqlfn #TJSONB_from_base_temp()
+ */
+Temporal *
+tjsonb_from_base_temp(const Jsonb *jsonb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jsonb, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(jsonb), T_TJSONB, temp);
+}
+//jsnb
+
 
 /*****************************************************************************
  * Transformation functions
@@ -418,6 +473,29 @@ ttext_values(const Temporal *temp, int *count)
   return result;
 }
 
+
+//jsnb
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal JSONB
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+Jsonb **
+tjsonb_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  Datum *datumarr = temporal_values_p(temp, count);
+  Jsonb **result = palloc(sizeof(Jsonb *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = jsonb_copy(DatumGetJsonbP(datumarr[i]));
+  pfree(datumarr);
+  return result;
+}
+//jsnb
+
 /*****************************************************************************/
 
 /**
@@ -478,6 +556,24 @@ ttext_start_value(const Temporal *temp)
   VALIDATE_TTEXT(temp, NULL);
   return DatumGetTextP(temporal_start_value(temp));
 }
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal JSONB
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_start_value()
+ */
+Jsonb *
+tjsonb_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  return DatumGetJsonbP(temporal_start_value(temp));
+}
+//jsnb
 
 /*****************************************************************************/
 
@@ -541,6 +637,22 @@ ttext_end_value(const Temporal *temp)
 }
 
 /*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal JSONB
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_end_value()
+ */
+Jsonb *
+tjsonb_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  return DatumGetJsonbP(temporal_end_value(temp));
+}
+//jsnb
 
 /**
  * @ingroup meos_temporal_accessor
@@ -589,6 +701,9 @@ ttext_min_value(const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return the maximum value of a temporal integer
@@ -635,6 +750,9 @@ ttext_max_value(const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+
+
 
 /**
  * @ingroup meos_temporal_accessor
@@ -715,5 +833,29 @@ ttext_value_n(const Temporal *temp, int n, text **result)
   *result = DatumGetTextP(dresult);
   return true;
 }
+
+//jsnb
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal JSONB
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tjsonb_value_n(const Temporal *temp, int n, Jsonb **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetJsonbP(dresult);
+  return true;
+}
+
+//jsnb
+
 
 /*****************************************************************************/

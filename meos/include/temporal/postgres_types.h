@@ -38,6 +38,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/jsonb.h>
+
 #if MEOS
 #include "postgres_int_defs.h"
 #else
@@ -108,7 +110,9 @@ extern uint64 pg_hashint8extended(int64 val, uint64 seed);
 extern uint64 pg_hashfloat8extended(float8 key, uint64 seed);
 extern uint32 pg_hashtext(text *key);
 extern uint64 pg_hashtextextended(text *key, uint64 seed);
-
+//JSNB
+extern uint32 pg_hashjsonb(Jsonb *key);
+extern uint64 pg_hashjsonb_extended (Jsonb *key, uint64 seed);
 /*****************************************************************************/
 
 #endif /* POSTGRES_TYPES_H */

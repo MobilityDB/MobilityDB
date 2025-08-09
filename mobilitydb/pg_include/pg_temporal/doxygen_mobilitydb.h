@@ -236,6 +236,10 @@
  * @ingroup mobilitydb_temporal
  * @brief Text functions for temporal types
  *
+ * @defgroup mobilitydb_temporal_jsonb Jsonb functions
+ * @ingroup mobilitydb_temporal
+ * @brief Jsonb functions for temporal types
+ *
  * @defgroup mobilitydb_temporal_dist Distance functions
  * @ingroup mobilitydb_temporal
  * @brief Distance functions for temporal types

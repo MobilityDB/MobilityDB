@@ -41,6 +41,7 @@
 #include <postgres.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
+#include <utils/jsonb.h>
 #include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -114,6 +115,26 @@ ttextseq_in(const char *str, interpType interp)
   return tsequence_in(str, T_TTEXT, interp);
 }
 
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB sequence from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str Input string, e.g.
+ *   '[ {"a":1} @ 2025-01-01T00:00:00Z, {"b":2} @ 2025-01-02T00:00:00Z ]'
+ * @param[in] interp Interpolation mode (STEP or LINEAR)
+ * @csqlfunc #TJSONBSEQ_in()
+ */
+inline TSequence *
+tjsonbseq_in(const char *str, interpType interp)
+{
+  /* refuse NULL input */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* delegate to the generic tsequence parser with JSONB tag */
+  return tsequence_in(str, T_TJSONB, interp);
+}
+//jsnb
+
 /*****************************************************************************/
 
 /**
@@ -176,6 +197,24 @@ ttextseq_from_base_tstzset(const text *txt, const Set *s)
   return tsequence_from_base_tstzset(PointerGetDatum(txt), T_TTEXT, s);
 }
 
+
+//jsnb
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal JSONB discrete sequence from a JSONB value and a
+ * timestamptz set
+ * @param[in] jsonb Value
+ * @param[in] s Set
+ */
+TSequence *
+tjsonbseq_from_base_tstzset(const Jsonb *jsonb, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jsonb, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(jsonb), T_TJSONB, s);
+}
+//jsnb
+
 /*****************************************************************************/
 
 /**
@@ -237,5 +276,23 @@ ttextseq_from_base_tstzspan(const text *txt, const Span *s)
   VALIDATE_TSTZSPAN(s, NULL);
   return tsequence_from_base_tstzspan(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal JSONB sequence from a JSONB value and a timestamptz
+ * span
+ * @param[in] jsonb Value
+ * @param[in] s Span
+ */
+TSequence *
+tjsonbseq_from_base_tstzspan(const Jsonb *jsonb, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jsonb, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(jsonb), T_TJSONB, s, STEP);
+}
+//jsnb
 
 /*****************************************************************************/

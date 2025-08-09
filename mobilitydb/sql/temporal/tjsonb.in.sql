@@ -28,29 +28,42 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal text functions: `textcat`, `lower`, `upper`.
+ * @file
+ * @brief Temporal JSONB functions
  */
 
-#ifndef __TTEXT_TEXTFUNCS_H__
-#define __TTEXT_TEXTFUNCS_H__
+/*****************************************************************************
+ * Temporal JSONB concatenation
+ *****************************************************************************/
 
-/* PostgreSQL */
-#include <postgres.h>
-/* PostgreSQL */
-#include <meos.h>
-#include "temporal/temporal.h"
+CREATE FUNCTION tjsonb_concat(jsonb, tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Jsonb_concat_jsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tjsonb_concat(tjsonb, jsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Jsonb_concat_tjsonb_jsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tjsonb_concat(tjsonb, tjsonb)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Jsonb_concat_tjsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************/
+CREATE OPERATOR || (
+  PROCEDURE = tjsonb_concat,
+  LEFTARG   = jsonb, RIGHTARG = tjsonb
+);
+CREATE OPERATOR || (
+  PROCEDURE = tjsonb_concat,
+  LEFTARG   = tjsonb, RIGHTARG = jsonb
+);
+CREATE OPERATOR || (
+  PROCEDURE = tjsonb_concat,
+  LEFTARG   = tjsonb, RIGHTARG = tjsonb
+);
 
-extern Datum datum_textcat(Datum l, Datum r);
-extern Datum datum_lower(Datum value);
-extern Datum datum_upper(Datum value);
-extern Datum datum_initcap(Datum value);
 
-extern Temporal *textfunc_ttext(const Temporal *temp, datum_func1 func);
-extern Temporal *textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func, bool invert);
-extern Temporal *textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2, datum_func2 func);
-
-/*****************************************************************************/
-
-#endif
+CREATE FUNCTION tjsonb_set_path(temp tjsonb, path text[], val jsonb, create_missing boolean DEFAULT true)
+RETURNS tjsonb
+AS 'MODULE_PATHNAME', 'Tjsonb_set_path'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -2024,3 +2024,246 @@ CREATE OPERATOR #>= (
 );
 
 /*****************************************************************************/
+
+
+
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--jsnb
+
+
+-- Ever_eq
+CREATE FUNCTION ever_eq(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  PROCEDURE = ever_eq,
+  NEGATOR   = %<>,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_eq(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  PROCEDURE = ever_eq,
+  NEGATOR   = %<>,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+
+-- Ever_ne
+CREATE FUNCTION ever_ne(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OPERATOR ?<> (
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  PROCEDURE = ever_ne,
+  NEGATOR   = %=,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+
+CREATE FUNCTION ever_ne(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<> (
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  PROCEDURE = ever_ne,
+  NEGATOR   = %=,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+
+-- Always_eq
+CREATE FUNCTION always_eq(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  PROCEDURE = always_eq,
+  NEGATOR   = ?<>,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_eq(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  PROCEDURE = always_eq,
+  NEGATOR   = ?<>,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+-- Always_ne
+CREATE FUNCTION always_ne(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<> (
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  PROCEDURE = always_ne,
+  NEGATOR   = ?=,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+
+CREATE FUNCTION always_ne(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<> (
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  PROCEDURE = always_ne,
+  NEGATOR   = ?=,
+  RESTRICT  = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_eq(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = ever_eq,
+  NEGATOR = %<>,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_eq(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = always_eq,
+  NEGATOR = ?<>,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_ne(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<> (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = ever_ne,
+  NEGATOR = %=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_ne(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OPERATOR %<> (
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = always_ne,
+  NEGATOR = ?=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+
+-----------------
+
+CREATE FUNCTION temporal_teq(jsonb, tjsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION temporal_teq(tjsonb, jsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION temporal_teq(tjsonb, tjsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR #= (
+  PROCEDURE = temporal_teq,
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = #=
+);
+CREATE OPERATOR #= (
+  PROCEDURE = temporal_teq,
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  COMMUTATOR = #=
+);
+CREATE OPERATOR #= (
+  PROCEDURE = temporal_teq,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = #=
+);
+
+
+---------------------
+
+CREATE FUNCTION temporal_tne(jsonb, tjsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION temporal_tne(tjsonb, jsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temporal_tne(tjsonb, tjsonb)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+CREATE OPERATOR #<> (
+  PROCEDURE = temporal_tne,
+  LEFTARG = jsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = #<>
+);
+
+CREATE OPERATOR #<> (
+  PROCEDURE = temporal_tne,
+  LEFTARG = tjsonb, RIGHTARG = jsonb,
+  COMMUTATOR = #<>
+);
+CREATE OPERATOR #<> (
+  PROCEDURE = temporal_tne,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = #<>
+);
+
+

@@ -39,6 +39,9 @@
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include <utils/jsonb.h>
+
+
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -106,6 +109,26 @@ ever_eq_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a JSONB is ever equal to a temporal JSONB
+ * @param[in] jb  JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+int
+ever_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);
+  VALIDATE_NOT_NULL(jb, -1);
+  return ever_eq_base_temporal(PointerGetDatum(jb), temp);
+}
+//jsnb
+
+/*****************************************************************************/
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean
@@ -165,6 +188,25 @@ ever_eq_ttext_text(const Temporal *temp, const text *txt)
   VALIDATE_TTEXT(temp, -1); VALIDATE_NOT_NULL(txt, -1);
   return ever_eq_temporal_base(temp, PointerGetDatum(txt));
 }
+
+/*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal JSONB is ever equal to a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb    JSONB value
+ * @csqlfn #Ever_eq_temporal_base()
+ */
+int
+ever_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);
+  VALIDATE_NOT_NULL(jb, -1);
+  return ever_eq_temporal_base(temp, PointerGetDatum(jb));
+}
+//jsnb
 
 /*****************************************************************************/
 
@@ -229,6 +271,24 @@ always_eq_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a JSONB is always equal to a temporal JSONB
+ * @param[in] jb   JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+int
+always_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);
+  VALIDATE_NOT_NULL(jb, -1);
+  return always_eq_base_temporal(PointerGetDatum(jb), temp);
+}
+//jsnb
+/*****************************************************************************/
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -292,6 +352,26 @@ always_eq_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal JSONB is always equal to a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb   JSONB value
+ * @csqlfn #Always_eq_temporal_base()
+ */
+int
+always_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);
+  VALIDATE_NOT_NULL(jb, -1);
+  return always_eq_temporal_base(temp, PointerGetDatum(jb));
+}
+//jsnb
+/*****************************************************************************/
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a boolean is ever different from a temporal boolean
@@ -353,6 +433,24 @@ ever_ne_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a JSONB is ever different from a temporal JSONB
+ * @param[in] jb   JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+int
+ever_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, -1);    /* checks that jb pointer is not NULL */
+  return ever_ne_base_temporal(PointerGetDatum(jb), temp);
+}
+//jsnb
+/*****************************************************************************/ 
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -416,6 +514,25 @@ ever_ne_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal JSONB is ever different from a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb   JSONB value
+ * @csqlfn #Ever_ne_temporal_base()
+ */
+int
+ever_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, -1);    /* checks that jb pointer is not NULL */
+  return ever_ne_temporal_base(temp, PointerGetDatum(jb));
+}
+//jsnb
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a boolean is always different from a temporal boolean
@@ -477,6 +594,26 @@ always_ne_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a JSONB is always different from a temporal JSONB
+ * @param[in] jb   JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+int
+always_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, -1);    /* checks that jb pointer is not NULL */
+  return always_ne_base_temporal(PointerGetDatum(jb), temp);
+}
+//jsnb
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -540,6 +677,27 @@ always_ne_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal JSONB is always different from a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb   JSONB value
+ * @csqlfn #Always_ne_temporal_base()
+ */
+int
+always_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, -1);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, -1);    /* checks that jb pointer is not NULL */
+  return always_ne_temporal_base(temp, PointerGetDatum(jb));
+}
+//jsnb
+/*****************************************************************************/
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if an integer is ever less than a temporal integer
@@ -586,6 +744,10 @@ ever_lt_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -634,6 +796,9 @@ ever_lt_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if an integer is always less than a temporal integer
@@ -681,6 +846,8 @@ always_lt_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than an integer
@@ -727,6 +894,8 @@ always_lt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -776,6 +945,9 @@ ever_le_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an
@@ -823,6 +995,8 @@ ever_le_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -873,6 +1047,8 @@ always_le_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than or equal to an
@@ -922,6 +1098,8 @@ always_le_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if an integer is ever less than a temporal integer
@@ -968,6 +1146,9 @@ ever_gt_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1016,6 +1197,8 @@ ever_gt_ttext_text(const Temporal *temp, const text *txt)
 
 /*****************************************************************************/
 
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if an integer is always less than a temporal integer
@@ -1063,6 +1246,9 @@ always_gt_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than an integer
@@ -1109,6 +1295,9 @@ always_gt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1158,6 +1347,9 @@ ever_ge_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an
@@ -1205,6 +1397,8 @@ ever_ge_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1255,6 +1449,8 @@ always_ge_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
 /**
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is always less than or equal to an
@@ -1301,6 +1497,10 @@ always_ge_ttext_text(const Temporal *temp, const text *txt)
   VALIDATE_TTEXT(temp, -1); VALIDATE_NOT_NULL(txt, -1);
   return always_ge_temporal_base(temp, PointerGetDatum(txt));
 }
+
+
+
+
 
 /*****************************************************************************
  * Temporal eq
@@ -1368,6 +1568,24 @@ teq_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a JSONB and a temporal JSONB
+ * @param[in] jb   JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Teq_base_temporal()
+ */
+Temporal *
+teq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, NULL);    /* checks that jb pointer is not NULL */
+  return tcomp_base_temporal(PointerGetDatum(jb), temp, &datum2_eq);
+}
+//jsnb
+
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equality of a temporal boolean and a boolean
@@ -1427,6 +1645,23 @@ teq_ttext_text(const Temporal *temp, const text *txt)
   VALIDATE_TTEXT(temp, NULL);
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_eq);
 }
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal equality of a temporal JSONB and a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb   JSONB value
+ * @csqlfn #Teq_temporal_base()
+ */
+Temporal *
+teq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, NULL);    /* checks that jb pointer is not NULL */
+  return tcomp_temporal_base(temp, PointerGetDatum(jb), &datum2_eq);
+}
+//jsnb
 
 /*****************************************************************************
  * Temporal ne
@@ -1493,6 +1728,23 @@ tne_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a JSONB and a temporal JSONB
+ * @param[in] jb   JSONB value
+ * @param[in] temp Temporal tjsonb value
+ * @csqlfn #Tne_base_temporal()
+ */
+Temporal *
+tne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, NULL);    /* checks that jb pointer is not NULL */
+  return tcomp_base_temporal(PointerGetDatum(jb), temp, &datum2_ne);
+}
+//jsnb
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1554,6 +1806,24 @@ tne_ttext_text(const Temporal *temp, const text *txt)
   return tcomp_temporal_base(temp, PointerGetDatum(txt), &datum2_ne);
 }
 
+//jsnb
+/**
+ * @ingroup meos_temporal_comp_temp
+ * @brief Return the temporal inequality of a temporal JSONB and a JSONB
+ * @param[in] temp Temporal tjsonb value
+ * @param[in] jb   JSONB value
+ * @csqlfn #Tne_temporal_base()
+ */
+Temporal *
+tne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);    /* checks that temp is of type tjsonb */
+  VALIDATE_NOT_NULL(jb, NULL);    /* checks that jb pointer is not NULL */
+  return tcomp_temporal_base(temp, PointerGetDatum(jb), &datum2_ne);
+}
+//jsnb
+
 /*****************************************************************************
  * Temporal lt
  *****************************************************************************/
@@ -1605,6 +1875,9 @@ tlt_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than of a temporal integer and an integer
@@ -1651,6 +1924,8 @@ tlt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1721,6 +1996,9 @@ tle_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal less than or equal to of a temporal integer and
@@ -1770,6 +2048,10 @@ tle_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
+
+
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1837,6 +2119,9 @@ tgt_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than of a temporal integer and an integer
@@ -1883,6 +2168,10 @@ tgt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+
+
+
 
 /**
  * @ingroup meos_temporal_comp_temp
@@ -1953,6 +2242,9 @@ tge_text_ttext(const text *txt, const Temporal *temp)
 
 /*****************************************************************************/
 
+
+
+
 /**
  * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal greater than or equal to of a temporal integer
@@ -2002,6 +2294,7 @@ tge_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
 
 /**
  * @ingroup meos_temporal_comp_temp

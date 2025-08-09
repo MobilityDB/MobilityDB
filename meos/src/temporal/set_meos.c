@@ -42,6 +42,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
+#include <utils/jsonb.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -50,6 +51,7 @@
 #include <meos_internal.h>
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "temporal/set.h"
 
 /*****************************************************************************
  * Input/output functions in string format
@@ -110,6 +112,23 @@ textset_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_TEXTSET);
 }
+
+//jsnb
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return a JSONB set from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
+ */
+Set *
+jsonbset_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* Parse a set of JSONB values */
+  return set_parse(&str, T_JSONBSET);
+}
+//jsnb
 
 /**
  * @ingroup meos_setspan_inout
@@ -197,6 +216,27 @@ textset_out(const Set *s)
   VALIDATE_TEXTSET(s, NULL);
   return set_out(s, 0);
 }
+
+//jsnb
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the string representation of a JSONB set
+ * @param[in] s Set
+ * @csqlfn #Set_out()
+ */
+char *
+jsonbset_out(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_type(s, T_JSONBSET))
+    return NULL;
+  /* Delegate to the generic set_out, with zero precision */
+  return set_out(s, 0);
+}
+//jsnb
+
+
 
 /**
  * @ingroup meos_setspan_inout
@@ -314,6 +354,12 @@ textset_make(const text **values, int count)
   return set_make_free(datums, count, T_TEXT, ORDER);
 }
 
+
+
+
+
+
+
 /**
  * @ingroup meos_setspan_constructor
  * @brief Return a date set from an array of values
@@ -414,6 +460,27 @@ text_to_set(const text *txt)
   return set_make_exp(&v, 1, 1, T_TEXT, ORDER_NO);
 }
 
+
+
+//jsnb
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a JSONB value into a JSONB set
+ * @param[in] jb JSONB value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+jsonb_to_set(const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL);
+  Datum v = PointerGetDatum(jb);
+  /* Make a set of one element, unordered */
+  return set_make_exp(&v, 1, 1, T_JSONB, ORDER_NO);
+}
+//jsnb
+
+
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a date into a set
@@ -503,6 +570,27 @@ textset_start_value(const Set *s)
   VALIDATE_TEXTSET(s, NULL);
   return DatumGetTextP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
+
+//jsnb
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return a copy of the first value of a JSONB set
+ * @param[in] s JSONB set
+ * @return On error return NULL
+ * @csqlfn #Set_start_value()
+ */
+Jsonb *
+jsonbset_start_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL);
+  /* Copy the datum and return as JSONB pointer */
+  return DatumGetJsonbP(datum_copy(SET_VAL_N(s, 0), s->basetype));
+}
+//jsnb
+
+
+
 
 /**
  * @ingroup meos_setspan_accessor
@@ -595,6 +683,28 @@ textset_end_value(const Set *s)
   VALIDATE_TEXTSET(s, NULL);
   return DatumGetTextP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
 }
+
+
+//jsnb
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return a copy of the last value of a JSONB set
+ * @param[in] s JSONB set
+ * @return On error return NULL
+ * @csqlfn #Set_end_value()
+ */
+Jsonb *
+jsonbset_end_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL);
+  /* Copy the datum and return as JSONB pointer */
+  return DatumGetJsonbP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
+}
+//jsnb
+
+
+
 
 /**
  * @ingroup meos_setspan_accessor
@@ -707,6 +817,36 @@ textset_value_n(const Set *s, int n, text **result)
   *result = DatumGetTextP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
   return true;
 }
+
+
+//jsnb
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return in the last argument a copy of the n-th value of a JSONB set
+ * @param[in] s JSONB set
+ * @param[in] n Number (1-based)
+ * @param[out] result JSONB pointer
+ * @return Return true if the value is found
+ * @csqlfn #Set_value_n()
+ */
+
+bool
+jsonbset_value_n(const Set *s, int n, Jsonb **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, false); VALIDATE_NOT_NULL(result, false);
+  if (n < 1 || n > s->count)
+    return false;
+  /* Copy the datum and return as JSONB pointer */
+  *result = DatumGetJsonbP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
+  return true;
+}
+//jsnb
+
+
+
+
+
 
 /**
  * @ingroup meos_setspan_accessor
@@ -822,6 +962,26 @@ textset_values(const Set *s)
   return result;
 }
 
+//jsnb
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the array of copies of the values of a JSONB set
+ * @param[in] s Set
+ * @return On error return @p NULL
+ * @csqlfn #Set_values()
+ */
+Jsonb **
+jsonbset_values(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL);
+  Jsonb **result = palloc(sizeof(Jsonb *) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetJsonbP(datum_copy(SET_VAL_N(s, i), s->basetype));
+  return result;
+}
+//jsnb
+
 /**
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of a date set
@@ -877,6 +1037,27 @@ textcat_text_textset(const text *txt, const Set *s)
   return textcat_textset_text_int(s, txt, INVERT);
 }
 
+
+//jsnb
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return the concatenation of a JSONB value and a JSONB set
+ * @param[in] jb JSONB value
+ * @param[in] s JSONB set
+ * @csqlfn #Jsonbcat_jsonb_jsonbset()
+ */
+Set *
+jsonbcat_jsonb_jsonbset(const Jsonb *jb, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return jsonbcat_jsonb_jsonbset_int(s, jb, true);
+}
+
+
+
+
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return the concatenation of a text set and a text
@@ -891,6 +1072,28 @@ textcat_textset_text(const Set *s, const text *txt)
   VALIDATE_TEXTSET(s, NULL); VALIDATE_NOT_NULL(txt, NULL);
   return textcat_textset_text_int(s, txt, INVERT_NO);
 }
+
+//jsnb
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return the concatenation of a JSONB set and a JSONB value
+ * @param[in] s JSONB set
+ * @param[in] jb JSONB value
+ * @csqlfn #Jsonbcat_jsonbset_jsonb()
+ */
+Set *
+jsonbcat_jsonbset_jsonb(const Set *s, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL); VALIDATE_NOT_NULL(jb, NULL);
+  return jsonbcat_jsonb_jsonbset_int(s, jb, false);
+}
+
+
+
+
+//jsnb
 
 /*****************************************************************************/
 

@@ -32,6 +32,7 @@ add_library(temporal OBJECT
   tsequence.c
   tsequenceset.c
   ttext_funcs.c
+  tjsonb_funcs.c
   type_in.c
   type_out.c
   type_parser.c
@@ -62,6 +63,7 @@ add_library(temporal_meos OBJECT
   tsequence_meos.c
   tsequenceset_meos.c
   ttext_funcs_meos.c
+  tjsonb_funcs_meos.c
   type_in_meos.c
 )
 

@@ -136,3 +136,7 @@ SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
 
 -------------------------------------------------------------------------------
+
+
+
+

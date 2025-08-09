@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
+#include <utils/jsonb.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -124,6 +125,28 @@ ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
 }
 
 
+//jsnb
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal JSONB sequence set from a JSONB value and a timestamptz
+ * span set
+ * @param[in] jb JSONB value
+ * @param[in] ss Span set of timestamptz spans
+ * @csqlfunc #TJSONBSEQSET_from_base_tstzspanset()
+ */
+TSequenceSet *
+tjsonbseqset_from_base_tstzspanset(const Jsonb *jb, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL);
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  /* Delegate to the generic tsequenceset constructor, with STEP interpolation */
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(jb),T_TJSONB, ss, 
+    STEP);
+}
+//jsnb
+
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -183,4 +206,22 @@ ttextseqset_in(const char *str)
   return tsequenceset_parse(&str, T_TTEXT, true);
 }
 
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB sequence set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfunc #TJSONBSEQSET_in()
+ */
+TSequenceSet *
+tjsonbseqset_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the interpolation at the beginning (if any) */
+  Temporal *temp = temporal_parse(&str, T_TJSONB);
+  assert(temp->subtype == TSEQUENCE);
+  return (TSequenceSet *) temp;
+}
+//jsnb
 /*****************************************************************************/

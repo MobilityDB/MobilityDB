@@ -188,3 +188,66 @@ CREATE FUNCTION asHexWKB(ttext, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+
+
+
+--jsnb
+
+
+ -- Input
+ 
+
+-- from MF-JSON
+CREATE FUNCTION tjsonbFromMFJSON(text)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- from binary WKB
+CREATE FUNCTION tjsonbFromBinary(bytea)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- from hex-encoded WKB
+CREATE FUNCTION tjsonbFromHexWKB(text)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+ --Output
+
+
+-- as plain text (single and array)
+CREATE FUNCTION asText(tjsonb)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tjsonb[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- as MF-JSON
+CREATE FUNCTION asMFJSON(temp tjsonb, options int4 DEFAULT 0, flags int4 DEFAULT 0)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- as binary WKB
+CREATE FUNCTION asBinary(tjsonb, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- as hex-encoded WKB
+CREATE FUNCTION asHexWKB(tjsonb, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+--jsnb

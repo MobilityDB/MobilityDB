@@ -1718,3 +1718,134 @@ CREATE OPERATOR <-> (
 );
 
 /*****************************************************************************/
+
+
+
+
+
+
+
+-- Containment (“does the set contain the value or another set?”)
+CREATE FUNCTION set_contains(jsonbset, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contains(jsonbset, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- jsonbset contains a single jsonb element
+CREATE OPERATOR @> (
+  PROCEDURE   = set_contains,
+  LEFTARG     = jsonbset,
+  RIGHTARG    = jsonb,
+  COMMUTATOR  = <@
+);
+
+-- jsonbset contains another jsonbset
+CREATE OPERATOR @> (
+  PROCEDURE   = set_contains,
+  LEFTARG     = jsonbset,
+  RIGHTARG    = jsonbset,
+  COMMUTATOR  = <@
+);
+
+
+
+
+-- Contained-in (“value or set is contained in the set”)
+CREATE FUNCTION set_contained(jsonb, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contained(jsonbset, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
+  LEFTARG = jsonb, RIGHTARG = jsonbset,
+  COMMUTATOR = @>
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = @>
+);
+
+
+-- Overlaps (“sets have any element in common”)
+CREATE FUNCTION set_overlaps(jsonbset, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = &&
+);
+
+-- “Left”/“right” operators, useful for btree spans
+CREATE FUNCTION set_left(jsonbset, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  PROCEDURE = set_left,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = >>
+);
+
+CREATE FUNCTION set_right(jsonbset, jsonbset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OPERATOR >> (
+  PROCEDURE = set_right,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = <<
+);
+
+-- Union (+), Minus (-), Intersection (*)
+CREATE FUNCTION set_union(jsonbset, jsonbset)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = +
+);
+
+CREATE FUNCTION set_minus(jsonbset, jsonbset)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset
+);
+
+CREATE FUNCTION set_intersection(jsonbset, jsonbset)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  COMMUTATOR = *
+);
+
+
+--jsnb

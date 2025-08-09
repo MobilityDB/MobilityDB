@@ -369,3 +369,22 @@ text_union_transfn(Set *state, const text *txt)
 }
 
 /*****************************************************************************/
+
+//jsnb
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of JSONB values
+ * @param[in,out] state Current aggregate state
+ * @param[in] jb JSONB value
+ */
+Set *
+jsonb_union_transfn(Set *state, const Jsonb *jb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jb, NULL);
+  if (state && ! ensure_set_isof_type(state, T_JSONBSET))
+    return NULL;
+  /* Reuse the generic value‐union function, passing T_JSONB */
+  return value_union_transfn(state, PointerGetDatum(jb), T_JSONB);
+}
+//JSNB

@@ -53,6 +53,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/ttext_funcs.h"
+#include "temporal/tjsonb_funcs.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -325,6 +326,9 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   bool hasz = false;
   bool geodetic = false;
   // TODO Should we bypass the tests on tnpoint ?
+
+
+
   if (spatial_basetype(basetype) && basetype != T_NPOINT)
   {
     /* Ensure the spatial validity of the elements */
@@ -348,9 +352,15 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   /* Sort the values and remove duplicates */
   Datum *newvalues;
   int newcount;
-  if (order && count > 1)
+  if (basetype == T_JSONB)
   {
-  /* Sort the values and remove duplicates */
+    /* Do not sort or deduplicate for jsonbset — preserve order */
+    newvalues = palloc(sizeof(Datum) * count);
+    memcpy(newvalues, values, sizeof(Datum) * count);
+    newcount = count;
+  }
+  else if (order && count > 1)
+  {
     newvalues = palloc(sizeof(Datum) * count);
     memcpy(newvalues, values, sizeof(Datum) * count);
     datumarr_sort(newvalues, count, basetype);
@@ -361,6 +371,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     newvalues = (Datum *) values;
     newcount = count;
   }
+
 
   /* Get the bounding box size */
   meosType settype = basetype_settype(basetype);
@@ -849,6 +860,11 @@ textset_func(const Set *s, Datum (*func)(Datum))
   return set_make_exp(values, s->count, s->count, T_TEXT, ORDER);
 }
 
+
+
+
+
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a text set transformed to lowercase
@@ -902,6 +918,11 @@ textcat_textset_text_int(const Set *s, const text *txt, bool invert)
       datum_textcat(SET_VAL_N(s, i), PointerGetDatum(txt));
   return set_make_free(values, s->count, T_TEXT, ORDER_NO);
 }
+
+
+//jsnb
+
+//jsnb
 
 /*****************************************************************************/
 

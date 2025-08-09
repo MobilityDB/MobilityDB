@@ -228,3 +228,9 @@ SELECT k%2, numValues(setUnion(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
 SELECT k%2, numValues(setUnion(d)) FROM tbl_dateset GROUP BY k%2 ORDER BY k%2;
 
 -------------------------------------------------------------------------------
+
+
+
+
+
+

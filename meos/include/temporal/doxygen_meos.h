@@ -308,6 +308,10 @@
  * @defgroup meos_temporal_text Text functions
  * @ingroup meos_temporal
  * @brief Text functions for temporal types
+*
+ * @defgroup meos_temporal_jsonb Jsonb functions
+ * @ingroup meos_temporal
+ * @brief Jsonb functions for temporal types
  *
  * @defgroup meos_temporal_dist Distance functions
  * @ingroup meos_temporal

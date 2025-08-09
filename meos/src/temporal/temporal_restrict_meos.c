@@ -41,6 +41,7 @@
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include <utils/jsonb.h>
 
 /*****************************************************************************
  * Restriction Functions
@@ -106,6 +107,26 @@ ttext_at_value(const Temporal *temp, text *txt)
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
 }
 
+//jsnb
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal JSONB restricted to a specific JSONB value
+ * @param[in] temp Temporal value
+ * @param[in] jsb JSONB value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tjsonb_at_value(const Temporal *temp, Jsonb *jsb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  VALIDATE_NOT_NULL(jsb, NULL);
+  /* Restrict the temporal JSONB to the instants where it equals the given jsb */
+  return temporal_restrict_value(temp, PointerGetDatum(jsb), REST_AT);
+}
+//jsnb
+
+
 /*****************************************************************************/
 
 /**
@@ -167,6 +188,28 @@ ttext_minus_value(const Temporal *temp, text *txt)
   VALIDATE_TTEXT(temp, NULL); 
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
 }
+
+//jsnb
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal JSONB restricted to the complement of a specific
+ * JSONB value
+ * @param[in] temp Temporal value
+ * @param[in] jsb JSONB value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tjsonb_minus_value(const Temporal *temp, Jsonb *jsb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  VALIDATE_NOT_NULL(jsb, NULL);
+  /* Restrict the temporal JSONB to the instants where it does not equal the
+   * given jsb */
+  return temporal_restrict_value(temp, PointerGetDatum(jsb), REST_MINUS);
+}
+//jsnb
+
 
 /*****************************************************************************/
 
@@ -293,6 +336,29 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   return result;
 }
 
+//jsnb
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal JSONB at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tjsonb_value_at_timestamptz(const Temporal *temp, TimestampTz t,
+  bool strict, Jsonb **value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, false); VALIDATE_NOT_NULL(value, false);
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetJsonbP(res);
+  return result;
+}
+//jsnb
 /*****************************************************************************/
 
 /**
