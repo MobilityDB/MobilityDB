@@ -36,6 +36,8 @@
 
 /* C */
 #include <stddef.h>
+#include <postgres.h>
+#include <fmgr.h>
 /* JSON-C */
 #include <json-c/json.h>
 /* GSL */
@@ -137,6 +139,24 @@
     } while (0)
 #endif /* MEOS */
 
+/**
+ * @brief Macro for ensuring that a set is a JSONB set
+ */
+#if MEOS
+  #define VALIDATE_JSONBSET(set, ret) \
+    do { \
+      if (! ensure_not_null((void *) (set)) || \
+          ! ensure_set_isof_type((set), T_JSONBSET) ) \
+        return (ret); \
+    } while (0)
+//jsnb
+#else
+  #define VALIDATE_JSONBSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_JSONBSET); \
+    } while (0)
+#endif /* MEOS */
 /**
  * @brief Macro for ensuring that a set is a date set
  */
@@ -495,6 +515,27 @@
 #endif /* MEOS */
 
 /**
+ * @brief Macro for ensuring that the temporal value is a temporal JSONB
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TJSONB(temp, ret) \
+    do { \
+      if (! ensure_not_null((void *) (temp)) || \
+          ! ensure_temporal_isof_type((Temporal *) (temp), T_TJSONB) ) \
+        return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TJSONB(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TJSONB); \
+    } while (0)
+#endif /* MEOS */
+
+
+/**
  * @brief Macro for ensuring that the temporal value is a temporal number
  * @note The macro works for the Temporal type and its subtypes TInstant,
  * TSequence, and TSequenceSet
@@ -769,6 +810,7 @@ extern void span_expand(const Span *s1, Span *s2);
 extern SpanSet *spanset_compact(const SpanSet *ss);
 extern TBox *tbox_expand_value(const TBox *box, Datum value, meosType basetyp);
 extern Set *textcat_textset_text_int(const Set *s, const text *txt, bool invert);
+extern Set * jsonbcat_jsonb_jsonbset_int(const Set *s, const Jsonb *jb, bool invert);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 
 /*****************************************************************************
@@ -950,12 +992,36 @@ extern char *tsequence_out(const TSequence *seq, int maxdd);
 extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, meosType temptype, interpType interp);
 extern TSequenceSet *tsequenceset_in(const char *str, meosType temptype, interpType interp);
 extern char *tsequenceset_out(const TSequenceSet *ss, int maxdd);
+
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(const char *str);
 extern TSequence *ttextseq_from_mfjson(json_object *mfjson);
 extern TSequence *ttextseq_in(const char *str, interpType interp);
 extern TSequenceSet *ttextseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *ttextseqset_in(const char *str);
+
+//jsnb
+
+// Create a single-instant temporal JSONB from an MF-JSON object
+extern TInstant *  tjsonbinst_from_mfjson(json_object *mfjson);
+
+//Parse a JSONB@timestamp literal into a temporal JSONB instant
+extern TInstant *  tjsonbinst_in(const char *str);
+
+//Create a temporal JSONB sequence from an MF-JSON object with given interpolation
+extern TSequence * tjsonbseq_from_mfjson(json_object *mfjson);
+
+// Parse a list of JSONB@timestamp pairs into a temporal JSONB sequence
+extern TSequence * tjsonbseq_in(const char *str, interpType interp);
+
+ //Create a temporal JSONB sequence set from an MF-JSON array with given interpolation
+extern TSequenceSet * tjsonbseqset_from_mfjson(json_object *mfjson);
+
+//Parse multiple JSONB sequences (semicolon-separated) into a temporal JSONB sequence set
+extern TSequenceSet * tjsonbseqset_in(const char *str);
+
+
+
 extern Temporal *temporal_from_mfjson(const char *mfjson, meosType temptype);
 
 /*****************************************************************************/

@@ -28,6 +28,7 @@ SET(LOCAL_FILES
   044_temporal_spgist
   046_temporal_analytics
   999_oid_cache
+  tjsonb
   )
 
 foreach (f ${LOCAL_FILES})

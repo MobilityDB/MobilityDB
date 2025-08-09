@@ -268,8 +268,8 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
-  meosType argtype = oid_type(argoid);
-  if (argtype == T_TBOOL || argtype == T_TTEXT)
+  meosType argtype = oid_type(argoid); 
+  if (argtype == T_TBOOL || argtype == T_TTEXT || argtype == T_TJSONB      || argtype == T_JSONBSET)
     funcname = "span";
   else if (argtype == T_INT4 || argtype == T_FLOAT8 ||
            argtype == T_TINT || argtype == T_TFLOAT)
@@ -478,8 +478,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       /* Determine type of right argument of the index support expression
        * which is a bounding box */
       exproid = rightoid;
-      if (righttype == T_TBOOL || righttype == T_TTEXT)
-        exproid = type_oid(T_TSTZSPAN);
+      if (righttype == T_TBOOL || righttype == T_TTEXT || righttype == T_TJSONB 
+       ) exproid = type_oid(T_TSTZSPAN);
       else if (righttype == T_INT4 || righttype == T_FLOAT8 ||
           righttype == T_TINT || righttype == T_TFLOAT || righttype == T_TBOX)
         exproid = type_oid(T_TBOX);

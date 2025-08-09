@@ -215,6 +215,10 @@ SELECT timeSplit(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 we
 SELECT timeSplit(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 week');
 SELECT timeSplit(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 week');
 
+
+
+
+
 /* Errors */
 SELECT timeSplit(tbool 't@2000-01-01', '-1 week');
 

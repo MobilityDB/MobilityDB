@@ -652,3 +652,7 @@ CREATE OPERATOR CLASS ttext_kdtree_ops
   FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/
+
+
+
+

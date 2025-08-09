@@ -390,3 +390,4 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal);
 
 /******************************************************************************/
+

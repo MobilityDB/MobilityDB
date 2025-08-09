@@ -1244,3 +1244,196 @@ CREATE OPERATOR -|- (
 );
 
 /*****************************************************************************/
+
+
+
+-----------------------------------------------------------------------------
+-- Support JSONB (temporal)
+-----------------------------------------------------------------------------
+
+-- spans()
+CREATE FUNCTION spans(tjsonb)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- splitNSpans()
+CREATE FUNCTION splitNSpans(tjsonb, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- splitEachNSpans()
+CREATE FUNCTION splitEachNSpans(tjsonb, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-----------------------------------------------------------------------------
+-- Temporal JSONB ∧ tstzspan / temporal JSONB
+-----------------------------------------------------------------------------
+
+-- overlaps
+CREATE FUNCTION temporal_overlaps(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overlaps(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overlaps(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = temporal_overlaps,
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  COMMUTATOR = &&,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = temporal_overlaps,
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  COMMUTATOR = &&,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = temporal_overlaps,
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = &&,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+
+-- contains
+CREATE FUNCTION temporal_contains(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_contains(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_contains(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = temporal_contains,
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  COMMUTATOR = <@,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = temporal_contains,
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  COMMUTATOR = <@,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = temporal_contains,
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = <@,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+
+-- contained
+CREATE FUNCTION temporal_contained(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_contained(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_contained(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = temporal_contained,
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  COMMUTATOR = @>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = temporal_contained,
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  COMMUTATOR = @>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = temporal_contained,
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = @>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+
+-- same
+CREATE FUNCTION temporal_same(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_same(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_same(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = temporal_same,
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  COMMUTATOR = ~=,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = temporal_same,
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  COMMUTATOR = ~=,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = temporal_same,
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = ~=,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+
+-- adjacent
+CREATE FUNCTION temporal_adjacent(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_adjacent(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_adjacent(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = temporal_adjacent,
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  COMMUTATOR = -|-,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = temporal_adjacent,
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  COMMUTATOR = -|-,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = temporal_adjacent,
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  COMMUTATOR = -|-,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);

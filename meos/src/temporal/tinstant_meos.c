@@ -51,6 +51,7 @@
 #include "temporal/tsequence.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include <utils/jsonb.h>
 
 /*****************************************************************************
  * Intput/output functions
@@ -103,6 +104,24 @@ ttextinst_in(const char *str)
 {
   return tinstant_in(str, T_TTEXT);
 }
+
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB instant from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfunc #TJSONBINST_in()
+ */
+TInstant *
+tjsonbinst_in(const char *str)
+{
+  /* Reject NULL input */
+  VALIDATE_NOT_NULL(str, NULL);
+  /* Parse the WKT into a TInstant, telling the parser this is a JSONB instant */
+  return tinstant_in(str, T_TJSONB);
+}
+//jsnb
 
 /*****************************************************************************
  * Constructor functions
@@ -162,4 +181,20 @@ ttextinst_make(const text *txt, TimestampTz t)
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
 
+//jsnb
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal JSONB instant from a JSONB and a timestamptz
+ * @param[in] jsonb Value
+ * @param[in] t Timestamp
+ * @csqlfn #TJSONBINST_constructor()
+ */
+TInstant *
+tjsonbinst_make(const Jsonb *jsonb, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(jsonb, NULL);
+  return tinstant_make(PointerGetDatum(jsonb), T_TJSONB, t);
+}
+//jsnb
 /*****************************************************************************/

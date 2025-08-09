@@ -35,6 +35,7 @@ add_library(pg_temporal OBJECT
   tnumber_mathfuncs.c
   tnumber_spgist.c
   ttext_funcs.c
+  tjsonb_funcs.c
   type_in.c
   type_out.c
   type_util.c

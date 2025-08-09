@@ -1246,3 +1246,144 @@ CREATE OPERATOR #&> (
 );
 
 /*****************************************************************************/
+
+
+
+--jsnb
+
+
+
+-----------------------------------------------------------------------------
+-- Relative position operators pour tjsonb
+-----------------------------------------------------------------------------
+
+/* tstzspan op tjsonb */
+
+CREATE FUNCTION temporal_before(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tstzspan, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE  = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG   = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE  = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG   = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = temporal_overafter,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+
+/* tjsonb op tstzspan */
+
+CREATE FUNCTION temporal_before(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tjsonb, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE  = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG   = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE  = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG   = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = temporal_overafter,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+
+/* tjsonb op tjsonb */
+
+CREATE FUNCTION temporal_before(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE  = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG   = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE  = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG   = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = temporal_overafter,
+  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+);
+
+
+
+
+--jsnb

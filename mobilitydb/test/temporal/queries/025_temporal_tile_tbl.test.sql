@@ -112,6 +112,8 @@ SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001
 SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
+
+
 WITH temp1 AS (
   SELECT k, temp, (tb).temp AS slice
   FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat) t ),

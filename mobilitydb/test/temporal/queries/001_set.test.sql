@@ -212,3 +212,4 @@ SELECT textset '{"aaa", "bbb", "ccc"}' || text 'XXX';
 SELECT text 'XXX' || textset '{"aaa", "bbb", "ccc"}';
 
 -------------------------------------------------------------------------------
+

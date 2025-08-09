@@ -99,6 +99,21 @@ ttextinst_from_mfjson(json_object *mfjson)
   return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
 }
 
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tjsonbinst_from_mfjson(json_object *mfjson)
+{
+  /* false = not linear, 0 = unused */
+  return tinstant_from_mfjson(mfjson, false, 0, T_TJSONB);
+}
+//jsnb
+
 /*****************************************************************************/
 
 /**
@@ -150,6 +165,21 @@ ttextseq_from_mfjson(json_object *mfjson)
   return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
 
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+
+tjsonbseq_from_mfjson(json_object *mfjson)
+{
+  /* false = not linear, 0 = unused */
+  return tsequence_from_mfjson(mfjson, false, 0, T_TJSONB, STEP);
+}
+//jsnb
 /*****************************************************************************/
 
 /**
@@ -202,6 +232,21 @@ ttextseqset_from_mfjson(json_object *mfjson)
 {
   return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
+
+//jsnb
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal JSONB sequence set from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tjsonbseqset_from_mfjson(json_object *mfjson)
+{
+  /* false = not linear, 0 = unused */
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TJSONB, STEP);
+}
+//jsnb
 
 /*****************************************************************************/
 
@@ -257,4 +302,22 @@ ttext_from_mfjson(const char *mfjson)
   return temporal_from_mfjson(mfjson, T_TTEXT);
 }
 
+
+
+//jsnb
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal JSONB from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #temporal_from_mfjson()
+ */
+
+Temporal *
+tjsonb_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TJSONB);
+}
+
+//jsnb
 /*****************************************************************************/

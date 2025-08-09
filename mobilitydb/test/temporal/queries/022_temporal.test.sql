@@ -47,6 +47,7 @@ SELECT tfloat '1@2012-01-01 08:00:00';
 SELECT tfloat '2@2012-01-01 08:00:00';
 SELECT ttext 'AAA@2012-01-01 08:00:00';
 SELECT ttext 'BBB@2012-01-01 08:00:00';
+
 /* Errors */
 SELECT tbool '2@2012-01-01 08:00:00';
 SELECT tint 'TRUE@2012-01-01 08:00:00';
@@ -840,6 +841,7 @@ SELECT getValue(tbool 't@2000-01-01');
 SELECT getValue(tint '1@2000-01-01');
 SELECT getValue(tfloat '1.5@2000-01-01');
 SELECT getValue(ttext 'AAA@2000-01-01');
+
 /* Errors */
 SELECT getValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT getValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');

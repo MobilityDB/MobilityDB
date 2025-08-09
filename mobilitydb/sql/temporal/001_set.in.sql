@@ -1443,4 +1443,229 @@ CREATE OPERATOR CLASS tstzset_hash_ops
     FUNCTION    1   set_hash(tstzset),
     FUNCTION    2   set_hash_extended(tstzset, bigint);
 
-/******************************************************************************/
+
+--jsnb
+
+-- ----------------------------------------------------------------------------
+-- 1) Declare the shell type & basic I/O
+-- ----------------------------------------------------------------------------
+
+CREATE TYPE jsonbset;
+
+CREATE FUNCTION jsonbset_in(cstring)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- parse text → jsonbset
+
+CREATE FUNCTION jsonbset_out(jsonbset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Set_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- serialize jsonbset → text
+
+CREATE FUNCTION jsonbset_recv(internal)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- binary receive
+
+CREATE FUNCTION jsonbset_send(jsonbset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- binary send
+
+CREATE TYPE jsonbset (
+  INTERNALLENGTH = VARIABLE,
+  INPUT   = jsonbset_in,
+  OUTPUT  = jsonbset_out,
+  RECEIVE = jsonbset_recv,
+  SEND    = jsonbset_send,
+  ALIGNMENT = DOUBLE,
+  STORAGE   = EXTENDED
+);
+
+-- ----------------------------------------------------------------------------
+-- 2) WKB / HexWKB I/O
+-- ----------------------------------------------------------------------------
+
+CREATE FUNCTION jsonbsetFromBinary(bytea)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION jsonbsetFromHexWKB(text)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- ----------------------------------------------------------------------------
+-- 3) Textual / binary serializers
+-- ----------------------------------------------------------------------------
+
+CREATE FUNCTION asText(jsonbset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- like `{…}`
+
+CREATE FUNCTION asBinary(jsonbset, endianencoding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- WKB
+
+CREATE FUNCTION asHexWKB(jsonbset, endianencoding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- hex-WKB
+
+-- ----------------------------------------------------------------------------
+-- 4) Constructors & casts
+-- ----------------------------------------------------------------------------
+
+CREATE FUNCTION set(jsonb[])
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Set_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- array → set
+
+CREATE FUNCTION set(jsonb)
+  RETURNS jsonbset
+  AS 'MODULE_PATHNAME', 'Value_to_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- singleton → set
+
+CREATE CAST (jsonb AS jsonbset) WITH FUNCTION set(jsonb);
+
+-- ----------------------------------------------------------------------------
+-- 5) Accessor functions
+-- ----------------------------------------------------------------------------
+
+CREATE FUNCTION memSize(jsonbset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- bytes used
+
+CREATE FUNCTION numValues(jsonbset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_num_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- cardinality
+
+CREATE FUNCTION startValue(jsonbset)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- first element
+
+CREATE FUNCTION endValue(jsonbset)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Set_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- last element
+
+CREATE FUNCTION valueN(jsonbset, integer)
+  RETURNS jsonb
+  AS 'MODULE_PATHNAME', 'Set_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- nᵗʰ element
+
+CREATE FUNCTION getValues(jsonbset)
+  RETURNS jsonb[]
+  AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- all as SQL array
+
+CREATE FUNCTION unnest(jsonbset)
+  RETURNS SETOF jsonb
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;      -- table-expand
+
+-- ----------------------------------------------------------------------------
+-- 6) Equality & ordering for btree/hash indexes
+-- ----------------------------------------------------------------------------
+-- 1. Comparison Functions
+CREATE FUNCTION set_eq(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_ne(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_lt(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_le(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_ge(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gt(jsonbset, jsonbset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- 2. Comparator function for btree
+CREATE FUNCTION set_cmp(jsonbset, jsonbset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- 3. Operators
+CREATE OPERATOR = (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_eq, COMMUTATOR = =, NEGATOR = <>, RESTRICT = eqsel, JOIN = eqjoinsel
+);
+
+CREATE OPERATOR <> (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_ne, COMMUTATOR = <>, NEGATOR = <>, RESTRICT = neqsel, JOIN = neqjoinsel
+);
+
+CREATE OPERATOR < (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_lt, COMMUTATOR = >, NEGATOR = >=, RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE OPERATOR <= (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_le, COMMUTATOR = >=, NEGATOR = >, RESTRICT = scalarlesel, JOIN = scalarlejoinsel
+);
+
+CREATE OPERATOR >= (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_ge, COMMUTATOR = <=, NEGATOR = <, RESTRICT = scalargesel, JOIN = scalargejoinsel
+);
+
+CREATE OPERATOR > (
+  LEFTARG = jsonbset, RIGHTARG = jsonbset,
+  PROCEDURE = set_gt, COMMUTATOR = <, NEGATOR = <=, RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+);
+
+-- 4. Operator Class (no 'FOR ORDER BY')
+CREATE OPERATOR CLASS jsonbset_btree_ops
+  DEFAULT FOR TYPE jsonbset USING btree AS
+    OPERATOR 1 <  (jsonbset, jsonbset),
+    OPERATOR 2 <= (jsonbset, jsonbset),
+    OPERATOR 3 =  (jsonbset, jsonbset),
+    OPERATOR 4 >= (jsonbset, jsonbset),
+    OPERATOR 5 >  (jsonbset, jsonbset),
+    FUNCTION 1 set_cmp(jsonbset, jsonbset);
+
+
+
+CREATE FUNCTION set_hash(jsonbset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_hash_extended(jsonbset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS jsonbset_hash_ops
+  DEFAULT FOR TYPE jsonbset USING hash AS
+    OPERATOR 1 =,
+    FUNCTION 1 set_hash(jsonbset),
+    FUNCTION 2 set_hash_extended(jsonbset, bigint);
+--jsnb

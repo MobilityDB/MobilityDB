@@ -279,6 +279,7 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
   }
 }
 
+
 /*****************************************************************************/
 
 /**

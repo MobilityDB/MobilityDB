@@ -45,6 +45,8 @@
 #include <common/int128.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
+#include "fmgr.h"
+#include <utils/jsonb.h>
 #if MEOS
   #include "utils/timestamp_def.h"
 #else
@@ -62,6 +64,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
+#include "temporal/tjsonb_funcs.h"
 
 #if ! MEOS
   extern Datum call_function1(PGFunction func, Datum arg1);
@@ -90,9 +93,22 @@ extern int pg_ulltoa_n(uint64 l, char *a);
 extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
   Oid collid);
 
+
+//jsnb
+
+extern Datum jsonb_out(PG_FUNCTION_ARGS);
+extern Datum jsonb_in(PG_FUNCTION_ARGS);
+extern Datum jsonb_concat(PG_FUNCTION_ARGS);
+
+
+
+
+
 /*****************************************************************************
  * Functions adapted from bool.c
  *****************************************************************************/
+
+
 
 static bool
 parse_bool_with_len(const char *value, size_t len, bool *result)
@@ -2261,6 +2277,72 @@ cstring2text(const char *str)
 
 /**
  * @ingroup meos_base_types
+ * @brief Convert a C string into a jsonb object
+ * @param[in] str String, possibly with escaped quotes
+ */
+Jsonb *
+cstring2jsonb(const char *str)
+{
+  VALIDATE_NOT_NULL(str, NULL);
+
+  // Step 1: De-escape \" to "
+  size_t len = strlen(str);
+  char *clean = palloc(len + 1);
+  int j = 0;
+
+  for (size_t i = 0; i < len; i++)
+  {
+    if (str[i] == '\\' && str[i + 1] == '"')
+    {
+      clean[j++] = '"';
+      i++;
+    }
+    else
+    {
+      clean[j++] = str[i];
+    }
+  }
+  clean[j] = '\0';
+
+  // Step 2: Strip outer quotes if any
+  len = strlen(clean);
+  if (len >= 2 && clean[0] == '"' && clean[len - 1] == '"')
+  {
+    char *unquoted = palloc(len - 1);
+    memcpy(unquoted, clean + 1, len - 2);
+    unquoted[len - 2] = '\0';
+    pfree(clean);
+    clean = unquoted;
+  }
+
+  // Step 3: Parse JSONB
+  Datum d = DirectFunctionCall1(jsonb_in, CStringGetDatum(clean));
+  return DatumGetJsonbP(d);
+}
+
+
+
+
+
+/**
+ * @ingroup meos_base_types
+ * @brief Convert a jsonb object into a C string
+ * @param[in] jb JSONB object
+ */
+char *
+jsonb2cstring(const Jsonb *jb)
+{
+   VALIDATE_NOT_NULL(jb, NULL);
+  Datum d = DirectFunctionCall1(jsonb_out, PointerGetDatum((Jsonb *)jb));
+  return DatumGetCString(d);
+}
+
+
+
+
+
+/**
+ * @ingroup meos_base_types
  * @brief Convert a text into a C string
  * @param[in] txt Text
  * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
@@ -2277,6 +2359,9 @@ text2cstring(const text *txt)
   str[size] = '\0';
   return str;
 }
+
+
+
 
 #if MEOS
 /**
@@ -2312,6 +2397,27 @@ text_cmp(const text *txt1, const text *txt2)
   return varstr_cmp(t1p, len1, t2p, len2, DEFAULT_COLLATION_OID);
 }
 
+//JSNB
+/**
+ * @ingroup meos_base_types
+ * @brief Plain-C comparison function for Jsonb values
+ * @param[in] jb1, jb2 Jsonb pointers (must be non-NULL)
+ * @return <0 if jb1<jb2, 0 if equal, >0 if jb1>jb2
+ */
+int
+jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
+{
+    Assert(jb1 != NULL);
+    Assert(jb2 != NULL);
+    return compareJsonbContainers(
+    (JsonbContainer *) &jb1->root,
+    (JsonbContainer *) &jb2->root
+);
+
+}
+
+//JSNB
+
 #if MEOS
 /**
  * @ingroup meos_base_types
@@ -2326,6 +2432,22 @@ text_copy(const text *txt)
   memcpy(result, txt, VARSIZE(txt));
   return result;
 }
+//JSNB
+/**
+ * @ingroup meos_base_types
+ * @brief Copy a JSONB value
+ * @param[in] jb Jsonb
+ */
+Jsonb *
+jsonb_copy(const Jsonb *jb)
+{
+  assert(jb);
+  /* On alloue la même taille que l’original (header + données) */
+  Jsonb *result = palloc(VARSIZE(jb));
+  memcpy(result, jb, VARSIZE(jb));
+  return result;
+}
+//JSNB
 #endif /* MEOS */
 
 /**
@@ -2356,6 +2478,24 @@ textcat_text_text(const text *txt1, const text *txt2)
   return result;
 }
 
+//JSNB
+/**
+ * @ingroup meos_base_types
+ * @brief Return the concatenation of two JSONB values (objects ou arrays)
+ * @param[in] jb1,jb2 JSONB values
+ */
+Jsonb *
+jsonb_concat_jsonb(const Jsonb *jb1, const Jsonb *jb2)
+{
+  /* On appelle l’opérateur PostgreSQL « || » sur JSONB */
+  Datum d = datum_jsonb_concat(PointerGetDatum(jb1),
+                               PointerGetDatum(jb2));
+  return DatumGetJsonbP(d);
+}
+
+
+
+
 /**
  * @brief Return the concatenation of the two text values
  */
@@ -2365,6 +2505,21 @@ datum_textcat(Datum l, Datum r)
   return PointerGetDatum(textcat_text_text(DatumGetTextP(l), DatumGetTextP(r)));
 }
 
+//jsnb
+/**
+ * @brief Return the concatenation of the two JSONB values (objects ou arrays)
+ */
+Datum
+datum_jsonb_concat(Datum l, Datum r)
+{
+  /* Appelle directement la fonction PostgreSQL jsonb_concat pour fusionner
+     deux documents JSONB */
+  return DirectFunctionCall2(jsonb_concat, l, r);
+}
+
+
+
+//jsnb
 #if MEOS
 /**
  * @brief Return a copy of the string value
@@ -2395,6 +2550,8 @@ pnstrdup(const char *in, Size size)
   return tmp;
 }
 #endif /* MEOS */
+
+
 
 /**
  * @ingroup meos_base_types
@@ -2595,5 +2752,41 @@ pg_hashtextextended(text *key, uint64 seed)
     (unsigned char *) VARDATA_ANY(key), VARSIZE_ANY_EXHDR(key), seed));
 }
 
-/*****************************************************************************/
+
+/*****************************************************************************
+ * JSONB hashing (32-bit and extended 64-bit)
+ *****************************************************************************/
+//Jsnb
+
+
+/**
+ * @brief Get the 32-bit hash value of a JSONB value.
+ * @note We use the same mechanism as hashtext(), but over the JSONB payload.
+ */
+uint32
+pg_hashjsonb(Jsonb *key)
+{
+  /* VARDATA_ANY/EXHDR to skip the varlena header */
+  return DatumGetUInt32(
+    hash_any((unsigned char *) VARDATA_ANY(key),
+             VARSIZE_ANY_EXHDR(key))
+  );
+}
+
+/**
+ * @brief Get the 64-bit hash value of a JSONB value, using a seed.
+ */
+uint64
+pg_hashjsonb_extended(Jsonb *key, uint64 seed)
+{
+  return DatumGetUInt64(
+    hash_any_extended((unsigned char *) VARDATA_ANY(key),
+                      VARSIZE_ANY_EXHDR(key),
+                      seed)
+  );
+}
+
+
+
+
 
