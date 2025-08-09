@@ -28,7 +28,7 @@
 		<para>La <xref linkend="tpoint_tgeo" /> illustra el uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024. Los datos provienen de National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). Como se ilustra en la figura, el tipo <varname>tgeompoint</varname> permite la interpolación <emphasis>lineal</emphasis>, mientras que el tipo <varname>tgeometry</varname> solo permite la interpolación <emphasis>escalonada</emphasis>.</para>
 
 		<figure xml:id="tpoint_tgeo" float="start">
-			<title>Ilustración de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024.</title>
+			<title>Ilustración del uso de los tipos <varname>tgeompoint</varname> (arriba) y <varname>tgeometry</varname> (abajo) para modelizar la trayectoria y la franja de viento de las tormentas tropicales en 2024.</title>
 			<mediaobject>
 				<imageobject><imagedata format="PNG" scale='30' fileref="../images/tgeompoint.png"/></imageobject>
 			</mediaobject>
