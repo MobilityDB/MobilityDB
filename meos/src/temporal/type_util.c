@@ -51,6 +51,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/postgres_types.h"
 #include "temporal/span.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/cbuffer.h"
@@ -189,7 +190,15 @@ datum_eq(Datum l, Datum r, meosType type)
     case T_GEOMETRY:
       return geo_equals(DatumGetGserializedP(l), DatumGetGserializedP(r));
     case T_GEOGRAPHY:
-      return geo_same(DatumGetGserializedP(l), DatumGetGserializedP(r));
+    {
+      GSERIALIZED *gs1 = DatumGetGserializedP(l);
+      GSERIALIZED *gs2 = DatumGetGserializedP(r);
+      if (gserialized_get_type(gs1) == POINTTYPE &&
+          gserialized_get_type(gs2) == POINTTYPE)
+        return geopoint_same(gs1, gs2);
+      else
+        return geo_same(gs1, gs2);
+    }
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_eq(DatumGetCbufferP(l), DatumGetCbufferP(r));

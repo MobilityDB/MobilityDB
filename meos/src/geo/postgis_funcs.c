@@ -1451,6 +1451,8 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @note PostGIS function: @p pgis_union_geometry_array(PG_FUNCTION_ARGS)
+ * MEOS modified the PostGIS function since does not cope with geographies
+ * by setting the geodetic flag for geographies.
  */
 GSERIALIZED *
 geom_array_union(GSERIALIZED **gsarr, int count)
@@ -1541,6 +1543,8 @@ geom_array_union(GSERIALIZED **gsarr, int count)
 
     GEOSSetSRID(g_union, srid);
     result = GEOS2POSTGIS(g_union, is3d);
+    /* MEOS: GEOS DOES NOT SET THE GEODETIC FLAG */
+    FLAGS_SET_GEODETIC(result->gflags, FLAGS_GET_GEODETIC(gsarr[0]->gflags));
     GEOSGeom_destroy(g_union);
   }
   /* No real geometries in our array, any empties? */
@@ -2475,6 +2479,8 @@ geog_centroid(const GSERIALIZED *g, bool use_spheroid)
   }
   lwgeom_out = lwpoint_as_lwgeom(lwpoint_out);
   g_out = geo_serialize(lwgeom_out);
+  /* MEOS: GEOS DOES NOT SET THE GEODETIC FLAG */
+  FLAGS_SET_GEODETIC(g_out->gflags, FLAGS_GET_GEODETIC(g->gflags));
   lwgeom_free(lwgeom_out);
   return g_out;
 }

@@ -15,6 +15,15 @@
 
 	<para>The <varname>cbuffer</varname> type serves as base type for defining the temporal circular buffer type <varname>tcbuffer</varname>. The <varname>tcbuffer</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname> with the exception that it only considers two dimensions. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tcbuffer</varname> type. In addition, there are specific functions defined for the <varname>tcbuffer</varname> type.</para>
 
+	<para><xref linkend="tgeo_tcbuffer" /> illustrates the use of the <varname>tcbuffer</varname> type for modelling the circular buffer around the wind swath of tropical storms in 2024. The data is obtained from the National Oceanic and Atmospherique Administration (<ulink url="https://www.nhc.noaa.gov/data/tcr/">NOAA</ulink>). As illustrated in the figure, the types <varname>tgeompoint</varname> and <varname>tcbuffer</varname> allow <emphasis>linear</emphasis> interpolation, while as we have seen in <xref linkend="tpoint_tgeo" />, the type <varname>tgeometry</varname> only allows <emphasis>step</emphasis> interpolation.</para>
+
+	<figure xml:id="tgeo_tcbuffer" float="start">
+		<title>Illustration of the use of the <varname>tcbuffer</varname> type for modelling the circular buffer around the wind swath of tropical storms in 2024.</title>
+		<mediaobject>
+			<imageobject><imagedata format="PNG" scale='30' fileref="images/tcbuffer.png"/></imageobject>
+		</mediaobject>
+		</figure>
+
 	<sect1 xml:id="static_circular_buffers">
 		<title>Static Circular Buffers</title>
 

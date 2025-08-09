@@ -422,3 +422,19 @@ SELECT tgeography '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02
 SELECT tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}' #<> tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}';
 
 -------------------------------------------------------------------------------
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #= tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]';
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2019-09-02]' #= tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2019-09-02]';
+
+SELECT tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #= tgeometry '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]';
+SELECT tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2019-09-02]' #= tgeography '[Point(2 2)@2000-01-01, Point(1 1)@2019-09-02]';
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #<> tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]';
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2019-09-02]' #<> tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2019-09-02]';
+
+SELECT tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #<> tgeometry '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]';
+SELECT tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2019-09-02]' #<> tgeography '[Point(2 2)@2000-01-01, Point(1 1)@2019-09-02]';
+
+-------------------------------------------------------------------------------
+
+
