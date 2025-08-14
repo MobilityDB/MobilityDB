@@ -118,7 +118,6 @@ extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xm
 
 /* Conversion functions for box types */
 
-extern STBox *box3d_to_stbox(const BOX3D *box);
 extern void gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
