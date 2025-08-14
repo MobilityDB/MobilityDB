@@ -209,8 +209,10 @@ typedef struct
 
 /*****************************************************************************/
 
+#ifndef NDEBUG
 extern bool temptype_subtype(tempSubtype subtype);
 extern bool temptype_subtype_all(tempSubtype subtype);
+#endif
 extern const char *tempsubtype_name(tempSubtype subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 extern const char *meosoper_name(meosOper oper);
@@ -231,14 +233,18 @@ extern meosType basetype_settype(meosType type);
 
 /* Catalog functions */
 
-extern bool meos_basetype(meosType type);
 extern bool tnumber_basetype(meosType type);
+extern bool geo_basetype(meosType type);
+#ifndef NDEBUG
+extern bool meos_basetype(meosType type);
 extern bool alphanum_basetype(meosType type);
 extern bool alphanum_temptype(meosType type);
-extern bool geo_basetype(meosType type);
+#endif
 
 extern bool time_type(meosType type);
+#ifndef NDEBUG
 extern bool set_basetype(meosType type);
+#endif
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
@@ -269,12 +275,16 @@ extern bool timespanset_type(meosType type);
 extern bool ensure_timespanset_type(meosType type);
 
 extern bool temporal_type(meosType type);
+#ifndef NDEBUG
 extern bool temporal_basetype(meosType type);
+#endif
 extern bool temptype_continuous(meosType type);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
 extern int16 basetype_length(meosType type);
+#ifndef NDEBUG
 extern bool talphanum_type(meosType type);
+#endif
 extern bool talpha_type(meosType type);
 extern bool tnumber_type(meosType type);
 extern bool ensure_tnumber_type(meosType type);
