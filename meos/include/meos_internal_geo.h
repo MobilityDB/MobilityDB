@@ -246,14 +246,12 @@ extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevl
 extern bool tpointseq_is_simple(const TSequence *seq);
 extern double tpointseq_length(const TSequence *seq);
 extern GSERIALIZED *tpointseq_linear_trajectory(const TSequence *seq, bool unary_union);
-extern TSequence *tpointseq_speed(const TSequence *seq);
 extern STBox *tgeoseq_stboxes(const TSequence *seq, int *count);
 extern STBox *tgeoseq_split_n_stboxes(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
 extern double tpointseqset_length(const TSequenceSet *ss);
-extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern STBox *tgeoseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox *tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);

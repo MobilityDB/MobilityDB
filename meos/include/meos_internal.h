@@ -890,11 +890,9 @@ extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
 extern TBox *number_tbox(Datum value, meosType basetype);
 extern void numset_set_tbox(const Set *s, TBox *box);
 extern void numspan_set_tbox(const Span *span, TBox *box);
-extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void timestamptz_set_tbox(TimestampTz t, TBox *box);
 extern void tstzset_set_tbox(const Set *s, TBox *box);
 extern void tstzspan_set_tbox(const Span *s, TBox *box);
-extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 
 /*****************************************************************************/
 
@@ -1207,8 +1205,6 @@ extern int ever_lt_temporal_base(const Temporal *temp, Datum value);
 
 /* Mathematical functions for temporal types */
 
-extern TSequence *tfloatseq_derivative(const TSequence *seq);
-extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);
 extern TInstant *tnumberinst_abs(const TInstant *inst);
 extern TSequence *tnumberseq_abs(const TSequence *seq);
 extern TSequence *tnumberseq_angular_difference(const TSequence *seq);

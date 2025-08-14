@@ -421,7 +421,6 @@ extern bool geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 /* Bounding box functions */
 
-extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
 extern STBox *geo_stboxes(const GSERIALIZED *gs, int *count);
 extern STBox *geo_split_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count);
 extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
@@ -724,7 +723,6 @@ extern Temporal *tne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /* Bounding box functions */
 
-extern STBox *tspatial_expand_space(const Temporal *temp, double d);
 extern STBox *tgeo_stboxes(const Temporal *temp, int *count);
 extern STBox *tgeo_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
