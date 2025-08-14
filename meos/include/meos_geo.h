@@ -356,7 +356,9 @@ extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 /* Accessor functions */
 
 extern bool geo_is_empty(const GSERIALIZED *g);
+#if CBUFFER
 extern bool geo_is_unitary(const GSERIALIZED *gs);
+#endif
 extern const char *geo_typename(int type);
 extern double geog_area(const GSERIALIZED *g, bool use_spheroid);
 extern GSERIALIZED *geog_centroid(const GSERIALIZED *g, bool use_spheroid);
@@ -387,8 +389,10 @@ extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
 extern int geo_npoints(const GSERIALIZED *gs);
 extern int geo_ngeos(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
+#if CBUFFER
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
+#endif
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, char *params);
@@ -396,8 +400,10 @@ extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+#if CBUFFER
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
+#endif
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_unary_union(GSERIALIZED *gs, double prec);
