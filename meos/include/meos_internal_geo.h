@@ -118,7 +118,6 @@ extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xm
 
 /* Conversion functions for box types */
 
-extern STBox *box3d_to_stbox(const BOX3D *box);
 extern void gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
@@ -246,14 +245,12 @@ extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevl
 extern bool tpointseq_is_simple(const TSequence *seq);
 extern double tpointseq_length(const TSequence *seq);
 extern GSERIALIZED *tpointseq_linear_trajectory(const TSequence *seq, bool unary_union);
-extern TSequence *tpointseq_speed(const TSequence *seq);
 extern STBox *tgeoseq_stboxes(const TSequence *seq, int *count);
 extern STBox *tgeoseq_split_n_stboxes(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
 extern double tpointseqset_length(const TSequenceSet *ss);
-extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern STBox *tgeoseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox *tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
