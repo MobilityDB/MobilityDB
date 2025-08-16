@@ -253,34 +253,9 @@ typedef struct
 /*****************************************************************************/
 
 /**
- * Structure to represent skiplist elements
+ * Structure for skiplists
  */
-
-#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
-
-typedef struct
-{
-  void *value;
-  int height;
-  int next[SKIPLIST_MAXLEVEL];
-} SkipListElem;
-
-/**
- * Structure to represent skiplists that keep the current state of an aggregation
- */
-typedef struct
-{
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  SkipListElem *elems;
-} SkipList;
+typedef struct SkipList SkipList;
 
 /*****************************************************************************/
 
@@ -370,6 +345,8 @@ extern double float_exp(double d);
 extern double float_ln(double d);
 extern double float_log10(double d);
 extern double float_round(double d, int maxdd);
+extern int int32_cmp(int32 l, int32 r);
+extern int int64_cmp(int64 l, int64 r);
 extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, double secs);
 extern Interval *minus_date_date(DateADT d1, DateADT d2);
 extern DateADT minus_date_int(DateADT d, int32 days);

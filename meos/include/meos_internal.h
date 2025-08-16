@@ -673,6 +673,62 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
   (sizeof(size_t) * (ss)->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[index] ) )
 #endif /* DEBUG_BUILD */
 
+/*****************************************************************************/
+
+/**
+ * Structure to represent skiplist elements
+ */
+
+#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
+
+typedef struct
+{
+  void *key;
+  void *value;
+  int height;
+  int next[SKIPLIST_MAXLEVEL];
+} SkipListElem;
+
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
+struct SkipList
+{
+  size_t key_size;     /**< Size in bytes of the keys */
+  size_t value_size;   /**< Size in bytes of the values */
+  int capacity;        /**< Maximum number of elements */
+  int length;          /**< Number of elements */
+  int next;            /**< Index of the next free element */
+  int tail;            /**< Index of the tail element  */
+  int *freed;          /**< Array of index values of deleted elements */
+  int freecount;       /**< Number of deleted elements */
+  int freecap;         /**< Maximum number of deleted elements */
+  void *extra;         /**< Pointer to additional data needed for processing */
+  size_t extrasize;    /**< Size of additional data needed for processing */
+  int (*comp_fn)(void *, void *); /**< Comparison function for the elements */
+  void *(*merge_fn)(void *, void *); /**< Merge function for the elements */
+  SkipListElem *elems; /**< Array of elements */
+};
+
+/**
+ * @brief Enumeration for the relative position of a given element into a
+ * skiplist
+ */
+typedef enum
+{
+  TEMPORAL,
+  KEYVALUE
+} SkipListType;
+
+/*****************************************************************************
+ * Definition of a function with one to three Datum arguments and returning 
+ * a Datum
+ *****************************************************************************/
+
+typedef Datum (*datum_func1) (Datum);
+typedef Datum (*datum_func2) (Datum, Datum);
+typedef Datum (*datum_func3) (Datum, Datum, Datum);
+
 /*****************************************************************************
  * Internal function accessing the Gnu Scientic Library (GSL)
  *****************************************************************************/
@@ -1245,7 +1301,16 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 
 /* Aggregate functions for temporal types */
 
+extern SkipList *temporal_skiplist_make();
+extern SkipList *skiplist_make(size_t key_size, size_t value_size,
+  int (*comp_fn)(void *, void *), void *(*merge_fn)(void *, void *));
+extern int skiplist_search(SkipList *list, void *key, void *value);
 extern void skiplist_free(SkipList *list);
+extern void skiplist_splice(SkipList *list, void **keys, void **values, int count, datum_func2 func, bool crossings, SkipListType sktype);
+extern void temporal_skiplist_splice(SkipList *list, void **values, int count, datum_func2 func, bool crossings);
+extern void **skiplist_values(SkipList *list);
+extern void **skiplist_keys_values(SkipList *list, void **values);
+
 extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 

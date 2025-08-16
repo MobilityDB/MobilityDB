@@ -72,6 +72,28 @@
  *****************************************************************************/
 
 /**
+ * @ingroup meos_base_types
+ * @brief Return -1, 0, or 1 depending on whether the first value is less than, 
+ * equal to, or greater than the second one
+ */
+int
+int32_cmp(int32 l, int32 r)
+{
+  return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
+/**
+ * @ingroup meos_base_types
+ * @brief Return -1, 0, or 1 depending on whether the first value is less than, 
+ * equal to, or greater than the second one
+ */
+int
+int64_cmp(int64 l, int64 r)
+{
+  return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
+/**
  * @brief Return -1, 0, or 1 depending on whether the first value is less than, 
  * equal to, or greater than the second one
  */
