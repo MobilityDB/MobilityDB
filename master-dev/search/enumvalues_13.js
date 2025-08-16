@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['vartag_5fexpanded_5fro_0',['VARTAG_EXPANDED_RO',['../postgres_8h_aea8e31cc3586c9253db4075a7bb8a96c.html#aea8e31cc3586c9253db4075a7bb8a96cac00a88a0bd1acace255bc4a8d0774ba0',1,'postgres.h']]],
-  ['vartag_5fexpanded_5frw_1',['VARTAG_EXPANDED_RW',['../postgres_8h_aea8e31cc3586c9253db4075a7bb8a96c.html#aea8e31cc3586c9253db4075a7bb8a96ca89a524973f95d56cc74aa481cdfe7ede',1,'postgres.h']]],
-  ['vartag_5findirect_2',['VARTAG_INDIRECT',['../postgres_8h_aea8e31cc3586c9253db4075a7bb8a96c.html#aea8e31cc3586c9253db4075a7bb8a96caa1fbbe09c60231e13f8864155058faef',1,'postgres.h']]],
-  ['vartag_5fondisk_3',['VARTAG_ONDISK',['../postgres_8h_aea8e31cc3586c9253db4075a7bb8a96c.html#aea8e31cc3586c9253db4075a7bb8a96ca59cfd012f45863fca76edc37a3dc625c',1,'postgres.h']]]
+  ['union_0',['UNION',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97ba4cf5e96eb7880eb38df303a6e5759afd',1,'temporal.h']]],
+  ['union_5fop_1',['UNION_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073aa8d1503743185874e9808ff41fb5836c',1,'meos_catalog.h']]],
+  ['unknown_5fop_2',['UNKNOWN_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a08135a58bdd69e5d6fa779e1a45d720a',1,'meos_catalog.h']]]
 ];

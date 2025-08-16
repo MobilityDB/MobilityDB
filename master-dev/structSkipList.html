@@ -79,35 +79,58 @@ $(function() {
 <p>Structure to represent skiplists that keep the current state of an aggregation.  
  <a href="structSkipList.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a59c60f5dd7c757313150b16150ba3e39"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a59c60f5dd7c757313150b16150ba3e39.html#a59c60f5dd7c757313150b16150ba3e39">capacity</a></td></tr>
+<tr class="memdesc:a59c60f5dd7c757313150b16150ba3e39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of elements.  <a href="structSkipList_a59c60f5dd7c757313150b16150ba3e39.html#a59c60f5dd7c757313150b16150ba3e39">More...</a><br /></td></tr>
 <tr class="separator:a59c60f5dd7c757313150b16150ba3e39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5595fb52b93856a63d78f05448378a14"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a5595fb52b93856a63d78f05448378a14.html#a5595fb52b93856a63d78f05448378a14">comp_fn</a> )(void *, void *)</td></tr>
+<tr class="memdesc:a5595fb52b93856a63d78f05448378a14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison function for the elements.  <a href="structSkipList_a5595fb52b93856a63d78f05448378a14.html#a5595fb52b93856a63d78f05448378a14">More...</a><br /></td></tr>
+<tr class="separator:a5595fb52b93856a63d78f05448378a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24a8fa2faf2c840073582801c3cc9eee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSkipListElem.html">SkipListElem</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a24a8fa2faf2c840073582801c3cc9eee.html#a24a8fa2faf2c840073582801c3cc9eee">elems</a></td></tr>
+<tr class="memdesc:a24a8fa2faf2c840073582801c3cc9eee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of elements.  <a href="structSkipList_a24a8fa2faf2c840073582801c3cc9eee.html#a24a8fa2faf2c840073582801c3cc9eee">More...</a><br /></td></tr>
 <tr class="separator:a24a8fa2faf2c840073582801c3cc9eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fbfeb6cca80f06b4dd99790067f1e7e"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e">extra</a></td></tr>
+<tr class="memdesc:a4fbfeb6cca80f06b4dd99790067f1e7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to additional data needed for processing.  <a href="structSkipList_a4fbfeb6cca80f06b4dd99790067f1e7e.html#a4fbfeb6cca80f06b4dd99790067f1e7e">More...</a><br /></td></tr>
 <tr class="separator:a4fbfeb6cca80f06b4dd99790067f1e7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a705a809de7d55be2529d307a7f640af5"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5">extrasize</a></td></tr>
+<tr class="memdesc:a705a809de7d55be2529d307a7f640af5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of additional data needed for processing.  <a href="structSkipList_a705a809de7d55be2529d307a7f640af5.html#a705a809de7d55be2529d307a7f640af5">More...</a><br /></td></tr>
 <tr class="separator:a705a809de7d55be2529d307a7f640af5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78c81884917f8a9d0813030a0ee5daa3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a78c81884917f8a9d0813030a0ee5daa3.html#a78c81884917f8a9d0813030a0ee5daa3">freecap</a></td></tr>
+<tr class="memdesc:a78c81884917f8a9d0813030a0ee5daa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of deleted elements.  <a href="structSkipList_a78c81884917f8a9d0813030a0ee5daa3.html#a78c81884917f8a9d0813030a0ee5daa3">More...</a><br /></td></tr>
 <tr class="separator:a78c81884917f8a9d0813030a0ee5daa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4.html#a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4">freecount</a></td></tr>
+<tr class="memdesc:a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of deleted elements.  <a href="structSkipList_a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4.html#a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4">More...</a><br /></td></tr>
 <tr class="separator:a6c7a5d6a53d7d2d64bf6c7d6ecc12ca4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4eceb166ef402e0a65b060282bb0874"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_ab4eceb166ef402e0a65b060282bb0874.html#ab4eceb166ef402e0a65b060282bb0874">freed</a></td></tr>
+<tr class="memdesc:ab4eceb166ef402e0a65b060282bb0874"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of index values of deleted elements.  <a href="structSkipList_ab4eceb166ef402e0a65b060282bb0874.html#ab4eceb166ef402e0a65b060282bb0874">More...</a><br /></td></tr>
 <tr class="separator:ab4eceb166ef402e0a65b060282bb0874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fbcfe856c6a26fedf314cbfbdc82ffd"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a6fbcfe856c6a26fedf314cbfbdc82ffd.html#a6fbcfe856c6a26fedf314cbfbdc82ffd">key_size</a></td></tr>
+<tr class="memdesc:a6fbcfe856c6a26fedf314cbfbdc82ffd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size in bytes of the keys.  <a href="structSkipList_a6fbcfe856c6a26fedf314cbfbdc82ffd.html#a6fbcfe856c6a26fedf314cbfbdc82ffd">More...</a><br /></td></tr>
+<tr class="separator:a6fbcfe856c6a26fedf314cbfbdc82ffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a759dd64aa3d40a4fd80b34e9f12ac60d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a759dd64aa3d40a4fd80b34e9f12ac60d.html#a759dd64aa3d40a4fd80b34e9f12ac60d">length</a></td></tr>
+<tr class="memdesc:a759dd64aa3d40a4fd80b34e9f12ac60d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of elements.  <a href="structSkipList_a759dd64aa3d40a4fd80b34e9f12ac60d.html#a759dd64aa3d40a4fd80b34e9f12ac60d">More...</a><br /></td></tr>
 <tr class="separator:a759dd64aa3d40a4fd80b34e9f12ac60d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fd0abf73ee0100f06a30626d0462186"><td class="memItemLeft" align="right" valign="top">void *(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_a5fd0abf73ee0100f06a30626d0462186.html#a5fd0abf73ee0100f06a30626d0462186">merge_fn</a> )(void *, void *)</td></tr>
+<tr class="memdesc:a5fd0abf73ee0100f06a30626d0462186"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge function for the elements.  <a href="structSkipList_a5fd0abf73ee0100f06a30626d0462186.html#a5fd0abf73ee0100f06a30626d0462186">More...</a><br /></td></tr>
+<tr class="separator:a5fd0abf73ee0100f06a30626d0462186"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb13e6647870a01588dc46237831096c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_adb13e6647870a01588dc46237831096c.html#adb13e6647870a01588dc46237831096c">next</a></td></tr>
+<tr class="memdesc:adb13e6647870a01588dc46237831096c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of the next free element.  <a href="structSkipList_adb13e6647870a01588dc46237831096c.html#adb13e6647870a01588dc46237831096c">More...</a><br /></td></tr>
 <tr class="separator:adb13e6647870a01588dc46237831096c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac58292dbf747733965a1dd369bdcf13b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_ac58292dbf747733965a1dd369bdcf13b.html#ac58292dbf747733965a1dd369bdcf13b">tail</a></td></tr>
+<tr class="memdesc:ac58292dbf747733965a1dd369bdcf13b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of the tail element <br  />
+  <a href="structSkipList_ac58292dbf747733965a1dd369bdcf13b.html#ac58292dbf747733965a1dd369bdcf13b">More...</a><br /></td></tr>
 <tr class="separator:ac58292dbf747733965a1dd369bdcf13b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4f9c40cd95ec1119d08b85cc9c1f952"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSkipList_af4f9c40cd95ec1119d08b85cc9c1f952.html#af4f9c40cd95ec1119d08b85cc9c1f952">value_size</a></td></tr>
+<tr class="memdesc:af4f9c40cd95ec1119d08b85cc9c1f952"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size in bytes of the values.  <a href="structSkipList_af4f9c40cd95ec1119d08b85cc9c1f952.html#af4f9c40cd95ec1119d08b85cc9c1f952">More...</a><br /></td></tr>
+<tr class="separator:af4f9c40cd95ec1119d08b85cc9c1f952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Structure to represent skiplists that keep the current state of an aggregation. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>meos/include/<a class="el" href="meos_8h_source.html">meos.h</a></li>
+<li>meos/include/<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
