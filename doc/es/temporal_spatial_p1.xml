@@ -44,7 +44,7 @@
 
 		<itemizedlist>
 			<listitem>
-				<para><varname>tspatial</varname> representa un tipo temporal espacial, por ejemplo, <varname>tgeometry</varname>, <varname>tgeompoint</varname>, <varname>tpose</varname>, o <varname>tnpoint</varname>,</para>
+				<para><varname>tspatial</varname> representa un tipo espaciotemporal, por ejemplo, <varname>tgeometry</varname>, <varname>tgeompoint</varname>, <varname>tpose</varname>, o <varname>tnpoint</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -243,10 +243,12 @@ SELECT asEWKT(tgeompointFromHexEWKB(
 	<sect1 xml:id="tgeo_conversions">
 		<title>Conversión de tipos</title>
 		<itemizedlist>
-			<listitem xml:id="tgeo_bbox">
+			<listitem xml:id="tspatial_bbox">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un valor temporal espacial a un cuadro delimitador espaciotemporal</para>
+				<indexterm significance="normal"><primary><varname>stbox(tspatial)</varname></primary></indexterm>
+				<para>Convertir un valor espaciotemporal a un rango temporal o a un cuadro delimitador espaciotemporal</para>
 				<para><varname>tspatial::stbox</varname></para>
+				<para><varname>stbox(tspatial)</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
 -- [2001-01-01, 2001-01-03]
@@ -455,17 +457,6 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tgeo_twCentroid">
-				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Devuelve el centroide ponderado en el tiempo &Z_support;</para>
-				<para><varname>twCentroid(tgeompoint) → point</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
-  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
--- POINT Z (0 0.666666666666667 0.666666666666667)
 </programlisting>
 			</listitem>
 
