@@ -1,0 +1,2365 @@
+table_name,field_name,language,translation,field_value
+agency,agency_name,fr,STIB,STIB
+agency,agency_name,nl,MIVB,STIB
+agency,agency_url,fr,https://www.stib-mivb.be/index.htm?l=fr,https://www.stib-mivb.be
+agency,agency_url,nl,https://www.stib-mivb.be/index.htm?l=nl,https://www.stib-mivb.be
+stops,stop_name,fr,Abbaye,ABBAYE
+stops,stop_name,nl,Abdij,ABBAYE
+stops,stop_name,fr,Acacias,ACACIAS
+stops,stop_name,nl,Acacia,ACACIAS
+stops,stop_name,fr,ADEPS,ADEPS
+stops,stop_name,nl,ADEPS,ADEPS
+stops,stop_name,fr,Aérodrome,AERODROME
+stops,stop_name,nl,Vliegveld,AERODROME
+stops,stop_name,fr,Albert,ALBERT
+stops,stop_name,nl,Albert,ALBERT
+stops,stop_name,fr,Albert I,ALBERT I
+stops,stop_name,nl,Albert I,ALBERT I
+stops,stop_name,fr,Albert II,ALBERT II
+stops,stop_name,nl,Albert II,ALBERT II
+stops,stop_name,fr,Alcyons,ALCYONS
+stops,stop_name,nl,Alcyons,ALCYONS
+stops,stop_name,fr,Alma,ALMA
+stops,stop_name,nl,Alma,ALMA
+stops,stop_name,fr,Alphonse XIII,ALPHONSE XIII
+stops,stop_name,nl,Alphonse XIII,ALPHONSE XIII
+stops,stop_name,fr,Altitude Cent,ALTITUDE CENT
+stops,stop_name,nl,Hoogte Honderd,ALTITUDE CENT
+stops,stop_name,fr,Ambiorix,AMBIORIX
+stops,stop_name,nl,Ambiorix,AMBIORIX
+stops,stop_name,fr,Amélie Gomand,AMELIE GOMAND
+stops,stop_name,nl,Amélie Gomand,AMELIE GOMAND
+stops,stop_name,fr,Améthyste,AMETHYSTE
+stops,stop_name,nl,Amethist,AMETHYSTE
+stops,stop_name,fr,Amitié,AMITIE
+stops,stop_name,nl,Vriendschap,AMITIE
+stops,stop_name,fr,Anatole France,ANATOLE FRANCE
+stops,stop_name,nl,Anatole France,ANATOLE FRANCE
+stops,stop_name,fr,Ancienne Barrière,ANCIENNE BARRIERE
+stops,stop_name,nl,Oude Afspanning,ANCIENNE BARRIERE
+stops,stop_name,fr,Ancre,ANCRE
+stops,stop_name,nl,Anker,ANCRE
+stops,stop_name,fr,Andrée De Jongh,ANDREE DE JONGH
+stops,stop_name,nl,Andrée De Jongh,ANDREE DE JONGH
+stops,stop_name,fr,Andromède,ANDROMEDE
+stops,stop_name,nl,Andromeda,ANDROMEDE
+stops,stop_name,fr,Annecy,ANNECY
+stops,stop_name,nl,Annecy,ANNECY
+stops,stop_name,fr,Anneessens,ANNEESSENS
+stops,stop_name,nl,Anneessens,ANNEESSENS
+stops,stop_name,fr,Aquiris,AQUIRIS
+stops,stop_name,nl,Aquiris,AQUIRIS
+stops,stop_name,fr,Araucaria,ARAUCARIA
+stops,stop_name,nl,Araucaria,ARAUCARIA
+stops,stop_name,fr,Arbre Ballon,ARBRE BALLON
+stops,stop_name,nl,Dikke Beuk,ARBRE BALLON
+stops,stop_name,fr,Arbre Unique,ARBRE UNIQUE
+stops,stop_name,nl,Eenboom,ARBRE UNIQUE
+stops,stop_name,fr,Arcades,ARCADES
+stops,stop_name,nl,Arcaden,ARCADES
+stops,stop_name,fr,Archiducs,ARCHIDUCS
+stops,stop_name,nl,Aartshertogen,ARCHIDUCS
+stops,stop_name,fr,Arenberg,ARENBERG
+stops,stop_name,nl,Arenberg,ARENBERG
+stops,stop_name,fr,Ariane,ARIANE
+stops,stop_name,nl,Ariane,ARIANE
+stops,stop_name,fr,Aristide Briand,ARISTIDE BRIAND
+stops,stop_name,nl,Aristide Briand,ARISTIDE BRIAND
+stops,stop_name,fr,Arsenal,ARSENAL
+stops,stop_name,nl,Arsenaal,ARSENAL
+stops,stop_name,fr,Artémis,ARTEMIS
+stops,stop_name,nl,Artémis,ARTEMIS
+stops,stop_name,fr,Artistes,ARTISTES
+stops,stop_name,nl,Kunstenaars,ARTISTES
+stops,stop_name,fr,Arts et Métiers,ARTS ET METIERS
+stops,stop_name,nl,Arts et Métiers,ARTS ET METIERS
+stops,stop_name,fr,Arts-Loi,ARTS-LOI
+stops,stop_name,nl,Kunst-Wet,ARTS-LOI
+stops,stop_name,fr,Auderghem-Forêt,AUDERGHEM-FORET
+stops,stop_name,nl,Oudergem-Woud,AUDERGHEM-FORET
+stops,stop_name,fr,Auderghem-Shopping,AUDERGHEM-SHOP.
+stops,stop_name,nl,Oudergem-Shopping,AUDERGHEM-SHOP.
+stops,stop_name,fr,Auditoires-UCL,AUDITOIRES-UCL
+stops,stop_name,nl,Auditoires-UCL,AUDITOIRES-UCL
+stops,stop_name,fr,Audrey Hepburn,AUDREY HEPBURN
+stops,stop_name,nl,Audrey Hepburn,AUDREY HEPBURN
+stops,stop_name,fr,Aulne,AULNE
+stops,stop_name,nl,Elzeboom,AULNE
+stops,stop_name,fr,Aumale,AUMALE
+stops,stop_name,nl,Aumale,AUMALE
+stops,stop_name,fr,Autrique,AUTRIQUE
+stops,stop_name,nl,Autrique,AUTRIQUE
+stops,stop_name,fr,Avant-Port,AVANT-PORT
+stops,stop_name,nl,Voorhaven,AVANT-PORT
+stops,stop_name,fr,Avenue du Roi,AVENUE DU ROI
+stops,stop_name,nl,Koningslaan,AVENUE DU ROI
+stops,stop_name,fr,Aviation,AVIATION
+stops,stop_name,nl,Luchtvaart,AVIATION
+stops,stop_name,fr,Azalées,AZALEES
+stops,stop_name,nl,Azalea,AZALEES
+stops,stop_name,fr,Azur,AZUR
+stops,stop_name,nl,Azuur,AZUR
+stops,stop_name,fr,Bailli,BAILLI
+stops,stop_name,nl,Baljuw,BAILLI
+stops,stop_name,fr,Ban-Eik,BAN-EIK
+stops,stop_name,nl,Ban-Eik,BAN-EIK
+stops,stop_name,fr,Bara,BARA
+stops,stop_name,nl,Bara,BARA
+stops,stop_name,fr,Baron de Castro,BARON DE CASTRO
+stops,stop_name,nl,Baron de Castro,BARON DE CASTRO
+stops,stop_name,fr,Barrière,BARRIERE
+stops,stop_name,nl,Bareel,BARRIERE
+stops,stop_name,fr,Bascule,BASCULE
+stops,stop_name,nl,Bascule,BASCULE
+stops,stop_name,fr,Basilix,BASILIX
+stops,stop_name,nl,Basilix,BASILIX
+stops,stop_name,fr,Bastogne,BASTOGNE
+stops,stop_name,nl,Bastenaken,BASTOGNE
+stops,stop_name,fr,Beaulieu,BEAULIEU
+stops,stop_name,nl,Beaulieu,BEAULIEU
+stops,stop_name,fr,Beauté,BEAUTE
+stops,stop_name,nl,Schoonheid,BEAUTE
+stops,stop_name,fr,Beeckmans,BEECKMANS
+stops,stop_name,nl,Beeckmans,BEECKMANS
+stops,stop_name,fr,Beekkant,BEEKKANT
+stops,stop_name,nl,Beekkant,BEEKKANT
+stops,stop_name,fr,Beersellaan,BEERSELLAAN
+stops,stop_name,nl,Beersellaan,BEERSELLAAN
+stops,stop_name,fr,Bel-Air,BEL-AIR
+stops,stop_name,nl,Schone Lucht,BEL-AIR
+stops,stop_name,fr,Belgica,BELGICA
+stops,stop_name,nl,Belgica,BELGICA
+stops,stop_name,fr,Bempt,BEMPT
+stops,stop_name,nl,Bempt,BEMPT
+stops,stop_name,fr,Bénès,BENES
+stops,stop_name,nl,Bénès,BENES
+stops,stop_name,fr,Bens,BENS
+stops,stop_name,nl,Bens,BENS
+stops,stop_name,fr,Berchem-Shopping,BERCHEM-SHOPPING
+stops,stop_name,nl,Berchem-Shopping,BERCHEM-SHOPPING
+stops,stop_name,fr,Berensheide,BERENSHEIDE
+stops,stop_name,nl,Berensheide,BERENSHEIDE
+stops,stop_name,fr,Bergdal,BERGDAL
+stops,stop_name,nl,Bergdal,BERGDAL
+stops,stop_name,fr,Bergoje,BERGOJE
+stops,stop_name,nl,Bergoje,BERGOJE
+stops,stop_name,fr,Berkendael,BERKENDAEL
+stops,stop_name,nl,Berkendaal,BERKENDAEL
+stops,stop_name,fr,Berthelot,BERTHELOT
+stops,stop_name,nl,Berthelot,BERTHELOT
+stops,stop_name,fr,Bervoets,BERVOETS
+stops,stop_name,nl,Bervoets,BERVOETS
+stops,stop_name,fr,Besme,BESME
+stops,stop_name,nl,Besme,BESME
+stops,stop_name,fr,Bethléem,BETHLEEM
+stops,stop_name,nl,Bethlehem,BETHLEEM
+stops,stop_name,fr,Beyseghem,BEYSEGHEM
+stops,stop_name,nl,Beizegem,BEYSEGHEM
+stops,stop_name,fr,Biarritz,BIARRITZ
+stops,stop_name,nl,Biarritz,BIARRITZ
+stops,stop_name,fr,Bichon,BICHON
+stops,stop_name,nl,Bichon,BICHON
+stops,stop_name,fr,Bicoque,BICOQUE
+stops,stop_name,nl,Bicoque,BICOQUE
+stops,stop_name,fr,Biebuyck,BIEBUYCK
+stops,stop_name,nl,Biebuyck,BIEBUYCK
+stops,stop_name,fr,Bien-Faire,BIEN-FAIRE
+stops,stop_name,nl,Bien-Faire,BIEN-FAIRE
+stops,stop_name,fr,Bienfaiteurs,BIENFAITEURS
+stops,stop_name,nl,Weldoeners,BIENFAITEURS
+stops,stop_name,fr,Bigarreaux,BIGARREAUX
+stops,stop_name,nl,Vleeskersen,BIGARREAUX
+stops,stop_name,fr,Biplan,BIPLAN
+stops,stop_name,nl,Tweedekker,BIPLAN
+stops,stop_name,fr,Bizet,BIZET
+stops,stop_name,nl,Bizet,BIZET
+stops,stop_name,fr,Blokken,BLOKKEN
+stops,stop_name,nl,Blokken,BLOKKEN
+stops,stop_name,fr,Blyckaerts,BLYCKAERTS
+stops,stop_name,nl,Blyckaerts,BLYCKAERTS
+stops,stop_name,fr,Bockstael,BOCKSTAEL
+stops,stop_name,nl,Bockstael,BOCKSTAEL
+stops,stop_name,fr,Boetendael,BOETENDAEL
+stops,stop_name,nl,Boetendael,BOETENDAEL
+stops,stop_name,fr,Boileau,BOILEAU
+stops,stop_name,nl,Boileau,BOILEAU
+stops,stop_name,fr,Bois des Îles,BOIS DES ILES
+stops,stop_name,nl,Eilandenhout,BOIS DES ILES
+stops,stop_name,fr,Boitsfort Gare,BOITSFORT GARE
+stops,stop_name,nl,Bosvoorde Station,BOITSFORT GARE
+stops,stop_name,fr,Bollinckx,BOLLINCKX
+stops,stop_name,nl,Bollinckx,BOLLINCKX
+stops,stop_name,fr,Bon Air,BON AIR
+stops,stop_name,nl,Goede Lucht,BON AIR
+stops,stop_name,fr,Bonaventure,BONAVENTURE
+stops,stop_name,nl,Bonaventure,BONAVENTURE
+stops,stop_name,fr,Boondael Gare,BOONDAEL GARE
+stops,stop_name,nl,Boondaal Station,BOONDAEL GARE
+stops,stop_name,fr,Bordet Station,BORDET STATION
+stops,stop_name,nl,Bordet Station,BORDET STATION
+stops,stop_name,fr,Borne,BORNE
+stops,stop_name,nl,Paal,BORNE
+stops,stop_name,fr,Bossaert-Basilique,BOSSAERT-BASILIQ.
+stops,stop_name,nl,Bossaert-Basiliek,BOSSAERT-BASILIQ.
+stops,stop_name,fr,Bossuet,BOSSUET
+stops,stop_name,nl,Bossuet,BOSSUET
+stops,stop_name,fr,Botanique,BOTANIQUE
+stops,stop_name,nl,Kruidtuin,BOTANIQUE
+stops,stop_name,fr,Boule et Bill,BOULE ET BILL
+stops,stop_name,nl,Bollie en Billie,BOULE ET BILL
+stops,stop_name,fr,Bouleaux,BOULEAUX
+stops,stop_name,nl,Berken,BOULEAUX
+stops,stop_name,fr,Bourdon,BOURDON
+stops,stop_name,nl,Horzel,BOURDON
+stops,stop_name,fr,Bourget,BOURGET
+stops,stop_name,nl,Bourget,BOURGET
+stops,stop_name,fr,Bourse,BOURSE
+stops,stop_name,nl,Beurs,BOURSE
+stops,stop_name,fr,Bozar,BOZAR
+stops,stop_name,nl,Bozar,BOZAR
+stops,stop_name,fr,Brabançonne,BRABANCONNE
+stops,stop_name,nl,Brabançonne,BRABANCONNE
+stops,stop_name,fr,Braemt,BRAEMT
+stops,stop_name,nl,Braemt,BRAEMT
+stops,stop_name,fr,Braves,BRAVES
+stops,stop_name,nl,Dapperen,BRAVES
+stops,stop_name,fr,Bremer,BREMER
+stops,stop_name,nl,Bremer,BREMER
+stops,stop_name,fr,Brésil,BRESIL
+stops,stop_name,nl,Brazilië,BRESIL
+stops,stop_name,fr,Breydel,BREYDEL
+stops,stop_name,nl,Breydel,BREYDEL
+stops,stop_name,fr,Brillant,BRILLANT
+stops,stop_name,nl,Briljant,BRILLANT
+stops,stop_name,fr,Broek,BROEK
+stops,stop_name,nl,Broek,BROEK
+stops,stop_name,fr,Broeren,BROEREN
+stops,stop_name,nl,Broeren,BROEREN
+stops,stop_name,fr,Broustin,BROUSTIN
+stops,stop_name,nl,Broustin,BROUSTIN
+stops,stop_name,fr,Brunard,BRUNARD
+stops,stop_name,nl,Brunard,BRUNARD
+stops,stop_name,fr,Brussels Airport,BRUSSELS AIRPORT
+stops,stop_name,nl,Brussels Airport,BRUSSELS AIRPORT
+stops,stop_name,fr,Brusselsesteenweg,BRUSSELSESTEENWEG
+stops,stop_name,nl,Brusselsesteenweg,BRUSSELSESTEENWEG
+stops,stop_name,fr,Bruxellois,BRUXELLOIS
+stops,stop_name,nl,Brusselaars,BRUXELLOIS
+stops,stop_name,fr,Buanderie,BUANDERIE
+stops,stop_name,nl,Washuis,BUANDERIE
+stops,stop_name,fr,Buda,BUDA
+stops,stop_name,nl,Buda,BUDA
+stops,stop_name,fr,Buedts,BUEDTS
+stops,stop_name,nl,Buedts,BUEDTS
+stops,stop_name,fr,Buissonnets,BUISSONNETS
+stops,stop_name,nl,Braambosjes,BUISSONNETS
+stops,stop_name,fr,Buyl,BUYL
+stops,stop_name,nl,Buyl,BUYL
+stops,stop_name,fr,Cabris,CABRIS
+stops,stop_name,nl,Geitjes,CABRIS
+stops,stop_name,fr,Calypso 2000,CALYPSO 2000
+stops,stop_name,nl,Calypso 2000,CALYPSO 2000
+stops,stop_name,fr,Cambre-Étoile,CAMBRE-ETOILE
+stops,stop_name,nl,Ter Kameren-Ster,CAMBRE-ETOILE
+stops,stop_name,fr,Campus CERIA,CAMPUS CERIA
+stops,stop_name,nl,Campus COOVI,CAMPUS CERIA
+stops,stop_name,fr,Candries,CANDRIES
+stops,stop_name,nl,Candries,CANDRIES
+stops,stop_name,fr,Capricorne,CAPRICORNE
+stops,stop_name,nl,Steenbok,CAPRICORNE
+stops,stop_name,fr,Carène,CARENE
+stops,stop_name,nl,Carina,CARENE
+stops,stop_name,fr,Carli,CARLI
+stops,stop_name,nl,Carli,CARLI
+stops,stop_name,fr,Carrefour Stalle,CARREFOUR STALLE
+stops,stop_name,nl,Kruispunt Stalle,CARREFOUR STALLE
+stops,stop_name,fr,Cavell,CAVELL
+stops,stop_name,nl,Cavell,CAVELL
+stops,stop_name,fr,Ceres,CERES
+stops,stop_name,nl,Ceres,CERES
+stops,stop_name,fr,CERIA,CERIA
+stops,stop_name,nl,COOVI,CERIA
+stops,stop_name,fr,Cerisaie,CERISAIE
+stops,stop_name,nl,Kerseboomgaard,CERISAIE
+stops,stop_name,fr,César De Paepe,CESAR DE PAEPE
+stops,stop_name,nl,César De Paepe,CESAR DE PAEPE
+stops,stop_name,fr,Chant d'Oiseau,CHANT D'OISEAU
+stops,stop_name,nl,Vogelzang,CHANT D'OISEAU
+stops,stop_name,fr,Chapelle,CHAPELLE
+stops,stop_name,nl,Kapellekerk,CHAPELLE
+stops,stop_name,fr,Charmille,CHARMILLE
+stops,stop_name,nl,Haagbeuken,CHARMILLE
+stops,stop_name,fr,Charroi,CHARROI
+stops,stop_name,nl,Gerij,CHARROI
+stops,stop_name,fr,Chasseurs Ardennais,CHASSEURS ARDEN.
+stops,stop_name,nl,Ardense Jagers,CHASSEURS ARDEN.
+stops,stop_name,fr,Châtaignes,CHATAIGNES
+stops,stop_name,nl,Kastanjes,CHATAIGNES
+stops,stop_name,fr,Chaumontel,CHAUMONTEL
+stops,stop_name,nl,Chaumontel,CHAUMONTEL
+stops,stop_name,fr,Chazal,CHAZAL
+stops,stop_name,nl,Chazal,CHAZAL
+stops,stop_name,fr,Chemin de Fer,CHEMIN DE FER
+stops,stop_name,nl,Spoorweg,CHEMIN DE FER
+stops,stop_name,fr,Chemin Vert,CHEMIN VERT
+stops,stop_name,nl,Groenweg,CHEMIN VERT
+stops,stop_name,fr,Chênaie,CHENAIE
+stops,stop_name,nl,Eikenbos,CHENAIE
+stops,stop_name,fr,Chevalerie,CHEVALERIE
+stops,stop_name,nl,Ridderschap,CHEVALERIE
+stops,stop_name,fr,Chien Vert,CHIEN VERT
+stops,stop_name,nl,Groene Hond,CHIEN VERT
+stops,stop_name,fr,CHIREC,CHIREC
+stops,stop_name,nl,CHIREC,CHIREC
+stops,stop_name,fr,Chopin,CHOPIN
+stops,stop_name,nl,Chopin,CHOPIN
+stops,stop_name,fr,Churchill,CHURCHILL
+stops,stop_name,nl,Churchill,CHURCHILL
+stops,stop_name,fr,Cicéron,CICERON
+stops,stop_name,nl,Cicero,CICERON
+stops,stop_name,fr,Cimetière d'Ixelles,CIM. D'IXELLES
+stops,stop_name,nl,Begraafplaats van Elsene,CIM. D'IXELLES
+stops,stop_name,fr,Cimetière de Bruxelles,CIM. DE BRUXELLES
+stops,stop_name,nl,Begraafplaats van Brussel,CIM. DE BRUXELLES
+stops,stop_name,fr,Cimetière de Jette,CIM. DE JETTE
+stops,stop_name,nl,Kerkhof van Jette,CIM. DE JETTE
+stops,stop_name,fr,Cimetière de Molenbeek,CIM. DE MOLENBEEK
+stops,stop_name,nl,Begraafplaats van Molenbeek,CIM. DE MOLENBEEK
+stops,stop_name,fr,Cimetières,CIMETIERES
+stops,stop_name,nl,Begraafplaatsen,CIMETIERES
+stops,stop_name,fr,Clays,CLAYS
+stops,stop_name,nl,Clays,CLAYS
+stops,stop_name,fr,Clémence Everard,CLEMENCE EVERARD
+stops,stop_name,nl,Clémence Everard,CLEMENCE EVERARD
+stops,stop_name,fr,Clemenceau,CLEMENCEAU
+stops,stop_name,nl,Clemenceau,CLEMENCEAU
+stops,stop_name,fr,Clesse,CLESSE
+stops,stop_name,nl,Clesse,CLESSE
+stops,stop_name,fr,Cliniques-UCL,CLINIQUES-UCL
+stops,stop_name,nl,Cliniques-UCL,CLINIQUES-UCL
+stops,stop_name,fr,Clovis,CLOVIS
+stops,stop_name,nl,Clovis,CLOVIS
+stops,stop_name,fr,Coghen,COGHEN
+stops,stop_name,nl,Coghen,COGHEN
+stops,stop_name,fr,Colignon,COLIGNON
+stops,stop_name,nl,Colignon,COLIGNON
+stops,stop_name,fr,Collège Sacré-Cœur,COLLEGE S.-COEUR
+stops,stop_name,nl,Heilig Hartcollege,COLLEGE S.-COEUR
+stops,stop_name,fr,Collège Saint-Pierre,COLLEGE ST-PIERRE
+stops,stop_name,nl,Sint-Pieterscollege,COLLEGE ST-PIERRE
+stops,stop_name,fr,Colombophiles,COLOMBOPHILES
+stops,stop_name,nl,Duivenmelkers,COLOMBOPHILES
+stops,stop_name,fr,Colonel Bourg,COLONEL BOURG
+stops,stop_name,nl,Kolonel Bourg,COLONEL BOURG
+stops,stop_name,fr,Combaz,COMBAZ
+stops,stop_name,nl,Combaz,COMBAZ
+stops,stop_name,fr,Comhaire,COMHAIRE
+stops,stop_name,nl,Comhaire,COMHAIRE
+stops,stop_name,fr,Comte de Flandre,COMTE DE FLANDRE
+stops,stop_name,nl,Graaf van Vlaanderen,COMTE DE FLANDRE
+stops,stop_name,fr,Condor,CONDOR
+stops,stop_name,nl,Condor,CONDOR
+stops,stop_name,fr,Congrès,CONGRES
+stops,stop_name,nl,Congres,CONGRES
+stops,stop_name,fr,Conscience,CONSCIENCE
+stops,stop_name,nl,Conscience,CONSCIENCE
+stops,stop_name,fr,Conseil,CONSEIL
+stops,stop_name,nl,Raad,CONSEIL
+stops,stop_name,fr,Cortenbach,CORTENBACH
+stops,stop_name,nl,Kortenbach,CORTENBACH
+stops,stop_name,fr,Côteaux,COTEAUX
+stops,stop_name,nl,Wijnheuvelen,COTEAUX
+stops,stop_name,fr,Craetbos,CRAETBOS
+stops,stop_name,nl,Craetbos,CRAETBOS
+stops,stop_name,fr,Crainhem,CRAINHEM
+stops,stop_name,nl,Kraainem,CRAINHEM
+stops,stop_name,fr,Crematorium,CREMATORIUM
+stops,stop_name,nl,Crematorium,CREMATORIUM
+stops,stop_name,fr,Crocq,CROCQ
+stops,stop_name,nl,Crocq,CROCQ
+stops,stop_name,fr,Croix de Guerre,CROIX DE GUERRE
+stops,stop_name,nl,Oorlogskruisen,CROIX DE GUERRE
+stops,stop_name,fr,Crossing,CROSSING
+stops,stop_name,nl,Crossing,CROSSING
+stops,stop_name,fr,Cureghem,CUREGHEM
+stops,stop_name,nl,Kuregem,CUREGHEM
+stops,stop_name,fr,Da Vinci,DA VINCI
+stops,stop_name,nl,Da Vinci,DA VINCI
+stops,stop_name,fr,Dailly,DAILLY
+stops,stop_name,nl,Dailly,DAILLY
+stops,stop_name,fr,Dansaert,DANSAERT
+stops,stop_name,nl,Dansaert,DANSAERT
+stops,stop_name,fr,Darwin,DARWIN
+stops,stop_name,nl,Darwin,DARWIN
+stops,stop_name,fr,Dautzenberg,DAUTZENBERG
+stops,stop_name,nl,Dautzenberg,DAUTZENBERG
+stops,stop_name,fr,de Berlaimont,DE BERLAIMONT
+stops,stop_name,nl,de Berlaimont,DE BERLAIMONT
+stops,stop_name,fr,De Brouckère,DE BROUCKERE
+stops,stop_name,nl,De Brouckère,DE BROUCKERE
+stops,stop_name,fr,de Burbure,DE BURBURE
+stops,stop_name,nl,de Burbure,DE BURBURE
+stops,stop_name,fr,De Heyn,DE HEYN
+stops,stop_name,nl,De Heyn,DE HEYN
+stops,stop_name,fr,De Linde,DE LINDE
+stops,stop_name,nl,De Linde,DE LINDE
+stops,stop_name,fr,de Lombaerde,DE LOMBAERDE
+stops,stop_name,nl,de Lombaerde,DE LOMBAERDE
+stops,stop_name,fr,de Villalobar,DE VILLALOBAR
+stops,stop_name,nl,de Villalobar,DE VILLALOBAR
+stops,stop_name,fr,de Villegas,DE VILLEGAS
+stops,stop_name,nl,de Villegas,DE VILLEGAS
+stops,stop_name,fr,De Wand,DE WAND
+stops,stop_name,nl,De Wand,DE WAND
+stops,stop_name,fr,De Wansijn,DE WANSIJN
+stops,stop_name,nl,De Wansijn,DE WANSIJN
+stops,stop_name,fr,Debussy,DEBUSSY
+stops,stop_name,nl,Debussy,DEBUSSY
+stops,stop_name,fr,Decroly,DECROLY
+stops,stop_name,nl,Decroly,DECROLY
+stops,stop_name,fr,Defacqz,DEFACQZ
+stops,stop_name,nl,Defacqz,DEFACQZ
+stops,stop_name,fr,Degrooff,DEGROOFF
+stops,stop_name,nl,Degrooff,DEGROOFF
+stops,stop_name,fr,Delacroix,DELACROIX
+stops,stop_name,nl,Delacroix,DELACROIX
+stops,stop_name,fr,Delhove,DELHOVE
+stops,stop_name,nl,Delhove,DELHOVE
+stops,stop_name,fr,Delleur,DELLEUR
+stops,stop_name,nl,Delleur,DELLEUR
+stops,stop_name,fr,Delporte,DELPORTE
+stops,stop_name,nl,Delporte,DELPORTE
+stops,stop_name,fr,Delta,DELTA
+stops,stop_name,nl,Delta,DELTA
+stops,stop_name,fr,Demey,DEMEY
+stops,stop_name,nl,Demey,DEMEY
+stops,stop_name,fr,Démineurs,DEMINEURS
+stops,stop_name,nl,Ontmijners,DEMINEURS
+stops,stop_name,fr,Demolder,DEMOLDER
+stops,stop_name,nl,Demolder,DEMOLDER
+stops,stop_name,fr,Déportés,DEPORTES
+stops,stop_name,nl,Weggevoerden,DEPORTES
+stops,stop_name,fr,Destouvelles,DESTOUVELLES
+stops,stop_name,nl,Destouvelles,DESTOUVELLES
+stops,stop_name,fr,Deutsche Schule,DEUTSCHE SCHULE
+stops,stop_name,nl,Deutsche Schule,DEUTSCHE SCHULE
+stops,stop_name,fr,Deux Chaussées,DEUX CHAUSSEES
+stops,stop_name,nl,Tweesteenwegen,DEUX CHAUSSEES
+stops,stop_name,fr,Deux Gares,DEUX GARES
+stops,stop_name,nl,Twee Stations,DEUX GARES
+stops,stop_name,fr,Diablotins,DIABLOTINS
+stops,stop_name,nl,Duiveltjes,DIABLOTINS
+stops,stop_name,fr,Diabolo,DIABOLO
+stops,stop_name,nl,Diabolo,DIABOLO
+stops,stop_name,fr,Diamant,DIAMANT
+stops,stop_name,nl,Diamant,DIAMANT
+stops,stop_name,fr,Diegemstraat,DIEGEMSTRAAT
+stops,stop_name,nl,Diegemstraat,DIEGEMSTRAAT
+stops,stop_name,fr,Dieleghem,DIELEGHEM
+stops,stop_name,nl,Dielegem,DIELEGHEM
+stops,stop_name,fr,Dieweg,DIEWEG
+stops,stop_name,nl,Dieweg,DIEWEG
+stops,stop_name,fr,Digue du Canal,DIGUE DU CANAL
+stops,stop_name,nl,Vaartdijk,DIGUE DU CANAL
+stops,stop_name,fr,Directoire,DIRECTOIRE
+stops,stop_name,nl,Directoire,DIRECTOIRE
+stops,stop_name,fr,Divin Sauveur,DIVIN SAUVEUR
+stops,stop_name,nl,Goddelijke Zaligmaker,DIVIN SAUVEUR
+stops,stop_name,fr,Docks Bruxsel,DOCKS BRUXSEL
+stops,stop_name,nl,Docks Bruxsel,DOCKS BRUXSEL
+stops,stop_name,fr,Domaine,DOMAINE
+stops,stop_name,nl,Domein,DOMAINE
+stops,stop_name,fr,Don Bosco,DON BOSCO
+stops,stop_name,nl,Don Bosco,DON BOSCO
+stops,stop_name,fr,Douvres,DOUVRES
+stops,stop_name,nl,Dover,DOUVRES
+stops,stop_name,fr,Drève de Nivelles,DREVE DE NIVELLES
+stops,stop_name,nl,Nijvelsedreef,DREVE DE NIVELLES
+stops,stop_name,fr,Drève des Brûlés,DREVE DES BRULES
+stops,stop_name,nl,Verbrandendreef,DREVE DES BRULES
+stops,stop_name,fr,Dries,DRIES
+stops,stop_name,nl,Dries,DRIES
+stops,stop_name,fr,Drogenbos,DROGENBOS
+stops,stop_name,nl,Drogenbos,DROGENBOS
+stops,stop_name,fr,Drogenbos-Shopping,DROGENBOS-SHOP.
+stops,stop_name,nl,Drogenbos-Shopping,DROGENBOS-SHOP.
+stops,stop_name,fr,Drossart,DROSSART
+stops,stop_name,nl,Drossaard,DROSSART
+stops,stop_name,fr,Dubois,DUBOIS
+stops,stop_name,nl,Dubois,DUBOIS
+stops,stop_name,fr,Duchesse de Brabant,DUCHESSE BRABANT
+stops,stop_name,nl,Hertogin van Brabant,DUCHESSE BRABANT
+stops,stop_name,fr,Duden,DUDEN
+stops,stop_name,nl,Duden,DUDEN
+stops,stop_name,fr,Dunant,DUNANT
+stops,stop_name,nl,Dunant,DUNANT
+stops,stop_name,fr,Dunette,DUNETTE
+stops,stop_name,nl,Dunette,DUNETTE
+stops,stop_name,fr,Eddy Merckx,EDDY MERCKX
+stops,stop_name,nl,Eddy Merckx,EDDY MERCKX
+stops,stop_name,fr,Eenens,EENENS
+stops,stop_name,nl,Eenens,EENENS
+stops,stop_name,fr,Eggergat,EGGERGAT
+stops,stop_name,nl,Eggergat,EGGERGAT
+stops,stop_name,fr,Egide Van Ophem,EGIDE VAN OPHEM
+stops,stop_name,nl,Egide Van Ophem,EGIDE VAN OPHEM
+stops,stop_name,fr,Églantiers,EGLANTIERS
+stops,stop_name,nl,Wilderozen,EGLANTIERS
+stops,stop_name,fr,Église Saint-Antoine,EGLISE ST-ANTOINE
+stops,stop_name,nl,Sint-Antoonkerk,EGLISE ST-ANTOINE
+stops,stop_name,fr,Église Saint-Julien,EGLISE ST-JULIEN
+stops,stop_name,nl,Sint-Juliaanskerk,EGLISE ST-JULIEN
+stops,stop_name,fr,Eglise Saint-Servais,EGLISE ST-SERVAIS
+stops,stop_name,nl,Sint-Servaaskerk,EGLISE ST-SERVAIS
+stops,stop_name,fr,Église Wezembeek,EGLISE WEZEMBEEK
+stops,stop_name,nl,Kerk Wezembeek,EGLISE WEZEMBEEK
+stops,stop_name,fr,Elbers,ELBERS
+stops,stop_name,nl,Elbers,ELBERS
+stops,stop_name,fr,Éléphant,ELEPHANT
+stops,stop_name,nl,Olifant,ELEPHANT
+stops,stop_name,fr,Elisabeth,ELISABETH
+stops,stop_name,nl,Elisabeth,ELISABETH
+stops,stop_name,fr,Eloy,ELOY
+stops,stop_name,nl,Eloy,ELOY
+stops,stop_name,fr,Emile Delva,EMILE DELVA
+stops,stop_name,nl,Emile Delva,EMILE DELVA
+stops,stop_name,fr,Empain,EMPAIN
+stops,stop_name,nl,Empain,EMPAIN
+stops,stop_name,fr,Engeland,ENGELAND
+stops,stop_name,nl,Engeland,ENGELAND
+stops,stop_name,fr,Ennepetal,ENNEPETAL
+stops,stop_name,nl,Ennepetal,ENNEPETAL
+stops,stop_name,fr,Ensor,ENSOR
+stops,stop_name,nl,Ensor,ENSOR
+stops,stop_name,fr,Entrepôt,ENTREPOT
+stops,stop_name,nl,Stapelhuis,ENTREPOT
+stops,stop_name,fr,Équipages,EQUIPAGES
+stops,stop_name,nl,Jachtstoet,EQUIPAGES
+stops,stop_name,fr,Erasme,ERASME
+stops,stop_name,nl,Erasmus,ERASME
+stops,stop_name,fr,Ernest Salu,ERNEST SALU
+stops,stop_name,nl,Ernest Salu,ERNEST SALU
+stops,stop_name,fr,Escrime,ESCRIME
+stops,stop_name,nl,Schermkunst,ESCRIME
+stops,stop_name,fr,Esplanade,ESPLANADE
+stops,stop_name,nl,Esplanade,ESPLANADE
+stops,stop_name,fr,Étangs,ETANGS
+stops,stop_name,nl,Vijvers,ETANGS
+stops,stop_name,fr,Étangs de Boitsfort,ETANGS BOITSFORT
+stops,stop_name,nl,Vijvers van Bosvoorde,ETANGS BOITSFORT
+stops,stop_name,fr,Étangs d'Ixelles,ETANGS D'IXELLES
+stops,stop_name,nl,Vijvers van Elsene,ETANGS D'IXELLES
+stops,stop_name,fr,Étangs Noirs,ETANGS NOIRS
+stops,stop_name,nl,Zwarte Vijvers,ETANGS NOIRS
+stops,stop_name,fr,Etterbeek Gare,ETTERBEEK GARE
+stops,stop_name,nl,Etterbeek Station,ETTERBEEK GARE
+stops,stop_name,fr,Eugène Toussaint,EUGENE TOUSSAINT
+stops,stop_name,nl,Eugène Toussaint,EUGENE TOUSSAINT
+stops,stop_name,fr,Evere Shopping,EVERE SHOPPING
+stops,stop_name,nl,Evere Shopping,EVERE SHOPPING
+stops,stop_name,fr,Exposition,EXPOSITION
+stops,stop_name,nl,Tentoonstelling,EXPOSITION
+stops,stop_name,fr,Faider,FAIDER
+stops,stop_name,nl,Faider,FAIDER
+stops,stop_name,fr,Fauconnerie,FAUCONNERIE
+stops,stop_name,nl,Valkerij,FAUCONNERIE
+stops,stop_name,fr,Ferme Nos Pilifs,FERME NOS PILIFS
+stops,stop_name,nl,Ferme Nos Pilifs,FERME NOS PILIFS
+stops,stop_name,fr,Fernand Cocq,FERNAND COCQ
+stops,stop_name,nl,Fernand Cocq,FERNAND COCQ
+stops,stop_name,fr,Fernand Léger,FERNAND LEGER
+stops,stop_name,nl,Fernand Léger,FERNAND LEGER
+stops,stop_name,fr,Fernande Volral,FERNANDE VOLRAL
+stops,stop_name,nl,Fernande Volral,FERNANDE VOLRAL
+stops,stop_name,fr,Fétis,FETIS
+stops,stop_name,nl,Fétis,FETIS
+stops,stop_name,fr,Février,FEVRIER
+stops,stop_name,nl,Februari,FEVRIER
+stops,stop_name,fr,Firmin Lecharlier,FIRMIN LECHARLIER
+stops,stop_name,nl,Firmin Lecharlier,FIRMIN LECHARLIER
+stops,stop_name,fr,Flagey,FLAGEY
+stops,stop_name,nl,Flagey,FLAGEY
+stops,stop_name,fr,Floride,FLORIDE
+stops,stop_name,nl,Florida,FLORIDE
+stops,stop_name,fr,Fonson,FONSON
+stops,stop_name,nl,Fonson,FONSON
+stops,stop_name,fr,Forest Centre,FOREST CENTRE
+stops,stop_name,nl,Vorst Centrum,FOREST CENTRE
+stops,stop_name,fr,Forest National,FOREST NATIONAL
+stops,stop_name,nl,Vorst Nationaal,FOREST NATIONAL
+stops,stop_name,fr,Foresterie,FORESTERIE
+stops,stop_name,nl,Vorsterie,FORESTERIE
+stops,stop_name,fr,Forestoise,FORESTOISE
+stops,stop_name,nl,Forestoise,FORESTOISE
+stops,stop_name,fr,Fort-Jaco,FORT-JACO
+stops,stop_name,nl,Fort-Jaco,FORT-JACO
+stops,stop_name,fr,Forum,FORUM
+stops,stop_name,nl,Forum,FORUM
+stops,stop_name,fr,Foyer Jettois,FOYER JETTOIS
+stops,stop_name,nl,Jetse Haard,FOYER JETTOIS
+stops,stop_name,fr,Foyer Schaerbeekois,FOYER SCHAERBEEK.
+stops,stop_name,nl,Schaarbeekse Haard,FOYER SCHAERBEEK.
+stops,stop_name,fr,Fraiteur,FRAITEUR
+stops,stop_name,nl,Fraiteur,FRAITEUR
+stops,stop_name,fr,Frans Courtens,FRANS COURTENS
+stops,stop_name,nl,Frans Courtens,FRANS COURTENS
+stops,stop_name,fr,Frans Hals,FRANS HALS
+stops,stop_name,nl,Frans Hals,FRANS HALS
+stops,stop_name,fr,Froissart,FROISSART
+stops,stop_name,nl,Froissart,FROISSART
+stops,stop_name,fr,Fruits,FRUITS
+stops,stop_name,nl,Fruit,FRUITS
+stops,stop_name,fr,Fusée,FUSEE
+stops,stop_name,nl,Raket,FUSEE
+stops,stop_name,fr,Fuss,FUSS
+stops,stop_name,nl,Fuss,FUSS
+stops,stop_name,fr,Futaie,FUTAIE
+stops,stop_name,nl,Futaie,FUTAIE
+stops,stop_name,fr,Gallait,GALLAIT
+stops,stop_name,nl,Gallait,GALLAIT
+stops,stop_name,fr,Ganshoren-Sport,GANSHOREN-SPORT
+stops,stop_name,nl,Ganshoren-Sport,GANSHOREN-SPORT
+stops,stop_name,fr,Gardon,GARDON
+stops,stop_name,nl,Voorn,GARDON
+stops,stop_name,fr,Gare Centrale,GARE CENTRALE
+stops,stop_name,nl,Centraal Station,GARE CENTRALE
+stops,stop_name,fr,Gare d'Evere,GARE D'EVERE
+stops,stop_name,nl,Station Evere,GARE D'EVERE
+stops,stop_name,fr,Gare de Berchem,GARE DE BERCHEM
+stops,stop_name,nl,Station Berchem,GARE DE BERCHEM
+stops,stop_name,fr,Gare de Bockstael,GARE DE BOCKSTAEL
+stops,stop_name,nl,Station Bockstael,GARE DE BOCKSTAEL
+stops,stop_name,fr,Gare de Haren-Sud,GARE DE HAREN-SUD
+stops,stop_name,nl,Station Haren-Zuid,GARE DE HAREN-SUD
+stops,stop_name,fr,Gare de Jette,GARE DE JETTE
+stops,stop_name,nl,Station Jette,GARE DE JETTE
+stops,stop_name,fr,Gare de l'Ouest,GARE DE L'OUEST
+stops,stop_name,nl,Weststation,GARE DE L'OUEST
+stops,stop_name,fr,Gare de Linkebeek,GARE DE LINKEBEEK
+stops,stop_name,nl,Station Linkebeek,GARE DE LINKEBEEK
+stops,stop_name,fr,Gare de Saint-Job,GARE DE SAINT-JOB
+stops,stop_name,nl,Station Sint-Job,GARE DE SAINT-JOB
+stops,stop_name,fr,Gare du Midi,GARE DU MIDI
+stops,stop_name,nl,Zuidstation,GARE DU MIDI
+stops,stop_name,fr,Gare du Nord,GARE DU NORD
+stops,stop_name,nl,Noordstation,GARE DU NORD
+stops,stop_name,fr,Gatti de Gamond,GATTI DE GAMOND
+stops,stop_name,nl,Gatti de Gamond,GATTI DE GAMOND
+stops,stop_name,fr,Gaulois,GAULOIS
+stops,stop_name,nl,Galliërs,GAULOIS
+stops,stop_name,fr,Gazelle,GAZELLE
+stops,stop_name,nl,Gazelle,GAZELLE
+stops,stop_name,fr,Geefs,GEEFS
+stops,stop_name,nl,Geefs,GEEFS
+stops,stop_name,fr,Gendarmes,GENDARMES
+stops,stop_name,nl,Gendarmen,GENDARMES
+stops,stop_name,fr,Genève,GENEVE
+stops,stop_name,nl,Genève,GENEVE
+stops,stop_name,fr,Genot,GENOT
+stops,stop_name,nl,Genot,GENOT
+stops,stop_name,fr,Géo Bernier,GEO BERNIER
+stops,stop_name,nl,Géo Bernier,GEO BERNIER
+stops,stop_name,fr,Georges Brugmann,GEORGES BRUGMANN
+stops,stop_name,nl,Georges Brugmann,GEORGES BRUGMANN
+stops,stop_name,fr,Georges Henri,GEORGES HENRI
+stops,stop_name,nl,Georges Henri,GEORGES HENRI
+stops,stop_name,fr,Gergel,GERGEL
+stops,stop_name,nl,Gergel,GERGEL
+stops,stop_name,fr,Germoir,GERMOIR
+stops,stop_name,nl,Mouterij,GERMOIR
+stops,stop_name,fr,Gersis,GERSIS
+stops,stop_name,nl,Gersis,GERSIS
+stops,stop_name,fr,Gillon,GILLON
+stops,stop_name,nl,Gillon,GILLON
+stops,stop_name,fr,Gilson,GILSON
+stops,stop_name,nl,Gilson,GILSON
+stops,stop_name,fr,Ginette Javaux,GINETTE JAVAUX
+stops,stop_name,nl,Ginette Javaux,GINETTE JAVAUX
+stops,stop_name,fr,GJ Martin,GJ MARTIN
+stops,stop_name,nl,GJ Martin,GJ MARTIN
+stops,stop_name,fr,Glibert,GLIBERT
+stops,stop_name,nl,Glibert,GLIBERT
+stops,stop_name,fr,Globe,GLOBE
+stops,stop_name,nl,Globe,GLOBE
+stops,stop_name,fr,Goffin,GOFFIN
+stops,stop_name,nl,Goffin,GOFFIN
+stops,stop_name,fr,Gossart,GOSSART
+stops,stop_name,nl,Gossart,GOSSART
+stops,stop_name,fr,Grand Sablon,GRAND SABLON
+stops,stop_name,nl,Grote Zavel,GRAND SABLON
+stops,stop_name,fr,Grand'Route,GRAND'ROUTE
+stops,stop_name,nl,Grote Baan,GRAND'ROUTE
+stops,stop_name,fr,Grand-Place,GRAND-PLACE
+stops,stop_name,nl,Grote Markt,GRAND-PLACE
+stops,stop_name,fr,Gribaumont,GRIBAUMONT
+stops,stop_name,nl,Gribaumont,GRIBAUMONT
+stops,stop_name,fr,Griottes,GRIOTTES
+stops,stop_name,nl,Noordkrieken,GRIOTTES
+stops,stop_name,fr,Groelstveld,GROELSTVELD
+stops,stop_name,nl,Groelstveld,GROELSTVELD
+stops,stop_name,fr,Groeninghe,GROENINGHE
+stops,stop_name,nl,Groeninghe,GROENINGHE
+stops,stop_name,fr,Groot-Bijgaarden,GROOT-BIJGAARDEN
+stops,stop_name,nl,Groot-Bijgaarden,GROOT-BIJGAARDEN
+stops,stop_name,fr,Gueux,GUEUX
+stops,stop_name,nl,Geuzen,GUEUX
+stops,stop_name,fr,Gui,GUI
+stops,stop_name,nl,Marentak,GUI
+stops,stop_name,fr,Guillaume De Greef,GUILL. DE GREEF
+stops,stop_name,nl,Guillaume De Greef,GUILL. DE GREEF
+stops,stop_name,fr,Guillaume,GUILLAUME
+stops,stop_name,nl,Guillaume,GUILLAUME
+stops,stop_name,fr,Guillaume Tell,GUILLAUME TELL
+stops,stop_name,nl,Willem Tell,GUILLAUME TELL
+stops,stop_name,fr,Gulledelle,GULLEDELLE
+stops,stop_name,nl,Gulledelle,GULLEDELLE
+stops,stop_name,fr,Gutenberg,GUTENBERG
+stops,stop_name,nl,Gutenberg,GUTENBERG
+stops,stop_name,fr,Hankar,HANKAR
+stops,stop_name,nl,Hankar,HANKAR
+stops,stop_name,fr,Hannetons,HANNETONS
+stops,stop_name,nl,Meikevers,HANNETONS
+stops,stop_name,fr,Haren,HAREN
+stops,stop_name,nl,Haren,HAREN
+stops,stop_name,fr,Heembeek,HEEMBEEK
+stops,stop_name,nl,Heembeek,HEEMBEEK
+stops,stop_name,fr,Heiligenborre,HEILIGENBORRE
+stops,stop_name,nl,Heiligenborre,HEILIGENBORRE
+stops,stop_name,fr,Heldenplein,HELDENPLEIN
+stops,stop_name,nl,Heldenplein,HELDENPLEIN
+stops,stop_name,fr,Héliotropes,HELIOTROPES
+stops,stop_name,nl,Heliotropen,HELIOTROPES
+stops,stop_name,fr,Hellevelt,HELLEVELT
+stops,stop_name,nl,Hellevelt,HELLEVELT
+stops,stop_name,fr,Helmet,HELMET
+stops,stop_name,nl,Helmet,HELMET
+stops,stop_name,fr,Henriette Lauwers,HENRIETTE LAUWERS
+stops,stop_name,nl,Henriette Lauwers,HENRIETTE LAUWERS
+stops,stop_name,fr,Herman,HERMAN
+stops,stop_name,nl,Herman,HERMAN
+stops,stop_name,fr,Hermes,HERMES
+stops,stop_name,nl,Hermes,HERMES
+stops,stop_name,fr,Hernalsteen,HERNALSTEEN
+stops,stop_name,nl,Hernalsteen,HERNALSTEEN
+stops,stop_name,fr,Héros,HEROS
+stops,stop_name,nl,Helden,HEROS
+stops,stop_name,fr,Herrmann-Debroux,HERRMANN-DEBROUX
+stops,stop_name,nl,Herrmann-Debroux,HERRMANN-DEBROUX
+stops,stop_name,fr,Het Veroost,HET VEROOST
+stops,stop_name,nl,Het Veroost,HET VEROOST
+stops,stop_name,fr,Heydenberg,HEYDENBERG
+stops,stop_name,nl,Heydenberg,HEYDENBERG
+stops,stop_name,fr,Heysel,HEYSEL
+stops,stop_name,nl,Heizel,HEYSEL
+stops,stop_name,fr,Hippodrome de Boitsfort,HIPPOD. BOITSFORT
+stops,stop_name,nl,Renbaan van Bosvoorde,HIPPOD. BOITSFORT
+stops,stop_name,fr,Hippodrome,HIPPODROME
+stops,stop_name,nl,Hippodroom,HIPPODROME
+stops,stop_name,fr,Hoedemaekers,HOEDEMAEKERS
+stops,stop_name,nl,Hoedemaekers,HOEDEMAEKERS
+stops,stop_name,fr,Hof ten Berg,HOF TEN BERG
+stops,stop_name,nl,Hof ten Berg,HOF TEN BERG
+stops,stop_name,fr,Hof ter Musschen,HOF TER MUSSCHEN
+stops,stop_name,nl,Hof ter Musschen,HOF TER MUSSCHEN
+stops,stop_name,fr,Homborch,HOMBORCH
+stops,stop_name,nl,Homborch,HOMBORCH
+stops,stop_name,fr,Home Heydeken,HOME HEYDEKEN
+stops,stop_name,nl,Rusthuis Heydeken,HOME HEYDEKEN
+stops,stop_name,fr,Hoogbosch,HOOGBOSCH
+stops,stop_name,nl,Hoogbosch,HOOGBOSCH
+stops,stop_name,fr,Hôpital des Enfants,HOP. DES ENFANTS
+stops,stop_name,nl,Kinderziekenhuis,HOP. DES ENFANTS
+stops,stop_name,fr,Hôpital Etterbeek-Ixelles,HOP. ETT.-IXELLES
+stops,stop_name,nl,Ziekenhuis Etterbeek-Elsene,HOP. ETT.-IXELLES
+stops,stop_name,fr,Hôpital Militaire,HOP. MILITAIRE
+stops,stop_name,nl,Militair Hospitaal,HOP. MILITAIRE
+stops,stop_name,fr,Hôpital Paul Brien,HOP. PAUL BRIEN
+stops,stop_name,nl,Paul Brien-ziekenhuis,HOP. PAUL BRIEN
+stops,stop_name,fr,Hôpital Saint-Pierre,HOP. SAINT-PIERRE
+stops,stop_name,nl,Sint-Pieters-ziekenhuis,HOP. SAINT-PIERRE
+stops,stop_name,fr,Hôpital Sainte-Élisabeth,HOP.STE-ELISABETH
+stops,stop_name,nl,Sint-Elizabeth-ziekenhuis,HOP.STE-ELISABETH
+stops,stop_name,fr,Hôpital Joseph Bracops,HOPITAL BRACOPS
+stops,stop_name,nl,Joseph Bracops-ziekenhuis,HOPITAL BRACOPS
+stops,stop_name,fr,Hôpital Brugmann,HOPITAL BRUGMANN
+stops,stop_name,nl,Brugmann-ziekenhuis,HOPITAL BRUGMANN
+stops,stop_name,fr,Hôpital Militaire,HOPITAL MILITAIRE
+stops,stop_name,nl,Militair Hospitaal,HOPITAL MILITAIRE
+stops,stop_name,fr,Horta,HORTA
+stops,stop_name,nl,Horta,HORTA
+stops,stop_name,fr,Hospices,HOSPICES
+stops,stop_name,nl,Godshuizen,HOSPICES
+stops,stop_name,fr,Hôtel des Monnaies,HOTEL DES MONNAIES
+stops,stop_name,nl,Munthof,HOTEL DES MONNAIES
+stops,stop_name,fr,Houba-Brugmann,HOUBA-BRUGMANN
+stops,stop_name,nl,Houba-Brugmann,HOUBA-BRUGMANN
+stops,stop_name,fr,Houwaert,HOUWAERT
+stops,stop_name,nl,Houwaert,HOUWAERT
+stops,stop_name,fr,Houzeau,HOUZEAU
+stops,stop_name,nl,Houzeau,HOUZEAU
+stops,stop_name,fr,Huart-Hamoir,HUART-HAMOIR
+stops,stop_name,nl,Huart-Hamoir,HUART-HAMOIR
+stops,stop_name,fr,Huit Heures,HUIT HEURES
+stops,stop_name,nl,Acht Uren,HUIT HEURES
+stops,stop_name,fr,Humanité,HUMANITE
+stops,stop_name,nl,Humaniteit,HUMANITE
+stops,stop_name,fr,Hunderenveld,HUNDERENVELD
+stops,stop_name,nl,Hunderenveld,HUNDERENVELD
+stops,stop_name,fr,Hymans,HYMANS
+stops,stop_name,nl,Hymans,HYMANS
+stops,stop_name,fr,ICHEC,ICHEC
+stops,stop_name,nl,ICHEC,ICHEC
+stops,stop_name,fr,Idalie,IDALIE
+stops,stop_name,nl,Idalie,IDALIE
+stops,stop_name,fr,Île Sainte-Hélène,ILE SAINTE-HELENE
+stops,stop_name,nl,Eiland Sint-Helena,ILE SAINTE-HELENE
+stops,stop_name,fr,Imprimerie,IMPRIMERIE
+stops,stop_name,nl,Drukkerij,IMPRIMERIE
+stops,stop_name,fr,International School,INTERNAT. SCHOOL
+stops,stop_name,nl,International School,INTERNAT. SCHOOL
+stops,stop_name,fr,International,INTERNATIONAL
+stops,stop_name,nl,Internationaal,INTERNATIONAL
+stops,stop_name,fr,Jacobs Fontaine,JACOBS FONTAINE
+stops,stop_name,nl,Jacobs Fontaine,JACOBS FONTAINE
+stops,stop_name,fr,Jacques Brel,JACQUES BREL
+stops,stop_name,nl,Jacques Brel,JACQUES BREL
+stops,stop_name,fr,Jakob Smits,JAKOB SMITS
+stops,stop_name,nl,Jakob Smits,JAKOB SMITS
+stops,stop_name,fr,de Jamblinne de Meux,JAMBLINNE DE MEUX
+stops,stop_name,nl,de Jamblinne de Meux,JAMBLINNE DE MEUX
+stops,stop_name,fr,Janson,JANSON
+stops,stop_name,nl,Janson,JANSON
+stops,stop_name,fr,Jardin Massart,JARDIN MASSART
+stops,stop_name,nl,Massarttuin,JARDIN MASSART
+stops,stop_name,fr,Jeanne,JEANNE
+stops,stop_name,nl,Johanna,JEANNE
+stops,stop_name,fr,Jeanne Herreman,JEANNE HERREMAN
+stops,stop_name,nl,Jeanne Herreman,JEANNE HERREMAN
+stops,stop_name,fr,Jespers,JESPERS
+stops,stop_name,nl,Jespers,JESPERS
+stops,stop_name,fr,Jeu de Balle,JEU DE BALLE
+stops,stop_name,nl,Vossenplein,JEU DE BALLE
+stops,stop_name,fr,Josaphat,JOSAPHAT
+stops,stop_name,nl,Josaphat,JOSAPHAT
+stops,stop_name,fr,Joseph Baeck,JOSEPH BAECK
+stops,stop_name,nl,Joseph Baeck,JOSEPH BAECK
+stops,stop_name,fr,Joséphine-Charlotte,JOSEPH.-CHARLOTTE
+stops,stop_name,nl,Joséphine-Charlotte,JOSEPH.-CHARLOTTE
+stops,stop_name,fr,Jourdan,JOURDAN
+stops,stop_name,nl,Jourdan,JOURDAN
+stops,stop_name,fr,Jozef Baus,JOZEF BAUS
+stops,stop_name,nl,Jozef Baus,JOZEF BAUS
+stops,stop_name,fr,Jubilé,JUBILE
+stops,stop_name,nl,Jubelfeest,JUBILE
+stops,stop_name,fr,Jules Bordet,JULES BORDET
+stops,stop_name,nl,Jules Bordet,JULES BORDET
+stops,stop_name,fr,Jules César,JULES CESAR
+stops,stop_name,nl,Julius Caesar,JULES CESAR
+stops,stop_name,fr,Jupiter,JUPITER
+stops,stop_name,nl,Jupiter,JUPITER
+stops,stop_name,fr,Kapel Ruisbroek,KAPEL RUISBROEK
+stops,stop_name,nl,Kapel Ruisbroek,KAPEL RUISBROEK
+stops,stop_name,fr,Karel Bogaerd,KAREL BOGAERD
+stops,stop_name,nl,Karel Bogaerd,KAREL BOGAERD
+stops,stop_name,fr,Karreveld,KARREVELD
+stops,stop_name,nl,Karreveld,KARREVELD
+stops,stop_name,fr,Kassei,KASSEI
+stops,stop_name,nl,Kassei,KASSEI
+stops,stop_name,fr,Kasteel Beaulieu,KASTEEL BEAULIEU
+stops,stop_name,nl,Kasteel Beaulieu,KASTEEL BEAULIEU
+stops,stop_name,fr,Kattenberg,KATTENBERG
+stops,stop_name,nl,Kattenberg,KATTENBERG
+stops,stop_name,fr,Kelle,KELLE
+stops,stop_name,nl,Kelle,KELLE
+stops,stop_name,fr,Kerk Machelen,KERK MACHELEN
+stops,stop_name,nl,Kerk Machelen,KERK MACHELEN
+stops,stop_name,fr,Kerk Ruisbroek,KERK RUISBROEK
+stops,stop_name,nl,Kerk Ruisbroek,KERK RUISBROEK
+stops,stop_name,fr,Keyenbempt,KEYENBEMPT
+stops,stop_name,nl,Keyenbempt,KEYENBEMPT
+stops,stop_name,fr,Keym,KEYM
+stops,stop_name,nl,Keym,KEYM
+stops,stop_name,fr,Klakkedelle,KLAKKEDELLE
+stops,stop_name,nl,Klakkedelle,KLAKKEDELLE
+stops,stop_name,fr,Koningin Fabiola,KONINGIN FABIOLA
+stops,stop_name,nl,Koningin Fabiola,KONINGIN FABIOLA
+stops,stop_name,fr,Konkel,KONKEL
+stops,stop_name,nl,Konkel,KONKEL
+stops,stop_name,fr,Kraainem,KRAAINEM
+stops,stop_name,nl,Kraainem,KRAAINEM
+stops,stop_name,fr,Kraainem-Shopping,KRAAINEM-SHOPPING
+stops,stop_name,nl,Kraainem-Shopping,KRAAINEM-SHOPPING
+stops,stop_name,fr,Kruipweg,KRUIPWEG
+stops,stop_name,nl,Kruipweg,KRUIPWEG
+stops,stop_name,fr,Kurth,KURTH
+stops,stop_name,nl,Kurth,KURTH
+stops,stop_name,fr,La Chasse,LA CHASSE
+stops,stop_name,nl,De Jacht,LA CHASSE
+stops,stop_name,fr,La Roue,LA ROUE
+stops,stop_name,nl,Het Rad,LA ROUE
+stops,stop_name,fr,Labeur,LABEUR
+stops,stop_name,nl,Arbeid,LABEUR
+stops,stop_name,fr,Laekebeek,LAEKEBEEK
+stops,stop_name,nl,Laekebeek,LAEKEBEEK
+stops,stop_name,fr,Laîné,LAINE
+stops,stop_name,nl,Laîné,LAINE
+stops,stop_name,fr,Lancaster,LANCASTER
+stops,stop_name,nl,Lancaster,LANCASTER
+stops,stop_name,fr,Langeveld,LANGEVELD
+stops,stop_name,nl,Langeveld,LANGEVELD
+stops,stop_name,fr,Latinis,LATINIS
+stops,stop_name,nl,Latinis,LATINIS
+stops,stop_name,fr,Le Roux,LE ROUX
+stops,stop_name,nl,Le Roux,LE ROUX
+stops,stop_name,fr,Lefrancq,LEFRANCQ
+stops,stop_name,nl,Lefrancq,LEFRANCQ
+stops,stop_name,fr,Legrand,LEGRAND
+stops,stop_name,nl,Legrand,LEGRAND
+stops,stop_name,fr,Lekaerts,LEKAERTS
+stops,stop_name,nl,Lekaerts,LEKAERTS
+stops,stop_name,fr,Leman,LEMAN
+stops,stop_name,nl,Leman,LEMAN
+stops,stop_name,fr,Lemonnier,LEMONNIER
+stops,stop_name,nl,Lemonnier,LEMONNIER
+stops,stop_name,fr,Lenneke Mare,LENNEKE MARE
+stops,stop_name,nl,Lenneke Mare,LENNEKE MARE
+stops,stop_name,fr,Lenoir,LENOIR
+stops,stop_name,nl,Lenoir,LENOIR
+stops,stop_name,fr,Léopold I,LEOPOLD I
+stops,stop_name,nl,Leopold I,LEOPOLD I
+stops,stop_name,fr,Léopold II,LEOPOLD II
+stops,stop_name,nl,Leopold II,LEOPOLD II
+stops,stop_name,fr,Léopold III,LEOPOLD III
+stops,stop_name,nl,Leopold III,LEOPOLD III
+stops,stop_name,fr,Lepoutre,LEPOUTRE
+stops,stop_name,nl,Lepoutre,LEPOUTRE
+stops,stop_name,fr,Leroy,LEROY
+stops,stop_name,nl,Leroy,LEROY
+stops,stop_name,fr,Les Trois Tilleuls,LES 3 TILLEULS
+stops,stop_name,nl,Drie Linden,LES 3 TILLEULS
+stops,stop_name,fr,Levie,LEVIE
+stops,stop_name,nl,Levie,LEVIE
+stops,stop_name,fr,Levure,LEVURE
+stops,stop_name,nl,Gist,LEVURE
+stops,stop_name,fr,Liberté,LIBERTE
+stops,stop_name,nl,Vrijheid,LIBERTE
+stops,stop_name,fr,Liedts,LIEDTS
+stops,stop_name,nl,Liedts,LIEDTS
+stops,stop_name,fr,Liverpool,LIVERPOOL
+stops,stop_name,nl,Liverpool,LIVERPOOL
+stops,stop_name,fr,Loisirs,LOISIRS
+stops,stop_name,nl,Vrijetijd,LOISIRS
+stops,stop_name,fr,Londres,LONDRES
+stops,stop_name,nl,Londen,LONDRES
+stops,stop_name,fr,Long Bonnier,LONG BONNIER
+stops,stop_name,nl,Lange Bunder,LONG BONNIER
+stops,stop_name,fr,Long-Chêne,LONG-CHENE
+stops,stop_name,nl,Lange Eik,LONG-CHENE
+stops,stop_name,fr,Longchamp,LONGCHAMP
+stops,stop_name,nl,Longchamp,LONGCHAMP
+stops,stop_name,fr,Lorge,LORGE
+stops,stop_name,nl,Lorge,LORGE
+stops,stop_name,fr,Lot Station,LOT STATION
+stops,stop_name,nl,Lot Station,LOT STATION
+stops,stop_name,fr,Louis Bertrand,LOUIS BERTRAND
+stops,stop_name,nl,Louis Bertrand,LOUIS BERTRAND
+stops,stop_name,fr,Louis Hap,LOUIS HAP
+stops,stop_name,nl,Louis Hap,LOUIS HAP
+stops,stop_name,fr,Louis Marcelis,LOUIS MARCELIS
+stops,stop_name,nl,Louis Marcelis,LOUIS MARCELIS
+stops,stop_name,fr,Louise,LOUISE
+stops,stop_name,nl,Louiza,LOUISE
+stops,stop_name,fr,Loutrier,LOUTRIER
+stops,stop_name,nl,Ottervanger,LOUTRIER
+stops,stop_name,fr,Lowet,LOWET
+stops,stop_name,nl,Lowet,LOWET
+stops,stop_name,fr,Luther,LUTHER
+stops,stop_name,nl,Luther,LUTHER
+stops,stop_name,fr,Luxembourg,LUXEMBOURG
+stops,stop_name,nl,Luxemburg,LUXEMBOURG
+stops,stop_name,fr,Marguerite Yourcenar,M. YOURCENAR
+stops,stop_name,nl,Marguerite Yourcenar,M. YOURCENAR
+stops,stop_name,fr,Ma Campagne,MA CAMPAGNE
+stops,stop_name,nl,Ma Campagne,MA CAMPAGNE
+stops,stop_name,fr,Mabru,MABRU
+stops,stop_name,nl,Mabru,MABRU
+stops,stop_name,fr,Machelen,MACHELEN
+stops,stop_name,nl,Machelen,MACHELEN
+stops,stop_name,fr,Machelenstraat,MACHELENSTRAAT
+stops,stop_name,nl,Machelenstraat,MACHELENSTRAAT
+stops,stop_name,fr,Machtens,MACHTENS
+stops,stop_name,nl,Machtens,MACHTENS
+stops,stop_name,fr,Madeleine,MADELEINE
+stops,stop_name,nl,Magdalena,MADELEINE
+stops,stop_name,fr,Madou,MADOU
+stops,stop_name,nl,Madou,MADOU
+stops,stop_name,fr,Madoux,MADOUX
+stops,stop_name,nl,Madoux,MADOUX
+stops,stop_name,fr,Maelbeek,MAELBEEK
+stops,stop_name,nl,Maalbeek,MAELBEEK
+stops,stop_name,fr,Maes,MAES
+stops,stop_name,nl,Maes,MAES
+stops,stop_name,fr,Mai,MAI
+stops,stop_name,nl,Mei,MAI
+stops,stop_name,fr,Maison d'Erasme,MAISON D'ERASME
+stops,stop_name,nl,Erasmushuis,MAISON D'ERASME
+stops,stop_name,fr,Malibran,MALIBRAN
+stops,stop_name,nl,Malibran,MALIBRAN
+stops,stop_name,fr,Manneken-Pis,MANNEKEN-PIS
+stops,stop_name,nl,Manneken-Pis,MANNEKEN-PIS
+stops,stop_name,fr,Manoir d'Anjou,MANOIR D'ANJOU
+stops,stop_name,nl,Manoir d'Anjou,MANOIR D'ANJOU
+stops,stop_name,fr,Marcel Thiry,MARCEL THIRY
+stops,stop_name,nl,Marcel Thiry,MARCEL THIRY
+stops,stop_name,fr,Mareyde,MAREYDE
+stops,stop_name,nl,Mareyde,MAREYDE
+stops,stop_name,fr,Marguerite,MARGUERITE
+stops,stop_name,nl,Margareta,MARGUERITE
+stops,stop_name,fr,Marguerite Duras,MARGUERITE DURAS
+stops,stop_name,nl,Marguerite Duras,MARGUERITE DURAS
+stops,stop_name,fr,Maricolles,MARICOLLES
+stops,stop_name,nl,Maricollen,MARICOLLES
+stops,stop_name,fr,Marie Curie,MARIE CURIE
+stops,stop_name,nl,Marie Curie,MARIE CURIE
+stops,stop_name,fr,Marie Depage,MARIE DEPAGE
+stops,stop_name,nl,Marie Depage,MARIE DEPAGE
+stops,stop_name,fr,Marie-Christine,MARIE-CHRISTINE
+stops,stop_name,nl,Maria-Christina,MARIE-CHRISTINE
+stops,stop_name,fr,Marie-José,MARIE-JOSE
+stops,stop_name,nl,Marie-José,MARIE-JOSE
+stops,stop_name,fr,Marie-Louise,MARIE-LOUISE
+stops,stop_name,nl,Maria-Louiza,MARIE-LOUISE
+stops,stop_name,fr,Marius Renard,MARIUS RENARD
+stops,stop_name,nl,Marius Renard,MARIUS RENARD
+stops,stop_name,fr,Marlow,MARLOW
+stops,stop_name,nl,Marlow,MARLOW
+stops,stop_name,fr,Marly,MARLY
+stops,stop_name,nl,Marly,MARLY
+stops,stop_name,fr,Marmotte,MARMOTTE
+stops,stop_name,nl,Marmot,MARMOTTE
+stops,stop_name,fr,Martin Luther King,MARTIN LUTH. KING
+stops,stop_name,nl,Martin Luther King,MARTIN LUTH. KING
+stops,stop_name,fr,Masui,MASUI
+stops,stop_name,nl,Masui,MASUI
+stops,stop_name,fr,Matisse,MATISSE
+stops,stop_name,nl,Matisse,MATISSE
+stops,stop_name,fr,Max Waller,MAX WALLER
+stops,stop_name,nl,Max Waller,MAX WALLER
+stops,stop_name,fr,Mehdi Bouda,MEHDI BOUDA
+stops,stop_name,nl,Mehdi Bouda,MEHDI BOUDA
+stops,stop_name,fr,Meir,MEIR
+stops,stop_name,nl,Meir,MEIR
+stops,stop_name,fr,Meiser,MEISER
+stops,stop_name,nl,Meiser,MEISER
+stops,stop_name,fr,Melard,MELARD
+stops,stop_name,nl,Melard,MELARD
+stops,stop_name,fr,Mennekens,MENNEKENS
+stops,stop_name,nl,Mennekens,MENNEKENS
+stops,stop_name,fr,Mercator,MERCATOR
+stops,stop_name,nl,Mercator,MERCATOR
+stops,stop_name,fr,Merchtem,MERCHTEM
+stops,stop_name,nl,Merchtem,MERCHTEM
+stops,stop_name,fr,Mercure,MERCURE
+stops,stop_name,nl,Mercurius,MERCURE
+stops,stop_name,fr,Méridien,MERIDIEN
+stops,stop_name,nl,Middaglijn,MERIDIEN
+stops,stop_name,fr,Merode,MERODE
+stops,stop_name,nl,Merode,MERODE
+stops,stop_name,fr,Mertens,MERTENS
+stops,stop_name,nl,Mertens,MERTENS
+stops,stop_name,fr,Messidor,MESSIDOR
+stops,stop_name,nl,Messidor,MESSIDOR
+stops,stop_name,fr,Meudon,MEUDON
+stops,stop_name,nl,Meudon,MEUDON
+stops,stop_name,fr,Meylemeersch,MEYLEMEERSCH
+stops,stop_name,nl,Mijlenmeers,MEYLEMEERSCH
+stops,stop_name,fr,Michel-Ange,MICHEL-ANGE
+stops,stop_name,nl,Michelangelo,MICHEL-ANGE
+stops,stop_name,fr,Michiels,MICHIELS
+stops,stop_name,nl,Michiels,MICHIELS
+stops,stop_name,fr,Middelweg,MIDDELWEG
+stops,stop_name,nl,Middelweg,MIDDELWEG
+stops,stop_name,fr,Miraval,MIRAVAL
+stops,stop_name,nl,Miraval,MIRAVAL
+stops,stop_name,fr,Miroir,MIROIR
+stops,stop_name,nl,Spiegel,MIROIR
+stops,stop_name,fr,Moensberg Gare,MOENSBERG GARE
+stops,stop_name,nl,Moensberg Station,MOENSBERG GARE
+stops,stop_name,fr,Molière,MOLIERE
+stops,stop_name,nl,Molière,MOLIERE
+stops,stop_name,fr,Molière-Longchamp,MOLIERE-LONGCHAMP
+stops,stop_name,nl,Molière-Longchamp,MOLIERE-LONGCHAMP
+stops,stop_name,fr,Mommaerts,MOMMAERTS
+stops,stop_name,nl,Mommaerts,MOMMAERTS
+stops,stop_name,fr,Monnoyer,MONNOYER
+stops,stop_name,nl,Monnoyer,MONNOYER
+stops,stop_name,fr,Mont Kemmel,MONT KEMMEL
+stops,stop_name,nl,Kemmelberg,MONT KEMMEL
+stops,stop_name,fr,Montald,MONTALD
+stops,stop_name,nl,Montald,MONTALD
+stops,stop_name,fr,Montana,MONTANA
+stops,stop_name,nl,Montana,MONTANA
+stops,stop_name,fr,Montgomery,MONTGOMERY
+stops,stop_name,nl,Montgomery,MONTGOMERY
+stops,stop_name,fr,Montjoie,MONTJOIE
+stops,stop_name,nl,Montjoie,MONTJOIE
+stops,stop_name,fr,Moonens,MOONENS
+stops,stop_name,nl,Moonens,MOONENS
+stops,stop_name,fr,Moorslede,MOORSLEDE
+stops,stop_name,nl,Moorslede,MOORSLEDE
+stops,stop_name,fr,Moortebeek,MOORTEBEEK
+stops,stop_name,nl,Moortebeek,MOORTEBEEK
+stops,stop_name,fr,Moris,MORIS
+stops,stop_name,nl,Moris,MORIS
+stops,stop_name,fr,Mostinck,MOSTINCK
+stops,stop_name,nl,Mostinck,MOSTINCK
+stops,stop_name,fr,Mouettes,MOUETTES
+stops,stop_name,nl,Meeuwen,MOUETTES
+stops,stop_name,fr,Mounier,MOUNIER
+stops,stop_name,nl,Mounier,MOUNIER
+stops,stop_name,fr,Mozart,MOZART
+stops,stop_name,nl,Mozart,MOZART
+stops,stop_name,fr,Musée d'Ixelles,MUSEE D'IXELLES
+stops,stop_name,nl,Museum van Elsene,MUSEE D'IXELLES
+stops,stop_name,fr,Musée du Tram,MUSEE DU TRAM
+stops,stop_name,nl,Trammuseum,MUSEE DU TRAM
+stops,stop_name,fr,Museum,MUSEUM
+stops,stop_name,nl,Museum,MUSEUM
+stops,stop_name,fr,Mystère,MYSTERE
+stops,stop_name,nl,Mysterie,MYSTERE
+stops,stop_name,fr,Napoléon,NAPOLEON
+stops,stop_name,nl,Napoléon,NAPOLEON
+stops,stop_name,fr,Natation,NATATION
+stops,stop_name,nl,Zwemkunst,NATATION
+stops,stop_name,fr,Neerpede,NEERPEDE
+stops,stop_name,nl,Neerpede,NEERPEDE
+stops,stop_name,fr,Neerstalle,NEERSTALLE
+stops,stop_name,nl,Neerstalle,NEERSTALLE
+stops,stop_name,fr,Nekkersdal,NEKKERSDAL
+stops,stop_name,nl,Nekkersdal,NEKKERSDAL
+stops,stop_name,fr,Nelson Mandela,NELSON MANDELA
+stops,stop_name,nl,Nelson Mandela,NELSON MANDELA
+stops,stop_name,fr,Neptunium,NEPTUNIUM
+stops,stop_name,nl,Neptunium,NEPTUNIUM
+stops,stop_name,fr,Nereus,NEREUS
+stops,stop_name,nl,Nereus,NEREUS
+stops,stop_name,fr,Nerviens,NERVIENS
+stops,stop_name,nl,Nerviërs,NERVIENS
+stops,stop_name,fr,Neuberger,NEUBERGER
+stops,stop_name,nl,Neuberger,NEUBERGER
+stops,stop_name,fr,Nicolay,NICOLAY
+stops,stop_name,nl,Nicolay,NICOLAY
+stops,stop_name,fr,Notre-Dame,NOTRE-DAME
+stops,stop_name,nl,Onze-Lieve-Vrouw,NOTRE-DAME
+stops,stop_name,fr,Observatoire,OBSERVATOIRE
+stops,stop_name,nl,Sterrenwacht,OBSERVATOIRE
+stops,stop_name,fr,Obus,OBUS
+stops,stop_name,nl,Obus,OBUS
+stops,stop_name,fr,Océan Atlantique,OCEAN ATLANTIQUE
+stops,stop_name,nl,Atlantische Oceaan,OCEAN ATLANTIQUE
+stops,stop_name,fr,Odon Warland,ODON WARLAND
+stops,stop_name,nl,Odon Warland,ODON WARLAND
+stops,stop_name,fr,Onze Novembre,ONZE NOVEMBRE
+stops,stop_name,nl,Elf November,ONZE NOVEMBRE
+stops,stop_name,fr,Oppem,OPPEM
+stops,stop_name,nl,Oppem,OPPEM
+stops,stop_name,fr,Oppemstraat,OPPEMSTRAAT
+stops,stop_name,nl,Oppemstraat,OPPEMSTRAAT
+stops,stop_name,fr,Optimisme,OPTIMISME
+stops,stop_name,nl,Optimisme,OPTIMISME
+stops,stop_name,fr,Orban,ORBAN
+stops,stop_name,nl,Orban,ORBAN
+stops,stop_name,fr,Osseghem,OSSEGHEM
+stops,stop_name,nl,Ossegem,OSSEGHEM
+stops,stop_name,fr,Oud-Kapelleke,OUD-KAPELLEKE
+stops,stop_name,nl,Oud-Kapelleke,OUD-KAPELLEKE
+stops,stop_name,fr,Paddock,PADDOCK
+stops,stop_name,nl,Paddock,PADDOCK
+stops,stop_name,fr,Paduwa,PADUWA
+stops,stop_name,nl,Paduwa,PADUWA
+stops,stop_name,fr,Pagodes,PAGODES
+stops,stop_name,nl,Pagoden,PAGODES
+stops,stop_name,fr,Paix,PAIX
+stops,stop_name,nl,Vrede,PAIX
+stops,stop_name,fr,Palais,PALAIS
+stops,stop_name,nl,Paleizen,PALAIS
+stops,stop_name,fr,Palais 12,PALAIS 12
+stops,stop_name,nl,Paleis 12,PALAIS 12
+stops,stop_name,fr,Palfijn,PALFIJN
+stops,stop_name,nl,Palfijn,PALFIJN
+stops,stop_name,fr,Pampoel,PAMPOEL
+stops,stop_name,nl,Pampoel,PAMPOEL
+stops,stop_name,fr,Pannenhuis,PANNENHUIS
+stops,stop_name,nl,Pannenhuis,PANNENHUIS
+stops,stop_name,fr,Parc,PARC
+stops,stop_name,nl,Park,PARC
+stops,stop_name,fr,Parc des Sources,PARC DES SOURCES
+stops,stop_name,nl,Bronnenpark,PARC DES SOURCES
+stops,stop_name,fr,Parc Élisabeth,PARC ELISABETH
+stops,stop_name,nl,Elisabethpark,PARC ELISABETH
+stops,stop_name,fr,Parc Léopold,PARC LEOPOLD
+stops,stop_name,nl,Leopoldspark,PARC LEOPOLD
+stops,stop_name,fr,Parc Malou,PARC MALOU
+stops,stop_name,nl,Maloupark,PARC MALOU
+stops,stop_name,fr,Parc Monnet,PARC MONNET
+stops,stop_name,nl,Monnet-park,PARC MONNET
+stops,stop_name,fr,Parc Seny,PARC SENY
+stops,stop_name,nl,Seny-park,PARC SENY
+stops,stop_name,fr,Parc Vivès,PARC VIVES
+stops,stop_name,nl,Vivès-park,PARC VIVES
+stops,stop_name,fr,Parkstraat,PARKSTRAAT
+stops,stop_name,nl,Parkstraat,PARKSTRAAT
+stops,stop_name,fr,Parvis Saint-Gilles,PARVIS ST-GILLES
+stops,stop_name,nl,Sint-Gillisvoorplein,PARVIS ST-GILLES
+stops,stop_name,fr,Pasteur,PASTEUR
+stops,stop_name,nl,Pasteur,PASTEUR
+stops,stop_name,fr,Patrie,PATRIE
+stops,stop_name,nl,Vaderland,PATRIE
+stops,stop_name,fr,Pattijn,PATTIJN
+stops,stop_name,nl,Pattijn,PATTIJN
+stops,stop_name,fr,Patton,PATTON
+stops,stop_name,nl,Patton,PATTON
+stops,stop_name,fr,Paul Deschanel,PAUL DESCHANEL
+stops,stop_name,nl,Paul Deschanel,PAUL DESCHANEL
+stops,stop_name,fr,Paul Leduc,PAUL LEDUC
+stops,stop_name,nl,Paul Leduc,PAUL LEDUC
+stops,stop_name,fr,Paulsen,PAULSEN
+stops,stop_name,nl,Paulsen,PAULSEN
+stops,stop_name,fr,Pavillon,PAVILLON
+stops,stop_name,nl,Paviljoen,PAVILLON
+stops,stop_name,fr,Pavillons Meudon,PAVILLONS MEUDON
+stops,stop_name,nl,Meudon-paviljoenen,PAVILLONS MEUDON
+stops,stop_name,fr,Péage,PEAGE
+stops,stop_name,nl,Tol,PEAGE
+stops,stop_name,fr,Pêcheries,PECHERIES
+stops,stop_name,nl,Visserij,PECHERIES
+stops,stop_name,fr,Pellenberg,PELLENBERG
+stops,stop_name,nl,Pellenberg,PELLENBERG
+stops,stop_name,fr,Pentathlon,PENTATHLON
+stops,stop_name,nl,Pentathlon,PENTATHLON
+stops,stop_name,fr,Permeke,PERMEKE
+stops,stop_name,nl,Permeke,PERMEKE
+stops,stop_name,fr,Peter Benoit,PETER BENOIT
+stops,stop_name,nl,Peter Benoit,PETER BENOIT
+stops,stop_name,fr,Peterbos,PETERBOS
+stops,stop_name,nl,Peterbos,PETERBOS
+stops,stop_name,fr,Pétillon,PETILLON
+stops,stop_name,nl,Pétillon,PETILLON
+stops,stop_name,fr,Petit Sablon,PETIT SABLON
+stops,stop_name,nl,Kleine Zavel,PETIT SABLON
+stops,stop_name,fr,Petite Île,PETITE ILE
+stops,stop_name,nl,Klein Eiland,PETITE ILE
+stops,stop_name,fr,Peupliers,PEUPLIERS
+stops,stop_name,nl,Populieren,PEUPLIERS
+stops,stop_name,fr,Peyo,PEYO
+stops,stop_name,nl,Peyo,PEYO
+stops,stop_name,fr,Picard,PICARD
+stops,stop_name,nl,Picard,PICARD
+stops,stop_name,fr,Picardie,PICARDIE
+stops,stop_name,nl,Picardie,PICARDIE
+stops,stop_name,fr,Pierre Decoster,PIERRE DECOSTER
+stops,stop_name,nl,Pierre Decoster,PIERRE DECOSTER
+stops,stop_name,fr,Place de l'Église,PLACE DE L'EGLISE
+stops,stop_name,nl,Kerkplein,PLACE DE L'EGLISE
+stops,stop_name,fr,Place Reine Astrid,PLACE R. ASTRID
+stops,stop_name,nl,Koningin Astridplein,PLACE R. ASTRID
+stops,stop_name,fr,Place Saint-Job,PLACE SAINT-JOB
+stops,stop_name,nl,Sint-Jobplein,PLACE SAINT-JOB
+stops,stop_name,fr,Place Saint-Pierre,PLACE ST-PIERRE
+stops,stop_name,nl,Sint-Pietersplein,PLACE ST-PIERRE
+stops,stop_name,fr,Place Victor Horta,PLACE V. HORTA
+stops,stop_name,nl,Victor Hortaplein,PLACE V. HORTA
+stops,stop_name,fr,Plaine des Sports,PLAINE DES SPORTS
+stops,stop_name,nl,Sportplein,PLAINE DES SPORTS
+stops,stop_name,fr,Plasky,PLASKY
+stops,stop_name,nl,Plasky,PLASKY
+stops,stop_name,fr,Pléiades,PLEIADES
+stops,stop_name,nl,Plejaden,PLEIADES
+stops,stop_name,fr,Poelaert,POELAERT
+stops,stop_name,nl,Poelaert,POELAERT
+stops,stop_name,fr,Pogge,POGGE
+stops,stop_name,nl,Pogge,POGGE
+stops,stop_name,fr,Polyclinique Brugmann,POLYCL. BRUGMANN
+stops,stop_name,nl,Polikliniek Brugmann,POLYCL. BRUGMANN
+stops,stop_name,fr,Pommier,POMMIER
+stops,stop_name,nl,Appelboom,POMMIER
+stops,stop_name,fr,Pont Albert,PONT ALBERT
+stops,stop_name,nl,Albertbrug,PONT ALBERT
+stops,stop_name,fr,Porte de Flandre,PORTE DE FLANDRE
+stops,stop_name,nl,Vlaamsepoort,PORTE DE FLANDRE
+stops,stop_name,fr,Porte de Hal,PORTE DE HAL
+stops,stop_name,nl,Hallepoort,PORTE DE HAL
+stops,stop_name,fr,Porte de Namur,PORTE DE NAMUR
+stops,stop_name,nl,Naamsepoort,PORTE DE NAMUR
+stops,stop_name,fr,Porte de Ninove,PORTE DE NINOVE
+stops,stop_name,nl,Ninoofsepoort,PORTE DE NINOVE
+stops,stop_name,fr,Pouchkine,POUCHKINE
+stops,stop_name,nl,Poesjkin,POUCHKINE
+stops,stop_name,fr,Prés Communs,PRES COMMUNS
+stops,stop_name,nl,Gemenebeemden,PRES COMMUNS
+stops,stop_name,fr,Presse,PRESSE
+stops,stop_name,nl,Drukpers,PRESSE
+stops,stop_name,fr,Princesse Clémentine,PRINC. CLEMENTINE
+stops,stop_name,nl,Prinses Clementina,PRINC. CLEMENTINE
+stops,stop_name,fr,Princesse Élisabeth,PRINC. ELISABETH
+stops,stop_name,nl,Prinses Elisabeth,PRINC. ELISABETH
+stops,stop_name,fr,Prince d'Orange,PRINCE D'ORANGE
+stops,stop_name,nl,Prins van Oranje,PRINCE D'ORANGE
+stops,stop_name,fr,Prince de Liège,PRINCE DE LIEGE
+stops,stop_name,nl,Prins van Luik,PRINCE DE LIEGE
+stops,stop_name,fr,Prince Léopold,PRINCE LEOPOLD
+stops,stop_name,nl,Prins Leopold,PRINCE LEOPOLD
+stops,stop_name,fr,Prison,PRISON
+stops,stop_name,nl,Gevangenis,PRISON
+stops,stop_name,fr,Porte d'Anderlecht,PTE D'ANDERLECHT
+stops,stop_name,nl,Anderlechtsepoort,PTE D'ANDERLECHT
+stops,stop_name,fr,Quartier Saint-Boniface,QUART.ST-BONIFACE
+stops,stop_name,nl,Sint-Bonifaaswijk,QUART.ST-BONIFACE
+stops,stop_name,fr,Quatre Bras,QUATRE BRAS
+stops,stop_name,nl,Vier Armen,QUATRE BRAS
+stops,stop_name,fr,Quatre-Vents,QUATRE-VENTS
+stops,stop_name,nl,Vier Winden,QUATRE-VENTS
+stops,stop_name,fr,Quetelet,QUETELET
+stops,stop_name,nl,Quetelet,QUETELET
+stops,stop_name,fr,Racing,RACING
+stops,stop_name,nl,Racing,RACING
+stops,stop_name,fr,Radium,RADIUM
+stops,stop_name,nl,Radium,RADIUM
+stops,stop_name,fr,Raedemaekers,RAEDEMAEKERS
+stops,stop_name,nl,Raedemaekers,RAEDEMAEKERS
+stops,stop_name,fr,Ravenstein,RAVENSTEIN
+stops,stop_name,nl,Ravenstein,RAVENSTEIN
+stops,stop_name,fr,Reine Astrid,REINE ASTRID
+stops,stop_name,nl,Koningin Astrid,REINE ASTRID
+stops,stop_name,fr,Relais,RELAIS
+stops,stop_name,nl,Pleisterplaats,RELAIS
+stops,stop_name,fr,René Gobert,RENE GOBERT
+stops,stop_name,nl,René Gobert,RENE GOBERT
+stops,stop_name,fr,René Henry,RENE HENRY
+stops,stop_name,nl,René Henry,RENE HENRY
+stops,stop_name,fr,Réservoir,RESERVOIR
+stops,stop_name,nl,Vergaarbak,RESERVOIR
+stops,stop_name,fr,Résistance,RESISTANCE
+stops,stop_name,nl,Verzet,RESISTANCE
+stops,stop_name,fr,Ribaucourt,RIBAUCOURT
+stops,stop_name,nl,Ribaucourt,RIBAUCOURT
+stops,stop_name,fr,Riethuisen,RIETHUISEN
+stops,stop_name,nl,Riethuisen,RIETHUISEN
+stops,stop_name,fr,Rittweger,RITTWEGER
+stops,stop_name,nl,Rittweger,RITTWEGER
+stops,stop_name,fr,Rive Droite,RIVE DROITE
+stops,stop_name,nl,Rechteroever,RIVE DROITE
+stops,stop_name,fr,Rive Gauche,RIVE GAUCHE
+stops,stop_name,nl,Linkeroever,RIVE GAUCHE
+stops,stop_name,fr,Robiano,ROBIANO
+stops,stop_name,nl,Robiano,ROBIANO
+stops,stop_name,fr,Rochefort,ROCHEFORT
+stops,stop_name,nl,Rochefort,ROCHEFORT
+stops,stop_name,fr,Rodin,RODIN
+stops,stop_name,nl,Rodin,RODIN
+stops,stop_name,fr,Rodts,RODTS
+stops,stop_name,nl,Rodts,RODTS
+stops,stop_name,fr,Roffiaen,ROFFIAEN
+stops,stop_name,nl,Roffiaen,ROFFIAEN
+stops,stop_name,fr,Rogier,ROGIER
+stops,stop_name,nl,Rogier,ROGIER
+stops,stop_name,fr,Roi Baudouin,ROI BAUDOUIN
+stops,stop_name,nl,Koning Boudewijn,ROI BAUDOUIN
+stops,stop_name,fr,Roi Vainqueur,ROI VAINQUEUR
+stops,stop_name,nl,Koning Overwinnaar,ROI VAINQUEUR
+stops,stop_name,fr,Ronces,RONCES
+stops,stop_name,nl,Braamstruiken,RONCES
+stops,stop_name,fr,Rond-point du Souverain,ROND-PT SOUVERAIN
+stops,stop_name,nl,Vorstrondpunt,ROND-PT SOUVERAIN
+stops,stop_name,fr,Roodebeek,ROODEBEEK
+stops,stop_name,nl,Roodebeek,ROODEBEEK
+stops,stop_name,fr,Roodenberg,ROODENBERG
+stops,stop_name,nl,Rodenberg,ROODENBERG
+stops,stop_name,fr,Roosendael,ROOSENDAEL
+stops,stop_name,nl,Roosendael,ROOSENDAEL
+stops,stop_name,fr,Rosa Parks,ROSA PARKS
+stops,stop_name,nl,Rosa Parks,ROSA PARKS
+stops,stop_name,fr,Rouge-Cloître,ROUGE-CLOITRE
+stops,stop_name,nl,Roodklooster,ROUGE-CLOITRE
+stops,stop_name,fr,Rouppe,ROUPPE
+stops,stop_name,nl,Rouppe,ROUPPE
+stops,stop_name,fr,Royale,ROYALE
+stops,stop_name,nl,Koning,ROYALE
+stops,stop_name,fr,RTL House,RTL HOUSE
+stops,stop_name,nl,RTL House,RTL HOUSE
+stops,stop_name,fr,Rue au Bois,RUE AU BOIS
+stops,stop_name,nl,Bosstraat,RUE AU BOIS
+stops,stop_name,fr,Rue Longue,RUE LONGUE
+stops,stop_name,nl,Langestraat,RUE LONGUE
+stops,stop_name,fr,Rue Traversière,RUE TRAVERSIERE
+stops,stop_name,nl,Dwarsstraat,RUE TRAVERSIERE
+stops,stop_name,fr,Ruisbroek Centrum,RUISBROEK CENTRUM
+stops,stop_name,nl,Ruisbroek Centrum,RUISBROEK CENTRUM
+stops,stop_name,fr,Ruisseau,RUISSEAU
+stops,stop_name,nl,Beek,RUISSEAU
+stops,stop_name,fr,SABCA,SABCA
+stops,stop_name,nl,SABCA,SABCA
+stops,stop_name,fr,Sacré-Cœur,SACRE-COEUR
+stops,stop_name,nl,Heilig Hart,SACRE-COEUR
+stops,stop_name,fr,Sainctelette,SAINCTELETTE
+stops,stop_name,nl,Sainctelette,SAINCTELETTE
+stops,stop_name,fr,Saint-Antoine,SAINT-ANTOINE
+stops,stop_name,nl,Sint-Antonius,SAINT-ANTOINE
+stops,stop_name,fr,Saint-Denis,SAINT-DENIS
+stops,stop_name,nl,Sint-Denijs,SAINT-DENIS
+stops,stop_name,fr,Saint-Géry,SAINT-GERY
+stops,stop_name,nl,Sint-Gorik,SAINT-GERY
+stops,stop_name,fr,Saint-Guidon,SAINT-GUIDON
+stops,stop_name,nl,Sint-Guido,SAINT-GUIDON
+stops,stop_name,fr,Saint-Josse,SAINT-JOSSE
+stops,stop_name,nl,Sint-Joost,SAINT-JOSSE
+stops,stop_name,fr,Saint-Lambert,SAINT-LAMBERT
+stops,stop_name,nl,Sint-Lambertus,SAINT-LAMBERT
+stops,stop_name,fr,Saint-Vincent,SAINT-VINCENT
+stops,stop_name,nl,Sint-Vincentius,SAINT-VINCENT
+stops,stop_name,fr,Sainte-Alix,SAINTE-ALIX
+stops,stop_name,nl,Sint-Aleidis,SAINTE-ALIX
+stops,stop_name,fr,Sainte-Alliance,SAINTE-ALLIANCE
+stops,stop_name,nl,Heilig Verbond,SAINTE-ALLIANCE
+stops,stop_name,fr,Sainte-Anne,SAINTE-ANNE
+stops,stop_name,nl,Sint-Anna,SAINTE-ANNE
+stops,stop_name,fr,Sainte-Catherine,SAINTE-CATHERINE
+stops,stop_name,nl,Sint-Katelijne,SAINTE-CATHERINE
+stops,stop_name,fr,Sainte-Famille,SAINTE-FAMILLE
+stops,stop_name,nl,Heilige Familie,SAINTE-FAMILLE
+stops,stop_name,fr,Sainte-Marie,SAINTE-MARIE
+stops,stop_name,nl,Sint-Maria,SAINTE-MARIE
+stops,stop_name,fr,Savonnerie,SAVONNERIE
+stops,stop_name,nl,Zeepziederij,SAVONNERIE
+stops,stop_name,fr,Schaerbeek Gare,SCHAERBEEK GARE
+stops,stop_name,nl,Schaarbeek Station,SCHAERBEEK GARE
+stops,stop_name,fr,Scherdemael,SCHERDEMAEL
+stops,stop_name,nl,Scherdemaal,SCHERDEMAEL
+stops,stop_name,fr,Scheut,SCHEUT
+stops,stop_name,nl,Scheut,SCHEUT
+stops,stop_name,fr,Schola Europea,SCHOLA EUROPEA
+stops,stop_name,nl,Schola Europea,SCHOLA EUROPEA
+stops,stop_name,fr,Schoonejans,SCHOONEJANS
+stops,stop_name,nl,Schoonejans,SCHOONEJANS
+stops,stop_name,fr,Schuman,SCHUMAN
+stops,stop_name,nl,Schuman,SCHUMAN
+stops,stop_name,fr,Schweitzer,SCHWEITZER
+stops,stop_name,nl,Schweitzer,SCHWEITZER
+stops,stop_name,fr,Science,SCIENCE
+stops,stop_name,nl,Wetenschap,SCIENCE
+stops,stop_name,fr,Sept Étoiles,SEPT ETOILES
+stops,stop_name,nl,Zeven Sterren,SEPT ETOILES
+stops,stop_name,fr,Serbie,SERBIE
+stops,stop_name,nl,Servië,SERBIE
+stops,stop_name,fr,Serres Royales,SERRES ROYALES
+stops,stop_name,nl,Koninklijke Serres,SERRES ROYALES
+stops,stop_name,fr,Sibelius,SIBELIUS
+stops,stop_name,nl,Sibelius,SIBELIUS
+stops,stop_name,fr,Simone Veil,SIMONE VEIL
+stops,stop_name,nl,Simone Veil,SIMONE VEIL
+stops,stop_name,fr,Simonis,SIMONIS
+stops,stop_name,nl,Simonis,SIMONIS
+stops,stop_name,fr,Simpson,SIMPSON
+stops,stop_name,nl,Simpson,SIMPSON
+stops,stop_name,fr,Sippelberg,SIPPELBERG
+stops,stop_name,nl,Sippelberg,SIPPELBERG
+stops,stop_name,fr,Slegers,SLEGERS
+stops,stop_name,nl,Slegers,SLEGERS
+stops,stop_name,fr,Sobieski,SOBIESKI
+stops,stop_name,nl,Sobieski,SOBIESKI
+stops,stop_name,fr,Solbosch,SOLBOSCH
+stops,stop_name,nl,Solbos,SOLBOSCH
+stops,stop_name,fr,Sorensen,SORENSEN
+stops,stop_name,nl,Sorensen,SORENSEN
+stops,stop_name,fr,Speeckaert,SPEECKAERT
+stops,stop_name,nl,Speeckaert,SPEECKAERT
+stops,stop_name,fr,Sportcentrum,SPORTCENTRUM
+stops,stop_name,nl,Sportcentrum,SPORTCENTRUM
+stops,stop_name,fr,Square du Centenaire,SQ. DU CENTENAIRE
+stops,stop_name,nl,Eeuwfeestsquare,SQ. DU CENTENAIRE
+stops,stop_name,fr,Stade,STADE
+stops,stop_name,nl,Stadion,STADE
+stops,stop_name,fr,Stade Fallon,STADE FALLON
+stops,stop_name,nl,Fallon Stadion,STADE FALLON
+stops,stop_name,fr,Stalle (P),STALLE (P)
+stops,stop_name,nl,Stalle (P),STALLE (P)
+stops,stop_name,fr,Station Lot,STATION LOT
+stops,stop_name,nl,Station Lot,STATION LOT
+stops,stop_name,fr,Statuaires,STATUAIRES
+stops,stop_name,nl,Beeldhouwers,STATUAIRES
+stops,stop_name,fr,Stéphanie,STEPHANIE
+stops,stop_name,nl,Stefania,STEPHANIE
+stops,stop_name,fr,Stephenson,STEPHENSON
+stops,stop_name,nl,Stephenson,STEPHENSON
+stops,stop_name,fr,Steurs,STEURS
+stops,stop_name,nl,Steurs,STEURS
+stops,stop_name,fr,Stiénon,STIENON
+stops,stop_name,nl,Stiénon,STIENON
+stops,stop_name,fr,Stockel,STOCKEL
+stops,stop_name,nl,Stokkel,STOCKEL
+stops,stop_name,fr,Stratégie,STRATEGIE
+stops,stop_name,nl,Krijgskunde,STRATEGIE
+stops,stop_name,fr,Stuyvenbergh,STUYVENBERGH
+stops,stop_name,nl,Stuyvenbergh,STUYVENBERGH
+stops,stop_name,fr,Suède,SUEDE
+stops,stop_name,nl,Zweden,SUEDE
+stops,stop_name,fr,Suzan Daniel,SUZAN DANIEL
+stops,stop_name,nl,Suzan Daniel,SUZAN DANIEL
+stops,stop_name,fr,Tamaris,TAMARIS
+stops,stop_name,nl,Tamarisken,TAMARIS
+stops,stop_name,fr,Tenreuken,TENREUKEN
+stops,stop_name,nl,Tenreuken,TENREUKEN
+stops,stop_name,fr,Ter Meeren,TER MEEREN
+stops,stop_name,nl,Ter Meeren,TER MEEREN
+stops,stop_name,fr,Tercoigne,TERCOIGNE
+stops,stop_name,nl,Tercoigne,TERCOIGNE
+stops,stop_name,fr,Terdelt,TERDELT
+stops,stop_name,nl,Terdelt,TERDELT
+stops,stop_name,fr,Tervuren Station,TERVUREN STATION
+stops,stop_name,nl,Tervuren Station,TERVUREN STATION
+stops,stop_name,fr,Thévenet,THEVENET
+stops,stop_name,nl,Thévenet,THEVENET
+stops,stop_name,fr,Thieffry,THIEFFRY
+stops,stop_name,nl,Thieffry,THIEFFRY
+stops,stop_name,fr,Thiry-Woluwe,THIRY-WOLUWE
+stops,stop_name,nl,Thiry-Woluwe,THIRY-WOLUWE
+stops,stop_name,fr,Thomas,THOMAS
+stops,stop_name,nl,Thomas,THOMAS
+stops,stop_name,fr,Thumas,THUMAS
+stops,stop_name,nl,Thumas,THUMAS
+stops,stop_name,fr,Thym,THYM
+stops,stop_name,nl,Tijm,THYM
+stops,stop_name,fr,Thys,THYS
+stops,stop_name,nl,Thys,THYS
+stops,stop_name,fr,Tilleul,TILLEUL
+stops,stop_name,nl,Linde,TILLEUL
+stops,stop_name,fr,Timmermans,TIMMERMANS
+stops,stop_name,nl,Timmermans,TIMMERMANS
+stops,stop_name,fr,Tir aux Pigeons,TIR AUX PIGEONS
+stops,stop_name,nl,Duivenschieting,TIR AUX PIGEONS
+stops,stop_name,fr,Tircher,TIRCHER
+stops,stop_name,nl,Tircher,TIRCHER
+stops,stop_name,fr,Tomberg,TOMBERG
+stops,stop_name,nl,Tomberg,TOMBERG
+stops,stop_name,fr,Toulouse,TOULOUSE
+stops,stop_name,nl,Toulouse,TOULOUSE
+stops,stop_name,fr,Tour et Taxis,TOUR ET TAXIS
+stops,stop_name,nl,Thurn en Taxis,TOUR ET TAXIS
+stops,stop_name,fr,Tournoi,TOURNOI
+stops,stop_name,nl,Steekspel,TOURNOI
+stops,stop_name,fr,Transvaal,TRANSVAAL
+stops,stop_name,nl,Transvaal,TRANSVAAL
+stops,stop_name,fr,Trèfles,TREFLES
+stops,stop_name,nl,Klaver,TREFLES
+stops,stop_name,fr,Trèves,TREVES
+stops,stop_name,nl,Trier,TREVES
+stops,stop_name,fr,Triangle,TRIANGLE
+stops,stop_name,nl,Driehoek,TRIANGLE
+stops,stop_name,fr,Trinité,TRINITE
+stops,stop_name,nl,Drievuldigheid,TRINITE
+stops,stop_name,fr,Tritomas,TRITOMAS
+stops,stop_name,nl,Tritoma,TRITOMAS
+stops,stop_name,fr,Trois Couleurs,TROIS COULEURS
+stops,stop_name,nl,Drie Kleuren,TROIS COULEURS
+stops,stop_name,fr,Trois Pertuis,TROIS PERTUIS
+stops,stop_name,nl,Driegaten,TROIS PERTUIS
+stops,stop_name,fr,Trône,TRONE
+stops,stop_name,nl,Troon,TRONE
+stops,stop_name,fr,Twee Leeuwenweg,TWEE LEEUWENWEG
+stops,stop_name,nl,Twee Leeuwenweg,TWEE LEEUWENWEG
+stops,stop_name,fr,Twyeninck,TWYENINCK
+stops,stop_name,nl,Twyeninck,TWYENINCK
+stops,stop_name,fr,Uccle Calevoet,UCCLE CALEVOET
+stops,stop_name,nl,Ukkel Kalevoet,UCCLE CALEVOET
+stops,stop_name,fr,Uccle Sport,UCCLE SPORT
+stops,stop_name,nl,Ukkel Sport,UCCLE SPORT
+stops,stop_name,fr,UCL Saint-Luc,UCL SAINT-LUC
+stops,stop_name,nl,UCL Saint-Luc,UCL SAINT-LUC
+stops,stop_name,fr,ULB,ULB
+stops,stop_name,nl,ULB,ULB
+stops,stop_name,fr,Union,UNION
+stops,stop_name,nl,Union,UNION
+stops,stop_name,fr,UZ Brussel,UZ BRUSSEL
+stops,stop_name,nl,UZ Brussel,UZ BRUSSEL
+stops,stop_name,fr,UZ-Pédiatrie,UZ-PEDIATRIE
+stops,stop_name,nl,UZ-Pediatrie,UZ-PEDIATRIE
+stops,stop_name,fr,UZ-VUB,UZ-VUB
+stops,stop_name,nl,UZ-VUB,UZ-VUB
+stops,stop_name,fr,Val des Seigneurs,VAL DES SEIGNEURS
+stops,stop_name,nl,Herendal,VAL DES SEIGNEURS
+stops,stop_name,fr,Val Maria,VAL MARIA
+stops,stop_name,nl,Mariëndaal,VAL MARIA
+stops,stop_name,fr,Valduc,VALDUC
+stops,stop_name,nl,Hertogendal,VALDUC
+stops,stop_name,fr,Valida,VALIDA
+stops,stop_name,nl,Valida,VALIDA
+stops,stop_name,fr,van Beethoven,VAN BEETHOVEN
+stops,stop_name,nl,van Beethoven,VAN BEETHOVEN
+stops,stop_name,fr,Van Bever,VAN BEVER
+stops,stop_name,nl,Van Bever,VAN BEVER
+stops,stop_name,fr,Van Eyck,VAN EYCK
+stops,stop_name,nl,Van Eyck,VAN EYCK
+stops,stop_name,fr,Van Haelen,VAN HAELEN
+stops,stop_name,nl,Van Haelen,VAN HAELEN
+stops,stop_name,fr,van Kalken,VAN KALKEN
+stops,stop_name,nl,van Kalken,VAN KALKEN
+stops,stop_name,fr,Van Zande,VAN ZANDE
+stops,stop_name,nl,Van Zande,VAN ZANDE
+stops,stop_name,fr,Vandenhoven,VANDENHOVEN
+stops,stop_name,nl,Vandenhoven,VANDENHOVEN
+stops,stop_name,fr,Vander Elst,VANDER ELST
+stops,stop_name,nl,Vander Elst,VANDER ELST
+stops,stop_name,fr,Vander Meerschen,VANDER MEERSCHEN
+stops,stop_name,nl,Vander Meerschen,VANDER MEERSCHEN
+stops,stop_name,fr,Vanderkindere,VANDERKINDERE
+stops,stop_name,nl,Vanderkindere,VANDERKINDERE
+stops,stop_name,fr,Vanderstichelen,VANDERSTICHELEN
+stops,stop_name,nl,Vanderstichelen,VANDERSTICHELEN
+stops,stop_name,fr,Vandervelde,VANDERVELDE
+stops,stop_name,nl,Vandervelde,VANDERVELDE
+stops,stop_name,fr,Vandromme,VANDROMME
+stops,stop_name,nl,Vandromme,VANDROMME
+stops,stop_name,fr,Vanhellemont,VANHELLEMONT
+stops,stop_name,nl,Vanhellemont,VANHELLEMONT
+stops,stop_name,fr,Vanhuffel,VANHUFFEL
+stops,stop_name,nl,Vanhuffel,VANHUFFEL
+stops,stop_name,fr,Vanne,VANNE
+stops,stop_name,nl,Verlaat,VANNE
+stops,stop_name,fr,Varia,VARIA
+stops,stop_name,nl,Varia,VARIA
+stops,stop_name,fr,Veeweyde,VEEWEYDE
+stops,stop_name,nl,Veeweide,VEEWEYDE
+stops,stop_name,fr,Verbeyst,VERBEYST
+stops,stop_name,nl,Verbeyst,VERBEYST
+stops,stop_name,fr,Verboekhoven,VERBOEKHOVEN
+stops,stop_name,nl,Verboekhoven,VERBOEKHOVEN
+stops,stop_name,fr,Vereman,VEREMAN
+stops,stop_name,nl,Vereman,VEREMAN
+stops,stop_name,fr,Verger,VERGER
+stops,stop_name,nl,Boomgaard,VERGER
+stops,stop_name,fr,Vergote,VERGOTE
+stops,stop_name,nl,Vergote,VERGOTE
+stops,stop_name,fr,Verheyleweghen,VERHEYLEWEGHEN
+stops,stop_name,nl,Verheyleweghen,VERHEYLEWEGHEN
+stops,stop_name,fr,Verrewinkel,VERREWINKEL
+stops,stop_name,nl,Verrewinkel,VERREWINKEL
+stops,stop_name,fr,Versailles,VERSAILLES
+stops,stop_name,nl,Versailles,VERSAILLES
+stops,stop_name,fr,Vert Chasseur,VERT CHASSEUR
+stops,stop_name,nl,Groene Jager,VERT CHASSEUR
+stops,stop_name,fr,Vétérans Coloniaux,VETERANS COLON.
+stops,stop_name,nl,Koloniale Veteranen,VETERANS COLON.
+stops,stop_name,fr,Vétérinaires,VETERINAIRES
+stops,stop_name,nl,Veeartsen,VETERINAIRES
+stops,stop_name,fr,Viaduc E40,VIADUC E40
+stops,stop_name,nl,Viaduct E40,VIADUC E40
+stops,stop_name,fr,Victor Allard,VICTOR ALLARD
+stops,stop_name,nl,Victor Allard,VICTOR ALLARD
+stops,stop_name,fr,Victor Gambier,VICTOR GAMBIER
+stops,stop_name,nl,Victor Gambier,VICTOR GAMBIER
+stops,stop_name,fr,Victor Hugo,VICTOR HUGO
+stops,stop_name,nl,Victor Hugo,VICTOR HUGO
+stops,stop_name,fr,Vier Fonteinen,VIER FONTEINEN
+stops,stop_name,nl,Vier Fonteinen,VIER FONTEINEN
+stops,stop_name,fr,Vier Huiskens,VIER HUISKENS
+stops,stop_name,nl,Vier Huiskens,VIER HUISKENS
+stops,stop_name,fr,Vieux Chemin,VIEUX CHEMIN
+stops,stop_name,nl,Oude Weg,VIEUX CHEMIN
+stops,stop_name,fr,Vignette,VIGNETTE
+stops,stop_name,nl,Kleine Wijngaard,VIGNETTE
+stops,stop_name,fr,Villon,VILLON
+stops,stop_name,nl,Villon,VILLON
+stops,stop_name,fr,Vilvoorde Station,VILVOORDE STATION
+stops,stop_name,nl,Vilvoorde Station,VILVOORDE STATION
+stops,stop_name,fr,Vinçotte,VINCOTTE
+stops,stop_name,nl,Vinçotte,VINCOTTE
+stops,stop_name,fr,Violettes,VIOLETTES
+stops,stop_name,nl,Viooltjes,VIOLETTES
+stops,stop_name,fr,Vivier d'Oie,VIVIER D'OIE
+stops,stop_name,nl,Diesdelle,VIVIER D'OIE
+stops,stop_name,fr,Vleurgat,VLEURGAT
+stops,stop_name,nl,Vleurgat,VLEURGAT
+stops,stop_name,fr,Voetbalclub,VOETBALCLUB
+stops,stop_name,nl,Voetbalclub,VOETBALCLUB
+stops,stop_name,fr,Voisins,VOISINS
+stops,stop_name,nl,Geburen,VOISINS
+stops,stop_name,fr,Voltaire,VOLTAIRE
+stops,stop_name,nl,Voltaire,VOLTAIRE
+stops,stop_name,fr,Voot,VOOT
+stops,stop_name,nl,Voot,VOOT
+stops,stop_name,fr,VTM,VTM
+stops,stop_name,nl,VTM,VTM
+stops,stop_name,fr,VUB,VUB
+stops,stop_name,nl,VUB,VUB
+stops,stop_name,fr,Waelhem,WAELHEM
+stops,stop_name,nl,Waelhem,WAELHEM
+stops,stop_name,fr,Wagon,WAGON
+stops,stop_name,nl,Wagen,WAGON
+stops,stop_name,fr,Wappers,WAPPERS
+stops,stop_name,nl,Wappers,WAPPERS
+stops,stop_name,fr,Washington,WASHINGTON
+stops,stop_name,nl,Washington,WASHINGTON
+stops,stop_name,fr,Waterbury,WATERBURY
+stops,stop_name,nl,Waterbury,WATERBURY
+stops,stop_name,fr,Waterloo Wilson,WATERLOO WILSON
+stops,stop_name,nl,Waterloo Wilson,WATERLOO WILSON
+stops,stop_name,fr,Watermael Gare,WATERMAEL GARE
+stops,stop_name,nl,Watermaal Station,WATERMAEL GARE
+stops,stop_name,fr,Wauters,WAUTERS
+stops,stop_name,nl,Wauters,WAUTERS
+stops,stop_name,fr,Waxweiler,WAXWEILER
+stops,stop_name,nl,Waxweiler,WAXWEILER
+stops,stop_name,fr,Wery,WERY
+stops,stop_name,nl,Wery,WERY
+stops,stop_name,fr,Westland Shopping,WESTLAND SHOPPING
+stops,stop_name,nl,Westland Shopping,WESTLAND SHOPPING
+stops,stop_name,fr,Wiels,WIELS
+stops,stop_name,nl,Wiels,WIELS
+stops,stop_name,fr,Wiener,WIENER
+stops,stop_name,nl,Wiener,WIENER
+stops,stop_name,fr,Willebroek,WILLEBROEK
+stops,stop_name,nl,Willebroek,WILLEBROEK
+stops,stop_name,fr,Winteroy,WINTEROY
+stops,stop_name,nl,Winteroy,WINTEROY
+stops,stop_name,fr,Witloof,WITLOOF
+stops,stop_name,nl,Witloof,WITLOOF
+stops,stop_name,fr,Woeste,WOESTE
+stops,stop_name,nl,Woeste,WOESTE
+stops,stop_name,fr,Woluwe Shopping,WOLUWE SHOPPING
+stops,stop_name,nl,Woluwe Shopping,WOLUWE SHOPPING
+stops,stop_name,fr,Wolvendael,WOLVENDAEL
+stops,stop_name,nl,Wolvendael,WOLVENDAEL
+stops,stop_name,fr,WTC,WTC
+stops,stop_name,nl,WTC,WTC
+stops,stop_name,fr,Xavier de Bue,XAVIER DE BUE
+stops,stop_name,nl,Xavier de Bue,XAVIER DE BUE
+stops,stop_name,fr,Ysaye,YSAYE
+stops,stop_name,nl,Ysaye,YSAYE
+stops,stop_name,fr,Yser,YSER
+stops,stop_name,nl,IJzer,YSER
+stops,stop_name,fr,Zaman-Forest Nat.,ZAMAN-FOREST NAT.
+stops,stop_name,nl,Zaman-Vorst Nat.,ZAMAN-FOREST NAT.
+stops,stop_name,fr,Zavelput,ZAVELPUT
+stops,stop_name,nl,Zavelput,ZAVELPUT
+stops,stop_name,fr,Zeecrabbe,ZEECRABBE
+stops,stop_name,nl,Zeecrabbe,ZEECRABBE
+stops,stop_name,fr,Zénobe Gramme,ZENOBE GRAMME
+stops,stop_name,nl,Zénobe Gramme,ZENOBE GRAMME
+stops,stop_name,fr,Zéphyr,ZEPHYR
+stops,stop_name,nl,Westenwind,ZEPHYR
+routes,route_long_name,fr,ALBERT - GARE DE LINKEBEEK,ALBERT - GARE DE LINKEBEEK
+routes,route_long_name,nl,ALBERT - STATION LINKEBEEK,ALBERT - GARE DE LINKEBEEK
+routes,route_long_name,fr,ALBERT - VAN HAELEN,ALBERT - VAN HAELEN
+routes,route_long_name,nl,ALBERT - VAN HAELEN,ALBERT - VAN HAELEN
+routes,route_long_name,fr,AMBIORIX - UCCLE CALEVOET,AMBIORIX - UCCLE CALEVOET
+routes,route_long_name,nl,AMBIORIX - UKKEL KALEVOET,AMBIORIX - UCCLE CALEVOET
+routes,route_long_name,fr,ANNEESSENS - DECROLY,ANNEESSENS - DECROLY
+routes,route_long_name,nl,ANNEESSENS - DECROLY,ANNEESSENS - DECROLY
+routes,route_long_name,fr,BEAULIEU - HEILIGENBORRE,BEAULIEU - HEILIGENBORRE
+routes,route_long_name,nl,BEAULIEU - HEILIGENBORRE,BEAULIEU - HEILIGENBORRE
+routes,route_long_name,fr,BOONDAEL GARE - ROGIER,BOONDAEL GARE - ROGIER
+routes,route_long_name,nl,BOONDAAL STATION - ROGIER,BOONDAEL GARE - ROGIER
+routes,route_long_name,fr,BRABANCONNE - KONKEL,BRABANCONNE - KONKEL
+routes,route_long_name,nl,BRABANCONNE - KONKEL,BRABANCONNE - KONKEL
+routes,route_long_name,fr,BRUSSELS AIRPORT - BRUSSELS CITY,BRUSSELS AIRPORT - BRUSSELS CITY
+routes,route_long_name,nl,BRUSSELS AIRPORT - BRUSSELS CITY,BRUSSELS AIRPORT - BRUSSELS CITY
+routes,route_long_name,fr,CERIA - GARE DU MIDI,CERIA - GARE DU MIDI
+routes,route_long_name,nl,COOVI - ZUIDSTATION,CERIA - GARE DU MIDI
+routes,route_long_name,fr,DA VINCI - ROGIER,DA VINCI - ROGIER
+routes,route_long_name,nl,DA VINCI - ROGIER,DA VINCI - ROGIER
+routes,route_long_name,fr,DANSAERT - LOUISE,DANSAERT - LOUISE
+routes,route_long_name,nl,DANSAERT - LOUIZA,DANSAERT - LOUISE
+routes,route_long_name,fr,DE BROUCKERE - DELTA,DE BROUCKERE - DELTA
+routes,route_long_name,nl,DE BROUCKERE - DELTA,DE BROUCKERE - DELTA
+routes,route_long_name,fr,DE BROUCKERE - HOF TEN BERG,DE BROUCKERE - HOF TEN BERG
+routes,route_long_name,nl,DE BROUCKERE - HOF TEN BERG,DE BROUCKERE - HOF TEN BERG
+routes,route_long_name,fr,DE BROUCKERE - UZ-VUB,DE BROUCKERE - UZ-VUB
+routes,route_long_name,nl,DE BROUCKERE - UZ-VUB,DE BROUCKERE - UZ-VUB
+routes,route_long_name,fr,ERASME - HERRMANN-DEBROUX,ERASME - HERRMANN-DEBROUX
+routes,route_long_name,nl,ERASMUS - HERRMANN-DEBROUX,ERASME - HERRMANN-DEBROUX
+routes,route_long_name,fr,ETANGS NOIRS - UZ-VUB,ETANGS NOIRS - UZ-VUB
+routes,route_long_name,nl,ZWARTE VIJVERS - UZ-VUB,ETANGS NOIRS - UZ-VUB
+routes,route_long_name,fr,EUROCONTROL - HEYSEL,EUROCONTROL - HEYSEL
+routes,route_long_name,nl,EUROCONTROL - HEIZEL,EUROCONTROL - HEYSEL
+routes,route_long_name,fr,GARE CENTRALE - CIMETIERE DE BRUXELLES,GARE CENTRALE - CIMETIERE DE BRUXELLES
+routes,route_long_name,nl,CENTRAAL STATION - BEGRAAFPLAATS VAN BRUSSEL,GARE CENTRALE - CIMETIERE DE BRUXELLES
+routes,route_long_name,fr,GARE CENTRALE - FOREST (BERVOETS),GARE CENTRALE - FOREST (BERVOETS)
+routes,route_long_name,nl,CENTRAAL STATION - VORST (BERVOETS),GARE CENTRALE - FOREST (BERVOETS)
+routes,route_long_name,fr,GARE CENTRALE - FORT-JACO,GARE CENTRALE - FORT-JACO
+routes,route_long_name,nl,CENTRAAL STATION - FORT-JACO,GARE CENTRALE - FORT-JACO
+routes,route_long_name,fr,GARE CENTRALE - GARE DE BERCHEM,GARE CENTRALE - GARE DE BERCHEM
+routes,route_long_name,nl,CENTRAAL STATION - BERCHEM STATION,GARE CENTRALE - GARE DE BERCHEM
+routes,route_long_name,fr,GARE CENTRALE - HEROS,GARE CENTRALE - HEROS
+routes,route_long_name,nl,CENTRAAL STATION - HELDEN,GARE CENTRALE - HEROS
+routes,route_long_name,fr,GARE CENTRALE - HERRMANN-DEBROUX,GARE CENTRALE - HERRMANN-DEBROUX
+routes,route_long_name,nl,CENTRAAL STATION - HERRMANN-DEBROUX,GARE CENTRALE - HERRMANN-DEBROUX
+routes,route_long_name,fr,GARE CENTRALE - HEYSEL,GARE CENTRALE - HEYSEL
+routes,route_long_name,nl,CENTRAAL STATION - HEIZEL,GARE CENTRALE - HEYSEL
+routes,route_long_name,fr,GARE CENTRALE - HOMBORCH,GARE CENTRALE - HOMBORCH
+routes,route_long_name,nl,CENTRAAL STATION - HOMBORCH,GARE CENTRALE - HOMBORCH
+routes,route_long_name,fr,GARE CENTRALE - KRAAINEM,GARE CENTRALE - KRAAINEM
+routes,route_long_name,nl,CENTRAAL STATION - KRAAINEM,GARE CENTRALE - KRAAINEM
+routes,route_long_name,fr,GARE CENTRALE - MACHELEN,GARE CENTRALE - MACHELEN
+routes,route_long_name,nl,CENTRAAL STATION - MACHELEN,GARE CENTRALE - MACHELEN
+routes,route_long_name,fr,GARE CENTRALE - MUSEE DU TRAM,GARE CENTRALE - MUSEE DU TRAM
+routes,route_long_name,nl,CENTRAAL STATION - TRAMMUSEUM,GARE CENTRALE - MUSEE DU TRAM
+routes,route_long_name,fr,GARE CENTRALE - PEAGE,GARE CENTRALE - PEAGE
+routes,route_long_name,nl,CENTRAAL STATION - TOL,GARE CENTRALE - PEAGE
+routes,route_long_name,fr,GARE CENTRALE - STALLE P,GARE CENTRALE - STALLE P
+routes,route_long_name,nl,CENTRAAL STATION - STALLE P,GARE CENTRALE - STALLE P
+routes,route_long_name,fr,GARE CENTRALE - WESTLAND SHOPPING,GARE CENTRALE - WESTLAND SHOPPING
+routes,route_long_name,nl,CENTRAAL STATION - WESTLAND SHOPPING,GARE CENTRALE - WESTLAND SHOPPING
+routes,route_long_name,fr,GARE CENTRALE - WIENER,GARE CENTRALE - WIENER
+routes,route_long_name,nl,CENTRAAL STATION - WIENER,GARE CENTRALE - WIENER
+routes,route_long_name,fr,GARE DE BERCHEM - DROGENBOS,GARE DE BERCHEM - DROGENBOS
+routes,route_long_name,nl,STATION BERCHEM  - DROGENBOS,GARE DE BERCHEM - DROGENBOS
+routes,route_long_name,fr,GARE DE BERCHEM - VAL MARIA,GARE DE BERCHEM - VAL MARIA
+routes,route_long_name,nl,STATION BERCHEM - MARIENDAAL,GARE DE BERCHEM - VAL MARIA
+routes,route_long_name,fr,GARE DE L'OUEST - STOCKEL,GARE DE L'OUEST - STOCKEL
+routes,route_long_name,nl,WESTSTATION - STOKKEL,GARE DE L'OUEST - STOCKEL
+routes,route_long_name,fr,GARE DU MIDI - LOT STATION,GARE DU MIDI - LOT STATION
+routes,route_long_name,nl,ZUIDSTATION - LOT STATION,GARE DU MIDI - LOT STATION
+routes,route_long_name,fr,GARE DU MIDI - SIMONIS,GARE DU MIDI - SIMONIS
+routes,route_long_name,nl,ZUIDSTATION - SIMONIS,GARE DU MIDI - SIMONIS
+routes,route_long_name,fr,GARE DU NORD - BIENFAITEURS,GARE DU NORD - BIENFAITEURS
+routes,route_long_name,nl,NOORDSTATION - WELDOENERS,GARE DU NORD - BIENFAITEURS
+routes,route_long_name,fr,GARE DU NORD - MONTGOMERY,GARE DU NORD - MONTGOMERY
+routes,route_long_name,nl,NOORDSTATION - MONTGOMERY,GARE DU NORD - MONTGOMERY
+routes,route_long_name,fr,GARE DU NORD - STALLE (P),GARE DU NORD - STALLE (P)
+routes,route_long_name,nl,NOORDSTATION - STALLE (P),GARE DU NORD - STALLE (P)
+routes,route_long_name,fr,GRAND-PLACE - WIENER,GRAND-PLACE - WIENER
+routes,route_long_name,nl,GROTE MARKT - WIENER,GRAND-PLACE - WIENER
+routes,route_long_name,fr,GROOT-BIJGAARDEN - ROI BAUDOUIN,GROOT-BIJGAARDEN - ROI BAUDOUIN
+routes,route_long_name,nl,GROOT-BIJGAARDEN - KONING BOUDEWIJN,GROOT-BIJGAARDEN - ROI BAUDOUIN
+routes,route_long_name,fr,HEEMBEEK - VILVOORDE STATION,HEEMBEEK - VILVOORDE STATION
+routes,route_long_name,nl,HEEMBEEK - VILVOORDE STATION,HEEMBEEK - VILVOORDE STATION
+routes,route_long_name,fr,HEROS - BON AIR,HEROS - BON AIR
+routes,route_long_name,nl,HELDEN - GOEDE LUCHT,HEROS - BON AIR
+routes,route_long_name,fr,HEROS - TRANSVAAL,HEROS - TRANSVAAL
+routes,route_long_name,nl,HELDEN - TRANSVAAL,HEROS - TRANSVAAL
+routes,route_long_name,fr,HEROS - VIVIER D'OIE,HEROS - VIVIER D'OIE
+routes,route_long_name,nl,HELDEN - DIESDELLE,HEROS - VIVIER D'OIE
+routes,route_long_name,fr,HOPITAL ETTERBEEK-IXELLES - BORDET STATION,HOPITAL ETTERBEEK-IXELLES - BORDET STATION
+routes,route_long_name,nl,ZIEKH. ETTERBEEK-ELSENE - BORDET STATION,HOPITAL ETTERBEEK-IXELLES - BORDET STATION
+routes,route_long_name,fr,HOPITAL MILITAIRE - CHURCHILL,HOPITAL MILITAIRE - CHURCHILL
+routes,route_long_name,nl,MILITAIR HOSPITAAL - CHURCHILL,HOPITAL MILITAIRE - CHURCHILL
+routes,route_long_name,fr,HUMANITE - GARE DU MIDI,HUMANITE - GARE DU MIDI
+routes,route_long_name,nl,HUMANITEIT - ZUIDSTATION,HUMANITE - GARE DU MIDI
+routes,route_long_name,fr,HUNDERENVELD - GARE DU NORD,HUNDERENVELD - GARE DU NORD
+routes,route_long_name,nl,HUNDERENVELD - NOORDSTATION,HUNDERENVELD - GARE DU NORD
+routes,route_long_name,fr,KRAAINEM - HIPPODROME,KRAAINEM - HIPPODROME
+routes,route_long_name,nl,KRAAINEM - HIPPODROOM,KRAAINEM - HIPPODROME
+routes,route_long_name,fr,KRAAINEM - OPPEM,KRAAINEM - OPPEM
+routes,route_long_name,nl,KRAAINEM - OPPEM,KRAAINEM - OPPEM
+routes,route_long_name,fr,KRAAINEM - SCHUMAN,KRAAINEM - SCHUMAN
+routes,route_long_name,nl,KRAAINEM - SCHUMAN,KRAAINEM - SCHUMAN
+routes,route_long_name,fr,LOUISE - ROODEBEEK,LOUISE - ROODEBEEK
+routes,route_long_name,nl,LOUIZA - ROODEBEEK,LOUISE - ROODEBEEK
+routes,route_long_name,fr,LUXEMBOURG - PLEIADES,LUXEMBOURG - PLEIADES
+routes,route_long_name,nl,LUXEMBURG - PLEJADEN,LUXEMBOURG - PLEIADES
+routes,route_long_name,fr,MACHTENS - BOCKSTAEL,MACHTENS - BOCKSTAEL
+routes,route_long_name,nl,MACHTENS - BOCKSTAEL,MACHTENS - BOCKSTAEL
+routes,route_long_name,fr,MAELBEEK - KONKEL,MAELBEEK - KONKEL
+routes,route_long_name,nl,MAALBEEK - KONKEL,MAELBEEK - KONKEL
+routes,route_long_name,fr,MAES - LUXEMBOURG,MAES - LUXEMBOURG
+routes,route_long_name,nl,MAES - LUXEMBURG,MAES - LUXEMBOURG
+routes,route_long_name,fr,MARIUS RENARD - MONTGOMERY,MARIUS RENARD - MONTGOMERY
+routes,route_long_name,nl,MARIUS RENARD - MONTGOMERY,MARIUS RENARD - MONTGOMERY
+routes,route_long_name,fr,MONTGOMERY - BAN-EIK,MONTGOMERY - BAN-EIK
+routes,route_long_name,nl,MONTGOMERY - BAN-EIK,MONTGOMERY - BAN-EIK
+routes,route_long_name,fr,MONTGOMERY - TERVUREN STATION,MONTGOMERY - TERVUREN STATION
+routes,route_long_name,nl,MONTGOMERY - TERVUREN STATION,MONTGOMERY - TERVUREN STATION
+routes,route_long_name,fr,MOORTEBEEK - PANNENHUIS,MOORTEBEEK - PANNENHUIS
+routes,route_long_name,nl,MOORTEBEEK - PANNENHUIS,MOORTEBEEK - PANNENHUIS
+routes,route_long_name,fr,NEERSTALLE - FLAGEY,NEERSTALLE - FLAGEY
+routes,route_long_name,nl,NEERSTALLE - FLAGEY,NEERSTALLE - FLAGEY
+routes,route_long_name,fr,PORTE DE NAMUR - BORDET STATION,PORTE DE NAMUR - BORDET STATION
+routes,route_long_name,nl,NAAMSEPOORT - BORDET STATION,PORTE DE NAMUR - BORDET STATION
+routes,route_long_name,fr,PORTE DE NAMUR - HAREN,PORTE DE NAMUR - HAREN
+routes,route_long_name,nl,NAAMSEPOORT - HAREN,PORTE DE NAMUR - HAREN
+routes,route_long_name,fr,PORTE DE NAMUR - SAINTE-ANNE,PORTE DE NAMUR - SAINTE-ANNE
+routes,route_long_name,nl,NAAMSEPOORT - SINT-ANNA,PORTE DE NAMUR - SAINTE-ANNE
+routes,route_long_name,fr,ROI BAUDOUIN - ELISABETH,ROI BAUDOUIN - ELISABETH
+routes,route_long_name,nl,KONING BOUDEWIJN - ELISABETH,ROI BAUDOUIN - ELISABETH
+routes,route_long_name,fr,ROODEBEEK - SAINT-VINCENT,ROODEBEEK - SAINT-VINCENT
+routes,route_long_name,nl,ROODEBEEK - SINT-VINCENTIUS,ROODEBEEK - SAINT-VINCENT
+routes,route_long_name,fr,ROODEBEEK - VIADUC E40,ROODEBEEK - VIADUC E40
+routes,route_long_name,nl,ROODEBEEK - VIADUCT E40,ROODEBEEK - VIADUC E40
+routes,route_long_name,fr,SCHAERBEEK GARE - ESPLANADE,SCHAERBEEK GARE - ESPLANADE
+routes,route_long_name,nl,SCHAARBEEK STATION - ESPLANADE,SCHAERBEEK GARE - ESPLANADE
+routes,route_long_name,fr,SCHAERBEEK GARE - FORT-JACO,SCHAERBEEK GARE - FORT-JACO
+routes,route_long_name,nl,SCHAARBEEK STATION - FORT-JACO,SCHAERBEEK GARE - FORT-JACO
+routes,route_long_name,fr,SCHAERBEEK GARE - JULES BORDET,SCHAERBEEK GARE - JULES BORDET
+routes,route_long_name,nl,SCHAARBEEK STATION - JULES BORDET,SCHAERBEEK GARE - JULES BORDET
+routes,route_long_name,fr,SCHUMAN - BUDA,SCHUMAN - BUDA
+routes,route_long_name,nl,SCHUMAN - BUDA,SCHUMAN - BUDA
+routes,route_long_name,fr,SIMONIS - BEEKKANT,SIMONIS - BEEKKANT
+routes,route_long_name,nl,SIMONIS - BEEKKANT,SIMONIS - BEEKKANT
+routes,route_long_name,fr,SIMONIS - DE WAND,SIMONIS - DE WAND
+routes,route_long_name,nl,SIMONIS - DE WAND,SIMONIS - DE WAND
+routes,route_long_name,fr,SIMONIS - ELISABETH,SIMONIS - ELISABETH
+routes,route_long_name,nl,SIMONIS - ELISABETH,SIMONIS - ELISABETH
+routes,route_long_name,fr,STADE - GARE DU MIDI,STADE - GARE DU MIDI
+routes,route_long_name,nl,STADION - ZUIDSTATION,STADE - GARE DU MIDI
+routes,route_long_name,fr,STADE - LEGRAND,STADE - LEGRAND
+routes,route_long_name,nl,STADION - LEGRAND,STADE - LEGRAND
+routes,route_long_name,fr,TRONE - FOREST (BERVOETS),TRONE - FOREST (BERVOETS)
+routes,route_long_name,nl,TROON - VORST (BERVOETS),TRONE - FOREST (BERVOETS)
+routes,route_long_name,fr,UCCLE-STALLE - CLEMENCE EVERARD,UCCLE-STALLE - CLEMENCE EVERARD
+routes,route_long_name,nl,CLEMENCE EVERARD - UKKEL-STALLE,UCCLE-STALLE - CLEMENCE EVERARD
+routes,route_long_name,fr,ULB - ADEPS,ULB - ADEPS
+routes,route_long_name,nl,ULB - ADEPS,ULB - ADEPS
+routes,route_long_name,fr,UZ-VUB - GARE DU NORD,UZ-VUB - GARE DU NORD
+routes,route_long_name,nl,UZ-VUB - NOORDSTATION,UZ-VUB - GARE DU NORD
+routes,route_long_name,fr,VANDERKINDERE - HEYSEL,VANDERKINDERE - HEYSEL
+routes,route_long_name,nl,VANDERKINDERE - HEIZEL,VANDERKINDERE - HEYSEL
+routes,route_long_name,fr,VILVOORDE STATION - ALBERT II,VILVOORDE STATION - ALBERT II
+routes,route_long_name,nl,VILVOORDE STATION - ALBERT II,VILVOORDE STATION - ALBERT II
+routes,route_long_name,fr,WESTLAND SHOPPING - GARE CENTRALE,WESTLAND SHOPPING - GARE CENTRALE
+routes,route_long_name,nl,WESTLAND SHOPPING - CENTRAAL STATION,WESTLAND SHOPPING - GARE CENTRALE
+routes,route_long_name,fr,WESTLAND SHOPPING - HOPITAL MILITAIRE,WESTLAND SHOPPING - HOPITAL MILITAIRE
+routes,route_long_name,nl,WESTLAND SHOPPING - MILITAIR HOSPITAAL,WESTLAND SHOPPING - HOPITAL MILITAIRE
+stops,stop_name,fr,4 - Boulevard Anspach,4 - Boulevard Anspach
+stops,stop_name,nl,4 - Anspachlaan,4 - Boulevard Anspach
+stops,stop_name,fr,2 - Place De Brouckère,2 - Place De Brouckère
+stops,stop_name,nl,2 - De Brouckèreplein,2 - Place De Brouckère
+stops,stop_name,fr,3 - Place De Brouckère,3 - Place De Brouckère
+stops,stop_name,nl,3 - De Brouckèreplein,3 - Place De Brouckère
+stops,stop_name,fr,1 - Place De Brouckère,1 - Place De Brouckère
+stops,stop_name,nl,1 - De Brouckèreplein,1 - Place De Brouckère
+stops,stop_name,fr,1 - Putterie,1 - Putterie
+stops,stop_name,nl,1 - Putterij,1 - Putterie
+stops,stop_name,fr,2 - Rue des Colonies,2 - Rue des Colonies
+stops,stop_name,nl,2 - Koloniënstraat,2 - Rue des Colonies
+stops,stop_name,fr,3 - Rue des Colonies,3 - Rue des Colonies
+stops,stop_name,nl,3 - Koloniënstraat,3 - Rue des Colonies
+stops,stop_name,fr,5 - Rue Montagne du Parc,5 - Rue Montagne du Parc
+stops,stop_name,nl,5 - Warandeberg,5 - Rue Montagne du Parc
+stops,stop_name,fr,6 - Putterie,6 - Putterie
+stops,stop_name,nl,6 - Putterij,6 - Putterie
+stops,stop_name,fr,7 - Rue de Loxum,7 - Rue de Loxum
+stops,stop_name,nl,7 - Loksumstraat,7 - Rue de Loxum
+stops,stop_name,fr,8 - Rue de Loxum,8 - Rue de Loxum
+stops,stop_name,nl,8 - Loksumstraat,8 - Rue de Loxum
+stops,stop_name,fr,1 - Rue Royale,1 - Rue Royale
+stops,stop_name,nl,1 - Koningsstraat,1 - Rue Royale
+stops,stop_name,fr,1 - Rue de la Loi,1 - Rue de la Loi
+stops,stop_name,nl,1 - Wetstraat,1 - Rue de la Loi
+stops,stop_name,fr,2 - Rue de la Loi,2 - Rue de la Loi
+stops,stop_name,nl,2 - Wetstraat,2 - Rue de la Loi
+stops,stop_name,fr,3 - Avenue des Arts,3 - Avenue des Arts
+stops,stop_name,nl,3 - Kunstlaan,3 - Avenue des Arts
+stops,stop_name,fr,4 - Avenue des Arts,4 - Avenue des Arts
+stops,stop_name,nl,4 - Kunstlaan,4 - Avenue des Arts
+stops,stop_name,fr,5 - Boulevard du Régent,5 - Boulevard du Régent
+stops,stop_name,nl,5 - Regentlaan,5 - Boulevard du Régent
+stops,stop_name,fr,6 - Boulevard du Régent,6 - Boulevard du Régent
+stops,stop_name,nl,6 - Regentlaan,6 - Boulevard du Régent
+stops,stop_name,fr,1 - Chaussée d'Etterbeek,1 - Chaussée d'Etterbeek
+stops,stop_name,nl,1 - Etterbeeksesteenweg,1 - Chaussée d'Etterbeek
+stops,stop_name,fr,3 - Rue de la Loi,3 - Rue de la Loi
+stops,stop_name,nl,3 - Wetstraat,3 - Rue de la Loi
+stops,stop_name,fr,4 - Rue Joseph II,4 - Rue Joseph II
+stops,stop_name,nl,4 - Jozef II-straat,4 - Rue Joseph II
+stops,stop_name,fr,5 - Rue de la Loi,5 - Rue de la Loi
+stops,stop_name,nl,5 - Wetstraat,5 - Rue de la Loi
+stops,stop_name,fr,3 - Rond-point Schuman,3 - Rond-point Schuman
+stops,stop_name,nl,3 - Robert Schumanplein,3 - Rond-point Schuman
+stops,stop_name,fr,2 - Rond-point Schuman,2 - Rond-point Schuman
+stops,stop_name,nl,2 - Robert Schumanplein,2 - Rond-point Schuman
+stops,stop_name,fr,1 - Avenue de l'Yser,1 - Avenue de l'Yser
+stops,stop_name,nl,1 - IJzerlaan,1 - Avenue de l'Yser
+stops,stop_name,fr,2 - Avenue de Tervuren,2 - Avenue de Tervuren
+stops,stop_name,nl,2 - Tervurenlaan,2 - Avenue de Tervuren
+stops,stop_name,fr,3 - Avenue des Celtes,3 - Avenue des Celtes
+stops,stop_name,nl,3 - Keltenlaan,3 - Avenue des Celtes
+stops,stop_name,fr,4 - Avenue des Gaulois,4 - Avenue des Gaulois
+stops,stop_name,nl,4 - Galliërslaan,4 - Avenue des Gaulois
+stops,stop_name,fr,7 - Square Princesse Jean de Mérode,7 - Square Princesse Jean de Mérode
+stops,stop_name,nl,7 - Prinses Jean de Mérodeplein,7 - Square Princesse Jean de Mérode
+stops,stop_name,fr,8 - Rue des Tongres,8 - Rue des Tongres
+stops,stop_name,nl,8 - Tongerenstraat,8 - Rue des Tongres
+stops,stop_name,fr,1 - Square Maréchal Montgomery,1 - Square Maréchal Montgomery
+stops,stop_name,nl,1 - Maarschalk Montgomeryplein,1 - Square Maréchal Montgomery
+stops,stop_name,fr,2 - Boulevard Saint-Michel,2 - Boulevard Saint-Michel
+stops,stop_name,nl,2 - Sint-Michielslaan,2 - Boulevard Saint-Michel
+stops,stop_name,fr,3 - Square Maréchal Montgomery,3 - Square Maréchal Montgomery
+stops,stop_name,nl,3 - Maarschalk Montgomeryplein,3 - Square Maréchal Montgomery
+stops,stop_name,fr,4 - Avenue de Tervuren,4 - Avenue de Tervuren
+stops,stop_name,nl,4 - Tervurenlaan,4 - Avenue de Tervuren
+stops,stop_name,fr,5 - Boulevard Brand Whitlock,5 - Boulevard Brand Whitlock
+stops,stop_name,nl,5 - Brand Whitlocklaan,5 - Boulevard Brand Whitlock
+stops,stop_name,fr,1 - Square Joséphine-Charlotte,1 - Square Joséphine-Charlotte
+stops,stop_name,nl,1 - Joséphine-Charlottesquare,1 - Square Joséphine-Charlotte
+stops,stop_name,fr,2 - Avenue de Woluwe-St-Lambert,2 - Avenue de Woluwe-St-Lambert
+stops,stop_name,nl,2 - Sint-Lambrechts-Woluwelaan,2 - Avenue de Woluwe-St-Lambert
+stops,stop_name,fr,3 - Avenue de Broqueville,3 - Avenue de Broqueville
+stops,stop_name,nl,3 - de Broquevillelaan,3 - Avenue de Broqueville
+stops,stop_name,fr,1 - Avenue du Roi Chevalier,1 - Avenue du Roi Chevalier
+stops,stop_name,nl,1 - Ridder Koninglaan,1 - Avenue du Roi Chevalier
+stops,stop_name,fr,2 - Avenue du Roi Chevalier,2 - Avenue du Roi Chevalier
+stops,stop_name,nl,2 - Ridder Koninglaan,2 - Avenue du Roi Chevalier
+stops,stop_name,fr,3 - Avenue Gribaumont,3 - Avenue Gribaumont
+stops,stop_name,nl,3 - Louis Gribaumontlaan,3 - Avenue Gribaumont
+stops,stop_name,fr,4 - Avenue Gribaumont,4 - Avenue Gribaumont
+stops,stop_name,nl,4 - Louis Gribaumontlaan,4 - Avenue Gribaumont
+stops,stop_name,fr,1 - Avenue Paul Hymans,1 - Avenue Paul Hymans
+stops,stop_name,nl,1 - Paul Hymanslaan,1 - Avenue Paul Hymans
+stops,stop_name,fr,2 - Avenue Paul Hymans,2 - Avenue Paul Hymans
+stops,stop_name,nl,2 - Paul Hymanslaan,2 - Avenue Paul Hymans
+stops,stop_name,fr,3 - Place du Tomberg,3 - Place du Tomberg
+stops,stop_name,nl,3 - Tombergplein,3 - Place du Tomberg
+stops,stop_name,fr,4 - Place du Tomberg,4 - Place du Tomberg
+stops,stop_name,nl,4 - Tombergplein,4 - Place du Tomberg
+stops,stop_name,fr,1 - Parking Roodebeek,1 - Parking Roodebeek
+stops,stop_name,nl,1 - Parking Roodebeek,1 - Parking Roodebeek
+stops,stop_name,fr,3 - Avenue Paul Hymans,3 - Avenue Paul Hymans
+stops,stop_name,nl,3 - Paul Hymanslaan,3 - Avenue Paul Hymans
+stops,stop_name,fr,4 - Woluwe Shopping Center,4 - Woluwe Shopping Center
+stops,stop_name,nl,4 - Woluwe Shopping Center,4 - Woluwe Shopping Center
+stops,stop_name,fr,5 - Avenue Paul Hymans,5 - Avenue Paul Hymans
+stops,stop_name,nl,5 - Paul Hymanslaan,5 - Avenue Paul Hymans
+stops,stop_name,fr,6 - Avenue Paul Hymans,6 - Avenue Paul Hymans
+stops,stop_name,nl,6 - Paul Hymanslaan,6 - Avenue Paul Hymans
+stops,stop_name,fr,1 - Avenue Emile Vandervelde,1 - Avenue Emile Vandervelde
+stops,stop_name,nl,1 - Emile Vanderveldelaan,1 - Avenue Emile Vandervelde
+stops,stop_name,fr,2 - Avenue Emile Vandervelde,2 - Avenue Emile Vandervelde
+stops,stop_name,nl,2 - Emile Vanderveldelaan,2 - Avenue Emile Vandervelde
+stops,stop_name,fr,3 - Place de l'Alma,3 - Place de l'Alma
+stops,stop_name,nl,3 - Almaplein,3 - Place de l'Alma
+stops,stop_name,fr,2 - Place de la Vecquée,2 - Place de la Vecquée
+stops,stop_name,nl,2 - Vècquéeplein,2 - Place de la Vecquée
+stops,stop_name,fr,R MARTIN V,R MARTIN V
+stops,stop_name,nl,MARTINUS V-STRAAT,R MARTIN V
+stops,stop_name,fr,1 - Avenue de Wezembeek,1 - Avenue de Wezembeek
+stops,stop_name,nl,1 - Wezembeeklaan,1 - Avenue de Wezembeek
+stops,stop_name,fr,1 - Square Stockel,1 - Square Stockel
+stops,stop_name,nl,1 - Stokkel Square,1 - Square Stockel
+stops,stop_name,fr,2 - Rue Dominique De Jonghe,2 - Rue Dominique De Jonghe
+stops,stop_name,nl,2 - Dominique De Jonghestraat,2 - Rue Dominique De Jonghe
+stops,stop_name,fr,1 - Pont Fernand Demany,1 - Pont Fernand Demany
+stops,stop_name,nl,1 - Fernand Demanybrug,1 - Pont Fernand Demany
+stops,stop_name,fr,2 - Pont Fernand Demany,2 - Pont Fernand Demany
+stops,stop_name,nl,2 - Fernand Demanybrug,2 - Pont Fernand Demany
+stops,stop_name,fr,1 - Avenue des Volontaires,1 - Avenue des Volontaires
+stops,stop_name,nl,1 - Vrijwilligerslaan,1 - Avenue des Volontaires
+stops,stop_name,fr,2 - Boulevard Louis Schimdt,2 - Boulevard Louis Schimdt
+stops,stop_name,nl,2 - Louis Schmidtlaan,2 - Boulevard Louis Schimdt
+stops,stop_name,fr,1 - Chaussée de Wavre,1 - Chaussée de Wavre
+stops,stop_name,nl,1 - Waversesteenweg,1 - Chaussée de Wavre
+stops,stop_name,fr,2 - Chaussée de Wavre,2 - Chaussée de Wavre
+stops,stop_name,nl,2 - Waversesteenweg,2 - Chaussée de Wavre
+stops,stop_name,fr,3 - Chaussée de Wavre,3 - Chaussée de Wavre
+stops,stop_name,nl,3 - Waversesteenweg,3 - Chaussée de Wavre
+stops,stop_name,fr,1 - Parking Delta,1 - Parking Delta
+stops,stop_name,nl,1 - Parking Delta,1 - Parking Delta
+stops,stop_name,fr,2 - Boulevard du Triomphe,2 - Boulevard du Triomphe
+stops,stop_name,nl,2 - Triomflaan,2 - Boulevard du Triomphe
+stops,stop_name,fr,3 - Boulevard des Invalides,3 - Boulevard des Invalides
+stops,stop_name,nl,3 - Invalidenlaan,3 - Boulevard des Invalides
+stops,stop_name,fr,4 - Rue Jules Cockx,4 - Rue Jules Cockx
+stops,stop_name,nl,4 - Jules Cockxstraat,4 - Rue Jules Cockx
+stops,stop_name,fr,BD INVALIDES/R TROIS PONTS,BD INVALIDES/R TROIS PONTS
+stops,stop_name,nl,INVALIDENLAAN / DRIEBRUGGENSTRAAT,BD INVALIDES/R TROIS PONTS
+stops,stop_name,fr,1 - Rue Jules Cockx,1 - Rue Jules Cockx
+stops,stop_name,nl,1 - Jules Cockxstraat,1 - Rue Jules Cockx
+stops,stop_name,fr,2 - Rue Jules Cockx,2 - Rue Jules Cockx
+stops,stop_name,nl,2 - Jules Cockxstraat,2 - Rue Jules Cockx
+stops,stop_name,fr,3 - Avenue des Meuniers,3 - Avenue des Meuniers
+stops,stop_name,nl,3 - Mulderslaan,3 - Avenue des Meuniers
+stops,stop_name,fr,4 - Avenue des Meuniers,4 - Avenue des Meuniers
+stops,stop_name,nl,4 - Mulderslaan,4 - Avenue des Meuniers
+stops,stop_name,fr,5 - Rue Jules Cockx,5 - Rue Jules Cockx
+stops,stop_name,nl,5 - Jules Cockxstraat,5 - Rue Jules Cockx
+stops,stop_name,fr,1 - Avenue E.Van Nieuwenhuyse,1 - Avenue E.Van Nieuwenhuyse
+stops,stop_name,nl,1 - Edmond van Nieuwenhuyselaan,1 - Avenue E.Van Nieuwenhuyse
+stops,stop_name,fr,2 - Avenue Louis Dehoux,2 - Avenue Louis Dehoux
+stops,stop_name,nl,2 - Louis Dehouxlaan,2 - Avenue Louis Dehoux
+stops,stop_name,fr,3 - Avenue Louis Dehoux,3 - Avenue Louis Dehoux
+stops,stop_name,nl,3 - Louis Dehouxlaan,3 - Avenue Louis Dehoux
+stops,stop_name,fr,4 - Avenue Louis Dehoux,4 - Avenue Louis Dehoux
+stops,stop_name,nl,4 - Louis Dehouxlaan,4 - Avenue Louis Dehoux
+stops,stop_name,fr,5 - Avenue E.Van Nieuwenhuyse,5 - Avenue E.Van Nieuwenhuyse
+stops,stop_name,nl,5 - Edmond van Nieuwenhuyselaan,5 - Avenue E.Van Nieuwenhuyse
+stops,stop_name,fr,1 - Avenue Herrmann-Debroux,1 - Avenue Herrmann-Debroux
+stops,stop_name,nl,1 - Herrmann-Debrouxlaan,1 - Avenue Herrmann-Debroux
+stops,stop_name,fr,2 - Avenue Herrmann-Debroux,2 - Avenue Herrmann-Debroux
+stops,stop_name,nl,2 - Herrmann-Debrouxlaan,2 - Avenue Herrmann-Debroux
+stops,stop_name,fr,1 - Quai au Bois à Brûler,1 - Quai au Bois à Brûler
+stops,stop_name,nl,1 - Brandhoutkaai,1 - Quai au Bois à Brûler
+stops,stop_name,fr,1 - Quai aux Briques,1 - Quai aux Briques
+stops,stop_name,nl,1 - Baksteenkaai,1 - Quai aux Briques
+stops,stop_name,fr,1 - Rue du Comte de Flandre,1 - Rue du Comte de Flandre
+stops,stop_name,nl,1 - Graaf van Vlaanderenstraat,1 - Rue du Comte de Flandre
+stops,stop_name,fr,2 - Rue Sainte-Marie,2 - Rue Sainte-Marie
+stops,stop_name,nl,2 - Sint-Mariastraat,2 - Rue Sainte-Marie
+stops,stop_name,fr,1 - Place des Étangs Noirs,1 - Place des Étangs Noirs
+stops,stop_name,nl,1 - Zwarte Vijversplein,1 - Place des Étangs Noirs
+stops,stop_name,fr,2 - Chaussée de Gand,2 - Chaussée de Gand
+stops,stop_name,nl,2 - Gentsesteenweg,2 - Chaussée de Gand
+stops,stop_name,fr,1 - Rue du Luxembourg,1 - Rue du Luxembourg
+stops,stop_name,nl,1 - Luxemburgstraat,1 - Rue du Luxembourg
+stops,stop_name,fr,2 - Rue Montoyer,2 - Rue Montoyer
+stops,stop_name,nl,2 - Montoyerstraat,2 - Rue Montoyer
+stops,stop_name,fr,1 - Chaussée d'Ixelles,1 - Chaussée d'Ixelles
+stops,stop_name,nl,1 - Elsensesteenweg,1 - Chaussée d'Ixelles
+stops,stop_name,fr,2 - Avenue de la Toison d'Or,2 - Avenue de la Toison d'Or
+stops,stop_name,nl,2 - Gulden-Vlieslaan,2 - Avenue de la Toison d'Or
+stops,stop_name,fr,3 - Boulevard de Waterloo,3 - Boulevard de Waterloo
+stops,stop_name,nl,3 - Waterloolaan,3 - Boulevard de Waterloo
+stops,stop_name,fr,4 - Boulevard du Régent,4 - Boulevard du Régent
+stops,stop_name,nl,4 - Regentlaan,4 - Boulevard du Régent
+stops,stop_name,fr,5 - Place du Champ de Mars,5 - Place du Champ de Mars
+stops,stop_name,nl,5 - Marsveldplein,5 - Place du Champ de Mars
+stops,stop_name,fr,6 - Square du Bastion,6 - Square du Bastion
+stops,stop_name,nl,6 - Bolwerksquare,6 - Square du Bastion
+stops,stop_name,fr,1 - Avenue Louise,1 - Avenue Louise
+stops,stop_name,nl,1 - Louizalaan,1 - Avenue Louise
+stops,stop_name,fr,2 - Avenue Louise,2 - Avenue Louise
+stops,stop_name,nl,2 - Louizalaan,2 - Avenue Louise
+stops,stop_name,fr,4 - Boulevard de Waterloo,4 - Boulevard de Waterloo
+stops,stop_name,nl,4 - Waterloolaan,4 - Boulevard de Waterloo
+stops,stop_name,fr,1 - Boulevard de Waterloo,1 - Boulevard de Waterloo
+stops,stop_name,nl,1 - Waterloolaan,1 - Boulevard de Waterloo
+stops,stop_name,fr,3 - Avenue Henri Jaspar,3 - Avenue Henri Jaspar
+stops,stop_name,nl,3 - Henri Jasparlaan,3 - Avenue Henri Jaspar
+stops,stop_name,fr,1 - Rue César de Paepe,1 - Rue César de Paepe
+stops,stop_name,nl,1 - César Depaepestraat,1 - Rue César de Paepe
+stops,stop_name,fr,2 - Boulevard du Midi,2 - Boulevard du Midi
+stops,stop_name,nl,2 - Zuidlaan,2 - Boulevard du Midi
+stops,stop_name,fr,3 - Chaussée de Forest,3 - Chaussée de Forest
+stops,stop_name,nl,3 - Vorstse Steenweg,3 - Chaussée de Forest
+stops,stop_name,fr,4 - Avenue de la Porte de Hal,4 - Avenue de la Porte de Hal
+stops,stop_name,nl,4 - Hallepoortlaan,4 - Avenue de la Porte de Hal
+stops,stop_name,fr,1 - Avenue Fonsny,1 - Avenue Fonsny
+stops,stop_name,nl,1 - Fonsnylaan,1 - Avenue Fonsny
+stops,stop_name,fr,2 - Gare SNCB,2 - Gare SNCB
+stops,stop_name,nl,2 - Station NMBS Brussel-Zuid,2 - Gare SNCB
+stops,stop_name,fr,6 - Boulevard de l'Europe,6 - Boulevard de l'Europe
+stops,stop_name,nl,6 - Europalaan,6 - Boulevard de l'Europe
+stops,stop_name,fr,7 - Avenue Fonsny,7 - Avenue Fonsny
+stops,stop_name,nl,7 - Fonsnylaan,7 - Avenue Fonsny
+stops,stop_name,fr,1 - Rue de la Clinique,1 - Rue de la Clinique
+stops,stop_name,nl,1 - Kliniekstraat,1 - Rue de la Clinique
+stops,stop_name,fr,2 - Chaussée de Mons,2 - Chaussée de Mons
+stops,stop_name,nl,2 - Bergensesteenweg,2 - Chaussée de Mons
+stops,stop_name,fr,1 - Rue Léon Delacroix,1 - Rue Léon Delacroix
+stops,stop_name,nl,1 - Léon Delacroixstraat,1 - Rue Léon Delacroix
+stops,stop_name,fr,3 - Quai Fernand Demets,3 - Quai Fernand Demets
+stops,stop_name,nl,3 - Fernand Demetskaai,3 - Quai Fernand Demets
+stops,stop_name,fr,4 - Quai de l'Industrie,4 - Quai de l'Industrie
+stops,stop_name,nl,4 - Nijverheidskaai,4 - Quai de l'Industrie
+stops,stop_name,fr,5 - Place Louise,5 - Place Louise
+stops,stop_name,nl,5 - Louizaplein,5 - Place Louise
+stops,stop_name,fr,1 - Place Madou,1 - Place Madou
+stops,stop_name,nl,1 - Madouplein,1 - Place Madou
+stops,stop_name,fr,2 - Boulevard Bischoffsheim,2 - Boulevard Bischoffsheim
+stops,stop_name,nl,2 - Bischoffsheimlaan,2 - Boulevard Bischoffsheim
+stops,stop_name,fr,3 - Rue des Cultes,3 - Rue des Cultes
+stops,stop_name,nl,3 - Eredienststraat,3 - Rue des Cultes
+stops,stop_name,fr,4 - Place Madou,4 - Place Madou
+stops,stop_name,nl,4 - Madouplein,4 - Place Madou
+stops,stop_name,fr,3 - Boulevard du Jardin Botanique,3 - Boulevard du Jardin Botanique
+stops,stop_name,nl,3 - Kruidtuinlaan,3 - Boulevard du Jardin Botanique
+stops,stop_name,fr,1 - Boulevard du Jardin Botanique,1 - Boulevard du Jardin Botanique
+stops,stop_name,nl,1 - Kruidtuinlaan,1 - Boulevard du Jardin Botanique
+stops,stop_name,fr,2 - Boulevard Adolphe Max,2 - Boulevard Adolphe Max
+stops,stop_name,nl,2 - Adolphe Maxlaan,2 - Boulevard Adolphe Max
+stops,stop_name,fr,3 - Boulevard Adolphe Max,3 - Boulevard Adolphe Max
+stops,stop_name,nl,3 - Adolphe Maxlaan,3 - Boulevard Adolphe Max
+stops,stop_name,fr,1 - City 2,1 - City 2
+stops,stop_name,nl,1 - City 2,1 - City 2
+stops,stop_name,fr,8 - Place Charles Rogier,8 - Place Charles Rogier
+stops,stop_name,nl,8 - Karel Rogierplein,8 - Place Charles Rogier
+stops,stop_name,fr,7 - Place Charles Rogier,7 - Place Charles Rogier
+stops,stop_name,nl,7 - Karel Rogierplein,7 - Place Charles Rogier
+stops,stop_name,fr,4 - Avenue du Boulevard,4 - Avenue du Boulevard
+stops,stop_name,nl,4 - Bolwerklaan,4 - Avenue du Boulevard
+stops,stop_name,fr,1 - Boulevard Baudouin,1 - Boulevard Baudouin
+stops,stop_name,nl,1 - Boudewijnlaan,1 - Boulevard Baudouin
+stops,stop_name,fr,2 - Chaussée d'Anvers,2 - Chaussée d'Anvers
+stops,stop_name,nl,2 - Antwerpsesteenweg,2 - Chaussée d'Anvers
+stops,stop_name,fr,3 - Porte d'Anvers,3 - Porte d'Anvers
+stops,stop_name,nl,3 - Antwerpsepoort,3 - Porte d'Anvers
+stops,stop_name,fr,4 - Boulevard d'Anvers,4 - Boulevard d'Anvers
+stops,stop_name,nl,4 - Antwerpselaan,4 - Boulevard d'Anvers
+stops,stop_name,fr,5 - Boulevard d'Anvers,5 - Boulevard d'Anvers
+stops,stop_name,nl,5 - Antwerpselaan,5 - Boulevard d'Anvers
+stops,stop_name,fr,6 - Parc Maximilien,6 - Parc Maximilien
+stops,stop_name,nl,6 - Maximiliaanpark,6 - Parc Maximilien
+stops,stop_name,fr,1 - Boulevard Léopold II,1 - Boulevard Léopold II
+stops,stop_name,nl,1 - Leopold II-laan,1 - Boulevard Léopold II
+stops,stop_name,fr,1 - Rue de Ribaucourt,1 - Rue de Ribaucourt
+stops,stop_name,nl,2- Leopold II-laan,1 - Rue de Ribaucourt
+stops,stop_name,fr,2 - Rue de l'Armistice,2 - Rue de l'Armistice
+stops,stop_name,nl,2 - Wapenstilstandstraat,2 - Rue de l'Armistice
+stops,stop_name,fr,3 - Rue de l'Armistice,3 - Rue de l'Armistice
+stops,stop_name,nl,3 - Wapenstilstandstraat,3 - Rue de l'Armistice
+stops,stop_name,fr,4 - Boulevard Léopold II,4 - Boulevard Léopold II
+stops,stop_name,nl,4 - Leopold II-laan,4 - Boulevard Léopold II
+stops,stop_name,fr,6 - Place Simonis,6 - Place Simonis
+stops,stop_name,nl,6 - Eugène Simonisplein,6 - Place Simonis
+stops,stop_name,fr,1 - Gare SNCB,1 - Gare SNCB
+stops,stop_name,nl,1 - Station NMBS Brussel-Noord,1 - Gare SNCB
+stops,stop_name,fr,1 - Boulevard Anspach,1 - Boulevard Anspach
+stops,stop_name,nl,1 - Anspachlaan,1 - Boulevard Anspach
+stops,stop_name,fr,2 - Boulevard Anspach,2 - Boulevard Anspach
+stops,stop_name,nl,2 - Anspachlaan,2 - Boulevard Anspach
+stops,stop_name,fr,3 - Bourse,3 - Bourse
+stops,stop_name,nl,3 - Beurs,3 - Bourse
+stops,stop_name,fr,4 - Bourse,4 - Bourse
+stops,stop_name,nl,4 - Beurs,4 - Bourse
+stops,stop_name,fr,5 - Boulevard Anspach,5 - Boulevard Anspach
+stops,stop_name,nl,5 - Anspachlaan,5 - Boulevard Anspach
+stops,stop_name,fr,6 - Boulevard Anspach,6 - Boulevard Anspach
+stops,stop_name,nl,6 - Anspachlaan,6 - Boulevard Anspach
+stops,stop_name,fr,7 - Boulevard Anspach,7 - Boulevard Anspach
+stops,stop_name,nl,7 - Anspachlaan,7 - Boulevard Anspach
+stops,stop_name,fr,8 - Boulevard Anspach,8 - Boulevard Anspach
+stops,stop_name,nl,8 - Anspachlaan,8 - Boulevard Anspach
+stops,stop_name,fr,9 - Bourse,9 - Bourse
+stops,stop_name,nl,9 - Beurs,9 - Bourse
+stops,stop_name,fr,10 - Bourse,10 - Bourse
+stops,stop_name,nl,10 - Beurs,10 - Bourse
+stops,stop_name,fr,11 - Place de la Bourse,11 - Place de la Bourse
+stops,stop_name,nl,11 - Beursplein,11 - Place de la Bourse
+stops,stop_name,fr,12 - Boulevard Anspach,12 - Boulevard Anspach
+stops,stop_name,nl,12 - Anspachlaan,12 - Boulevard Anspach
+stops,stop_name,fr,1 - Place Anneessens,1 - Place Anneessens
+stops,stop_name,nl,1 - Anneessensplein,1 - Place Anneessens
+stops,stop_name,fr,2 - Place Anneessens,2 - Place Anneessens
+stops,stop_name,nl,2 - Anneessensplein,2 - Place Anneessens
+stops,stop_name,fr,3 - Rue de Tournai,3 - Rue de Tournai
+stops,stop_name,nl,3 - Doornikstraat,3 - Rue de Tournai
+stops,stop_name,fr,4 - Boulevard Maurice Lemonnier,4 - Boulevard Maurice Lemonnier
+stops,stop_name,nl,4 - Maurice Lemonnierlaan,4 - Boulevard Maurice Lemonnier
+stops,stop_name,fr,5 - Place Anneessens,5 - Place Anneessens
+stops,stop_name,nl,5 - Anneessensplein,5 - Place Anneessens
+stops,stop_name,fr,6 - Place Anneessens,6 - Place Anneessens
+stops,stop_name,nl,6 - Anneessensplein,6 - Place Anneessens
+stops,stop_name,fr,1 - Boulevard Maurice Lemonnier,1 - Boulevard Maurice Lemonnier
+stops,stop_name,nl,1 - Maurice Lemonnierlaan,1 - Boulevard Maurice Lemonnier
+stops,stop_name,fr,1 - Parvis de Saint-Gilles,1 - Parvis de Saint-Gilles
+stops,stop_name,nl,1 - Sint-Gillisvoorplein,1 - Parvis de Saint-Gilles
+stops,stop_name,fr,2 - Rue Hôtel des Monnaies,2 - Rue Hôtel des Monnaies
+stops,stop_name,nl,2 - Munthofstraat,2 - Rue Hôtel des Monnaies
+stops,stop_name,fr,1 - Chaussée de Waterloo,1 - Chaussée de Waterloo
+stops,stop_name,nl,1 - Waterloosesteenweg,1 - Chaussée de Waterloo
+stops,stop_name,fr,2 - Chaussée de Waterloo,2 - Chaussée de Waterloo
+stops,stop_name,nl,2 - Waterloosesteenweg,2 - Chaussée de Waterloo
+stops,stop_name,fr,1 - Avenue Jupiter,1 - Avenue Jupiter
+stops,stop_name,nl,1 - Jupiterlaan,1 - Avenue Jupiter
+stops,stop_name,fr,2 - Avenue Besme,2 - Avenue Besme
+stops,stop_name,nl,2 - Besmelaan,2 - Avenue Besme
+stops,stop_name,fr,3 - Avenue Albert,3 - Avenue Albert
+stops,stop_name,nl,3 - Albertlaan,3 - Avenue Albert
+stops,stop_name,fr,1 - Square Vergote,1 - Square Vergote
+stops,stop_name,nl,1 - Vergoteplein,1 - Square Vergote
+stops,stop_name,fr,2 - Square Vergote,2 - Square Vergote
+stops,stop_name,nl,2 - Vergoteplein,2 - Square Vergote
+stops,stop_name,fr,3 - Boulevard Brand Whitlock,3 - Boulevard Brand Whitlock
+stops,stop_name,nl,3 - Brand Whitlocklaan,3 - Boulevard Brand Whitlock
+stops,stop_name,fr,4 - Boulevard Brand Whitlock,4 - Boulevard Brand Whitlock
+stops,stop_name,nl,4 - Brand Whitlocklaan,4 - Boulevard Brand Whitlock
+stops,stop_name,fr,1 - Boulevard Auguste Reyers,1 - Boulevard Auguste Reyers
+stops,stop_name,nl,1 - Auguste Reyerslaan,1 - Boulevard Auguste Reyers
+stops,stop_name,fr,2 - Boulevard Auguste Reyers,2 - Boulevard Auguste Reyers
+stops,stop_name,nl,2 - Auguste Reyerslaan,2 - Boulevard Auguste Reyers
+stops,stop_name,fr,1 - Boulevard Saint-Michel,1 - Boulevard Saint-Michel
+stops,stop_name,nl,1 - Sint-Michielslaan,1 - Boulevard Saint-Michel
+stops,stop_name,fr,2 - Rue Charles Legrelle,2 - Rue Charles Legrelle
+stops,stop_name,nl,2 - Charles Legrellestraat,2 - Rue Charles Legrelle
+stops,stop_name,fr,3 - Rue Charles Legrelle,3 - Rue Charles Legrelle
+stops,stop_name,nl,3 - Charles Legrellestraat,3 - Rue Charles Legrelle
+stops,stop_name,fr,4 - Rue Père E. Devroye,4 - Rue Père E. Devroye
+stops,stop_name,nl,4 - Pater Eudore Devroyestraat,4 - Rue Père E. Devroye
+stops,stop_name,fr,5 - Avenue Boileau,5 - Avenue Boileau
+stops,stop_name,nl,5 - Boileaulaan,5 - Avenue Boileau
+stops,stop_name,fr,1 - Route de Lennik,1 - Route de Lennik
+stops,stop_name,nl,1 - Lenniksebaan,1 - Route de Lennik
+stops,stop_name,fr,2 - Route de Lennik,2 - Route de Lennik
+stops,stop_name,nl,2 - Lenniksebaan,2 - Route de Lennik
+stops,stop_name,fr,3 - Hôpital Erasme,3 - Hôpital Erasme
+stops,stop_name,nl,3 - Erasmus Ziekenhuis,3 - Hôpital Erasme
+stops,stop_name,fr,1 - Boulevard Josse Leemans,1 - Boulevard Josse Leemans
+stops,stop_name,nl,1 - Josse Leemanslaan,1 - Boulevard Josse Leemans
+stops,stop_name,fr,1 - Chaussée de Mons,1 - Chaussée de Mons
+stops,stop_name,nl,1 - Bergensesteenweg,1 - Chaussée de Mons
+stops,stop_name,fr,2 - Parking CERIA,2 - Parking CERIA
+stops,stop_name,nl,2 - Parking CERIA,2 - Parking CERIA
+stops,stop_name,fr,1 - Place Bizet,1 - Place Bizet
+stops,stop_name,nl,1 - Bizetplein,1 - Place Bizet
+stops,stop_name,fr,1 - Avenue Gounod,1 - Avenue Gounod
+stops,stop_name,nl,1 - Gounodlaan,1 - Avenue Gounod
+stops,stop_name,fr,2 - Place Verdi,2 - Place Verdi
+stops,stop_name,nl,2 - Verdiplein,2 - Place Verdi
+stops,stop_name,fr,1 - Cours Saint-Guidon,1 - Cours Saint-Guidon
+stops,stop_name,nl,1 - Sint-Guidocorso,1 - Cours Saint-Guidon
+stops,stop_name,fr,2 - Cours Saint-Guidon,2 - Cours Saint-Guidon
+stops,stop_name,nl,2 - Sint-Guidocorso,2 - Cours Saint-Guidon
+stops,stop_name,fr,1 - Square E. Vander Bruggen,1 - Square E. Vander Bruggen
+stops,stop_name,nl,1 - Emile Vander Bruggensquare,1 - Square E. Vander Bruggen
+stops,stop_name,fr,2 - Place du Repos,2 - Place du Repos
+stops,stop_name,nl,2 - Rustplein,2 - Place du Repos
+stops,stop_name,fr,1 - Avenue Norbert Gille,1 - Avenue Norbert Gille
+stops,stop_name,nl,1 - Norbert Gillelaan,1 - Avenue Norbert Gille
+stops,stop_name,fr,2 - Avenue Norbert Gille,2 - Avenue Norbert Gille
+stops,stop_name,nl,2 - Norbert Gillelaan,2 - Avenue Norbert Gille
+stops,stop_name,fr,3 - Boulevard Jules Graindor,3 - Boulevard Jules Graindor
+stops,stop_name,nl,3 - Jules Graindorlaan,3 - Boulevard Jules Graindor
+stops,stop_name,fr,4 - Boulevard Jules Graindor,4 - Boulevard Jules Graindor
+stops,stop_name,nl,4 - Jules Graindorlaan,4 - Boulevard Jules Graindor
+stops,stop_name,fr,1 - Avenue Joseph Baeck,1 - Avenue Joseph Baeck
+stops,stop_name,nl,1 - Joseph Baecklaan,1 - Avenue Joseph Baeck
+stops,stop_name,fr,5 - Rue Verheyden,5 - Rue Verheyden
+stops,stop_name,nl,5 - Verheydenstraat,5 - Rue Verheyden
+stops,stop_name,fr,6 - Chaussée de Ninove,6 - Chaussée de Ninove
+stops,stop_name,nl,6 - Ninoofsesteenweg,6 - Chaussée de Ninove
+stops,stop_name,fr,1 - Rue Dubois-Thorn,1 - Rue Dubois-Thorn
+stops,stop_name,nl,1 - Dubois-Thornstraat,1 - Rue Dubois-Thorn
+stops,stop_name,fr,2 - Rue Alphonse Vandenpeereboom,2 - Rue Alphonse Vandenpeereboom
+stops,stop_name,nl,2 - Alphonse Vandenpeereboomstraat,2 - Rue Alphonse Vandenpeereboom
+stops,stop_name,fr,1 - Chaussée de Gand,1 - Chaussée de Gand
+stops,stop_name,nl,1- Gentsesteenweg,1 - Chaussée de Gand
+stops,stop_name,fr,2 - Avenue Mahatma Gandhi,2 - Avenue Mahatma Gandhi
+stops,stop_name,nl,2 - Mahatma Gandhilaan,2 - Avenue Mahatma Gandhi
+stops,stop_name,fr,1 - Boulevard Belgica,1 - Boulevard Belgica
+stops,stop_name,nl,1 - Belgicalaan,1 - Boulevard Belgica
+stops,stop_name,fr,2 - Boulevard Belgica,2 - Boulevard Belgica
+stops,stop_name,nl,2 - Belgicalaan,2 - Boulevard Belgica
+stops,stop_name,fr,1 - Rue Charles Demeer,1 - Rue Charles Demeer
+stops,stop_name,nl,1 - Charles Demeerstraat,1 - Rue Charles Demeer
+stops,stop_name,fr,1 - Rue Léopold I,1 - Rue Léopold I
+stops,stop_name,nl,1 - Leopold I-straat,1 - Rue Léopold I
+stops,stop_name,fr,2 - Place Emile Bockstael,2 - Place Emile Bockstael
+stops,stop_name,nl,2 - Emile Bockstaelplein,2 - Place Emile Bockstael
+stops,stop_name,fr,3 - Boulevard Emile Bockstael,3 - Boulevard Emile Bockstael
+stops,stop_name,nl,3 - Emile Bockstaelplein,3 - Boulevard Emile Bockstael
+stops,stop_name,fr,4 - Rue du Champ de la Couronne,4 - Rue du Champ de la Couronne
+stops,stop_name,nl,4 - Kroonveldstraat,4 - Rue du Champ de la Couronne
+stops,stop_name,fr,5 - Rue des Artistes,5 - Rue des Artistes
+stops,stop_name,nl,5 - Kunstenaarsstraat,5 - Rue des Artistes
+stops,stop_name,fr,1 - Boulevard de Smet de Naeyer,1 - Boulevard de Smet de Naeyer
+stops,stop_name,nl,1 - de Smet de Naeyerlaan,1 - Boulevard de Smet de Naeyer
+stops,stop_name,fr,4 - Avenue Houba-de Strooper,4 - Avenue Houba-de Strooper
+stops,stop_name,nl,4 - Houba de Strooperlaan,4 - Avenue Houba-de Strooper
+stops,stop_name,fr,3 - Boulevard de Smet de Naeyer,3 - Boulevard de Smet de Naeyer
+stops,stop_name,nl,3 - de Smet de Naeyerlaan,3 - Boulevard de Smet de Naeyer
+stops,stop_name,fr,2 - Avenue Houba-de Strooper,2 - Avenue Houba-de Strooper
+stops,stop_name,nl,2 - Houba de Strooperlaan,2 - Avenue Houba-de Strooper
+stops,stop_name,fr,1 - Avenue Houba-de Strooper,1 - Avenue Houba-de Strooper
+stops,stop_name,nl,1 - Houba de Strooperlaan,1 - Avenue Houba-de Strooper
+stops,stop_name,fr,2 - Rue du Heysel,2 - Rue du Heysel
+stops,stop_name,nl,2 - Heizelstraat,2 - Rue du Heysel
+stops,stop_name,fr,1 - Avenue Impératrice Charlotte,1 - Avenue Impératrice Charlotte
+stops,stop_name,nl,1 - Keizerin Charlottelaan,1 - Avenue Impératrice Charlotte
+stops,stop_name,fr,2 - Avenue des Athlètes,2 - Avenue des Athlètes
+stops,stop_name,nl,2 - Atletenlaan,2 - Avenue des Athlètes
+stops,stop_name,fr,3 - Esplanade,3 - Esplanade
+stops,stop_name,nl,3 - Esplanade,3 - Esplanade
+stops,stop_name,fr,4 - Esplanade,4 - Esplanade
+stops,stop_name,nl,4 - Esplanade,4 - Esplanade
+stops,stop_name,fr,2 - Avenue Houba de Strooper,2 - Avenue Houba de Strooper
+stops,stop_name,nl,2 - Houba de Strooperlaan,2 - Avenue Houba de Strooper
+stops,stop_name,fr,3 - Avenue des Citronniers,3 - Avenue des Citronniers
+stops,stop_name,nl,3 - Citroenbomenlaan,3 - Avenue des Citronniers

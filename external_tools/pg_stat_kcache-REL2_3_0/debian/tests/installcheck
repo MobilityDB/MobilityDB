@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -eu
+
+pg_buildext -o "shared_preload_libraries=pg_stat_statements,pg_stat_kcache" installcheck

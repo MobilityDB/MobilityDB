@@ -1833,3 +1833,212 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 }
 
 /*****************************************************************************/
+
+
+
+
+
+
+/*****************************************************************************
+ *
+ *  This bloc is modified by master student Ossama Benaissa 000440942
+ *
+ lcss
+ average Hausdorff
+
+ *****************************************************************************/
+
+/**
+ * @brief Computes the average Hausdorff distance between two arrays of temporal instants.
+ *
+ * This function calculates the average Hausdorff distance between the temporal values
+ * represented by two arrays of TInstant pointers. The Hausdorff distance is a measure
+ * of the similarity between two sets of points, and in this context, it quantifies
+ * the difference between two temporal sequences.
+ *
+ * @param[in] instants1 Array of pointers to the first set of temporal instants.
+ * @param[in] count1 Number of elements in the first array.
+ * @param[in] instants2 Array of pointers to the second set of temporal instants.
+ * @param[in] count2 Number of elements in the second array.
+ * @return The average Hausdorff distance between the two sets of temporal instants.
+ */
+static double
+tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
+   const TInstant **instants2, int count2)
+ {
+
+  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  const TInstant *inst1, *inst2;
+
+  double sum1 = 0.0, sum2 = 0.0;
+
+  double cmax = 0.0, cmin;
+  double d;
+  int i, j;
+  for (i = 0; i < count1; i++)
+  {
+    inst1 = instants1[i];
+    cmin = DBL_MAX;
+    for (j = 0; j < count2; j++)
+    {
+      inst2 = instants2[j];
+      d = tinstant_distance(inst1, inst2, func);
+      if (d < cmin)
+        cmin = d;
+      /*if (cmin < cmax)
+        break;*/
+    }
+    if (cmax < cmin && cmin < DBL_MAX){
+      cmax = cmin;
+    }
+    sum1 += cmin;
+    
+  }
+  for (j = 0; j < count2; j++)
+  {
+    cmin = DBL_MAX;
+    inst2 = instants2[j];
+    for (i = 0; i < count1; i++)
+    {
+      inst1 = instants1[i];
+      d = tinstant_distance(inst1, inst2, func);
+      if (d < cmin)
+        cmin = d;
+      /*if (cmin < cmax)
+        break;*/
+    }
+    if (cmax < cmin && cmin < DBL_MAX){
+      cmax = cmin;
+    }
+    sum2 += cmin;
+  }
+  
+  return 0.5 * ((sum1 / (double) count1) +(sum2 / (double) count2));
+  
+ }
+ 
+ 
+ 
+/**
+ * @brief Computes the average Hausdorff distance between two temporal objects.
+ *
+ * This function calculates the average Hausdorff distance between the temporal
+ * values represented by `temp1` and `temp2`. The Hausdorff distance is a measure
+ * of the similarity between two sets of points, and in this context, it is used
+ * to quantify the difference between two temporal objects over their respective
+ * time spans.
+ *
+ * @param temp1 Pointer to the first Temporal object.
+ * @param temp2 Pointer to the second Temporal object.
+ * @return The average Hausdorff distance as a double.
+ */
+ double
+ temporal_average_hausdorff_distance(const Temporal * temp1, const Temporal * temp2) {
+ 
+ 
+    // Ensure validity of the arguments
+    if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+        ! ensure_same_temporal_type(temp1, temp2))
+      return -1.0;
+
+    double result;
+    int count1, count2;
+    const TInstant **instants1 = temporal_insts(temp1, &count1);
+    const TInstant **instants2 = temporal_insts(temp2, &count2);
+    result = tinstarr_average_hausdorff_distance(instants1, count1, instants2, count2);
+    // Free memory
+    pfree(instants1); pfree(instants2);
+    int var = 23.0;
+    return result;
+ }
+
+ 
+
+/*
+
+This is the formal definition of lcss,
+The formal lcss tries to find the longuest common subsequence between 2 trajectories*/
+/**
+ * Computes the Longest Common Subsequence (LCSS) distance between two arrays of temporal instants.
+ *
+ * @param A        Pointer to the first array of temporal instants.
+ * @param count1   Number of elements in the first array.
+ * @param B        Pointer to the second array of temporal instants.
+ * @param count2   Number of elements in the second array.
+ * @param epsilon  Tolerance value for matching temporal values.
+ * @return         The LCSS distance as a double value.
+ */
+static double
+tinstarr_lcss_distance(const TInstant **A, int count1,
+            const TInstant **B, int count2, double epsilon)
+{
+  
+  int *prev = palloc0(sizeof(int) * (count2 + 1)); // on remplie la mémoire de 0
+  int *curr = palloc0(sizeof(int) * (count2 + 1));
+  
+  
+  datum_func2 func = pt_distance_fn(A[0]->flags);
+
+  for (int i = 1; i <= count1; i++) {
+    for (int j = 1; j <= count2; j++) {
+      double dist = tinstant_distance(A[i-1], B[j-1], func);
+
+
+      if (dist <= epsilon) {
+        curr[j] = prev[j-1] + 1;      
+      }
+      else{
+        curr[j] = Max(prev[j], curr[j-1]); 
+      }
+      
+    }
+  
+    int *tmp = prev;
+    prev = curr;
+    curr = tmp;
+  }
+  
+  double lcss = prev[count2];
+  pfree(prev);
+  pfree(curr);
+  
+  return lcss;
+}
+
+
+
+
+/**
+ * Computes the Longest Common Subsequence (LCSS) distance between two temporal objects.
+ *
+ * The LCSS distance is a similarity measure that finds the longest subsequence common to both temporal sequences,
+ * allowing for some tolerance (epsilon) in the matching of values. This function is useful for comparing temporal
+ * sequences where exact matches are not required, and small differences can be ignored.
+ *
+ * @param temp1    Pointer to the first temporal object.
+ * @param temp2    Pointer to the second temporal object.
+ * @param epsilon  Tolerance value for matching temporal values.
+ * @return         The LCSS distance as a double.
+ */
+double
+temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon)
+{
+  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
+      ! ensure_same_temporal_type(temp1, temp2) || epsilon < 0)
+    return -1.0;
+
+  double result;
+  int count1, count2;
+  const TInstant **instants1 = temporal_insts(temp1, &count1);
+  const TInstant **instants2 = temporal_insts(temp2, &count2);
+  
+  // Normalisation : distance =  (lcss / max(len1, len2)) REFERENCE 0 - 1 100% similar
+
+  result = count1 > count2 ?
+    tinstarr_lcss_distance(instants1, count1, instants2, count2, epsilon) :
+    tinstarr_lcss_distance(instants2, count2, instants1, count1, epsilon);
+  pfree(instants1);
+  pfree(instants2);
+
+  return result;
+}

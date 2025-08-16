@@ -1,0 +1,7 @@
+*.o
+*.a
+*.so
+*.pc
+*~
+pg_stat_kcache-*.zip
+results/

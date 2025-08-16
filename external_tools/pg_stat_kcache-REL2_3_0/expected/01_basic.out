@@ -1,0 +1,91 @@
+CREATE EXTENSION pg_stat_statements;
+CREATE EXTENSION pg_stat_kcache;
+-- first make sure that catcache is loaded to avoid physical reads
+SELECT count(*) >= 0 FROM pg_stat_kcache;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pg_stat_kcache_reset();
+ pg_stat_kcache_reset 
+----------------------
+ 
+(1 row)
+
+-- dummy query
+SELECT 1 AS dummy;
+ dummy 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM pg_stat_kcache WHERE datname = current_database();
+ count 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM pg_stat_kcache_detail WHERE datname = current_database() AND (query = 'SELECT $1 AS dummy' OR query = 'SELECT ? AS dummy;');
+ count 
+-------
+     1
+(1 row)
+
+SELECT exec_reads, exec_reads_blks, exec_writes, exec_writes_blks
+FROM pg_stat_kcache_detail
+WHERE datname = current_database()
+AND (query = 'SELECT $1 AS dummy' OR query = 'SELECT ? AS dummy;');
+ exec_reads | exec_reads_blks | exec_writes | exec_writes_blks 
+------------+-----------------+-------------+------------------
+          0 |               0 |           0 |                0
+(1 row)
+
+-- dummy table
+CREATE TABLE test AS SELECT i FROM generate_series(1, 1000) i;
+-- dummy query again
+SELECT count(*) FROM test;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT exec_user_time + exec_system_time > 0 AS cpu_time_ok
+FROM pg_stat_kcache_detail
+WHERE datname = current_database()
+AND query LIKE 'SELECT count(*) FROM test%';
+ cpu_time_ok 
+-------------
+ t
+(1 row)
+
+-- dummy nested query
+SET pg_stat_statements.track = 'all';
+SET pg_stat_statements.track_planning = TRUE;
+SET pg_stat_kcache.track = 'all';
+SET pg_stat_kcache.track_planning = TRUE;
+SELECT pg_stat_kcache_reset();
+ pg_stat_kcache_reset 
+----------------------
+ 
+(1 row)
+
+CREATE OR REPLACE FUNCTION plpgsql_nested()
+  RETURNS void AS $$
+BEGIN
+  PERFORM i::text as str from generate_series(1, 100) as i;
+  PERFORM md5(i::text) as str from generate_series(1, 100) as i;
+END
+$$ LANGUAGE plpgsql;
+SELECT plpgsql_nested();
+ plpgsql_nested 
+----------------
+ 
+(1 row)
+
+SELECT COUNT(*) FROM pg_stat_kcache_detail WHERE top IS FALSE;
+ count 
+-------
+     2
+(1 row)
+

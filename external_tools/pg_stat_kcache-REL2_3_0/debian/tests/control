@@ -1,0 +1,3 @@
+Depends: @, postgresql-contrib-16, make
+Tests: installcheck
+Restrictions: allow-stderr

@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+override_dh_pgxs_test:
+	pg_buildext -o "shared_preload_libraries=pg_stat_statements,pg_stat_kcache" installcheck . . postgresql-%v-pg-stat-kcache
+
+override_dh_installdocs:
+	dh_installdocs --all CONTRIBUTORS.md README.rst
+	rm -rvf debian/*/usr/share/doc/postgresql-doc-*
+
+%:
+	dh $@ --with pgxs_loop

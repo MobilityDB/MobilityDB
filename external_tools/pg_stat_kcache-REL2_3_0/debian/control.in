@@ -1,0 +1,20 @@
+Source: pg-stat-kcache
+Section: database
+Priority: optional
+Maintainer: Julien Rouhaud <rjuju123@gmail.com>
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Build-Depends: debhelper-compat (= 13), postgresql-all (>= 217~)
+Homepage: https://powa.readthedocs.io/
+Vcs-Browser: https://github.com/powa-team/pg_stat_kcache
+Vcs-Git: https://github.com/powa-team/pg_stat_kcache.git
+
+Package: postgresql-PGVERSION-pg-stat-kcache
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, ${postgresql:Depends},
+ postgresql-contrib-PGVERSION
+Description: PostgreSQL extension to gather per-query kernel statistics.
+ Statistics gathered are reads and writes done out of the operating system
+ cache, user and system CPU usage, context switches and all the other
+ meaningful metrics returned by getrusage(2).  All those counters are
+ aggregated per postgres role, database and normalized query identifier.
