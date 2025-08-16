@@ -37,17 +37,20 @@
  * @endcode
  */
 
+/* C */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <string.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include <meos_catalog.h>
 
 /* Maximum length in characters of a trip  */
-#define MAX_LEN_TRIP 100
+#define MAX_LEN_STBOX 100
 /* Maximum number of stboxes */
 #define NO_STBOX 10000
 
@@ -77,7 +80,7 @@ int main()
   double time_taken;
   RTree * rtree;
   rtree = rtree_create_stbox();
-  char trip_str[MAX_LEN_TRIP];
+  char box_str[MAX_LEN_STBOX];
 
   for (int i = 0; i < NO_STBOX; ++i)
   {
@@ -87,21 +90,20 @@ int main()
     int ymax = ymin + get_random_number(1, 10);
     int time_min = get_random_number(1, 29);
     int time_max = time_min + get_random_number(1, 29);
-    snprintf(trip_str, MAX_LEN_TRIP - 1,
-      "SRID=25832;[POINT(%d %d)@2023-01-01 00:00:%02d+00,POINT(%d %d)@2023-01-01 00:00:%02d+00]", 
-      xmin, ymin, time_min, xmax, ymax, time_max);
-    Temporal * trip = tgeompoint_in(trip_str);
-    tspatial_set_stbox(trip, & stboxes[i]);
+    snprintf(box_str, MAX_LEN_STBOX - 1,
+      "SRID=25832;STBOX XT(((%d %d),(%d %d)),[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
+      xmin, xmax, ymin, ymax, time_min, time_max);
+    STBox *box = stbox_in(box_str);
+    memcpy(&stboxes[i], box, sizeof(STBox));
     rtree_insert(rtree, & stboxes[i], i);
+    free(box);
   }
 
   int count = 0;
   int real_count = 0;
-  snprintf(trip_str, MAX_LEN_TRIP - 1,
-    "SRID=25832;[POINT(0 0)@2023-01-01 00:00:00+00,POINT(100 100)@2023-01-01 00:00:60+00]");
-  STBox * stbox = malloc(sizeof(STBox));
-  Temporal * trip = tgeompoint_in(trip_str);
-  tspatial_set_stbox(trip, stbox);
+  snprintf(box_str, MAX_LEN_STBOX - 1,
+    "SRID=25832;STBOX XT(((0 0),(100 100)),[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
+  STBox *stbox = stbox_in(box_str);
 
   t = clock();
   int * ids = rtree_search(rtree, stbox, & count);
@@ -140,6 +142,6 @@ int main()
   }
 
   printf("\nEXPECTED HITS = %d \n", real_count);
-  printf("\nINDEX HITS    = %d\n", count);
+  printf("INDEX HITS    = %d\n", count);
   rtree_free(rtree);
 }
