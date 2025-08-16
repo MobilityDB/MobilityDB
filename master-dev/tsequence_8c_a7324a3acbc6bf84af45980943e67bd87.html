@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnumberseq_disc_twavg</title>
+<title>MobilityDB: tnumberseq_avg_val</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -106,8 +106,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__transf_ga49d550680bafabb9505274b6d3495776.html#ga49d550680bafabb9505274b6d3495776">tinstant_to_tsequence_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a68a5b508310b9fdaeaeba12397a50b56.html#a68a5b508310b9fdaeaeba12397a50b56">tinstarr_normalize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_aad07a10e5dc88e3904895b9c7148ab6f.html#aad07a10e5dc88e3904895b9c7148ab6f">tnumbersegm_intersection</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8c_a7324a3acbc6bf84af45980943e67bd87.html#a7324a3acbc6bf84af45980943e67bd87">tnumberseq_avg_val</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a720ca0698accae4ef47ef252a30592fa.html#a720ca0698accae4ef47ef252a30592fa">tnumberseq_cont_twavg</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tsequence_8c_a636af7b620d6f464f1d0571e74400d72.html#a636af7b620d6f464f1d0571e74400d72">tnumberseq_disc_twavg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__accessor_ga2066b0ef5ed751eef47b76804092099a.html#ga2066b0ef5ed751eef47b76804092099a">tnumberseq_integral</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__transf_ga95ca54e64a1a4d74a81a19157dd3cde0.html#ga95ca54e64a1a4d74a81a19157dd3cde0">tnumberseq_shift_scale_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8c_a49323b54dea49e7a794ea4204a86298a.html#a49323b54dea49e7a794ea4204a86298a">tnumberseq_shift_scale_value_iter</a></td></tr>
@@ -166,14 +166,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a636af7b620d6f464f1d0571e74400d72" name="a636af7b620d6f464f1d0571e74400d72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a636af7b620d6f464f1d0571e74400d72">&#9670;&#160;</a></span>tnumberseq_disc_twavg()</h2>
+<a id="a7324a3acbc6bf84af45980943e67bd87" name="a7324a3acbc6bf84af45980943e67bd87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7324a3acbc6bf84af45980943e67bd87">&#9670;&#160;</a></span>tnumberseq_avg_val()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double tnumberseq_disc_twavg </td>
+          <td class="memname">double tnumberseq_avg_val </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
           <td class="paramname"><em>seq</em></td><td>)</td>
@@ -182,8 +182,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the time-weighted average of a temporal discrete sequence number. </p>
-<dl class="section note"><dt>Note</dt><dd>Since a discrete sequence does not have duration, the function returns the traditional average of the values </dd></dl>
+<p>Return the average value of a temporal discrete sequence number. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence </td></tr>
