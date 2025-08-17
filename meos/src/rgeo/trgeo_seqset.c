@@ -56,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * @brief Returns the reference geometry of the temporal value
+ * @brief Return the reference geometry of the temporal value
  */
 const GSERIALIZED *
 trgeoseqset_geom_p(const TSequenceSet *ss)
@@ -73,7 +73,7 @@ trgeoseqset_geom_p(const TSequenceSet *ss)
 }
 
 /**
- * @brief Returns a new temporal pose sequence obtained by removing the 
+ * @brief Return a new temporal pose sequence obtained by removing the 
  * reference geometry of a temporal rigid geometry
  */
 TSequenceSet *

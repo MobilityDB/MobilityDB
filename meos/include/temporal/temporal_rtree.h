@@ -31,8 +31,8 @@
  * @brief In memory index for STBox based on RTree
  */
 
-#ifndef __TPOINT_RTREE__
-#define __TPOINT_RTREE__
+#ifndef __TEMPORAL_RTREE__
+#define __TEMPORAL_RTREE__
 
 /* MEOS */
 #include <meos.h>
@@ -40,52 +40,68 @@
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************
- * Definitions
+ * RTree
  *****************************************************************************/
 
 #define MAXITEMS 64
 #define SEARCH_ARRAY_STARTING_SIZE 64
 #define MINITEMS_PERCENTAGE 10
 #define MINITEMS ((MAXITEMS) * (MINITEMS_PERCENTAGE) / 100 + 1)
-#define RTREE_INNER_NODE_NO true
-#define RTREE_INNER_NODE false
 
-/*****************************************************************************
- * Structs
- *****************************************************************************/
+/**
+ * @brief Enumeration that defines the node types for an RTree.
+ */
+typedef enum
+{
+  RTREE_LEAF,
+  RTREE_INNER
+} RTreeNodeType;
 
 /**
  * @brief Internal representation of an RTree node.
  */
-typedef struct RTreeNode{
-  bool kind;
-  int count;
+typedef struct RTreeNode
+{
+  size_t bboxsize;            /**< Size of the bouding box */
+  int count;                  /**< Number of bouding boxes */
+  RTreeNodeType node_type;
   union 
   {
-    struct RTreeNode * nodes[MAXITEMS];
+    struct RTreeNode *nodes[MAXITEMS];
     int64 ids[MAXITEMS];
   };
-  // TODO: Find a way to include box and span in the definition.
-  STBox boxes[MAXITEMS];
+  /* The bounding boxes can be of type Span, TBox, or STBox */
+  char boxes[];
 } RTreeNode;
 
 /**
- * @brief Rtree in memory index basic structure.
- * 
- * It works based on STBox. The spliting criteria is based on the largest axis.
- * The inserting criteria is based on least enlarging square.
- *
- * The get axis function makes it ease to implement with X,Y,Z and time or any
- * combination that you may want.
+ * @brief Rtree in-memory index basic structure.
+ * @details It works based on Span, TBox and STBox. 
+ * - The spliting criteria is based on the largest axis. 
+ * - The inserting criteria is based on least enlarging square.
+ * - The get axis function makes it ease to implement with X,Y,Z and time or any
+ *   combination that you may want.
  */
-struct RTree {
-  meosType basetype;
+struct RTree
+{
+  size_t bboxsize;       /**< Size of the bouding box */
+  meosType bboxtype;     /**< Type of the bouding box */
   int dims;
   RTreeNode *root;
-  STBox box;
-  double (*get_axis)(const STBox*, int, bool);
+  double (*get_axis)(const void *, int, bool);
+  void (*bbox_expand)(const void *, void *);
+  bool (*bbox_contains)(const void *, const void *);
+  bool (*bbox_overlaps)(const void *, const void *);
+  char box[];
 };
+
+/**
+ * @brief Return a pointer to the n-th bounding box of a node
+ * @details The bouding boxes of a node can be of type Span, TBox, or STBox
+ */
+#define RTREE_NODE_BBOX_N(node, n) ( (void *)( \
+  ((char *) &((node)->boxes)) + (n) * (node)->bboxsize ) )
 
 /*****************************************************************************/
 
-#endif /* __TPOINT_RTREE__ */
+#endif /* __TEMPORAL_RTREE__ */

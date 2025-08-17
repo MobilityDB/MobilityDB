@@ -880,6 +880,16 @@ extern bool right_spanset_value(const SpanSet *ss, Datum value);
 
 /*****************************************************************************/
 
+/* Functions on generic bounding boxes of temporal types */
+
+extern bool bbox_type(meosType bboxtype);
+extern size_t bbox_get_size(meosType bboxtype);
+extern int bbox_max_dims(meosType bboxtype);
+extern bool temporal_bbox_eq(const void *box1, const void *box2,
+  meosType temptype);
+extern int temporal_bbox_cmp(const void *box1, const void *box2,
+  meosType temptype);
+
 /* Set functions for set and span types */
 
 extern void bbox_union_span_span(const Span *s1, const Span *s2, Span *result);
