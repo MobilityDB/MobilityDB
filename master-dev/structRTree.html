@@ -76,30 +76,43 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Rtree in memory index basic structure.  
+<p>Rtree in-memory index basic structure.  
  <a href="structRTree.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="tspatial__rtree_8h_source.html">tspatial_rtree.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="temporal__rtree_8h_source.html">temporal_rtree.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a4f15445683039cc1e1cbc2017ddea6d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a4f15445683039cc1e1cbc2017ddea6d8.html#a4f15445683039cc1e1cbc2017ddea6d8">basetype</a></td></tr>
-<tr class="separator:a4f15445683039cc1e1cbc2017ddea6d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8de2f6993d3f0bf35ee599dcd2b87230"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a8de2f6993d3f0bf35ee599dcd2b87230.html#a8de2f6993d3f0bf35ee599dcd2b87230">box</a></td></tr>
-<tr class="separator:a8de2f6993d3f0bf35ee599dcd2b87230"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1acfdf586e580ff0ff292f7062328e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_ad1acfdf586e580ff0ff292f7062328e7.html#ad1acfdf586e580ff0ff292f7062328e7">bbox_contains</a> )(const void *, const void *)</td></tr>
+<tr class="separator:ad1acfdf586e580ff0ff292f7062328e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa0d6acac61e4c9752d86fd7a57e8bd0"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_aaa0d6acac61e4c9752d86fd7a57e8bd0.html#aaa0d6acac61e4c9752d86fd7a57e8bd0">bbox_expand</a> )(const void *, void *)</td></tr>
+<tr class="separator:aaa0d6acac61e4c9752d86fd7a57e8bd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0444e84fa4a52b188b7460922a1a0f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_ae0444e84fa4a52b188b7460922a1a0f7.html#ae0444e84fa4a52b188b7460922a1a0f7">bbox_overlaps</a> )(const void *, const void *)</td></tr>
+<tr class="separator:ae0444e84fa4a52b188b7460922a1a0f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a562f74d23eed838587cde5e0d376c74b"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a562f74d23eed838587cde5e0d376c74b.html#a562f74d23eed838587cde5e0d376c74b">bboxsize</a></td></tr>
+<tr class="memdesc:a562f74d23eed838587cde5e0d376c74b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the bouding box.  <a href="structRTree_a562f74d23eed838587cde5e0d376c74b.html#a562f74d23eed838587cde5e0d376c74b">More...</a><br /></td></tr>
+<tr class="separator:a562f74d23eed838587cde5e0d376c74b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a810be16a579e8b159cd802b1cb99e193"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a810be16a579e8b159cd802b1cb99e193.html#a810be16a579e8b159cd802b1cb99e193">bboxtype</a></td></tr>
+<tr class="memdesc:a810be16a579e8b159cd802b1cb99e193"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of the bouding box.  <a href="structRTree_a810be16a579e8b159cd802b1cb99e193.html#a810be16a579e8b159cd802b1cb99e193">More...</a><br /></td></tr>
+<tr class="separator:a810be16a579e8b159cd802b1cb99e193"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26f062b73bea07093c04fc1bc970d211"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a26f062b73bea07093c04fc1bc970d211.html#a26f062b73bea07093c04fc1bc970d211">box</a> []</td></tr>
+<tr class="separator:a26f062b73bea07093c04fc1bc970d211"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9103770fd5bb555b9c21fd377f61e6a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_aa9103770fd5bb555b9c21fd377f61e6a.html#aa9103770fd5bb555b9c21fd377f61e6a">dims</a></td></tr>
 <tr class="separator:aa9103770fd5bb555b9c21fd377f61e6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8f8b9d94ccaba5c29690ec062d66179"><td class="memItemLeft" align="right" valign="top">double(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_ae8f8b9d94ccaba5c29690ec062d66179.html#ae8f8b9d94ccaba5c29690ec062d66179">get_axis</a> )(const <a class="el" href="structSTBox.html">STBox</a> *, int, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>)</td></tr>
-<tr class="separator:ae8f8b9d94ccaba5c29690ec062d66179"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74599c0f5734ed7a23531340016624de"><td class="memItemLeft" align="right" valign="top">double(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_a74599c0f5734ed7a23531340016624de.html#a74599c0f5734ed7a23531340016624de">get_axis</a> )(const void *, int, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>)</td></tr>
+<tr class="separator:a74599c0f5734ed7a23531340016624de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af63bc9816508ff62fba78dc67f0b5fd7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structRTreeNode.html">RTreeNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRTree_af63bc9816508ff62fba78dc67f0b5fd7.html#af63bc9816508ff62fba78dc67f0b5fd7">root</a></td></tr>
 <tr class="separator:af63bc9816508ff62fba78dc67f0b5fd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Rtree in memory index basic structure. </p>
-<p >It works based on <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a>. The spliting criteria is based on the largest axis. The inserting criteria is based on least enlarging square.</p>
-<p >The get axis function makes it ease to implement with X,Y,Z and time or any combination that you may want. </p>
+<div class="textblock"><p >Rtree in-memory index basic structure. </p>
+<p >It works based on <a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a>, <a class="el" href="structTBox.html" title="Structure to represent temporal boxes.">TBox</a> and <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a>.</p><ul>
+<li>The spliting criteria is based on the largest axis.</li>
+<li>The inserting criteria is based on least enlarging square.</li>
+<li>The get axis function makes it ease to implement with X,Y,Z and time or any combination that you may want. </li>
+</ul>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>meos/include/geo/<a class="el" href="tspatial__rtree_8h_source.html">tspatial_rtree.h</a></li>
+<li>meos/include/temporal/<a class="el" href="temporal__rtree_8h_source.html">temporal_rtree.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

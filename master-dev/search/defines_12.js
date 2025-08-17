@@ -45,14 +45,13 @@ var searchData=
   ['rtoverleftstrategynumber_42',['RTOverLeftStrategyNumber',['../postgres_2access_2stratnum_8h_ad428fb3abca167eb90c65204b61600fd.html#ad428fb3abca167eb90c65204b61600fd',1,'stratnum.h']]],
   ['rtoverrightstrategynumber_43',['RTOverRightStrategyNumber',['../postgres_2access_2stratnum_8h_a2e2842598be28435053f87716b9b7553.html#a2e2842598be28435053f87716b9b7553',1,'stratnum.h']]],
   ['rtprefixstrategynumber_44',['RTPrefixStrategyNumber',['../postgres_2access_2stratnum_8h_a1db979fcd3ed42b0decc2a12d0d1ec63.html#a1db979fcd3ed42b0decc2a12d0d1ec63',1,'stratnum.h']]],
-  ['rtree_5finner_5fnode_45',['RTREE_INNER_NODE',['../tspatial__rtree_8h_a3a4145295515ba8236d2ec8acd9062f9.html#a3a4145295515ba8236d2ec8acd9062f9',1,'tspatial_rtree.h']]],
-  ['rtree_5finner_5fnode_5fno_46',['RTREE_INNER_NODE_NO',['../tspatial__rtree_8h_a2b44246cfecd5eeefd096b8a9717362e.html#a2b44246cfecd5eeefd096b8a9717362e',1,'tspatial_rtree.h']]],
-  ['rtrightstrategynumber_47',['RTRightStrategyNumber',['../postgres_2access_2stratnum_8h_a39d0fd34d3b4b576d56f9b53762dcc95.html#a39d0fd34d3b4b576d56f9b53762dcc95',1,'stratnum.h']]],
-  ['rtsamestrategynumber_48',['RTSameStrategyNumber',['../postgres_2access_2stratnum_8h_a3a9bbd1243cb6d44d1bb34e043f72bed.html#a3a9bbd1243cb6d44d1bb34e043f72bed',1,'stratnum.h']]],
-  ['rtsubequalstrategynumber_49',['RTSubEqualStrategyNumber',['../postgres_2access_2stratnum_8h_a1ddceab67e3283de65ed9c3a52860c5d.html#a1ddceab67e3283de65ed9c3a52860c5d',1,'stratnum.h']]],
-  ['rtsubstrategynumber_50',['RTSubStrategyNumber',['../postgres_2access_2stratnum_8h_a06bfdd929efae73d04937ea5c42558c9.html#a06bfdd929efae73d04937ea5c42558c9',1,'stratnum.h']]],
-  ['rtsuperequalstrategynumber_51',['RTSuperEqualStrategyNumber',['../postgres_2access_2stratnum_8h_a1e0c366e9b2a1da19ad33f1a6be398fa.html#a1e0c366e9b2a1da19ad33f1a6be398fa',1,'stratnum.h']]],
-  ['rtsuperstrategynumber_52',['RTSuperStrategyNumber',['../postgres_2access_2stratnum_8h_a9f704ac1c379032a3de44ad1a4826627.html#a9f704ac1c379032a3de44ad1a4826627',1,'stratnum.h']]],
-  ['rusage_5fchildren_53',['RUSAGE_CHILDREN',['../resource_8h_a76da11928becba8246c8c406314e6282.html#a76da11928becba8246c8c406314e6282',1,'resource.h']]],
-  ['rusage_5fself_54',['RUSAGE_SELF',['../resource_8h_af96c310e02eee3878d8fb3af154c2ba0.html#af96c310e02eee3878d8fb3af154c2ba0',1,'resource.h']]]
+  ['rtree_5fnode_5fbbox_5fn_45',['RTREE_NODE_BBOX_N',['../temporal__rtree_8h_a21115c83a6cf20519eb12684b5252379.html#a21115c83a6cf20519eb12684b5252379',1,'temporal_rtree.h']]],
+  ['rtrightstrategynumber_46',['RTRightStrategyNumber',['../postgres_2access_2stratnum_8h_a39d0fd34d3b4b576d56f9b53762dcc95.html#a39d0fd34d3b4b576d56f9b53762dcc95',1,'stratnum.h']]],
+  ['rtsamestrategynumber_47',['RTSameStrategyNumber',['../postgres_2access_2stratnum_8h_a3a9bbd1243cb6d44d1bb34e043f72bed.html#a3a9bbd1243cb6d44d1bb34e043f72bed',1,'stratnum.h']]],
+  ['rtsubequalstrategynumber_48',['RTSubEqualStrategyNumber',['../postgres_2access_2stratnum_8h_a1ddceab67e3283de65ed9c3a52860c5d.html#a1ddceab67e3283de65ed9c3a52860c5d',1,'stratnum.h']]],
+  ['rtsubstrategynumber_49',['RTSubStrategyNumber',['../postgres_2access_2stratnum_8h_a06bfdd929efae73d04937ea5c42558c9.html#a06bfdd929efae73d04937ea5c42558c9',1,'stratnum.h']]],
+  ['rtsuperequalstrategynumber_50',['RTSuperEqualStrategyNumber',['../postgres_2access_2stratnum_8h_a1e0c366e9b2a1da19ad33f1a6be398fa.html#a1e0c366e9b2a1da19ad33f1a6be398fa',1,'stratnum.h']]],
+  ['rtsuperstrategynumber_51',['RTSuperStrategyNumber',['../postgres_2access_2stratnum_8h_a9f704ac1c379032a3de44ad1a4826627.html#a9f704ac1c379032a3de44ad1a4826627',1,'stratnum.h']]],
+  ['rusage_5fchildren_52',['RUSAGE_CHILDREN',['../resource_8h_a76da11928becba8246c8c406314e6282.html#a76da11928becba8246c8c406314e6282',1,'resource.h']]],
+  ['rusage_5fself_53',['RUSAGE_SELF',['../resource_8h_af96c310e02eee3878d8fb3af154c2ba0.html#af96c310e02eee3878d8fb3af154c2ba0',1,'resource.h']]]
 ];

@@ -82,11 +82,12 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program to use an <a class="el" href="structRTree.html" title="Rtree in memory index basic structure.">RTree</a> index for searching.  
+<p>A simple program to use an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes, i.e., <code>floatspan</code>, <code>tstzspan</code>, <code>tbox</code>, and <code>stbox</code>  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
@@ -94,10 +95,18 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a35b0008c6f3814d16e22f1516e199735"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a35b0008c6f3814d16e22f1516e199735.html#a35b0008c6f3814d16e22f1516e199735">MAX_LEN_TRIP</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:a35b0008c6f3814d16e22f1516e199735"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02f442d5bc69c638f0802f7a87e546c8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a02f442d5bc69c638f0802f7a87e546c8.html#a02f442d5bc69c638f0802f7a87e546c8">NO_STBOX</a>&#160;&#160;&#160;10000</td></tr>
-<tr class="separator:a02f442d5bc69c638f0802f7a87e546c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1053ea16cbdefebbfa02eb9ee19d797f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a1053ea16cbdefebbfa02eb9ee19d797f.html#a1053ea16cbdefebbfa02eb9ee19d797f">BBOX_TYPE</a>&#160;&#160;&#160;STBOX</td></tr>
+<tr class="separator:a1053ea16cbdefebbfa02eb9ee19d797f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d5f778222f4ae22387a1b2ffd955fee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a1d5f778222f4ae22387a1b2ffd955fee.html#a1d5f778222f4ae22387a1b2ffd955fee">FLOATSPAN</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a1d5f778222f4ae22387a1b2ffd955fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7f21a8cabfc3d89d92799127bbfd67e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aa7f21a8cabfc3d89d92799127bbfd67e.html#aa7f21a8cabfc3d89d92799127bbfd67e">MAX_LEN_BBOX</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:aa7f21a8cabfc3d89d92799127bbfd67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab16e2c7828b7ddc8981343d1ce1e5e65"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>&#160;&#160;&#160;10000</td></tr>
+<tr class="separator:ab16e2c7828b7ddc8981343d1ce1e5e65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d92e5c0cf08dbcca25d3059b7a09ab9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a6d92e5c0cf08dbcca25d3059b7a09ab9.html#a6d92e5c0cf08dbcca25d3059b7a09ab9">TBOX</a>&#160;&#160;&#160;3</td></tr>
+<tr class="separator:a6d92e5c0cf08dbcca25d3059b7a09ab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12beee97d557d967fedcfce5341f01b6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a12beee97d557d967fedcfce5341f01b6.html#a12beee97d557d967fedcfce5341f01b6">TSTZSPAN</a>&#160;&#160;&#160;2</td></tr>
+<tr class="separator:a12beee97d557d967fedcfce5341f01b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -105,20 +114,20 @@ Functions</h2></td></tr>
 <tr class="separator:ac907165df800f62ade81cea2b1087a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ae66f6b31b5ad750f1fe042a706a4e3d4.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
 <tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8ecb136a68ce3f00f67d85e03b3e9fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_af8ecb136a68ce3f00f67d85e03b3e9fc.html#af8ecb136a68ce3f00f67d85e03b3e9fc">print_stbox</a> (const <a class="el" href="structSTBox.html">STBox</a> *stbox, char *prefix)</td></tr>
-<tr class="separator:af8ecb136a68ce3f00f67d85e03b3e9fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e4ed2a6de62126cf52507805a768454"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a9e4ed2a6de62126cf52507805a768454.html#a9e4ed2a6de62126cf52507805a768454">print_bbox</a> (const void *box, char *prefix)</td></tr>
+<tr class="separator:a9e4ed2a6de62126cf52507805a768454"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a9f6380909dbe35b85a35b7bb7ae6a3f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a9f6380909dbe35b85a35b7bb7ae6a3f2.html#a9f6380909dbe35b85a35b7bb7ae6a3f2">actual</a> [<a class="el" href="rtree__example_8c_a02f442d5bc69c638f0802f7a87e546c8.html#a02f442d5bc69c638f0802f7a87e546c8">NO_STBOX</a>]</td></tr>
-<tr class="separator:a9f6380909dbe35b85a35b7bb7ae6a3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04049c64c731eb826295bbdb17ec0ef2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a04049c64c731eb826295bbdb17ec0ef2.html#a04049c64c731eb826295bbdb17ec0ef2">index_result</a> [<a class="el" href="rtree__example_8c_a02f442d5bc69c638f0802f7a87e546c8.html#a02f442d5bc69c638f0802f7a87e546c8">NO_STBOX</a>]</td></tr>
-<tr class="separator:a04049c64c731eb826295bbdb17ec0ef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0defe77ef14df7f2e3016031084399d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aa0defe77ef14df7f2e3016031084399d.html#aa0defe77ef14df7f2e3016031084399d">stboxes</a></td></tr>
-<tr class="separator:aa0defe77ef14df7f2e3016031084399d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6d801b7174c3965d6a7762ab3769bc0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ae6d801b7174c3965d6a7762ab3769bc0.html#ae6d801b7174c3965d6a7762ab3769bc0">actual_result</a> [<a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>]</td></tr>
+<tr class="separator:ae6d801b7174c3965d6a7762ab3769bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a2ef2e59d3180e356f1ed8f36e2dc29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29.html#a8a2ef2e59d3180e356f1ed8f36e2dc29">boxes</a></td></tr>
+<tr class="separator:a8a2ef2e59d3180e356f1ed8f36e2dc29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af29e0c93c517f3c84fde6640d597c450"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_af29e0c93c517f3c84fde6640d597c450.html#af29e0c93c517f3c84fde6640d597c450">index_result</a> [<a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>]</td></tr>
+<tr class="separator:af29e0c93c517f3c84fde6640d597c450"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program to use an <a class="el" href="structRTree.html" title="Rtree in memory index basic structure.">RTree</a> index for searching. </p>
+<div class="textblock"><p >A simple program to use an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes, i.e., <code>floatspan</code>, <code>tstzspan</code>, <code>tbox</code>, and <code>stbox</code> </p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/lib -lproj -L/usr/local/lib -lmeos</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
