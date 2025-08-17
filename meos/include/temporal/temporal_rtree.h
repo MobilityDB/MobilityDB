@@ -53,10 +53,9 @@
  */
 typedef enum
 {
-  RTREE_NODE_ROOT =     0,
-  RTREE_NODE_INNER =    1,
-  RTREE_NODE_LEAF =     2,
-} RTREE_NODE_TYPE;
+  RTREE_LEAF,
+  RTREE_INNER
+} RTreeNodeType;
 
 /**
  * @brief Internal representation of an RTree node.
@@ -65,7 +64,7 @@ typedef struct RTreeNode
 {
   size_t bboxsize;            /**< Size of the bouding box */
   int count;                  /**< Number of bouding boxes */
-  RTREE_NODE_TYPE node_type;
+  RTreeNodeType node_type;
   union 
   {
     struct RTreeNode *nodes[MAXITEMS];

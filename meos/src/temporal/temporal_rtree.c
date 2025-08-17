@@ -221,7 +221,7 @@ bbox_overlaps_stbox(const void *box1, const void *box2)
  * @return Pointer to the newly created node
  */
 static RTreeNode *
-node_make(RTREE_NODE_TYPE node_type, size_t bboxsize)
+node_make(RTreeNodeType node_type, size_t bboxsize)
 {
   size_t bboxes_size = bboxsize * MAXITEMS;
   RTreeNode *node = palloc0(sizeof(RTreeNode) + bboxes_size);
@@ -407,7 +407,7 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
     from->bboxsize);
   memcpy(RTREE_NODE_BBOX_N(from, index),
     RTREE_NODE_BBOX_N(from, from->count - 1), from->bboxsize);
-  if (from->node_type == RTREE_NODE_ROOT)
+  if (from->node_type == RTREE_LEAF)
   {
     into->ids[into->count] = from->ids[index];
     from->ids[index] = from->ids[from->count - 1];
@@ -442,7 +442,7 @@ node_swap(const RTree *rtree, RTreeNode *node, int i, int j)
   memcpy(RTREE_NODE_BBOX_N(node, i), RTREE_NODE_BBOX_N(node, j),
     rtree->bboxsize);
   memcpy(RTREE_NODE_BBOX_N(node, j), &box, rtree->bboxsize);
-  if (node->node_type == RTREE_NODE_ROOT)
+  if (node->node_type == RTREE_LEAF)
   {
     int tmp = node->ids[i];
     node->ids[i] = node->ids[j];
@@ -578,7 +578,7 @@ node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
       node_move_box_at_index_into(node, node->count - 1, right);
     } while (right->count < MINITEMS);
   }
-  if (node->node_type == RTREE_NODE_INNER)
+  if (node->node_type == RTREE_INNER)
   {
     node_sort_axis(rtree, node, 0, false);
     node_sort_axis(rtree, right, 0, false);
@@ -612,7 +612,7 @@ static void
 node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
   void *new_box, int id, bool *split)
 {
-  if (node->node_type == RTREE_NODE_ROOT)
+  if (node->node_type == RTREE_LEAF)
   {
     if (node->count == MAXITEMS)
     {
@@ -699,7 +699,7 @@ node_search(const RTree *rtree, const RTreeNode *node, const void *query,
   {
     if (rtree->bbox_overlaps(query, RTREE_NODE_BBOX_N(node, i)))
     {
-      if (node->node_type == RTREE_NODE_ROOT)
+      if (node->node_type == RTREE_LEAF)
         add_answer(node->ids[i], ids, count);
       else
         node_search(rtree, node->nodes[i], query, ids, count);
@@ -837,7 +837,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
   {
     if (! rtree->root)
     {
-      RTreeNode *new_root = node_make(RTREE_NODE_ROOT, rtree->bboxsize);
+      RTreeNode *new_root = node_make(RTREE_LEAF, rtree->bboxsize);
       if (rtree->dims < 0)
         rtree->dims = 3 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
       rtree->root = new_root;
@@ -850,7 +850,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
       rtree->bbox_expand(box, &rtree->box);
       return;
     }
-    RTreeNode *new_root = node_make(RTREE_NODE_INNER, rtree->bboxsize);
+    RTreeNode *new_root = node_make(RTREE_INNER, rtree->bboxsize);
     RTreeNode *right;
     node_split(rtree, rtree->root, &rtree->box, &right);
 
@@ -896,7 +896,7 @@ rtree_search(const RTree *rtree, const void *query, int *count)
 static void
 node_free(RTreeNode *node)
 {
-  if (node->node_type == RTREE_NODE_INNER)
+  if (node->node_type == RTREE_INNER)
   {
     for (int i = 0; i < node->count; ++i)
       node_free(node->nodes[i]);
