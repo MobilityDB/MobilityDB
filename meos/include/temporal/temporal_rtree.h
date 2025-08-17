@@ -55,15 +55,16 @@
  */
 typedef struct RTreeNode
 {
+  size_t bboxsize;            /**< Size of the bouding box */
+  int count;                  /**< Number of bouding boxes */
   bool isRoot;
-  int count;
   union 
   {
     struct RTreeNode *nodes[MAXITEMS];
     int64 ids[MAXITEMS];
   };
-  /* STBox is the largest MEOS bounding box */
-  STBox boxes[MAXITEMS];
+  /* The bounding boxes can be of type Span, TBox, or STBox */
+  char boxes[];
 } RTreeNode;
 
 /**
@@ -76,17 +77,23 @@ typedef struct RTreeNode
  */
 struct RTree
 {
-  meosType bboxtype;     /**< Type of the bouding box */
   size_t bboxsize;       /**< Size of the bouding box */
+  meosType bboxtype;     /**< Type of the bouding box */
   int dims;
   RTreeNode *root;
-  /* STBox is the largest MEOS bounding box */
-  char box[sizeof(STBox)];
   double (*get_axis)(const void *, int, bool);
   void (*bbox_expand)(const void *, void *);
   bool (*bbox_contains)(const void *, const void *);
   bool (*bbox_overlaps)(const void *, const void *);
+  char box[];
 };
+
+/**
+ * @brief Return a pointer to the n-th bounding box of a node
+ * @details The bouding boxes of a node can be of type Span, TBox, or STBox
+ */
+#define RTREE_NODE_BBOX_N(node, n) ( (void *)( \
+  ((char *) &((node)->boxes)) + (n) * (node)->bboxsize ) )
 
 /*****************************************************************************/
 

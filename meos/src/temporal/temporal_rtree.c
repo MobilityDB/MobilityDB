@@ -217,13 +217,16 @@ bbox_overlaps_stbox(const void *box1, const void *box2)
 /**
  * @brief Creates a new RTree node
  * @param[in] isRoot True when the node is a root node, False otherwise
+ * @param[in] bboxsize Bounding box size 
  * @return Pointer to the newly created node
  */
 static RTreeNode *
-node_make(bool isRoot)
+node_make(bool isRoot, size_t bboxsize)
 {
-  RTreeNode *node = palloc(sizeof(RTreeNode));
+  size_t bboxes_size = bboxsize * MAXITEMS;
+  RTreeNode *node = palloc0(sizeof(RTreeNode) + bboxes_size);
   node->isRoot = isRoot;
+  node->bboxsize = bboxsize;
   node->count = 0;
   return node;
 }
@@ -303,8 +306,8 @@ node_choose_least_enlargement(const RTree *rtree, const RTreeNode *node,
   double previous_enlargement = INFINITY;
   for (int i = 0; i < node->count; ++i)
   {
-    double union_area = unioned_area(rtree, &node->boxes[i], box);
-    double area = box_area(rtree, &node->boxes[i]);
+    double union_area = unioned_area(rtree, RTREE_NODE_BBOX_N(node, i), box);
+    double area = box_area(rtree, RTREE_NODE_BBOX_N(node, i));
     double enlarge_area = union_area - area;
     if (enlarge_area < previous_enlargement)
     {
@@ -354,9 +357,9 @@ node_choose(const RTree *rtree, const void *box, const RTreeNode *node)
 static void
 node_box_calculate(const RTree *rtree, const RTreeNode *node, void *box)
 {
-  memcpy(box, &node->boxes[0], rtree->bboxsize);
+  memcpy(box, RTREE_NODE_BBOX_N(node, 0), rtree->bboxsize);
   for (int i = 1; i < node->count; ++i)
-    rtree->bbox_expand(&node->boxes[i], box);
+    rtree->bbox_expand(RTREE_NODE_BBOX_N(node, i), box);
   return;
 }
 
@@ -392,16 +395,18 @@ box_largest_axis(const RTree *rtree, const void *box)
  * @details Changes the information from one node into another.
  * @param[in] from Pointer to the node from which the bounding box is
  * being moved.
- * @param[in] index The index of the bounding box in the `from` node that is to be
- * moved.
- * @param[in] into Pointer to the node where the bounding box is being
- * moved to.
+ * @param[in] index The index of the bounding box in the `from` node that is to
+ * be moved.
+ * @param[in] into Pointer to the node where the bounding box is being moved
+ * to.
  */
 static void
 node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
 {
-  into->boxes[into->count] = from->boxes[index];
-  from->boxes[index] = from->boxes[from->count - 1];
+  memcpy(RTREE_NODE_BBOX_N(into, into->count), RTREE_NODE_BBOX_N(from, index),
+    from->bboxsize);
+  memcpy(RTREE_NODE_BBOX_N(from, index),
+    RTREE_NODE_BBOX_N(from, from->count - 1), from->bboxsize);
   if (from->isRoot == RTREE_ROOT_NODE)
   {
     into->ids[into->count] = from->ids[index];
@@ -433,9 +438,10 @@ node_swap(const RTree *rtree, RTreeNode *node, int i, int j)
 {
   /* STBox is the largest MEOS bounding boxes */
   STBox box;
-  memcpy(&box, &node->boxes[i], rtree->bboxsize);
-  memcpy(&node->boxes[i], &node->boxes[j], rtree->bboxsize);
-  memcpy(&node->boxes[j], &box, rtree->bboxsize);
+  memcpy(&box, RTREE_NODE_BBOX_N(node, i), rtree->bboxsize);
+  memcpy(RTREE_NODE_BBOX_N(node, i), RTREE_NODE_BBOX_N(node, j),
+    rtree->bboxsize);
+  memcpy(RTREE_NODE_BBOX_N(node, j), &box, rtree->bboxsize);
   if (node->isRoot == RTREE_ROOT_NODE)
   {
     int tmp = node->ids[i];
@@ -485,8 +491,8 @@ node_qsort(const RTree *rtree, RTreeNode *node, int index, bool upper, int s,
   node_swap(rtree, node, s + pivot, s + right);
   for (int i = 0; i < no_box; ++i)
   {
-    if (rtree->get_axis(&node->boxes[right + s], index, upper) >
-        rtree->get_axis(&node->boxes[s + i], index, upper))
+    if (rtree->get_axis(RTREE_NODE_BBOX_N(node, right + s), index, upper) >
+        rtree->get_axis(RTREE_NODE_BBOX_N(node, s + i), index, upper))
     {
       node_swap(rtree, node, s + i, s + left);
       left++;
@@ -538,15 +544,15 @@ node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
 {
   /* Split through the largest axis */
   int largest_axis = box_largest_axis(rtree, box);
-  RTreeNode *right = node_make(node->isRoot);
+  RTreeNode *right = node_make(node->isRoot, rtree->bboxsize);
   for (int i = 0; i < node->count; ++i)
   {
     double min_dist =
-      rtree->get_axis(&node->boxes[i], largest_axis, false) -
+      rtree->get_axis(RTREE_NODE_BBOX_N(node, i), largest_axis, false) -
       rtree->get_axis(box, largest_axis, false);
     double max_dist =
       rtree->get_axis(box, largest_axis, true) -
-      rtree->get_axis(&node->boxes[i], largest_axis, true);
+      rtree->get_axis(RTREE_NODE_BBOX_N(node, i), largest_axis, true);
     /* Move to the right */
     if (max_dist < min_dist)
       node_move_box_at_index_into(node, i--, right);
@@ -614,18 +620,18 @@ node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
       return;
     }
     int index = node->count;
-    memcpy(&node->boxes[index], new_box, rtree->bboxsize);
+    memcpy(RTREE_NODE_BBOX_N(node, index), new_box, rtree->bboxsize);
     node->ids[index] = id;
     node->count++;
     *split = false;
     return;
   }
   int insertion_node = node_choose(rtree, new_box, node);
-  node_insert(rtree, &node->boxes[insertion_node],
+  node_insert(rtree, RTREE_NODE_BBOX_N(node, insertion_node),
     (RTreeNode *) node->nodes[insertion_node], new_box, id, split);
   if (! *split)
   {
-    rtree->bbox_expand(new_box, &node->boxes[insertion_node]);
+    rtree->bbox_expand(new_box, RTREE_NODE_BBOX_N(node, insertion_node));
     *split = false;
     return;
   }
@@ -635,11 +641,11 @@ node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
     return;
   }
   RTreeNode *right;
-  node_split(rtree, node->nodes[insertion_node], &node->boxes[insertion_node],
-    &right);
+  node_split(rtree, node->nodes[insertion_node],
+    RTREE_NODE_BBOX_N(node, insertion_node), &right);
   node_box_calculate(rtree, node->nodes[insertion_node],
-    &node->boxes[insertion_node]);
-  node_box_calculate(rtree, right, &node->boxes[node->count]);
+    RTREE_NODE_BBOX_N(node, insertion_node));
+  node_box_calculate(rtree, right, RTREE_NODE_BBOX_N(node, node->count));
   node->nodes[node->count] = right;
   node->count++;
   node_insert(rtree, node_bounding_box, node, new_box, id, split);
@@ -691,7 +697,7 @@ node_search(const RTree *rtree, const RTreeNode *node, const void *query,
 {
   for (int i = 0; i < node->count; ++i)
   {
-    if (rtree->bbox_overlaps(query, &node->boxes[i]))
+    if (rtree->bbox_overlaps(query, RTREE_NODE_BBOX_N(node, i)))
     {
       if (node->isRoot == RTREE_ROOT_NODE)
         add_answer(node->ids[i], ids, count);
@@ -711,11 +717,10 @@ RTree *
 rtree_create(meosType bboxtype)
 {
   assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
-  RTree *rtree = palloc0(sizeof(RTree));
-  size_t bboxsize;
+  size_t bboxsize = bbox_get_size(bboxtype);
+  RTree *rtree = palloc0(sizeof(RTree) + bboxsize);
   if (span_type(bboxtype))
   {
-    bboxsize = sizeof(Span);
     rtree->dims = 1;
     rtree->get_axis = &get_axis_span;
     rtree->bbox_expand = &bbox_expand_span;
@@ -724,7 +729,6 @@ rtree_create(meosType bboxtype)
   }
   else if (bboxtype == T_TBOX)
   {
-    bboxsize =  sizeof(TBox);
     rtree->dims = 2;
     rtree->get_axis = &get_axis_tbox;
     rtree->bbox_expand = &bbox_expand_tbox;
@@ -733,7 +737,6 @@ rtree_create(meosType bboxtype)
   }
   else /* bboxtype == T_STBOX */
   {
-    bboxsize = sizeof(STBox);
     /* To be set when the first node is created since it is not known yet
      * whether there is a Z dimension or not */
     rtree->dims = -1;
@@ -834,7 +837,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
   {
     if (! rtree->root)
     {
-      RTreeNode *new_root = node_make(RTREE_ROOT_NODE);
+      RTreeNode *new_root = node_make(RTREE_ROOT_NODE, rtree->bboxsize);
       if (rtree->dims < 0)
         rtree->dims = 3 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
       rtree->root = new_root;
@@ -847,12 +850,12 @@ rtree_insert(RTree *rtree, void *box, int64 id)
       rtree->bbox_expand(box, &rtree->box);
       return;
     }
-    RTreeNode *new_root = node_make(RTREE_INNER_NODE);
+    RTreeNode *new_root = node_make(RTREE_INNER_NODE, rtree->bboxsize);
     RTreeNode *right;
     node_split(rtree, rtree->root, &rtree->box, &right);
 
-    node_box_calculate(rtree, rtree->root, &new_root->boxes[0]);
-    node_box_calculate(rtree, right, &new_root->boxes[1]);
+    node_box_calculate(rtree, rtree->root, RTREE_NODE_BBOX_N(new_root, 0));
+    node_box_calculate(rtree, right, RTREE_NODE_BBOX_N(new_root, 1));
     new_root->nodes[0] = rtree->root;
     new_root->nodes[1] = right;
     rtree->root = new_root;
