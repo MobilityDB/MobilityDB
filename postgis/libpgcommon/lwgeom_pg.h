@@ -25,7 +25,6 @@
 #include "utils/syscache.h"
 
 #include "liblwgeom.h"
-#include "pgsql_compat.h"
 
 #if POSTGIS_PGSQL_VERSION > 150
 #include "varatt.h"
@@ -84,7 +83,7 @@ const char *postgis_spatial_ref_sys(void);
 
 /****************************************************************************************/
 
-/* Install PosgreSQL handlers for liblwgeom use */
+/* Install PostgreSQL handlers for liblwgeom use */
 void pg_install_lwgeom_handlers(void);
 
 /* Argument handling macros */

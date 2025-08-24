@@ -36,6 +36,8 @@
  * These functions are not needed in MobilityDB.
  */
 
+// #include "point/geography_funcs.h"
+
 /* C */
 #include <float.h>
 /* PostGIS */
@@ -230,6 +232,7 @@ geography_substring(
 	END:
 		tlength += slength;
 		memcpy(&p1, &p2, sizeof(POINT4D));
+		geographic_point_init(p1.x, p1.y, &g1);
 	}
 
 	if (dpa->npoints <= 1) {

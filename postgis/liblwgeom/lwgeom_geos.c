@@ -714,7 +714,7 @@ lwgeom_intersection_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision intersection", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-    finishGEOS(); // MEOS remove memory leak
+		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSIntersectionPrec(g1, g2, prec);
@@ -725,13 +725,13 @@ lwgeom_intersection_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 		g3 = GEOSIntersection(g1, g2);
 	}
 
-	if (!g3) GEOS_FREE_AND_FAIL(g1);
+	if (!g3) GEOS_FREE_AND_FAIL(g1, g2);
 	GEOSSetSRID(g3, srid);
 
 	if (!(result = GEOS2LWGEOM(g3, is3d))) GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -764,7 +764,6 @@ lwgeom_linemerge_directed(const LWGEOM* geom, int directed)
 #if POSTGIS_GEOS_VERSION < 31100
 		lwgeom_geos_error_minversion("Directed line merging", "3.11");
 		GEOS_FREE_AND_FAIL(g1);
-    finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSLineMergeDirected(g1);
@@ -782,7 +781,7 @@ lwgeom_linemerge_directed(const LWGEOM* geom, int directed)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-  finishGEOS(); // MEOS remove memory leak
+
 	return result;
 }
 
@@ -814,7 +813,7 @@ lwgeom_unaryunion_prec(const LWGEOM* geom, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision unary union", "3.9");
 		GEOS_FREE_AND_FAIL(g1);
-    finishGEOS(); // MEOS to remove memory leak
+		finishGEOS(); // MEOS to remove memory leak
 		return NULL;
 #else
 		g3 = GEOSUnaryUnionPrec(g1, prec);
@@ -832,8 +831,8 @@ lwgeom_unaryunion_prec(const LWGEOM* geom, double prec)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
+	finishGEOS(); // MEOS to remove memory leak
 
-  finishGEOS(); // MEOS to remove memory leak
 	return result;
 }
 
@@ -868,7 +867,7 @@ lwgeom_difference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision difference", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-    finishGEOS(); // MEOS remove memory leak
+		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSDifferencePrec(g1, g2, prec);
@@ -886,7 +885,7 @@ lwgeom_difference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -921,7 +920,7 @@ lwgeom_symdifference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision symdifference", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-    finishGEOS(); // MEOS remove memory leak
+		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSSymDifferencePrec(g1, g2, prec);
@@ -939,7 +938,7 @@ lwgeom_symdifference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -972,7 +971,8 @@ lwgeom_centroid(const LWGEOM* geom)
 		GEOS_FREE_AND_FAIL(g1);
 
 	GEOS_FREE(g1, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
+
 	return result;
 }
 
@@ -1007,7 +1007,7 @@ lwgeom_reduceprecision(const LWGEOM* geom, double gridSize)
 		GEOS_FREE_AND_FAIL(g1);
 
 	GEOS_FREE(g1, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 #endif
 }
@@ -1041,7 +1041,7 @@ lwgeom_pointonsurface(const LWGEOM *geom)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1076,7 +1076,7 @@ lwgeom_union_prec(const LWGEOM* geom1, const LWGEOM* geom2, double gridSize)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision union", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-    finishGEOS(); // MEOS remove memory leak
+		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSUnionPrec(g1, g2, gridSize);
@@ -1094,7 +1094,7 @@ lwgeom_union_prec(const LWGEOM* geom1, const LWGEOM* geom2, double gridSize)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1127,7 +1127,8 @@ lwgeom_clip_by_rect(const LWGEOM *geom1, double x1, double y1, double x2, double
 		GEOS_FAIL_DEBUG();
 
 	result->srid = geom1->srid;
-  finishGEOS(); // MEOS remove memory leak
+
+	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1157,8 +1158,8 @@ lwgeom_buildarea(const LWGEOM* geom)
 	/* If no geometries are in result collection, return NULL */
 	if (GEOSGetNumGeometries(g3) == 0)
 	{
-		GEOS_FREE(g1);
-    finishGEOS(); // MEOS remove memory leak
+		GEOS_FREE(g1, g3);
+		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 	}
 
@@ -1166,7 +1167,8 @@ lwgeom_buildarea(const LWGEOM* geom)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-  finishGEOS(); // MEOS remove memory leak
+	finishGEOS(); // MEOS remove memory leak
+
 	return result;
 }
 

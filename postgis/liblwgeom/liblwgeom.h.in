@@ -906,6 +906,12 @@ extern int lwgeom_is_collection(const LWGEOM *lwgeom);
 * are all unitary, they are not just bags of other geometries.
 */
 extern int lwgeom_is_unitary(const LWGEOM *geom);
+extern int lwtype_is_unitary(uint32_t lwtype);
+
+/*
+ * Check if geometry type contains patches
+ */
+extern int lwgeom_has_patches(const LWGEOM *geom);
 
 /**
 * Is this a type that has rings enclosing an area, but is
@@ -1398,11 +1404,15 @@ typedef struct gridspec_t
 	double ysize;
 	double zsize;
 	double msize;
+    double xscale;
+    double yscale;
+    double zscale;
+    double mscale;
 }
 gridspec;
 
-extern LWGEOM* lwgeom_grid(const LWGEOM *lwgeom, const gridspec *grid);
-extern void lwgeom_grid_in_place(LWGEOM *lwgeom, const gridspec *grid);
+extern LWGEOM* lwgeom_grid(const LWGEOM *lwgeom, gridspec *grid);
+extern void lwgeom_grid_in_place(LWGEOM *lwgeom, gridspec *grid);
 
 
 /****************************************************************
@@ -2642,7 +2652,7 @@ LWGEOM* lwgeom_triangulate_polygon(const LWGEOM* geom);
 * @param geoms the input array of LWGEOM pointers
 * @param ngeoms the number of elements in the array
 * @param k the number of clusters to calculate
-* @param max_radius maxmimum radius of cluster before it's split
+* @param max_radius maximum radius of cluster before it's split
 */
 int * lwgeom_cluster_kmeans(const LWGEOM **geoms, uint32_t n, uint32_t k, double max_radius);
 

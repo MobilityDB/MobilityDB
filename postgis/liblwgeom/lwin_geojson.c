@@ -102,7 +102,6 @@ parse_coordinates(json_object *geojson)
 	return coordinates;
 }
 
-
 static inline int
 parse_geojson_coord(json_object *poObj, int *hasz, POINTARRAY *pa)
 {

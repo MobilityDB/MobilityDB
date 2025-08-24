@@ -47,6 +47,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
+#include <intervaltree.h>
 #include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
@@ -55,10 +56,6 @@
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
-
-/* To avoid including lwgeom_functions_analytic.h */
-extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
-extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
 
 /* Modified version of PG_PARSER_ERROR */
 #if MEOS
@@ -73,6 +70,124 @@ extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
 
 /* Function not exported in liblwgeom.h */
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
+
+/*****************************************************************************
+ * Interval tree functions
+ * Functions copied from /postgis/lwgeom_itree.c
+ *****************************************************************************/
+
+/*
+ * A point must be fully inside (not on boundary) of
+ * a polygon to be contained. A multipoint must have
+ * at least one fully contained member and no members
+ * outside the polygon to be contained.
+ */
+bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
+{
+  if (lwgeom_get_type(lwpoints) == POINTTYPE)
+  {
+    return itree_point_in_multipolygon(itree, lwgeom_as_lwpoint(lwpoints)) == ITREE_INSIDE;
+  }
+  else if (lwgeom_get_type(lwpoints) == MULTIPOINTTYPE)
+  {
+    bool found_completely_inside = false;
+    LWMPOINT *mpoint = lwgeom_as_lwmpoint(lwpoints);
+    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+    {
+      IntervalTreeResult pip_result;
+      const LWPOINT* pt = mpoint->geoms[i];
+
+      if (lwpoint_is_empty(pt))
+        continue;
+      /*
+       * We need to find at least one point that's completely inside the
+       * polygons (pip_result == 1).  As long as we have one point that's
+       * completely inside, we can have as many as we want on the boundary
+       * itself. (pip_result == 0)
+       */
+      pip_result = itree_point_in_multipolygon(itree, pt);
+
+      if (pip_result == ITREE_INSIDE)
+        found_completely_inside = true;
+
+      if (pip_result == ITREE_OUTSIDE)
+        return false;
+    }
+    return found_completely_inside;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+      "%s got a non-point input", __func__);
+    return false;
+  }
+}
+
+/*
+ * If any point in the point/multipoint is outside
+ * the polygon, then the polygon does not cover the point/multipoint.
+ */
+bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
+{
+  if (lwgeom_get_type(lwpoints) == POINTTYPE)
+  {
+    return itree_point_in_multipolygon(itree, lwgeom_as_lwpoint(lwpoints)) != ITREE_OUTSIDE;
+  }
+  else if (lwgeom_get_type(lwpoints) == MULTIPOINTTYPE)
+  {
+    LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwpoints);
+    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+    {
+      const LWPOINT *pt = mpoint->geoms[i];
+
+      if (lwpoint_is_empty(pt))
+        continue;
+
+      if (itree_point_in_multipolygon(itree, pt) == ITREE_OUTSIDE)
+        return false;
+    }
+    return true;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+      "%s got a non-point input", __func__);
+    return false;
+  }
+}
+
+/*
+ * A.intersects(B) implies if any member of the point/multipoint
+ * is not outside, then they intersect.
+ */
+bool itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
+{
+  if (lwgeom_get_type(lwpoints) == POINTTYPE)
+  {
+    return itree_point_in_multipolygon(itree, lwgeom_as_lwpoint(lwpoints)) != ITREE_OUTSIDE;
+  }
+  else if (lwgeom_get_type(lwpoints) == MULTIPOINTTYPE)
+  {
+    LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwpoints);
+    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+    {
+      const LWPOINT *pt = mpoint->geoms[i];
+
+      if (lwpoint_is_empty(pt))
+        continue;
+
+      if (itree_point_in_multipolygon(itree, pt) != ITREE_OUTSIDE)
+        return true;
+    }
+    return false;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+      "%s got a non-point input", __func__);
+    return false;
+  }
+}
 
 /*****************************************************************************
  * General functions
@@ -1090,56 +1205,27 @@ gserialized_is_poly(const GSERIALIZED* gs)
  * @note This function is based PostGIS function @p pip_short_circuit bypassing
  * the cache
  */
-static int
+static bool
 meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  bool inter)
+  spatialRel rel)
 {
+  assert(rel == INTERSECTS || rel == CONTAINS || rel == COVERS);
   const GSERIALIZED *gpoly = gserialized_is_poly(gs1) ? gs1 : gs2;
   const GSERIALIZED *gpoint = gserialized_is_point(gs1) ? gs1 : gs2;
-
   LWGEOM *poly = lwgeom_from_gserialized(gpoly);
-  int32 polytype = lwgeom_get_type(poly);
-  int retval = -1; /* Initialize to completely outside */
-  if (gserialized_get_type(gpoint) == POINTTYPE)
-  {
-    LWGEOM *point = lwgeom_from_gserialized(gpoint);
-    if ( polytype == POLYGONTYPE )
-      retval = point_in_polygon(lwgeom_as_lwpoly(poly),
-        lwgeom_as_lwpoint(point));
-    else /* polytype == MULTIPOLYGONTYPE */
-      retval = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
-        lwgeom_as_lwpoint(point));
-    lwgeom_free(point);
-    lwgeom_free(poly);
-    return retval;
-  }
-  else /* gserialized_get_type(gpoint) == MULTIPOINTTYPE */
-  {
-    LWMPOINT* mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gpoint));
-    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
-    {
-      /* We need to find at least one point that's completely inside the
-       * polygons (pip_result == 1).  As long as we have one point that's
-       * completely inside, we can have as many as we want on the boundary
-       * itself. (pip_result == 0)
-       */
-       int pip_result;
-       if ( polytype == POLYGONTYPE )
-        pip_result = point_in_polygon(lwgeom_as_lwpoly(poly), mpoint->geoms[i]);
-      else /* polytype == MULTIPOLYGONTYPE */
-        pip_result = point_in_multipolygon(lwgeom_as_lwmpoly(poly),
-          mpoint->geoms[i]);
-      /* Since we use the same function for intersects and contains we cannot
-       * break on pip_result != -1 for intersects or pip_presult == 1 for
-       * contains */
-      retval = Max(retval, pip_result);
-      if ((inter && retval != -1)|| (!inter && retval == 1))
-        break;
-    }
-    lwmpoint_free(mpoint);
-    lwgeom_free(poly);
-    return retval;
-  }
+  LWGEOM *point = lwgeom_from_gserialized(gpoint);
+  IntervalTree *itree = itree_from_lwgeom(poly);
+  bool result;
+  if (rel == INTERSECTS)
+    result = itree_pip_intersects(itree, point);
+  else if (rel == CONTAINS)
+    result = itree_pip_contains(itree, point);
+  else /* rel == COVERS */
+    result = itree_pip_covers(itree, point);
+  itree_free(itree);
+  lwgeom_free(point);
+  lwgeom_free(poly);
+  return result;
 }
 
 /**
@@ -1251,18 +1337,13 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
   }
 
   /*
-   * short-circuit 2: if the geoms are a point and a polygon,
-   * call the point_in_polygon function.
+   * short-circuit 2: if the geoms are a (multi)point and a (multi)polygon,
+   * call the meos_point_in_polygon function.
    */
-  if ((rel == INTERSECTS || rel == CONTAINS) && (
+  if ((rel == INTERSECTS || rel == CONTAINS || rel == COVERS) && (
       (gserialized_is_point(gs1) && gserialized_is_poly(gs2)) ||
       (gserialized_is_poly(gs1) && gserialized_is_point(gs2))))
-  {
-    int pip_result = meos_point_in_polygon(gs1, gs2, rel == INTERSECTS);
-    return (rel == INTERSECTS) ?
-      (pip_result != -1) : /* not outside */
-      (pip_result == 1); /* inside */
-  }
+    return meos_point_in_polygon(gs1, gs2, rel);
 
   /* Call GEOS function */
   assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
