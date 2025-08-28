@@ -930,7 +930,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbool_whenTrue"><varname>whenTrue</varname></link>: Devuelve el tiempo cuando el booleano temporal toma el valor verdadero</para>
+					<para><link linkend="tbool_whenTrue"><varname>whenTrue</varname></link>: Devuelve el tiempo cuando un booleano temporal toma el valor verdadero</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

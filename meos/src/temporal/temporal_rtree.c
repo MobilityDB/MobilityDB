@@ -351,6 +351,7 @@ node_choose(const RTree *rtree, const void *box, const RTreeNode *node)
  * node
  * @details The function takes the destination bounding box and change it to the
  * minimal bounding box enclosing all bounding boxes within a given RTree node
+ * @param[in] rtree Pointer to the RTree structure
  * @param[in] node Pointer to the node containing the bounding boxes
  * @param[out] box bounding box that will be expanded
  */
@@ -428,6 +429,7 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
  * single RTree node. If the node is a leaf, it also swaps the associated IDs.
  * For internal nodes, it swaps the pointers to child nodes. The function is
  * useful for reordering elements within a node.
+ * @param[in] rtree Pointer to the RTree structure
  * @param[in,out] node Pointer to the node containing the
  * bounding boxes and associated data.
  * @param[in] i The index of the first bounding box to be swapped.
@@ -686,6 +688,7 @@ add_answer(const int id, int **ids, int *count)
 
 /**
  * @brief Searches recursively a node looking for hits with a query
+ * @param[in] rtree Pointer to the RTree structure
  * @param[in] node The node to be searched
  * @param[in] query The bounding box that serves as query
  * @param[in] ids The array with the list of answers

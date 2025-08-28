@@ -924,7 +924,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbool_whenTrue"><varname>whenTrue</varname></link>: Return the time when the temporal Boolean takes the value true</para>
+					<para><link linkend="tbool_whenTrue"><varname>whenTrue</varname></link>: Return the time when a temporal Boolean takes the value true</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

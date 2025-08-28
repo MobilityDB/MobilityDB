@@ -241,6 +241,8 @@ temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
  * @param[in] count Number of elements in the array
  * @param[out] lower Array index of the start of the segment 
  * @param[out] upper Array index of the end of the segment 
+ * @param[out] update Array of indices keeping the levels of the elements to
+ * insert
  * @result Number of elements in the list that will be aggregated with the new
  * values, on error return -1
  */
@@ -320,16 +322,17 @@ temporal_skiplist_common(SkipList *list, void **values, int count,
 /**
  * @brief Return the new values obtained by merging the segment of the list
  * that overlaps with the new set of temporal values
- * @param[in] list Skiplist
  * @param[in] spliced Array of spliced values
  * @param[in] spliced_count Number of elements in the spliced array
  * @param[in] values Array of new values
  * @param[in] crossings True if turning points are added in the segments when
  * aggregating temporal value
  * @param[in] count Number of elements in the values array
- * @param[int] func Function used when aggregating temporal values, may be NULL
+ * @param[in] func Function used when aggregating temporal values, may be NULL
  * for the merge aggregate function
  * @param[out] newcount Number of elements in the output array
+ * @param[out] tofree Array of values that must be freed
+ * @param[out] nfree Number of values that must be freed
  */
 void **
 temporal_skiplist_merge(void **spliced, int spliced_count, void **values,
@@ -373,11 +376,11 @@ temporal_skiplist_splice(SkipList *list, void **values, int count,
  * @brief Generic aggregate function for temporal instants
  * @param[in] instants1 Accumulated state
  * @param[in] instants2 Instants of the input temporal discrete sequence
- * @note Return new sequences that must be freed by the calling function.
- * @param[in] instants1,instants2 Arrays of instants
  * @param[in] count1,count2 Number of values in the input arrays
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[out] newcount Number of instants in the output array
+ * @param[out] tofree Array of values that must be freed
+ * @param[out] nfree Number of values that must be freed
  */
 TInstant **
 tinstant_tagg(const TInstant **instants1, int count1,
