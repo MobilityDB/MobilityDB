@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: point_in_polygon</title>
+<title>MobilityDB: itree_pip_intersects</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -162,6 +162,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">GEOS2POSTGIS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a2ade9b89fcbff53e1fc14a20dcbca128.html#a2ade9b89fcbff53e1fc14a20dcbca128">gserialized_is_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5e32921f0eabf36201d8c711d8149f89.html#a5e32921f0eabf36201d8c711d8149f89">gserialized_is_poly</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae645f786e5b039504f61f38b1308d9bd.html#ae645f786e5b039504f61f38b1308d9bd">itree_pip_contains</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_accc992d99a78b9d2522ad0d8091e637d.html#accc992d99a78b9d2522ad0d8091e637d">itree_pip_covers</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a1c8a6266ace643165708eca25f84315c.html#a1c8a6266ace643165708eca25f84315c">itree_pip_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga18906fe742491d592b5ddcad513032e3.html#ga18906fe742491d592b5ddcad513032e3">line_interpolate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaee7f2a7a0216b5f05d61e65f48d9695e.html#gaee7f2a7a0216b5f05d61e65f48d9695e">line_locate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga595406b9557d51442086687837683870.html#ga595406b9557d51442086687837683870">line_numpoints</a></td></tr>
@@ -170,11 +173,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5f7592552d28d38819b5e04a46e2b525.html#a5f7592552d28d38819b5e04a46e2b525">lonlat_to_cart</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ad37ab51f91ddf4417c9775fe0b0a5bb4.html#ad37ab51f91ddf4417c9775fe0b0a5bb4">lwgeom_line_interpolate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a6f472ab25e82ce48cf7ad856c07b13ad.html#a6f472ab25e82ce48cf7ad856c07b13ad">meos_call_geos2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae357fba88b488840792876d1b92d4aac.html#ae357fba88b488840792876d1b92d4aac">meos_point_in_polygon</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a7cea55e3b2b13d71494a5c91a204fd4c.html#a7cea55e3b2b13d71494a5c91a204fd4c">meos_point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_adb5e820c58dec63ccdf40981c110cd3f.html#adb5e820c58dec63ccdf40981c110cd3f">PG_PARSER_ERROR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a02e63c9764b1fa97b1db257c6a77ea2a.html#a02e63c9764b1fa97b1db257c6a77ea2a">PGIS_FP_TOLERANCE</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0362b9435ebbe9ae0879b661639b388b.html#a0362b9435ebbe9ae0879b661639b388b">point_in_multipolygon</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_aac03a9d336c58e8ca7b35195ba20513c.html#aac03a9d336c58e8ca7b35195ba20513c">point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ac687598d059f7cac421deb93a1f30c5a.html#ac687598d059f7cac421deb93a1f30c5a">POSTGIS2GEOS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_abfcf635143063bd52419c2f80829a83b.html#abfcf635143063bd52419c2f80829a83b">postgis_valid_typmod</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5f52970397e99dbd3a5b0db6067a8994.html#a5f52970397e99dbd3a5b0db6067a8994">spheroid_init_from_srid</a></td></tr>
@@ -182,23 +183,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aac03a9d336c58e8ca7b35195ba20513c" name="aac03a9d336c58e8ca7b35195ba20513c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac03a9d336c58e8ca7b35195ba20513c">&#9670;&#160;</a></span>point_in_polygon()</h2>
+<a id="a1c8a6266ace643165708eca25f84315c" name="a1c8a6266ace643165708eca25f84315c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c8a6266ace643165708eca25f84315c">&#9670;&#160;</a></span>itree_pip_intersects()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int point_in_polygon </td>
+          <td class="memname"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> itree_pip_intersects </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structLWPOLY.html">LWPOLY</a> *&#160;</td>
-          <td class="paramname"><em>polygon</em>, </td>
+          <td class="paramtype">const IntervalTree *&#160;</td>
+          <td class="paramname"><em>itree</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structLWPOINT.html">LWPOINT</a> *&#160;</td>
-          <td class="paramname"><em>point</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>lwpoints</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
