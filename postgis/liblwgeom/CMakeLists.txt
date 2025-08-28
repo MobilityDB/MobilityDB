@@ -9,6 +9,7 @@ add_library(liblwgeom OBJECT
   gserialized.c
   gserialized1.c
   gserialized2.c
+  intervaltree.c
   lookup3.c
   lwalgorithm.c
   lwboundingcircle.c
@@ -23,14 +24,13 @@ add_library(liblwgeom OBJECT
   lwgeom.c
   lwgeom_api.c
   lwgeom_debug.c
-  lwgeom_functions_analytic.c
   lwgeom_geos.c
   lwgeom_geos_clean.c
   lwgeom_geos_cluster.c
   lwgeom_geos_node.c
   lwgeom_geos_split.c
   lwgeom_median.c
-  lwgeom_topo.c
+  # lwgeom_topo.c
   lwgeom_transform.c
   lwgeom_wrapx.c
   lwhomogenize.c

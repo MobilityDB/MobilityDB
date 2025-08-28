@@ -2006,7 +2006,8 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
   AFFINE affine = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  gridspec grid = {0, 0, 0, 0, 1, 1, 0, 0};
+  gridspec grid;
+  memset(&grid, 0, sizeof(gridspec));
   double width = box->xmax - box->xmin;
   double height = box->ymax - box->ymin;
   double resx, resy, res, fx, fy;

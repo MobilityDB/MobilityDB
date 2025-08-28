@@ -19,7 +19,7 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tContains(t1.temp,
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
-   525
+   656
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tCovers(g, temp) IS NOT NULL;

@@ -30,8 +30,6 @@
 
 /* Internal prototype */
 static CIRC_NODE* circ_nodes_merge(CIRC_NODE** nodes, int num_nodes);
-// MEOS removed static
-double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
 
 /**
@@ -170,7 +168,7 @@ circ_center_spherical(const GEOGRAPHIC_POINT* c1, const GEOGRAPHIC_POINT* c2, do
 	/* Direction from c1 to c2 */
 	double dir = sphere_direction(c1, c2, distance);
 
-	LWDEBUGF(4,"calculating spherical center", dir);
+	LWDEBUG(4,"calculating spherical center");
 
 	LWDEBUGF(4,"dir is %g", dir);
 
