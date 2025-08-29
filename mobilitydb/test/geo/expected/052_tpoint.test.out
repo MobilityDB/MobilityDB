@@ -595,7 +595,7 @@ ERROR:  Only point geometries without M dimension accepted
 LINE 1: SELECT tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000...
                ^
 SELECT tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid geometry type modifier: pointzz
+ERROR:  invalid input syntax for type integer: "pointzz"
 LINE 1: SELECT tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2...
                ^
 SELECT tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
@@ -603,7 +603,7 @@ ERROR:  Only point geometries without M dimension accepted
 LINE 1: SELECT tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2...
                ^
 SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid temporal geometry type modifier:
+ERROR:  invalid input syntax for type integer: "pointzz"
 LINE 1: SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-0...
                ^
 SELECT tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';

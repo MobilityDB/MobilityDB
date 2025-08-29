@@ -1159,19 +1159,19 @@
 			<title>Operaciones de distancia</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Devuelve la distancia mínima que haya existido</para>
+					<para><link linkend="tgeo_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia mínima que haya existido</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
+					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano</para>
+					<para><link linkend="tgeo_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
+					<para><link linkend="tgeo_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1184,23 +1184,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Contiene alguna vez o siempre</para>
+						<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Contiene alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Es disjunto alguna vez o siempre</para>
+						<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Es disjunto alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Está alguna vez o siempre a distancia de</para>
+						<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Está alguna vez o siempre a distancia de</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Cruza alguna vez o siempre</para>
+						<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Cruza alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Toca alguna vez o siempre</para>
+						<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Toca alguna vez o siempre</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1210,23 +1210,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_tContains"><varname>tContains</varname></link>: Contiene temporal</para>
+						<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Contiene temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_tDisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
+						<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_tDwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
+						<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_tIntersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
+						<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_tTouches"><varname>tTouches</varname></link>: Toca temporal</para>
+						<para><link linkend="tgeo_tTouches"><varname>tTouches</varname></link>: Toca temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1577,11 +1577,11 @@
 				<title>Operadores de distancia</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia más cercana</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Devuelve la distancia más pequeña entre los dos argumentos</para>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
 					</listitem>
 
 					<listitem>
@@ -1589,11 +1589,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Devuelve la distancia más pequeña entre los dos argumentos</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
+						<para><link linkend="tnpoint_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

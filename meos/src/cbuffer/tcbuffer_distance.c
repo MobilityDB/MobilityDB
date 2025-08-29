@@ -420,6 +420,7 @@ tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #NAI_tcbuffer_geo()
+ * @note This function needs to be implemented TODO
  */
 TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -446,6 +447,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @csqlfn #NAI_tcbuffer_cbuffer()
+ * @note This function needs to be implemented TODO
  */
 TInstant *
 nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
@@ -471,6 +473,7 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @brief Return the nearest approach instant of two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #NAI_tcbuffer_tcbuffer()
+ * @note This function needs to be implemented TODO
  */
 TInstant *
 nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
@@ -656,6 +659,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Shortestline_tcbuffer_tcbuffer()
+ * @note This function needs to be implemented TODO
  */
 GSERIALIZED *
 shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
