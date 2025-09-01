@@ -35,12 +35,12 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 </pre><p>
 		</p><p>
 				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB).
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2400"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2399"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
-</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2410"></a><a class="indexterm" name="id2413"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2409"></a><a class="indexterm" name="id2412"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
@@ -53,7 +53,7 @@ SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
 -- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
-</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2424"></a><a class="indexterm" name="id2427"></a><p>Entrar a partir de representación binaria conocida (WKB) o de la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">boxFromBinary(bytea) → box</code></p><p><code class="varname">boxFromHexWKB(text) → box</code></p><p>En las funciones anteriores, <code class="varname">box</code> reemplaza cualquier tipo de cuadro delimitador, a saber, <code class="varname">tbox</code> o <code class="varname">stbox</code>.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2423"></a><a class="indexterm" name="id2426"></a><p>Entrar a partir de representación binaria conocida (WKB) o de la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">boxFromBinary(bytea) → box</code></p><p><code class="varname">boxFromHexWKB(text) → box</code></p><p>En las funciones anteriores, <code class="varname">box</code> reemplaza cualquier tipo de cuadro delimitador, a saber, <code class="varname">tbox</code> o <code class="varname">stbox</code>.</p><pre class="programlisting">
 SELECT tboxFromBinary(
   '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))
