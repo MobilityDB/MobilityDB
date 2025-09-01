@@ -210,14 +210,15 @@ $(function() {
 <p>Return the new values obtained by merging the segment of the list that overlaps with the new set of temporal values. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">list</td><td>Skiplist </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">spliced</td><td>Array of spliced values </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">spliced_count</td><td>Number of elements in the spliced array </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Array of new values </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">crossings</td><td>True if turning points are added in the segments when aggregating temporal value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the values array </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">[int]</td><td>func Function used when aggregating temporal values, may be NULL for the merge aggregate function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function used when aggregating temporal values, may be NULL for the merge aggregate function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">newcount</td><td>Number of elements in the output array </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">tofree</td><td>Array of values that must be freed </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">nfree</td><td>Number of values that must be freed </td></tr>
   </table>
   </dd>
 </dl>

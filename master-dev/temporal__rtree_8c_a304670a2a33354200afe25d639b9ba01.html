@@ -173,6 +173,7 @@ $(function() {
 <p>Swaps two bounding boxes and their associated data within an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> node. </p>
 <p >The function exchanges the positions of two bounding boxes within a single <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> node. If the node is a leaf, it also swaps the associated IDs. For internal nodes, it swaps the pointers to child nodes. The function is useful for reordering elements within a node. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Pointer to the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> structure </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">node</td><td>Pointer to the node containing the bounding boxes and associated data. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">i</td><td>The index of the first bounding box to be swapped. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">j</td><td>The index of the second bounding box to be swapped. </td></tr>

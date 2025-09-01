@@ -178,16 +178,11 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">instants1</td><td>Accumulated state </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">instants2</td><td>Instants of the input temporal discrete sequence </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>Return new sequences that must be freed by the calling function. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">instants1,instants2</td><td>Arrays of instants </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count1,count2</td><td>Number of values in the input arrays </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function, may be NULL for the merge aggregate function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">newcount</td><td>Number of instants in the output array </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">tofree</td><td>Array of values that must be freed </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">nfree</td><td>Number of values that must be freed </td></tr>
   </table>
   </dd>
 </dl>
