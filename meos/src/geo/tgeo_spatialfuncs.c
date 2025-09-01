@@ -1600,6 +1600,8 @@ tgeo_convex_hull(const Temporal *temp)
  * @brief Return the traversed area of a temporal geo or the trajectory for
  * a temporal point with discrete or step interpolation
  * @param[in] temp Temporal geo
+ * @param[in] unary_union True when the PostGIS ST_UnaryUnion function is
+ * applied to the result
  * @csqlfn #Tgeo_traversed_area()
  */
 GSERIALIZED *

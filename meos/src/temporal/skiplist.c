@@ -422,6 +422,8 @@ skiplist_print(const SkipList *list)
  * @param[in] count Number of elements in the arrays
  * @param[out] lower Array index of the start of the segment 
  * @param[out] upper Array index of the end of the segment 
+ * @param[out] update Array of indices keeping the levels of the elements to
+ * insert
  * @result Number of elements in the list that will be merged with the new
  * values, on error return -1
  */
@@ -475,13 +477,14 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
 
 /**
  * @brief Generic aggregate function for temporal values
- * @param[in] values1 Accumulated state
- * @param[in] values2 New values
- * @note Return new values that must be freed by the calling function.
+ * @param[in] list Skiplist
+ * @param[in] keys1,keys2 Arrays of keys and values
  * @param[in] values1,values2 Arrays of values
  * @param[in] count1,count2 Number of values in the input arrays
- * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[out] newcount Number of values in the output array
+ * @param[out] newkeys Array of new keys
+ * @param[out] tofree Array of values that must be freed
+ * @param[out] nfree Number of values that must be freed
  */
 void **
 keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
@@ -559,12 +562,14 @@ keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
  * - worst case: O(n + count*log(n)) (when period spans the whole list so
  *   everything has to be deleted)
  * @param[in,out] list Skiplist
+ * @param[in] keys Array of keys
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] func Function used when aggregating temporal values, may be NULL
  * for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments when
  * aggregating temporal value
+ * @param[in] sktype Type of the skiplist
  */
 void
 skiplist_splice(SkipList *list, void **keys, void **values, int count,
@@ -579,7 +584,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Height of the element at which the new values will be merged, initialized
    * to the root for an empty list */
   int height = list->elems[0].height;
-  /* Array indices for keeping the levels of the element to insert */
+  /* Array of indices keeping the levels of the element to insert */
   int update[SKIPLIST_MAXLEVEL];
   SkipListElem *head, *tail;
   /* Array keeping the new aggregated values that must be freed */

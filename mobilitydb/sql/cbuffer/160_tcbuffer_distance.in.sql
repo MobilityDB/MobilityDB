@@ -36,53 +36,53 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION tdistance(geometry, cbuffer)
+CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tdistance_geo_cbuffer'
+  AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tdistance(stbox, cbuffer)
+CREATE FUNCTION distance(stbox, cbuffer)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tdistance_stbox_cbuffer'
+  AS 'MODULE_PATHNAME', 'Distance_stbox_cbuffer'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tdistance(cbuffer, geometry)
+CREATE FUNCTION distance(cbuffer, geometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tdistance_cbuffer_geo'
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_geo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tdistance(cbuffer, stbox)
+CREATE FUNCTION distance(cbuffer, stbox)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tdistance_cbuffer_stbox'
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_stbox'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tdistance(cbuffer, cbuffer)
+CREATE FUNCTION distance(cbuffer, cbuffer)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_cbuffer_cbuffer'
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = distance,
   LEFTARG = geometry,
   RIGHTARG = cbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = distance,
   LEFTARG = stbox,
   RIGHTARG = cbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = distance,
   LEFTARG = cbuffer,
   RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = distance,
   LEFTARG = cbuffer,
   RIGHTARG = stbox,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = distance,
   LEFTARG = cbuffer,
   RIGHTARG = cbuffer,
   COMMUTATOR = <->

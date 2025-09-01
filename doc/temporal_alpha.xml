@@ -329,7 +329,7 @@ SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 
 			<listitem xml:id="tbool_whenTrue">
 				<indexterm significance="normal"><primary><varname>whenTrue</varname></primary></indexterm>
-				<para>Return the time when the temporal Boolean takes the value true</para>
+				<para>Return the time when a temporal Boolean takes the value true</para>
 				<para><varname>whenTrue(tbool) → tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT whenTrue(tfloat '[1@2001-01-01, 4@2001-01-04, 1@2001-01-07]' #&gt; 2);
