@@ -86,3 +86,35 @@ CREATE FUNCTION dynTimeWarpPath(tfloat, tfloat)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+<<<<<<< Updated upstream
+=======
+
+
+/*****************************************************************************
+ *  This bloc is modified by master student Ossama Benaissa 000440942
+ *
+ lcss
+ average-Hausdorff
+
+ *****************************************************************************/
+
+CREATE FUNCTION averageHausdorffDistance(tint, tint)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION averageHausdorffDistance(tfloat, tfloat)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+
+CREATE FUNCTION lcssDistance(tint, tint, float)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lcssDistance(tfloat, tfloat, float)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+>>>>>>> Stashed changes
