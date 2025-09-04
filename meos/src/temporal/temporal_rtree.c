@@ -41,6 +41,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/temporal.h"
 #include "temporal/temporal_rtree.h"
 
 /*****************************************************************************
@@ -56,9 +57,9 @@
  * bound
  */
 static double
-get_axis_span(const void *box, int axis, bool upper)
+get_axis_span(const void *box, int axis UNUSED, bool upper)
 {
-  assert(box); assert(axis == 0);
+  assert(box);
   Span *span = (Span *) box;
   return upper ? (double) span->upper : (double) span->lower;
 }
