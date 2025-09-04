@@ -228,6 +228,11 @@ SELECT duration(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1
 SELECT getTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
 
 -------------------------------------------------------------------------------
+
+SELECT asEWKT(points(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
+SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}');
+
+-------------------------------------------------------------------------------
 -- Shift and scale functions
 -------------------------------------------------------------------------------
 

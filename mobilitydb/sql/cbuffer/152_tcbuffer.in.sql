@@ -57,7 +57,7 @@ CREATE FUNCTION temporal_send(tcbuffer)
 
 CREATE FUNCTION tcbuffer_typmod_in(cstring[])
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tgeompoint_typmod_in'
+  AS 'MODULE_PATHNAME', 'Tcbuffer_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tcbuffer (

@@ -159,6 +159,7 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   Cbuffer *sv2 = DatumGetCbufferP(start2);
   Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
+
   /* Extract the points */
   const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv1));
   const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev1));
@@ -804,12 +805,13 @@ tcbufferseq_members(const TSequence *seq, bool point)
     values[i] = point ?
       PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   }
-  datumarr_sort(values, seq->count, T_GEOMETRY);
-  int count = datumarr_remove_duplicates(values, seq->count, T_GEOMETRY);
+  meosType basetype = point ? T_GEOMETRY : T_FLOAT8;
+  datumarr_sort(values, seq->count, basetype);
+  int count = datumarr_remove_duplicates(values, seq->count, basetype);
   /* Free the duplicate values that have been found */
   for (int i = count; i < seq->count; i++)
     pfree(DatumGetPointer(values[i]));
-  return set_make_free(values, count, T_GEOMETRY, ORDER_NO);
+  return set_make_free(values, count, basetype, ORDER_NO);
 }
 
 /**
@@ -1079,8 +1081,11 @@ tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
   Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
   Temporal *result = NULL;
   if (tpoint_rest)
+  {
     result = tcbuffer_make(tpoint_rest, tfloat);
-  pfree(tpoint); pfree(tfloat); pfree(tpoint_rest);
+    pfree(tpoint_rest);
+  }
+  pfree(tpoint); pfree(tfloat); 
   return result;
 }
 

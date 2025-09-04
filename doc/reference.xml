@@ -1159,19 +1159,19 @@
 			<title>Distance Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
+					<para><link linkend="tgeo_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal point at which the two arguments are at the nearest distance</para>
+					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal point at which the two arguments are at the nearest distance</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point</para>
+					<para><link linkend="tgeo_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+					<para><link linkend="tgeo_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1183,23 +1183,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Ever or always contains</para>
+						<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Ever or always contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint</para>
+						<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within</para>
+						<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects</para>
+						<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
+						<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1684,7 +1684,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tpose_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+						<para><link linkend="tpose_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1905,11 +1905,11 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Smallest distance ever between the two arguments</para>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
 					</listitem>
 
 					<listitem>
@@ -1917,11 +1917,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Return the smallest distance ever between the two arguments</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+						<para><link linkend="tnpoint_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1991,7 +1987,7 @@
 				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer_geometry"><varname>cbuffer::geometry</varname>, <varname>geometry::cbuffer</varname></link>: Convert betwwen a circular buffer and a geometry point</para>
+						<para><link linkend="cbuffer_geometry"><varname>cbuffer::geometry</varname>, <varname>geometry::cbuffer</varname></link>: Convert between a circular buffer and a geometry point</para>
 					</listitem>
 
 					<listitem>
@@ -2005,11 +2001,11 @@
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="point"><varname>point</varname></link>: Return the point</para>
+						<para><link linkend="cbuffer_point"><varname>point</varname></link>: Return the point</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="radius"><varname>radius</varname></link>: Return the radius</para>
+						<para><link linkend="cbuffer_radius"><varname>radius</varname></link>: Return the radius</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2111,7 +2107,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_points"><varname>points</varname></link>: Return the points</para>
+						<para><link linkend="tcbuffer_points"><varname>points</varname>, <varname>radius</varname></link>: Return the points or the radii</para>
 					</listitem>
 
 					<listitem>
@@ -2154,11 +2150,11 @@
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance</para>
+						<para><link linkend="tcbuffer_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever between the two arguments</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Return the smallest distance ever between the two arguments</para>
+						<para><link linkend="tcbuffer_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance</para>
 					</listitem>
 
 					<listitem>
@@ -2166,11 +2162,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_smallestDistance"><varname>|=|</varname></link>: Return the smallest distance ever between the two arguments</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tcbuffer_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+						<para><link linkend="tcbuffer_tdistance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
