@@ -50,15 +50,15 @@
 /**
  * @brief Return the lower or upper bound from a span as a double
  * @param[in] box Span
- * @param[in] axis Axis to retrieve, it is always 0 for spans since there is // REMOVED PARAMETER
+ * @param[in] axis Axis to retrieve, it is always 0 for spans since there is
  * only one dimension
  * @param[in] upper True when retrieving the upper bound, False for the lower
  * bound
  */
 static double
-get_axis_span(const void *box, bool upper)
+get_axis_span(const void *box, int axis, bool upper)
 {
-  assert(box);
+  assert(box); assert(axis == 0);
   Span *span = (Span *) box;
   return upper ? (double) span->upper : (double) span->lower;
 }
