@@ -217,13 +217,22 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
   }
   else if (n == 2)
   {
-    /* Type modifier is either (TempSubType, Geometry) or (Geometry, SRID) */
+    /* Type modifier is either (TempSubType, Geometry), (TempSubType, SRID) or
+      (Geometry, SRID) */
     if (tempsubtype_from_string(s[0], &tempsubtype))
     {
       if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
-        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-            errmsg("Invalid geometry type modifier: %s", s[1])));
-      has_geo = true;
+      {
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+        srid = pg_strtoint32(s[1]);
+#else
+        srid = pg_atoi(s[1], sizeof(int32), '\0');
+#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
+        srid = clamp_srid(srid);
+        has_srid = true;
+      }
+      else
+        has_geo = true;
     }
     else
     {
@@ -241,19 +250,23 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
   }
   else if (n == 1)
   {
-    /* Type modifier: either (TempSubType) or (Geometry) */
+    /* Type modifier: either (TempSubType), (Geometry), or (SRID) */
     has_srid = false;
     if (tempsubtype_from_string(s[0], &tempsubtype))
       ;
     else if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM))
       has_geo = true;
     else
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal geometry type modifier:")));
+    {
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+      srid = pg_strtoint32(s[0]);
+#else
+      srid = pg_atoi(s[0], sizeof(int32), '\0');
+#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
+      srid = clamp_srid(srid);
+      has_srid = true;
+    }
   }
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Invalid temporal geometry type modifier:")));
 
   /* Set the temporal type */
   if (tempsubtype != ANYTEMPSUBTYPE)

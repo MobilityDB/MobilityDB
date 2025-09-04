@@ -1180,9 +1180,9 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
     }
-    /* If either the start values are equal or both have linear interpolation
-     * and the end values are equal compute the function at the start
-     * instant, at an intermediate point, and at the end instant */
+    /* If either the start values or the end values are equal, compute the
+     * function at the start instant, at an intermediate point, and at the
+     * end instant */
     else if (datum_eq(startvalue1, startvalue2, basetype) ||
       datum_eq(endvalue1, endvalue2, basetype))
     {

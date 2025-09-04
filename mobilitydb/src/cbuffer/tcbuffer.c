@@ -53,6 +53,7 @@
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -121,6 +122,20 @@ Tcbuffer_enforce_typmod(PG_FUNCTION_ARGS)
   temp = tcbuffer_valid_typmod(temp, typmod);
   PG_RETURN_TEMPORAL_P(temp);
 }
+
+PGDLLEXPORT Datum Tcbuffer_typmod_in(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_typmod_in);
+/**
+ * @brief Input typmod information for temporal circular buffers
+ */
+Datum
+Tcbuffer_typmod_in(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
+  uint32 typmod = tspatial_typmod_in(array, true, false);
+  PG_RETURN_INT32(typmod);
+}
+
 
 /*****************************************************************************
  * Constructor functions

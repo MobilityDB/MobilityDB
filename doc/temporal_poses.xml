@@ -403,7 +403,7 @@ SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01,
 </programlisting>
 	</sect1>
 
-	<sect1 xml:id="temporal_poses_validity">
+	<sect1 xml:id="tpose_validity">
 		<title>Validity of Temporal Poses</title>
 
 		<para>Temporal pose values must satisfy the constraints specified in <xref linkend="ttype_validity"/> so that they are well defined. An error is raised whenever one of these constraints are not satisfied. Examples of incorrect values are as follows.</para>
@@ -611,7 +611,7 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="temporal_poses_conversions">
+	<sect1 xml:id="tpose_conversions">
 		<title>Conversions</title>
 		<para>A temporal pose value can be converted to and from a temporal geometry point. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
 		<itemizedlist>
@@ -876,20 +876,17 @@ FROM test;
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 				<para>Topological operators</para>
-				<para><varname>tpose {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} tpose → boolean</varname></para>
+				<para><varname>{tstzspan,stbox,tpose} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tpose} → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; pose 'Pose(Point(1 1), 0.5)'
+  Pose(Point(1 1), 0.5)@2001-01-03]' &amp;&amp; tstzspan '[2001-01-02,2001-01-04]';
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)')
--- true
-SELECT pose 'Pose(Point(1 1), 0.5)'::geometry &lt;@
-  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'
+  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)');
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
   Pose(Point(1 1), 0.5)@2001-01-03]' ~= tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'
+  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]';
 -- true
 </programlisting>
 			</listitem>
@@ -897,30 +894,33 @@ SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_pos">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Position operators</para>
-				<para><varname>tpose {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tpose → boolean</varname></para>
-				<para><varname>tpose {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tpose → boolean</varname></para>
-				<para><varname>tpose {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} tpose → boolean</varname></para>
-				<para><varname>tpose {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} tpose → boolean</varname></para>
+				<para><varname>{stbox,tpose} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tpose}  → boolean</varname></para>
+				<para><varname>{stbox,tpose} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tpose}  → boolean</varname></para>
+				<para><varname>{stbox,tpose} {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} {stbox,tpose}  → boolean</varname></para>
+				<para><varname>{tstzspan,stbox,tpose} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tpose} → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; pose 'Pose(Point(1 1), 0.2)'
--- false
-SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(1 1), 0.5)')
--- false
-SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; pose 'Pose(Point(1 1), 0.3)'::geometry
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; stbox(pose 'Pose(Point(2 2), 0.5)');
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
-  tpose '[Pose(Point(1 1), 0.3)@2001-01-03, Pose(Point(1 1), 0.5)@2001-01-05]'
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(2 2), 0.5)');
+-- true
+SELECT tpose '[Pose(Point(1 1 1), 1,0,0,0)@2001-01-01, 
+  Pose(Point(1 1 1), 1,0,0,0)@2001-01-02]' &lt;&lt;/ stbox(pose 'Pose(Point(2 2 2), 1,0,0,0)');
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;# tstzspan '[2001-01-03, 2001-01-04]';
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03, 
+  Pose(Point(1 1), 0.5)@2001-01-05]' #&gt;&gt;
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]';
 -- true
 </programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tpose_distance_ops">
+	<sect1 xml:id="tpose_distance">
 		<title>Distance Operations</title>
 		<para>
 			We present next the functions that compute distance operations for temporal poses. Notice that for these operations only the point component is considered, not the orientation.
@@ -950,6 +950,7 @@ SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_nearestApproachInstant">
 				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
 				<para>Return the instant of the first temporal pose at which the two arguments are at the nearest distance</para>
+				<para><varname>nearestApproachInstant({geo,pose,tpose},{geo,pose,tpose}) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(nearestApproachInstant(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
@@ -975,7 +976,7 @@ SELECT ST_AsText(shortestLine(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tpose_distance">
+			<listitem xml:id="tpose_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Return the temporal distance</para>
 				<para><varname>tpose &lt;-&gt; tpose → tfloat</varname></para>

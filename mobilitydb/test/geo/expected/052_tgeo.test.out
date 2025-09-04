@@ -597,13 +597,13 @@ LINE 1: SELECT tgeometry(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-...
 SELECT tgeometry(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  The tgeometry value has Z dimension but column does not
 SELECT tgeometry(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid geometry type modifier: pointzz
+ERROR:  invalid input syntax for type integer: "pointzz"
 LINE 1: SELECT tgeometry(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@20...
                ^
 SELECT tgeometry(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  The tgeometry value has Z dimension but column does not
 SELECT tgeometry(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid temporal geometry type modifier:
+ERROR:  invalid input syntax for type integer: "pointzz"
 LINE 1: SELECT tgeometry(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01...
                ^
 SELECT tgeometry(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';

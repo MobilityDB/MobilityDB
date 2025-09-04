@@ -724,6 +724,18 @@ SELECT getTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT asEWKT(points(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
+                 asewkt                 
+----------------------------------------
+ SRID=5676;{"POINT(1 1)", "POINT(3 3)"}
+(1 row)
+
+SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}');
+   radius   
+------------
+ {0.3, 0.5}
+(1 row)
+
 SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '5 min'));
                         astext                        
 ------------------------------------------------------
