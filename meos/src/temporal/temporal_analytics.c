@@ -2006,8 +2006,8 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
 
     double result;
     int count1, count2;
-    const TInstant **instants1 = temporal_insts(temp1, &count1);
-    const TInstant **instants2 = temporal_insts(temp2, &count2);
+    const TInstant **instants1 = temporal_instants_p(temp1, &count1);
+    const TInstant **instants2 = temporal_instants_p(temp2, &count2);
     result = tinstarr_average_hausdorff_distance(instants1, count1, instants2, count2);
     // Free memory
     pfree(instants1); pfree(instants2);
@@ -2091,8 +2091,8 @@ temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsi
 
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_insts(temp1, &count1);
-  const TInstant **instants2 = temporal_insts(temp2, &count2);
+  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
   
   // Normalisation : distance =  (lcss / max(len1, len2)) REFERENCE 0 - 1 100% similar
 
