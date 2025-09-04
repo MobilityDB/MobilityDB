@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version,feed_contact_email
+STIB,"https://www.stib-mivb.be/index.htm?l=fr",fr,20250707,20250803,2_16_20250707_010614,data@stib-mivb.brussels

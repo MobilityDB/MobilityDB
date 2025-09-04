@@ -63,3 +63,14 @@ SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeompoint t1
 SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
 
 -------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+-- Average Hausdorff distance
+/*This part is modified by master student Ossama BENAISSA 440942*/
+-------------------------------------------------------------------------------
+
+-- SELECT round(MAX(averageHausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
+-- SELECT round(MAX(averageHausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
+
+-------------------------------------------------------------------------------

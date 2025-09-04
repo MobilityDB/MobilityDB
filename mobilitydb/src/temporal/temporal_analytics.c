@@ -174,14 +174,34 @@ Temporal_tsample(PG_FUNCTION_ARGS)
 Datum
 Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
+
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable for temporal geography points */
   if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
-  double result = (simfunc == HAUSDORFF) ?
-    temporal_hausdorff_distance(temp1, temp2) :
-    temporal_similarity(temp1, temp2, simfunc);
+
+
+  // This bloc is modified by master student Ossama Benaissa 000440942  
+  double result = 1.0;    
+  if (simfunc == HAUSDORFF)
+  {
+    result = temporal_hausdorff_distance(temp1, temp2);
+  }
+  else if (simfunc == AVERAGEHAUSDORFF)
+  {
+    result = temporal_average_hausdorff_distance(temp1, temp2);
+  }
+  else if (simfunc == LCSS)
+  {
+    double  epsilon = PG_GETARG_FLOAT8(2);
+    result = temporal_lcss_distance(temp1, temp2, epsilon);
+  }
+  else{
+    result = temporal_similarity(temp1, temp2, simfunc);
+  }
+  
+
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
@@ -445,3 +465,40 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************/
+
+
+/*****************************************************************************
+ *  This bloc is modified by master student Ossama Benaissa 000440942        *
+ *****************************************************************************/
+
+ PGDLLEXPORT Datum Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS);
+ PG_FUNCTION_INFO_V1(Temporal_average_hausdorff_distance);
+ /**
+  * @ingroup mobilitydb_temporal_analytics_similarity
+  * @brief Return the average_hausdorff distance between two temporal
+  * values
+  * @sqlfn averageHausdorffDistance
+  */
+ Datum
+ Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS)
+ {
+
+   return Temporal_similarity(fcinfo, AVERAGEHAUSDORFF);
+ }
+ 
+
+ 
+PGDLLEXPORT Datum Temporal_lcss_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_lcss_distance);
+/**
+ * @ingroup mobilitydb_temporal_analytics_similarity
+ * @brief Return the LCSS distance between two temporal values
+ * @sqlfn lcssDistance
+ */
+Datum
+Temporal_lcss_distance(PG_FUNCTION_ARGS)
+{
+  return Temporal_similarity(fcinfo, LCSS);
+}
