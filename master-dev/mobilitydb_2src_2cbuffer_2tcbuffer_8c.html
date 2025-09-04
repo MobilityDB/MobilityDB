@@ -101,6 +101,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis_8h_source.html">pg_geo/postgis.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__geo_2tspatial_8h_source.html">pg_geo/tspatial.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -163,6 +164,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga85cc8e6104460481eacb1f9fb66e791e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__cbuffer__accessor_ga85cc8e6104460481eacb1f9fb66e791e.html#ga85cc8e6104460481eacb1f9fb66e791e">Tcbuffer_traversed_area</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga85cc8e6104460481eacb1f9fb66e791e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the geometry covered by a temporal circular buffer @sqlfn traversedArea()  <a href="group__mobilitydb__cbuffer__accessor_ga85cc8e6104460481eacb1f9fb66e791e.html#ga85cc8e6104460481eacb1f9fb66e791e">More...</a><br /></td></tr>
 <tr class="separator:ga85cc8e6104460481eacb1f9fb66e791e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad55e87ab9fe70b07a1cd612702b0d732"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2cbuffer_2tcbuffer_8c_ad55e87ab9fe70b07a1cd612702b0d732.html#ad55e87ab9fe70b07a1cd612702b0d732">Tcbuffer_typmod_in</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ad55e87ab9fe70b07a1cd612702b0d732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input typmod information for temporal circular buffers.  <a href="mobilitydb_2src_2cbuffer_2tcbuffer_8c_ad55e87ab9fe70b07a1cd612702b0d732.html#ad55e87ab9fe70b07a1cd612702b0d732">More...</a><br /></td></tr>
+<tr class="separator:ad55e87ab9fe70b07a1cd612702b0d732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb4f47be67ad01bbe5acd183b71277bf"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2cbuffer_2tcbuffer_8c_afb4f47be67ad01bbe5acd183b71277bf.html#afb4f47be67ad01bbe5acd183b71277bf">tcbuffer_valid_typmod</a> (<a class="el" href="structTemporal.html">Temporal</a> *temp, int32_t typmod)</td></tr>
 <tr class="memdesc:afb4f47be67ad01bbe5acd183b71277bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check the consistency of the metadata specified in the typmod: SRID, type, and dimensionality.  <a href="mobilitydb_2src_2cbuffer_2tcbuffer_8c_afb4f47be67ad01bbe5acd183b71277bf.html#afb4f47be67ad01bbe5acd183b71277bf">More...</a><br /></td></tr>
 <tr class="separator:afb4f47be67ad01bbe5acd183b71277bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
