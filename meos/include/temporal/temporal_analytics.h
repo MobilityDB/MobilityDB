@@ -39,15 +39,7 @@ typedef enum
 {
   FRECHET,
   DYNTIMEWARP,
-  HAUSDORFF,
-  /**
-   * This part was added by master student Ossama BENAISSA 000440942
-   * Enumeration values for temporal analytics algorithms.
-   * - LCSS: Longest Common Subsequence algorithm for measuring similarity between temporal sequences.
-   * - AVERAGEHAUSDORFF: Average Hausdorff distance for quantifying the similarity between temporal trajectories.
-   */
-  LCSS,
-  AVERAGEHAUSDORFF
+  HAUSDORFF
 } SimFunc;
 
 /**
