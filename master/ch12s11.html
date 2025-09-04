@@ -1,28 +1,25 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Network Points"><link rel="prev" href="ch12s10.html" title="Spatial Operations"><link rel="next" href="ch12s12.html" title="Spatial Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s10.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch12s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_topo"></a><a class="indexterm" name="id8904"></a><a class="indexterm" name="id8907"></a><a class="indexterm" name="id8910"></a><a class="indexterm" name="id8913"></a><a class="indexterm" name="id8916"></a><p>Topological operators</p><p><code class="varname">tnpoint {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} tnpoint → boolean</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch12.html" title="Chapter 12. Temporal Network Points"><link rel="prev" href="ch12s10.html" title="Spatial Operations"><link rel="next" href="ch12s12.html" title="Spatial Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch12s10.html">Prev</a> </td><th width="60%" align="center">Chapter 12. Temporal Network Points</th><td width="20%" align="right"> <a accesskey="n" href="ch12s12.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_topo"></a><a class="indexterm" name="id8897"></a><a class="indexterm" name="id8900"></a><a class="indexterm" name="id8903"></a><a class="indexterm" name="id8906"></a><a class="indexterm" name="id8909"></a><p>Topological operators</p><p><code class="varname">{tstzspan,stbox,tnpoint} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tnpoint} → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&amp;
-  npoint 'NPoint(1, 0.5)'
+  tstzspan '[2001-01-02,2001-01-03]';
 -- true
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' @&gt;
-  stbox(npoint 'NPoint(1, 0.5)')
--- true
-SELECT npoint 'NPoint(1, 0.5)'::geometry &lt;@
-  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]'
+  stbox(npoint 'NPoint(1, 0.5)');
 -- true
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
   tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.35)@2001-01-02,
-  NPoint(1, 0.5)@2001-01-03]'
+  NPoint(1, 0.5)@2001-01-03]';
 -- true
-</pre></li><li class="listitem"><a name="tnpoint_pos"></a><a class="indexterm" name="id8924"></a><p>Position operators</p><p><code class="varname">tnpoint {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tnpoint → boolean</code></p><p><code class="varname">tnpoint {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tnpoint → boolean</code></p><p><code class="varname">tnpoint {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} tnpoint → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_pos"></a><a class="indexterm" name="id8917"></a><p>Position operators</p><p><code class="varname">{stbox,tnpoint} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tnpoint} → boolean</code></p><p><code class="varname">{stbox,tnpoint} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tnpoint} → boolean</code></p><p><code class="varname">{tstzspan,stbox,tnpoint} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tnpoint} → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;
-  npoint 'NPoint(1, 0.2)'
--- false
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;|
-  stbox(npoint 'NPoint(1, 0.5)')
--- false
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&gt;
-  npoint 'NPoint(1, 0.3)'::geometry
+  stbox(npoint 'NPoint(1, 0.2)');
 -- true
-SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &gt;&gt;#
-  tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05]'
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;|
+  stbox(npoint 'NPoint(1, 0.5)');
+-- false
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05]' #&amp;&gt;
+  tstzspan '[2001-01-01,2001-01-03]';
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt;
+  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02]';
 -- true
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12s10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch12.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch12s12.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatial Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatial Relationships</td></tr></table></div></body></html>

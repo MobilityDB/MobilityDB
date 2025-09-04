@@ -37,7 +37,7 @@ FROM Trips T, Regions R
 WHERE eIntersects(T.Trip, R.Geom)
 </pre><p>
 			que verifica si un viaje <code class="varname">T</code> (que es un punto temporal) se cruza con una región <code class="varname">R</code> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <code class="varname">T.Trip</code> dado que la función <code class="varname">intersects</code> realiza automáticamente la comparación del cuadro delimitador <code class="varname">T.Trip &amp;&amp; R.Geom</code>. Esto se explica más adelante en este documento.
-		</p><p>No todas las relaciones espaciales disponibles en PostGIS se han generalizado para geometrías temporales, solo las derivadas de las siguientes funciones: <code class="varname">ST_Contains</code>, <code class="varname">ST_Covers</code>, <code class="varname">ST_Disjoint</code>, <code class="varname">ST_Intersects</code>, <code class="varname">ST_Touches</code> y <code class="varname">ST_DWithin</code>. Estas funciones solo admiten geometrías 2D, y solo las funciones <code class="varname">ST_Covers</code>, <code class="varname">ST_Intersects</code> y <code class="varname">ST_DWithin</code> admiten geografías. Por lo tanto, esto mismo aplica a las funciones de MobilityDB derivadas de ellas, excepto que admiten 3D para puntos temporales, es decir, <code class="varname">tgeompoint</code> y <code class="varname">tgeogpoint</code>. Como se mencionó anteriormente, cada una de las funciones PostGIS mencionadas, como <code class="varname">ST_Contains</code>, tiene tres versiones generalizadas en MobilityDB: <code class="varname">eContains</code>, <code class="varname">aContains</code> y <code class="varname">tContains</code>. Además, no todas las combinaciones de parámetros son relevantes para las funciones generalizadas. Por ejemplo, <code class="varname">tContains(tpoint, geometría)</code> solo es relevante cuando la geometría es un solo punto, y <code class="varname">tContains(tpoint, tpoint)</code> es equivalente a <code class="varname">tintersects(tpoint, geometría)</code>.</p><p>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id792"></a>Relaciones alguna vez o siempre</h3></div></div></div><p>Presentamos a continuación las relaciones alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="eContains"></a><a class="indexterm" name="id5748"></a><a class="indexterm" name="id5751"></a><p>Contiene alguna vez</p><p><code class="varname">eContains(geometry,tgeom) → boolean</code></p><p><code class="varname">aContains(geometry,tgeom) → boolean</code></p><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
+		</p><p>No todas las relaciones espaciales disponibles en PostGIS se han generalizado para geometrías temporales, solo las derivadas de las siguientes funciones: <code class="varname">ST_Contains</code>, <code class="varname">ST_Covers</code>, <code class="varname">ST_Disjoint</code>, <code class="varname">ST_Intersects</code>, <code class="varname">ST_Touches</code> y <code class="varname">ST_DWithin</code>. Estas funciones solo admiten geometrías 2D, y solo las funciones <code class="varname">ST_Covers</code>, <code class="varname">ST_Intersects</code> y <code class="varname">ST_DWithin</code> admiten geografías. Por lo tanto, esto mismo aplica a las funciones de MobilityDB derivadas de ellas, excepto que admiten 3D para puntos temporales, es decir, <code class="varname">tgeompoint</code> y <code class="varname">tgeogpoint</code>. Como se mencionó anteriormente, cada una de las funciones PostGIS mencionadas, como <code class="varname">ST_Contains</code>, tiene tres versiones generalizadas en MobilityDB: <code class="varname">eContains</code>, <code class="varname">aContains</code> y <code class="varname">tContains</code>. Además, no todas las combinaciones de parámetros son relevantes para las funciones generalizadas. Por ejemplo, <code class="varname">tContains(tpoint, geometría)</code> solo es relevante cuando la geometría es un solo punto, y <code class="varname">tContains(tpoint, tpoint)</code> es equivalente a <code class="varname">tintersects(tpoint, geometría)</code>.</p><p>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id792"></a>Relaciones alguna vez o siempre</h3></div></div></div><p>Presentamos a continuación las relaciones alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id5748"></a><a class="indexterm" name="id5751"></a><p>Contiene alguna vez</p><p><code class="varname">eContains(geometry,tgeom) → boolean</code></p><p><code class="varname">aContains(geometry,tgeom) → boolean</code></p><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
 SELECT eContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- false
@@ -50,7 +50,7 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="eCovers"></a><a class="indexterm" name="id5763"></a><a class="indexterm" name="id5766"></a><p>Ever or always covers</p><p><code class="varname">eCovers({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p><code class="varname">aCovers({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id5763"></a><a class="indexterm" name="id5766"></a><p>Ever or always covers</p><p><code class="varname">eCovers({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p><code class="varname">aCovers({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
 SELECT eCovers(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- false
@@ -63,7 +63,7 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="eDisjoint"></a><a class="indexterm" name="id5779"></a><a class="indexterm" name="id5782"></a><p>Está disjunto alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id5779"></a><a class="indexterm" name="id5782"></a><p>Está disjunto alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eDisjoint({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p><code class="varname">aDisjoint({geo,tgeo},{geo,tgeo}) → boolean</code></p><pre class="programlisting">
 SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -72,7 +72,7 @@ SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
 -- true
-</pre></li><li class="listitem"><a name="eDwithin"></a><a class="indexterm" name="id5806"></a><a class="indexterm" name="id5809"></a><p>Está alguna vez a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id5806"></a><a class="indexterm" name="id5809"></a><p>Está alguna vez a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eDwithin({geo,tgeo},{geo,tgeo},float) → boolean</code></p><p><code class="varname">aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean</code></p><pre class="programlisting">
 SELECT eDwithin(geometry 'Point(1 1 1)',
@@ -81,7 +81,7 @@ SELECT eDwithin(geometry 'Point(1 1 1)',
 SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
 -- false
-</pre></li><li class="listitem"><a name="eIntersects"></a><a class="indexterm" name="id5833"></a><a class="indexterm" name="id5836"></a><p>Intersecta alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id5833"></a><a class="indexterm" name="id5836"></a><p>Intersecta alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eIntersects({geo,tgeo},{geo,tgeo}) → boolean</code></p><p><code class="varname">aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><pre class="programlisting">
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
@@ -90,7 +90,7 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
-</pre></li><li class="listitem"><a name="eTouches"></a><a class="indexterm" name="id5860"></a><a class="indexterm" name="id5863"></a><p>Toca alguna vez</p><p><code class="varname">eTouches({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p><code class="varname">aTouches({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id5860"></a><a class="indexterm" name="id5863"></a><p>Toca alguna vez</p><p><code class="varname">eTouches({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><p><code class="varname">aTouches({geometry,tgeom},{geometry,tgeom}) → boolean</code></p><pre class="programlisting">
 SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
@@ -102,7 +102,7 @@ WHERE M.Name = "Brussels" AND atValues(tIntersects(T.trip, M.geom), True) IS NOT
 SELECT TripId, duration(tIntersects(T.trip, M.geom, True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND tIntersects(T.trip, M.geom, True) IS NOT NULL;
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tContains"></a><a class="indexterm" name="id5881"></a><p>Contiene temporal</p><p><code class="varname">tContains(geometry,tgeom,atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tContains"></a><a class="indexterm" name="id5881"></a><p>Contiene temporal</p><p><code class="varname">tContains(geometry,tgeom,atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- {[f@2001-01-01, f@2001-01-02]}
@@ -115,7 +115,7 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
-</pre></li><li class="listitem"><a name="tDisjoint"></a><a class="indexterm" name="id5889"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tDisjoint"></a><a class="indexterm" name="id5889"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">tDisjoint({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</code></p><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
 SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
@@ -124,7 +124,7 @@ SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
-</pre></li><li class="listitem"><a name="tDwithin"></a><a class="indexterm" name="id5912"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tDwithin"></a><a class="indexterm" name="id5912"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><p><code class="varname">tDwithin({geo,tgeo},{geo,tgeo},float,atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
@@ -132,7 +132,7 @@ SELECT tDwithin(geometry 'Point(1 1)',
 SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
   tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(1 3)@2001-01-05]', 1);
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
-</pre></li><li class="listitem"><a name="tIntersects"></a><a class="indexterm" name="id5927"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_tIntersects"></a><a class="indexterm" name="id5927"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">tIntersects({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</code></p><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
 SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
@@ -142,7 +142,7 @@ SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
 SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
-</pre></li><li class="listitem"><a name="tTouches"></a><a class="indexterm" name="id5950"></a><p>Toca temporal</p><p><code class="varname">tTouches({geometry,tgeom},{geometry,tgeom},atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_tTouches"></a><a class="indexterm" name="id5950"></a><p>Toca temporal</p><p><code class="varname">tTouches({geometry,tgeom},{geometry,tgeom},atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}

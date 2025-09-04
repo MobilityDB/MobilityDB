@@ -1,29 +1,29 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Poses"><link rel="prev" href="ch11s11.html" title="Spatial Reference System"><link rel="next" href="ch11s13.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Poses</th><td width="20%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_topo"></a><a class="indexterm" name="id8223"></a><a class="indexterm" name="id8226"></a><a class="indexterm" name="id8229"></a><a class="indexterm" name="id8232"></a><a class="indexterm" name="id8235"></a><p>Topological operators</p><p><code class="varname">tpose {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} tpose → boolean</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Poses"><link rel="prev" href="ch11s11.html" title="Spatial Reference System"><link rel="next" href="ch11s13.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Poses</th><td width="20%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_bbox_ops"></a>Bounding Box Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_topo"></a><a class="indexterm" name="id8223"></a><a class="indexterm" name="id8226"></a><a class="indexterm" name="id8229"></a><a class="indexterm" name="id8232"></a><a class="indexterm" name="id8235"></a><p>Topological operators</p><p><code class="varname">{tstzspan,stbox,tpose} {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} {tstzspan,stbox,tpose} → boolean</code></p><pre class="programlisting">
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; pose 'Pose(Point(1 1), 0.5)'
+  Pose(Point(1 1), 0.5)@2001-01-03]' &amp;&amp; tstzspan '[2001-01-02,2001-01-04]';
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)')
--- true
-SELECT pose 'Pose(Point(1 1), 0.5)'::geometry &lt;@
-  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'
+  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)');
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
   Pose(Point(1 1), 0.5)@2001-01-03]' ~= tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'
+  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]';
 -- true
-</pre></li><li class="listitem"><a name="tpose_pos"></a><a class="indexterm" name="id8243"></a><p>Position operators</p><p><code class="varname">tpose {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tpose → boolean</code></p><p><code class="varname">tpose {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tpose → boolean</code></p><p><code class="varname">tpose {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} tpose → boolean</code></p><p><code class="varname">tpose {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} tpose → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpose_pos"></a><a class="indexterm" name="id8243"></a><p>Position operators</p><p><code class="varname">{stbox,tpose} {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} {stbox,tpose}  → boolean</code></p><p><code class="varname">{stbox,tpose} {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} {stbox,tpose}  → boolean</code></p><p><code class="varname">{stbox,tpose} {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} {stbox,tpose}  → boolean</code></p><p><code class="varname">{tstzspan,stbox,tpose} {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} {tstzspan,stbox,tpose} → boolean</code></p><pre class="programlisting">
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; pose 'Pose(Point(1 1), 0.2)'
--- false
-SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(1 1), 0.5)')
--- false
-SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; pose 'Pose(Point(1 1), 0.3)'::geometry
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; stbox(pose 'Pose(Point(2 2), 0.5)');
 -- true
 SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
-  Pose(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
-  tpose '[Pose(Point(1 1), 0.3)@2001-01-03, Pose(Point(1 1), 0.5)@2001-01-05]'
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(2 2), 0.5)');
+-- true
+SELECT tpose '[Pose(Point(1 1 1), 1,0,0,0)@2001-01-01, 
+  Pose(Point(1 1 1), 1,0,0,0)@2001-01-02]' &lt;&lt;/ stbox(pose 'Pose(Point(2 2 2), 1,0,0,0)');
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;# tstzspan '[2001-01-03, 2001-01-04]';
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03, 
+  Pose(Point(1 1), 0.5)@2001-01-05]' #&gt;&gt;
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]';
 -- true
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s13.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Spatial Reference System </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Distance Operations</td></tr></table></div></body></html>
