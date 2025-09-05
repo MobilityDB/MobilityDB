@@ -1790,7 +1790,6 @@ extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 
 
-/*This part is modified by master Student Ossama BENAISSA 000440942*/
 extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon);
 

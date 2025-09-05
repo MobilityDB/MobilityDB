@@ -1902,23 +1902,17 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 /*****************************************************************************/
 
 
-/*****************************************************************************
- *
- *  This bloc is modified by master student Ossama Benaissa 000440942
- *
- lcss
- average Hausdorff
-
- *****************************************************************************/
 
 /**
  * @brief Computes the average Hausdorff distance between two arrays of temporal instants.
- *
+ * 
  * This function calculates the average Hausdorff distance between the temporal values
  * represented by two arrays of TInstant pointers. The Hausdorff distance is a measure
  * of the similarity between two sets of points, and in this context, it quantifies
  * the difference between two temporal sequences.
- *
+ * 
+ * @note Function written by Ossama BENAISSA ossama.benaissa.96@gmail.com
+ * 
  * @param[in] instants1 Array of pointers to the first set of temporal instants.
  * @param[in] count1 Number of elements in the first array.
  * @param[in] instants2 Array of pointers to the second set of temporal instants.
@@ -1990,7 +1984,9 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
  * of the similarity between two sets of points, and in this context, it is used
  * to quantify the difference between two temporal objects over their respective
  * time spans.
- *
+ * 
+ * @note Function written by Ossama BENAISSA ossama.benaissa.96@gmail.com
+ * 
  * @param temp1 Pointer to the first Temporal object.
  * @param temp2 Pointer to the second Temporal object.
  * @return The average Hausdorff distance as a double.
@@ -2016,12 +2012,13 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
 
  
 
-/*
-
-This is the formal definition of lcss,
-The formal lcss tries to find the longuest common subsequence between 2 trajectories*/
 /**
- * Computes the Longest Common Subsequence (LCSS) distance between two arrays of temporal instants.
+ * @brief Computes the Longest Common Subsequence (LCSS) distance between two arrays of temporal instants.
+ *
+ * This function calculates the LCSS distance between two arrays of temporal instants,
+ * allowing for some tolerance (epsilon) in the matching of values.
+ *
+ * @note Function written by Ossama BENAISSA ossama.benaissa.96@gmail.com
  *
  * @param A        Pointer to the first array of temporal instants.
  * @param count1   Number of elements in the first array.
@@ -2071,12 +2068,14 @@ tinstarr_lcss_distance(const TInstant **A, int count1,
 
 
 /**
- * Computes the Longest Common Subsequence (LCSS) distance between two temporal objects.
+ * @brief Computes the Longest Common Subsequence (LCSS) distance between two temporal objects.
  *
  * The LCSS distance is a similarity measure that finds the longest subsequence common to both temporal sequences,
  * allowing for some tolerance (epsilon) in the matching of values. This function is useful for comparing temporal
  * sequences where exact matches are not required, and small differences can be ignored.
  *
+ * @note Function written by Ossama BENAISSA ossama.benaissa.96@gmail.com
+ * 
  * @param temp1    Pointer to the first temporal object.
  * @param temp2    Pointer to the second temporal object.
  * @param epsilon  Tolerance value for matching temporal values.

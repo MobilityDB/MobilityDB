@@ -170,6 +170,7 @@ Temporal_tsample(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic similarity function between two temporal values
+ * @note Additions for AVERAGEHAUSDORFF and LCSS written by Ossama BENAISSA ossama.benaissa.96@gmail.com
  */
 Datum
 Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
@@ -182,7 +183,6 @@ Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
     store_fcinfo(fcinfo);
 
 
-  // This bloc is modified by master student Ossama Benaissa 000440942  
   double result = 1.0;    
   if (simfunc == HAUSDORFF)
   {
@@ -465,9 +465,6 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/*****************************************************************************
- *  This bloc is modified by master student Ossama Benaissa 000440942        *
- *****************************************************************************/
 
  PGDLLEXPORT Datum Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS);
  PG_FUNCTION_INFO_V1(Temporal_average_hausdorff_distance);
@@ -475,6 +472,8 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
   * @ingroup mobilitydb_temporal_analytics_similarity
   * @brief Return the average_hausdorff distance between two temporal
   * values
+  *
+  * @note Functions written by Ossama BENAISSA ossama.benaissa.96@gmail.com
   * @sqlfn averageHausdorffDistance
   */
  Datum
@@ -491,6 +490,8 @@ PG_FUNCTION_INFO_V1(Temporal_lcss_distance);
 /**
  * @ingroup mobilitydb_temporal_analytics_similarity
  * @brief Return the LCSS distance between two temporal values
+ *
+ * @note Function written by Ossama BENAISSA ossama.benaissa.96@gmail.com
  * @sqlfn lcssDistance
  */
 Datum
