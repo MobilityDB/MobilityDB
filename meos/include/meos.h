@@ -1293,6 +1293,7 @@ extern bool temporal_upper_inc(const Temporal *temp);
 extern double tfloat_avg_value(const Temporal *temp);
 extern double tfloat_end_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
+extern double tfloat_max_value(const Temporal *temp);
 extern double tfloat_start_value(const Temporal *temp);
 extern bool tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, double *value);
 extern bool tfloat_value_n(const Temporal *temp, int n, double *result);
