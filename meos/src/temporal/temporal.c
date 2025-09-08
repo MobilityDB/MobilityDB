@@ -2922,21 +2922,20 @@ static int
 tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
-  assert(seq->temptype == T_TFLOAT);
-  assert(seq->count > 1);
+  assert(seq); assert(seq->count > 1); assert(seq->temptype == T_TFLOAT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
-  bool  is_stopped = false,
-        previously_stopped = false;
+  bool is_stopped = false, previously_stopped = false;
 
   for (end = 0; end < seq->count; ++end)
   {
     inst1 = TSEQUENCE_INST_N(seq, start);
     inst2 = TSEQUENCE_INST_N(seq, end);
 
-    while (! is_stopped && end - start > 1
-      && (int64)(inst2->t - inst1->t) >= mintunits)
+    while (! is_stopped && end - start > 1 &&
+      (int64)(inst2->t - inst1->t) >= mintunits)
     {
       inst1 = TSEQUENCE_INST_N(seq, ++start);
     }
@@ -2944,17 +2943,18 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (end - start == 0)
       continue;
 
-    is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
+    is_stopped = maxdist ?
+      mrr_distance_scalar(seq, start, end) <= maxdist : false;
 
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (! is_stopped && previously_stopped
-      && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
+    if (! is_stopped && previously_stopped &&
+      (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
-          insts[i] = TSEQUENCE_INST_N(seq, start + i);
-      result[nseqs++] = tsequence_make(insts, end - start,
-        true, true, LINEAR, NORMALIZE_NO);
+        insts[i] = TSEQUENCE_INST_N(seq, start + i);
+      result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+        NORMALIZE_NO);
       start = end;
     }
     previously_stopped = is_stopped;
@@ -2965,9 +2965,9 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   {
     const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
-        insts[i] = TSEQUENCE_INST_N(seq, start + i);
-    result[nseqs++] = tsequence_make(insts, end - start,
-      true, true, LINEAR, NORMALIZE_NO);
+      insts[i] = TSEQUENCE_INST_N(seq, start + i);
+    result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+      NORMALIZE_NO);
   }
   return nseqs;
 }
@@ -2983,7 +2983,7 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 TSequenceSet *
 tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
@@ -3007,7 +3007,7 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 TSequenceSet *
 tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 {
-  assert(ss);
+  assert(ss); assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)

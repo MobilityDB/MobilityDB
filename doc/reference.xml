@@ -1135,9 +1135,8 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_stops"><varname>stops</varname></link>: Extract from a temporal geometry point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration</para>
+					<para><link linkend="tgeo_stops"><varname>stops</varname></link>: Extract from a temporal point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration</para>
 				</listitem>
-
 			</itemizedlist>
 		</sect2>
 
