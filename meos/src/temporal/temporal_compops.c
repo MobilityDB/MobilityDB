@@ -79,7 +79,7 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT;
-  lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.ever = ever;
   return eafunc_temporal_base(temp, value, &lfinfo);
 }
@@ -109,7 +109,7 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.ever = ever;
   return eafunc_temporal_base(temp, value, &lfinfo);
 }
@@ -137,7 +137,8 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.ever = ever;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }

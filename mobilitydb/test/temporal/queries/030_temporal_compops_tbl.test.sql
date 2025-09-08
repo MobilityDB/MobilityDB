@@ -181,6 +181,90 @@ DROP INDEX tbl_tfloat_big_quadtree_idx;
 DROP INDEX tbl_ttext_quadtree_idx;
 
 -------------------------------------------------------------------------------
+-- Ever comparisons
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_bool t1, tbl_tbool t2 WHERE t1.b ?= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_bool t2 WHERE t1.temp ?= t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp ?= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bool t1, tbl_tbool t2 WHERE t1.b ?<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_bool t2 WHERE t1.temp ?<> t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp ?<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_tint t2 WHERE t1.i ?= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_int t2 WHERE t1.temp ?= t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ?= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_tint t2 WHERE t1.i ?<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_int t2 WHERE t1.temp ?<> t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ?<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_tfloat t2 WHERE t1.f ?= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_float t2 WHERE t1.temp ?= t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ?= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_tfloat t2 WHERE t1.f ?<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_float t2 WHERE t1.temp ?<> t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ?<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_ttext t2 WHERE t1.t ?= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_text t2 WHERE t1.temp ?= t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ?= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_ttext t2 WHERE t1.t ?<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_text t2 WHERE t1.temp ?<> t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ?<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Always comparisons
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_bool t1, tbl_tbool t2 WHERE t1.b %= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_bool t2 WHERE t1.temp %= t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp %= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_bool t1, tbl_tbool t2 WHERE t1.b %<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_bool t2 WHERE t1.temp %<> t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp %<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_tint t2 WHERE t1.i %= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_int t2 WHERE t1.temp %= t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp %= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_tint t2 WHERE t1.i %<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_int t2 WHERE t1.temp %<> t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp %<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_tfloat t2 WHERE t1.f %= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_float t2 WHERE t1.temp %= t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp %= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_tfloat t2 WHERE t1.f %<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_float t2 WHERE t1.temp %<> t2.f IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp %<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_ttext t2 WHERE t1.t %= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_text t2 WHERE t1.temp %= t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp %= t2.temp IS NOT NULL;
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_ttext t2 WHERE t1.t %<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_text t2 WHERE t1.temp %<> t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp %<> t2.temp IS NOT NULL;
+
+-------------------------------------------------------------------------------
 -- Temporal eq
 -------------------------------------------------------------------------------
 
