@@ -514,7 +514,9 @@ SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_ttext_seqset;
 -------------------------------------------------------------------------------
 -- stop function
 
+SELECT MAX(numInstants(stops(seq))) FROM tbl_tfloat_seq;
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(stops(seq, interval '5 min'))) FROM tbl_tfloat_seq;
 SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tfloat_seq;
 -- Errors
 SELECT MAX(numInstants(stops(inst, 50.0))) FROM tbl_tfloat_inst;

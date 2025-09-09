@@ -2943,8 +2943,7 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (end - start == 0)
       continue;
 
-    is_stopped = maxdist ?
-      mrr_distance_scalar(seq, start, end) <= maxdist : false;
+    is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
     if (! is_stopped && previously_stopped &&
