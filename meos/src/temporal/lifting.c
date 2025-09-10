@@ -92,6 +92,11 @@
  *     and if there is a crossing in the middle of two consecutive pairs of
  *     instants add an instant sequence at the crossing. The result is a
  *     `tfloatseqset`.
+ *   - `tfloatseq <-> tfloatseq => tfunc_tcontseq_tcontseq_single`
+ *     synchronizes the sequences, applies the `<->` operator to each instant,
+ *     and if there is a crossing in the middle of two consecutive pairs of
+ *     instants add an instant sequence at the crossing. The result is a
+ *     `tfloatseq`.
  *
  * A struct named `LiftedFunctionInfo` is used to describe the above
  * characteristics of the function to be lifted. Such struct is filled by
@@ -1749,7 +1754,6 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
-  assert(lfinfo->discont);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1826,7 +1830,7 @@ static int
 eafunc_tsequence_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-  assert(seq); assert(lfinfo->discont);
+  assert(seq);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   if (interp == DISCRETE || interp == STEP)
     return eafunc_tdiscstepseq_base(seq, value, lfinfo);
@@ -2409,15 +2413,13 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
     return result;
   }
 
-  /* General case */
-  if (lfinfo->discont)
-    return eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+  /* If the two sequences have step interpolation */
+  if (MEOS_FLAGS_GET_INTERP(seq1->flags) == STEP &&
+      MEOS_FLAGS_GET_INTERP(seq2->flags) == STEP)
+    return eafunc_tstepseq_tstepseq(seq1, seq2, lfinfo, &inter);
 
-  /* The case where one sequence is step and another one is linear has
-   * not been yet implemented */
-  assert(MEOS_FLAGS_GET_INTERP(seq1->flags) == STEP);
-  assert(MEOS_FLAGS_GET_INTERP(seq2->flags) == STEP);
-  return eafunc_tstepseq_tstepseq(seq1, seq2, lfinfo, &inter);
+  /* General case */
+  return eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
 }
 
 /*****************************************************************************/
