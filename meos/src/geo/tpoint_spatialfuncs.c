@@ -60,6 +60,9 @@
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
+#if CBUFFER
+  #include "cbuffer/cbuffer.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -3253,7 +3256,6 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 {
-
   double result = 0.0;
   int numGeoms = GEOSGetNumGeometries(geom);
   if (numGeoms == 2)
@@ -3319,6 +3321,11 @@ multipoint_make(const TSequence *seq, int start, int end)
     if (tpoint_type(seq->temptype))
       gs = DatumGetGserializedP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)));
+#if CBUFFER
+    else if (seq->temptype == T_TCBUFFER)
+      gs = (GSERIALIZED *) cbuffer_point_p(DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
+#endif
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
       gs = npoint_to_geompoint(DatumGetNpointP(
@@ -3327,7 +3334,7 @@ multipoint_make(const TSequence *seq, int start, int end)
     else
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Sequence must have a spatial base type");
+        "Sequence must have a spatial point base type");
       return NULL;
     }
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
@@ -3348,6 +3355,11 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
   GSERIALIZED *gs = NULL; /* make compiler quiet */
   if (tpoint_type(inst->temptype))
     gs = DatumGetGserializedP(tinstant_value_p(inst));
+#if CBUFFER
+  else if (inst->temptype == T_TCBUFFER)
+    gs = (GSERIALIZED *) cbuffer_point_p(DatumGetCbufferP(
+      tinstant_value_p(inst)));
+#endif
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
     gs = npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
@@ -3355,7 +3367,7 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
   else
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Instant must have a spatial base type");
+      "Instant must have a spatial point base type");
     return NULL;
   }
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
@@ -3382,27 +3394,30 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
   assert(seq); assert(seq->count > 1);
-  assert(tpoint_type(seq->temptype) || seq->temptype == T_TNPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(tpoint_type(seq->temptype) || seq->temptype == T_TNPOINT
+#if CBUFFER
+    || seq->temptype == T_TCBUFFER
+#endif
+    );
 
   /* Use GEOS only for non-scalar input */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   GEOSGeometry *geom = NULL;
   initGEOS(lwnotice, lwgeom_geos_error);
   geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
 
+  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
-  bool  is_stopped = false,
-        previously_stopped = false,
-        rebuild_geom = false;
+  bool is_stopped = false, previously_stopped = false, rebuild_geom = false;
 
   for (end = 0; end < seq->count; ++end)
   {
     inst1 = TSEQUENCE_INST_N(seq, start);
     inst2 = TSEQUENCE_INST_N(seq, end);
 
-    while (! is_stopped && end - start > 1
-      && (int64)(inst2->t - inst1->t) >= mintunits)
+    while (! is_stopped && end - start > 1 &&
+      (int64)(inst2->t - inst1->t) >= mintunits)
     {
       inst1 = TSEQUENCE_INST_N(seq, ++start);
       rebuild_geom = true;
@@ -3422,14 +3437,14 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 
     is_stopped = mrr_distance_geos(geom, geodetic) <= maxdist;
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
-    if (! is_stopped && previously_stopped
-      && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
+    if (! is_stopped && previously_stopped &&
+      (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
     {
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
-          insts[i] = TSEQUENCE_INST_N(seq, start + i);
-      result[nseqs++] = tsequence_make(insts, end - start,
-        true, true, LINEAR, NORMALIZE_NO);
+        insts[i] = TSEQUENCE_INST_N(seq, start + i);
+      result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+        NORMALIZE_NO);
       start = end;
       rebuild_geom = true;
     }
@@ -3442,9 +3457,9 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   {
     const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
-        insts[i] = TSEQUENCE_INST_N(seq, start + i);
-    result[nseqs++] = tsequence_make(insts, end - start,
-      true, true, LINEAR, NORMALIZE_NO);
+      insts[i] = TSEQUENCE_INST_N(seq, start + i);
+    result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+      NORMALIZE_NO);
   }
   return nseqs;
 }

@@ -1373,6 +1373,18 @@ SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'linear'))) FROM tbl_
   15
 (1 row)
 
+SELECT MAX(numInstants(stops(seq))) FROM tbl_tgeompoint_seq;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numInstants(stops(seq))) FROM tbl_tgeogpoint_seq;
+ max 
+-----
+    
+(1 row)
+
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeompoint_seq;
  max 
 -----
@@ -1380,6 +1392,18 @@ SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeompoint_seq;
 (1 row)
 
 SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeogpoint_seq;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numInstants(stops(seq, interval '1 min'))) FROM tbl_tgeompoint_seq;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numInstants(stops(seq, interval '1 min'))) FROM tbl_tgeogpoint_seq;
  max 
 -----
     

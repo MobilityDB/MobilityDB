@@ -702,8 +702,8 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-0
 
 			<listitem xml:id="tgeo_stops">
 				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
-				<para>Extraer de un punto de geometría temporal con interpolación lineal las subsecuencias donde el punto permanece dentro de un área con un tamaño máximo especificado durante al menos la duración dada &Z_support; &geography_support;</para>
-				<para><varname>stops(tgeompoint,maxDist=0.0,minDuration='0 minutes') → tgeompoint</varname></para>
+				<para>Extraer de un punto temporal con interpolación lineal las subsecuencias donde el punto permanece dentro de un área con un tamaño máximo especificado durante al menos la duración dada &Z_support; &geography_support;</para>
+				<para><varname>stops(tpoint,maxDist=0.0,minDuration='0 minutes') → tpoint</varname></para>
 				<para>El tamaño del área se calcula como la diagonal del rectángulo mínimo rotado de los puntos de la subsecuencia. Si no se especifica <varname>maxDist</varname>, se asume 0.0 y, por lo tanto, la función extrae los segmentos constantes del punto temporal dado. La distancia se calcula en las unidades del sistema de coordenadas. Tenga en cuenta que, aunque la función acepta geometrías 3D, el cálculo siempre se realiza en 2D.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02,

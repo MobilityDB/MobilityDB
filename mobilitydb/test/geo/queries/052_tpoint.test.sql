@@ -954,6 +954,25 @@ SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '0'));
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
 
 -------------------------------------------------------------------------------
+-- Stops function
+-------------------------------------------------------------------------------
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]')));
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]')));
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0)));
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0)));
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 min')));
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 min')));
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0, '1 min')));
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0, '1 min')));
+
+SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
+SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
+
+-------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
 

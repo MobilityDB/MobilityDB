@@ -851,6 +851,14 @@ CREATE FUNCTION stops(tgeogpoint, maxdist float DEFAULT 0.0,
   AS 'MODULE_PATHNAME', 'Temporal_stops'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION stops(tgeompoint, minduration interval)
+  RETURNS tgeompoint
+  AS 'SELECT @extschema@.stops($1, 0.0, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stops(tgeogpoint, minduration interval)
+  RETURNS tgeogpoint
+  AS 'SELECT @extschema@.stops($1, 0.0, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Multidimensional tiling

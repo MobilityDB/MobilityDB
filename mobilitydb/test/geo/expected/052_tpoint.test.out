@@ -3067,6 +3067,66 @@ SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '0'));
 ERROR:  The interval must be positive: 00:00:00
 SELECT asEWKT(scaleTime(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
 ERROR:  The interval must be positive: -1 days
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0)));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0)));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 min')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', interval '1 min')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0, '1 min')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]', 50.0, '1 min')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
+ max 
+-----
+   4
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------

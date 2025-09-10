@@ -1139,6 +1139,10 @@
 				<listitem>
 					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeo_stops"><varname>stops</varname></link>: Extraer de un punto temporal con interpolación lineal las subsecuencias donde el punto permanece dentro de un área con un tamaño máximo especificado durante al menos la duración dada</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

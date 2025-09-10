@@ -839,17 +839,25 @@ CREATE FUNCTION deleteTime(tgeography, tstzspanset, connect boolean DEFAULT TRUE
  * Stops Function
  *****************************************************************************/
 
-CREATE FUNCTION stops(tgeometry, maxdist float DEFAULT 0.0,
-    minduration interval DEFAULT '0 minutes')
-  RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_stops'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stops(tgeography, maxdist float DEFAULT 0.0,
-    minduration interval DEFAULT '0 minutes')
-  RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Temporal_stops'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION stops(tgeometry, maxdist float DEFAULT 0.0,
+    -- minduration interval DEFAULT '0 minutes')
+  -- RETURNS tgeometry
+  -- AS 'MODULE_PATHNAME', 'Temporal_stops'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION stops(tgeography, maxdist float DEFAULT 0.0,
+    -- minduration interval DEFAULT '0 minutes')
+  -- RETURNS tgeography
+  -- AS 'MODULE_PATHNAME', 'Temporal_stops'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- CREATE FUNCTION stops(tgeometry, minduration interval DEFAULT '0 minutes')
+  -- RETURNS tgeometry
+  -- AS 'SELECT @extschema@.stops($1, 0.0, $2)'
+  -- LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION stops(tgeography, minduration interval DEFAULT '0 minutes')
+  -- RETURNS tgeography
+  -- AS 'SELECT @extschema@.stops($1, 0.0, $2)'
+  -- LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Multidimensional tiling

@@ -1725,6 +1725,11 @@ CREATE FUNCTION stops(tfloat, maxdist float DEFAULT 0.0,
   AS 'MODULE_PATHNAME', 'Temporal_stops'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION stops(tfloat, minduration interval)
+  RETURNS tfloat
+  AS 'SELECT @extschema@.stops($1, 0.0, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Local Aggregate Functions
  *****************************************************************************/

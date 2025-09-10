@@ -711,8 +711,8 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-0
 
 			<listitem xml:id="tgeo_stops">
 				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
-				<para>Extract from a temporal geometry point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration &Z_support; &geography_support;</para>
-				<para><varname>stops(tgeompoint,maxDist=0.0,minDuration='0 minutes') → tgeompoint</varname></para>
+				<para>Extract from a temporal point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration &Z_support; &geography_support;</para>
+				<para><varname>stops(tpoint,maxDist=0.0,minDuration='0 minutes') → tpoint</varname></para>
 				<para>The size of the area is computed as the diagonal of the minimum rotated rectangle of the points in the subsequence. If <varname>maxDist</varname> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal point. The distance is computed in the units of the coordinate system. Note that even though the function accepts 3D geometries, the computation is always performed in 2D.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02,
