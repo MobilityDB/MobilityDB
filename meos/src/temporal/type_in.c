@@ -1157,6 +1157,17 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
  * The file type_in.c explains the binary representation
  *****************************************************************************/
 
+#define SWAP_BYTES(size, ptr) \
+  do { \
+    size_t i; \
+    for (i = 0; i < (size) / 2; i++) \
+    { \
+      uint8_t tmp = ((uint8_t*)(ptr))[i]; \
+      ((uint8_t*)(ptr))[i] = ((uint8_t*)(ptr))[(size) - i - 1]; \
+      ((uint8_t*)(ptr))[(size) - i - 1] = tmp; \
+    } \
+  } while(0) \
+  
 /**
  * @brief Check that we are not about to read off the end of the WKB array
  */
@@ -1198,7 +1209,8 @@ int16_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT2_SIZE/2; j++)
+    // SWAP_BYTES(MEOS_WKB_INT2_SIZE, &i);
+    for (size_t j = 0; j < MEOS_WKB_INT2_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
       ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT2_SIZE - j - 1];
@@ -1223,7 +1235,8 @@ int32_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT4_SIZE/2; j++)
+    // SWAP_BYTES(MEOS_WKB_INT4_SIZE, &i);
+    for (size_t j = 0; j < MEOS_WKB_INT4_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
       ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT4_SIZE - j - 1];
@@ -1248,7 +1261,8 @@ int64_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT8_SIZE/2; j++)
+    // SWAP_BYTES(MEOS_WKB_INT8_SIZE, &i);
+    for (size_t j = 0; j < MEOS_WKB_INT8_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
       ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT8_SIZE - j - 1];
@@ -1273,7 +1287,8 @@ double_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated double */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_DOUBLE_SIZE/2; i++)
+    // SWAP_BYTES(MEOS_WKB_DOUBLE_SIZE, &d);
+    for (size_t i = 0; i < MEOS_WKB_DOUBLE_SIZE/2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&d))[i];
       ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MEOS_WKB_DOUBLE_SIZE - i - 1];
@@ -1298,7 +1313,8 @@ date_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_DATE_SIZE / 2; i++)
+    // SWAP_BYTES(MEOS_WKB_DATE_SIZE, &d);
+    for (size_t i = 0; i < MEOS_WKB_DATE_SIZE / 2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&d))[i];
       ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MEOS_WKB_DATE_SIZE - i - 1];
@@ -1323,7 +1339,8 @@ timestamp_from_wkb_state(meos_wkb_parse_state *s)
   /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_TIMESTAMP_SIZE / 2; i++)
+    // SWAP_BYTES(MEOS_WKB_TIMESTAMP_SIZE, &t);
+    for (size_t i = 0; i < MEOS_WKB_TIMESTAMP_SIZE / 2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&t))[i];
       ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1];
@@ -1348,6 +1365,17 @@ text_from_wkb_state(meos_wkb_parse_state *s)
   /* Get the data */
   char *str = palloc(size + 1);
   memcpy(str, s->pos, size);
+  /* Swap? Copy into a stack-allocated string. */
+  if (s->swap_bytes)
+  {
+    // SWAP_BYTES(size, str);
+    for (size_t i = 0; i < size / 2; i++)
+    {
+      uint8_t tmp = ((uint8_t*)(str))[i];
+      ((uint8_t*)(str))[i] = ((uint8_t*)(str))[size - i - 1];
+      ((uint8_t*)(str))[size - i - 1] = tmp;
+    }
+  }
   s->pos += size;
   text *result = cstring2text(str);
   pfree(str);
@@ -1356,27 +1384,6 @@ text_from_wkb_state(meos_wkb_parse_state *s)
 }
 
 /*****************************************************************************/
-
-// /**
- // * @brief Return a point from its WKB representation
- // * @note A WKB point has just a set of doubles, with the quantity depending on
- // * the dimension of the point
- // */
-// Datum
-// point_from_wkb_state(meos_wkb_parse_state *s)
-// {
-  // double x, y, z = 0; /* make compiler quiet */
-  // x = double_from_wkb_state(s);
-  // y = double_from_wkb_state(s);
-  // if (s->hasz)
-    // z = double_from_wkb_state(s);
-  // LWPOINT *point = s->hasz ? lwpoint_make3dz(s->srid, x, y, z) :
-    // lwpoint_make2d(s->srid, x, y);
-  // FLAGS_SET_GEODETIC(point->flags, s->geodetic);
-  // Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
-  // lwpoint_free(point);
-  // return result;
-// }
 
 /**
  * @brief Structure used in PostGIS for passing the parse state between the
