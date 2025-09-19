@@ -1,10 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s03.html" title="Conversions"><link rel="next" href="ch02s05.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s03.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2313"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_memSize"></a><a class="indexterm" name="id2317"></a><p>Return the memory size in bytes</p><p><code class="varname">memSize({set,spanset}) → integer</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s03.html" title="Conversions"><link rel="next" href="ch02s05.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s03.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id2270"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_memSize"></a><a class="indexterm" name="id2274"></a><p>Return the memory size in bytes</p><p><code class="varname">memSize({set,spanset}) → integer</code></p><pre class="programlisting">
 SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 48
 SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 112
-</pre></li><li class="listitem"><a name="setspan_lower"></a><a class="indexterm" name="id2325"></a><a class="indexterm" name="id2328"></a><p>Return the lower or upper bound</p><p><code class="varname">lower(spans) → base</code></p><p><code class="varname">upper(spans) → base</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_lower"></a><a class="indexterm" name="id2282"></a><a class="indexterm" name="id2285"></a><p>Return the lower or upper bound</p><p><code class="varname">lower(spans) → base</code></p><p><code class="varname">upper(spans) → base</code></p><pre class="programlisting">
 SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-01
 SELECT lower(intspanset '{[1,2],[4,5]}');
@@ -23,7 +23,7 @@ SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="setspan_lowerInc"></a><a class="indexterm" name="id2340"></a><a class="indexterm" name="id2343"></a><p>Is the lower or upper bound inclusive?</p><p><code class="varname">lowerInc(spans) → boolean</code></p><p><code class="varname">upperInc(spans) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_lowerInc"></a><a class="indexterm" name="id2297"></a><a class="indexterm" name="id2300"></a><p>Is the lower or upper bound inclusive?</p><p><code class="varname">lowerInc(spans) → boolean</code></p><p><code class="varname">upperInc(spans) → boolean</code></p><pre class="programlisting">
 SELECT lowerInc(datespan '[2001-01-01, 2001-01-05)');
 -- true
 SELECT lowerInc(intspanset '{[1,2],[4,5]}');
@@ -33,33 +33,33 @@ SELECT upper(floatspan '[20.5, 25.3]');
 -- true
 SELECT upperInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- false
-</pre></li><li class="listitem"><a name="setspan_width"></a><a class="indexterm" name="id2354"></a><p>Return the width of the span as a float</p><p><code class="varname">width(numspan) → float</code></p><p><code class="varname">width(numspanset,boundspan=false) → float</code></p><p>An additional parameter can be set to true to compute the width of the bounding span, thus ignoring the potential value gaps</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_width"></a><a class="indexterm" name="id2311"></a><p>Return the width of the span as a float</p><p><code class="varname">width(numspan) → float</code></p><p><code class="varname">width(numspanset,boundspan=false) → float</code></p><p>An additional parameter can be set to true to compute the width of the bounding span, thus ignoring the potential value gaps</p><pre class="programlisting">
 SELECT width(floatspan '[1, 3)');
 -- 2
 SELECT width(intspanset '{[1,3),[5,7)}');
 -- 4
 SELECT width(intspanset '{[1,3),[5,7)}', true);
 -- 6
-</pre></li><li class="listitem"><a name="setspan_duration"></a><a class="indexterm" name="id2365"></a><p>Return the duration</p><p><code class="varname">duration({datespan,tstzspan}) → interval</code></p><p><code class="varname">duration({datespanset,tstzspanset},boundspan bool=false) → interval</code></p><p>An additional parameter can be set to true to compute the duration of the bounding time span, thus ignoring the potential time gaps</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_duration"></a><a class="indexterm" name="id2322"></a><p>Return the duration</p><p><code class="varname">duration({datespan,tstzspan}) → interval</code></p><p><code class="varname">duration({datespanset,tstzspanset},boundspan bool=false) → interval</code></p><p>An additional parameter can be set to true to compute the duration of the bounding time span, thus ignoring the potential time gaps</p><pre class="programlisting">
 SELECT duration(datespan '[2001-01-01, 2001-01-03)');
 -- 2 days
 SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
 -- 3 days
 SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}', true);
 -- 4 days
-</pre></li><li class="listitem"><a name="setspan_numValues"></a><a class="indexterm" name="id2376"></a><a class="indexterm" name="id2379"></a><p>Return the (number of) values</p><p><code class="varname">numValues(set) → integer</code></p><p><code class="varname">getValues(set) → base[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_numValues"></a><a class="indexterm" name="id2333"></a><a class="indexterm" name="id2336"></a><p>Return the (number of) values</p><p><code class="varname">numValues(set) → integer</code></p><p><code class="varname">getValues(set) → base[]</code></p><pre class="programlisting">
 SELECT numValues(intset '{1,3,5,7}');
 -- 4
 SELECT getValues(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
 -- {"2001-01-01","2001-01-03","2001-01-05","2001-01-07"}
-</pre></li><li class="listitem"><a name="setspan_startValue"></a><a class="indexterm" name="id2389"></a><a class="indexterm" name="id2392"></a><a class="indexterm" name="id2395"></a><p>Return the start, end, or n-th value</p><p><code class="varname">startValue(set) → base</code></p><p><code class="varname">endValue(set) → base</code></p><p><code class="varname">valueN(set,integer) → base</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_startValue"></a><a class="indexterm" name="id2346"></a><a class="indexterm" name="id2349"></a><a class="indexterm" name="id2352"></a><p>Return the start, end, or n-th value</p><p><code class="varname">startValue(set) → base</code></p><p><code class="varname">endValue(set) → base</code></p><p><code class="varname">valueN(set,integer) → base</code></p><pre class="programlisting">
 SELECT startValue(intset '{1,3,5,7}');
 -- 1
 SELECT endValue(dateset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
 -- 2001-01-07
 SELECT valueN(floatset '{1,3,5,7}',2);
 -- 3
-</pre></li><li class="listitem"><a name="setspan_numSpans"></a><a class="indexterm" name="id2407"></a><a class="indexterm" name="id2410"></a><p>Return the (number of) spans</p><p><code class="varname">numSpans(spanset) → integer</code></p><p><code class="varname">spans(spanset) → span[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_numSpans"></a><a class="indexterm" name="id2364"></a><a class="indexterm" name="id2367"></a><p>Return the (number of) spans</p><p><code class="varname">numSpans(spanset) → integer</code></p><p><code class="varname">spans(spanset) → span[]</code></p><pre class="programlisting">
 SELECT numSpans(intspanset '{[1,3),[4,5),[6,7)}');
 -- 3
 SELECT numSpans(datespanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05),
@@ -71,7 +71,7 @@ SELECT spans(floatspanset '{[1,3),[4,4],[6,7)}');
 SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- {"[2001-01-01,2001-01-03)", "[2001-01-04,2001-01-04]", "[2001-01-05,2001-01-06)"}
-</pre></li><li class="listitem"><a name="setspan_startSpan"></a><a class="indexterm" name="id2421"></a><a class="indexterm" name="id2424"></a><p>Return the start, end, or n-th span</p><p><code class="varname">startSpan(spanset) → span</code></p><p><code class="varname">endSpan(spanset) → span</code></p><p><code class="varname">spanN(spanset,integer) → span</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_startSpan"></a><a class="indexterm" name="id2378"></a><a class="indexterm" name="id2381"></a><p>Return the start, end, or n-th span</p><p><code class="varname">startSpan(spanset) → span</code></p><p><code class="varname">endSpan(spanset) → span</code></p><p><code class="varname">spanN(spanset,integer) → span</code></p><pre class="programlisting">
 SELECT startSpan(intspanset '{[1,3),[4,5),[6,7)}');
 -- [1,3)
 SELECT startSpan(datespanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05),
@@ -89,24 +89,24 @@ SELECT spanN(floatspanset '{[1,3),[4,4],[6,7)}',2);
 SELECT spanN(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}', 2);
 -- [2001-01-04,2001-01-04]
-</pre></li><li class="listitem"><a name="setspan_numDates"></a><a class="indexterm" name="id2438"></a><a class="indexterm" name="id2441"></a><p>Return the (number of) different dates</p><p><code class="varname">numDates(datespanset) → integer</code></p><p><code class="varname">dates(datespanset) → dateset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_numDates"></a><a class="indexterm" name="id2395"></a><a class="indexterm" name="id2398"></a><p>Return the (number of) different dates</p><p><code class="varname">numDates(datespanset) → integer</code></p><p><code class="varname">dates(datespanset) → dateset</code></p><pre class="programlisting">
 SELECT numDates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- 4
 SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04}
-</pre></li><li class="listitem"><a name="setspan_startDate"></a><a class="indexterm" name="id2451"></a><a class="indexterm" name="id2454"></a><a class="indexterm" name="id2457"></a><p>Return the start, end, or n-th date</p><p><code class="varname">startDate(datespanset) → date</code></p><p><code class="varname">endDate(datespanset) → date</code></p><p><code class="varname">dateN(datespanset,integer) → date</code></p><p>The functions do not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_startDate"></a><a class="indexterm" name="id2408"></a><a class="indexterm" name="id2411"></a><a class="indexterm" name="id2414"></a><p>Return the start, end, or n-th date</p><p><code class="varname">startDate(datespanset) → date</code></p><p><code class="varname">endDate(datespanset) → date</code></p><p><code class="varname">dateN(datespanset,integer) → date</code></p><p>The functions do not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
 SELECT startDate(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- 2001-01-01
 SELECT endDate(datespanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 2001-01-05
 SELECT dateN(datespanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="setspan_numTimestamps"></a><a class="indexterm" name="id2470"></a><a class="indexterm" name="id2473"></a><p>Return the (number of) different timestamps</p><p><code class="varname">numTimestamps(tstzspanset) → integer</code></p><p><code class="varname">timestamps(tstzspanset) → tstzset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_numTimestamps"></a><a class="indexterm" name="id2427"></a><a class="indexterm" name="id2430"></a><p>Return the (number of) different timestamps</p><p><code class="varname">numTimestamps(tstzspanset) → integer</code></p><p><code class="varname">timestamps(tstzspanset) → tstzset</code></p><pre class="programlisting">
 SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 3
 SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- {"2001-01-01 00:00:00", "2001-01-03 00:00:00", "2001-01-05 00:00:00"}
-</pre></li><li class="listitem"><a name="setspan_startTimestamp"></a><a class="indexterm" name="id2483"></a><a class="indexterm" name="id2486"></a><a class="indexterm" name="id2489"></a><p>Return the start, end, or n-th timestamp</p><p><code class="varname">startTimestamp(tstzspanset) → timestamptz</code></p><p><code class="varname">endTimestamp(tstzspanset) → timestamptz</code></p><p><code class="varname">timestampN(tstzspanset,integer) → timestamptz</code></p><p>The functions do not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_startTimestamp"></a><a class="indexterm" name="id2440"></a><a class="indexterm" name="id2443"></a><a class="indexterm" name="id2446"></a><p>Return the start, end, or n-th timestamp</p><p><code class="varname">startTimestamp(tstzspanset) → timestamptz</code></p><p><code class="varname">endTimestamp(tstzspanset) → timestamptz</code></p><p><code class="varname">timestampN(tstzspanset,integer) → timestamptz</code></p><p>The functions do not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
 SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- 2001-01-01
 SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');

@@ -35,12 +35,12 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 </pre><p>
 		</p><p>
 				We give next the functions for input and output of box types in Well-Known Text and Well-Known Binary format.
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2975"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2932"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
-</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2985"></a><a class="indexterm" name="id2988"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2942"></a><a class="indexterm" name="id2945"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
@@ -53,7 +53,7 @@ SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
 -- 000300270100001CC1D3579C0000001CD5F12EFC00000D013FF00000000000004000000000000000
 SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
-</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2999"></a><a class="indexterm" name="id3002"></a><p>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</p><p><code class="varname">boxFromBinary(bytea) → box</code></p><p><code class="varname">boxFromHexWKB(text) → box</code></p><p>In the signatures above, <code class="varname">box</code> replaces any box type, that is, <code class="varname">tbox</code> or <code class="varname">stbox</code>.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="boxFromBinary"></a><a class="indexterm" name="id2956"></a><a class="indexterm" name="id2959"></a><p>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</p><p><code class="varname">boxFromBinary(bytea) → box</code></p><p><code class="varname">boxFromHexWKB(text) → box</code></p><p>In the signatures above, <code class="varname">box</code> replaces any box type, that is, <code class="varname">tbox</code> or <code class="varname">stbox</code>.</p><pre class="programlisting">
 SELECT tboxFromBinary(
   '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))

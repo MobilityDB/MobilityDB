@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s04.html" title="Conversions"><link rel="next" href="ch07s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s04.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_trajectory"></a><a class="indexterm" name="id5549"></a><a class="indexterm" name="id5552"></a><p>Return the trajectory or the traversed area <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s04.html" title="Conversions"><link rel="next" href="ch07s06.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s04.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_trajectory"></a><a class="indexterm" name="id5506"></a><a class="indexterm" name="id5509"></a><p>Return the trajectory or the traversed area <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">trajectory(tpoint,unary_union=false) → geo</code></p><p><code class="varname">traversedArea(tgeo,unary_union=false) → geo</code></p><p>This function is equivalent to <a class="link" href=""><code class="varname">getValues</code></a> for temporal alphanumeric values. The last argument states whether the PostGIS function <a class="ulink" href="https://postgis.net/docs/ST_UnaryUnion.html" target="_top">ST_UnaryUnion</a> is applied to remove redundant geometries in the result. Notice that setting this argument to true is computationally expensive.</p><pre class="programlisting">
 SELECT ST_AsText(trajectory(tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02,
@@ -20,7 +20,7 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02, Point(1 1)@2001-01-03]', true));
 -- LINESTRING(1 1,2 2)
-</pre></li><li class="listitem"><a name="tgeo_centroid"></a><a class="indexterm" name="id5581"></a><p>Return the centroid as a temporal point <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_centroid"></a><a class="indexterm" name="id5538"></a><p>Return the centroid as a temporal point <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">centroid(tgeo) → tpoint</code></p><pre class="programlisting">
 SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02,
   Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
@@ -28,7 +28,7 @@ SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@20
 SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, 
   Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
 -- Interp=Step;[POINT(4 2.001727)@2000-01-01, POINT(4 2.001727)@2000-01-02]
-</pre></li><li class="listitem"><a name="tgeo_getX"></a><a class="indexterm" name="id5596"></a><a class="indexterm" name="id5599"></a><a class="indexterm" name="id5602"></a><p>Return the X/Y/Z coordinate values as a temporal float <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_getX"></a><a class="indexterm" name="id5553"></a><a class="indexterm" name="id5556"></a><a class="indexterm" name="id5559"></a><p>Return the X/Y/Z coordinate values as a temporal float <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">getX(tpoint) → tfloat</code></p><p><code class="varname">getY(tpoint) → tfloat</code></p><p><code class="varname">getZ(tpoint) → tfloat</code></p><pre class="programlisting">
 SELECT getX(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
@@ -49,7 +49,7 @@ SELECT getZ(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
 SELECT getZ(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02,
   Point(7 8 9)@2001-01-03]');
 -- Interp=Step;[3@2001-01-01, 6@2001-01-02, 9@2001-01-03]
-</pre></li><li class="listitem"><a name="tgeo_isSimple"></a><a class="indexterm" name="id5628"></a><p>Return true if the temporal point does not spatially self-intersect <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_isSimple"></a><a class="indexterm" name="id5585"></a><p>Return true if the temporal point does not spatially self-intersect <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><p><code class="varname">isSimple(tpoint) → boolean</code></p><p>Notice that a temporal sequence set point is simple if every composing sequence is simple.</p><pre class="programlisting">
 SELECT isSimple(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(0 0)@2001-01-03]');
@@ -60,7 +60,7 @@ SELECT isSimple(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
   [Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04]}');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_length"></a><a class="indexterm" name="id5644"></a><p>Return the length traversed by the temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_length"></a><a class="indexterm" name="id5601"></a><p>Return the length traversed by the temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">length(tpoint) → float</code></p><pre class="programlisting">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
@@ -71,7 +71,7 @@ SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- 0
-</pre></li><li class="listitem"><a name="tgeo_cumulativeLength"></a><a class="indexterm" name="id5666"></a><p>Return the cumulative length traversed by the temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_cumulativeLength"></a><a class="indexterm" name="id5623"></a><p>Return the cumulative length traversed by the temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">cumulativeLength(tpoint) → tfloatSeq</code></p><pre class="programlisting">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -81,7 +81,7 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@20
 SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- Interp=Step;[0@2001-01-01, 0@2001-01-03]
-</pre></li><li class="listitem"><a name="tgeo_speed"></a><a class="indexterm" name="id5688"></a><p>Return the speed of the temporal point in units per second <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_speed"></a><a class="indexterm" name="id5645"></a><p>Return the speed of the temporal point in units per second <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">speed(tpoint) → tfloatSeqSet</code></p><p>The temporal point must have linear interpolation</p><pre class="programlisting">
 SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -91,12 +91,12 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
-</pre></li><li class="listitem"><a name="tgeo_twCentroid"></a><a class="indexterm" name="id5711"></a><p>Return the time-weighted centroid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_twCentroid"></a><a class="indexterm" name="id5668"></a><p>Return the time-weighted centroid <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
 </p><p><code class="varname">twCentroid(tgeompoint) → point</code></p><pre class="programlisting">
 SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
   Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
 -- POINT Z (0 0.666666666666667 0.666666666666667)
-</pre></li><li class="listitem"><a name="tgeo_direction"></a><a class="indexterm" name="id5726"></a><p>Return the direction, that is, the azimuth between the start and end locations <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_direction"></a><a class="indexterm" name="id5683"></a><p>Return the direction, that is, the azimuth between the start and end locations <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">direction(tpoint) → float</code></p><p>The result is expressed in radians. It is NULL if there is only one location or if the start and end locations are equal.</p><pre class="programlisting">
 SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
@@ -105,13 +105,13 @@ SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
 SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
   Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}');
 -- NULL
-</pre></li><li class="listitem"><a name="tgeo_azimuth"></a><a class="indexterm" name="id5749"></a><p>Return the temporal azimuth <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_azimuth"></a><a class="indexterm" name="id5706"></a><p>Return the temporal azimuth <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">azimuth(tpoint) → tfloat</code></p><p>The result is expressed in radians. The azimut is undefined when two succesive locations are equal and in this case a temporal gap is added.</p><pre class="programlisting">
 SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)')));
 -- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
-</pre></li><li class="listitem"><a name="tgeo_angularDifference"></a><a class="indexterm" name="id5772"></a><p>Return the temporal angular difference <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_angularDifference"></a><a class="indexterm" name="id5729"></a><p>Return the temporal angular difference <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">angularDifference(tpoint) → tfloat</code></p><p>The result is expressed in degrees.</p><pre class="programlisting">
 SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03]'), 3);
@@ -119,7 +119,7 @@ SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@20
 SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02], [Point(2 2)@2001-01-03, Point(1 1)@2001-01-04]}')), 3);
 -- {0@2001-01-01, 0@2001-01-02, 0@2001-01-03, 0@2001-01-04}
-</pre></li><li class="listitem"><a name="tgeo_bearing"></a><a class="indexterm" name="id5788"></a><p>Return the temporal bearing <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_bearing"></a><a class="indexterm" name="id5745"></a><p>Return the temporal bearing <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">bearing({tpoint,point},{tpoint,point}) → tfloat</code></p><p>Notice that this function does not accept two temporal geographic points.</p><pre class="programlisting">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
