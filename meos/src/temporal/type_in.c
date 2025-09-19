@@ -1295,6 +1295,7 @@ text_from_wkb_state(meos_wkb_parse_state *s)
   /* Get the data */
   char *str = palloc(size + 1);
   memcpy(str, s->pos, size);
+  str[size] = '\0';
   /* Advance the state and return */
   s->pos += size;
   text *result = cstring2text(str);

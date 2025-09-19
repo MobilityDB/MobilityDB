@@ -956,7 +956,7 @@ base_to_wkb_size(Datum value, meosType basetype, uint8_t variant)
     case T_TIMESTAMPTZ:
       return MEOS_WKB_TIMESTAMP_SIZE;
     case T_TEXT:
-      return MEOS_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
+      return MEOS_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value));
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       return geo_to_wkb_size(DatumGetGserializedP(value), variant);
@@ -1426,13 +1426,39 @@ timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 static uint8_t *
 text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 {
-  char *str = text2cstring(txt);
-  uint8_t *bstr = (uint8_t *)(str);
-  size_t size = VARSIZE_ANY_EXHDR(txt) + 1;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt, NULL);
+
+  /*
+   * Get the text data directly from the varlena structure.
+   * This avoids the memory allocation of text2cstring.
+   */
+  size_t size = VARSIZE_ANY_EXHDR(txt);
+  char *str = VARDATA(txt);
+
+  /* Write the size first (this gets proper endian handling) */
   buf = int64_to_wkb_buf(size, buf, variant);
-  buf = bytes_to_wkb_buf(bstr, size, buf, variant);
-  pfree(str);
-  return buf;
+
+  /* Write the text data - needs special handling to avoid swapping */
+  if (variant & WKB_HEX)
+  {
+    /* Convert to hex without swapping byte order */
+    for (size_t i = 0; i < size; i++)
+    {
+      uint8_t b = str[i];
+      /* Top four bits to 0-F */
+      buf[2*i] = HEXCHR[b >> 4];
+      /* Bottom four bits to 0-F */
+      buf[2*i + 1] = HEXCHR[b & 0x0F];
+    }
+    return buf + (2 * size);
+  }
+  else
+  {
+    /* Binary - direct copy without swapping */
+    memcpy(buf, str, size);
+    return buf + size;
+  }
 }
 
 /**
