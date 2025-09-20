@@ -70,14 +70,26 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp)) <> temp;
-SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp)) <> temp;
+-- Little endian
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp, 'NDR')) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp, 'NDR')) <> temp;
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp)) <> temp;
-SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp)) <> temp;
-SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
+
+-- Big endian
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp, 'XDR')) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp, 'XDR')) <> temp;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
+SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 
 ------------------------------------------------------------------------------
