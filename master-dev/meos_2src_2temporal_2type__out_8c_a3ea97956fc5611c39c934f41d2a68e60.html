@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set_to_wkb_size</title>
+<title>MobilityDB: typed_value_to_wkb_buf</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -118,7 +118,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_ga7a9ad3b49779d8435be055e2b2eaedd3.html#ga7a9ad3b49779d8435be055e2b2eaedd3">set_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ab53e19d274fcba602e02bf4d189693f4.html#ab53e19d274fcba602e02bf4d189693f4">set_flags_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a5849afb05e48c3d3dc79bbba477fc058.html#a5849afb05e48c3d3dc79bbba477fc058">set_to_wkb_buf</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a9b9c1f9a90d1db0a71abe109609d0e4d.html#a9b9c1f9a90d1db0a71abe109609d0e4d">set_to_wkb_size</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a9b9c1f9a90d1db0a71abe109609d0e4d.html#a9b9c1f9a90d1db0a71abe109609d0e4d">set_to_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_gac4bc3c0c16a175babd205e05e58a53f5.html#gac4bc3c0c16a175babd205e05e58a53f5">span_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_gae07a245ba982c4bc39b933d251730240.html#gae07a245ba982c4bc39b933d251730240">span_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a75be1608850928529c7a8b58d727a3eb.html#a75be1608850928529c7a8b58d727a3eb">span_to_wkb_buf</a></td></tr>
@@ -164,15 +164,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_afab0a44a06f13127d4ec7d34c7496fa9.html#afab0a44a06f13127d4ec7d34c7496fa9">tsequenceset_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a4888df8ebe97c17752b72a49ab4cdad3.html#a4888df8ebe97c17752b72a49ab4cdad3">tsequenceset_to_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a626514dc0f10b306644967d72787db62.html#a626514dc0f10b306644967d72787db62">tstzspan_as_mfjson_sb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a3ea97956fc5611c39c934f41d2a68e60.html#a3ea97956fc5611c39c934f41d2a68e60">typed_value_to_wkb_buf</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a3ea97956fc5611c39c934f41d2a68e60.html#a3ea97956fc5611c39c934f41d2a68e60">typed_value_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a7b7102e70f8c8ffa1bd6328cbee8fa69.html#a7b7102e70f8c8ffa1bd6328cbee8fa69">uint8_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_af12cfc5b8467254fe41369bc1535872a.html#af12cfc5b8467254fe41369bc1535872a">wkb_swap_bytes</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9b9c1f9a90d1db0a71abe109609d0e4d" name="a9b9c1f9a90d1db0a71abe109609d0e4d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b9c1f9a90d1db0a71abe109609d0e4d">&#9670;&#160;</a></span>set_to_wkb_size()</h2>
+<a id="a3ea97956fc5611c39c934f41d2a68e60" name="a3ea97956fc5611c39c934f41d2a68e60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ea97956fc5611c39c934f41d2a68e60">&#9670;&#160;</a></span>typed_value_to_wkb_buf()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -181,10 +181,34 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static size_t set_to_wkb_size </td>
+          <td class="memname">static uint8_t * typed_value_to_wkb_buf </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
-          <td class="paramname"><em>set</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>actual_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>expected_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>type_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -200,12 +224,12 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the size in bytes of a set in the Well-Known Binary (WKB) representation. </p>
+<p>Generic function to write a typed value to WKB buffer with size checking. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: parse_mfjson_values</title>
+<title>MobilityDB: swap_bytes</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -97,7 +97,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a6367ea7e4ac08a63f15dd5ffde59caf5.html#a6367ea7e4ac08a63f15dd5ffde59caf5">parse_mfjson_datetimes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a17bf605bcaf17a8352d847482aa2456b.html#a17bf605bcaf17a8352d847482aa2456b">parse_mfjson_geos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_ad406d5062d712135e12c43cd72f2b3fd.html#ad406d5062d712135e12c43cd72f2b3fd">parse_mfjson_points</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42e4545cbd3858d55bfe874ab4326c8c.html#a42e4545cbd3858d55bfe874ab4326c8c">parse_mfjson_values</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a42e4545cbd3858d55bfe874ab4326c8c.html#a42e4545cbd3858d55bfe874ab4326c8c">parse_mfjson_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a9dc3ccc71e783349d6aa68b8ccc5ca44.html#a9dc3ccc71e783349d6aa68b8ccc5ca44">read_wkb_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a9768772586bc7a228bf0b42e06c05bca.html#a9768772586bc7a228bf0b42e06c05bca">set_flags_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_gafc0e09e4d3142aecf316aca2e221aa72.html#gafc0e09e4d3142aecf316aca2e221aa72">set_from_hexwkb</a></td></tr>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a10b43bb17a9386f1f945289e50ef1edd.html#a10b43bb17a9386f1f945289e50ef1edd">spanset_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a5a718f0beca58bae29ee3cc67ec55982.html#a5a718f0beca58bae29ee3cc67ec55982">stbox_flags_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_af4625a193a137bba38aa66f0e3945a78.html#af4625a193a137bba38aa66f0e3945a78">stbox_from_wkb_state</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a0672be12d330b18299d8b682d367234d.html#a0672be12d330b18299d8b682d367234d">swap_bytes</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a0672be12d330b18299d8b682d367234d.html#a0672be12d330b18299d8b682d367234d">swap_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__in_8c_a3f1175c98b9ff16d36fd6c887c932f72.html#a3f1175c98b9ff16d36fd6c887c932f72">tbox_flags_from_wkb_state</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_gac6a13d1ba6d54a2ad2940aff6c366263.html#gac6a13d1ba6d54a2ad2940aff6c366263">tbox_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga6dfcfb3078efa8e887acd93153763289.html#ga6dfcfb3078efa8e887acd93153763289">tbox_from_wkb</a></td></tr>
@@ -140,8 +140,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a42e4545cbd3858d55bfe874ab4326c8c" name="a42e4545cbd3858d55bfe874ab4326c8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a42e4545cbd3858d55bfe874ab4326c8c">&#9670;&#160;</a></span>parse_mfjson_values()</h2>
+<a id="a0672be12d330b18299d8b682d367234d" name="a0672be12d330b18299d8b682d367234d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0672be12d330b18299d8b682d367234d">&#9670;&#160;</a></span>swap_bytes()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,22 +150,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> * parse_mfjson_values </td>
+          <td class="memname">static void swap_bytes </td>
           <td>(</td>
-          <td class="paramtype">json_object *&#160;</td>
-          <td class="paramname"><em>mfjson</em>, </td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a>&#160;</td>
-          <td class="paramname"><em>temptype</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -175,12 +169,12 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return an array of values from its MF-JSON representation. </p>
+<p>Swap bytes in-place for endian conversion. </p>
 
 </div>
 </div>
