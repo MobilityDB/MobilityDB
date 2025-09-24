@@ -336,7 +336,7 @@ tgeoseq_merge_array_iter(const TSequence **sequences, int count,
   /* Test the validity of the composing sequences, while performing spatial
    * union of the values for the instants with the same timestamp */
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
-  TSequence **tofree = palloc(sizeof(TSequence *) * count);
+  TSequence **tofree = palloc(sizeof(TSequence *) * 2 * count);
   int nfree = 0;
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
