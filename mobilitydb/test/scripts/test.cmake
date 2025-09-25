@@ -204,7 +204,7 @@ elseif(TEST_OPER MATCHES "run_compare")
       )
   else()
     execute_process(
-      COMMAND diff -urdN ${TEST_DIR_OUT}/${TEST_NAME}.out ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out
+      COMMAND diff -urdN ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out ${TEST_DIR_OUT}/${TEST_NAME}.out
       OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )
