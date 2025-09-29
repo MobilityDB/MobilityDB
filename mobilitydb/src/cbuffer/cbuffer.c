@@ -139,7 +139,7 @@ Cbuffer_send(PG_FUNCTION_ARGS)
  * @sqlfn asText()
  */
 static Datum
-Cbuffer_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Cbuffer_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
@@ -163,7 +163,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_as_text);
 Datum
 Cbuffer_as_text(PG_FUNCTION_ARGS)
 {
-  return Cbuffer_as_text_ext(fcinfo, false);
+  return Cbuffer_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Cbuffer_as_ewkt(PG_FUNCTION_ARGS);
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_as_ewkt);
 Datum
 Cbuffer_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Cbuffer_as_text_ext(fcinfo, true);
+  return Cbuffer_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************/

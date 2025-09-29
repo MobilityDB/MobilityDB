@@ -122,7 +122,7 @@ Tspatial_from_ewkt(PG_FUNCTION_ARGS)
  * @sqlfn asText()
  */
 static Datum
-Tspatial_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Tspatial_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Tspatial_as_text);
 Datum
 Tspatial_as_text(PG_FUNCTION_ARGS)
 {
-  return Tspatial_as_text_ext(fcinfo, false);
+  return Tspatial_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Tspatial_as_ewkt(PG_FUNCTION_ARGS);
@@ -162,7 +162,7 @@ PG_FUNCTION_INFO_V1(Tspatial_as_ewkt);
 Datum
 Tspatial_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Tspatial_as_text_ext(fcinfo, true);
+  return Tspatial_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************

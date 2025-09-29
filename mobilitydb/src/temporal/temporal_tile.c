@@ -229,7 +229,7 @@ Tnumber_value_bins(PG_FUNCTION_ARGS)
  * @brief Return the tiles of a temporal box
  */
 Datum
-Tbox_value_time_tiles_ext(FunctionCallInfo fcinfo, bool valuetiles,
+Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
   bool timetiles)
 {
   assert(valuetiles || timetiles);
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_tiles);
 inline Datum
 Tbox_value_tiles(PG_FUNCTION_ARGS)
 {
-  return Tbox_value_time_tiles_ext(fcinfo, true, false);
+  return Tbox_value_time_tiles_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tbox_time_tiles(PG_FUNCTION_ARGS);
@@ -331,7 +331,7 @@ PG_FUNCTION_INFO_V1(Tbox_time_tiles);
 inline Datum
 Tbox_time_tiles(PG_FUNCTION_ARGS)
 {
-  return Tbox_value_time_tiles_ext(fcinfo, false, true);
+  return Tbox_value_time_tiles_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tbox_value_time_tiles(PG_FUNCTION_ARGS);
@@ -344,7 +344,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_time_tiles);
 inline Datum
 Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 {
-  return Tbox_value_time_tiles_ext(fcinfo, true, true);
+  return Tbox_value_time_tiles_common(fcinfo, true, true);
 }
 
 /*****************************************************************************/
@@ -354,7 +354,7 @@ Tbox_value_time_tiles(PG_FUNCTION_ARGS)
  * (external function)
  */
 Datum
-Tbox_get_value_time_tile_ext(FunctionCallInfo fcinfo, bool valuetile,
+Tbox_get_value_time_tile_common(FunctionCallInfo fcinfo, bool valuetile,
   bool timetile)
 {
   assert(valuetile || timetile);
@@ -393,7 +393,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_tile);
 inline Datum
 Tbox_get_value_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_ext(fcinfo, true, false);
+  return Tbox_get_value_time_tile_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tbox_get_time_tile(PG_FUNCTION_ARGS);
@@ -406,7 +406,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_time_tile);
 inline Datum
 Tbox_get_time_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_ext(fcinfo, false, true);
+  return Tbox_get_value_time_tile_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tbox_get_value_time_tile(PG_FUNCTION_ARGS);
@@ -419,7 +419,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_time_tile);
 inline Datum
 Tbox_get_value_time_tile(PG_FUNCTION_ARGS)
 {
-  return Tbox_get_value_time_tile_ext(fcinfo, true, true);
+  return Tbox_get_value_time_tile_common(fcinfo, true, true);
 }
 
 /*****************************************************************************
@@ -431,7 +431,7 @@ Tbox_get_value_time_tile(PG_FUNCTION_ARGS)
  * a value and/or time grid (external function)
  */
 Datum
-Tnumber_value_time_boxes_ext(FunctionCallInfo fcinfo, bool valueboxes,
+Tnumber_value_time_boxes_common(FunctionCallInfo fcinfo, bool valueboxes,
   bool timeboxes)
 {
   assert(valueboxes || timeboxes);
@@ -473,7 +473,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_boxes);
 inline Datum
 Tnumber_value_boxes(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_boxes_ext(fcinfo, true, false);
+  return Tnumber_value_time_boxes_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tnumber_time_boxes(PG_FUNCTION_ARGS);
@@ -487,7 +487,7 @@ PG_FUNCTION_INFO_V1(Tnumber_time_boxes);
 inline Datum
 Tnumber_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_boxes_ext(fcinfo, false, true);
+  return Tnumber_value_time_boxes_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tnumber_value_time_boxes(PG_FUNCTION_ARGS);
@@ -501,7 +501,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_boxes);
 inline Datum
 Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_boxes_ext(fcinfo, true, true);
+  return Tnumber_value_time_boxes_common(fcinfo, true, true);
 }
 
 /*****************************************************************************
@@ -726,7 +726,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
  * and time bins
  */
 Datum
-Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
+Tnumber_value_time_split_common(FunctionCallInfo fcinfo, bool valuesplit,
   bool timesplit)
 {
   FuncCallContext *funcctx;
@@ -834,7 +834,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
 inline Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_split_ext(fcinfo, true, false);
+  return Tnumber_value_time_split_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
@@ -848,7 +848,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 inline Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_split_ext(fcinfo, true, true);
+  return Tnumber_value_time_split_common(fcinfo, true, true);
 }
 
 /*****************************************************************************/

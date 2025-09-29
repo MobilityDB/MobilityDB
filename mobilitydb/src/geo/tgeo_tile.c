@@ -61,7 +61,7 @@
  * spatiotemporal box (external function)
  */
 static Datum
-Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
+Stbox_space_time_tiles_common(FunctionCallInfo fcinfo, bool spacetiles,
   bool timetiles)
 {
   assert(spacetiles || timetiles);
@@ -197,7 +197,7 @@ PG_FUNCTION_INFO_V1(Stbox_space_tiles);
 inline Datum
 Stbox_space_tiles(PG_FUNCTION_ARGS)
 {
-  return Stbox_space_time_tiles_ext(fcinfo, true, false);
+  return Stbox_space_time_tiles_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Stbox_time_tiles(PG_FUNCTION_ARGS);
@@ -210,7 +210,7 @@ PG_FUNCTION_INFO_V1(Stbox_time_tiles);
 inline Datum
 Stbox_time_tiles(PG_FUNCTION_ARGS)
 {
-  return Stbox_space_time_tiles_ext(fcinfo, false, true);
+  return Stbox_space_time_tiles_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Stbox_space_time_tiles(PG_FUNCTION_ARGS);
@@ -223,7 +223,7 @@ PG_FUNCTION_INFO_V1(Stbox_space_time_tiles);
 inline Datum
 Stbox_space_time_tiles(PG_FUNCTION_ARGS)
 {
-  return Stbox_space_time_tiles_ext(fcinfo, true, true);
+  return Stbox_space_time_tiles_common(fcinfo, true, true);
 }
 
 /*****************************************************************************/
@@ -233,7 +233,7 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
  * (external function)
  */
 static Datum
-Stbox_get_space_time_tile_ext(FunctionCallInfo fcinfo, bool spacetile,
+Stbox_get_space_time_tile_common(FunctionCallInfo fcinfo, bool spacetile,
   bool timetile)
 {
   assert(spacetile || timetile);
@@ -289,7 +289,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_space_tile);
 inline Datum
 Stbox_get_space_tile(PG_FUNCTION_ARGS)
 {
-  return Stbox_get_space_time_tile_ext(fcinfo, true, false);
+  return Stbox_get_space_time_tile_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Stbox_get_time_tile(PG_FUNCTION_ARGS);
@@ -302,7 +302,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_time_tile);
 inline Datum
 Stbox_get_time_tile(PG_FUNCTION_ARGS)
 {
-  return Stbox_get_space_time_tile_ext(fcinfo, false, true);
+  return Stbox_get_space_time_tile_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Stbox_get_space_time_tile(PG_FUNCTION_ARGS);
@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Stbox_get_space_time_tile);
 inline Datum
 Stbox_get_space_time_tile(PG_FUNCTION_ARGS)
 {
-  return Stbox_get_space_time_tile_ext(fcinfo, true, true);
+  return Stbox_get_space_time_tile_common(fcinfo, true, true);
 }
 
 /*****************************************************************************
@@ -327,7 +327,7 @@ Stbox_get_space_time_tile(PG_FUNCTION_ARGS)
  * respect to a spatial or spatiotemporal grid
  */
 static Datum
-Tgeo_space_time_boxes_ext(FunctionCallInfo fcinfo, bool spacetiles,
+Tgeo_space_time_boxes_common(FunctionCallInfo fcinfo, bool spacetiles,
   bool timetiles)
 {
   /* Get input parameters */
@@ -369,7 +369,7 @@ PG_FUNCTION_INFO_V1(Tgeo_space_boxes);
 inline Datum
 Tgeo_space_boxes(PG_FUNCTION_ARGS)
 {
-  return Tgeo_space_time_boxes_ext(fcinfo, true, false);
+  return Tgeo_space_time_boxes_common(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tgeo_time_boxes(PG_FUNCTION_ARGS);
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(Tgeo_time_boxes);
 inline Datum
 Tgeo_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Tgeo_space_time_boxes_ext(fcinfo, false, true);
+  return Tgeo_space_time_boxes_common(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tgeo_space_time_boxes(PG_FUNCTION_ARGS);
@@ -397,7 +397,7 @@ PG_FUNCTION_INFO_V1(Tgeo_space_time_boxes);
 inline Datum
 Tgeo_space_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Tgeo_space_time_boxes_ext(fcinfo, true, true);
+  return Tgeo_space_time_boxes_common(fcinfo, true, true);
 }
 
 /*****************************************************************************
@@ -409,7 +409,7 @@ Tgeo_space_time_boxes(PG_FUNCTION_ARGS)
  * spatiotemporal grid
  */
 static Datum
-Tgeo_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
+Tgeo_space_time_split_common(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
 
@@ -519,7 +519,7 @@ PG_FUNCTION_INFO_V1(Tgeo_space_split);
 inline Datum
 Tgeo_space_split(PG_FUNCTION_ARGS)
 {
-  return Tgeo_space_time_split_ext(fcinfo, false);
+  return Tgeo_space_time_split_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Tgeo_space_time_split(PG_FUNCTION_ARGS);
@@ -532,7 +532,7 @@ PG_FUNCTION_INFO_V1(Tgeo_space_time_split);
 inline Datum
 Tgeo_space_time_split(PG_FUNCTION_ARGS)
 {
-  return Tgeo_space_time_split_ext(fcinfo, true);
+  return Tgeo_space_time_split_common(fcinfo, true);
 }
 
 /*****************************************************************************/

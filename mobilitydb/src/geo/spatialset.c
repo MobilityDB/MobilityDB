@@ -141,7 +141,7 @@ Spatialset_as_ewkt(PG_FUNCTION_ARGS)
  * an array of spatial values (external function)
  */
 Datum
-Spatialarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Spatialarr_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Spatialarr_as_text);
 Datum
 Spatialarr_as_text(PG_FUNCTION_ARGS)
 {
-  return Spatialarr_as_text_ext(fcinfo, false);
+  return Spatialarr_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Spatialarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Spatialarr_as_ewkt);
 Datum
 Spatialarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Spatialarr_as_text_ext(fcinfo, true);
+  return Spatialarr_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************

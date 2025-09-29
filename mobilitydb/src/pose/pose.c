@@ -200,7 +200,7 @@ Pose_from_hexwkb(PG_FUNCTION_ARGS)
  * @sqlfn asText(), asEWKT()
  */
 static Datum
-Pose_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Pose_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
@@ -224,7 +224,7 @@ PG_FUNCTION_INFO_V1(Pose_as_text);
 Datum
 Pose_as_text(PG_FUNCTION_ARGS)
 {
-  return Pose_as_text_ext(fcinfo, false);
+  return Pose_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Pose_as_ewkt(PG_FUNCTION_ARGS);
@@ -238,7 +238,7 @@ PG_FUNCTION_INFO_V1(Pose_as_ewkt);
 Datum
 Pose_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Pose_as_text_ext(fcinfo, true);
+  return Pose_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************/
