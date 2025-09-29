@@ -256,7 +256,7 @@ Npoint_from_hexwkb(PG_FUNCTION_ARGS)
  * @sqlfn asText()
  */
 static Datum
-Npoint_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Npoint_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Npoint_as_text);
 Datum
 Npoint_as_text(PG_FUNCTION_ARGS)
 {
-  return Npoint_as_text_ext(fcinfo, false);
+  return Npoint_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Npoint_as_ewkt(PG_FUNCTION_ARGS);
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Npoint_as_ewkt);
 Datum
 Npoint_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Npoint_as_text_ext(fcinfo, true);
+  return Npoint_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************/

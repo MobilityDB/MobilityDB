@@ -203,7 +203,7 @@ Trgeometry_from_ewkt(PG_FUNCTION_ARGS)
  * a temporal rigid geometry
  */
 static Datum
-Trgeometry_as_text_ext(FunctionCallInfo fcinfo, bool extended)
+Trgeometry_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
@@ -227,7 +227,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_as_text);
 Datum
 Trgeometry_as_text(PG_FUNCTION_ARGS)
 {
-  return Trgeometry_as_text_ext(fcinfo, false);
+  return Trgeometry_as_text_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Trgeometry_as_ewkt(PG_FUNCTION_ARGS);
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_as_ewkt);
 Datum
 Trgeometry_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Trgeometry_as_text_ext(fcinfo, true);
+  return Trgeometry_as_text_common(fcinfo, true);
 }
 
 /*****************************************************************************
