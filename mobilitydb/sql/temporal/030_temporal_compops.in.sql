@@ -1804,17 +1804,17 @@ CREATE FUNCTION temporal_tgt(ttext, ttext)
 CREATE OPERATOR #> (
   PROCEDURE = temporal_tgt,
   LEFTARG = text, RIGHTARG = ttext,
-  COMMUTATOR = #<=
+  COMMUTATOR = #<
 );
 CREATE OPERATOR #> (
   PROCEDURE = temporal_tgt,
   LEFTARG = ttext, RIGHTARG = text,
-  COMMUTATOR = #<=
+  COMMUTATOR = #<
 );
 CREATE OPERATOR #> (
   PROCEDURE = temporal_tgt,
   LEFTARG = ttext, RIGHTARG = ttext,
-  COMMUTATOR = #<=
+  COMMUTATOR = #<
 );
 
 /*****************************************************************************
