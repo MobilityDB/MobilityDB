@@ -664,7 +664,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     notnull_cnt++;
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /*
@@ -868,7 +872,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     if (! nd_box) continue; /* Skip Null'ed out hard deviants */
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
 
     /* Find the cells that overlap with this box and put them into the ND_IBOX */
     nd_box_overlap(nd_stats, nd_box, &nd_ibox);
@@ -1002,7 +1010,11 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       pfree(set);
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /* We can only compute real stats if we found some non-null values. */
@@ -1096,7 +1108,11 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       pfree(temp);
 
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
   }
 
   /* We can only compute real stats if we found some non-null values. */
