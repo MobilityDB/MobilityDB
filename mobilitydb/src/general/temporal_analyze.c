@@ -140,7 +140,11 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   for (int i = 0; i < samplerows; i++)
   {
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
 
     bool isnull;
     Datum value = fetchfunc(stats, i, &isnull);
