@@ -3335,7 +3335,7 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
 
-  size_t data_size = wkb->size - LWVARHDRSZ;
+  size_t data_size = VARSIZE(wkb) - LWVARHDRSZ;
   uint8_t *result = palloc(data_size);
   memcpy(result, wkb->data, data_size);
   pfree(geom); pfree(wkb);
