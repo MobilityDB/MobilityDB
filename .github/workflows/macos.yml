@@ -45,17 +45,38 @@ jobs:
           mkdir build
           cd build
           cmake -DPOSTGRESQL_BIN="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin" -DCMAKE_BUILD_TYPE=Release ..
+
       - name: Build
         run: |
           cd build
           make -j
           sudo make install
+
+      - name: Library symlinks
+        run: |
+          DYNLIB_DIR="/opt/homebrew/lib/postgresql@${{ matrix.psql }}"
+          if [ -d "$DYNLIB_DIR" ]; then
+            echo "Creating missing MobilityDB symlinks in $DYNLIB_DIR"
+            cd "$DYNLIB_DIR"
+            if [ -f libMobilityDB-1.3.so ]; then
+              sudo ln -sf libMobilityDB-1.3.so libMobilityDB-1.3.dylib
+              sudo ln -sf libMobilityDB-1.3.so libMobilityDB-1.3
+            elif [ -f libMobilityDB-1.3.dylib ]; then
+              sudo ln -sf libMobilityDB-1.3.dylib libMobilityDB-1.3.so
+              sudo ln -sf libMobilityDB-1.3.dylib libMobilityDB-1.3
+            fi
+            ls -l libMobilityDB*
+          else
+            echo "Directory $DYNLIB_DIR not found"
+          fi
+
       - name: test install
         run: |
           export PATH="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin:$PATH"
           pg_ctl -D /opt/homebrew/var/postgresql@${{ matrix.psql }}/ start
           createdb ___mobdb___test___
           psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE;  SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+
       - name: Test
         run: |
           cd build
