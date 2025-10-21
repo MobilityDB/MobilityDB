@@ -55,7 +55,6 @@ jobs:
       - name: test install
         run: |
           export PATH="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin:$PATH"
-          initdb -D /opt/homebrew/var/postgresql@${{ matrix.psql }}/
           pg_ctl -D /opt/homebrew/var/postgresql@${{ matrix.psql }}/ start
           createdb ___mobdb___test___
           psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE;  SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
