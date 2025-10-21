@@ -190,15 +190,10 @@ endif()
 # Build the library
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 if(APPLE)
-  If(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
-    message(STATUS "Building for arm architecture")
-    set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
-    LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /opt/homebrew/bin/postgres")
-  else()
-    message(STATUS "Building for x86 architecture")
-    set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
-    LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
-  endif()
+  set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
+    SUFFIX ".dylib"
+    LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader ${POSTGRESQL_BIN_DIR}/postgres"
+  )
 endif()
 
 #--------------------------------
