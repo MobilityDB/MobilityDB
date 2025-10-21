@@ -39,23 +39,58 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get dependencies from homebrew (cache)
+      - name: Get dependencies from Homebrew (cached)
+        if: matrix.os == 'macos-13'
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
           tools: postgresql postgis proj gsl
 
-      - name: update brew
-        if: matrix.os == 'macos-13'
-        # Necessary to avoid issue with macOS runners. See
-        # https://github.com/actions/runner-images/issues/4020
+      - name: Get dependencies from Homebrew (cached, without PostGIS)
+        if: matrix.os == 'macos-14'
+        uses: tecolicom/actions-use-homebrew-tools@v1
+        with:
+          tools: postgresql proj gsl
+      
+      - name: Build PostGIS 3.4.2 from source for PostgreSQL@14 (macOS-14)
+        if: matrix.os == 'macos-14'
         run: |
-          brew reinstall python@3.12 || brew link --overwrite python@3.12
-          brew update
 
-      - name: reinstall cmake
-        # Remove once issue with hombrew cache action is fixed
+          echo "Installing build dependencies..."
+          brew install geos gdal  json-c sfcgal protobuf-c  libxml2 
+
+          echo "Downloading PostGIS 3.4.2 source..."
+          wget https://download.osgeo.org/postgis/source/postgis-3.4.2.tar.gz
+          tar -xzf postgis-3.4.2.tar.gz
+          cd postgis-3.4.2
+
+          echo "⚙️ Configuring PostGIS build for PostgreSQL@14..."
+          ./configure \
+            --with-pgconfig=/opt/homebrew/opt/postgresql@14/bin/pg_config \
+            --with-projdir=/opt/homebrew/opt/proj \
+            --with-jsondir=/opt/homebrew/opt/json-c \
+            --with-sfcgal=/opt/homebrew/opt/sfcgal/bin/sfcgal-config \
+            --without-protobuf \
+            --without-topology
+
+          make -j2
+          sudo make install
+
+      - name: Ensure Python 3.12 is installed (macOS-13 only)
+        if: matrix.os == 'macos-13'
         run: |
-          brew reinstall cmake
+          brew install python@3.12 || true
+          brew link --overwrite python@3.12 || true
+          python3 --version
+
+      - name: Ensure CMake is installed
+        run: |
+          if ! command -v cmake >/dev/null; then
+            echo "CMake not found, installing..."
+            brew install cmake
+          else
+            echo "CMake already installed:"
+            cmake --version
+          fi
 
       - name: Configure
         run: |

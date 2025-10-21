@@ -26,9 +26,19 @@ endif()
 # If specific version of PostGIS requested, choose that one, otherwise get all versions
 if(POSTGIS_REQUIRED_VERSION)
   message(STATUS "Selecting requested PostGIS version: Selecting postgis-${POSTGIS_REQUIRED_VERSION}")
-  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-${POSTGIS_REQUIRED_VERSION}.*")
+  file(GLOB POSTGIS_LIBRARY
+    "${POSTGRESQL_DYNLIB_DIR}/postgis-${POSTGIS_REQUIRED_VERSION}.*"
+    # added: search Homebrew and Intel paths too
+    "/opt/homebrew/lib/postgresql@*/postgis-${POSTGIS_REQUIRED_VERSION}.*"
+    "/usr/local/lib/postgresql@*/postgis-${POSTGIS_REQUIRED_VERSION}.*"
+  )
 else()
-  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*.*")
+  file(GLOB POSTGIS_LIBRARY
+    "${POSTGRESQL_DYNLIB_DIR}/postgis-*.*"
+    # added: search Homebrew and Intel paths too
+    "/opt/homebrew/lib/postgresql@*/postgis-*.*"
+    "/usr/local/lib/postgresql@*/postgis-*.*"
+  )
 endif()
 
 if(POSTGIS_LIBRARY STREQUAL "")
