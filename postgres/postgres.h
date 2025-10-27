@@ -67,6 +67,8 @@
 #endif
 #define EXIT_FAILURE 1
 
+extern void elog(int errlevel, const char *format, ...);
+
 /* MEOS: redefining palloc0, palloc, and pfree */
 #if MEOS
 #define palloc0(X) (calloc(1, X))

@@ -16,8 +16,6 @@
 
 #include "postgres.h"
 
-#include "../../include/meos.h"
-
 /*
  * pgfnames
  *
@@ -37,8 +35,7 @@ pgfnames(const char *path)
   dir = opendir(path);
   if (dir == NULL)
   {
-    meos_error(WARNING, MEOS_ERR_DIRECTORY_ERROR,
-      "could not open directory \"%s\": %m", path);
+    elog(WARNING, "could not open directory \"%s\": %m", path);
     return NULL;
   }
 
@@ -59,8 +56,7 @@ pgfnames(const char *path)
 
   if (errno)
   {
-    meos_error(WARNING, MEOS_ERR_DIRECTORY_ERROR,
-      "could not read directory \"%s\": %m", path);
+    elog(WARNING, "could not read directory \"%s\": %m", path);
     return NULL;
   }
 
@@ -68,8 +64,7 @@ pgfnames(const char *path)
 
   if (closedir(dir))
   {
-    meos_error(WARNING, MEOS_ERR_DIRECTORY_ERROR,
-      "could not close directory \"%s\": %m", path);
+    elog(WARNING, "could not close directory \"%s\": %m", path);
     return NULL;
   }
 

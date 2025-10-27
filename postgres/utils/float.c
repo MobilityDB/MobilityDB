@@ -19,8 +19,6 @@
 #include <math.h>
 #include <limits.h>
 
-#include "../../include/meos.h"
-
 /*
  * Configurable GUC parameter
  *
@@ -41,21 +39,19 @@ int      extra_float_digits = 1;
 pg_noinline void
 float_overflow_error(void)
 {
-  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-    "value out of range: overflow");
+  elog(ERROR, "value out of range: overflow");
 }
 
 pg_noinline void
 float_underflow_error(void)
 {
-  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-    "value out of range: underflow");
+  elog(ERROR, "value out of range: underflow");
 }
 
 pg_noinline void
 float_zero_divide_error(void)
 {
-  meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "division by zero");
+  elog(ERROR, "division by zero");
 }
 
 /*

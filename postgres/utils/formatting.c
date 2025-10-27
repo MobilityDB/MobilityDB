@@ -67,8 +67,6 @@
 #include "utils/date.h"
 #include "utils/float.h"
 
-#include "../../include/meos.h"
-
 #define DEFAULT_COLLATION_OID 100
 
 /*
@@ -444,7 +442,7 @@ do { \
 do { \
   if (is_interval) \
   { \
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, \
+    elog(ERROR, \
         "invalid format specification for an interval value"); \
     return; \
   } \
@@ -960,8 +958,7 @@ parse_format(FormatNode *node, const char *str, const KeyWord *kw,
          */
         if (strchr("-./,':; ", *str) == NULL)
         {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "invalid datetime format separator: \"%s\"",
+          elog(ERROR, "invalid datetime format separator: \"%s\"",
             pnstrdup(str, sizeof(char)));
           return;
         }
@@ -1054,8 +1051,7 @@ get_th(char *num, int type)
   last = *(num + (len - 1));
   if (!isdigit((unsigned char) last))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "\"%s\" is not a number", num);
+    elog(ERROR, "\"%s\" is not a number", num);
     return NULL;
   }
 
@@ -1329,8 +1325,7 @@ from_char_set_mode(TmFromChar *tmfc, const FromCharDateMode mode, bool *have_err
       tmfc->mode = mode;
     else if (tmfc->mode != mode)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "invalid combination of date conventions");
+      elog(ERROR, "invalid combination of date conventions");
       return;
     }
   }
@@ -1353,8 +1348,7 @@ from_char_set_int(int *dest, const int value, const FormatNode *node,
 {
   if (*dest != 0 && *dest != value)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "conflicting values for \"%s\" field in formatting string",
+    elog(ERROR, "conflicting values for \"%s\" field in formatting string",
       node->key->name);
     return;
   }
@@ -1436,8 +1430,7 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
 
     if (used < len)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "source string too short for \"%s\" formatting field",
+      elog(ERROR, "source string too short for \"%s\" formatting field",
         node->key->name);
       goto on_error;
     }
@@ -1448,8 +1441,7 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
 
     if (used > 0 && used < len)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "invalid value \"%s\" for \"%s\"", copy, node->key->name);
+      elog(ERROR, "invalid value \"%s\" for \"%s\"", copy, node->key->name);
       goto on_error;
     }
 
@@ -1458,15 +1450,13 @@ from_char_parse_int_len(int *dest, const char **src, const int len,
 
   if (*src == init)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "invalid value \"%s\" for \"%s\"", copy, node->key->name);
+    elog(ERROR, "invalid value \"%s\" for \"%s\"", copy, node->key->name);
     goto on_error;
   }
 
   if (errno == ERANGE || result < INT_MIN || result > INT_MAX)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "value for \"%s\" in source string is out of range", node->key->name);
+    elog(ERROR, "value for \"%s\" in source string is out of range", node->key->name);
     goto on_error;
   }
 
@@ -1701,8 +1691,7 @@ from_char_seq_search(int *dest, const char **src, const char *const *array,
       }
     }
 
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "invalid value \"%s\" for \"%s\"", copy, node->key->name);
+    elog(ERROR, "invalid value \"%s\" for \"%s\"", copy, node->key->name);
     return -1;
   }
   *src += len;
@@ -1919,8 +1908,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -1941,8 +1929,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -1963,8 +1950,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -1985,8 +1971,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2006,8 +1991,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2027,8 +2011,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2053,8 +2036,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2073,8 +2055,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2093,8 +2074,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2113,8 +2093,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2132,8 +2111,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2151,8 +2129,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out,
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "localized string format value too long");
+            elog(ERROR, "localized string format value too long");
             return;
           }
         }
@@ -2431,8 +2408,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
           s++;
         else
         {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "unmatched format separator \"%c\"",  n->character[0]);
+          elog(ERROR, "unmatched format separator \"%c\"",  n->character[0]);
           return;
         }
       }
@@ -2493,8 +2469,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
         if (std && n->type == NODE_TYPE_CHAR &&
           strncmp(s, n->character, chlen) != 0)
         {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-            "unmatched format character \"%s\"", n->character);
+          elog(ERROR, "unmatched format character \"%s\"", n->character);
           return;
         }
 
@@ -2599,8 +2574,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
       case DCH_tz:
       case DCH_TZ:
       case DCH_OF:
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "formatting field \"%s\" is only supported in to_char",
+        elog(ERROR, "formatting field \"%s\" is only supported in to_char",
                        n->key->name);
         return;
         // CHECK_ERROR;
@@ -2775,8 +2749,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
           matched = sscanf(s, "%d,%03d%n", &millennia, &years, &nch);
           if (matched < 2)
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-              "invalid input string for \"Y,YYY\"");
+            elog(ERROR, "invalid input string for \"Y,YYY\"");
             return;
           }
           years += (millennia * 1000);
@@ -2863,8 +2836,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
   {
     if (n->type != NODE_TYPE_END)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "input string is too short for datetime format");
+      elog(ERROR, "input string is too short for datetime format");
       return;
     }
 
@@ -2873,7 +2845,7 @@ DCH_from_char(FormatNode *node, const char *in, TmFromChar *out,
 
     if (*s != '\0')
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      elog(ERROR,
         "trailing characters remain in input string after datetime format");
       return;
     }
@@ -2948,8 +2920,7 @@ DCH_datetime_type(FormatNode *node, bool *have_error)
       case DCH_tz:
       case DCH_TZ:
       case DCH_OF:
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "formatting field \"%s\" is only supported in to_char",
+        elog(ERROR, "formatting field \"%s\" is only supported in to_char",
           n->key->name);
         flags |= DCH_ZONED;
         break;
@@ -3198,7 +3169,7 @@ pg_timestamp_to_char(Timestamp dt, text *fmt)
 
   if (timestamp2tm(dt, NULL, tm, &tmtcFsec(&tmtc), NULL, NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+    elog(ERROR, "timestamp out of range");
     return NULL;
   }
 
@@ -3232,7 +3203,7 @@ pg_timestamptz_to_char(TimestampTz dt, text *fmt)
 
   if (timestamp2tm(dt, &tz, tm, &tmtcFsec(&tmtc), &tmtcTzn(&tmtc), NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+    elog(ERROR, "timestamp out of range");
     return NULL;
   }
 
@@ -3319,7 +3290,7 @@ pg_to_timestamp(text *date_txt, text *fmt)
 
   if (tm2timestamp(&tm, fsec, &tz, &result) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+    elog(ERROR, "timestamp out of range");
     return DT_NOEND;
   }
 
@@ -3351,8 +3322,7 @@ pg_to_date(text *date_txt, text *fmt)
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
   {
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "date out of range: \"%s\"", text2cstring(date_txt));
+    elog(ERROR, "date out of range: \"%s\"", text2cstring(date_txt));
     return 0;
   }
 
@@ -3361,8 +3331,7 @@ pg_to_date(text *date_txt, text *fmt)
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(result))
   {
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "date out of range: \"%s\"", text2cstring(date_txt));
+    elog(ERROR, "date out of range: \"%s\"", text2cstring(date_txt));
     return 0;
   }
 
@@ -3486,8 +3455,7 @@ do_to_timestamp(text *date_txt, text *fmt, Oid collid, bool std,
   {
     if (tm->tm_hour < 1 || tm->tm_hour > HOURS_PER_DAY / 2)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "hour \"%d\" is invalid for the 12-hour clock", tm->tm_hour);
+      elog(ERROR, "hour \"%d\" is invalid for the 12-hour clock", tm->tm_hour);
     }
 
     if (tmfc.pm && tm->tm_hour < HOURS_PER_DAY / 2)
@@ -3596,8 +3564,7 @@ do_to_timestamp(text *date_txt, text *fmt, Oid collid, bool std,
 
     if (!tm->tm_year && !tmfc.bc)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "cannot calculate day of year without year information");
+      elog(ERROR, "cannot calculate day of year without year information");
     }
 
     if (tmfc.mode == FROM_CHAR_DATE_ISOWEEK)

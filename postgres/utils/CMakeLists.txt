@@ -4,6 +4,7 @@ add_library(utils OBJECT
   float.c
   formatting.c
   numutils.c
+  pg_error.c
   timestamp.c
   )
 

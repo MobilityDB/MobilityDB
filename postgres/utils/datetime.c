@@ -22,8 +22,6 @@
 #include "utils/datetime.h"
 #include "utils/date.h"
 
-#include "../../include/meos.h"
-
 static const datetkn *datebsearch(const char *key, const datetkn *base, int nel);
 
 /* Defined below */
@@ -390,7 +388,7 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
     if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec, NULL,
              session_timezone) != 0)
     {
-      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
+      elog(ERROR, "timestamp out of range");
       return;
     }
 
@@ -947,8 +945,7 @@ DecodeDateTime(char **field, int *ftype, int nf, int *dtype,
                * ereport'ing directly, but then there is no way
                * to report the bad time zone name.
                */
-              meos_error(ERROR, MEOS_ERR_FILE_ERROR,
-                "time zone \"%s\" not recognized", field[i]);
+              elog(ERROR, "time zone \"%s\" not recognized", field[i]);
               return -1;
             }
             /* we'll apply the zone setting below */
@@ -1811,8 +1808,7 @@ DecodeTimeOnly(char **field, int *ftype, int nf, int *dtype, struct pg_tm *tm,
                * ereport'ing directly, but then there is no way
                * to report the bad time zone name.
                */
-              meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-                "time zone \"%s\" not recognized", field[i]);
+              elog(ERROR, "time zone \"%s\" not recognized", field[i]);
               return DTERR_BAD_FORMAT;
             }
             /* we'll apply the zone setting below */
@@ -3740,7 +3736,7 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
         "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
-  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, errmsg);
+  elog(ERROR, errmsg);
   return;
 }
 
@@ -3830,8 +3826,7 @@ EncodeSpecialDate(DateADT dt, char *str)
   else if (DATE_IS_NOEND(dt))
     strcpy(str, LATE);
   else            /* shouldn't happen */
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "invalid argument for EncodeSpecialDate");
+    elog(ERROR, "invalid argument for EncodeSpecialDate");
   return;
 }
 
@@ -4400,7 +4395,7 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp)
      */
     if (dtza->tz == NULL)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "time zone \"%s\" not recognized", dtza->zone);
+      elog(ERROR, "time zone \"%s\" not recognized", dtza->zone);
       return NULL;
     }
   }
