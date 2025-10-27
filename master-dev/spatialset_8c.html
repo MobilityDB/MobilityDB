@@ -83,7 +83,7 @@ $(function() {
 <p>Functions for spatial reference systems for spatial values, that is, spatial sets, spatiotemporal boxes, temporal points, and temporal geos.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;funcapi.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;liblwgeom_internal.h&gt;</code><br />
@@ -110,7 +110,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gaed4304f4577650160637de98e673a23a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__inout_gaed4304f4577650160637de98e673a23a.html#gaed4304f4577650160637de98e673a23a">Spatialarr_as_text</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gaed4304f4577650160637de98e673a23a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Well-Known Text (WKT) representation of an array of spatial values @sqlfn asText()  <a href="group__mobilitydb__geo__inout_gaed4304f4577650160637de98e673a23a.html#gaed4304f4577650160637de98e673a23a">More...</a><br /></td></tr>
 <tr class="separator:gaed4304f4577650160637de98e673a23a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d64a430075b7737f3398f90c1b965ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spatialset_8c_a9d64a430075b7737f3398f90c1b965ef.html#a9d64a430075b7737f3398f90c1b965ef">Spatialarr_as_text_common</a> (FunctionCallInfo fcinfo, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> extended)</td></tr>
+<tr class="memitem:a9d64a430075b7737f3398f90c1b965ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spatialset_8c_a9d64a430075b7737f3398f90c1b965ef.html#a9d64a430075b7737f3398f90c1b965ef">Spatialarr_as_text_common</a> (FunctionCallInfo fcinfo, bool extended)</td></tr>
 <tr class="memdesc:a9d64a430075b7737f3398f90c1b965ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the (Extended) Well-Known Text (WKT or EWKT) representation of an array of spatial values (external function)  <a href="spatialset_8c_a9d64a430075b7737f3398f90c1b965ef.html#a9d64a430075b7737f3398f90c1b965ef">More...</a><br /></td></tr>
 <tr class="separator:a9d64a430075b7737f3398f90c1b965ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf6b725bbe2dc72ea87160140e49164f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__inout_gaf6b725bbe2dc72ea87160140e49164f6.html#gaf6b725bbe2dc72ea87160140e49164f6">Spatialset_as_ewkb</a> (PG_FUNCTION_ARGS)</td></tr>

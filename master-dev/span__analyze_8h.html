@@ -80,7 +80,7 @@ $(function() {
   <div class="headertitle"><div class="title">span_analyze.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;commands/vacuum.h&gt;</code><br />
 <code>#include &lt;statistics/extended_stats_internal.h&gt;</code><br />
@@ -104,7 +104,7 @@ Macros</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ac84f97c3f9e0a4276dc97e0e789ec982"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8h_ac84f97c3f9e0a4276dc97e0e789ec982.html#ac84f97c3f9e0a4276dc97e0e789ec982">set_analyze</a> (FunctionCallInfo fcinfo, void(*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))</td></tr>
 <tr class="separator:ac84f97c3f9e0a4276dc97e0e789ec982"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1984271bd974833315c31ae37fa4977e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8h_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">span_compute_stats_generic</a> (VacAttrStats *stats, int non_null_cnt, int *slot_idx, <a class="el" href="structSpanBound.html">SpanBound</a> *lowers, <a class="el" href="structSpanBound.html">SpanBound</a> *uppers, <a class="el" href="c_8h_a9155724ff2560eea2c49383a4d08fbd4.html#a9155724ff2560eea2c49383a4d08fbd4">float8</a> *lengths, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> valuedim)</td></tr>
+<tr class="memitem:a1984271bd974833315c31ae37fa4977e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8h_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">span_compute_stats_generic</a> (VacAttrStats *stats, int non_null_cnt, int *slot_idx, <a class="el" href="structSpanBound.html">SpanBound</a> *lowers, <a class="el" href="structSpanBound.html">SpanBound</a> *uppers, float8 *lengths, bool valuedim)</td></tr>
 <tr class="memdesc:a1984271bd974833315c31ae37fa4977e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute statistics for span type columns and for the time dimension of temporal types whose subtype is not instant.  <a href="span__analyze_8h_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">More...</a><br /></td></tr>
 <tr class="separator:a1984271bd974833315c31ae37fa4977e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

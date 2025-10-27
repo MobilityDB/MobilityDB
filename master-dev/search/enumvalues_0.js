@@ -1,4 +1,20 @@
 var searchData=
 [
-  ['_5fdch_5flast_5f_0',['_DCH_last_',['../formatting_8c_a99d4293036208e5c2fbd2c8072cd6748.html#a99d4293036208e5c2fbd2c8072cd6748aaa035170e7019e525b6911226cd0db65',1,'formatting.c']]]
+  ['above_5fop_0',['ABOVE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a4d447990222e461f063b144b6d4acb83',1,'meos_catalog.h']]],
+  ['acontains_5fidx_1',['ACONTAINS_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea9750c38652fe179a6c0d78333f93e8da',1,'temporal_supportfn.c']]],
+  ['add_2',['ADD',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092acfcf145f2788bf340ff3f3098bc54909',1,'tnumber_mathfuncs.h']]],
+  ['adisjoint_5fidx_3',['ADISJOINT_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea28b76254d100661919e0361135e43064',1,'temporal_supportfn.c']]],
+  ['adjacent_5fop_4',['ADJACENT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073ab96291fe3a80eaa9bd99b77597817c33',1,'meos_catalog.h']]],
+  ['adwithin_5fidx_5',['ADWITHIN_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea3fa7e79a9d05497f45748d5aee1d6d66',1,'temporal_supportfn.c']]],
+  ['after_5fop_6',['AFTER_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073aaa03758d9a8e1d2c97fdbeda6a73e623',1,'meos_catalog.h']]],
+  ['aintersects_5fidx_7',['AINTERSECTS_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eaeabe29e5eeecdfc09720a99726b849f1',1,'temporal_supportfn.c']]],
+  ['always_5feq_5fidx_8',['ALWAYS_EQ_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea5d8434706647495e50350854d95247fe',1,'temporal_supportfn.c']]],
+  ['alwayseq_5fop_9',['ALWAYSEQ_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a76a2e0d9d9a14d41be39164a1129e5b3',1,'meos_catalog.h']]],
+  ['alwaysge_5fop_10',['ALWAYSGE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073ae177cca1a5617c4a5e7e8ab49d550a39',1,'meos_catalog.h']]],
+  ['alwaysgt_5fop_11',['ALWAYSGT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a47f8e41d999dd84749929304a58acf2b',1,'meos_catalog.h']]],
+  ['alwaysle_5fop_12',['ALWAYSLE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a65dcfd19bd3804257f84fda9b22f5f55',1,'meos_catalog.h']]],
+  ['alwayslt_5fop_13',['ALWAYSLT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a4778f8593140d31958cef75d73bc087d',1,'meos_catalog.h']]],
+  ['alwaysne_5fop_14',['ALWAYSNE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073af5f205b84443a272f34b196dd158ae82',1,'meos_catalog.h']]],
+  ['anytempsubtype_15',['ANYTEMPSUBTYPE',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6a65b6d82c3517045c5a806dbbb3d51cbb',1,'meos.h']]],
+  ['atouches_5fidx_16',['ATOUCHES_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea11bf444cda170ec5992c8ec63d19ed86',1,'temporal_supportfn.c']]]
 ];

@@ -80,7 +80,7 @@ $(function() {
   <div class="headertitle"><div class="title">tbox.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 </div>
 <p><a href="tbox_8h_source.html">Go to the source code of this file.</a></p>
@@ -94,12 +94,12 @@ Macros</h2></td></tr>
 <tr class="separator:a15435b42edc81629a63e6d4293d3de8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42edaecc7f8abef1fa140abc696a9815"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox_8h_a42edaecc7f8abef1fa140abc696a9815.html#a42edaecc7f8abef1fa140abc696a9815">PG_RETURN_TBOX_P</a>(x)&#160;&#160;&#160;return <a class="el" href="tbox_8h_a0f8caf1bc0bc4ce1fcb6b00bd9b2d692.html#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">TboxPGetDatum</a>(x)</td></tr>
 <tr class="separator:a42edaecc7f8abef1fa140abc696a9815"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f8caf1bc0bc4ce1fcb6b00bd9b2d692"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox_8h_a0f8caf1bc0bc4ce1fcb6b00bd9b2d692.html#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">TboxPGetDatum</a>(X)&#160;&#160;&#160;<a class="el" href="postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8">PointerGetDatum</a>(X)</td></tr>
+<tr class="memitem:a0f8caf1bc0bc4ce1fcb6b00bd9b2d692"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox_8h_a0f8caf1bc0bc4ce1fcb6b00bd9b2d692.html#a0f8caf1bc0bc4ce1fcb6b00bd9b2d692">TboxPGetDatum</a>(X)&#160;&#160;&#160;PointerGetDatum(X)</td></tr>
 <tr class="separator:a0f8caf1bc0bc4ce1fcb6b00bd9b2d692"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a3c9e972a7dbdef0ce75ff873c33fa0bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox_8h_a3c9e972a7dbdef0ce75ff873c33fa0bb.html#a3c9e972a7dbdef0ce75ff873c33fa0bb">ensure_same_dimensionality_tbox</a> (const <a class="el" href="structTBox.html">TBox</a> *box1, const <a class="el" href="structTBox.html">TBox</a> *box2)</td></tr>
+<tr class="memitem:a3c9e972a7dbdef0ce75ff873c33fa0bb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox_8h_a3c9e972a7dbdef0ce75ff873c33fa0bb.html#a3c9e972a7dbdef0ce75ff873c33fa0bb">ensure_same_dimensionality_tbox</a> (const <a class="el" href="structTBox.html">TBox</a> *box1, const <a class="el" href="structTBox.html">TBox</a> *box2)</td></tr>
 <tr class="memdesc:a3c9e972a7dbdef0ce75ff873c33fa0bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that a temporal boxes have the same dimensionality.  <a href="tbox_8h_a3c9e972a7dbdef0ce75ff873c33fa0bb.html#a3c9e972a7dbdef0ce75ff873c33fa0bb">More...</a><br /></td></tr>
 <tr class="separator:a3c9e972a7dbdef0ce75ff873c33fa0bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf4b942cf98a4b7cc512cc8c2e331ea3a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTBox.html">TBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__conversion_gaf4b942cf98a4b7cc512cc8c2e331ea3a.html#gaf4b942cf98a4b7cc512cc8c2e331ea3a">set_tbox</a> (const <a class="el" href="structSet.html">Set</a> *s)</td></tr>

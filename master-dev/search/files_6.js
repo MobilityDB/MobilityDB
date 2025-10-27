@@ -7,6 +7,5 @@ var searchData=
   ['geonames_5fdbscan_2ec_4',['geonames_dbscan.c',['../geonames__dbscan_8c.html',1,'']]],
   ['geos_5fclip_2ec_5',['geos_clip.c',['../geos__clip_8c.html',1,'']]],
   ['geoset_5fmeos_2ec_6',['geoset_meos.c',['../geoset__meos_8c.html',1,'']]],
-  ['get_5fsrid_5fways_2ec_7',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]],
-  ['grp_2eh_8',['grp.h',['../grp_8h.html',1,'']]]
+  ['get_5fsrid_5fways_2ec_7',['get_srid_ways.c',['../get__srid__ways_8c.html',1,'']]]
 ];

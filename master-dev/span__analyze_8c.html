@@ -84,7 +84,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="span__analyze_8h_source.html">pg_temporal/span_analyze.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;catalog/pg_operator.h&gt;</code><br />
 <code>#include &lt;utils/typcache.h&gt;</code><br />
@@ -104,7 +104,7 @@ Functions</h2></td></tr>
 <tr class="memitem:adf216c28ae8dce12029d60abb848bd58"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8c_adf216c28ae8dce12029d60abb848bd58.html#adf216c28ae8dce12029d60abb848bd58">span_compute_stats</a> (VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>)</td></tr>
 <tr class="memdesc:adf216c28ae8dce12029d60abb848bd58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute statistics for set, span, and span set columns.  <a href="span__analyze_8c_adf216c28ae8dce12029d60abb848bd58.html#adf216c28ae8dce12029d60abb848bd58">More...</a><br /></td></tr>
 <tr class="separator:adf216c28ae8dce12029d60abb848bd58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1984271bd974833315c31ae37fa4977e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8c_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">span_compute_stats_generic</a> (VacAttrStats *stats, int non_null_cnt, int *slot_idx, <a class="el" href="structSpanBound.html">SpanBound</a> *lowers, <a class="el" href="structSpanBound.html">SpanBound</a> *uppers, <a class="el" href="c_8h_a9155724ff2560eea2c49383a4d08fbd4.html#a9155724ff2560eea2c49383a4d08fbd4">float8</a> *lengths, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> valuedim)</td></tr>
+<tr class="memitem:a1984271bd974833315c31ae37fa4977e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__analyze_8c_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">span_compute_stats_generic</a> (VacAttrStats *stats, int non_null_cnt, int *slot_idx, <a class="el" href="structSpanBound.html">SpanBound</a> *lowers, <a class="el" href="structSpanBound.html">SpanBound</a> *uppers, float8 *lengths, bool valuedim)</td></tr>
 <tr class="memdesc:a1984271bd974833315c31ae37fa4977e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute statistics for span type columns and for the time dimension of temporal types whose subtype is not instant.  <a href="span__analyze_8c_a1984271bd974833315c31ae37fa4977e.html#a1984271bd974833315c31ae37fa4977e">More...</a><br /></td></tr>
 <tr class="separator:a1984271bd974833315c31ae37fa4977e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

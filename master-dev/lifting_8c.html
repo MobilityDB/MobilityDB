@@ -84,8 +84,8 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="lifting_8h_source.html">temporal/lifting.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="temporal__restrict_8h_source.html">temporal/temporal_restrict.h</a>&quot;</code><br />
@@ -332,7 +332,7 @@ Functions</h2></td></tr>
 <div class="line">  }</div>
 <div class="line">  <span class="keywordflow">else</span></div>
 <div class="line">  {</div>
-<div class="line">    <a class="code hl_function" href="meos_8h_ae25eac26575ca0d33b0667ca0c635278.html#ae25eac26575ca0d33b0667ca0c635278">meos_error</a>(<a class="code hl_define" href="postgres_8h_a8fe83ac76edc595f6b98cd4a4127aed5.html#a8fe83ac76edc595f6b98cd4a4127aed5">ERROR</a>, <a class="code hl_enumvalue" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a83f643b002882d5234b37fb159689627">MEOS_ERR_INTERNAL_ERROR</a>,</div>
+<div class="line">    <a class="code hl_function" href="meos_8h_ae25eac26575ca0d33b0667ca0c635278.html#ae25eac26575ca0d33b0667ca0c635278">meos_error</a>(ERROR, <a class="code hl_enumvalue" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a83f643b002882d5234b37fb159689627">MEOS_ERR_INTERNAL_ERROR</a>,</div>
 <div class="line">      <span class="stringliteral">&quot;Number of function parameters not supported: %u&quot;</span>, lfinfo-&gt;<a class="code hl_variable" href="structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146">numparam</a>);</div>
 <div class="line">    <span class="keywordflow">return</span> NULL;</div>
 <div class="line">  }</div>
@@ -357,7 +357,6 @@ Functions</h2></td></tr>
 <div class="ttc" id="ameos__internal_8h_a95dad66d300eac304a3e5f94d8910086_html_a95dad66d300eac304a3e5f94d8910086"><div class="ttname"><a href="meos__internal_8h_a95dad66d300eac304a3e5f94d8910086.html#a95dad66d300eac304a3e5f94d8910086">tinstant_make_free</a></div><div class="ttdeci">TInstant * tinstant_make_free(Datum value, meosType temptype, TimestampTz t)</div><div class="ttdoc">Return a temporal instant created from the values and free the base value after the creation.</div><div class="ttdef"><b>Definition:</b> tinstant.c:275</div></div>
 <div class="ttc" id="ameos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769_html_ab1980f05b1867926cafa7e8f5eb87769"><div class="ttname"><a href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a></div><div class="ttdeci">Datum(* datum_func2)(Datum, Datum)</div><div class="ttdef"><b>Definition:</b> meos_internal.h:729</div></div>
 <div class="ttc" id="ameos__internal_8h_adbd869bb2866aea062f0514d80548d4b_html_adbd869bb2866aea062f0514d80548d4b"><div class="ttname"><a href="meos__internal_8h_adbd869bb2866aea062f0514d80548d4b.html#adbd869bb2866aea062f0514d80548d4b">datum_func1</a></div><div class="ttdeci">Datum(* datum_func1)(Datum)</div><div class="ttdef"><b>Definition:</b> meos_internal.h:728</div></div>
-<div class="ttc" id="apostgres_8h_a8fe83ac76edc595f6b98cd4a4127aed5_html_a8fe83ac76edc595f6b98cd4a4127aed5"><div class="ttname"><a href="postgres_8h_a8fe83ac76edc595f6b98cd4a4127aed5.html#a8fe83ac76edc595f6b98cd4a4127aed5">ERROR</a></div><div class="ttdeci">#define ERROR</div><div class="ttdef"><b>Definition:</b> postgres.h:59</div></div>
 <div class="ttc" id="apostgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6_html_a43879eb52e27b2413d7a05056a173ca6"><div class="ttname"><a href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a></div><div class="ttdeci">uintptr_t Datum</div><div class="ttdef"><b>Definition:</b> postgres_ext_defs.in.h:7</div></div>
 <div class="ttc" id="astructLiftedFunctionInfo_a65adbadeb001a80104791b48be673146_html_a65adbadeb001a80104791b48be673146"><div class="ttname"><a href="structLiftedFunctionInfo_a65adbadeb001a80104791b48be673146.html#a65adbadeb001a80104791b48be673146">LiftedFunctionInfo::numparam</a></div><div class="ttdeci">int numparam</div><div class="ttdoc">Number of parameters of the function.</div><div class="ttdef"><b>Definition:</b> lifting.h:59</div></div>
 <div class="ttc" id="astructLiftedFunctionInfo_aa1de651d59651da148f937777a015d49_html_aa1de651d59651da148f937777a015d49"><div class="ttname"><a href="structLiftedFunctionInfo_aa1de651d59651da148f937777a015d49.html#aa1de651d59651da148f937777a015d49">LiftedFunctionInfo::param</a></div><div class="ttdeci">Datum param[MAX_PARAMS]</div><div class="ttdoc">Datum array for the parameters of the function.</div><div class="ttdef"><b>Definition:</b> lifting.h:60</div></div>
@@ -368,7 +367,7 @@ Functions</h2></td></tr>
 <div class="ttc" id="astructTInstant_html"><div class="ttname"><a href="structTInstant.html">TInstant</a></div><div class="ttdoc">Structure to represent temporal values of instant subtype.</div><div class="ttdef"><b>Definition:</b> meos.h:185</div></div>
 <div class="ttc" id="astructTemporal_html"><div class="ttname"><a href="structTemporal.html">Temporal</a></div><div class="ttdoc">Structure to represent the common structure of temporal values of any temporal subtype.</div><div class="ttdef"><b>Definition:</b> meos.h:173</div></div>
 </div><!-- fragment --><p> An example of use of the lifting functions is given next. </p><div class="fragment"><div class="line"><span class="comment">// Transform the geometry to a geography</span></div>
-<div class="line"><a class="code hl_define" href="win32_8h_a917200bfedbf3f9f57fca0d485f15dd0.html#a917200bfedbf3f9f57fca0d485f15dd0">PGDLLEXPORT</a> <a class="code hl_typedef" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a></div>
+<div class="line">PGDLLEXPORT <a class="code hl_typedef" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a></div>
 <div class="line">tgeompoint_tgeogpoint(PG_FUNCTION_ARGS)</div>
 <div class="line">{</div>
 <div class="line">  <a class="code hl_struct" href="structTemporal.html">Temporal</a> *temp = <a class="code hl_define" href="meos_2include_2temporal_2temporal_8h_a371878cb0c83dc7a11109d2f5ce86112.html#a371878cb0c83dc7a11109d2f5ce86112">PG_GETARG_TEMPORAL_P</a>(0);</div>
@@ -388,7 +387,6 @@ Functions</h2></td></tr>
 <div class="ttc" id="ameos_2include_2temporal_2temporal_8h_a3c1ce1d83831fef3c15f67fbb25113e6_html_a3c1ce1d83831fef3c15f67fbb25113e6"><div class="ttname"><a href="meos_2include_2temporal_2temporal_8h_a3c1ce1d83831fef3c15f67fbb25113e6.html#a3c1ce1d83831fef3c15f67fbb25113e6">PG_RETURN_TEMPORAL_P</a></div><div class="ttdeci">#define PG_RETURN_TEMPORAL_P(X)</div><div class="ttdef"><b>Definition:</b> temporal.h:320</div></div>
 <div class="ttc" id="astructLiftedFunctionInfo_a5c4391595d96b48fc125ec25fcd4a227_html_a5c4391595d96b48fc125ec25fcd4a227"><div class="ttname"><a href="structLiftedFunctionInfo_a5c4391595d96b48fc125ec25fcd4a227.html#a5c4391595d96b48fc125ec25fcd4a227">LiftedFunctionInfo::tpfn_base</a></div><div class="ttdeci">tpfunc_base tpfn_base</div><div class="ttdoc">Turning point function for temporal and base types.</div><div class="ttdef"><b>Definition:</b> lifting.h:67</div></div>
 <div class="ttc" id="astructLiftedFunctionInfo_a601d1ba84b58b135a18ac8bca5ad4767_html_a601d1ba84b58b135a18ac8bca5ad4767"><div class="ttname"><a href="structLiftedFunctionInfo_a601d1ba84b58b135a18ac8bca5ad4767.html#a601d1ba84b58b135a18ac8bca5ad4767">LiftedFunctionInfo::tpfn_temp</a></div><div class="ttdeci">tpfunc_temp tpfn_temp</div><div class="ttdoc">Turning point function for two temporal types.</div><div class="ttdef"><b>Definition:</b> lifting.h:68</div></div>
-<div class="ttc" id="awin32_8h_a917200bfedbf3f9f57fca0d485f15dd0_html_a917200bfedbf3f9f57fca0d485f15dd0"><div class="ttname"><a href="win32_8h_a917200bfedbf3f9f57fca0d485f15dd0.html#a917200bfedbf3f9f57fca0d485f15dd0">PGDLLEXPORT</a></div><div class="ttdeci">#define PGDLLEXPORT</div><div class="ttdef"><b>Definition:</b> win32.h:57</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

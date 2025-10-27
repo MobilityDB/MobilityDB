@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['j2date_0',['j2date',['../datetime_8c_a889d375aaf2a25be071d818565142b9e.html#a889d375aaf2a25be071d818565142b9e',1,'j2date(int jd, int *year, int *month, int *day):&#160;datetime.c'],['../datetime_8h_a889d375aaf2a25be071d818565142b9e.html#a889d375aaf2a25be071d818565142b9e',1,'j2date(int jd, int *year, int *month, int *day):&#160;datetime.c']]],
-  ['j2day_1',['j2day',['../datetime_8c_a4af6fb0b2eaee653a8523e777ce6ed78.html#a4af6fb0b2eaee653a8523e777ce6ed78',1,'j2day(int date):&#160;datetime.c'],['../datetime_8h_a852409776cde4ce4128e581356046649.html#a852409776cde4ce4128e581356046649',1,'j2day(int jd):&#160;datetime.c']]]
+  ['keyval_5fskiplist_5fcommon_0',['keyval_skiplist_common',['../meos_2src_2temporal_2skiplist_8c_a78caa00896bdf358de7f2f86149943a1.html#a78caa00896bdf358de7f2f86149943a1',1,'skiplist.c']]],
+  ['keyval_5fskiplist_5fmerge_1',['keyval_skiplist_merge',['../meos_2src_2temporal_2skiplist_8c_a0f9234d9f2a9ab5573027ee5b735d9ca.html#a0f9234d9f2a9ab5573027ee5b735d9ca',1,'skiplist.c']]]
 ];

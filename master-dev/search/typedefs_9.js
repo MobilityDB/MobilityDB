@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['localtransactionid_0',['LocalTransactionId',['../c_8h_addc3759c5152121ef452f4e68ac5ddb3.html#addc3759c5152121ef452f4e68ac5ddb3',1,'c.h']]],
-  ['lwflags_5ft_1',['lwflags_t',['../postgis__ext__defs_8in_8h_a4f088265c50fb586dd2f7e9d6e6a7784.html#a4f088265c50fb586dd2f7e9d6e6a7784',1,'postgis_ext_defs.in.h']]],
-  ['lwproj_2',['LWPROJ',['../postgis__ext__defs_8in_8h_adce5f7e0704787473194ee1396d08bfa.html#adce5f7e0704787473194ee1396d08bfa',1,'postgis_ext_defs.in.h']]]
+  ['nd_5fbox_0',['ND_BOX',['../tspatial__analyze_8h_af815388cbbe239a2be56c40e5b39a266.html#af815388cbbe239a2be56c40e5b39a266',1,'tspatial_analyze.h']]],
+  ['nd_5fibox_1',['ND_IBOX',['../tspatial__analyze_8h_ac6acd599cc9913f2ae47473382a3d271.html#ac6acd599cc9913f2ae47473382a3d271',1,'tspatial_analyze.h']]],
+  ['nd_5fstats_2',['ND_STATS',['../tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b',1,'tspatial_analyze.h']]]
 ];

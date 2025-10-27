@@ -83,9 +83,10 @@ $(function() {
 <p>R-tree GiST index for temporal points.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="stbox__index_8h_source.html">geo/stbox_index.h</a>&quot;</code><br />
-<code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/float.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
@@ -94,13 +95,13 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a258f1883ed7d29fddbfeccc7ad598431"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_a258f1883ed7d29fddbfeccc7ad598431.html#a258f1883ed7d29fddbfeccc7ad598431">stbox_gist_inner_consistent</a> (const <a class="el" href="structSTBox.html">STBox</a> *key, const <a class="el" href="structSTBox.html">STBox</a> *query, <a class="el" href="postgres_2access_2stratnum_8h_a07ff203a1ab2910ac770b8631f095bdc.html#a07ff203a1ab2910ac770b8631f095bdc">StrategyNumber</a> strategy)</td></tr>
+<tr class="memitem:a258f1883ed7d29fddbfeccc7ad598431"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_a258f1883ed7d29fddbfeccc7ad598431.html#a258f1883ed7d29fddbfeccc7ad598431">stbox_gist_inner_consistent</a> (const <a class="el" href="structSTBox.html">STBox</a> *key, const <a class="el" href="structSTBox.html">STBox</a> *query, StrategyNumber strategy)</td></tr>
 <tr class="memdesc:a258f1883ed7d29fddbfeccc7ad598431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inner consistent method for temporal points.  <a href="stbox__index_8c_a258f1883ed7d29fddbfeccc7ad598431.html#a258f1883ed7d29fddbfeccc7ad598431">More...</a><br /></td></tr>
 <tr class="separator:a258f1883ed7d29fddbfeccc7ad598431"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5975619304741ef8d6fe74ac4c8b2eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_af5975619304741ef8d6fe74ac4c8b2eb.html#af5975619304741ef8d6fe74ac4c8b2eb">stbox_index_leaf_consistent</a> (const <a class="el" href="structSTBox.html">STBox</a> *key, const <a class="el" href="structSTBox.html">STBox</a> *query, <a class="el" href="postgres_2access_2stratnum_8h_a07ff203a1ab2910ac770b8631f095bdc.html#a07ff203a1ab2910ac770b8631f095bdc">StrategyNumber</a> strategy)</td></tr>
+<tr class="memitem:af5975619304741ef8d6fe74ac4c8b2eb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_af5975619304741ef8d6fe74ac4c8b2eb.html#af5975619304741ef8d6fe74ac4c8b2eb">stbox_index_leaf_consistent</a> (const <a class="el" href="structSTBox.html">STBox</a> *key, const <a class="el" href="structSTBox.html">STBox</a> *query, StrategyNumber strategy)</td></tr>
 <tr class="memdesc:af5975619304741ef8d6fe74ac4c8b2eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leaf consistency for temporal points.  <a href="stbox__index_8c_af5975619304741ef8d6fe74ac4c8b2eb.html#af5975619304741ef8d6fe74ac4c8b2eb">More...</a><br /></td></tr>
 <tr class="separator:af5975619304741ef8d6fe74ac4c8b2eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_a7e2a1e9ff20b8da62f036cf30c26e20b.html#a7e2a1e9ff20b8da62f036cf30c26e20b">stbox_index_recheck</a> (<a class="el" href="postgres_2access_2stratnum_8h_a07ff203a1ab2910ac770b8631f095bdc.html#a07ff203a1ab2910ac770b8631f095bdc">StrategyNumber</a> strategy)</td></tr>
+<tr class="memitem:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="stbox__index_8c_a7e2a1e9ff20b8da62f036cf30c26e20b.html#a7e2a1e9ff20b8da62f036cf30c26e20b">stbox_index_recheck</a> (StrategyNumber strategy)</td></tr>
 <tr class="memdesc:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a recheck is necessary depending on the strategy.  <a href="stbox__index_8c_a7e2a1e9ff20b8da62f036cf30c26e20b.html#a7e2a1e9ff20b8da62f036cf30c26e20b">More...</a><br /></td></tr>
 <tr class="separator:a7e2a1e9ff20b8da62f036cf30c26e20b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
