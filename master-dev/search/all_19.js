@@ -20,8 +20,8 @@ var searchData=
   ['wexitstatus_17',['WEXITSTATUS',['../win32__port_8h_ae7700c010e70c0004dd332624e03122a.html#ae7700c010e70c0004dd332624e03122a',1,'win32_port.h']]],
   ['wifexited_18',['WIFEXITED',['../win32__port_8h_a9b96776468de7da3196410b337fcaa11.html#a9b96776468de7da3196410b337fcaa11',1,'win32_port.h']]],
   ['wifsignaled_19',['WIFSIGNALED',['../win32__port_8h_ab39b58beb6d7dc58f5ec057a0d28429b.html#ab39b58beb6d7dc58f5ec057a0d28429b',1,'win32_port.h']]],
-  ['wildabbr_20',['wildabbr',['../localtime_8c_ad493cfa568ecdc883a3bb6e34091f57c.html#ad493cfa568ecdc883a3bb6e34091f57c',1,'localtime.c']]],
-  ['wildabbr_21',['WILDABBR',['../localtime_8c_a9287004ef227a7a6805089ad9daa1164.html#a9287004ef227a7a6805089ad9daa1164',1,'localtime.c']]],
+  ['wildabbr_20',['WILDABBR',['../localtime_8c_a9287004ef227a7a6805089ad9daa1164.html#a9287004ef227a7a6805089ad9daa1164',1,'localtime.c']]],
+  ['wildabbr_21',['wildabbr',['../localtime_8c_ad493cfa568ecdc883a3bb6e34091f57c.html#ad493cfa568ecdc883a3bb6e34091f57c',1,'localtime.c']]],
   ['win32_2eh_22',['win32.h',['../win32_8h.html',1,'']]],
   ['win32_5fport_2eh_23',['win32_port.h',['../win32__port_8h.html',1,'']]],
   ['with_5fgeom_24',['WITH_GEOM',['../trgeo_8h_aa03c2c862ea80cfefa8402842a72a3e4.html#aa03c2c862ea80cfefa8402842a72a3e4',1,'trgeo.h']]],
@@ -43,8 +43,7 @@ var searchData=
   ['wkt_5fextended_40',['WKT_EXTENDED',['../postgis__ext__defs_8in_8h_a4c2c398e84c8a183208b0b21dd604f8e.html#a4c2c398e84c8a183208b0b21dd604f8e',1,'postgis_ext_defs.in.h']]],
   ['wkt_5fiso_41',['WKT_ISO',['../postgis__ext__defs_8in_8h_aa9351cce9401245ca5bdd8e86b3ea8aa.html#aa9351cce9401245ca5bdd8e86b3ea8aa',1,'postgis_ext_defs.in.h']]],
   ['wkt_5fsfsql_42',['WKT_SFSQL',['../postgis__ext__defs_8in_8h_a12b2d0c15bb1930ba8dce5da92362204.html#a12b2d0c15bb1930ba8dce5da92362204',1,'postgis_ext_defs.in.h']]],
-  ['wl_43',['Wl',['../mobilitydb_2CMakeLists_8txt_a006bff9c64c212ace00a192412136a47.html#a006bff9c64c212ace00a192412136a47',1,'CMakeLists.txt']]],
-  ['writeback_5fmax_5fpending_5fflushes_44',['WRITEBACK_MAX_PENDING_FLUSHES',['../pg__config__manual_8h_a2358b826cbc0c015f1e6444ba8be9340.html#a2358b826cbc0c015f1e6444ba8be9340',1,'pg_config_manual.h']]],
-  ['wtermsig_45',['WTERMSIG',['../win32__port_8h_acaeb2e652dc908353c472ed40707495c.html#acaeb2e652dc908353c472ed40707495c',1,'win32_port.h']]],
-  ['ww_46',['ww',['../structTmFromChar_a98be993a8555c71cc315b2486c6511f8.html#a98be993a8555c71cc315b2486c6511f8',1,'TmFromChar']]]
+  ['writeback_5fmax_5fpending_5fflushes_43',['WRITEBACK_MAX_PENDING_FLUSHES',['../pg__config__manual_8h_a2358b826cbc0c015f1e6444ba8be9340.html#a2358b826cbc0c015f1e6444ba8be9340',1,'pg_config_manual.h']]],
+  ['wtermsig_44',['WTERMSIG',['../win32__port_8h_acaeb2e652dc908353c472ed40707495c.html#acaeb2e652dc908353c472ed40707495c',1,'win32_port.h']]],
+  ['ww_45',['ww',['../structTmFromChar_a98be993a8555c71cc315b2486c6511f8.html#a98be993a8555c71cc315b2486c6511f8',1,'TmFromChar']]]
 ];

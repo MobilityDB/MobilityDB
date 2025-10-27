@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['b_5fc_5fstr_0',['B_C_STR',['../formatting_8c_a6b3d8a8136ae73ea20b57ea524d09156.html#a6b3d8a8136ae73ea20b57ea524d09156',1,'formatting.c']]],
-  ['b_5fc_5fstr_1',['b_c_STR',['../formatting_8c_a9bd23a4b5fa8c3d3de9fd237f28af19b.html#a9bd23a4b5fa8c3d3de9fd237f28af19b',1,'formatting.c']]],
+  ['b_5fc_5fstr_0',['b_c_STR',['../formatting_8c_a9bd23a4b5fa8c3d3de9fd237f28af19b.html#a9bd23a4b5fa8c3d3de9fd237f28af19b',1,'formatting.c']]],
+  ['b_5fc_5fstr_1',['B_C_STR',['../formatting_8c_a6b3d8a8136ae73ea20b57ea524d09156.html#a6b3d8a8136ae73ea20b57ea524d09156',1,'formatting.c']]],
   ['bbox_5ftest_2',['BBOX_TEST',['../meos_2include_2temporal_2temporal_8h_a992e328527bba8d82568f9fcd8debdc9.html#a992e328527bba8d82568f9fcd8debdc9',1,'temporal.h']]],
   ['bbox_5ftest_5fno_3',['BBOX_TEST_NO',['../meos_2include_2temporal_2temporal_8h_a9203a90a170ee73d4681f4fe94c34b49.html#a9203a90a170ee73d4681f4fe94c34b49',1,'temporal.h']]],
   ['bbox_5ftype_4',['BBOX_TYPE',['../rtree__example_8c_a1053ea16cbdefebbfa02eb9ee19d797f.html#a1053ea16cbdefebbfa02eb9ee19d797f',1,'rtree_example.c']]],
