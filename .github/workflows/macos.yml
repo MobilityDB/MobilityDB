@@ -28,12 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-13, macos-14 ]
-        include:
-          - os: macos-13
-            pg_path: "/usr/local/var/postgres"
-          - os: macos-14
-            pg_path: "/opt/homebrew/var/postgres"
+        os: [ macos-14, macos-15 ]
+        psql: [ 17, 18 ]
 
     steps:
       - name: Checkout repository
@@ -42,41 +38,29 @@ jobs:
       - name: Get dependencies from homebrew (cache)
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: postgresql postgis proj gsl
-
-      - name: update brew
-        if: matrix.os == 'macos-13'
-        # Necessary to avoid issue with macOS runners. See
-        # https://github.com/actions/runner-images/issues/4020
-        run: |
-          brew reinstall python@3.12 || brew link --overwrite python@3.12
-          brew update
-
-      - name: reinstall cmake
-        # Remove once issue with hombrew cache action is fixed
-        run: |
-          brew reinstall cmake
+          tools: postgresql@${{ matrix.psql }} postgis proj gsl
 
       - name: Configure
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-
+          cmake -DPOSTGRESQL_BIN="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin" -DCMAKE_BUILD_TYPE=Release ..
+    
       - name: Build
         run: |
           cd build
           make -j
           sudo make install
-
-      - name: test install
+    
+      - name: test installation
         run: |
-          mkdir ${{ matrix.pg_path }}
-          initdb -D ${{ matrix.pg_path }}
-          pg_ctl -D ${{ matrix.pg_path }} start
+          export PATH="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin:$PATH"
+          mkdir -p $HOME/pgdata
+          initdb -D $HOME/pgdata -E UTF8 --locale=C
+          pg_ctl -D $HOME/pgdata -l logfile start
           createdb ___mobdb___test___
-          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE;  SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
-
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+    
       - name: Test
         run: |
           cd build
