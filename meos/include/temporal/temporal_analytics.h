@@ -39,7 +39,12 @@ typedef enum
 {
   FRECHET,
   DYNTIMEWARP,
-  HAUSDORFF
+  HAUSDORFF,
+  /**
+   * @note Additions written by Ossama BENAISSA ossama.benaissa.96@gmail.com
+   */
+  LCSS,
+  AVERAGEHAUSDORFF
 } SimFunc;
 
 /**
