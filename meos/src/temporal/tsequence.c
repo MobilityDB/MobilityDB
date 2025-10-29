@@ -50,7 +50,6 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/doublen.h"
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -77,6 +76,10 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Collinear functions

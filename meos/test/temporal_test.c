@@ -42,6 +42,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <pg_bool.h>
+#include <pg_float.h>
+#include <pg_text.h>
 
 /* Main program */
 int main(void)
@@ -3606,7 +3609,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float_out(float8array_result[i], 6);
+    char1_result = float8_out(float8array_result[i], 6);
     printf("%s:%s", char_result, char1_result);
     if (i < count - 1)
       printf(", ");
@@ -3640,7 +3643,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float_out(float8array_result[i], 6);
+    char1_result = float8_out(float8array_result[i], 6);
     char2_result = timestamptz_out(tstzarray_result[i]);
     printf("%s:%s,%s", char_result, char1_result, char2_result);
     if (i < count - 1)
@@ -3730,7 +3733,6 @@ int main(void)
     free(char_result);
   }
   free(ispanarray_result);
-
 
   /* TBox *tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count); */
   tboxarray_result = tint_value_boxes(tint1, int32_in1, int32_in2, &count);

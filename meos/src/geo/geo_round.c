@@ -43,6 +43,10 @@
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
+
 /*****************************************************************************
  * Geometry/Geography
  *****************************************************************************/
@@ -57,18 +61,18 @@ round_point_n(POINTARRAY *points, uint32_t n, int maxdd, bool hasz, bool hasm)
   /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
    * the values of the arguments hasz and hasm !!! */
   POINT4D *pt = (POINT4D *) getPoint_internal(points, n);
-  pt->x = float_round(pt->x, maxdd);
-  pt->y = float_round(pt->y, maxdd);
+  pt->x = float8_round(pt->x, maxdd);
+  pt->y = float8_round(pt->y, maxdd);
   if (hasz && hasm)
   {
-    pt->z = float_round(pt->z, maxdd);
-    pt->m = float_round(pt->m, maxdd);
+    pt->z = float8_round(pt->z, maxdd);
+    pt->m = float8_round(pt->m, maxdd);
   }
   else if (hasz)
-    pt->z = float_round(pt->z, maxdd);
+    pt->z = float8_round(pt->z, maxdd);
   else if (hasm)
     /* The m co ordinate is located at the third double of the point */
-    pt->z = float_round(pt->z, maxdd);
+    pt->z = float8_round(pt->z, maxdd);
   return;
 }
 

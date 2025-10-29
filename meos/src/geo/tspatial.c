@@ -44,7 +44,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
@@ -68,6 +67,10 @@
   #include "rgeo/trgeo_inst.h"
   #include "rgeo/trgeo_boxops.h"
 #endif 
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Input/output functions

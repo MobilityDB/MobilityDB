@@ -58,6 +58,10 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_boxops.h"
 
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/

@@ -41,9 +41,11 @@
 /* GEOS */
 #include <geos_c.h>
 /* PostgreSQL */
+#include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+#include <pgtypes.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
@@ -77,26 +79,25 @@ extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
  *****************************************************************************/
 
 #if MEOS
-#define MAXBOX3DLEN    255
-#define MAXGBOXLEN     255
+#define MAX_LEN_BOX3D    255
+#define MAX_LEN_GBOX     255
 
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a PostGIS GBOX from the arguments
  * @param[in] hasz True if there is a Z dimension
- * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
- * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ * @param[in] hasm True if there is a M dimension
+ * @param[in] geodetic True if geodetic
+ * @param[in] xmin,ymin,zmin,mmin Minimum bounds for the spatial dimensions
+ * @param[in] xmax,ymax,zmax,mmax Maximum bounds for the spatial dimensions
  */
 GBOX *
-gbox_make(bool hasz, double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax)
+gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax, 
+  double ymin, double ymax, double zmin, double zmax, double mmin,
+  double mmax)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  GBOX *result = palloc0(sizeof(GBOX));
-  FLAGS_SET_Z(result->flags, hasz);
-  FLAGS_SET_GEODETIC(result->flags, false);
-
-  /* Process X/Y min/max */
+  GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
+  /* Process X min/max */
   result->xmin = Min(xmin, xmax);
   result->xmax = Max(xmin, xmax);
   /* Process Y min/max */
@@ -108,7 +109,12 @@ gbox_make(bool hasz, double xmin, double xmax, double ymin, double ymax,
     result->zmin = Min(zmin, zmax);
     result->zmax = Max(zmin, zmax);
   }
-
+  if (hasm)
+  {
+    /* Process M min/max */
+    result->mmin = Min(mmin, mmax);
+    result->mmax = Max(mmin, mmax);
+  }
   return result;
 }
 
@@ -126,36 +132,7 @@ gbox_out(const GBOX *box, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAXGBOXLEN + 1;
-  char buf[MAXGBOXLEN + 1];
-  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
-    *zmax = NULL;
-  bool hasz = FLAGS_GET_Z(box->flags);
-
-  xmin = float_out(box->xmin, maxdd);
-  xmax = float_out(box->xmax, maxdd);
-  ymin = float_out(box->ymin, maxdd);
-  ymax = float_out(box->ymax, maxdd);
-  if (hasz)
-  {
-    zmin = float_out(box->zmin, maxdd);
-    zmax = float_out(box->zmax, maxdd);
-    snprintf(buf, size, "GBOX Z((%s,%s,%s),(%s,%s,%s))",
-      xmin, ymin, zmin, xmax, ymax, zmax);
-  }
-  else
-  {
-    snprintf(buf, size, "GBOX X((%s,%s),(%s,%s))",
-      xmin, ymin, xmax, ymax);
-  }
-
-  pfree(xmin); pfree(xmax);
-  pfree(ymin); pfree(ymax);
-  if (hasz)
-  {
-    pfree(zmin); pfree(zmax);
-  }
-  return strdup(buf);
+  return gbox_to_string(box);
 }
 
 /**
@@ -166,8 +143,8 @@ gbox_out(const GBOX *box, int maxdd)
  * @param[in] srid SRID
  */
 BOX3D *
-box3d_make(double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax, int32 srid)
+box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, int32 srid)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   BOX3D *result = palloc0(sizeof(BOX3D));
@@ -201,8 +178,8 @@ box3d_out(const BOX3D *box, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAXBOX3DLEN + 1;
-  char buf[MAXBOX3DLEN + 1];
+  static size_t size = MAX_LEN_BOX3D + 1;
+  char buf[MAX_LEN_BOX3D + 1];
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL;
 
@@ -213,12 +190,12 @@ box3d_out(const BOX3D *box, int maxdd)
   else
     srid[0] = '\0';
 
-  xmin = float_out(box->xmin, maxdd);
-  xmax = float_out(box->xmax, maxdd);
-  ymin = float_out(box->ymin, maxdd);
-  ymax = float_out(box->ymax, maxdd);
-  zmin = float_out(box->zmin, maxdd);
-  zmax = float_out(box->zmax, maxdd);
+  xmin = float8_out(box->xmin, maxdd);
+  xmax = float8_out(box->xmax, maxdd);
+  ymin = float8_out(box->ymin, maxdd);
+  ymax = float8_out(box->ymax, maxdd);
+  zmin = float8_out(box->zmin, maxdd);
+  zmax = float8_out(box->zmax, maxdd);
   snprintf(buf, size, "%sBOX3D((%s,%s,%s),(%s,%s,%s))",
       srid, xmin, ymin, zmin, xmax, ymax, zmax);
 
@@ -227,7 +204,6 @@ box3d_out(const BOX3D *box, int maxdd)
   pfree(zmin); pfree(zmax);
   return strdup(buf);
 }
-
 #endif /* MEOS */
 
 /*****************************************************************************
@@ -2038,7 +2014,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
       return NULL;
     }
   }
-  pfree(params1); // TODO
+  pfree(params1);
 
   /* Empty.Buffer() == Empty[polygon] */
   if (gserialized_is_empty(gs))
@@ -3320,9 +3296,7 @@ geo_from_text(const char *wkt, int32_t srid)
 
   geo_result = geo_serialize(lwgeom);
   /* Clean up */
-  lwgeom_free(lwg_parser_result.geom);
-  // lwgeom_parser_result_free(&lwg_parser_result);
-
+  lwgeom_parser_result_free(&lwg_parser_result);
   return geo_result;
 }
 #endif /* MEOS */

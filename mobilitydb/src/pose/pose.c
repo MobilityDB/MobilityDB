@@ -37,6 +37,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <funcapi.h>
 #include <access/heaptoast.h>
 #include <lib/stringinfo.h>
@@ -147,7 +148,7 @@ Datum
 Pose_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
-  char *wkt = text2cstring(wkt_text);
+  char *wkt = text_to_cstring(wkt_text);
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
   Pose *result = pose_parse(&wkt_ptr, true);
@@ -185,7 +186,7 @@ Datum
 Pose_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
+  char *hexwkb = text_to_cstring(hexwkb_text);
   Pose *result = pose_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
@@ -208,7 +209,7 @@ Pose_as_text_common(FunctionCallInfo fcinfo, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = extended ? pose_as_ewkt(pose, dbl_dig_for_wkt) : 
     pose_as_text(pose, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(pose, 0);
   PG_RETURN_TEXT_P(result);
@@ -615,7 +616,7 @@ Pose_transform_pipeline(PG_FUNCTION_ARGS)
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
   int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
-  char *pipelinestr = text2cstring(pipelinetxt);
+  char *pipelinestr = text_to_cstring(pipelinetxt);
   Pose *result = pose_transform_pipeline(cb, pipelinestr, srid,
     is_forward);
   pfree(pipelinestr);

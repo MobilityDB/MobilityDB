@@ -10,7 +10,7 @@ message(STATUS "-------------------")
 # extension.
 add_definitions(-DMEOS=0)
 
-# Set the version and name of the library
+# Set the version and name of the MobilityDB library
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -19,6 +19,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
 set(MOBILITYDB_DATAGEN_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}_datagen--${PROJECT_VERSION}.sql")
+
+# Option to build MEOS as a shared or static library
+option(BUILD_SHARED_LIBS
+  "Set BUILD_SHARED_LIBS (default=ON) to build MEOS as a shared library"
+  ON
+)
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -46,8 +52,8 @@ endif()
 #-------------------------------------
 
 # Find PostgreSQL
-set(PG_MIN_MAJOR_VERSION "13")
-set(PG_MAX_MAJOR_VERSION "14")
+set(PG_MIN_MAJOR_VERSION "14")
+set(PG_MAX_MAJOR_VERSION "18")
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
@@ -87,6 +93,10 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 # MobilityDB directories
 #--------------------------------
 
+# PostgreSQL
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/pgtypes")
+include_directories(SYSTEM "${CMAKE_BINARY_DIR}/pgtypes")
+
 set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
 
@@ -98,11 +108,11 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis/liblwgeom")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis")
-add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
+# add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
+add_subdirectory("${CMAKE_SOURCE_DIR}/postgis/libpgcommon" "postgis")
 
 # MEOS
 include_directories("${CMAKE_SOURCE_DIR}/meos/include")
-add_subdirectory("${CMAKE_SOURCE_DIR}/meos/src" "meos_src")
 
 # MobilityDB
 include_directories("pg_include")
@@ -111,33 +121,33 @@ add_subdirectory("src")
 # Must be after add_library
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles" OR CMAKE_GENERATOR STREQUAL "Ninja")
   # Disable all warnings on embeded code from PostgreSQL and PostGIS
-  target_compile_options(liblwgeom PRIVATE "-w")
+  # target_compile_options(liblwgeom PRIVATE "-w")
   target_compile_options(libpgcommon PRIVATE "-w")
-  target_compile_options(ryu PRIVATE "-w")
+  # target_compile_options(ryu PRIVATE "-w")
 elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Disable all warnings on embeded code from PostgreSQL and PostGIS
-  target_compile_options(liblwgeom PRIVATE "/W0")
-  target_compile_options(libpgcommon PRIVATE "/W0")
-  target_compile_options(ryu PRIVATE "/W0")
+  # target_compile_options(liblwgeom PRIVATE "/W0")
+  # target_compile_options(libpgcommon PRIVATE "/W0")
+  # target_compile_options(ryu PRIVATE "/W0")
   # Enable all warnings on MEOS and MobilityDB
-  target_compile_options(temporal PRIVATE "/W4")
-  target_compile_options(geo PRIVATE "/W4")
+  # target_compile_options(temporal PRIVATE "/W4")
+  # target_compile_options(geo PRIVATE "/W4")
   target_compile_options(pg_temporal PRIVATE "/W4")
   target_compile_options(pg_geo PRIVATE "/W4")
   if(CBUFFER)
-    target_compile_options(cbuffer PRIVATE "/W4")
+    # target_compile_options(cbuffer PRIVATE "/W4")
     target_compile_options(pg_cbuffer PRIVATE "/W4")
   endif()
   if(NPOINT)
-    target_compile_options(npoint PRIVATE "/W4")
+    # target_compile_options(npoint PRIVATE "/W4")
     target_compile_options(pg_npoint PRIVATE "/W4")
   endif()
   if(POSE)
-    target_compile_options(pose PRIVATE "/W4")
+    # target_compile_options(pose PRIVATE "/W4")
     target_compile_options(pg_pose PRIVATE "/W4")
   endif()
   if(RGEO)
-    target_compile_options(rgeo PRIVATE "/W4")
+    # target_compile_options(rgeo PRIVATE "/W4")
     target_compile_options(pg_rgeo PRIVATE "/W4")
   endif()
 endif()
@@ -147,48 +157,63 @@ endif()
 #--------------------------------
 
 # MEOS
-set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
+# set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
+# set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
+# if(CBUFFER)
+  # message(STATUS "Including circular buffers")
+  # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
+# endif()
+# if(NPOINT)
+  # message(STATUS "Including network points")
+  # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+# endif()
+# if(POSE)
+  # message(STATUS "Including geoposes")
+  # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
+# endif()
+# if(RGEO)
+  # message(STATUS "Including rigid geometries")
+  # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
+# endif()
+
+# MobilityDB
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_temporal>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_geo>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_cbuffer>")
 endif()
 if(NPOINT)
   message(STATUS "Including network points")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_npoint>")
 endif()
 if(POSE)
   message(STATUS "Including geoposes")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_pose>")
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_rgeo>")
 endif()
+
+# PostgreSQL
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:access>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:catalog>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:conversion_procs>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:parser>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:mb>")
 
 # Build the library: PostGIS
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
-# MobilityDB
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_temporal>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_geo>")
-if(CBUFFER)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_cbuffer>")
-endif()
-if(NPOINT)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_npoint>")
-endif()
-if(POSE)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_pose>")
-endif()
-if(RGEO)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_rgeo>")
-endif()
-
 # Build the library
-add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
+add_library(${MOBILITYDB_LIB_NAME} ${PROJECT_OBJECTS})
 if(APPLE)
   set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
     SUFFIX ".dylib"
@@ -201,15 +226,20 @@ endif()
 #--------------------------------
 
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
+# target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 if(WIN32)
   message(STATUS "Adding PostGIS as a target link library")
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${POSTGIS_LIBRARY})
 endif()
+
+# Link the application to pgtypes
+target_link_libraries(${MOBILITYDB_LIB_NAME} pgtypes)
+# Link the application to meos
+target_link_libraries(${MOBILITYDB_LIB_NAME} meos)
 
 #--------------------------------
 # Belongs to MobilityDB

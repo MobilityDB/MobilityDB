@@ -40,6 +40,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -50,7 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
@@ -760,7 +761,7 @@ cbuffer_round(const Cbuffer *cb, int maxdd)
 
   /* Set precision of the point and the radius */
   GSERIALIZED *point = point_round((GSERIALIZED *) (&cb->point), maxdd);
-  double radius = float_round(cb->radius, maxdd);
+  double radius = float8_round(cb->radius, maxdd);
   Cbuffer *result = cbuffer_make(point, radius);
   pfree(point);
   return result;
@@ -1514,7 +1515,7 @@ cbuffer_hash(const Cbuffer *cb)
   /* Compute hashes of value and radius */
   Datum d = PointerGetDatum(&cb->point);
   uint32 point_hash = gserialized_hash(DatumGetGserializedP(d));
-  uint32 radius_hash = pg_hashfloat8(cb->radius);
+  uint32 radius_hash = float8_hash(cb->radius);
 
   /* Merge hashes of value and radius */
   uint32 result = point_hash;

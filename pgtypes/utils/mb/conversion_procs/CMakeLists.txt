@@ -1,0 +1,29 @@
+set(CONVERSION_PROCS_SRCS
+  big5.c
+  cyrillic_and_mic.c
+  euc_cn_and_mic.c
+  euc_jp_and_sjis.c
+  euc_kr_and_mic.c
+  euc_tw_and_big5.c
+  euc2004_sjis2004.c
+  latin_and_mic.c
+  latin2_and_win1250.c
+  utf8_and_big5.c
+  utf8_and_cyrillic.c
+  utf8_and_euc_cn.c
+  utf8_and_euc_jp.c
+  utf8_and_euc_kr.c
+  utf8_and_euc_tw.c
+  utf8_and_euc2004.c
+  utf8_and_gb18030.c
+  utf8_and_gbk.c
+  utf8_and_iso8859.c
+  utf8_and_iso8859_1.c
+  utf8_and_johab.c
+  utf8_and_sjis.c
+   utf8_and_sjis2004.c
+  utf8_and_uhc.c
+  utf8_and_win.c
+)
+
+add_library(conversion_procs OBJECT ${CONVERSION_PROCS_SRCS})

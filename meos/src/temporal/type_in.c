@@ -43,7 +43,6 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
@@ -64,6 +63,10 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************/
 
@@ -105,8 +108,7 @@ bool
 #if CBUFFER || NPOINT || POSE || RGEO
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType type,
-  bool end UNUSED, Datum *result)
+basetype_in(const char *str, meosType type, bool end UNUSED, Datum *result)
 #endif
 {
   assert(meos_basetype(type));
@@ -114,7 +116,7 @@ basetype_in(const char *str, meosType type,
   {
     case T_TIMESTAMPTZ:
     {
-      TimestampTz t = pg_timestamptz_in(str, -1);
+      TimestampTz t = pg_timestamptz_in((char *) str, -1);
       if (t == DT_NOEND)
         return false;
       *result = TimestampTzGetDatum(t);
@@ -122,7 +124,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_DATE:
     {
-      DateADT d = pg_date_in(str);
+      DateADT d = pg_date_in((char *) str);
       if (d == DATEVAL_NOEND)
         return false;
       *result = DateADTGetDatum(d);
@@ -138,7 +140,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_INT4:
     {
-      int i = int4_in(str);
+      int i = int32_in(str);
       if (i == PG_INT32_MAX)
         return false;
       *result = Int32GetDatum(i);
@@ -146,7 +148,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_INT8:
     {
-      int64 i = int8_in(str);
+      int64 i = int64_in(str);
       if (i == PG_INT64_MAX)
         return false;
       *result = Int64GetDatum(i);
@@ -154,7 +156,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_FLOAT8:
     {
-      double d = float8_in(str, "double precision", str);
+      double d = float8_in(str);
       if (d == DBL_MAX)
         return false;
       *result = Float8GetDatum(d);
@@ -162,7 +164,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_TEXT:
     {
-      text *txt = cstring2text(str);
+      text *txt = cstring_to_text(str);
       if (! txt)
         return false;
       *result = PointerGetDatum(txt);
@@ -381,7 +383,8 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
             "Invalid string value in 'values' array in MFJSON string");
           return NULL;
         }
-        values[i] = PointerGetDatum(cstring2text(json_object_get_string(jvalue)));
+        values[i] = PointerGetDatum(cstring_to_text(
+          json_object_get_string(jvalue)));
         break;
       default: /* Error! */
         meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1298,7 +1301,7 @@ text_from_wkb_state(meos_wkb_parse_state *s)
   str[size] = '\0';
   /* Advance the state and return */
   s->pos += size;
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   return result;
 }

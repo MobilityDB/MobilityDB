@@ -6,5 +6,5 @@ add_library(libpgcommon OBJECT
   shared_gserialized.c
   )
 
-set_property(TARGET libpgcommon PROPERTY C_VISIBILITY_PRESET hidden)
-set_property(TARGET libpgcommon PROPERTY POSITION_INDEPENDENT_CODE ON)
+# set_property(TARGET libpgcommon PROPERTY C_VISIBILITY_PRESET hidden)
+# set_property(TARGET libpgcommon PROPERTY POSITION_INDEPENDENT_CODE ON)

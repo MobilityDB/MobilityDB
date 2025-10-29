@@ -85,6 +85,13 @@ option(CBUFFER
   OFF
   )
 
+# Option for including geoposes
+option(JSON
+  "Set ON|OFF (default=ON) to include json types
+  "
+  ON
+  )
+
 # Option for including network points
 option(NPOINT
   "Set ON|OFF (default=ON) to include network points
@@ -333,8 +340,9 @@ endif()
 # Build either MobilityDB or MEOS
 #-------------------------------------
 
+add_subdirectory(pgtypes)
+add_subdirectory(meos)
 if(MEOS)
-  add_subdirectory(meos)
 else()
   add_subdirectory(mobilitydb)
 endif()

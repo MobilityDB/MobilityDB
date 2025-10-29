@@ -46,7 +46,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -54,6 +53,10 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /** Buffer size for input and output of TBox values */
 #define TBOX_MAXLEN    128

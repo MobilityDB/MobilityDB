@@ -195,7 +195,7 @@ int main(void)
   /* Print information about the last sequence */
   seq = temporal_end_sequence((Temporal *) ss1);
   text *txt = ttext_end_value((Temporal *) seq);
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   printf("Number of instants in the last sequence: %d, Last value : %s\n",
     seq->count, str);
 

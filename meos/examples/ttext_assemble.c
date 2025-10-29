@@ -108,7 +108,7 @@ int main(void)
   // Uncomment the next line to see the resulting sequence value
   // printf("%s\n", ttext_out(seq));
   text *txt = ttext_end_value(seq);
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   printf("\nNumber of instants: %d, Last value : %s\n",
     temporal_num_instants(seq), str);
 

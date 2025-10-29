@@ -37,6 +37,7 @@
 #include <limits.h>
 /* Postgres */
 #include <postgres.h>
+#include <pgtypes.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -47,7 +48,7 @@
 #include <meos_pose.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
@@ -952,20 +953,20 @@ pose_round(const Pose *pose, int maxdd)
   Pose *result;
   if (MEOS_FLAGS_GET_Z(pose->flags))
   {
-    double x = float_round(pose->data[0], maxdd);
-    double y = float_round(pose->data[1], maxdd);
-    double z = float_round(pose->data[2], maxdd);
-    double W = float_round(pose->data[3], maxdd);
-    double X = float_round(pose->data[4], maxdd);
-    double Y = float_round(pose->data[5], maxdd);
-    double Z = float_round(pose->data[6], maxdd);
+    double x = float8_round(pose->data[0], maxdd);
+    double y = float8_round(pose->data[1], maxdd);
+    double z = float8_round(pose->data[2], maxdd);
+    double W = float8_round(pose->data[3], maxdd);
+    double X = float8_round(pose->data[4], maxdd);
+    double Y = float8_round(pose->data[5], maxdd);
+    double Z = float8_round(pose->data[6], maxdd);
     result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose));
   }
   else
   {
-    double x = float_round(pose->data[0], maxdd);
-    double y = float_round(pose->data[1], maxdd);
-    double theta = float_round(pose->data[2], maxdd);
+    double x = float8_round(pose->data[0], maxdd);
+    double y = float8_round(pose->data[1], maxdd);
+    double theta = float8_round(pose->data[2], maxdd);
     result = pose_make_2d(x, y, theta, pose_srid(pose));
   }
   return result;
