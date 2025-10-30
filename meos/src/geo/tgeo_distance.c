@@ -707,12 +707,13 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   if (dist == NULL)
     return NULL;
 
-  const TInstant *min = temporal_min_instant(dist);
+  const TInstant *min = temporal_min_inst_p(dist);
+  TimestampTz t = min->t;
   pfree(dist);
   /* The closest point may be at an exclusive bound => 3rd argument = false */
   Datum value;
-  temporal_value_at_timestamptz(temp1, min->t, false, &value);
-  return tinstant_make_free(value, temp1->temptype, min->t);
+  temporal_value_at_timestamptz(temp1, t, false, &value);
+  return tinstant_make_free(value, temp1->temptype, t);
 }
 
 /*****************************************************************************
@@ -978,14 +979,15 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
     return NULL;
-  const TInstant *inst = temporal_min_instant(dist);
+  const TInstant *inst = temporal_min_inst_p(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
   temporal_value_at_timestamptz(temp1, inst->t, false, &value1);
   temporal_value_at_timestamptz(temp2, inst->t, false, &value2);
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
+  pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2)); 
+  pfree(dist); lwgeom_free(line);
   return result;
 }
 

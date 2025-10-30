@@ -90,6 +90,26 @@ size_t lwgeom_to_wkb_size(const LWGEOM *geom, uint8_t variant);
 
 /**
  * @ingroup meos_base_types
+ * @brief Return the string representation of a float8 number
+ * @details This function uses the PostGIS function lwprint_double to print an
+ * ordinate value using at most **maxdd** number of decimal digits. The actual 
+ * number of printed decimal digits may be less than the requested ones if out 
+ * of significant digits.
+ *
+ * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
+ * terminating NULL.
+ */
+char *
+float_out(double num, int maxdd)
+{
+  assert(maxdd >= 0);
+  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
+  lwprint_double(num, maxdd, ascii);
+  return ascii;
+}
+
+/**
+ * @ingroup meos_base_types
  * @brief Return the string representation of a text value
  * @param[in] txt Text
  */
@@ -621,7 +641,7 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       /* Do not repeat the crs for the composing geometries */
       char *str = geo_as_geojson(gs, 0, precision, NULL);
       stringbuffer_aprintf(sb, "%s", str);
-      // pfree(str);
+      pfree(str);
     }
 #if POSE
     else if (inst->temptype == T_TPOSE)

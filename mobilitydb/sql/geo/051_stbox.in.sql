@@ -742,3 +742,21 @@ CREATE OPERATOR CLASS stbox_btree_ops
   FUNCTION  1  stbox_cmp(stbox, stbox);
 
 /*****************************************************************************/
+
+CREATE FUNCTION stbox_hash(stbox)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Stbox_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox_hash_extended(stbox, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Stbox_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS stbox_hash_ops
+  DEFAULT FOR TYPE stbox USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   stbox_hash(stbox),
+    FUNCTION    2   stbox_hash_extended(stbox, bigint);
+
+/*****************************************************************************/

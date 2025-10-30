@@ -874,7 +874,7 @@ textcat_text_textset(const text *txt, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TEXTSET(s, NULL); VALIDATE_NOT_NULL(txt, NULL);
-  return textcat_textset_text_int(s, txt, INVERT);
+  return textcat_textset_text_common(s, txt, INVERT);
 }
 
 /**
@@ -889,7 +889,7 @@ textcat_textset_text(const Set *s, const text *txt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TEXTSET(s, NULL); VALIDATE_NOT_NULL(txt, NULL);
-  return textcat_textset_text_int(s, txt, INVERT_NO);
+  return textcat_textset_text_common(s, txt, INVERT_NO);
 }
 
 /*****************************************************************************/

@@ -1933,3 +1933,51 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
   5050
 (1 row)
 
+SELECT stbox_hash(stbox 'SRID=5676;STBOX X((1,1),(2,2))');
+ stbox_hash 
+------------
+  831058784
+(1 row)
+
+SELECT stbox_hash_extended(stbox 'SRID=5676;STBOX X((1,1),(2,2))', 1);
+ stbox_hash_extended  
+----------------------
+ -8881480602313019783
+(1 row)
+
+SELECT stbox_hash(stbox 'STBOX T([2001-01-03,2001-01-03])');
+ stbox_hash  
+-------------
+ -1269428925
+(1 row)
+
+SELECT stbox_hash_extended(stbox 'STBOX T([2001-01-03,2001-01-03])', 1);
+ stbox_hash_extended  
+----------------------
+ -6599699962919275454
+(1 row)
+
+SELECT stbox_hash(stbox 'STBOX XT(((1,2),(1,2)),[2001-01-03,2001-01-03])');
+ stbox_hash 
+------------
+  -14833343
+(1 row)
+
+SELECT stbox_hash_extended(stbox 'STBOX XT(((1,2),(1,2)),[2001-01-03,2001-01-03])', 1);
+ stbox_hash_extended 
+---------------------
+  -16171094012104722
+(1 row)
+
+SELECT stbox_hash(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])');
+ stbox_hash  
+-------------
+ -1924364340
+(1 row)
+
+SELECT stbox_hash_extended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])', 1);
+ stbox_hash_extended 
+---------------------
+ 4942726506971401033
+(1 row)
+

@@ -119,7 +119,8 @@ lw_dist2d_distanceline(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int m
 		lwpoints[0] = lwpoint_make2d(srid, x1, y1);
 		lwpoints[1] = lwpoint_make2d(srid, x2, y2);
 
-		result = (LWGEOM *)lwline_from_ptarray(srid, 2, lwpoints);
+		result = (LWGEOM *) lwline_from_ptarray(srid, 2, lwpoints);
+    lwpoint_free(lwpoints[0]); lwpoint_free(lwpoints[1]); // MEOS
 	}
 	return result;
 }

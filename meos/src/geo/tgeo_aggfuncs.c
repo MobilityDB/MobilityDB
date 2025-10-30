@@ -247,39 +247,39 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal extent aggregation of spatiotemporal
  * values
- * @param[in] box Current aggregate value
+ * @param[in] state Current aggregate value
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Tspatial_extent_transfn()
  */
 STBox *
-tspatial_extent_transfn(STBox *box, const Temporal *temp)
+tspatial_extent_transfn(STBox *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! box && ! temp)
+  if (! state && ! temp)
     return NULL;
-  STBox *result = palloc0(sizeof(STBox));
-  /* Null box and non-null temporal, return the bbox of the temporal */
-  if (temp && ! box )
+  /* Null state and non-null temporal, return the bbox of the temporal */
+  if (! state )
   {
+    STBox *result = palloc0(sizeof(STBox));
     tspatial_set_stbox(temp, result);
     return result;
   }
-  /* Non-null box and null temporal, return the box */
-  if (box && ! temp)
+  /* Non-null state and null temporal, return the state */
+  if (! temp)
   {
-    memcpy(result, box, sizeof(STBox));
-    return result;
+    return state;
   }
 
-  /* Both box and temporal are not null */
-  if (! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
-      ! ensure_same_dimensionality(temp->flags, box->flags) ||
-      ! ensure_same_geodetic(temp->flags, box->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_same_srid(tspatial_srid(temp), stbox_srid(state)) ||
+      ! ensure_same_dimensionality(temp->flags, state->flags) ||
+      ! ensure_same_geodetic(temp->flags, state->flags))
     return NULL;
 
-  tspatial_set_stbox(temp, result);
-  stbox_expand(box, result);
-  return result;
+  STBox b;
+  tspatial_set_stbox(temp, &b);
+  stbox_expand(&b, state);
+  return state;
 }
 
 /*****************************************************************************

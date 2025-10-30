@@ -667,12 +667,12 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
   VALIDATE_NOT_NULL(bounds, NULL); VALIDATE_NOT_NULL(count, NULL);
-  VALIDATE_NOT_NULL(sorigin, NULL);
   if (! ensure_has_X(T_STBOX, bounds->flags) ||
       ! ensure_not_geodetic(bounds->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_not_negative_datum(Float8GetDatum(ysize), T_FLOAT8) ||
-      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      (sorigin && 
+        (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
       (MEOS_FLAGS_GET_Z(bounds->flags) &&
         (! ensure_not_negative_datum(Float8GetDatum(zsize), T_FLOAT8) ||
          ! ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin))) ||
@@ -680,29 +680,35 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
         (! ensure_has_T(T_STBOX, bounds->flags) ||
          ! ensure_positive_duration(duration))))
       return NULL;
-  int32 srid = bounds->srid;
-  int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
-    return NULL;
+  if (sorigin)
+  {    
+    int32 srid = bounds->srid;
+    int32 gs_srid = gserialized_get_srid(sorigin);
+    if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+      return NULL;
+  }
 
   POINT3DZ pt;
   memset(&pt, 0, sizeof(POINT3DZ));
-  if (FLAGS_GET_Z(sorigin->gflags))
+  if (sorigin)
   {
-    const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-    pt.x = p3d->x;
-    pt.y = p3d->y;
-    pt.z = p3d->z;
-  }
-  else
-  {
-    /* Initialize to 0 the Z dimension if it is missing */
-    const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-    pt.x = p2d->x;
-    pt.y = p2d->y;
-    /* Since when zsize is not given we pass by default xsize, if the box does
-     * not have Z dimension we set zsize to 0 */
-    zsize = 0;
+    if (sorigin && FLAGS_GET_Z(sorigin->gflags))
+    {
+      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
+      pt.x = p3d->x;
+      pt.y = p3d->y;
+      pt.z = p3d->z;
+    }
+    else
+    {
+      /* Initialize to 0 the Z dimension if it is missing */
+      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
+      pt.x = p2d->x;
+      pt.y = p2d->y;
+      /* Since when zsize is not given we pass by default xsize, if the box does
+       * not have Z dimension we set zsize to 0 */
+      zsize = 0;
+    }
   }
 
   STboxGridState *state = stbox_tile_state_make(NULL, bounds, xsize, ysize,
@@ -942,7 +948,7 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tgeo_space_time_boxes_ext
+ * @csqlfn #Tgeo_space_time_boxes_common
  */
 STBox *
 tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
@@ -1354,7 +1360,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of elements in the output arrays
  * @note This function in MEOS corresponds to the MobilityDB function
- * #Tgeo_space_time_split_ext. Note that the test for the validity of the
+ * #Tgeo_space_time_split_common. Note that the test for the validity of the
  * arguments is done in #tgeo_space_time_tile_init
  */
 Temporal **

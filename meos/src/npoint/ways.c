@@ -174,7 +174,7 @@ route_length(int64 rid)
  * @param[in] rid Route identifier
  * @return On error return @p NULL
  */
-GSERIALIZED *
+const GSERIALIZED *
 route_geom(int64 rid)
 {
   char sql[SQL_ROUTE_MAXLEN];

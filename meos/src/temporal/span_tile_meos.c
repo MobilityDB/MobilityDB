@@ -120,11 +120,7 @@ datespan_bins(const Span *s, const Interval *duration, DateADT origin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
-  if (! ensure_valid_day_duration(duration))
-    return NULL;
-
-  int32 days = (int32) (interval_units(duration) / USECS_PER_DAY);
-  return span_bins(s, Int32GetDatum(days), DateADTGetDatum(origin), count);
+  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(origin), count);
 }
 
 /**
@@ -141,11 +137,7 @@ tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_positive_duration(duration))
-    return NULL;
-
-  int64 tunits = interval_units(duration);
-  return span_bins(s, Int64GetDatum(tunits), TimestampTzGetDatum(origin),
+  return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(origin),
     count);
 }
 

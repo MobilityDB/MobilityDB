@@ -545,6 +545,7 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
+  pfree(tpoint);
   Temporal *result = NULL;
   if (res)
   {

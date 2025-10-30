@@ -494,7 +494,7 @@ ensure_not_negative_datum(Datum d, meosType basetype)
   if (not_negative_datum(d, basetype))
     return true;
   char str[256];
-  assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
+  assert(basetype == T_INT4 || basetype == T_FLOAT8 || basetype == T_DATE ||
     basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
     snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
@@ -2123,7 +2123,7 @@ temporal_value_n(const Temporal *temp, int n, Datum *result)
  * an exclusive bound or not.
  */
 const TInstant *
-temporal_min_inst(const Temporal *temp)
+temporal_min_inst_p(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -2134,9 +2134,9 @@ temporal_min_inst(const Temporal *temp)
     case TINSTANT:
       return (TInstant *) temp;
     case TSEQUENCE:
-      return tsequence_min_inst((TSequence *) temp);
+      return tsequence_min_inst_p((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return tsequenceset_min_inst((TSequenceSet *) temp);
+      return tsequenceset_min_inst_p((TSequenceSet *) temp);
   }
 }
 
@@ -2153,7 +2153,7 @@ temporal_min_inst(const Temporal *temp)
 TInstant *
 temporal_min_instant(const Temporal *temp)
 {
-  return tinstant_copy(temporal_min_inst(temp));
+  return tinstant_copy(temporal_min_inst_p(temp));
 }
 
 /**
@@ -2164,8 +2164,8 @@ temporal_min_instant(const Temporal *temp)
  * @return On error return @p NULL
  * @csqlfn #Temporal_max_instant()
  */
-TInstant *
-temporal_max_instant(const Temporal *temp)
+const TInstant *
+temporal_max_inst_p(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -2174,12 +2174,28 @@ temporal_max_instant(const Temporal *temp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_copy((TInstant *) temp);
+      return (TInstant *) temp;
     case TSEQUENCE:
-      return tinstant_copy(tsequence_max_inst((TSequence *) temp));
+      return tsequence_max_inst_p((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return tinstant_copy(tsequenceset_max_inst((TSequenceSet *) temp));
+      return tsequenceset_max_inst_p((TSequenceSet *) temp);
   }
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the instant with maximum base value of a temporal
+ * value
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @note The function does not take into account whether the instant is at
+ * an exclusive bound or not.
+ * @csqlfn #Temporal_max_instant()
+ */
+TInstant *
+temporal_max_instant(const Temporal *temp)
+{
+  return tinstant_copy(temporal_max_inst_p(temp));
 }
 
 /**
@@ -2602,7 +2618,7 @@ temporal_instant_n(const Temporal *temp, int n)
  * @return On error return @p NULL
  */
 const TInstant **
-temporal_instants_p(const Temporal *temp, int *count)
+temporal_insts_p(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
@@ -2640,7 +2656,7 @@ temporal_instants(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  TInstant **instants = (TInstant **) temporal_instants_p(temp, count);
+  TInstant **instants = (TInstant **) temporal_insts_p(temp, count);
   for (int i = 0; i < *count; i ++)
     instants[i] = tinstant_copy(instants[i]);
   return instants;
@@ -3238,7 +3254,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup meos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
- * less than, equal, or greater than the second one
+ * less than, equal to, or greater than the second one
  * @param[in] temp1,temp2 Temporal values
  * @note Function used for B-tree comparison
  * @csqlfn #Temporal_cmp()

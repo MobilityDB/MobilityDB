@@ -264,12 +264,12 @@ set_union_finalfn(Set *state)
   Datum *values = palloc0(sizeof(Datum) * state->count);
   for (int i = 0; i < state->count; i++)
     values[i] = SET_VAL_N(state, i);
-  meosType basetype = settype_basetype(state->settype);
-  Set *result = set_make_exp(values, state->count, state->count, basetype,
-    ORDER);
+  Set *result = set_make_exp(values, state->count, state->count,
+    state->basetype, ORDER);
 
   /* Clean up and return */
   pfree(values);
+  pfree(state);
   return result;
 }
 
