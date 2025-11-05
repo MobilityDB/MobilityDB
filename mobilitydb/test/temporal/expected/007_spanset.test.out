@@ -177,6 +177,11 @@ SELECT tstzspanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05
  {[01-01-2000, 01-02-2000), [01-03-2000, 01-04-2000), [01-05-2000, 01-06-2000)}
 (1 row)
 
+/* Errors */
+SELECT tstzmultirange '{}'::tstzspanset;
+ERROR:  Multirange cannot be empty
+SELECT tstzmultirange '{(,)}'::tstzspanset;
+ERROR:  Range bounds cannot be infinite
 SELECT memSize(intspanset '{[1,2),[3,4),[5,6)}');
  memsize 
 ---------

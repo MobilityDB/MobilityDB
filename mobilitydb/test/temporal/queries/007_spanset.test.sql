@@ -86,6 +86,10 @@ SELECT floatspanset '{[1,2),[3,4),[5,6)}'::intspanset;
 SELECT datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}'::tstzspanset;
 SELECT tstzspanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}'::datespanset;
 
+/* Errors */
+SELECT tstzmultirange '{}'::tstzspanset;
+SELECT tstzmultirange '{(,)}'::tstzspanset;
+
 -------------------------------------------------------------------------------
 -- Accessor functions
 -------------------------------------------------------------------------------

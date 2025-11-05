@@ -1,5 +1,0 @@
-/* Errors */
-SELECT tstzmultirange '{}'::tstzspanset;
-ERROR:  Multirange cannot be empty
-SELECT tstzmultirange '{(,)}'::tstzspanset;
-ERROR:  Range bounds cannot be infinite
