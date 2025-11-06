@@ -49,6 +49,7 @@
 /* C */
 #include <assert.h>
 /* MEOS */
+#include <liblwgeom.h>
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
@@ -356,9 +357,11 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
       result = invert ? func3(geo, dtrav, param) : func3(dtrav, geo, param);
     }
     /* We cannot lwgeom_free((LWGEOM *) coll); */
+    pfree(DatumGetPointer(dtrav));
     if (result)
-      return result ? 1 : 0;
+      break;
   }
+  lwcollection_free(coll);
   pfree(trav);
   return result ? 1 : 0;
 }
@@ -410,7 +413,8 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       datum_func3 func3 = (datum_func3) func;
       result = func3(dtrav1, dtrav2, param);
     }
-    pfree(DatumGetPointer(dtrav1));
+    pfree(DatumGetPointer(dtrav1)); 
+    pfree(DatumGetPointer(dtrav2));
     return result ? 1 : 0;
   }
 
@@ -577,7 +581,7 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * for detailed explanations about the difference between both functions.
  */
 int
-ea_contains_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
+ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever,
   bool invert)
 {
   VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
@@ -603,7 +607,7 @@ ea_contains_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
 inline int
 ea_contains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, ever, INVERT);
+  return ea_contains_tgeo_geo_common(temp, gs, ever, INVERT);
 }
 
 /**
@@ -614,7 +618,7 @@ ea_contains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 inline int
 ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, ever, INVERT_NO);
+  return ea_contains_tgeo_geo_common(temp, gs, ever, INVERT_NO);
 }
 
 #if MEOS
@@ -629,7 +633,7 @@ ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, EVER, INVERT);
+  return ea_contains_tgeo_geo_common(temp, gs, EVER, INVERT);
 }
 
 /**
@@ -643,7 +647,7 @@ econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, ALWAYS, INVERT);
+  return ea_contains_tgeo_geo_common(temp, gs, ALWAYS, INVERT);
 }
 
 /**
@@ -657,7 +661,7 @@ acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 econtains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, EVER, INVERT_NO);
+  return ea_contains_tgeo_geo_common(temp, gs, EVER, INVERT_NO);
 }
 
 /**
@@ -671,7 +675,7 @@ econtains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_contains_tgeo_geo_int(temp, gs, ALWAYS, INVERT_NO);
+  return ea_contains_tgeo_geo_common(temp, gs, ALWAYS, INVERT_NO);
 }
 #endif /* MEOS */
 
@@ -1226,7 +1230,9 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Bounding box test */
   STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
-  if (! overlaps_stbox_stbox(box1, box2))
+  bool over = overlaps_stbox_stbox(box1, box2);
+  pfree(box1); pfree(box2);
+  if (! over)
     return 0;
 
   /* EVER */
@@ -1326,7 +1332,9 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Bounding box test */
   STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
-  if (! overlaps_stbox_stbox(box1, box2))
+  bool over = overlaps_stbox_stbox(box1, box2);
+  pfree(box1); pfree(box2);
+  if (! over)
     return 0;
 
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
@@ -1394,7 +1402,9 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   /* Bounding box test */
   STBox *box1 = tspatial_to_stbox(temp1);
   STBox *box2 = tspatial_to_stbox(temp2);
-  if (! overlaps_stbox_stbox(box1, box2))
+  bool over = overlaps_stbox_stbox(box1, box2);
+  pfree(box1); pfree(box2);
+  if (! over)
     return 0;
 
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_touches,

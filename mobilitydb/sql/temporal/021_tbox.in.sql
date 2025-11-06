@@ -604,3 +604,21 @@ CREATE OPERATOR CLASS tbox_btree_ops
   FUNCTION  1  tbox_cmp(tbox, tbox);
 
 /*****************************************************************************/
+
+CREATE FUNCTION tbox_hash(tbox)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tbox_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tbox_hash_extended(tbox, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Tbox_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS tbox_hash_ops
+  DEFAULT FOR TYPE tbox USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   tbox_hash(tbox),
+    FUNCTION    2   tbox_hash_extended(tbox, bigint);
+
+/*****************************************************************************/

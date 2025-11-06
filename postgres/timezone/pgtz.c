@@ -36,7 +36,6 @@ typedef struct
 } tzentry;
 
 static uint32 hash_string_pointer(const char *s);
-// static void tzcache_my_destroy(SH_TYPE *tb);
 #define SH_PREFIX tzcache
 #define SH_ELEMENT_TYPE tzentry
 #define SH_KEY_TYPE const char *
@@ -45,10 +44,11 @@ static uint32 hash_string_pointer(const char *s);
 #define SH_EQUAL(tb, a, b) (strcmp(a, b) == 0)
 #define SH_SCOPE static inline
 #define SH_RAW_ALLOCATOR palloc0
-#define SH_DESTROY tzcache_destroy(tzcache)
+#define SH_DESTROY tzcache_my_destroy(tzcache)
 #define SH_DEFINE
 #define SH_DECLARE
 #include <lib/simplehash.h>
+static void tzcache_my_destroy(tzcache_hash *tb);
 
 /* Size of the timezone hash table */
 #define TZCACHE_INITIAL_SIZE 32
@@ -115,7 +115,6 @@ static void tzcache_my_destroy(tzcache_hash *tb)
       pfree(entry->key); 
     if (entry->data != NULL)
       pfree(entry->data);
-    tzcache_delete_item(timezone_cache, entry);
   }
   tzcache_destroy(tb);
 }
@@ -159,10 +158,9 @@ pg_TZDIR(void)
 int
 pg_open_tzfile(const char *name, char *canonname)
 {
-  const char *fname;
-  char    fullname[MAXPGPATH];
-  int      fullnamelen;
-  int      orignamelen;
+  char fullname[MAXPGPATH];
+  int fullnamelen;
+  int orignamelen;
 
   /* Initialize fullname with base name of tzdata directory */
   // strlcpy(fullname, pg_TZDIR(), sizeof(fullname)); /* MEOS */
@@ -181,12 +179,10 @@ pg_open_tzfile(const char *name, char *canonname)
    */
   if (canonname == NULL)
   {
-    int result;
-
     fullname[fullnamelen] = '/';
     /* test above ensured this will fit: */
     strcpy(fullname + fullnamelen + 1, name);
-    result = open(fullname, O_RDONLY | PG_BINARY, 0);
+    int result = open(fullname, O_RDONLY | PG_BINARY, 0);
     if (result >= 0)
       return result;
     /* If that didn't work, fall through to do it the hard way */
@@ -197,20 +193,17 @@ pg_open_tzfile(const char *name, char *canonname)
    * Loop to split the given name into directory levels; for each level,
    * search using scan_directory_ci().
    */
-  fname = name;
+  const char *fname = name;
   for (;;)
   {
-    const char *slashptr;
+    const char *slashptr = strchr(fname, '/');
     int fnamelen;
-
-    slashptr = strchr(fname, '/');
     if (slashptr)
       fnamelen = slashptr - fname;
     else
       fnamelen = strlen(fname);
     if (!scan_directory_ci(fullname, fname, fnamelen,
-                 fullname + fullnamelen + 1,
-                 MAXPGPATH - fullnamelen - 1))
+        fullname + fullnamelen + 1, MAXPGPATH - fullnamelen - 1))
       return -1;
     fullname[fullnamelen++] = '/';
     fullnamelen += strlen(fullname + fullnamelen);
@@ -240,8 +233,6 @@ pg_open_tzfile(const char *name, char *canonname)
 struct dirent *
 ReadDir(DIR *dir, const char *dirname)
 {
-  struct dirent *dent;
-
   /* Give a generic message for AllocateDir failure, if caller didn't */
   if (dir == NULL)
   {
@@ -249,6 +240,7 @@ ReadDir(DIR *dir, const char *dirname)
     return NULL;
   }
 
+  struct dirent *dent;
   errno = 0;
   if ((dent = readdir(dir)) != NULL)
     return dent;
@@ -478,18 +470,7 @@ meos_finalize_timezone(void)
   if (session_timezone)
     pfree(session_timezone); 
   if (timezone_cache)
-  {
-    /* Free the timezone name strings associated to the keys */
-    tzcache_iterator it;
-    tzentry *entry;
-    tzcache_start_iterate(timezone_cache, &it);
-    while ((entry = tzcache_iterate(timezone_cache, &it)) != NULL)
-    {
-      if (entry->key != NULL)
-        pfree(entry->key); 
-    }
-    tzcache_destroy(timezone_cache);
-  }
+    tzcache_my_destroy(timezone_cache);
   return;
 }
 /*****************************************************************************/

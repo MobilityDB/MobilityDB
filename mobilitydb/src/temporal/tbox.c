@@ -1196,3 +1196,34 @@ Tbox_ne(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_hash(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_hash);
+/**
+ * @ingroup mobilitydb_temporal_box_comp
+ * @brief Return the hash value of a temporal box
+ * @sqlfn tbox_hash()
+ */
+Datum
+Tbox_hash(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  PG_RETURN_UINT32(tbox_hash(box));
+}
+
+PGDLLEXPORT Datum Tbox_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_hash_extended);
+/**
+ * @ingroup mobilitydb_temporal_box_comp
+ * @brief Return the hash value of a temporal box
+ * @sqlfn tbox_hash()
+ */
+Datum
+Tbox_hash_extended(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  PG_RETURN_UINT64(tbox_hash_extended(box, seed));
+}
+
+/*****************************************************************************/

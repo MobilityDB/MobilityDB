@@ -142,14 +142,8 @@ spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       break;
   }
   /* Clean up and return */
-  if (count1 == 1)
-    pfree(elems1);
-  else
-    pfree_array((void *) elems1, count1);
-  if (count2 == 1)
-    pfree(elems2);
-  else
-    pfree_array((void *) elems2, count2);
+  pfree_array((void *) elems1, count1);
+  pfree_array((void *) elems2, count2);
   return result;
 }
 
@@ -418,9 +412,10 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   /* Bounding box test */
   if (bbox_test)
   {
-    STBox *box1 = tspatial_to_stbox(temp1);
-    STBox *box2 = tspatial_to_stbox(temp2);
-    if (! overlaps_stbox_stbox(box1, box2))
+    STBox box1, box2;
+    tspatial_set_stbox(temp1, &box1);
+    tspatial_set_stbox(temp2, &box2);
+    if (! overlaps_stbox_stbox(&box1, &box2))
       return 0;
   }
 

@@ -39,8 +39,7 @@
 /* MEOS */
 #include <meos.h>
 
-#define maxprojlen  512
-#define spibufferlen 512
+#define MAX_PROJ_LEN  512
 
 /*****************************************************************************
  * Data structures
@@ -101,12 +100,16 @@ typedef struct
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_SRS_RECORD 5120
 /* Location of the spatial_ref_sys.csv file */
+char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 
-char* SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
-
-void meos_set_spatial_ref_sys_csv(const char* path) {
-    SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
-    strcpy(SPATIAL_REF_SYS_CSV, path);
+/**
+ * @brief Set the location of the SPATIAL_REF_SYS_CSV files
+ */
+void
+meos_set_spatial_ref_sys_csv(const char* path)
+{
+  SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
+  strcpy(SPATIAL_REF_SYS_CSV, path);
 }
 
 typedef struct
@@ -209,7 +212,7 @@ GetProjectionFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
 /**
  * @brief Return a copy of a string obtained from the database using SPI
  */
-static char*
+static char *
 SPI_pstrdup(const char *str)
 {
   char *ostr = NULL;
@@ -238,24 +241,22 @@ GetProjStringsSPI(int32_t srid)
   char proj4text[2048];
   char srtext[2048];
 
-  PjStrs strs;
+  PjStrs strs; // TODO palloc ?
   memset(&strs, 0, sizeof(strs));
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen(SPATIAL_REF_SYS_CSV, "r");
-
   if (! file)
   {
     printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n", SPATIAL_REF_SYS_CSV);
     return strs;
   }
 
-  bool found = false;
-
   /* Read the first line of the file with the headers */
   int read = fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
+  bool found = false;
   do
   {
     /* Read each line from the file */
@@ -271,8 +272,8 @@ GetProjStringsSPI(int32_t srid)
     /* Ignore the records with NULL values */
     if (read == 4 && auth_srid == srid)
     {
-      char tmp[maxprojlen];
-      snprintf(tmp, maxprojlen, "%s:%d", auth_name, auth_srid);
+      char tmp[MAX_PROJ_LEN];
+      snprintf(tmp, MAX_PROJ_LEN, "%s:%d", auth_name, auth_srid);
       strs.authtext = strdup(tmp);
       strs.proj4text = strdup(proj4text);
       strs.srtext = strdup(srtext);
@@ -336,8 +337,8 @@ GetProjStringsSPI(int32_t srid)
     char *authsrid = SPI_getvalue(tuple, tupdesc, 3);
     if (authname && authsrid && strlen(authname) && strlen(authsrid))
     {
-      char tmp[maxprojlen];
-      snprintf(tmp, maxprojlen, "%s:%s", authname, authsrid);
+      char tmp[MAX_PROJ_LEN];
+      snprintf(tmp, MAX_PROJ_LEN, "%s:%s", authname, authsrid);
       strs.authtext = SPI_pstrdup(tmp);
     }
 
@@ -383,19 +384,19 @@ GetProjStrings(int32_t srid)
   /* Automagic SRIDs */
   else
   {
-    strs.proj4text = palloc(maxprojlen);
+    strs.proj4text = palloc(MAX_PROJ_LEN);
     int id = srid;
     /* UTM North */
     if (id >= SRID_NORTH_UTM_START && id <= SRID_NORTH_UTM_END)
     {
-      snprintf(strs.proj4text, maxprojlen,
+      snprintf(strs.proj4text, MAX_PROJ_LEN,
         "+proj=utm +zone=%d +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         id - SRID_NORTH_UTM_START + 1);
     }
     /* UTM South */
     else if (id >= SRID_SOUTH_UTM_START && id <= SRID_SOUTH_UTM_END)
     {
-      snprintf(strs.proj4text, maxprojlen,
+      snprintf(strs.proj4text, MAX_PROJ_LEN,
         "+proj=utm +zone=%d +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
         id - SRID_SOUTH_UTM_START + 1);
     }
@@ -426,7 +427,7 @@ GetProjStrings(int32_t srid)
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown yzone encountered!");
 
-      snprintf(strs.proj4text, maxprojlen,
+      snprintf(strs.proj4text, MAX_PROJ_LEN,
         "+proj=laea +ellps=WGS84 +datum=WGS84 +lat_0=%g +lon_0=%g +units=m +no_defs",
         lat_0, lon_0);
     }
@@ -435,35 +436,35 @@ GetProjStrings(int32_t srid)
     {
       strncpy(strs.proj4text,
         "+proj=laea +lat_0=-90 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-        maxprojlen);
+        MAX_PROJ_LEN);
     }
     /* Polar Sterographic South */
     else if (id == SRID_SOUTH_STEREO)
     {
       strncpy(strs.proj4text,
         "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-        maxprojlen);
+        MAX_PROJ_LEN);
     }
     /* Lambert Azimuthal Equal Area North Pole */
     else if (id == SRID_NORTH_LAMBERT)
     {
       strncpy(strs.proj4text,
         "+proj=laea +lat_0=90 +lon_0=-40 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-        maxprojlen);
+        MAX_PROJ_LEN);
     }
     /* Polar Stereographic North */
     else if (id == SRID_NORTH_STEREO)
     {
       strncpy(strs.proj4text,
         "+proj=stere +lat_0=90 +lat_ts=71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-        maxprojlen);
+        MAX_PROJ_LEN);
     }
     /* World Mercator */
     else if (id == SRID_WORLD_MERCATOR)
     {
       strncpy(strs.proj4text,
         "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
-        maxprojlen);
+        MAX_PROJ_LEN);
     }
     else
     {

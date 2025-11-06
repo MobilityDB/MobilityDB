@@ -428,32 +428,30 @@ span_num_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
 Span *
 span_bins(const Span *s, Datum size, Datum origin, int *count)
 {
+  assert(s); assert(count);
   assert(numspan_type(s->spantype) || timespan_type(s->spantype));
-  Interval *duration = NULL;
-  if (timespan_type(s->spantype))
-    duration = DatumGetIntervalP(size);
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   if ((numspan_type(s->spantype) && 
-        ! ensure_positive_datum(size, s->basetype)) ||
-      (s->spantype == T_DATESPAN && ! ensure_valid_day_duration(duration)) ||
-      (s->spantype == T_TSTZSPAN &&  ! ensure_positive_duration(duration)))
+        ! ensure_not_negative_datum(size, s->basetype)) ||
+      (timespan_type(s->spantype) && 
+        ! ensure_positive_duration(DatumGetIntervalP(size))))
     return NULL;
 
-  /* Compute the size in time units */
+  /* Convert an interval into time units */
   Datum size1;
-  if (s->spantype == T_DATESPAN)
-    size1 = Int32GetDatum((int)(interval_units(duration) / USECS_PER_DAY));
-  else if (s->spantype == T_TSTZSPAN)
-    size1 = Int64GetDatum(interval_units(duration));
-  else 
+  if (timespan_type(s->spantype))
+  {
+    if (s->spantype == T_DATESPAN)
+      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(size)) /
+        USECS_PER_DAY));
+    else
+      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(size)));
+  }
+  else
     size1 = size;
-
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
   int nbins = span_num_bins(s, size1, origin, &start_bin, &end_bin);
   Span *bins = palloc0(sizeof(Span) * nbins);
-  /* Set the span of the state */
   /* Iterate for each bin */
   Datum lower = start_bin;
   for (int i = 0; i < nbins; i++)
@@ -477,27 +475,26 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
 Span *
 spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
 {
+  assert(ss); assert(count);
   assert(numspan_type(ss->spantype) || timespan_type(ss->spantype));
-  Interval *duration = NULL;
-  if (timespan_type(ss->spantype))
-    duration = DatumGetIntervalP(size);
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
   if ((numspan_type(ss->spantype) && 
-        ! ensure_positive_datum(size, ss->basetype)) ||
-      (ss->spantype == T_DATESPAN && ! ensure_valid_day_duration(duration)) ||
-      (ss->spantype == T_TSTZSPAN &&  ! ensure_positive_duration(duration)))
+        ! ensure_not_negative_datum(size, ss->basetype)) ||
+      (timespan_type(ss->spantype) && 
+        ! ensure_positive_duration(DatumGetIntervalP(size))))
     return NULL;
 
-  /* Compute the size in time units */
+  /* Convert an interval into time units */
   Datum size1;
-  if (ss->spantype == T_DATESPAN)
-    size1 = Int32GetDatum((int)(interval_units(duration) / USECS_PER_DAY));
-  else if (ss->spantype == T_TSTZSPAN)
-    size1 = Int64GetDatum(interval_units(duration));
-  else 
+  if (timespan_type(ss->spantype))
+  {
+    if (ss->spantype == T_DATESPAN)
+      size1 = Int32GetDatum((int32) (interval_units(DatumGetIntervalP(size)) /
+        USECS_PER_DAY));
+    else
+      size1 = Int64GetDatum(interval_units(DatumGetIntervalP(size)));
+  }
+  else
     size1 = size;
-
   /* Get the span bounds of the state */
   Datum start_bin, end_bin;
   int nbins = span_num_bins(&ss->span, size1, origin, &start_bin, &end_bin);
@@ -566,6 +563,7 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
     memcpy(&result[count1++], &bins[i], sizeof(Span));
     pfree(atspan);
   }
+  pfree(bins);
   *count = count1;
   return result;
 }
@@ -604,6 +602,7 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
     memcpy(&result[count1++], &bins[i], sizeof(Span));
     pfree(atspan);
   }
+  pfree(bins);
   *count = count1;
   return result;
 }
@@ -864,7 +863,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
-  if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
+  if (! ensure_not_negative_datum(vsize, temptype_basetype(temp->temptype)) ||
       (duration && ! ensure_positive_duration(duration)))
     return NULL;
 

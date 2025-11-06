@@ -22,16 +22,28 @@ SELECT SUM(array_length(bins(f, 2.5, 1.5), 1)) AS bl FROM tbl_floatspan;
  310
 (1 row)
 
-SELECT SUM(array_length(bins(d, '2 days'), 1)) AS bl FROM tbl_datespan;
+SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespan;
  bl  
 -----
- 331
+ 168
 (1 row)
 
-SELECT SUM(array_length(bins(d, '2 days', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
+SELECT SUM(array_length(bins(d, interval '1 week', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
  bl  
 -----
- 334
+ 171
+(1 row)
+
+SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespanset;
+  bl  
+------
+ 1018
+(1 row)
+
+SELECT SUM(array_length(bins(d, interval '1 week', '2001-06-01'), 1)) AS bl FROM tbl_datespanset;
+  bl  
+------
+ 1030
 (1 row)
 
 SELECT getBin(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -66,20 +78,20 @@ SELECT getBin(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 
  [46.5, 49) |     6
 (3 rows)
 
-SELECT getBin(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(t, interval '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
                             getbin                            | count 
 --------------------------------------------------------------+-------
- [Sun Sep 16 01:00:00 2001 PDT, Tue Sep 18 01:00:00 2001 PDT) |     4
- [Sat Jan 27 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST) |     3
- [Sat Oct 06 01:00:00 2001 PDT, Mon Oct 08 01:00:00 2001 PDT) |     3
+ [Mon Jun 11 01:00:00 2001 PDT, Mon Jun 18 01:00:00 2001 PDT) |     6
+ [Mon Sep 17 01:00:00 2001 PDT, Mon Sep 24 01:00:00 2001 PDT) |     6
+ [Mon Jan 22 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST) |     5
 (3 rows)
 
-SELECT getBin(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(t, interval '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
                             getbin                            | count 
 --------------------------------------------------------------+-------
- [Mon Sep 17 00:00:00 2001 PDT, Wed Sep 19 00:00:00 2001 PDT) |     4
- [Wed Apr 18 00:00:00 2001 PDT, Fri Apr 20 00:00:00 2001 PDT) |     3
- [Thu May 10 00:00:00 2001 PDT, Sat May 12 00:00:00 2001 PDT) |     3
+ [Fri Sep 14 00:00:00 2001 PDT, Fri Sep 21 00:00:00 2001 PDT) |     8
+ [Thu Mar 29 23:00:00 2001 PST, Fri Apr 06 00:00:00 2001 PDT) |     5
+ [Fri Jun 15 00:00:00 2001 PDT, Fri Jun 22 00:00:00 2001 PDT) |     5
 (3 rows)
 
 SELECT valueTimeTiles(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

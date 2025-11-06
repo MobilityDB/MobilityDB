@@ -486,7 +486,8 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_not_geodetic(int16 flags)
 {
-  if (MEOS_FLAGS_GET_X(flags) && ! MEOS_FLAGS_GET_GEODETIC(flags))
+  if ((MEOS_FLAGS_GET_X(flags) || MEOS_FLAGS_GET_Z(flags)) && 
+    ! MEOS_FLAGS_GET_GEODETIC(flags))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Only planar coordinates supported");
@@ -1324,12 +1325,12 @@ static void
 tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
 {
   assert(inst); assert(a); assert(tgeo_type_all(inst->temptype));
-  LWGEOM *geo = lwgeom_from_gserialized(
-    DatumGetGserializedP(tinstant_value_p(inst)));
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
+  LWGEOM *geo = lwgeom_from_gserialized(gs);
   lwgeom_affine(geo, a);
   GSERIALIZED *gs1 = geo_serialize(geo);
   *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
-  // lwgeom_free(geo);
+  lwgeom_free(geo);
   return;
 }
 
@@ -1706,11 +1707,12 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
  * @param[in] ngeoms Number of elements in the input array
  * @param[in] tolerance Tolerance
  * @param[in] minpoints Minimum number of points
+  * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterDBSCAN(PG_FUNCTION_ARGS)
  */
 uint32_t *
 geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
-  double tolerance, int minpoints)
+  double tolerance, int minpoints, int *count)
 {
   /* Ensure validity of arguments */
   if (! ensure_not_null(geoms))
@@ -1753,7 +1755,11 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   }
 
   uint32_t *result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
+  *count = uf->N;
   finishGEOS();
+  UF_destroy(uf);
+  if (is_in_cluster)
+    lwfree(is_in_cluster);
   return result_ids;
 }
 

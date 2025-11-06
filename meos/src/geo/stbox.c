@@ -39,6 +39,8 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
+#include "common/hashfn.h"
+#include "port/pg_bitutils.h"
 #include "utils/timestamp.h"
 /* PostGIS */
 #include <lwgeodetic.h>
@@ -72,7 +74,6 @@
 #endif
 
 /* Buffer size for input and output of STBox */
-#define MAXGBOXLEN     256
 #define MAXSTBOXLEN    256
 
 /* PostGIS prototype */
@@ -378,7 +379,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   }
   if (hasx)
   {
-    /* Process X min/max */
+    /* Process X/Y min/max */
     box->xmin = Min(xmin, xmax);
     box->xmax = Max(xmin, xmax);
     /* Process Y min/max */
@@ -614,9 +615,12 @@ stbox_geo(const STBox *box)
   FLAGS_SET_Z(geo->flags, hasz);
   FLAGS_SET_GEODETIC(geo->flags, geodetic);
   result = geo_serialize(geo);
-  // lwgeom_free(geo);
+  /* We cannot lwgeom_free(geo); */
+  if (gserialized_get_type(result) != POINTTYPE)
+    lwgeom_free(geo);
   return result;
 }
+
 
 /**
  * @ingroup meos_geo_box_conversion
@@ -2559,6 +2563,141 @@ inline bool
 stbox_gt(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) > 0;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_geo_box_accessor
+ * @brief Return the 32-bit hash value of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @return On error return @p INT_MAX
+ * @sqlfn stbox_hash()
+ */
+uint32
+stbox_hash(const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, INT_MAX);
+
+  /* Determine the dimensions of the spatiotemporal box */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+
+  /* Merge hashes of period and remaining values */
+  uint32 result = 0;
+  if (hast)
+    result = span_hash(&box->period);
+  if (hasx)
+  {
+    result ^= pg_hashfloat8(box->xmin);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+    result ^= pg_hashfloat8(box->ymin);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+    if (hasz)
+    {
+      result ^= pg_hashfloat8(box->zmin);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+      result = pg_rotate_left32(result, 1);
+#else
+      result =  (result << 1) | (result >> 31);
+#endif
+    }
+    result ^= pg_hashfloat8(box->xmax);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+    result ^= pg_hashfloat8(box->ymax);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+    if (hasz)
+    {
+      result ^= pg_hashfloat8(box->zmax);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+      result = pg_rotate_left32(result, 1);
+#else
+      result =  (result << 1) | (result >> 31);
+#endif
+    }
+    result ^= hash_uint32(box->srid);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+  }
+  result ^= hash_uint32((uint32) box->flags);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the 64-bit hash of a spatiotemporal box using a seed
+ * @param[in] box Spatiotemporal box
+ * @param[in] seed Seed
+ * @return On error return @p LONG_MAX
+ * @csqlfn #Stbox_hash_extended()
+ */
+uint64
+stbox_hash_extended(const STBox *box, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, LONG_MAX);
+
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+
+  /* Merge hashes of period and remaining values */
+  uint64 result = 0;
+  if (hast)
+    result = span_hash_extended(&box->period, seed);
+  if (hasx)
+  {
+    result ^= pg_hashfloat8extended(box->xmin, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    result ^= pg_hashfloat8extended(box->ymin, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    if (hasz)
+    {
+      result ^= pg_hashfloat8extended(box->zmin, seed);
+      result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    }
+    result ^= pg_hashfloat8extended(box->xmax, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    result ^= pg_hashfloat8extended(box->ymax, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    if (hasz)
+    {
+      result ^= pg_hashfloat8extended(box->zmax, seed);
+      result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    }
+    result ^= hash_uint32_extended(box->srid, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+    result ^= hash_uint32_extended((uint32) box->flags, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+  }
+
+  return result;
 }
 
 /*****************************************************************************/

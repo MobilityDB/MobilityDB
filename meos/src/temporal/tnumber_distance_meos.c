@@ -80,7 +80,7 @@ Temporal *
 tdistance_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL);
+  VALIDATE_TFLOAT(temp, NULL);
   return tdistance_tnumber_number(temp, Int32GetDatum(d));
 }
 

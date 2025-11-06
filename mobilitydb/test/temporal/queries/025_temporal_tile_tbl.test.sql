@@ -37,8 +37,11 @@ SELECT SUM(array_length(bins(i, 2, 1), 1)) AS bl FROM tbl_intspan;
 SELECT SUM(array_length(bins(f, 2.5), 1)) AS bl FROM tbl_floatspan;
 SELECT SUM(array_length(bins(f, 2.5, 1.5), 1)) AS bl FROM tbl_floatspan;
 
-SELECT SUM(array_length(bins(d, '2 days'), 1)) AS bl FROM tbl_datespan;
-SELECT SUM(array_length(bins(d, '2 days', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
+SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespan;
+SELECT SUM(array_length(bins(d, interval '1 week', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
+
+SELECT SUM(array_length(bins(d, interval '1 week'), 1)) AS bl FROM tbl_datespanset;
+SELECT SUM(array_length(bins(d, interval '1 week', '2001-06-01'), 1)) AS bl FROM tbl_datespanset;
 
 -------------------------------------------------------------------------------
 
@@ -48,8 +51,8 @@ SELECT getBin(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMI
 SELECT getBin(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT getBin(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT getBin(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT getBin(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(t, interval '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(t, interval '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 

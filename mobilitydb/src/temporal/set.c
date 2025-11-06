@@ -698,7 +698,7 @@ Textcat_text_textset(PG_FUNCTION_ARGS)
 {
   text *txt = PG_GETARG_TEXT_P(0);
   Set *s = PG_GETARG_SET_P(1);
-  Set *result = textcat_textset_text_int(s, txt, INVERT);
+  Set *result = textcat_textset_text_common(s, txt, INVERT);
   PG_FREE_IF_COPY(txt, 0);
   PG_FREE_IF_COPY(s, 1);
   PG_RETURN_SET_P(result);
@@ -716,7 +716,7 @@ Textcat_textset_text(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   text *txt = PG_GETARG_TEXT_P(1);
-  Set *result = textcat_textset_text_int(s, txt, INVERT_NO);
+  Set *result = textcat_textset_text_common(s, txt, INVERT_NO);
   PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(txt, 1);
   PG_RETURN_SET_P(result);

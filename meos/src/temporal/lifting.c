@@ -505,6 +505,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         if (i == seq->count - 1)
           instants[ninsts++] = tinstant_make(endresult, restype, end->t);
       }
+      DATUM_FREE(tpresult, resbasetype);
     }
     else
     {
@@ -571,6 +572,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
           if (i == seq->count - 1)
             instants[ninsts++] = tinstant_make(endresult, restype, end->t);
         }
+        DATUM_FREE(tpresult, resbasetype);
       }
     }
     start = end;
@@ -1199,6 +1201,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       tpvalue2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
         start1->temptype, start1->t, end1->t, tpt1);
       tpresult = tfunc_base_base(tpvalue1, tpvalue2, lfinfo);
+      // DATUM_FREE(tpvalue1, basetype);  DATUM_FREE(tpvalue1, basetype); 
       lower_eq = datum_eq(startresult, tpresult, resbasetype);
       if (lower_eq)
       {
@@ -1218,6 +1221,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
         /* Start a new sequence */
         instants[ninsts++] = tinstant_make(tpresult, restype, start1->t);
       }
+      // DATUM_FREE(tpresult, resbasetype);
     }
     else
     {
@@ -1280,6 +1284,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           lower_inc = false;
           instants[ninsts++] = tinstant_make(endresult, restype, tpt1);
         }
+        DATUM_FREE(tpresult, resbasetype);
       }
     }
     DATUM_FREE(startresult, resbasetype);
@@ -1477,8 +1482,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
       pfree(result);
       return resultseq;
     }
-    else
-      return (Temporal *) result;
+    return (Temporal *) result;
   }
 }
 
@@ -2280,6 +2284,8 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue1, endvalue1, 
           start1->temptype, start1->t, end1->t, tpt1);
         res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
+        DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
+        DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
         if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
         {
           pfree_array((void **) tofree, nfree);

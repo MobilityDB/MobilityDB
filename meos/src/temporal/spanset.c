@@ -535,7 +535,7 @@ int
 spanset_mem_size(const SpanSet *ss)
 {
   VALIDATE_NOT_NULL(ss, -1);
-  return (int) VARSIZE(DatumGetPointer(ss));
+  return (int) VARSIZE(ss);
 }
 
 /**
@@ -648,17 +648,22 @@ datespanset_duration(const SpanSet *ss, bool boundspan)
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
 
+  Interval *result = palloc0(sizeof(Interval));
+  int ndays;
   if (boundspan)
-    return minus_date_date(ss->span.upper, ss->span.lower);
+  {
+    ndays = minus_date_date(ss->span.upper, ss->span.lower);
+    result->day = ndays;
+    return result;
+  }
 
-  int nodays = 0;
+  ndays = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = SPANSET_SP_N(ss, i);
-    nodays += (int32) (s->upper - s->lower);
+    ndays += (int32) (s->upper - s->lower);
   }
-  Interval *result = palloc0(sizeof(Interval));
-  result->day = nodays;
+  result->day = ndays;
   return result;
 }
 
@@ -1280,7 +1285,7 @@ spanset_spans(const SpanSet *ss)
 
 /**
  * @brief Return -1, 0, or 1 depending on whether the size of the first
- * span is less than, equal, or greater than the second one
+ * span is less than, equal to, or greater than the second one
  * @param[in] s1,s2 Spans
  */
 static int
@@ -1448,7 +1453,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @param[in] ss1,ss2 Span sets
  * @return On error return @p INT_MAX
  * @note Function used for B-tree comparison

@@ -560,3 +560,17 @@ SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
 
 -------------------------------------------------------------------------------
+
+SELECT stbox_hash(stbox 'SRID=5676;STBOX X((1,1),(2,2))');
+SELECT stbox_hash_extended(stbox 'SRID=5676;STBOX X((1,1),(2,2))', 1);
+
+SELECT stbox_hash(stbox 'STBOX T([2001-01-03,2001-01-03])');
+SELECT stbox_hash_extended(stbox 'STBOX T([2001-01-03,2001-01-03])', 1);
+
+SELECT stbox_hash(stbox 'STBOX XT(((1,2),(1,2)),[2001-01-03,2001-01-03])');
+SELECT stbox_hash_extended(stbox 'STBOX XT(((1,2),(1,2)),[2001-01-03,2001-01-03])', 1);
+
+SELECT stbox_hash(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])');
+SELECT stbox_hash_extended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])', 1);
+
+-------------------------------------------------------------------------------

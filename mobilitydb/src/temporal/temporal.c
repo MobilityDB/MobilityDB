@@ -1361,9 +1361,9 @@ Temporal_instants(PG_FUNCTION_ARGS)
 #if RGEO
   TInstant **instants = (temp->temptype == T_TRGEOMETRY) ?
     trgeo_instants(temp, &count) : 
-    (TInstant **) temporal_instants_p(temp, &count);
+    (TInstant **) temporal_insts_p(temp, &count);
 #else
-  const TInstant **instants = temporal_instants_p(temp, &count);
+  const TInstant **instants = temporal_insts_p(temp, &count);
 #endif /* RGEO */
   ArrayType *result = temparr_to_array((Temporal **) instants, count, FREE);
   PG_FREE_IF_COPY(temp, 0);

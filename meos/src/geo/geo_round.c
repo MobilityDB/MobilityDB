@@ -87,7 +87,7 @@ point_round(const GSERIALIZED *gs, int maxdd)
   LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   round_point_n(point->point, 0, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
-  pfree(point);
+  lwpoint_free(point);
   return result;
 }
 

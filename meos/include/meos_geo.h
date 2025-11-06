@@ -340,6 +340,13 @@ extern GSERIALIZED *geog_in(const char *str, int32 typmod);
 extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 
+extern BOX3D *box3d_make(double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax, int32_t srid);
+extern char *box3d_out(const BOX3D *box, int maxdd);
+extern GBOX *gbox_make(bool hasz, double xmin, double xmax, double ymin,
+  double ymax, double zmin, double zmax);
+extern char *gbox_out(const GBOX *box, int maxdd);
+
 /* Constructor functions */
 
 extern GSERIALIZED *geo_copy(const GSERIALIZED *g);
@@ -356,9 +363,7 @@ extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 /* Accessor functions */
 
 extern bool geo_is_empty(const GSERIALIZED *g);
-#if CBUFFER
 extern bool geo_is_unitary(const GSERIALIZED *gs);
-#endif
 extern const char *geo_typename(int type);
 extern double geog_area(const GSERIALIZED *g, bool use_spheroid);
 extern GSERIALIZED *geog_centroid(const GSERIALIZED *g, bool use_spheroid);
@@ -379,7 +384,7 @@ extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
 
 extern GSERIALIZED *geo_set_srid(const GSERIALIZED *gs, int32_t srid);
 extern int32_t geo_srid(const GSERIALIZED *gs);
-extern GSERIALIZED *geo_transform(GSERIALIZED *geom, int32_t srid_to);
+extern GSERIALIZED *geo_transform(const GSERIALIZED *geom, int32_t srid_to);
 extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to, bool is_forward);
 
 /* Spatial processing functions */
@@ -389,25 +394,21 @@ extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
 extern int geo_npoints(const GSERIALIZED *gs);
 extern int geo_ngeos(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
-#if CBUFFER
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
-#endif
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
-extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, char *params);
+extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, const char *params);
 extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-#if CBUFFER
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
-#endif
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
-extern GSERIALIZED *geom_unary_union(GSERIALIZED *gs, double prec);
-extern GSERIALIZED *line_interpolate_point(GSERIALIZED *gs, double distance_fraction, bool repeat);
+extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);
+extern GSERIALIZED *line_interpolate_point(const GSERIALIZED *gs, double distance_fraction, bool repeat);
 extern double line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *line_substring(const GSERIALIZED *gs, double from, double to);
 
@@ -523,6 +524,8 @@ extern STBox *tstzspanset_to_stbox(const SpanSet *ss);
 /* Accessor functions */
 
 extern double stbox_area(const STBox *box, bool spheroid);
+extern uint32 stbox_hash(const STBox *box);
+extern uint64 stbox_hash_extended(const STBox *box, uint64 seed);
 extern bool stbox_hast(const STBox *box);
 extern bool stbox_hasx(const STBox *box);
 extern bool stbox_hasz(const STBox *box);
@@ -889,7 +892,7 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 /* Clustering functions */
 
 extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
-extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints);
+extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints, int *count);
 extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
 extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);
 

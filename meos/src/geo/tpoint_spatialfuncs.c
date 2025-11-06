@@ -460,7 +460,6 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
 
   Datum result = PointerGetDatum(geopoint_make(p.x, p.y, p.z, hasz, geodetic,
     srid));
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(start));
   return result;
 }
 
@@ -2136,7 +2135,7 @@ tpointseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
   GSERIALIZED *result = geo_serialize(geom);
   *timesarr = times;
   *count = seq->count;
-  pfree(geom);
+  lwgeom_free(geom);
   return result;
 }
 
@@ -2264,8 +2263,7 @@ tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   double bounds_height = ((bounds->ymax - bounds->ymin) / extent) / 2.0;
   if (tpoint_width < bounds_width && tpoint_height < bounds_height)
   {
-    PG_FREE_IF_COPY(temp, 0);
-    PG_RETURN_NULL();
+    return NULL;
   }
   */
 
@@ -2812,6 +2810,8 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
     /* Resulting sequence has step interpolation */
     result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       lower_inc, upper_inc, STEP, NORMALIZE);
+    for (int j = 0; j < ninsts; j++)
+      pfree(instants[j]);
   }
 
   pfree(instants);
@@ -2896,7 +2896,7 @@ tpoint_angular_difference(const Temporal *temp)
   {
     Temporal *tazimuth_deg = tfloat_degrees(tazimuth, false);
     result = tnumber_angular_difference(tazimuth_deg);
-    pfree(tazimuth_deg);
+    pfree(tazimuth); pfree(tazimuth_deg);
   }
   return result;
 }
@@ -3116,10 +3116,12 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
     lower, upper, *t2);
   sp1 = DATUM_POINT2D_P(v1);
   sp2 = DATUM_POINT2D_P(v2);
-  pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
+  int result;
   if (sp1->y > sp2->y) // TODO Use MEOS_EPSILON
-    return 0;
-  return 1;
+    result = 0;
+  result = 1;
+  pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
+  return result;
 }
 
 /*****************************************************************************/
@@ -3461,6 +3463,7 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
+  finishGEOS();
   return nseqs;
 }
 

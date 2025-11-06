@@ -609,7 +609,7 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @return On error return `NULL`
  */
 Temporal *
-tspatialrel_tspatial_tspatial_int(const Temporal *temp1, const Temporal *temp2,
+tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   Datum param, varfunc func, int numparam, bool invert)
 {
   assert(temp1); assert(temp2); assert(tspatial_type(temp1->temptype));
@@ -622,10 +622,10 @@ tspatialrel_tspatial_tspatial_int(const Temporal *temp1, const Temporal *temp2,
   lfinfo.param[0] = param;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
-    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
+  lfinfo.reslinear = false;
   lfinfo.invert = invert;
-  lfinfo.discont = lfinfo.reslinear; /* If linear interpolation */;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
@@ -650,7 +650,7 @@ tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_tspatial_int(temp1, temp2,
+  Temporal *result = tspatialrel_tspatial_tspatial(temp1, temp2,
     (Datum) NULL, func, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -711,6 +711,8 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
       Temporal *inter_bound = tinterrel_tspatial_base(temp,
         PointerGetDatum(gsbound), TINTERSECTS, restr, atvalue,
         &datum_geom_intersects2d);
+        if (! inter_bound)
+          return NULL;
       Temporal *not_inter_bound = tnot_tbool(inter_bound);
       result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
       pfree(inter); pfree(gsbound); pfree(inter_bound); pfree(not_inter_bound);
@@ -1003,10 +1005,10 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     {
       result = tinterrel_tspatial_base(temp, PointerGetDatum(gsbound),
         TINTERSECTS, restr, atvalue, &datum_geom_intersects2d);
-      pfree(gsbound);
     }
     else
       result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+    pfree(gsbound);
   }
   /* Temporal geometry, temporal cbuffer case */
   else
@@ -1625,7 +1627,7 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
       else
       {
         /* Both sequences have either discrete or step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2, dist,
+        result = tspatialrel_tspatial_tspatial(sync1, sync2, dist,
           (varfunc) func, 1, INVERT_NO);
       }
       break;
@@ -1640,7 +1642,7 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
       else
       {
         /* Both sequence sets have step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2, dist,
+        result = tspatialrel_tspatial_tspatial(sync1, sync2, dist,
           (varfunc) func, 1, INVERT_NO);
       }
     }

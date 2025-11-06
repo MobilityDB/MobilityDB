@@ -503,10 +503,10 @@ tgeography_from_mfjson(const char *mfjson)
  * @param[in] maxdd Maximum number of decimal digits
  */
 char *
-tgeo_out(const Temporal *temp, int maxdd)
+tspatial_out(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL);
+  VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(maxdd))
     return NULL;
   return temporal_out(temp, maxdd);

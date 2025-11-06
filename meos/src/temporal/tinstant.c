@@ -36,8 +36,10 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include "port/pg_bitutils.h"
 #include <utils/timestamp.h>
 #include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -550,7 +552,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 /**
  * @ingroup meos_internal_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal instant is
- * less than, equal, or greater than the second one
+ * less than, equal to, or greater than the second one
  * @param[in] inst1,inst2 Temporal instants
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency.
@@ -589,14 +591,17 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the 32-bit hash value of a temporal instant
+ * @brief Return the 32-bit hash of a temporal instant
  * @param[in] inst Temporal instant
+ * @return On error return @p INT_MAX
  * @csqlfn #Temporal_hash()
  */
 uint32
 tinstant_hash(const TInstant *inst)
 {
-  assert(inst);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(inst, INT_MAX);
+
   meosType basetype = temptype_basetype(inst->temptype);
   /* Apply the hash function to the base type */
   uint32 value_hash = datum_hash(tinstant_value_p(inst), basetype);
@@ -604,7 +609,11 @@ tinstant_hash(const TInstant *inst)
   uint32 time_hash = pg_hashint8(inst->t);
   /* Merge hashes of value and timestamp */
   uint32 result = value_hash;
-  result = (result << 1) | (result >> 31);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  result = pg_rotate_left32(result, 1);
+#else
+  result =  (result << 1) | (result >> 31);
+#endif
   result ^= time_hash;
   return result;
 }

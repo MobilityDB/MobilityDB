@@ -439,10 +439,11 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
  */
 Datum
 #if CBUFFER
-  datum_transf_pj(Datum d, meosType basetype, int32_t srid_to, const LWPROJ *pj)
+  datum_transf_pj(Datum d, meosType basetype, int32_t srid_to,
+    const LWPROJ *pj)
 #else
-  datum_transf_pj(Datum d, meosType basetype,
-    int32_t srid_to UNUSED, const LWPROJ *pj)
+  datum_transf_pj(Datum d, meosType basetype, int32_t srid_to UNUSED,
+    const LWPROJ *pj)
 #endif /* CBUFFER */
 {
   assert(spatial_basetype(basetype));
@@ -492,13 +493,17 @@ spatialset_transf_pj(const Set *s, int32_t srid_to, const LWPROJ *pj)
   for (int i = 0; i < s->count; i++)
   {
     datums[i] = datum_transf_pj(SET_VAL_N(s, i), s->basetype, srid_to, pj);
-    if (!datums[i])
+    if (! datums[i])
     {
       pfree_array((void **) datums, i);
       return NULL;
     }
   }
-  return set_make_free(datums, s->count, s->basetype, ORDER_NO);
+  Set *result = set_make(datums, s->count, s->basetype, ORDER_NO);
+  for (int i = 0; i < s->count; i++)
+    pfree(DatumGetPointer(datums[i]));
+  pfree(datums);
+  return result;
 }
 
 /**
@@ -558,8 +563,10 @@ spatialset_transform_pipeline(const Set *s, const char *pipeline,
     return NULL;
 
   /* Transform the geo set */
-  Set *result = set_copy(s);
-  return spatialset_transf_pj(result, srid_to, pj);
+  Set *result = spatialset_transf_pj(s, srid_to, pj);
+  proj_destroy(pj->pj);
+  pfree(pj);
+  return result;
 }
 
 /*****************************************************************************/

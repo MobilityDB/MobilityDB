@@ -1397,7 +1397,7 @@ double
 distance_floatspan_floatspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s1, -1.0); VALIDATE_DATESPAN(s2, -1.0);
+  VALIDATE_FLOATSPAN(s1, -1.0); VALIDATE_FLOATSPAN(s2, -1.0);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 

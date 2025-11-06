@@ -75,6 +75,21 @@ geogset_in(const char *str)
   return set_parse(&str, T_GEOGSET);
 }
 
+/**
+ * @ingroup meos_geo_set_inout
+ * @brief Return the string representation of a float set
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Set_out()
+ */
+char *
+spatialset_out(const Set *s, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_SPATIALSET(s, NULL);
+  return set_out(s, maxdd);
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

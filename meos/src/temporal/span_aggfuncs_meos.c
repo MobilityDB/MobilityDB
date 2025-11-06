@@ -285,7 +285,9 @@ spanset_union_finalfn(SpanSet *state)
 {
   if (! state)
     return NULL;
-  return spanset_compact(state);
+  SpanSet *result = spanset_compact(state);
+  pfree(state);
+  return result;
 }
 
 /*****************************************************************************/
