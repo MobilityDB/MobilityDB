@@ -1788,6 +1788,18 @@ extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Tempora
 extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
+
+/*****************************************************************************
+ * Extended Kalman Filter (EKF) outlier filtering
+ *****************************************************************************/
+
+/*
+ * Filters a temporal float or geometry point (2D/3D) using an EKF with
+ * Mahalanobis gating. Outliers are either dropped or replaced by predictions.
+ * The implementation adapts tinyEKF to MEOS data types.
+ */
+extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
+  double q, double variance, bool to_drop);
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
