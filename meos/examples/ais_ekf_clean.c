@@ -191,7 +191,7 @@ int main(int argc, char **argv)
     }
 
     /* Make a 2D tgeompoint instant with SRID unknown (0), geodetic=false */
-    GSERIALIZED *gs = geompoint_make2d(0, r.lon, r.lat);
+    GSERIALIZED *gs = geompoint_make2d(4326, r.lon, r.lat);
     TInstant *ti = tpointinst_make(gs, r.t);
     free(gs);
 
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
   if (!fout)
     fprintf(stderr, "Could not open output file %s (printing to stdout only)\n", outpath);
   else
-    fprintf(fout, "MMSI,RawEWKT,CleanEWKT\n");
+    fprintf(fout, "MMSI,CleanTrajectoryEWKT\n");
 
   for (int i = 0; i < n_tracks; i++)
   {
@@ -252,13 +252,12 @@ int main(int argc, char **argv)
 
     Temporal *clean = temporal_ext_kalman_filter((Temporal *) seq, gate, q, r, to_drop);
 
-    const TSequence *cseq = (const TSequence *) clean;
-    char *raww = tspatial_as_ewkt((Temporal *) seq, 10);
-    char *clnw = cseq ? tspatial_as_ewkt((Temporal *) cseq, 10) : NULL;
+    GSERIALIZED *traj = tpoint_trajectory(clean ? clean : (Temporal *) seq, false);
+    char *ewkt = traj ? geo_as_ewkt(traj, 10) : NULL;
     if (fout)
-      fprintf(fout, "%lld,\"%s\",\"%s\"\n", tracks[i].mmsi, raww ? raww : "", clnw ? clnw : "");
-    if (raww) free(raww);
-    if (clnw) free(clnw);
+      fprintf(fout, "%lld,\"%s\"\n", tracks[i].mmsi, ewkt ? ewkt : "");
+    if (ewkt) free(ewkt);
+    if (traj) free(traj);
 
     if (clean) free(clean);
     if (seq) free(seq);
