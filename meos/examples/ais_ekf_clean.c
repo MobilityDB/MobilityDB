@@ -236,6 +236,23 @@ int main(int argc, char **argv)
   else
     fprintf(fout, "MMSI,CleanTrajectoryEWKT\n");
 
+  /* Prepare removed-points CSV path (derived from outpath) */
+  char removed_path[1024];
+  removed_path[0] = '\0';
+  FILE *fremoved = NULL;
+  if (fout)
+  {
+    const char *dot = strrchr(outpath, '.');
+    size_t base_len = dot ? (size_t)(dot - outpath) : strlen(outpath);
+    if (base_len > sizeof(removed_path) - 16) base_len = sizeof(removed_path) - 16;
+    memcpy(removed_path, outpath, base_len);
+    removed_path[base_len] = '\0';
+    strcat(removed_path, "_removed.csv");
+    fremoved = fopen(removed_path, "w");
+    if (fremoved)
+      fprintf(fremoved, "MMSI,Timestamp,Longitude,Latitude\n");
+  }
+
   for (int i = 0; i < n_tracks; i++)
   {
     if (tracks[i].n_inst == 0)
@@ -259,12 +276,66 @@ int main(int argc, char **argv)
     if (ewkt) free(ewkt);
     if (traj) free(traj);
 
+    /* If drop mode and removed CSV is open, write removed points (timestamps not present in cleaned) */
+    int removed_count = 0;
+    if (to_drop && fremoved && clean)
+    {
+      const TSequence *cseq = (const TSequence *) clean;
+      int iraw = 0, icln = 0;
+      int nraw = seq ? seq->count : 0;
+      int ncln = cseq ? cseq->count : 0;
+      while (iraw < nraw)
+      {
+        TInstant *ir = temporal_instant_n((const Temporal *) seq, iraw + 1);
+        TimestampTz tr = ir->t;
+        /* Advance cleaned pointer until >= raw time */
+        while (icln < ncln)
+        {
+          TInstant *icpeek = temporal_instant_n((const Temporal *) cseq, icln + 1);
+          if (icpeek->t < tr) { free(icpeek); icln++; continue; }
+          /* icpeek->t >= tr */
+          if (icpeek->t == tr)
+          {
+            /* kept */
+            free(icpeek); free(ir); iraw++; icln++; goto next_raw;
+          }
+          /* icpeek->t > tr -> removed */
+          free(icpeek);
+          break;
+        }
+        {
+          /* Removed point: write row */
+          char *ts = pg_timestamptz_out(tr);
+          /* Get EWKT for the single instant and parse point coords */
+          char *wkt = tspatial_as_ewkt((Temporal *) ir, 10); /* e.g., SRID=4326;POINT(x y)@time */
+          double lon = 0.0, lat = 0.0;
+          if (wkt)
+          {
+            char *p = strchr(wkt, '(');
+            char *q = strchr(wkt, ')');
+            if (p && q && q > p) sscanf(p+1, "%lf %lf", &lon, &lat);
+          }
+          fprintf(fremoved, "%lld,%s,%.10f,%.10f\n", tracks[i].mmsi, ts ? ts : "", lon, lat);
+          if (ts) free(ts);
+          if (wkt) free(wkt);
+          free(ir); iraw++;
+          removed_count++;
+        }
+next_raw:
+        ;
+      }
+    }
+
     if (clean) free(clean);
     if (seq) free(seq);
-    printf("MMSI %lld cleaned.\n", tracks[i].mmsi);
+    if (to_drop)
+      printf("MMSI %lld cleaned (removed=%d).\n", tracks[i].mmsi, removed_count);
+    else
+      printf("MMSI %lld cleaned.\n", tracks[i].mmsi);
   }
 
   if (fout) fclose(fout);
+  if (fremoved) fclose(fremoved);
 
   meos_finalize();
   return EXIT_SUCCESS;
