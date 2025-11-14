@@ -54,10 +54,6 @@
 #include "temporal/temporal_tile.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
-#include "temporal/tinyekf_meos.h"
-#include "geo/tgeo_distance.h"
-#include "geo/tgeo_spatialfuncs.h"
-
 
 /*****************************************************************************
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
@@ -66,6 +62,13 @@
 #define _float_t double
 #define EKF_N 6 /* [x,vx,y,vy,z,vz] */
 #define EKF_M 3 /* measure positions [x,y,z] */
+
+/* Header-only tinyEKF core, uses _float_t/EKF_N/EKF_M above */
+#include "temporal/tinyekf_meos.h"
+
+/* MEOS / PostGIS helpers */
+#include "geo/tgeo_distance.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /* Build constant-velocity F matrix for given dt (seconds) */
 static inline void
@@ -78,7 +81,7 @@ ekf_build_F(_float_t F[EKF_N*EKF_N], double dt, int dims)
   if (dims >= 3) F[4*EKF_N + 5] = (_float_t) dt; /* z += vz*dt */
 }
 
-/* Build white-accel process noise Q for each used axis */
+/* Build process noise Q for each used axis */
 static inline void
 ekf_build_Q(_float_t Q[EKF_N*EKF_N], double dt, double q, int dims)
 {
@@ -131,38 +134,93 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
   return sqrt(d2);
 }
 
-/* Filter a TSequence of tfloat */
+/* Filter a TSequence of tfloat or tgeompoint (2D/3D, non-geodetic) */
 static TSequence *
-tfloatseq_ext_kalman_filter(const TSequence *seq, double gate, double q,
-  double variance, bool to_drop)
+tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,
+  double gate, double q, double variance, bool to_drop)
 {
   if (seq->count == 0)
     return tsequence_copy(seq);
 
   const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
-  double x0 = DatumGetFloat8(tinstant_value_p(inst0));
 
+  /* Determine dimensionality and SRID / initial value depending on type */
+  int dims = 1;
+  bool hasz = false;
+  bool geodetic = false;
+  int32_t srid = SRID_UNKNOWN;
+
+  double x0 = 0.0, y0 = 0.0, z0 = 0.0;
+
+  if (temptype == T_TFLOAT)
+  {
+    dims = 1;
+    x0 = DatumGetFloat8(tinstant_value_p(inst0));
+  }
+  else if (temptype == T_TGEOMPOINT)
+  {
+    meosType basetype = temptype_basetype(seq->temptype);
+    int16 flags = spatial_flags(tinstant_value_p(inst0), basetype);
+    hasz = FLAGS_GET_Z(flags);
+    geodetic = FLAGS_GET_GEODETIC(flags);
+    if (geodetic)
+      return tsequence_copy(seq); /* v1: not supported on geodetic */
+    dims = hasz ? 3 : 2;
+
+    POINT4D p0; datum_point4d(tinstant_value_p(inst0), &p0);
+    x0 = p0.x;
+    y0 = p0.y;
+    z0 = hasz ? p0.z : 0.0;
+    srid = spatial_srid(tinstant_value_p(inst0), basetype);
+  }
+  else
+  {
+    /* Not a supported type, just copy */
+    return tsequence_copy(seq);
+  }
+
+  /* Initialize EKF - state vector + covariance */
   ekf_t ekf = {0};
   _float_t pdiag[EKF_N] = {0};
   for (int i = 0; i < EKF_N; i++) pdiag[i] = 1e3; /* broad initial covariance */
   ekf_initialize(&ekf, pdiag);
-  ekf.x[0] = (_float_t) x0; ekf.x[1] = 0; ekf.x[2] = 0; ekf.x[3] = 0; ekf.x[4] = 0; ekf.x[5] = 0;
+
+  /* Initial state: position in used dimensions, zero velocity, x is state vector */
+  ekf.x[0] = (_float_t) x0; ekf.x[1] = 0;
+  ekf.x[2] = (_float_t) (dims >= 2 ? y0 : 0.0); ekf.x[3] = 0;
+  ekf.x[4] = (_float_t) (dims == 3 ? z0 : 0.0); ekf.x[5] = 0;
 
   TInstant **outinsts = palloc(sizeof(TInstant *) * seq->count);
   int outcount = 0;
-  outinsts[outcount++] = tinstant_make(Float8GetDatum(x0), T_TFLOAT, inst0->t);
+
+  /* First output instant is the initial observation */
+  if (temptype == T_TFLOAT)
+  {
+    outinsts[outcount++] = tinstant_make(Float8GetDatum(x0), T_TFLOAT, inst0->t);
+  }
+  else /* T_TGEOMPOINT */
+  {
+    GSERIALIZED *gsp = geopoint_make(x0, y0, z0, hasz, false, srid);
+    outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gsp),
+      T_TGEOMPOINT, inst0->t);
+  }
+
   TimestampTz prev_t = inst0->t;
 
-  for (int i = 1; i < seq->count; i++) {
+  /* Loop for each subsequent instant */
+  for (int i = 1; i < seq->count; i++)
+  {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    double zval = DatumGetFloat8(tinstant_value_p(inst));
+
     double dt = (double) (inst->t - prev_t) / 1000000.0; /* seconds */
     if (dt < 0) dt = 0;
 
+    /* Build F transition matrix*/
     _float_t F[EKF_N*EKF_N];
+    /* Build Q process noise matrix */
     _float_t Q[EKF_N*EKF_N];
-    ekf_build_F(F, dt, 1);
-    ekf_build_Q(Q, dt, q, 1);
+    ekf_build_F(F, dt, dims);
+    ekf_build_Q(Q, dt, q, dims);
 
     /* Predict state: fx = F * x */
     _float_t fx[EKF_N] = {0};
@@ -171,11 +229,24 @@ tfloatseq_ext_kalman_filter(const TSequence *seq, double gate, double q,
 
     _float_t H[EKF_M*EKF_N];
     _float_t hx[EKF_M];
-    ekf_build_H_hx(H, hx, fx, 1);
+    ekf_build_H_hx(H, hx, fx, dims);
 
-    _float_t z[EKF_M] = { (_float_t) zval, 0.0, 0.0 };
+    _float_t z[EKF_M] = {0};
+    if (temptype == T_TFLOAT)
+    {
+      double zval = DatumGetFloat8(tinstant_value_p(inst));
+      z[0] = (_float_t) zval;
+    }
+    else /* T_TGEOMPOINT */
+    {
+      POINT4D p; datum_point4d(tinstant_value_p(inst), &p);
+      z[0] = (_float_t) p.x;
+      if (dims >= 2) z[1] = (_float_t) p.y;
+      if (dims == 3) z[2] = (_float_t) p.z;
+    }
+
     _float_t Rm[EKF_M*EKF_M];
-    ekf_build_R(Rm, variance, 1);
+    ekf_build_R(Rm, variance, dims);
 
     /* Gating: compute innovation and S^{-1} */
     _float_t Ht[EKF_N*EKF_M]; _transpose(H, Ht, EKF_M, EKF_N);
@@ -183,16 +254,29 @@ tfloatseq_ext_kalman_filter(const TSequence *seq, double gate, double q,
     _float_t HP[EKF_M*EKF_N]; _mulmat(H, ekf.P, HP, EKF_M, EKF_N, EKF_N);
     _float_t HpHt[EKF_M*EKF_M]; _mulmat(HP, Ht, HpHt, EKF_M, EKF_N, EKF_M);
     _float_t S[EKF_M*EKF_M]; _addmat(HpHt, Rm, S, EKF_M, EKF_M);
-    /* Used cholesky inversion for better numerical stability */
     _float_t Sinv[EKF_M*EKF_M]; bool ok = invert(S, Sinv);
     _float_t v[EKF_M]; _sub(z, hx, v, EKF_M);
     double mdist = ok ? innovation_distance(v, Sinv) : 0.0;
 
-    if (ok && mdist > gate) {
-      if (!to_drop) {
-        /* Keep predicted value */
-        outinsts[outcount++] = tinstant_make(Float8GetDatum((double) fx[0]),
-          T_TFLOAT, inst->t);
+    if (ok && mdist > gate)
+    {
+      if (!to_drop)
+      {
+        /* Keep predicted value without updating the state */
+        if (temptype == T_TFLOAT)
+        {
+          outinsts[outcount++] = tinstant_make(
+            Float8GetDatum((double) fx[0]), T_TFLOAT, inst->t);
+        }
+        else /* T_TGEOMPOINT */
+        {
+          double x = fx[0];
+          double y = fx[2];
+          double zpos = fx[4];
+          GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
+          outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
+            T_TGEOMPOINT, inst->t);
+        }
       }
       /* Skip update to avoid contaminating state */
       prev_t = inst->t;
@@ -201,97 +285,19 @@ tfloatseq_ext_kalman_filter(const TSequence *seq, double gate, double q,
 
     /* Inlier: update and emit filtered value */
     (void) ekf_update(&ekf, z, hx, H, Rm);
-    outinsts[outcount++] = tinstant_make(Float8GetDatum((double) ekf.x[0]),
-      T_TFLOAT, inst->t);
-    prev_t = inst->t;
-  }
 
-  TSequence *result = tsequence_make((const TInstant **) outinsts, outcount,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
-  for (int i = 0; i < outcount; i++)
-    if (outinsts[i] != inst0) /* first was copied, but safe to free only allocs */
-      ;
-  pfree(outinsts);
-  return result;
-}
-
-/* Filter a TSequence of tgeompoint (2D/3D, non-geodetic) */
-static TSequence *
-tgeompointseq_ext_kalman_filter(const TSequence *seq, double gate, double q, double variance, bool to_drop)
-{
-  if (seq->count == 0)
-    return tsequence_copy(seq);
-
-  /* Determine dimensionality and SRID */
-  const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
-  meosType basetype = temptype_basetype(seq->temptype);
-  int16 flags = spatial_flags(tinstant_value_p(inst0), basetype);
-  bool hasz = FLAGS_GET_Z(flags);
-  bool geodetic = FLAGS_GET_GEODETIC(flags);
-  if (geodetic)
-    return tsequence_copy(seq); /* v1: not supported on geodetic */
-  int dims = hasz ? 3 : 2;
-
-  POINT4D p0; datum_point4d(tinstant_value_p(inst0), &p0);
-  int32_t srid = spatial_srid(tinstant_value_p(inst0), basetype);
-
-  ekf_t ekf = {0};
-  _float_t pdiag[EKF_N] = {0};
-  for (int i = 0; i < EKF_N; i++) pdiag[i] = 1e3;
-  ekf_initialize(&ekf, pdiag);
-  ekf.x[0] = (_float_t) p0.x; ekf.x[1] = 0;
-  ekf.x[2] = (_float_t) p0.y; ekf.x[3] = 0;
-  ekf.x[4] = (_float_t) (hasz ? p0.z : 0.0); ekf.x[5] = 0;
-
-  TInstant **outinsts = palloc(sizeof(TInstant *) * seq->count);
-  int outcount = 0;
-  GSERIALIZED *gsp = geopoint_make(p0.x, p0.y, p0.z, hasz, false, srid);
-  outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gsp), T_TGEOMPOINT, inst0->t);
-  TimestampTz prev_t = inst0->t;
-
-  for (int i = 1; i < seq->count; i++) {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    POINT4D p; datum_point4d(tinstant_value_p(inst), &p);
-    double dt = (double) (inst->t - prev_t) / 1000000.0;
-    if (dt < 0) dt = 0;
-
-    _float_t F[EKF_N*EKF_N]; _float_t Q[EKF_N*EKF_N];
-    ekf_build_F(F, dt, dims);
-    ekf_build_Q(Q, dt, q, dims);
-
-    _float_t fx[EKF_N] = {0};
-    _mulvec(F, ekf.x, fx, EKF_N, EKF_N);
-    ekf_predict(&ekf, fx, F, Q);
-
-    _float_t H[EKF_M*EKF_N]; _float_t hx[EKF_M];
-    ekf_build_H_hx(H, hx, fx, dims);
-
-    _float_t z[EKF_M] = {0}; z[0] = (_float_t) p.x; z[1] = (_float_t) p.y; if (dims == 3) z[2] = (_float_t) p.z;
-    _float_t Rm[EKF_M*EKF_M]; ekf_build_R(Rm, variance, dims);
-
-    _float_t Ht[EKF_N*EKF_M]; _transpose(H, Ht, EKF_M, EKF_N);
-    _float_t PHt[EKF_N*EKF_M]; _mulmat(ekf.P, Ht, PHt, EKF_N, EKF_N, EKF_M);
-    _float_t HP[EKF_M*EKF_N]; _mulmat(H, ekf.P, HP, EKF_M, EKF_N, EKF_N);
-    _float_t HpHt[EKF_M*EKF_M]; _mulmat(HP, Ht, HpHt, EKF_M, EKF_N, EKF_M);
-    _float_t S[EKF_M*EKF_M]; _addmat(HpHt, Rm, S, EKF_M, EKF_M);
-    _float_t Sinv[EKF_M*EKF_M]; bool ok = invert(S, Sinv);
-    _float_t v[EKF_M]; _sub(z, hx, v, EKF_M);
-    double mdist = ok ? innovation_distance(v, Sinv) : 0.0;
-
-    if (ok && mdist > gate) {
-      if (!to_drop) {
-        double x = fx[0], y = fx[2], zpos = fx[4];
-        GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
-        outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-      }
-      prev_t = inst->t; continue;
+    if (temptype == T_TFLOAT)
+    {
+      outinsts[outcount++] = tinstant_make(
+        Float8GetDatum((double) ekf.x[0]), T_TFLOAT, inst->t);
     }
-
-    (void) ekf_update(&ekf, z, hx, H, Rm);
-    double x = ekf.x[0], y = ekf.x[2], zpos = ekf.x[4];
-    GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
-    outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+    else /* T_TGEOMPOINT */
+    {
+      double x = ekf.x[0], y = ekf.x[2], zpos = ekf.x[4];
+      GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
+      outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
+        T_TGEOMPOINT, inst->t);
+    }
     prev_t = inst->t;
   }
 
@@ -324,10 +330,8 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
     case TSEQUENCE:
     {
       const TSequence *seq = (const TSequence *) temp;
-      if (temp->temptype == T_TFLOAT)
-        return (Temporal *) tfloatseq_ext_kalman_filter(seq, gate, q, variance, to_drop);
-      else /* T_TGEOMPOINT */
-        return (Temporal *) tgeompointseq_ext_kalman_filter(seq, gate, q, variance, to_drop);
+      return (Temporal *) tsequence_ext_kalman_filter(seq, temp->temptype,
+        gate, q, variance, to_drop);
     }
     default: /* TSEQUENCESET */
     {
@@ -335,9 +339,8 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
       TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
       for (int i = 0; i < ss->count; i++) {
         const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-        seqs[i] = (temp->temptype == T_TFLOAT) ?
-          tfloatseq_ext_kalman_filter(seq, gate, q, variance, to_drop) :
-          tgeompointseq_ext_kalman_filter(seq, gate, q, variance, to_drop);
+        seqs[i] = tsequence_ext_kalman_filter(seq, temp->temptype,
+          gate, q, variance, to_drop);
       }
       return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
     }
