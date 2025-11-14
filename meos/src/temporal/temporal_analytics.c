@@ -61,11 +61,8 @@
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
  *****************************************************************************/
 
-/*
- * We include tinyEKF as a header with fixed maximum dimensions (3D position,
- * constant-velocity model). For lower-dimensional inputs (tfloat, 2D
- * tgeompoint), we only use the leading axes and keep the rest unused.
- */
+/* We include tinyEKF as a header. */
+
 #define _float_t double
 #define EKF_N 6 /* [x,vx,y,vy,z,vz] */
 #define EKF_M 3 /* measure positions [x,y,z] */
