@@ -58,33 +58,35 @@
 #include <meos.h>
 #include <meos_geo.h>
 
-/* Fallbacks for Datum helpers when not provided by headers */
-#ifndef PointerGetDatum
-#define PointerGetDatum(X) ((Datum) (X))
-#endif
-#ifndef DatumGetPointer
-#define DatumGetPointer(X) ((void *) (X))
-#endif
 
-/* Limits for this example */
-#define MAX_SHIPS         4096
+/* Limits and sizes (kept similar to ais_assemble_full.c) */
+/* Maximum number of records read in the CSV file */
+#define MAX_NO_RECORDS    20000000
+/* Maximum number of trips (ships) */
+#define MAX_SHIPS         6500
+/* Number of records in a batch for printing a marker */
+#define NO_RECORDS_BATCH  100000
+/* Initial number of allocated instants for an input trip */
 #define INITIAL_INSTANTS  64
-#define MAX_LINE_LEN      4096
+/* Maximum length in characters of a record in the input CSV file */
+#define MAX_LINE_LEN      1024
 
 typedef struct
 {
-  TimestampTz t;
-  long long mmsi;
-  double lon;
-  double lat;
-} Rec;
+  TimestampTz T;
+  long long MMSI;
+  double Latitude;
+  double Longitude;
+  double SOG;
+} AIS_record;
 
 typedef struct
 {
-  long long mmsi;
-  int n_inst;
-  int cap_inst;
-  TInstant **inst; 
+  long long MMSI;    /* Identifier of the trip */
+  int no_records;    /* Number of input records for the trip */
+  int n_inst;        /* Number of input instants for the trip */
+  int free_inst;     /* Number of available input instants */
+  TInstant **inst;   /* Array of instants for the trip */
 } trip_record;
 
 static bool parse_timestamp_eu(const char *s, TimestampTz *out)
@@ -104,10 +106,6 @@ static bool parse_timestamp_eu(const char *s, TimestampTz *out)
   return true;
 }
 
-static bool is_nonempty_token(const char *tok)
-{
-  return tok && *tok && strcmp(tok, "Unknown") != 0;
-}
 
 int main(int argc, char **argv)
 {
@@ -121,100 +119,184 @@ int main(int argc, char **argv)
   meos_initialize();
   meos_initialize_timezone("UTC");
 
-  FILE *fp = fopen(argv[1], "r");
-  if (!fp)
+  /* Input buffers and per-ship storage (mirroring ais_assemble_full.c) */
+  char line_buffer[MAX_LINE_LEN];
+  trip_record trips[MAX_SHIPS] = {0};
+  AIS_record rec;
+  int no_records = 0;
+  int no_err_records = 0;
+  int no_ships = 0;
+  int n_points_ok = 0;
+  int i, j;
+  int exit_value = EXIT_FAILURE;
+
+  FILE *file = fopen(argv[1], "r");
+  if (!file)
   {
-    fprintf(stderr, "Could not open %s\n", argv[1]);
+    fprintf(stderr, "Error opening input file %s\n", argv[1]);
     meos_finalize();
     return EXIT_FAILURE;
   }
 
-  /* Skip header */
-  char line[MAX_LINE_LEN];
-  if (!fgets(line, sizeof(line), fp))
+  /* Read the first line of the file with the headers */
+  if (fscanf(file, "%1023[^\n]\n", line_buffer) != 1)
   {
-    fprintf(stderr, "Empty file\n");
-    fclose(fp);
+    fprintf(stderr, "Empty or invalid header in input file\n");
+    fclose(file);
     meos_finalize();
     return EXIT_FAILURE;
   }
+  printf("Processing records\n");
+  printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
 
-  trip_record trip_records[MAX_SHIPS] = {0};
-  int n_trip_records = 0;
-  int n_rows = 0, n_rows_ok = 0;
-
-  while (fgets(line, sizeof(line), fp))
+  /* Continue reading the file, following ais_assemble_full.c logic */
+  do
   {
-    n_rows++;
-    /* Extract required columns */
-    char *tokens[5] = {0};
-    int idx = 0;
-    for (char *tok = strtok(line, ","); tok && idx < 5; tok = strtok(NULL, ","))
-      tokens[idx++] = tok;
-    if (idx < 5) continue;
-
-    if (!is_nonempty_token(tokens[0]) || !is_nonempty_token(tokens[2]) ||
-        !is_nonempty_token(tokens[3]) || !is_nonempty_token(tokens[4]))
-      continue;
-
-    /* Optional: skip Base Station rows */
-    if (tokens[1] && strncmp(tokens[1], "Base Station", 12) == 0)
-      continue;
-
-    Rec r = {0};
-    if (!parse_timestamp_eu(tokens[0], &r.t))
-      continue;
-    r.mmsi = strtoll(tokens[2], NULL, 10);
-    r.lat = strtod(tokens[3], NULL);
-    r.lon = strtod(tokens[4], NULL);
-
-    /* Find trip_record */
-    int j = -1;
-    for (int i = 0; i < n_trip_records; i++)
-      if (trip_records[i].mmsi == r.mmsi) { j = i; break; }
-    if (j == -1)
+    if (fscanf(file, "%1023[^\n]\n", line_buffer) != 1)
     {
-      if (n_trip_records == MAX_SHIPS)
-        continue;
-      j = n_trip_records++;
-      trip_records[j].mmsi = r.mmsi;
-      trip_records[j].n_inst = 0;
-      trip_records[j].cap_inst = INITIAL_INSTANTS;
-      trip_records[j].inst = (TInstant **) calloc((size_t)INITIAL_INSTANTS, sizeof(TInstant *));
-      if (!trip_records[j].inst)
+      if (ferror(file))
+        fprintf(stderr, "\nError reading input file\n");
+      break;
+    }
+
+    no_records++;
+    if (no_records % NO_RECORDS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
+    if (no_records == MAX_NO_RECORDS)
+      break;
+
+    memset(&rec, 0, sizeof(rec));
+    int field = 0;
+    char *token = strtok(line_buffer, ",");
+    bool has_t = false, has_mmsi = false, has_lat = false,
+      has_long = false, has_sog = false;
+    while (token)
+    {
+      if (strlen(token) != 0 && strcmp(token, "Unknown") != 0)
       {
-        fprintf(stderr, "Out of memory\n");
-        fclose(fp);
-        meos_finalize();
-        return EXIT_FAILURE;
+        switch (field)
+        {
+          case 0:
+            if (parse_timestamp_eu(token, &rec.T))
+              has_t = true;
+            break;
+          case 2:
+            rec.MMSI = strtoll(token, NULL, 0);
+            if (rec.MMSI != 0)
+              has_mmsi = true;
+            break;
+          case 3:
+            rec.Latitude = strtold(token, NULL);
+            if (rec.Latitude >= 40.18 && rec.Latitude <= 84.17)
+              has_lat = true;
+            break;
+          case 4:
+            rec.Longitude = strtold(token, NULL);
+            if (rec.Longitude >= -16.1 && rec.Longitude <= 32.88)
+              has_long = true;
+            break;
+          case 7:
+            rec.SOG = strtold(token, NULL);
+            if (rec.SOG >= 0 && rec.SOG <= 1022)
+              has_sog = true;
+            break;
+          default:
+            break;
+        }
+      }
+      token = strtok(NULL, ",");
+      field++;
+      if (field > 7)
+        break;
+    }
+
+    if (! has_t || ! has_mmsi || ! ( ( has_lat && has_long ) || has_sog) )
+    {
+      no_err_records++;
+      continue;
+    }
+
+    /* Find the place to store the new instant */
+    j = -1;
+    for (i = 0; i < no_ships; i++)
+    {
+      if (trips[i].MMSI == rec.MMSI)
+      {
+        j = i;
+        break;
       }
     }
-
-    /* Make a 2D tgeompoint instant with SRID unknown (0), geodetic=false */
-    GSERIALIZED *gs = geompoint_make2d(4326, r.lon, r.lat);
-    TInstant *ti = tpointinst_make(gs, r.t);
-    free(gs);
-
-    int n = trip_records[j].n_inst;
-    if (n > 0 && trip_records[j].inst[n-1]->t == ti->t)
-    { free(ti); continue; }
-    if (n == trip_records[j].cap_inst)
+    if (j < 0)
     {
-      int newcap = trip_records[j].cap_inst * 2;
-      TInstant **tmp = (TInstant **) realloc(trip_records[j].inst, (size_t)newcap * sizeof(TInstant *));
-      if (!tmp) { fprintf(stderr, "Out of memory (expand)\n"); free(ti); break; }
-      trip_records[j].inst = tmp; trip_records[j].cap_inst = newcap;
+      if (no_ships == MAX_SHIPS)
+        continue;
+      j = no_ships++;
+      trips[j].MMSI = rec.MMSI;
+      trips[j].no_records = 0;
+      trips[j].n_inst = 0;
+      trips[j].free_inst = INITIAL_INSTANTS;
+      trips[j].inst = (TInstant **) calloc(INITIAL_INSTANTS, sizeof(TInstant *));
+      if (!trips[j].inst)
+      {
+        fprintf(stderr, "\nMMSI: %lld, there is no more memory to expand the trip\n",
+          trips[j].MMSI);
+        fclose(file);
+        goto cleanup;
+      }
     }
-    trip_records[j].inst[trip_records[j].n_inst++] = ti;
-    n_rows_ok++;
-  }
-  fclose(fp);
+    trips[j].no_records++;
 
-  printf("Read %d rows, accepted %d points, built %d trip_records.\n", n_rows, n_rows_ok, n_trip_records);
+    /* Create a Trip instant from the record, only if we have valid position */
+    if (has_lat && has_long)
+    {
+      TInstant *inst, **new_instants;
+      const TInstant *last;
+
+      GSERIALIZED *gs = geompoint_make2d(4326, rec.Longitude, rec.Latitude);
+      inst = tpointinst_make(gs, rec.T);
+      free(gs);
+
+      if (trips[j].free_inst == 0)
+      {
+        new_instants = realloc(trips[j].inst,
+          sizeof(TInstant *) * trips[j].n_inst * 2);
+        if (! new_instants)
+        {
+          fprintf(stderr, "\nMMSI: %lld, there is no more memory to expand the trip\n",
+            trips[j].MMSI);
+          free(inst);
+          fclose(file);
+          goto cleanup;
+        }
+        trips[j].inst = new_instants;
+        trips[j].free_inst = trips[j].n_inst;
+      }
+
+      last = trips[j].n_inst ?
+        trips[j].inst[trips[j].n_inst - 1] : NULL;
+      if (last && last->t == inst->t)
+      {
+        free(inst);
+      }
+      else
+      {
+        trips[j].inst[trips[j].n_inst++] = inst;
+        trips[j].free_inst--;
+        n_points_ok++;
+      }
+    }
+  } while (! feof(file));
+  fclose(file);
+
+  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records, no_err_records);
+  printf("%d trips read, %d trip instants accepted.\n", no_ships, n_points_ok);
 
   /* Output config */
   const char *outpath = (argc >= 3 ? argv[2] : "ais_ekf_clean_out.csv");
-  bool to_drop = true;           /* default: drop */
+  bool to_drop = true;            /* default: drop */
   double gate = 8.0;              /* Mahalanobis threshold in sigmas */
   double q = 5e-10;               /* process noise (deg^2/s^4) default */
   double r = 4e-6;                /* measurement noise (deg^2) default */
@@ -254,26 +336,26 @@ int main(int argc, char **argv)
   }
 
   /* Process each trip_record */
-  for (int i = 0; i < n_trip_records; i++)
+  for (i = 0; i < no_ships; i++)
   {
-    if (trip_records[i].n_inst == 0)
+    if (trips[i].n_inst == 0)
       continue;
 
     /* Build sequence and run EKF filter */
-    TSequence *seq = tsequence_make((const TInstant **) trip_records[i].inst, trip_records[i].n_inst,
+    TSequence *seq = tsequence_make((const TInstant **) trips[i].inst, trips[i].n_inst,
       true, true, LINEAR, false);
     /* Free instants and the array after building the sequence */
-    for (int j = 0; j < trip_records[i].n_inst; j++)
-      free(trip_records[i].inst[j]);
-    free(trip_records[i].inst);
-    trip_records[i].inst = NULL; trip_records[i].n_inst = trip_records[i].cap_inst = 0;
+    for (j = 0; j < trips[i].n_inst; j++)
+      free(trips[i].inst[j]);
+    free(trips[i].inst);
+    trips[i].inst = NULL; trips[i].n_inst = trips[i].free_inst = 0;
 
     Temporal *clean = temporal_ext_kalman_filter((Temporal *) seq, gate, q, r, to_drop);
 
     GSERIALIZED *traj = tpoint_trajectory(clean ? clean : (Temporal *) seq, false);
     char *ewkt = traj ? geo_as_ewkt(traj, 10) : NULL;
     if (fout)
-      fprintf(fout, "%lld,\"%s\"\n", trip_records[i].mmsi, ewkt ? ewkt : "");
+      fprintf(fout, "%lld,\"%s\"\n", trips[i].MMSI, ewkt ? ewkt : "");
     if (ewkt) free(ewkt);
     if (traj) free(traj);
 
@@ -316,7 +398,7 @@ int main(int argc, char **argv)
             char *q = strchr(wkt, ')');
             if (p && q && q > p) sscanf(p+1, "%lf %lf", &lon, &lat);
           }
-          fprintf(fremoved, "%lld,%s,%.10f,%.10f\n", trip_records[i].mmsi, ts ? ts : "", lon, lat);
+          fprintf(fremoved, "%lld,%s,%.10f,%.10f\n", trips[i].MMSI, ts ? ts : "", lon, lat);
           if (ts) free(ts);
           if (wkt) free(wkt);
           free(ir); iraw++;
@@ -330,14 +412,29 @@ next_raw:
     if (clean) free(clean);
     if (seq) free(seq);
     if (to_drop)
-      printf("MMSI %lld cleaned (removed=%d).\n", trip_records[i].mmsi, removed_count);
+      printf("MMSI %lld cleaned (removed=%d).\n", trips[i].MMSI, removed_count);
     else
-      printf("MMSI %lld cleaned.\n", trip_records[i].mmsi);
+      printf("MMSI %lld cleaned.\n", trips[i].MMSI);
   }
 
   if (fout) fclose(fout);
   if (fremoved) fclose(fremoved);
 
+  exit_value = EXIT_SUCCESS;
+
+cleanup:
+
+  /* Free any remaining per-ship buffers (in case of early error) */
+  for (i = 0; i < no_ships; i++)
+  {
+    if (trips[i].inst)
+    {
+      for (j = 0; j < trips[i].n_inst; j++)
+        free(trips[i].inst[j]);
+      free(trips[i].inst);
+    }
+  }
+
   meos_finalize();
-  return 0;
+  return exit_value;
 }

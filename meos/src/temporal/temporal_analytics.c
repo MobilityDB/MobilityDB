@@ -54,19 +54,20 @@
 #include "temporal/temporal_tile.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "temporal/tinyekf_meos.h"
 #include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
+
+
+
 
 /*****************************************************************************
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
  *****************************************************************************/
-
-/* We include tinyEKF as a header. */
-
+ 
 #define _float_t double
 #define EKF_N 6 /* [x,vx,y,vy,z,vz] */
 #define EKF_M 3 /* measure positions [x,y,z] */
-#include "temporal/tinyekf_meos.h"
 
 /* Build constant-velocity F matrix for given dt (seconds) */
 static inline void
