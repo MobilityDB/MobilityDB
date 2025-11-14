@@ -294,6 +294,9 @@ int main(int argc, char **argv)
   printf("\n%d records read.\n%d erroneous records ignored.\n", no_records, no_err_records);
   printf("%d trips read, %d trip instants accepted.\n", no_ships, n_points_ok);
 
+  /************************************************************************/
+  /* After creating the trips , we preform EKF cleaning per trip */
+
   /* Output config */
   const char *outpath = (argc >= 3 ? argv[2] : "ais_ekf_clean_out.csv");
   bool to_drop = true;            /* default: drop */
@@ -311,7 +314,7 @@ int main(int argc, char **argv)
       if (endp && endp != argv[ai]) gate = v;
     }
   }
-
+  /* Prepare output CSV file */
   FILE *fout = fopen(outpath, "w");
   if (!fout)
     fprintf(stderr, "Could not open output file %s (printing to stdout only)\n", outpath);
@@ -341,9 +344,10 @@ int main(int argc, char **argv)
     if (trips[i].n_inst == 0)
       continue;
 
-    /* Build sequence and run EKF filter */
+    /* Build sequence and run EKF filter ----------------*/
     TSequence *seq = tsequence_make((const TInstant **) trips[i].inst, trips[i].n_inst,
       true, true, LINEAR, false);
+
     /* Free instants and the array after building the sequence */
     for (j = 0; j < trips[i].n_inst; j++)
       free(trips[i].inst[j]);
@@ -352,6 +356,8 @@ int main(int argc, char **argv)
 
     Temporal *clean = temporal_ext_kalman_filter((Temporal *) seq, gate, q, r, to_drop);
 
+
+    /* Get EWKT of cleaned trajectory */
     GSERIALIZED *traj = tpoint_trajectory(clean ? clean : (Temporal *) seq, false);
     char *ewkt = traj ? geo_as_ewkt(traj, 10) : NULL;
     if (fout)

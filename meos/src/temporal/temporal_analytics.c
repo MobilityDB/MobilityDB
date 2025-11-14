@@ -59,12 +59,10 @@
 #include "geo/tgeo_spatialfuncs.h"
 
 
-
-
 /*****************************************************************************
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
  *****************************************************************************/
- 
+
 #define _float_t double
 #define EKF_N 6 /* [x,vx,y,vy,z,vz] */
 #define EKF_M 3 /* measure positions [x,y,z] */
@@ -185,6 +183,7 @@ tfloatseq_ext_kalman_filter(const TSequence *seq, double gate, double q,
     _float_t HP[EKF_M*EKF_N]; _mulmat(H, ekf.P, HP, EKF_M, EKF_N, EKF_N);
     _float_t HpHt[EKF_M*EKF_M]; _mulmat(HP, Ht, HpHt, EKF_M, EKF_N, EKF_M);
     _float_t S[EKF_M*EKF_M]; _addmat(HpHt, Rm, S, EKF_M, EKF_M);
+    /* Used cholesky inversion for better numerical stability */
     _float_t Sinv[EKF_M*EKF_M]; bool ok = invert(S, Sinv);
     _float_t v[EKF_M]; _sub(z, hx, v, EKF_M);
     double mdist = ok ? innovation_distance(v, Sinv) : 0.0;
