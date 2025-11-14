@@ -113,7 +113,7 @@ Requirements
 
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   CMake >= 3.7
-*   PostgreSQL >= 13
+*   PostgreSQL >= 14
 *   PostGIS >= 3.0
 *   GEOS >= 3.8
 *   PROJ4 >= 6.1
