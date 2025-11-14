@@ -444,9 +444,6 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/*****************************************************************************/
-
-/* Extended Kalman Filter wrapper */
 
 PGDLLEXPORT Datum Temporal_ext_kalman_filter(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_ext_kalman_filter);

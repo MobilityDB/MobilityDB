@@ -310,8 +310,7 @@ tgeompointseq_ext_kalman_filter(const TSequence *seq, double gate, double q, dou
  * @brief EKF-based outlier filtering for temporal floats/points.
  */
 Temporal *
-temporal_ext_kalman_filter(const Temporal *temp, double gate, double q,
-  double variance, bool to_drop)
+temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double variance, bool to_drop)
 {
   /* Validate input */
   VALIDATE_NOT_NULL(temp, NULL);

@@ -38,8 +38,8 @@
  * Example timestamp format: "01/03/2024 00:00:00" (DD/MM/YYYY HH:MM:SS)
  *
  * For each MMSI we aggregate geographic positions (Longitude, Latitude)
- * into a TSEQUENCE of tgeompoint instants (2D, SRID unknown, geodetic=false),
- * and apply an EKF (constant-velocity) via temporal_ext_kalman_filter().
+ * into a TSEQUENCE of tgeompoint instants
+ * and apply an EKF via temporal_ext_kalman_filter().
  *
  * Build:
  *  gcc -Wall -O2 -I/usr/local/include -o ais_ekf_clean meos/examples/ais_ekf_clean.c \
@@ -84,8 +84,8 @@ typedef struct
   long long mmsi;
   int n_inst;
   int cap_inst;
-  TInstant **inst; /* T_TGEOMPOINT instants */
-} Track;
+  TInstant **inst; 
+} trip_record;
 
 static bool parse_timestamp_eu(const char *s, TimestampTz *out)
 {
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  Track tracks[MAX_SHIPS] = {0};
-  int n_tracks = 0;
+  trip_record trip_records[MAX_SHIPS] = {0};
+  int n_trip_records = 0;
   int n_rows = 0, n_rows_ok = 0;
 
   while (fgets(line, sizeof(line), fp))
@@ -168,20 +168,20 @@ int main(int argc, char **argv)
     r.lat = strtod(tokens[3], NULL);
     r.lon = strtod(tokens[4], NULL);
 
-    /* Find track */
+    /* Find trip_record */
     int j = -1;
-    for (int i = 0; i < n_tracks; i++)
-      if (tracks[i].mmsi == r.mmsi) { j = i; break; }
+    for (int i = 0; i < n_trip_records; i++)
+      if (trip_records[i].mmsi == r.mmsi) { j = i; break; }
     if (j == -1)
     {
-      if (n_tracks == MAX_SHIPS)
+      if (n_trip_records == MAX_SHIPS)
         continue;
-      j = n_tracks++;
-      tracks[j].mmsi = r.mmsi;
-      tracks[j].n_inst = 0;
-      tracks[j].cap_inst = INITIAL_INSTANTS;
-      tracks[j].inst = (TInstant **) calloc((size_t)INITIAL_INSTANTS, sizeof(TInstant *));
-      if (!tracks[j].inst)
+      j = n_trip_records++;
+      trip_records[j].mmsi = r.mmsi;
+      trip_records[j].n_inst = 0;
+      trip_records[j].cap_inst = INITIAL_INSTANTS;
+      trip_records[j].inst = (TInstant **) calloc((size_t)INITIAL_INSTANTS, sizeof(TInstant *));
+      if (!trip_records[j].inst)
       {
         fprintf(stderr, "Out of memory\n");
         fclose(fp);
@@ -195,26 +195,26 @@ int main(int argc, char **argv)
     TInstant *ti = tpointinst_make(gs, r.t);
     free(gs);
 
-    int n = tracks[j].n_inst;
-    if (n > 0 && tracks[j].inst[n-1]->t == ti->t)
+    int n = trip_records[j].n_inst;
+    if (n > 0 && trip_records[j].inst[n-1]->t == ti->t)
     { free(ti); continue; }
-    if (n == tracks[j].cap_inst)
+    if (n == trip_records[j].cap_inst)
     {
-      int newcap = tracks[j].cap_inst * 2;
-      TInstant **tmp = (TInstant **) realloc(tracks[j].inst, (size_t)newcap * sizeof(TInstant *));
+      int newcap = trip_records[j].cap_inst * 2;
+      TInstant **tmp = (TInstant **) realloc(trip_records[j].inst, (size_t)newcap * sizeof(TInstant *));
       if (!tmp) { fprintf(stderr, "Out of memory (expand)\n"); free(ti); break; }
-      tracks[j].inst = tmp; tracks[j].cap_inst = newcap;
+      trip_records[j].inst = tmp; trip_records[j].cap_inst = newcap;
     }
-    tracks[j].inst[tracks[j].n_inst++] = ti;
+    trip_records[j].inst[trip_records[j].n_inst++] = ti;
     n_rows_ok++;
   }
   fclose(fp);
 
-  printf("Read %d rows, accepted %d points, built %d tracks.\n", n_rows, n_rows_ok, n_tracks);
+  printf("Read %d rows, accepted %d points, built %d trip_records.\n", n_rows, n_rows_ok, n_trip_records);
 
   /* Output config */
   const char *outpath = (argc >= 3 ? argv[2] : "ais_ekf_clean_out.csv");
-  bool to_drop = false;           /* default: fill */
+  bool to_drop = true;           /* default: drop */
   double gate = 8.0;              /* Mahalanobis threshold in sigmas */
   double q = 5e-10;               /* process noise (deg^2/s^4) default */
   double r = 4e-6;                /* measurement noise (deg^2) default */
@@ -253,30 +253,31 @@ int main(int argc, char **argv)
       fprintf(fremoved, "MMSI,Timestamp,Longitude,Latitude\n");
   }
 
-  for (int i = 0; i < n_tracks; i++)
+  /* Process each trip_record */
+  for (int i = 0; i < n_trip_records; i++)
   {
-    if (tracks[i].n_inst == 0)
+    if (trip_records[i].n_inst == 0)
       continue;
 
     /* Build sequence and run EKF filter */
-    TSequence *seq = tsequence_make((const TInstant **) tracks[i].inst, tracks[i].n_inst,
+    TSequence *seq = tsequence_make((const TInstant **) trip_records[i].inst, trip_records[i].n_inst,
       true, true, LINEAR, false);
     /* Free instants and the array after building the sequence */
-    for (int j = 0; j < tracks[i].n_inst; j++)
-      free(tracks[i].inst[j]);
-    free(tracks[i].inst);
-    tracks[i].inst = NULL; tracks[i].n_inst = tracks[i].cap_inst = 0;
+    for (int j = 0; j < trip_records[i].n_inst; j++)
+      free(trip_records[i].inst[j]);
+    free(trip_records[i].inst);
+    trip_records[i].inst = NULL; trip_records[i].n_inst = trip_records[i].cap_inst = 0;
 
     Temporal *clean = temporal_ext_kalman_filter((Temporal *) seq, gate, q, r, to_drop);
 
     GSERIALIZED *traj = tpoint_trajectory(clean ? clean : (Temporal *) seq, false);
     char *ewkt = traj ? geo_as_ewkt(traj, 10) : NULL;
     if (fout)
-      fprintf(fout, "%lld,\"%s\"\n", tracks[i].mmsi, ewkt ? ewkt : "");
+      fprintf(fout, "%lld,\"%s\"\n", trip_records[i].mmsi, ewkt ? ewkt : "");
     if (ewkt) free(ewkt);
     if (traj) free(traj);
 
-    /* If drop mode and removed CSV is open, write removed points (timestamps not present in cleaned) */
+    /* If drop mode and removed CSV is open, write removed points (we compare the timestamps not present in cleaned) */
     int removed_count = 0;
     if (to_drop && fremoved && clean)
     {
@@ -315,7 +316,7 @@ int main(int argc, char **argv)
             char *q = strchr(wkt, ')');
             if (p && q && q > p) sscanf(p+1, "%lf %lf", &lon, &lat);
           }
-          fprintf(fremoved, "%lld,%s,%.10f,%.10f\n", tracks[i].mmsi, ts ? ts : "", lon, lat);
+          fprintf(fremoved, "%lld,%s,%.10f,%.10f\n", trip_records[i].mmsi, ts ? ts : "", lon, lat);
           if (ts) free(ts);
           if (wkt) free(wkt);
           free(ir); iraw++;
@@ -329,14 +330,14 @@ next_raw:
     if (clean) free(clean);
     if (seq) free(seq);
     if (to_drop)
-      printf("MMSI %lld cleaned (removed=%d).\n", tracks[i].mmsi, removed_count);
+      printf("MMSI %lld cleaned (removed=%d).\n", trip_records[i].mmsi, removed_count);
     else
-      printf("MMSI %lld cleaned.\n", tracks[i].mmsi);
+      printf("MMSI %lld cleaned.\n", trip_records[i].mmsi);
   }
 
   if (fout) fclose(fout);
   if (fremoved) fclose(fremoved);
 
   meos_finalize();
-  return EXIT_SUCCESS;
+  return 0;
 }

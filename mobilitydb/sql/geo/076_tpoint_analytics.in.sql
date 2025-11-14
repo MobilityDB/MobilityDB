@@ -193,10 +193,7 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Extended Kalman Filter (EKF) outlier filtering for tgeompoint
-
-CREATE FUNCTION extendedKalmanFilter(tgeompoint, gates float, q float,
-  variance float, boolean to_drop DEFAULT TRUE)
+CREATE FUNCTION extendedKalmanFilter(tgeompoint, gate float, q float, variance float, boolean to_drop DEFAULT TRUE)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_ext_kalman_filter'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
