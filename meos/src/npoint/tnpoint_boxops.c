@@ -104,14 +104,13 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
     posmax = Max(posmax, np->pos);
   }
 
-  GSERIALIZED *line = route_geom(rid);
-  GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
+  const GSERIALIZED *line = route_geom(rid);
+  GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
     line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
-  pfree(line);
   if (posmin != 0 || posmax != 1)
     pfree(gs);
   return;
@@ -157,14 +156,13 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     int64 rid = np1->rid;
     double posmin = Min(np1->pos, np2->pos);
     double posmax = Min(np1->pos, np2->pos);
-    GSERIALIZED *line = route_geom(rid);
-    GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
+    const GSERIALIZED *line = route_geom(rid);
+    GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? geo_copy(line) :
       line_substring(line, posmin, posmax);
     geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);
     MEOS_FLAGS_SET_T(box.flags, true);
-    pfree(line);
     if (posmin != 0 || posmax != 1)
       pfree(gs);
   }

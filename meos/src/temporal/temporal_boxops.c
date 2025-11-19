@@ -130,7 +130,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 
 /**
  * @brief Return -1, 0, or 1 depending on whether the first bounding box
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
  */

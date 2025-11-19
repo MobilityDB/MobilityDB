@@ -374,8 +374,11 @@ temporal_skiplist_splice(SkipList *list, void **values, int count,
 
 /**
  * @brief Generic aggregate function for temporal instants
- * @param[in] instants1 Accumulated state
- * @param[in] instants2 Instants of the input temporal discrete sequence
+ * @param[in] instants1 Instants of the accumulated state that overlap with
+ * the new instants in instants2. At this point of the processing these
+ * instants have been removed from the skiplist.
+ * @param[in] instants2 Instants of the input temporal discrete sequence that
+ * need to be merged into the skiplist.
  * @param[in] count1,count2 Number of values in the input arrays
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[out] newcount Number of instants in the output array
@@ -407,7 +410,9 @@ tinstant_tagg(const TInstant **instants1, int count1,
       else
       {
         if (tinstant_eq(inst1, inst2))
+        {
           result[count++] = tinstant_copy(inst1);
+        }
         else
         {
           char *t1 = pg_timestamptz_out(inst1->t);
@@ -428,6 +433,8 @@ tinstant_tagg(const TInstant **instants1, int count1,
     else
     {
       result[count++] = tinstant_copy(inst2);
+      if (tofree)
+        tofree1[nfree1++] = result[count - 1];
       j++;
     }
   }
@@ -435,7 +442,11 @@ tinstant_tagg(const TInstant **instants1, int count1,
   assert (i == count1);
   /* Copy the instants from state2 that are after the end of state1 */
   while (j < count2)
+  {
     result[count++] = tinstant_copy(instants2[j++]);
+    if (tofree)
+      tofree1[nfree1++] = result[count - 1];
+  }
   /* Set the output parameters and return */
   *newcount = count;
   *tofree = tofree1;
@@ -540,9 +551,10 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func)
-      instants[i] = tinstant_make(
-        func(tinstant_value_p(inst1), tinstant_value_p(inst2)), seq1->temptype,
-        inst1->t);
+    {
+      Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
+      instants[i] = tinstant_make(value, seq1->temptype, inst1->t);
+    }
     else
     {
       if (tinstant_eq(inst1, inst2))
@@ -553,6 +565,9 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
+        for (int j = 0; j < i; j++)
+          pfree(instants[i]);
+        pfree(instants);
         return -1;
       }
     }
@@ -589,9 +604,9 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];
+  pfree(normseqs);
   for (int i = 0; i < nseqs; i++)
     pfree(sequences[i]);
-  pfree(normseqs);
   return count;
 }
 
@@ -627,14 +642,13 @@ tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **seque
       &sequences[k]);
     k += countstep - 1;
 
-    /* Need to get all info from seq1 and seq2
-     * since we might free one of them right after */
+    /* Need to get all info from seq1 and seq2 since we might free one of them
+     * right after */
     int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
     bool upper1_inc = seq1->period.upper_inc,
          upper2_inc = seq2->period.upper_inc;
 
-    /* We just discarded sequences[k]
-     * from last iteration, so free it */
+    /* We just discarded sequences[k] from last iteration, so free it */
     if (tofree)
       pfree(tofree);
 
@@ -649,7 +663,7 @@ tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **seque
       /* Nothing to free in next iteration */
       tofree = NULL;
     }
-    /* If upper bound of seq1 is less than or equal to the upper bound of seq2 */
+    /* If the upper bound of seq1 is less than or equal to the upper bound of seq2 */
     else if (cmp < 0 ||
       (!upper1_inc && upper2_inc && cmp == 0))
     {
@@ -659,8 +673,8 @@ tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **seque
         k++; j++;
         break;
       }
-      /* sequences[k] will be overwritten in the next
-       * iteration so we need to save and later free it */
+      /* sequences[k] will be overwritten in the next iteration so we need to
+       * save and later free it */
       seq1 = sequences1[i];
       seq2 = tofree = sequences[k];
     }
@@ -683,17 +697,17 @@ tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **seque
     sequences[k++] = tsequence_copy(sequences2[j++]);
 
   /* Normalization */
+  TSequence **result;
   if (k == 1)
   {
-    TSequence **result = palloc(sizeof(TSequence *));
+    result = palloc(sizeof(TSequence *));
     result[0] = sequences[0];
     pfree(sequences);
     *newcount = 1;
     return result;
   }
   int count;
-  TSequence **result = tseqarr_normalize((const TSequence **) sequences,
-    k, &count);
+  result = tseqarr_normalize((const TSequence **) sequences, k, &count);
   pfree_array((void **) sequences, k);
   *newcount = count;
   return result;
@@ -778,7 +792,8 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   const TSequence **sequences = tsequenceset_sequences_p(ss);
   if (! state)
     state = temporal_skiplist_make();
-  temporal_skiplist_splice(state, (void **) sequences, ss->count, func, crossings);
+  temporal_skiplist_splice(state, (void **) sequences, ss->count, func,
+    crossings);
   pfree(sequences);
   return state;
 }
@@ -1262,7 +1277,8 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
     if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
       return NULL;
   }
-  temporal_skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32, CROSSINGS_NO);
+  temporal_skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
+    CROSSINGS_NO);
   pfree(seq);
   return state;
 }
@@ -1295,8 +1311,8 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
   }
   for (int i = 0; i < ss->count; i++)
   {
-    temporal_skiplist_splice(state, (void **) &sequences[i], 1, &datum_sum_int32,
-      CROSSINGS_NO);
+    temporal_skiplist_splice(state, (void **) &sequences[i], 1,
+      &datum_sum_int32, CROSSINGS_NO);
   }
   pfree_array((void **) sequences, ss->count);
   return state;
@@ -1322,7 +1338,8 @@ temporal_tcount_transfn(SkipList *state, const Temporal *temp)
   /* Null state: create a new state */
   if (! state)
     state = temporal_skiplist_make();
-  temporal_skiplist_splice(state, (void **) temparr, count, &datum_sum_int32, false);
+  temporal_skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
+    false);
   pfree_array((void **) temparr, count);
   return state;
 }

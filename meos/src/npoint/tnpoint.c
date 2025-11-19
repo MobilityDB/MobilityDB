@@ -345,7 +345,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* We are sure line is not empty */
-  GSERIALIZED *line = route_geom(np->rid);
+  const GSERIALIZED *line = route_geom(np->rid);
   int32_t srid = gserialized_get_srid(line);
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
   for (int i = 0; i < seq->count; i++)
@@ -360,7 +360,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
     instants[i] = tinstant_make_free(point, T_TGEOMPOINT, inst->t);
   }
 
-  pfree(line); lwline_free(lwline);
+  lwline_free(lwline);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }

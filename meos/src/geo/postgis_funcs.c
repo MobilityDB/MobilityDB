@@ -72,6 +72,165 @@
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 
 /*****************************************************************************
+ * Output functions for GBOX and BOX3D
+ * Original MEOS functions
+ *****************************************************************************/
+
+#if MEOS
+#define MAXBOX3DLEN    255
+#define MAXGBOXLEN     255
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a PostGIS GBOX from the arguments
+ * @param[in] hasz True if there is a Z dimension
+ * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
+ * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ */
+GBOX *
+gbox_make(bool hasz, double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  GBOX *result = palloc0(sizeof(GBOX));
+  FLAGS_SET_Z(result->flags, hasz);
+  FLAGS_SET_GEODETIC(result->flags, false);
+
+  /* Process X/Y min/max */
+  result->xmin = Min(xmin, xmax);
+  result->xmax = Max(xmin, xmax);
+  /* Process Y min/max */
+  result->ymin = Min(ymin, ymax);
+  result->ymax = Max(ymin, ymax);
+  if (hasz)
+  {
+    /* Process Z min/max */
+    result->zmin = Min(zmin, zmax);
+    result->zmax = Max(zmin, zmax);
+  }
+
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return the string representation of a PostGIS GBOX
+ * @param[in] box Box
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+char *
+gbox_out(const GBOX *box, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
+  static size_t size = MAXGBOXLEN + 1;
+  char buf[MAXGBOXLEN + 1];
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
+    *zmax = NULL;
+  bool hasz = FLAGS_GET_Z(box->flags);
+
+  xmin = float_out(box->xmin, maxdd);
+  xmax = float_out(box->xmax, maxdd);
+  ymin = float_out(box->ymin, maxdd);
+  ymax = float_out(box->ymax, maxdd);
+  if (hasz)
+  {
+    zmin = float_out(box->zmin, maxdd);
+    zmax = float_out(box->zmax, maxdd);
+    snprintf(buf, size, "GBOX Z((%s,%s,%s),(%s,%s,%s))",
+      xmin, ymin, zmin, xmax, ymax, zmax);
+  }
+  else
+  {
+    snprintf(buf, size, "GBOX X((%s,%s),(%s,%s))",
+      xmin, ymin, xmax, ymax);
+  }
+
+  pfree(xmin); pfree(xmax);
+  pfree(ymin); pfree(ymax);
+  if (hasz)
+  {
+    pfree(zmin); pfree(zmax);
+  }
+  return strdup(buf);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a PostGIS BOX3D from the arguments
+ * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
+ * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ * @param[in] srid SRID
+ */
+BOX3D *
+box3d_make(double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax, int32 srid)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  BOX3D *result = palloc0(sizeof(BOX3D));
+
+  /* Process X min/max */
+  result->xmin = Min(xmin, xmax);
+  result->xmax = Max(xmin, xmax);
+  /* Process Y min/max */
+  result->ymin = Min(ymin, ymax);
+  result->ymax = Max(ymin, ymax);
+  /* Process Z min/max */
+  result->zmin = Min(zmin, zmax);
+  result->zmax = Max(zmin, zmax);
+  /* Process SRID */
+  result->srid = srid;
+
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return the string representation of a PostGIS BOX3D
+ * @param[in] box Box
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+char *
+box3d_out(const BOX3D *box, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
+  static size_t size = MAXBOX3DLEN + 1;
+  char buf[MAXBOX3DLEN + 1];
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
+    *zmax = NULL;
+
+  char srid[18];
+  if (box->srid > 0)
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
+  else
+    srid[0] = '\0';
+
+  xmin = float_out(box->xmin, maxdd);
+  xmax = float_out(box->xmax, maxdd);
+  ymin = float_out(box->ymin, maxdd);
+  ymax = float_out(box->ymax, maxdd);
+  zmin = float_out(box->zmin, maxdd);
+  zmax = float_out(box->zmax, maxdd);
+  snprintf(buf, size, "%sBOX3D((%s,%s,%s),(%s,%s,%s))",
+      srid, xmin, ymin, zmin, xmax, ymax, zmax);
+
+  pfree(xmin); pfree(xmax);
+  pfree(ymin); pfree(ymax);
+  pfree(zmin); pfree(zmax);
+  return strdup(buf);
+}
+
+#endif /* MEOS */
+
+/*****************************************************************************
  * Interval tree functions
  * Functions copied from /postgis/lwgeom_itree.c
  *****************************************************************************/
@@ -245,6 +404,7 @@ geompoint_make3dz(int32_t srid, double x, double y, double z)
 {
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  lwpoint_free(point);
   return result;
 }
 
@@ -258,6 +418,7 @@ geogpoint_make3dz(int32_t srid, double x, double y, double z)
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
   FLAGS_SET_GEODETIC(point->flags, true);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  lwpoint_free(point);
   return result;
 }
 #endif /* MEOS */
@@ -543,7 +704,6 @@ box3d_to_lwgeom(BOX3D *box)
  * Functions adapted from lwgeom_functions_basic.c
  *****************************************************************************/
 
-#if CBUFFER
 /**
  * @ingroup meos_geo_base_accessor
  * @note Derived from PostGIS function: @p lwgeom_is_unitary(const LWGEOM *geom)
@@ -565,7 +725,6 @@ geo_is_unitary(const GSERIALIZED *gs)
       return false;
   }
 }
-#endif /* CBUFFER */
 
 #if MEOS
 /**
@@ -609,6 +768,7 @@ geom_perimeter(const GSERIALIZED *gs)
   assert(gs);
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   double perimeter = lwgeom_perimeter_2d(lwgeom);
+  lwgeom_free(lwgeom);
   return perimeter;
 }
 
@@ -650,11 +810,11 @@ geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *line = lwgeom_closest_line(geom1, geom2);
-  if (lwgeom_is_empty(line))
-    return NULL;
-
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line); lwgeom_free(geom1); lwgeom_free(geom2);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  GSERIALIZED *result = NULL;
+  if (! lwgeom_is_empty(line))
+    result = geo_serialize(line);
+  lwgeom_free(line);
   return result;
 }
 
@@ -720,8 +880,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   double mindist = lwgeom_mindistance3d(geom1, geom2);
-  lwgeom_free(geom1);
-  lwgeom_free(geom2);
+  lwgeom_free(geom1); lwgeom_free(geom2);
   /* if called with empty geometries the ingoing mindistance is untouched,
    * and makes us return NULL */
   if (mindist < FLT_MAX)
@@ -744,6 +903,7 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, 0.0);
+  lwgeom_free(geom1); lwgeom_free(geom2);
   /* empty geometries cases should be right handled since return from
      underlying functions should be FLT_MAX which causes false as answer */
   return (mindist == 0.0);
@@ -796,6 +956,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, tolerance);
   /*empty geometries cases should be right handled since return from underlying
    functions should be FLT_MAX which causes false as answer*/
+  lwgeom_free(geom1); lwgeom_free(geom2);
   return (tolerance >= mindist);
 }
 
@@ -813,7 +974,7 @@ geo_reverse(const GSERIALIZED *gs)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwgeom_reverse_in_place(geom);
   GSERIALIZED *result = geo_serialize(geom);
-  pfree(geom);
+  lwgeom_free(geom);
   return result;
 }
 
@@ -1021,7 +1182,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   return result;
 }
 
-#if CBUFFER
+
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return a MultiPoint containing all the coordinates of a geometry
@@ -1057,9 +1218,9 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
     result[i] = geo_serialize((LWGEOM *) res->geoms[i]);
   *count = res->ngeoms;
   lwgeom_free(lwgeom); 
+  lwmpoint_free(res); 
   return result;
 }
-#endif /* CBUFFER */
 
 #if MEOS
 /**
@@ -1123,10 +1284,14 @@ geo_geoN(const GSERIALIZED *gs, int n)
 
   /* Empty returns NULL */
   if (lwgeom_is_empty(lwgeom))
+  {
+    lwgeom_free(lwgeom);
     return NULL;
+  }
   /* Unitary geometries just reflect back */
   if (lwgeom_is_unitary(lwgeom))
   {
+    lwgeom_free(lwgeom);
     if (n == 1)
       return geo_copy(gs);
     else
@@ -1645,6 +1810,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
       return NULL;
   }
 
+  pfree(geoms);
   finishGEOS();
   if (! result)
     /* Union returned a NULL geometry */
@@ -1660,7 +1826,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
  * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geom_unary_union(GSERIALIZED *gs, double prec)
+geom_unary_union(const GSERIALIZED *gs, double prec)
 {
   assert(gs);
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs) ;
@@ -1754,7 +1920,7 @@ geom_convex_hull(const GSERIALIZED *gs)
  * @note PostGIS function: @p ST_Buffer(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geom_buffer(const GSERIALIZED *gs, double size, char *params)
+geom_buffer(const GSERIALIZED *gs, double size, const char *params)
 {
   assert(gs); assert(params);
 
@@ -1782,8 +1948,13 @@ geom_buffer(const GSERIALIZED *gs, double size, char *params)
   int endCapStyle = DEFAULT_ENDCAP_STYLE;
   int joinStyle  = DEFAULT_JOIN_STYLE;
 
+  /* In the for loop below the params parameter is modified. 
+   * Therefore we need to take a copy of it */
+  size_t params_size = strlen(params) + 1;
+  char *params1 = palloc(params_size);
+  memcpy(params1, params, params_size);
   char *param;
-  for (param = params; ; param = NULL)
+  for (param = params1; ; param = NULL)
   {
     char *key, *val;
     param = strtok(param, " ");
@@ -1867,6 +2038,7 @@ geom_buffer(const GSERIALIZED *gs, double size, char *params)
       return NULL;
     }
   }
+  pfree(params1); // TODO
 
   /* Empty.Buffer() == Empty[polygon] */
   if (gserialized_is_empty(gs))
@@ -1950,7 +2122,6 @@ geom_buffer(const GSERIALIZED *gs, double size, char *params)
 
 /*****************************************************************************/
 
-#if CBUFFER
 /**
  * @brief Extract the first-level elements of a gemetry collection
  */
@@ -2028,7 +2199,6 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   pfree_array((void *) elems2, count2);
   return result;
 }
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos_predicates.c
@@ -2168,7 +2338,7 @@ geo_serialize(const LWGEOM *geom)
  * @note PostGIS function: @p transform(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geo_transform(GSERIALIZED *gs, int32_t srid_to)
+geo_transform(const GSERIALIZED *gs, int32_t srid_to)
 {
   if (srid_to == SRID_UNKNOWN)
   {
@@ -2188,7 +2358,7 @@ geo_transform(GSERIALIZED *gs, int32_t srid_to)
 
   /* Input SRID and output SRID are equal, noop */
   if (srid_from == srid_to)
-    return gs;
+    return geo_copy(gs);
 
   LWPROJ *pj;
   if (! lwproj_lookup(srid_from, srid_to, &pj))
@@ -2199,7 +2369,8 @@ geo_transform(GSERIALIZED *gs, int32_t srid_to)
   }
 
   /* now we have a geometry, and input/output PJ structs. */
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  GSERIALIZED *gs1 = geo_copy(gs);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs1);
   lwgeom_transform(lwgeom, pj);
   lwgeom->srid = srid_to;
 
@@ -2211,6 +2382,7 @@ geo_transform(GSERIALIZED *gs, int32_t srid_to)
 
   GSERIALIZED *result = geo_serialize(lwgeom);
   lwgeom_free(lwgeom);
+  pfree(gs1);
   return result; /* new geometry */
 }
 
@@ -2228,7 +2400,8 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
   bool is_forward)
 {
   assert(gs); assert(pipeline);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  GSERIALIZED *gs1 = geo_copy(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs1);
   int rv = lwgeom_transform_pipeline(geom, pipeline, is_forward);
 
   if (rv == LW_FAILURE)
@@ -2244,7 +2417,7 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
     lwgeom_refresh_bbox(geom);
 
   GSERIALIZED *result = geo_serialize(geom);
-  lwgeom_free(geom);
+  lwgeom_free(geom); pfree(gs1);
   return (result); /* new geometry */
 }
 #endif /* MEOS */
@@ -3148,7 +3321,7 @@ geo_from_text(const char *wkt, int32_t srid)
   geo_result = geo_serialize(lwgeom);
   /* Clean up */
   lwgeom_free(lwg_parser_result.geom);
-  lwgeom_parser_result_free(&lwg_parser_result);
+  // lwgeom_parser_result_free(&lwg_parser_result);
 
   return geo_result;
 }
@@ -3286,8 +3459,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(wkb, NULL);
 
-  LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size,
-    LW_PARSER_CHECK_ALL);
+  LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_ALL);
   if (!geom)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
@@ -3338,7 +3510,7 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
   size_t data_size = VARSIZE(wkb) - LWVARHDRSZ;
   uint8_t *result = palloc(data_size);
   memcpy(result, wkb->data, data_size);
-  pfree(geom); pfree(wkb);
+  lwgeom_free(geom); pfree(wkb);
   *size = data_size;
   return result;
 }
@@ -3364,13 +3536,14 @@ geo_from_geojson(const char *geojson)
     /* Shouldn't get here */
     meos_error(ERROR, MEOS_ERR_GEOJSON_INPUT,
       "lwgeom_from_geojson returned NULL");
+    lwfree(srs);
     return NULL;
   }
 
   // if (srs)
   // {
     // srid = GetSRIDCacheBySRS(fcinfo, srs);
-    // lwfree(srs);
+    lwfree(srs);
   // }
 
   lwgeom_set_srid(geom, srid);
@@ -3577,39 +3750,6 @@ geog_in(const char *str, int32 typmod)
   return result;
 }
 
-#if MEOS
-/**
- * @ingroup meos_geo_base_inout
- * @brief Return a geography from its binary representation
- * @param[in] wkb_bytea Byte striing
- * geography_from_binary(*char) returns *GSERIALIZED
- */
-GSERIALIZED *
-geog_from_binary(const char *wkb_bytea)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(wkb_bytea, NULL);
-
-  size_t wkb_size = VARSIZE(wkb_bytea);
-  uint8_t *wkb = (uint8_t *) VARDATA(wkb_bytea);
-  LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_NONE);
-
-  if (! geom)
-  {
-    meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
-    return NULL;
-  }
-
-  GSERIALIZED *result = NULL;
-  /* Error on any SRID != default */
-  if (ensure_srid_is_latlong(geom->srid))
-    result = geog_serialize(geom);
-
-  lwgeom_free(geom);
-  return result;
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_geo_base_conversion
  * @brief Return a geography from a geometry
@@ -3693,7 +3833,10 @@ lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
   if (opa->npoints <= 1)
     result = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
   else
+  {
     result = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+    ptarray_free(opa);
+  }
   return result;
 }
 
@@ -3707,7 +3850,7 @@ lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
  * @note PostGIS function: @p LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-line_interpolate_point(GSERIALIZED *gs, double fraction, bool repeat)
+line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
 {
   if (fraction < 0 || fraction > 1)
   {
@@ -3722,20 +3865,13 @@ line_interpolate_point(GSERIALIZED *gs, double fraction, bool repeat)
     return NULL;
   }
 
-  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
-  POINTARRAY *opa = lwline_interpolate_points(lwline, fraction, repeat);
-
-  lwgeom_free(lwline_as_lwgeom(lwline));
-
-  LWGEOM *lwresult;
   int32_t srid = gserialized_get_srid(gs);
-  if (opa->npoints <= 1)
-    lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
-  else
-    lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  LWGEOM *lwresult = lwgeom_line_interpolate_point(lwgeom, fraction, srid,
+    repeat);
 
   GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwresult);
+  lwgeom_free(lwgeom); lwgeom_free(lwresult); 
   return result;
 }
 
@@ -3880,7 +4016,6 @@ line_substring(const GSERIALIZED *gs, double from, double to)
   return result;
 }
 
-#if CBUFFER
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the center point and radius of the smallest circle that
@@ -3927,7 +4062,6 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
 
   return result;
 }
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_lrs.c
@@ -4060,7 +4194,7 @@ line_point_n(const GSERIALIZED *gs, int n)
   if (! point)
     return NULL;
   GSERIALIZED *result = geo_serialize(lwpoint_as_lwgeom(point));
-  pfree(point);
+  lwpoint_free(point);
   return result;
 }
 

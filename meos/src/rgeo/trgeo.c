@@ -642,7 +642,7 @@ trgeo_instants(const Temporal *temp, int *count)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
-  const TInstant **instants = temporal_instants_p(temp, count);
+  const TInstant **instants = temporal_insts_p(temp, count);
   TInstant **result = palloc(sizeof(TInstant *) * *count);
   const GSERIALIZED *geo = trgeo_geom_p(temp);
   for (int i = 0; i < *count; i ++)

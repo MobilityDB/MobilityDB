@@ -122,7 +122,7 @@ tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_tspatial_int(temp1, temp2,
+  Temporal *result = tspatialrel_tspatial_tspatial(temp1, temp2,
     (Datum) NULL, (varfunc) func, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -620,8 +620,10 @@ tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tinterrel_tspatial_base(temp, PointerGetDatum(cb), tinter, restr,
-    atvalue, tinter ? &datum_cbuffer_intersects : &datum_cbuffer_disjoint);
+  GSERIALIZED *geo = cbuffer_to_geom(cb);
+  Temporal *result = tinterrel_tcbuffer_geo(temp, geo, tinter, restr, atvalue);
+  pfree(geo);
+  return result;
 }
 
 /*****************************************************************************

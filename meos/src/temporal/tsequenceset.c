@@ -562,7 +562,6 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   if (nsplits == 0)
   {
     /* There are no gaps  */
-    pfree(splits);
     seq = tsequence_make_exp1((const TInstant **) instants, count, count, true,
       true, interp, NORMALIZE, NULL);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
@@ -592,10 +591,10 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
     if (ninsts > 0)
       sequences[nseqs++] = tsequence_make_exp1((const TInstant **) newinsts,
         ninsts, ninsts, true, true, interp, NORMALIZE, NULL);
-    result = tsequenceset_make((const TSequence **) sequences, nseqs,
-      NORMALIZE);
-    pfree(newinsts); pfree(sequences);
+    result = tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+    pfree(newinsts);
   }
+  pfree(splits);
   return result;
 }
 
@@ -747,7 +746,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
  * an exclusive bound or not.
  */
 const TInstant *
-tsequenceset_minmax_inst(const TSequenceSet *ss,
+tsequenceset_minmax_inst_p(const TSequenceSet *ss,
   bool (*func)(Datum, Datum, meosType))
 {
   assert(ss);
@@ -784,9 +783,9 @@ tsequenceset_minmax_inst(const TSequenceSet *ss,
  * @csqlfn #Temporal_min_instant()
  */
 const TInstant *
-tsequenceset_min_inst(const TSequenceSet *ss)
+tsequenceset_min_inst_p(const TSequenceSet *ss)
 {
-  return tsequenceset_minmax_inst(ss, &datum_lt);
+  return tsequenceset_minmax_inst_p(ss, &datum_lt);
 }
 
 /**
@@ -799,9 +798,9 @@ tsequenceset_min_inst(const TSequenceSet *ss)
  * @csqlfn #Temporal_max_instant()
  */
 const TInstant *
-tsequenceset_max_inst(const TSequenceSet *ss)
+tsequenceset_max_inst_p(const TSequenceSet *ss)
 {
-  return tsequenceset_minmax_inst(ss, &datum_gt);
+  return tsequenceset_minmax_inst_p(ss, &datum_gt);
 }
 
 /**
@@ -2148,7 +2147,7 @@ tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)
 /**
  * @ingroup meos_internal_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal sequence
- * set is less than, equal, or greater than the second one
+ * set is less than, equal to, or greater than the second one
  * @param[in] ss1,ss2 Temporal sequence sets
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling

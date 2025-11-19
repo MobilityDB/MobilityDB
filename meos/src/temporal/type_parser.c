@@ -510,9 +510,9 @@ set_parse(const char **str, meosType settype)
   int count = 1;
   while (p_comma(str))
   {
-    count++;
     if (! elem_parse(str, basetype, &d))
       return NULL;
+    count++;
     DATUM_FREE(d, basetype);
   }
   if (! ensure_cbrace(str, type_str) ||

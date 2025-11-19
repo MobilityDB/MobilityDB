@@ -539,6 +539,12 @@ SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
  Sat Dec 22 20:22:00 2001 PST
 (1 row)
 
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 1);
+                                       round                                       
+-----------------------------------------------------------------------------------
+ TBOXFLOAT XT([1, 2],[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 1.0);
                                     shiftvalue                                     
 -----------------------------------------------------------------------------------
@@ -611,6 +617,9 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-
  TBOXFLOAT XT([1, 2],[Fri Dec 31 00:00:00 1999 PST, Fri Dec 31 01:00:00 1999 PST])
 (1 row)
 
+/* Errors */
+SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day', interval '-1 day');
+ERROR:  The interval must be positive: -1 days
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
                                    expandvalue                                    
 ----------------------------------------------------------------------------------
@@ -672,6 +681,8 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interv
 (1 row)
 
 /* Errors */
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
+ERROR:  The value cannot be negative: -1
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
 ERROR:  Invalid value to expand box: -1.000000
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
@@ -989,6 +1000,8 @@ ERROR:  Result of box union would not be contiguous
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-02-01,2000-02-02])';
 ERROR:  Result of box union would not be contiguous
 /* Errors */
+SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT X([3.0,4.0])';
+ERROR:  The boxes must be of the same dimensionality
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([3.0,4.0],[2000-01-01,2000-01-02])';
 ERROR:  Result of box union would not be contiguous
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-03, 2000-01-04])';
@@ -1274,5 +1287,41 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b >= t2.b;
  count 
 -------
   4950
+(1 row)
+
+SELECT tbox_hash(tbox 'TBOXFLOAT X([1.0,1.0])');
+ tbox_hash 
+-----------
+ 968363612
+(1 row)
+
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
+ tbox_hash_extended  
+---------------------
+ 4991639173001897668
+(1 row)
+
+SELECT tbox_hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
+ tbox_hash  
+------------
+ 1472778806
+(1 row)
+
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
+ tbox_hash_extended  
+---------------------
+ 6393472602966114521
+(1 row)
+
+SELECT tbox_hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ tbox_hash  
+------------
+ 1124885432
+(1 row)
+
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
+ tbox_hash_extended  
+---------------------
+ 2841424149611304447
 (1 row)
 

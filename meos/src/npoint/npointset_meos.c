@@ -223,7 +223,7 @@ ensure_valid_set_npoint(const Set *s, const Npoint *np)
  * @csqlfn #Contains_set_value()
  */
 bool
-contains_set_npoint(const Set *s, Npoint *np)
+contains_set_npoint(const Set *s, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))

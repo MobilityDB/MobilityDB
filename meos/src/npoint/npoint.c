@@ -40,11 +40,13 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/hashfn.h>
 #if ! MEOS
   #include <libpq/pqformat.h>
   #include <executor/spi.h>
   #include <utils/memutils.h>
 #endif /* ! MEOS */
+#include "port/pg_bitutils.h"
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
@@ -852,9 +854,8 @@ npoint_to_geompoint(const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(np, NULL);
-  GSERIALIZED *line = route_geom(np->rid);
+  const GSERIALIZED *line = route_geom(np->rid);
   GSERIALIZED *result = line_interpolate_point(line, np->pos, 0);
-  pfree(line);
   return result;
 }
 
@@ -869,14 +870,11 @@ nsegment_to_geom(const Nsegment *ns)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ns, NULL);
-  GSERIALIZED *line = route_geom(ns->rid);
-  GSERIALIZED *result;
+  const GSERIALIZED *line = route_geom(ns->rid);
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
-    result = line_interpolate_point(line, ns->pos1, 0);
+    return line_interpolate_point(line, ns->pos1, 0);
   else
-    result = line_substring(line, ns->pos1, ns->pos2);
-  pfree(line);
-  return result;
+    return line_substring(line, ns->pos1, ns->pos2);
 }
 
 /**
@@ -966,18 +964,20 @@ npointarr_geom(Npoint **points, int count)
   int32_t srid = npoint_srid(points[0]);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *gsline = route_geom(points[i]->rid);
+    const GSERIALIZED *gsline = route_geom(points[i]->rid);
     assert(gserialized_get_srid(gsline) == srid);
     LWGEOM *line = lwgeom_from_gserialized(gsline);
     geoms[i] = lwgeom_line_interpolate_point(line, points[i]->pos, srid, 0);
-    pfree(gsline); pfree(line);
+    lwgeom_free(line);
   }
   int newcount;
   LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
+  // for (int j = newcount; j < count; j++)
+    // lwgeom_free(newgeoms[j]);
   LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
   GSERIALIZED *result = geo_serialize(geom);
-  pfree(newgeoms); pfree(geom);
-  pfree_array((void **) geoms, count);
+  lwgeom_free(geom);
+  /* Cannot pfree(geoms); pfree(newgeoms);  */
   return result;
 }
 
@@ -995,14 +995,13 @@ nsegmentarr_geom(Nsegment **segments, int count)
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *line = route_geom(segments[i]->rid);
+    const GSERIALIZED *line = route_geom(segments[i]->rid);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = geo_copy(line);
     else if (segments[i]->pos1 == segments[i]->pos2)
       geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
     else
       geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
-    pfree(line);
   }
   GSERIALIZED *result = geom_array_union(geoms, count);
   pfree_array((void **) geoms, count);
@@ -1404,7 +1403,11 @@ npoint_hash(const Npoint *np)
 
   /* Merge hashes of value and position */
   uint32 result = rid_hash;
-  result = (result << 1) | (result >> 31);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  result = pg_rotate_left32(result, 1);
+#else
+  result =  (result << 1) | (result >> 31);
+#endif
   result ^= pos_hash;
   return result;
 }
@@ -1427,8 +1430,8 @@ npoint_hash_extended(const Npoint *np, uint64 seed)
 
   /* Merge hashes of value and position */
   uint64 result = rid_hash;
-  result = (result << 1) | (result >> 31);
   result ^= pos_hash;
+  result = ROTATE_HIGH_AND_LOW_32BITS(result);
   return result;
 }
 

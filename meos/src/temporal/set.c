@@ -484,12 +484,13 @@ Set *
 set_make_free(Datum *values, int count, meosType basetype, bool order)
 {
   assert(values); assert(count >= 0);
-  Set *result = NULL;
-  if (count > 0)
+  if (! count)
   {
-    result = set_make_exp(values, count, count, basetype, order);
     pfree(values);
+    return NULL;
   }
+  Set *result = set_make_exp(values, count, count, basetype, order);
+  pfree(values);
   return result;
 }
 
@@ -616,7 +617,7 @@ int
 set_mem_size(const Set *s)
 {
   VALIDATE_NOT_NULL(s, -1);
-  return (int) VARSIZE(DatumGetPointer(s));
+  return (int) VARSIZE(s);
 }
 #endif /* MEOS */
 
@@ -778,7 +779,9 @@ floatset_func(const Set *s, Datum (*func)(Datum))
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  Set *result = set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  pfree(values);
+  return result;
 }
 
 /**
@@ -846,7 +849,9 @@ textset_func(const Set *s, Datum (*func)(Datum))
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_TEXT, ORDER);
+  Set *result = set_make_exp(values, s->count, s->count, T_TEXT, ORDER);
+  pfree_array((void **) values, s->count);
+  return result;
 }
 
 /**
@@ -892,7 +897,7 @@ textset_initcap(const Set *s)
  * @param[in] invert True when the arguments must be inverted
  */
 Set *
-textcat_textset_text_int(const Set *s, const text *txt, bool invert)
+textcat_textset_text_common(const Set *s, const text *txt, bool invert)
 {
   assert(s); assert(txt); assert((s->settype == T_TEXTSET));
   Datum *values = palloc(sizeof(Datum) * s->count);
@@ -900,7 +905,9 @@ textcat_textset_text_int(const Set *s, const text *txt, bool invert)
     values[i] = invert ?
       datum_textcat(PointerGetDatum(txt), SET_VAL_N(s, i)) :
       datum_textcat(SET_VAL_N(s, i), PointerGetDatum(txt));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  Set *result = set_make(values, s->count, T_TEXT, ORDER_NO);
+  pfree_array((void **) values, s->count);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1088,7 +1095,7 @@ set_ne(const Set *s1, const Set *s2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less
- * than, equal, or greater than the second one
+ * than, equal to, or greater than the second one
  * @param[in] s1,s2 Sets
  * @return On error return @p INT_MAX
  * @note Function used for B-tree comparison

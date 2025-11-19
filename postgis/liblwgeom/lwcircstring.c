@@ -70,6 +70,8 @@ lwcircstring_construct(int32_t srid, GBOX *bbox, POINTARRAY *points)
 
 	result->srid = srid;
 	result->points = points;
+  // MEOS Now we own the point array
+  FLAGS_SET_READONLY(result->points->flags, 0);
 	result->bbox = bbox;
 
 	return result;

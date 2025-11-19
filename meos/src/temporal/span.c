@@ -41,6 +41,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <common/hashfn.h>
+#include "port/pg_bitutils.h"
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
@@ -1048,27 +1049,33 @@ tstzspan_expand(const Span *s, const Interval *interv)
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
-  Interval interv_neg;
+  Interval *interv_neg;
   if (negative)
   {
     Interval *duration = tstzspan_duration(s);
     /* Negate the interval */
-    interval_negate(interv, &interv_neg);
-    Interval *interv_neg2 = mul_interval_double(&interv_neg, 2.0);
+    interv_neg = interval_negate(interv);
+    Interval *interv_neg2 = mul_interval_double(interv_neg, 2.0);
     int cmp = pg_interval_cmp(duration, interv_neg2);
     pfree(duration); pfree(interv_neg2);
     if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
+    {
+      pfree(interv_neg);
       return NULL;
+    }
   }
 
   Span *result = span_copy(s);
   TimestampTz tmin = negative ?
-    add_timestamptz_interval(DatumGetTimestampTz(s->lower), &interv_neg) :
-    minus_timestamptz_interval(DatumGetTimestampTz(s->lower), interv);
+    add_timestamptz_interval(DatumGetTimestampTz(s->lower), interv_neg) :
+    minus_timestamptz_interval(DatumGetTimestampTz(s->lower),
+      (Interval *) interv);
   TimestampTz tmax = add_timestamptz_interval(DatumGetTimestampTz(s->upper),
-    interv);
+    (Interval *) interv);
   result->lower = TimestampTzGetDatum(tmin);
   result->upper = TimestampTzGetDatum(tmax);
+  if (negative)
+    pfree(interv_neg);
   return result;
 }
 
@@ -1125,14 +1132,14 @@ span_bounds_shift_scale_time(const Interval *shift, const Interval *duration,
   bool instant = (*lower == *upper);
   if (shift)
   {
-    *lower = add_timestamptz_interval(*lower, shift);
+    *lower = add_timestamptz_interval(*lower, (Interval *) shift);
     if (instant)
       *upper = *lower;
     else
-      *upper = add_timestamptz_interval(*upper, shift);
+      *upper = add_timestamptz_interval(*upper, (Interval *) shift);
   }
   if (duration && ! instant)
-    *upper = add_timestamptz_interval(*lower, duration);
+    *upper = add_timestamptz_interval(*lower, (Interval *) duration);
   return;
 }
 
@@ -1329,7 +1336,7 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(interv, DT_NOEND);
-  return add_timestamptz_interval(t, interv);
+  return add_timestamptz_interval(t, (Interval *) interv);
 }
 
 /**
@@ -1506,8 +1513,9 @@ span_ne(const Span *s1, const Span *s2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
- * equal, or greater than the second one
+ * equal to, or greater than the second one
  * @param[in] s1,s2 Sets
+ * @return On error return INT_MAX
  * @note Function used for B-tree comparison
  * @csqlfn #Span_cmp()
  */
@@ -1617,9 +1625,17 @@ span_hash(const Span *s)
   /* Merge hashes of flags, type, and bounds */
   uint32 result = hash_bytes_uint32((uint32) flags);
   result ^= type_hash;
-  result = (result << 1) | (result >> 31);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  result = pg_rotate_left32(result, 1);
+#else
+  result =  (result << 1) | (result >> 31);
+#endif
   result ^= lower_hash;
-  result = (result << 1) | (result >> 31);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  result = pg_rotate_left32(result, 1);
+#else
+  result =  (result << 1) | (result >> 31);
+#endif
   result ^= upper_hash;
 
   return result;
@@ -1630,7 +1646,7 @@ span_hash(const Span *s)
  * @brief Return the 64-bit hash of a span using a seed
  * @param[in] s Span
  * @param[in] seed Seed
- * @return On error return @p INT_MAX
+ * @return On error return @p LONG_MAX
  * @csqlfn #Span_hash_extended()
  */
 uint64
@@ -1639,12 +1655,7 @@ span_hash_extended(const Span *s, uint64 seed)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, LONG_MAX);
 
-  uint64 result;
   char flags = '\0';
-  uint64 type_hash;
-  uint64 lower_hash;
-  uint64 upper_hash;
-
   /* Create flags from the lower_inc and upper_inc values */
   if (s->lower_inc)
     flags |= 0x01;
@@ -1653,15 +1664,14 @@ span_hash_extended(const Span *s, uint64 seed)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  type_hash = DatumGetUInt64(hash_uint32_extended(type, seed));
+  uint64 type_hash = hash_uint32_extended((uint32) type, seed);
 
   /* Apply the hash function to each bound */
-  lower_hash = pg_hashint8extended(s->lower, seed);
-  upper_hash = pg_hashint8extended(s->upper, seed);
+  uint64 lower_hash = pg_hashint8extended(s->lower, seed);
+  uint64 upper_hash = pg_hashint8extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
-  result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
-    DatumGetInt64(seed)));
+  uint64 result = hash_uint32_extended((uint32) flags, seed);
   result ^= type_hash;
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= lower_hash;

@@ -254,7 +254,7 @@ int main(void)
     printf("%d: %s, %d records\n", i, admin1_list[i], admin1_count[i]);
     /* Compute the clusters */
     uint32_t *clust = geo_cluster_dbscan((const GSERIALIZED **) geoms,
-      admin1_count[i], 2000.0, 5);
+      admin1_count[i], 2000.0, 5, &count);
     for (j = 0; j < admin1_count[i]; j++)
       cluster[ids[j]] = clust[j];
     free(clust);
