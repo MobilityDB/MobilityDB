@@ -28,6 +28,5 @@ var searchData=
   ['struct_5fmeosprojsrscache_25',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
   ['struct_5fprojsrscacheitem_26',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
   ['struct_5fwayscache_27',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
-  ['struct_5fwayscacheentry_28',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]],
-  ['struct_5fwayscacheitem_29',['struct_WaysCacheItem',['../structstruct__WaysCacheItem.html',1,'']]]
+  ['struct_5fwayscacheentry_28',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
 ];

@@ -15,6 +15,6 @@ var searchData=
   ['rotx_12',['rotx',['../projection__gk_8c_a48691d48226a83de51fef2037fd39bf2.html#a48691d48226a83de51fef2037fd39bf2',1,'projection_gk.c']]],
   ['roty_13',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
   ['rotz_14',['rotz',['../projection__gk_8c_a3bc522161034a64098cc55f6798ecc39.html#a3bc522161034a64098cc55f6798ecc39',1,'projection_gk.c']]],
-  ['routes_15',['routes',['../structstruct__WaysCache_a79168e4429af6ae479077e3839db84ab.html#a79168e4429af6ae479077e3839db84ab',1,'struct_WaysCache::routes()'],['../structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6',1,'struct_WaysCache::routes()']]],
+  ['routes_15',['routes',['../structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6',1,'struct_WaysCache']]],
   ['rtype_16',['rtype',['../structoid__oper__entry_a193fbb28456423d1e77553574df95032.html#a193fbb28456423d1e77553574df95032',1,'oid_oper_entry']]]
 ];

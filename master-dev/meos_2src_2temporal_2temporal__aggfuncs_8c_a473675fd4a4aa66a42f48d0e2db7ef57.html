@@ -204,8 +204,8 @@ $(function() {
 <p>Generic aggregate function for temporal instants. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">instants1</td><td>Accumulated state </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">instants2</td><td>Instants of the input temporal discrete sequence </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">instants1</td><td>Instants of the accumulated state that overlap with the new instants in instants2. At this point of the processing these instants have been removed from the skiplist. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">instants2</td><td>Instants of the input temporal discrete sequence that need to be merged into the skiplist. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count1,count2</td><td>Number of values in the input arrays </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function, may be NULL for the merge aggregate function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">newcount</td><td>Number of instants in the output array </td></tr>
