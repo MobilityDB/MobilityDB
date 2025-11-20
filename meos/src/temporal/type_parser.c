@@ -787,8 +787,8 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
   p_cbracket(str);
   p_cparen(str);
   if (result)
-    *result = tsequence_make((const TInstant **) instants, count,
-      lower_inc, upper_inc, interp, NORMALIZE);
+    *result = tsequence_make(instants, count, lower_inc, upper_inc, interp,
+      NORMALIZE);
   pfree_array((void **) instants, count);
   return true;
 }

@@ -83,8 +83,8 @@ int main(void)
     instants[i] = tfloatinst_make(i % 2 + 1, t);
   }
 
-  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
-    true, true, STEP, true);
+  seq = (Temporal *) tsequence_make(instants, MAX_INSTANTS, true, true, STEP,
+    true);
   for (i = 0; i < MAX_INSTANTS; i++)
     free(instants[i]);
 

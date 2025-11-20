@@ -207,8 +207,8 @@ main(int argc, char **argv)
     TInstant *inst = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[j].trip)
-      trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
-        NO_INSTANTS_BATCH, true, true, LINEAR, false);
+      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTANTS_BATCH, true,
+      true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
     free(inst);

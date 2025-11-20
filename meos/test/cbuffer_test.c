@@ -404,10 +404,10 @@ int main(void)
   /* Constructor functions */
   printf("****************************************************************\n");
 
-  /* Set *cbufferset_make(const Cbuffer **values, int count); */
+  /* Set *cbufferset_make(Cbuffer **values, int count); */
   cbufferarray[0] = cbuffer1;
   cbufferarray[1] = cbuffer2;
-  cbufferset_result = cbufferset_make((const Cbuffer **) cbufferarray, 2);
+  cbufferset_result = cbufferset_make(cbufferarray, 2);
   char_result = spatialset_as_text(cbufferset_result, 6);
   printf("cbufferset_make({%s, %s}): %s\n", cbuffer1_out, cbuffer2_out, char_result);
   free(cbufferset_result); free(char_result);

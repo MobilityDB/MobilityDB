@@ -285,8 +285,8 @@ int main(void)
       /* Ensure there is still space for storing the temporal point instant */
       if (! trips[j].trip)
       {
-        trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
-          INITIAL_INSTANTS, true, true, LINEAR, false);
+        trips[j].trip = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS, true,
+          true, LINEAR, false);
         if (! trips[j].trip)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
@@ -337,8 +337,8 @@ int main(void)
         // printf("Speed %d -> %d ", trips[j].no_SOG_instants,
           // trips[j].no_SOG_instants * 2);
         // fflush(stdout);
-        trips[j].SOG = tsequence_make_exp((const TInstant **) &inst, 1,
-          INITIAL_INSTANTS, true,  true, LINEAR, false);
+        trips[j].SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS, true,
+          true, LINEAR, false);
         if (trips[j].SOG == NULL)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the speed\n",

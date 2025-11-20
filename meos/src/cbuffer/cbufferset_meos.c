@@ -94,7 +94,7 @@ cbufferset_out(const Set *s, int maxdd)
  * @csqlfn #Set_constructor()
  */
 Set *
-cbufferset_make(const Cbuffer **values, int count)
+cbufferset_make(Cbuffer **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);

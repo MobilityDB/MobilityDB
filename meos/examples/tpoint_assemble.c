@@ -104,8 +104,8 @@ int main(void)
 
   printf("\nAssembing the instants ...\n");
 
-  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
-    true, true, LINEAR, true);
+  seq = (Temporal *) tsequence_make(instants, MAX_INSTANTS, true, true, LINEAR,
+    true);
 
   /* Print information about the sequence */
   printf("\nNumber of instants: %d, Distance : %lf\n",

@@ -200,11 +200,9 @@ int main(void)
   /* Construct the trips */
   for (i = 0; i < numships; i++)
   {
-    trips[i].trip = (Temporal *) tsequence_make(
-      (const TInstant **) trips[i].trip_instants,
+    trips[i].trip = (Temporal *) tsequence_make(trips[i].trip_instants,
       trips[i].numinstants, true, true, LINEAR, true);
-    trips[i].SOG = (Temporal *) tsequence_make(
-      (const TInstant **) trips[i].SOG_instants,
+    trips[i].SOG = (Temporal *) tsequence_make(trips[i].SOG_instants,
       trips[i].numinstants, true, true, LINEAR, true);
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);

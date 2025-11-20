@@ -301,7 +301,7 @@ floatset_make(const double *values, int count)
  * @csqlfn #Set_constructor()
  */
 Set *
-textset_make(const text **values, int count)
+textset_make(text **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);

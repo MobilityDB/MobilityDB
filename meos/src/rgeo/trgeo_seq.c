@@ -113,7 +113,7 @@ trgeoseq_tposeseq(const TSequence *seq)
  * @brief Ensure the validity of the arguments when creating a temporal value
  */
 bool
-trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
+trgeoseq_make_valid(const GSERIALIZED *geom, TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear)
 {
   if (! tsequence_make_valid(instants, count, lower_inc, upper_inc, linear))
@@ -147,7 +147,7 @@ trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-trgeoseq_make1_exp(const GSERIALIZED *geom, const TInstant **instants,
+trgeoseq_make1_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
@@ -202,8 +202,8 @@ trgeoseq_make1_exp(const GSERIALIZED *geom, const TInstant **instants,
   MEOS_FLAGS_SET_GEOM(result->flags, WITH_GEOM);
   /* Initialization of the variable-length part */
   /* Compute the bounding box */
-  trgeoinstarr_compute_bbox(geom, (const TInstant **) norminsts,
-    newcount, interp, TSEQUENCE_BBOX_PTR(result));
+  trgeoinstarr_compute_bbox(geom, norminsts, newcount, interp,
+    TSEQUENCE_BBOX_PTR(result));
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
   Span *p = (Span *) TSEQUENCE_BBOX_PTR(result);
@@ -236,7 +236,7 @@ trgeoseq_make1_exp(const GSERIALIZED *geom, const TInstant **instants,
  * @pre The validity of the arguments has been tested before
  */
 inline TSequence *
-trgeoseq_make1(const GSERIALIZED *geom, const TInstant **instants, int count,
+trgeoseq_make1(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make1_exp(geom, instants, count, count, lower_inc, upper_inc,
@@ -254,7 +254,7 @@ trgeoseq_make1(const GSERIALIZED *geom, const TInstant **instants, int count,
  * @param[in] normalize True if the resulting value should be normalized
  */
 TSequence *
-trgeoseq_make_exp(const GSERIALIZED *geom, const TInstant **instants,
+trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
@@ -279,7 +279,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, const TInstant **instants,
  * @param[in] normalize True if the resulting value should be normalized
  */
 inline TSequence *
-trgeoseq_make(const GSERIALIZED *geom, const TInstant **instants, int count,
+trgeoseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make_exp(geom, instants, count, count, lower_inc, upper_inc,
@@ -314,8 +314,8 @@ trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants, int count,
     pfree(instants);
     return NULL;
   }
-  TSequence *result = trgeoseq_make_exp(geom, (const TInstant **) instants,
-    count, maxcount, lower_inc, upper_inc, interp, normalize);
+  TSequence *result = trgeoseq_make_exp(geom, instants, count, maxcount,
+    lower_inc, upper_inc, interp, normalize);
   pfree_array((void **) instants, count);
   return result;
 }
@@ -355,8 +355,8 @@ TSequence *
 trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
 {
   assert(inst);
-  return trgeoseq_make(trgeoinst_geom_p(inst), &inst, 1, true, true, interp,
-    NORMALIZE_NO);
+  return trgeoseq_make(trgeoinst_geom_p(inst), (TInstant **) &inst, 1, true,
+    true, interp, NORMALIZE_NO);
 }
 
 /**

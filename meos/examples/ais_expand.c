@@ -174,15 +174,15 @@ int main(void)
     TInstant *inst1 = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[ship].trip)
-      trips[ship].trip = (Temporal *) tsequence_make_exp(
-        (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
+      trips[ship].trip = (Temporal *) tsequence_make_exp(&inst1, 1, 2, true,
+        true, LINEAR, false);
     else
       trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, 
         LINEAR, 0.0, NULL, true);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     if (! trips[ship].SOG)
-      trips[ship].SOG = (Temporal *) tsequence_make_exp(
-        (const TInstant **) &inst2, 1, 2, true, true, LINEAR, false);
+      trips[ship].SOG = (Temporal *) tsequence_make_exp(&inst2, 1, 2, true,
+        true, LINEAR, false);
     else
       trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2,
         LINEAR, 0.0, NULL, true);

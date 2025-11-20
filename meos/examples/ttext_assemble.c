@@ -101,8 +101,8 @@ int main(void)
   }
   free(oneday);
 
-  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
-    true, true, STEP, true);
+  seq = (Temporal *) tsequence_make(instants, MAX_INSTANTS, true, true, STEP,
+    true);
 
   /* Print information about the sequence */
   // Uncomment the next line to see the resulting sequence value

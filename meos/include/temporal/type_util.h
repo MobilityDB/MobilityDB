@@ -82,7 +82,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 extern int datumarr_remove_duplicates(Datum *values, int count,
   meosType basetype);
 extern int tstzarr_remove_duplicates(TimestampTz *values, int count);
-extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
+extern int tinstarr_remove_duplicates(TInstant **instants, int count);
 
 /* Text functions */
 

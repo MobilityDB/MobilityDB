@@ -1110,7 +1110,7 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
  * in the Well-Known Binary (WKB) representation
  */
 static size_t
-tinstarr_to_wkb_size(const TInstant **instants, int count, uint8_t variant)
+tinstarr_to_wkb_size(TInstant **instants, int count, uint8_t variant)
 {
   size_t result = 0;
   meosType basetype = temptype_basetype(instants[0]->temptype);
@@ -1138,7 +1138,7 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
       spatial_wkb_needs_srid(tspatial_srid((Temporal *) inst), variant))
     result += MEOS_WKB_INT4_SIZE;
   /* TInstant */
-  result += tinstarr_to_wkb_size(&inst, 1, variant);
+  result += tinstarr_to_wkb_size((TInstant **) &inst, 1, variant);
   return result;
 }
 
@@ -1159,7 +1159,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
   result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
   const TInstant **instants = tsequence_insts_p(seq);
   /* Include the TInstant array */
-  result += tinstarr_to_wkb_size(instants, seq->count, variant);
+  result += tinstarr_to_wkb_size((TInstant **) instants, seq->count, variant);
   pfree(instants);
   return result;
 }
@@ -1183,7 +1183,8 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   result += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
   const TInstant **instants = tsequenceset_insts_p(ss);
-  result += tinstarr_to_wkb_size(instants, ss->totalcount, variant);
+  result += tinstarr_to_wkb_size((TInstant **) instants, ss->totalcount,
+    variant);
   pfree(instants);
   return result;
 }

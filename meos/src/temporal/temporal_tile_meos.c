@@ -344,7 +344,7 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start, int64 tunits,
 
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int i = 0,       /* counter for instants of temporal value */
       ninsts = 0,  /* counter for instants of next split */
       nfrags = 0;  /* counter for resulting fragments */
@@ -355,7 +355,7 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start, int64 tunits,
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (lower <= inst->t && inst->t < upper)
     {
-      instants[ninsts++] = inst;
+      instants[ninsts++] = (TInstant *) inst;
       i++;
     }
     else
@@ -419,7 +419,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
     upper += tunits;
   }
 
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   int i = 0,      /* counter for instants of temporal value */
@@ -434,7 +434,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
     if ((lower <= inst->t && inst->t < upper) ||
       (inst->t == upper && (interp == LINEAR || i == seq->count - 1)))
     {
-      instants[ninsts++] = inst;
+      instants[ninsts++] = (TInstant *) inst;
       i++;
     }
     else
@@ -472,7 +472,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
         break;
       /* The end value of the previous bin is the start of the new bin */
       if (lower < inst->t)
-        instants[ninsts++] = TSEQUENCE_INST_N(result[nfrags - 1],
+        instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(result[nfrags - 1],
           result[nfrags - 1]->count - 1);
      }
   }
@@ -563,8 +563,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
      * if the current sequence starts on the next time bin */
     if (nfrags > 0 && DatumGetTimestampTz(seq->period.lower) >= upper)
     {
-      result[nbucks++] = tsequenceset_make((const TSequence **) fragments, nfrags,
-        NORMALIZE);
+      result[nbucks++] = tsequenceset_make(fragments, nfrags, NORMALIZE);
       for (int j = 0; j < nfrags; j++)
         pfree(fragments[j]);
       nfrags = 0;
@@ -583,8 +582,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
       else
       {
         fragments[nfrags++] = sequences[0];
-        result[nbucks++] = tsequenceset_make((const TSequence **) fragments,
-          nfrags, NORMALIZE);
+        result[nbucks++] = tsequenceset_make(fragments, nfrags, NORMALIZE);
         for (int j = 0; j < nfrags; j++)
           pfree(fragments[j]);
         nfrags = 0;
@@ -600,8 +598,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
   /* Process the accumulated fragments of the last time bin */
   if (nfrags > 0)
   {
-    result[nbucks++] = tsequenceset_make((const TSequence **) fragments, nfrags,
-      NORMALIZE);
+    result[nbucks++] = tsequenceset_make(fragments, nfrags, NORMALIZE);
     for (int j = 0; j < nfrags; j++)
       pfree(fragments[j]);
   }
@@ -789,8 +786,8 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bin,
   {
     if (ninsts[i] > 0)
     {
-      result[nfrags] = tsequence_make(&instants[i * seq->count], ninsts[i],
-        true, true, DISCRETE, NORMALIZE_NO);
+      result[nfrags] = tsequence_make((TInstant **) &instants[i * seq->count],
+        ninsts[i], true, true, DISCRETE, NORMALIZE_NO);
       values[nfrags++] = bin_value;
     }
     bin_value = datum_add(bin_value, size, basetype);
@@ -859,8 +856,8 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
         inst2->t);
       nfrags++;
     }
-    result[bin_no * numcols + seq_no] = tsequence_make(
-      (const TInstant **) bounds, nfrags, lower_inc1, false, STEP, NORMALIZE);
+    result[bin_no * numcols + seq_no] = tsequence_make(bounds, nfrags,
+      lower_inc1, false, STEP, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -1032,8 +1029,8 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
       if (nfrags == 1 && ! upper_inc1)
         break;
       seq_no = nseqs[j]++;
-      result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        nfrags, (nfrags > 1) ? lower_inc1 : true, (nfrags > 1) ? upper_inc1 : true,
+      result[j * numcols + seq_no] = tsequence_make(bounds, nfrags,
+        (nfrags > 1) ? lower_inc1 : true, (nfrags > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bin_lower = bin_upper;
@@ -1102,8 +1099,8 @@ tnumberseq_cont_value_split(const TSequence *seq, Datum start_bin, Datum size,
   {
     if (nseqs[i] > 0)
     {
-      result[nfrags] = tsequenceset_make(
-        (const TSequence **)(&sequences[seq->count * i]), nseqs[i], NORMALIZE);
+      result[nfrags] = tsequenceset_make(&sequences[seq->count * i],
+        nseqs[i], NORMALIZE);
       values[nfrags++] = bin_value;
     }
     bin_value = datum_add(bin_value, size, basetype);
@@ -1164,8 +1161,8 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
   {
     if (nseqs[i] > 0)
     {
-      result[nfrags] = tsequenceset_make((const TSequence **)
-        (&binseqs[i * ss->totalcount]), nseqs[i], NORMALIZE);
+      result[nfrags] = tsequenceset_make(&binseqs[i * ss->totalcount],
+        nseqs[i], NORMALIZE);
       values[nfrags++] = bin_value;
     }
     bin_value = datum_add(bin_value, size, basetype);

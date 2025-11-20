@@ -85,8 +85,8 @@ int main(void)
     if (! seq)
       /* Create an expandable temporal sequence that can store 64 instants
        * and store the first instant */
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1, 64,
-        true, true, LINEAR, false);
+      seq = (Temporal *) tsequence_make_exp(&inst, 1, 64, true, true, LINEAR,
+        false);
     else
       /* Append the instant to the sequence so that if there is no more space
        * the sequence is automatically exanded doubling its capacity */

@@ -71,7 +71,7 @@ tcbufferinst_set_stbox(const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-tcbufferinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
+tcbufferinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 {
   tcbufferinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)

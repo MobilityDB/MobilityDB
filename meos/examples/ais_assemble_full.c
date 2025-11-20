@@ -382,8 +382,7 @@ int main(void)
       trips[i].no_records, trips[i].no_trip_instants, trips[i].no_SOG_instants);
     if (trips[i].no_trip_instants != 0)
     {
-      Temporal *trip = (Temporal *) tsequence_make(
-        (const TInstant **) trips[i].trip_instants,
+      Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
         trips[i].no_trip_instants, true, true, LINEAR, true);
       printf(" %15.6lf |", tpoint_length(trip));
       free(trip);
@@ -393,8 +392,7 @@ int main(void)
 
     if (trips[i].no_SOG_instants != 0)
     {
-      Temporal *SOG = (Temporal *) tsequence_make(
-        (const TInstant **) trips[i].SOG_instants,
+      Temporal *SOG = (Temporal *) tsequence_make(trips[i].SOG_instants,
         trips[i].no_SOG_instants, true, true, LINEAR, true);
       printf(" %13.6lf |\n", tnumber_twavg(SOG));
       free(SOG);

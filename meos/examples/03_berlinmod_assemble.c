@@ -75,15 +75,13 @@
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
-typedef struct
-{
-  int tripid;
-  int vehid;
-  DateADT day;
-  int seq;
-  GSERIALIZED *point;
-  TimestampTz t;
-} trip_input_record;
+/* Input variables for reading a record */
+int tripid;
+int vehid;
+DateADT day;
+int seq;
+GSERIALIZED *point;
+TimestampTz t;
 
 typedef struct
 {
@@ -124,7 +122,6 @@ int main(void)
     goto cleanup;
   }
 
-  trip_input_record rec;
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
@@ -142,7 +139,7 @@ int main(void)
   do
   {
     int read = fscanf(file, "%d,%d,%10[^,],%d,%99[^,],%31[^\n]\n",
-      &rec.tripid, &rec.vehid, date_buffer, &rec.seq, point_buffer,
+      &tripid, &vehid, date_buffer, &seq, point_buffer,
       timestamp_buffer);
     if (ferror(file))
     {
@@ -164,21 +161,21 @@ int main(void)
     }
 
     /* Transform the string representing the date into a date value */
-    rec.day = date_in(date_buffer);
+    day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
-    rec.point = geom_in(point_buffer, -1);
+    point = geom_in(point_buffer, -1);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.t = timestamp_in(timestamp_buffer, -1);
+    t = timestamp_in(timestamp_buffer, -1);
     /* Transform the string representing the trip into a temporal value */
-    TInstant *inst = tpointinst_make(rec.point, rec.t);
+    TInstant *inst = tpointinst_make(point, t);
     /* Free the point as it is not needed anymore */
-    free(rec.point);
+    free(point);
 
     /* Find the place to store the new instant */
     int trip = -1;
     for (i = 0; i < MAX_TRIPS; i++)
     {
-      if (trips[i].tripid == rec.tripid)
+      if (trips[i].tripid == tripid)
       {
         trip = i;
         break;
@@ -206,10 +203,10 @@ int main(void)
     /*
      * Store the input values
      */
-    trips[trip].tripid = rec.tripid;
-    trips[trip].vehid = rec.vehid;
-    trips[trip].day = rec.day;
-    trips[trip].seq = rec.seq;
+    trips[trip].tripid = tripid;
+    trips[trip].vehid = vehid;
+    trips[trip].day = day;
+    trips[trip].seq = seq;
     trips[trip].trip_instants[trips[trip].no_instants++] = inst;
   } while (!feof(file));
 
@@ -223,8 +220,7 @@ int main(void)
   /* Construct the trips */
   for (i = 0; i < no_trips; i++)
   {
-    trips[i].trip = (Temporal *) tsequence_make(
-      (const TInstant **) trips[i].trip_instants,
+    trips[i].trip = (Temporal *) tsequence_make(trips[i].trip_instants,
       trips[i].no_instants, true, true, LINEAR, true);
     printf("TripId: %d, Number of input instants: %d, Distance travelled %lf\n",
       trips[i].tripid, trips[i].no_instants, tpoint_length(trips[i].trip));

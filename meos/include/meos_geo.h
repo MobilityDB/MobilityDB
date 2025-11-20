@@ -456,7 +456,7 @@ extern char *spatialset_as_ewkt(const Set *set, int maxdd);
 
 /* Constructor functions */
 
-extern Set *geoset_make(const GSERIALIZED **values, int count);
+extern Set *geoset_make(GSERIALIZED **values, int count);
 
 /* Conversion functions */
 

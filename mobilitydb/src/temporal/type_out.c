@@ -101,8 +101,7 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Temporal **temparr = temparr_extract(array, &count);
-  char **strarr = temparr_out((const Temporal **) temparr, count,
-    Int32GetDatum(dbl_dig_for_wkt));
+  char **strarr = temparr_out(temparr, count, Int32GetDatum(dbl_dig_for_wkt));
   ArrayType *result = strarr_to_textarray(strarr, count);
   /* We cannot use pfree_array */
   pfree(temparr);

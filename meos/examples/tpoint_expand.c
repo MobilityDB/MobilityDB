@@ -114,8 +114,8 @@ int main(void)
     TInstant *inst = (TInstant *) tgeompoint_in(inst_buffer);
 #endif
     if (! seq)
-      seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
-        EXPAND ? 2 : 1, true, true, LINEAR, false);
+      seq = (Temporal *) tsequence_make_exp(&inst, 1, EXPAND ? 2 : 1, true,
+        true, LINEAR, false);
     else
       seq = temporal_append_tinstant((Temporal *) seq, inst, LINEAR, 0.0, 
         NULL, EXPAND);

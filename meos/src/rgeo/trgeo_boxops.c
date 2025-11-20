@@ -106,7 +106,7 @@ trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-trgeoinstarr_static_stbox(const GSERIALIZED *geom, const TInstant **instants,
+trgeoinstarr_static_stbox(const GSERIALIZED *geom, TInstant **instants,
   int count, STBox *box)
 {
   trgeoinst_set_stbox(geom, instants[0], box);
@@ -149,7 +149,7 @@ trgeoinst_make_pose_stbox(const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-trgeoinstarr_rotating_stbox(const GSERIALIZED *geom, const TInstant **instants,
+trgeoinstarr_rotating_stbox(const GSERIALIZED *geom, TInstant **instants,
   int count, STBox *box)
 {
   double r = geom_radius(geom);
@@ -187,7 +187,7 @@ trgeoinstarr_rotating_stbox(const GSERIALIZED *geom, const TInstant **instants,
  * @param[out] box Box
  */
 void
-trgeoinstarr_compute_bbox(const GSERIALIZED *geom, const TInstant **instants,
+trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
   int count, interpType interp, void *box)
 {
   /* Only external types have bounding box */

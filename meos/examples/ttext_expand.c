@@ -133,8 +133,8 @@ int main(void)
        * INITIAL_INSTANTS_SEQ instants and store the first instant.
        * Notice that we do not use MAX_INSTANTS_SEQ to illustrate the
        * #tsequence_compact() function */
-      seq = tsequence_make_exp((const TInstant **) &inst, 1,
-        INITIAL_INSTANTS_SEQ, true, true, STEP, false);
+      seq = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS_SEQ, true, true,
+        STEP, false);
     else
     {
       if (seq->count < MAX_INSTANTS_SEQ)
@@ -155,16 +155,16 @@ int main(void)
         /* If requested, compact the sequence to remove unused extra space */
         seq1 = COMPACT_COMP_SEQS ? tsequence_compact(seq) : seq;
         if (! ss)
-          ss = tsequenceset_make_exp((const TSequence **) &seq1, 1,
-            INITIAL_SEQUENCES_SEQSET, false);
+          ss = tsequenceset_make_exp(&seq1, 1, INITIAL_SEQUENCES_SEQSET,
+            false);
         else
           ss = tsequenceset_append_tsequence(ss, seq1, true);
         free(seq);
         if (COMPACT_COMP_SEQS)
           free(seq1);
         /* Create a new sequence containing the last instant generated */
-        seq = tsequence_make_exp((const TInstant **) &inst, 1,
-          INITIAL_INSTANTS_SEQ, true, true, STEP, false);
+        seq = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS_SEQ, true, true,
+          STEP, false);
       }
     }
     free(inst);
