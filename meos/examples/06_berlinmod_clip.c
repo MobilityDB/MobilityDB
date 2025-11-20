@@ -74,17 +74,17 @@
  * -- 328178
  * @endcode
  */
-#define MAX_LENGTH_TRIP 400001
+#define MAX_LEN_TRIP 400001
 /* Maximum length in characters of the output matrix */
-#define MAX_LENGTH_MATRIX 65536
+#define MAX_LEN_MATRIX 65536
 /* Maximum length in characters of a geometry in the input data */
-#define MAX_LENGTH_GEOM 100001
+#define MAX_LEN_GEOM 100001
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a name in the input data */
-#define MAX_LENGTH_NAME 101
+#define MAX_LEN_NAME 101
 /* Maximum length in characters of a date in the input data */
-#define MAX_LENGTH_DATE 12
+#define MAX_LEN_DATE 12
 /* Number of vehicles */
 #define NO_VEHICLES 5
 /* Number of communes */
@@ -93,14 +93,14 @@
 typedef struct
 {
   int id;
-  char name[MAX_LENGTH_NAME];
+  char name[MAX_LEN_NAME];
   int population;
   GSERIALIZED *geom;
 } commune_record;
 
 typedef struct
 {
-  char name[MAX_LENGTH_NAME];
+  char name[MAX_LEN_NAME];
   GSERIALIZED *geom;
 } region_record;
 
@@ -116,10 +116,10 @@ typedef struct
 commune_record communes[NO_COMMUNES];
 double distance[NO_VEHICLES + 1][NO_COMMUNES + 3] = {0};
 
-char trip_buffer[MAX_LENGTH_TRIP];
-char geo_buffer[MAX_LENGTH_GEOM];
-char header_buffer[MAX_LENGTH_HEADER];
-char date_buffer[MAX_LENGTH_DATE];
+char trip_buffer[MAX_LEN_TRIP];
+char geo_buffer[MAX_LEN_GEOM];
+char header_buffer[MAX_LEN_HEADER];
+char date_buffer[MAX_LEN_DATE];
 
 region_record brussels_region;
 
@@ -217,92 +217,92 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
   bool all_communes)
 {
   size_t len = 0;
-  char buf[MAX_LENGTH_MATRIX];
+  char buf[MAX_LEN_MATRIX];
   int i, j;
 
   /* Print table header */
-  len += snprintf(buf, MAX_LENGTH_MATRIX - 1, "\n                --");
+  len += snprintf(buf, MAX_LEN_MATRIX - 1, "\n                --");
   for (j = 1; j < NO_COMMUNES + 2; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "---------");
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "---------");
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
     "\n                | Commmunes");
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
     "\n    --------------");
   for (j = 1; j < NO_COMMUNES + 2; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "---------");
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "---------");
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
     "\nVeh | Distance | ");
   for (j = 1; j < NO_COMMUNES + 1; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "   %2d   ", j);
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "   %2d   ", j);
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
     "|  Inside | Outside\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "---------");
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "---------");
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "\n");
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "\n");
 
   /* Print for each vehicle */
   for (i = 0; i < NO_VEHICLES; i++)
   {
     /* Print the vehicle number and the total distance for the vehicle */
-    len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+    len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
       " %2d | %8.3f |", i + 1, distance[i][0]);
     /* Print the total distance per commune for the vehicle */
     for (j = 1; j <= NO_COMMUNES; j++)
     {
       if (all_communes || distance[NO_VEHICLES][j] != 0)
       {
-        len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+        len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
           " %7.3f", distance[i][j]);
       }
     }
     /* Print the total distance outside and inside Brussels for the vehicle */
     for (j = NO_COMMUNES + 1; j < NO_COMMUNES + 3; j++)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1,
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1,
         " | %7.3f", distance[i][j]);
-    len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "\n");
+    len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "\n");
   }
 
   /* Print the total row */
   for (j = 0; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "---------");
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "---------");
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
     "\n    | %8.3f |", distance[NO_VEHICLES][0]);
   /* Print the total distance per commune */
   for (j = 1; j <= NO_COMMUNES; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1,
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1,
         " %7.3f", distance[NO_VEHICLES][j]);
   }
   /* Print the total distance outside and inside Brussels */
   for (j = NO_COMMUNES + 1; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, 
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, 
         " | %7.3f", distance[NO_VEHICLES][j]);
   }
-  len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "\n");
+  len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "\n");
   for (j = 0; j < NO_COMMUNES + 3; j++)
   {
     if (all_communes || distance[NO_VEHICLES][j] != 0)
-      len += snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "---------");
+      len += snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "---------");
   }
-  snprintf(buf + len, MAX_LENGTH_MATRIX - len - 1, "\n\n");
+  snprintf(buf + len, MAX_LEN_MATRIX - len - 1, "\n\n");
   printf("%s", buf);
 
   return;

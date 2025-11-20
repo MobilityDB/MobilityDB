@@ -71,9 +71,9 @@
 /* Maximum number of input rows */
 #define MAX_ROWS 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_LINE 1024
+#define MAX_LEN_LINE 1024
 
 /* Main program */
 int main(void)
@@ -106,12 +106,12 @@ int main(void)
   int no_records = 0;
   int no_nulls = 0;
   int count = 0;
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
 
   /* Read the first line of the file with the headers */
   fscanf(input_file, "%1023s\n", line_buffer);
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -152,7 +152,7 @@ int main(void)
     if (column == 3)
     {
       no_records++;
-      if (no_records % NO_INSTANTS_BATCH == 0)
+      if (no_records % NO_INSTS_BATCH == 0)
       {
         printf("*");
         fflush(stdout);

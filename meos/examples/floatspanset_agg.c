@@ -46,9 +46,9 @@
 #include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a span set in the input data */
-#define MAX_LENGTH_SPANSET 1024
+#define MAX_LEN_SPANSET 1024
 /* Number of groups for accumulating the input span sets */
 #define NUMBER_GROUPS 10
 
@@ -83,8 +83,8 @@ int main(void)
   floatspanset_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char spanset_buffer[MAX_LENGTH_SPANSET];
+  char header_buffer[MAX_LEN_HEADER];
+  char spanset_buffer[MAX_LEN_SPANSET];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);

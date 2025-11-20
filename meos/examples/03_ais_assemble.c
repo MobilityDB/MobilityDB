@@ -54,15 +54,15 @@
 #include <meos_geo.h>
 
 /* Maximum number of instants in an input trip */
-#define MAX_INSTANTS 50000
+#define MAX_NO_INSTS 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 10000
+#define NO_INSTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
@@ -79,8 +79,8 @@ typedef struct
 {
   long int MMSI;   /* Identifier of the trip */
   int numinstants; /* Number of input instants */
-  TInstant *trip_instants[MAX_INSTANTS]; /* Array of instants for the trip */
-  TInstant *SOG_instants[MAX_INSTANTS];  /* Array of instants for the SOG */
+  TInstant *trip_instants[MAX_NO_INSTS]; /* Array of instants for the trip */
+  TInstant *SOG_instants[MAX_NO_INSTS];  /* Array of instants for the SOG */
   Temporal *trip;  /* Trip constructed from the input instants */
   Temporal *SOG;   /* SOG constructed from the input instants */
 } trip_record;
@@ -116,14 +116,14 @@ int main(void)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
+  char header_buffer[MAX_LEN_HEADER];
+  char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -144,7 +144,7 @@ int main(void)
     }
 
     no_records++;
-    if (no_records % NO_INSTANTS_BATCH == 0)
+    if (no_records % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);

@@ -57,9 +57,9 @@
 /* Number of ways in a batch for printing a marker */
 #define NO_WAYS_BATCH 10
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
-#define MAX_LENGTH_GEOM 100001
+#define MAX_LEN_GEOM 100001
 
 typedef struct
 {
@@ -96,8 +96,8 @@ int main(void)
   ways_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char geo_buffer[MAX_LENGTH_GEOM];
+  char header_buffer[MAX_LEN_HEADER];
+  char geo_buffer[MAX_LEN_GEOM];
   const char *geo_str = "SRID=5676;POINT(72.94967061684646 25.156720715884354)";
   GSERIALIZED *point = geom_in(geo_str, -1);
   

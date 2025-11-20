@@ -61,9 +61,9 @@
 /* Maximum number of records read in the CSV file */
 #define MAX_NO_RECORDS 20000000
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LENGTH_LINE 1024
+#define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Number of instants in a batch for printing a marker */
 #define NO_RECORDS_BATCH 100000
 
@@ -79,7 +79,7 @@ typedef struct
 int main(void)
 {
   /* Input buffers to read the CSV file */
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */

@@ -79,7 +79,7 @@
 /* Maximum number of rows per windinw on which the clustering is performed */
 #define MAX_ROWS_WIN 15000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTS_BATCH 1000
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LINE_LENGTH 2048
 /* Maximum number of fields in the input CSV file */
@@ -190,7 +190,7 @@ int main(void)
 
   /* Read the file */
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   do
   {
@@ -208,7 +208,7 @@ int main(void)
     parse_csv_line(line_buffer, fields);
 
     no_records++;
-    if (no_records % NO_INSTANTS_BATCH == 0)
+    if (no_records % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);

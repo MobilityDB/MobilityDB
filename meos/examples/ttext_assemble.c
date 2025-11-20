@@ -48,13 +48,13 @@
 #include <string.h>
 #include <meos.h>
 
-#define MAX_INSTANTS 1000000
+#define MAX_NO_INSTS 1000000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 10000
+#define NO_INSTS_BATCH 10000
 /* Maximum length in characters of the input instant */
-#define MAX_LENGTH_INST 64
+#define MAX_LEN_INST 64
 /* Maximum length in characters of the text values in the instants */
-#define MAX_LENGTH_TEXT 20
+#define MAX_LEN_TEXT 20
 
 /* Main program */
 int main(void)
@@ -67,7 +67,7 @@ int main(void)
   tm = clock();
 
   /* Input instants that are accumulated */
-  TInstant *instants[MAX_INSTANTS] = {0};
+  TInstant *instants[MAX_NO_INSTS] = {0};
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -78,19 +78,19 @@ int main(void)
   srandom (time (0));
 
   printf("Generating the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
   {
     /* Generate the instant */
-    if (i % NO_INSTANTS_BATCH == 0)
+    if (i % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Use a random generator to set the length of the text value */
-    int len = random() % MAX_LENGTH_TEXT + 1;
+    int len = random() % MAX_LEN_TEXT + 1;
     char *value = malloc(sizeof(char) * (len + 2));
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
@@ -101,7 +101,7 @@ int main(void)
   }
   free(oneday);
 
-  seq = (Temporal *) tsequence_make(instants, MAX_INSTANTS, true, true, STEP,
+  seq = (Temporal *) tsequence_make(instants, MAX_NO_INSTS, true, true, STEP,
     true);
 
   /* Print information about the sequence */
@@ -114,7 +114,7 @@ int main(void)
 
   /* Free memory */
   free(seq); free(txt); free(str);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
     free(instants[i]);
 
   /* Calculate the elapsed time */

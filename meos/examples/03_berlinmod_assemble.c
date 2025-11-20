@@ -61,17 +61,17 @@
 #include <meos_geo.h>
 
 /* Maximum number of instants in an input trip */
-#define MAX_INSTANTS 64000
+#define MAX_NO_INSTS 64000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 100
+#define MAX_LEN_POINT 100
 /* Maximum length in characters of a date in the input data */
-#define MAX_LENGTH_DATE 12
+#define MAX_LEN_DATE 12
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
@@ -90,7 +90,7 @@ typedef struct
   DateADT day;     /* Day of the trip */
   int seq;         /* Number of the trip in the day of the trip */
   int no_instants; /* Number of input instants */
-  TInstant *trip_instants[MAX_INSTANTS]; /* Array of instants for the trip */
+  TInstant *trip_instants[MAX_NO_INSTS]; /* Array of instants for the trip */
   Temporal *trip;  /* Trip constructed from the input instants */
 } trip_output_record;
 
@@ -124,16 +124,16 @@ int main(void)
 
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char point_buffer[MAX_LENGTH_POINT];
-  char date_buffer[MAX_LENGTH_DATE];
-  char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
+  char header_buffer[MAX_LEN_HEADER];
+  char point_buffer[MAX_LEN_POINT];
+  char date_buffer[MAX_LEN_DATE];
+  char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -154,7 +154,7 @@ int main(void)
     }
 
     no_records++;
-    if (no_records % NO_INSTANTS_BATCH == 0)
+    if (no_records % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -193,10 +193,10 @@ int main(void)
       }
     }
 
-    if (trips[trip].no_instants == MAX_INSTANTS)
+    if (trips[trip].no_instants == MAX_NO_INSTS)
     {
       printf("\nThe maximum number of instants for trips in the input file is bigger than %d\n",
-        MAX_INSTANTS);
+        MAX_NO_INSTS);
       goto cleanup;
     }
 

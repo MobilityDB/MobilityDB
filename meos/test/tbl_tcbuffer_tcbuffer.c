@@ -56,13 +56,13 @@
 #include <meos_cbuffer.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a temporal circular buffer in the input
  * data as computed by the following query on the corresponding table
  * SELECT MAX(length(temp::text)) FROM tbl_tcbuffer;
  * -- 7449
  */
-#define MAX_LENGTH_TCBUFFER 7501
+#define MAX_LEN_TCBUFFER 7501
 
 /* Main program */
 int main(void)
@@ -80,8 +80,8 @@ int main(void)
     return 1;
   }
 
-  char header_buffer[MAX_LENGTH_HEADER];
-  char tcbuffer_buffer[MAX_LENGTH_TCBUFFER];
+  char header_buffer[MAX_LEN_HEADER];
+  char tcbuffer_buffer[MAX_LEN_TCBUFFER];
 
   int k = 1, k1, k2, nrows = 0;
   do

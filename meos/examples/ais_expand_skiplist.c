@@ -76,13 +76,13 @@
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTANTS 64
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LENGTH_LINE 1024
+#define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum length in characters of all other strings in the input data */
-#define MAX_LENGTH_STRING 64
+#define MAX_LEN_STRING 64
 
 typedef struct
 {
@@ -162,7 +162,7 @@ rec_skiplist_free(SkipList *list)
 int main(void)
 {
   /* Input buffer to read the CSV file */
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */

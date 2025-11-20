@@ -56,7 +56,7 @@
 #include <meos_internal.h>
 
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000000
+#define MAX_NO_INSTS 1000000
 
 /* Main program */
 int main(void)
@@ -76,7 +76,7 @@ int main(void)
   int i;
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
   {
     t = add_timestamptz_interval(t, oneday);
     /* Generate an instant that is kept upon normalization */

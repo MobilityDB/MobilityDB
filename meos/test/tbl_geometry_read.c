@@ -44,13 +44,13 @@
 #include <meos_geo.h>
 
 /* Maximum length in characters of a header record in the input CSV file1 */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data as computed by
  * the following query on the corresponding table
  * SELECT MAX(length(g::text)) FROM tbl_geometry;
  * -- 11572
  */
-#define MAX_LENGTH_GEO 12001
+#define MAX_LEN_GEO 12001
 
 /* Main program */
 int main(void)
@@ -69,8 +69,8 @@ int main(void)
     return 1;
   }
 
-  char header_buffer[MAX_LENGTH_HEADER];
-  char geo_buffer[MAX_LENGTH_GEO];
+  char header_buffer[MAX_LEN_HEADER];
+  char geo_buffer[MAX_LEN_GEO];
 
   /* Read the first line of the first file with the headers */
   fscanf(file, "%1023s\n", header_buffer);

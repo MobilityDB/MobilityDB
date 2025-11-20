@@ -83,13 +83,13 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the database */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence, should keep at least one */
 #define NO_INSTANTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
@@ -136,7 +136,7 @@ main(int argc, char **argv)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char text_buffer[MAX_LENGTH_HEADER];
+  char text_buffer[MAX_LEN_HEADER];
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
@@ -223,7 +223,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   printf("Accumulating %d instants before sending them to the database\n"
-    "(one '*' marker every database update)\n", NO_INSTANTS_BATCH);
+    "(one '*' marker every database update)\n", NO_INSTS_BATCH);
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
@@ -275,7 +275,7 @@ main(int argc, char **argv)
     }
 
     /* Send the trip to the database when its size reaches the maximum size */
-    if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
+    if (trips[j].trip && trips[j].trip->count == NO_INSTS_BATCH)
     {
       /* Construct the query to be sent to the database */
       char *temp_out = tsequence_out(trips[j].trip, 15);
@@ -311,7 +311,7 @@ main(int argc, char **argv)
     TInstant *inst = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[j].trip)
-      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTANTS_BATCH, true,
+      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTS_BATCH, true,
         true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
@@ -324,7 +324,7 @@ main(int argc, char **argv)
   printf("\n%d records read\n%d incomplete records ignored\n"
     "%d writes to the database\n", no_records, no_nulls, no_writes);
 
-  snprintf(text_buffer, MAX_LENGTH_HEADER - 1,
+  snprintf(text_buffer, MAX_LEN_HEADER - 1,
     "SELECT MMSI, public.numInstants(trip) FROM public.AISTrips;");
   PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)

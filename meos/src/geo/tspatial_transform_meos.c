@@ -96,9 +96,9 @@ typedef struct
 
 #if MEOS
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
-#define MAX_LENGTH_SRS_RECORD 5120
+#define MAX_LEN_SRS_RECORD 5120
 /* Location of the spatial_ref_sys.csv file */
 char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 
@@ -235,7 +235,7 @@ SPI_pstrdup(const char *str)
 static PjStrs
 GetProjStringsSPI(int32_t srid)
 {
-  char header_buffer[MAX_LENGTH_HEADER];
+  char header_buffer[MAX_LEN_HEADER];
   char auth_name[256];
   int32_t auth_srid;
   char proj4text[2048];

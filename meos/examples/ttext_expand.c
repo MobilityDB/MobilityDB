@@ -67,17 +67,17 @@
 #include <meos_internal.h>
 
 /* Maximum number of instants */
-#define MAX_INSTANTS 50000000
+#define MAX_NO_INSTS 50000000
 /* Initial number of instants allocated when creating a sequence */
-#define INITIAL_INSTANTS_SEQ 64
+#define INITIAL_INSTS_SEQ 64
 /* Initial number of sequences allocated when creating a sequence set */
 #define INITIAL_SEQUENCES_SEQSET 64
 /* Maximum number of instants in a sequence */
-#define MAX_INSTANTS_SEQ 50000
+#define MAX_INSTS_SEQ 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 500000
+#define NO_INSTS_BATCH 500000
 /* Maximum length in characters of the text values in the instants */
-#define MAX_LENGTH_TEXT 10
+#define MAX_LEN_TEXT 10
 /* State whether a message is shown every time a sequence set is expanded */
 #define EXPAND_SEQ true
 /* Determine when the composing sequences are compacted
@@ -109,17 +109,17 @@ int main(void)
   /* Seed the random number generator with the current time in seconds. */
   srandom(time(0));
 
-  printf("Total number of instants generated: %d\n", MAX_INSTANTS);
-  printf("Maximum number of instants in a sequence: %d\n", MAX_INSTANTS_SEQ);
+  printf("Total number of instants generated: %d\n", MAX_NO_INSTS);
+  printf("Maximum number of instants in a sequence: %d\n", MAX_INSTS_SEQ);
   printf("Generating the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("2000-01-01", -1);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
   {
     /* Generate the instant */
     /* Use a random generator to set the length of the text value */
-    int len = random() % MAX_LENGTH_TEXT + 1;
+    int len = random() % MAX_LEN_TEXT + 1;
     char *value = malloc(sizeof(char) * (len + 2));
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
@@ -130,14 +130,14 @@ int main(void)
     /* Test whether it is the first instant read */
     if (! seq)
       /* Create an expandable temporal sequence that can store
-       * INITIAL_INSTANTS_SEQ instants and store the first instant.
-       * Notice that we do not use MAX_INSTANTS_SEQ to illustrate the
+       * INITIAL_INSTS_SEQ instants and store the first instant.
+       * Notice that we do not use MAX_INSTS_SEQ to illustrate the
        * #tsequence_compact() function */
-      seq = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS_SEQ, true, true,
+      seq = tsequence_make_exp(&inst, 1, INITIAL_INSTS_SEQ, true, true,
         STEP, false);
     else
     {
-      if (seq->count < MAX_INSTANTS_SEQ)
+      if (seq->count < MAX_INSTS_SEQ)
       {
         int maxcount = seq->maxcount;
         /* We are sure that the result is a temporal sequence */
@@ -163,14 +163,14 @@ int main(void)
         if (COMPACT_COMP_SEQS)
           free(seq1);
         /* Create a new sequence containing the last instant generated */
-        seq = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS_SEQ, true, true,
+        seq = tsequence_make_exp(&inst, 1, INITIAL_INSTS_SEQ, true, true,
           STEP, false);
       }
     }
     free(inst);
 
     /* Print a '*' marker every X instants generated */
-    if (i % NO_INSTANTS_BATCH == 0)
+    if (i % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);

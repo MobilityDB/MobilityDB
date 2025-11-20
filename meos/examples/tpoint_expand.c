@@ -65,11 +65,11 @@
  */
 #define GEODETIC false
 /* Maximum number of instants */
-#define MAX_INSTANTS 1000000
+#define MAX_NO_INSTS 1000000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 10000
+#define NO_INSTS_BATCH 10000
 /* Maximum length in characters of the input instant */
-#define MAX_LENGTH_INST 64
+#define MAX_LEN_INST 64
 
 /* Main program */
 int main(void)
@@ -81,8 +81,8 @@ int main(void)
   clock_t time;
   time = clock();
 
-  /* Buffer for creating input string */
-  char inst_buffer[MAX_LENGTH_INST];
+  /* Buffer for creating the input string */
+  char inst_buffer[MAX_LEN_INST];
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -91,12 +91,12 @@ int main(void)
   int i;
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
   {
-    if (i % NO_INSTANTS_BATCH == 0)
+    if (i % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -105,11 +105,11 @@ int main(void)
     char *time_str = timestamptz_out(t);
     int value = i % 2 + 1;
 #if GEODETIC == true
-    snprintf(inst_buffer, MAX_LENGTH_INST - 1,
+    snprintf(inst_buffer, MAX_LEN_INST - 1,
       "SRID=4326;Point(%d %d)@%s", value, value, time_str);
     TInstant *inst = (TInstant *) tgeogpoint_in(inst_buffer);
 #else
-    snprintf(inst_buffer, MAX_LENGTH_INST - 1,
+    snprintf(inst_buffer, MAX_LEN_INST - 1,
       "Point(%d %d)@%s", value, value, time_str);
     TInstant *inst = (TInstant *) tgeompoint_in(inst_buffer);
 #endif
