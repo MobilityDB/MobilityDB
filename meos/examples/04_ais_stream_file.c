@@ -57,7 +57,7 @@
 /* Number of instants to send in batch to the file  */
 #define NO_INSTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence */
-#define NO_INSTANTS_KEEP 2
+#define NO_INSTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -191,7 +191,7 @@ main(int argc, char **argv)
       printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last instants */
-      tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
+      tsequence_restart(trips[j].trip, NO_INSTS_KEEP);
     }
 
     /* Transform the string representing the timestamp into a timestamp value */

@@ -66,15 +66,15 @@
 #include <meos_internal_geo.h>
 
 /*
- * You may fix the value MAX_NO_RECORDS to only process the given number of
+ * You may fix the value MAX_NO_RECS to only process the given number of
  * records
  */
 /* Maximum number of records read from the CSV file */
-#define MAX_NO_RECORDS 20000000
+#define MAX_NO_RECS 20000000
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
-#define INITIAL_INSTANTS 64
+#define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
@@ -200,7 +200,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
+  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -220,13 +220,13 @@ int main(void)
 
     no_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECORDS_BATCH == 0)
+    if (no_records % NO_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECORDS)
+    if (no_records == MAX_NO_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -333,7 +333,7 @@ int main(void)
       /* Ensure there is still space for storing the temporal point instant */
       if (! rec1->trip)
       {
-        rec1->trip = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS, true, true,
+        rec1->trip = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true, true,
           LINEAR, false);
         if (! rec1->trip)
         {
@@ -384,7 +384,7 @@ int main(void)
         // printf("Speed %d -> %d ", rec1->no_SOG_instants,
           // rec1->no_SOG_instants * 2);
         // fflush(stdout);
-        rec1->SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTANTS, true, true,
+        rec1->SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true, true,
           LINEAR, false);
         if (rec1->SOG == NULL)
         {

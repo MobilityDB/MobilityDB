@@ -143,10 +143,7 @@ int main(void)
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     /* Add the current value to the running aggregates */
-    STBox *new_extent = tspatial_extent_transfn(extent, trip_rec.trip);
-    if (extent)
-      free(extent);
-    extent = new_extent;
+    extent = tspatial_extent_transfn(extent, trip_rec.trip);
     /* Get the time of the trip at an hour granularity */
     SpanSet *temptime = temporal_time(trip_rec.trip);
     SpanSet *ps = tstzspanset_tprecision(temptime, interval, origin);

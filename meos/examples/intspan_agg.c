@@ -131,7 +131,6 @@ int main(void)
   char *spanset_out = intspanset_out(final);
   printf("spanset: %s\n", spanset_out);
   free(spanset_out);
-  free(state);
   free(final);
 
   /* Calculate the elapsed time */

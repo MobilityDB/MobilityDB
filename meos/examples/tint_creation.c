@@ -36,7 +36,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o tint_benchmark tint_benchmark.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o tint_creation tint_creation.c -L/usr/local/lib -lmeos
  * @endcode
  *
  * The output of the program is as follows

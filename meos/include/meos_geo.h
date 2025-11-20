@@ -615,7 +615,6 @@ extern bool stbox_ne(const STBox *box1, const STBox *box2);
 
 /* Input and output functions */
 
-extern char *tgeo_out(const Temporal *temp, int maxdd);
 extern Temporal *tgeogpoint_from_mfjson(const char *str);
 extern Temporal *tgeogpoint_in(const char *str);
 extern Temporal *tgeography_from_mfjson(const char *mfjson);
@@ -626,6 +625,7 @@ extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd);
+extern char *tspatial_out(const Temporal *temp, int maxdd);
 
 /* Constructor functions */
 

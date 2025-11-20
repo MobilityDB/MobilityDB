@@ -75,44 +75,41 @@
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
-/* Input variables for reading a record */
-int tripid;
-int vehid;
-DateADT day;
-int seq;
-GSERIALIZED *point;
-TimestampTz t;
-
 typedef struct
 {
-  int tripid;      /* Identifier of the trip */
-  int vehid;       /* Identifier of the vehicle */
-  DateADT day;     /* Day of the trip */
-  int seq;         /* Number of the trip in the day of the trip */
+  int tripid;      /* Identifier of a trip */
+  int vehid;       /* Identifier of a vehicle */
+  DateADT day;     /* Day of a trip */
+  int seq;         /* Sequence number of a trip in a day of a vehicle */
   int no_instants; /* Number of input instants */
-  TInstant *trip_instants[MAX_NO_INSTS]; /* Array of instants for the trip */
-  Temporal *trip;  /* Trip constructed from the input instants */
-} trip_output_record;
-
+  TInstant *trip_instants[MAX_NO_INSTS]; /* Array of instants for a trip */
+} trip_record;
 
 /* Main program */
 int main(void)
 {
-  /* Get start time */
-  clock_t t;
-  t = clock();
-
-  /* Initialize MEOS */
-  meos_initialize();
-
+  /* Input variables for reading a record */
+  int tripid;
+  int vehid;
+  DateADT day;
+  int seq;
+  GSERIALIZED *point;
+  TimestampTz t;
   /* Allocate space to build the trips */
-  trip_output_record trips[MAX_TRIPS] = {0};
+  trip_record trips[MAX_TRIPS] = {0};
   /* Number of trips */
   int no_trips = 0;
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to failure to quickly exit upon error */
   int exit_value = EXIT_FAILURE;
+
+  /* Get start time */
+  clock_t tm;
+  tm = clock();
+
+  /* Initialize MEOS */
+  meos_initialize();
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_instants.csv", "r");
@@ -172,19 +169,19 @@ int main(void)
     free(point);
 
     /* Find the place to store the new instant */
-    int trip = -1;
+    int tripIdx = -1;
     for (i = 0; i < MAX_TRIPS; i++)
     {
       if (trips[i].tripid == tripid)
       {
-        trip = i;
+        tripIdx = i;
         break;
       }
     }
-    if (trip < 0)
+    if (tripIdx < 0)
     {
-      trip = no_trips++;
-      if (trip == MAX_TRIPS)
+      tripIdx = no_trips++;
+      if (tripIdx == MAX_TRIPS)
       {
         printf("\nThe maximum number of trips in the input file is bigger than %d\n",
           MAX_TRIPS);
@@ -193,7 +190,7 @@ int main(void)
       }
     }
 
-    if (trips[trip].no_instants == MAX_NO_INSTS)
+    if (trips[tripIdx].no_instants == MAX_NO_INSTS)
     {
       printf("\nThe maximum number of instants for trips in the input file is bigger than %d\n",
         MAX_NO_INSTS);
@@ -203,28 +200,18 @@ int main(void)
     /*
      * Store the input values
      */
-    trips[trip].tripid = tripid;
-    trips[trip].vehid = vehid;
-    trips[trip].day = day;
-    trips[trip].seq = seq;
-    trips[trip].trip_instants[trips[trip].no_instants++] = inst;
+    trips[tripIdx].tripid = tripid;
+    trips[tripIdx].vehid = vehid;
+    trips[tripIdx].day = day;
+    trips[tripIdx].seq = seq;
+    trips[tripIdx].trip_instants[trips[tripIdx].no_instants++] = inst;
   } while (!feof(file));
 
   /* Close the input file */
   fclose(file);
-
   printf("\n%d records read from file 'berlinmod_instants.csv'.\n"
     "%d incomplete records ignored.\n", no_records, no_nulls);
   printf("%d trips read.\n", no_trips);
-
-  /* Construct the trips */
-  for (i = 0; i < no_trips; i++)
-  {
-    trips[i].trip = (Temporal *) tsequence_make(trips[i].trip_instants,
-      trips[i].no_instants, true, true, LINEAR, true);
-    printf("TripId: %d, Number of input instants: %d, Distance travelled %lf\n",
-      trips[i].tripid, trips[i].no_instants, tpoint_length(trips[i].trip));
-  }
 
   /* Open the output file */
   file = fopen("data/berlinmod_trips_new.csv", "w+");
@@ -242,22 +229,28 @@ int main(void)
   /* Loop for each trip */
   for (i = 0; i < no_trips; i++)
   {
+    /* Construct a trip and print some information about it */
+    Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
+      trips[i].no_instants, true, true, LINEAR, true);
+    printf("TripId: %d, Number of input instants: %d, Distance travelled %lf\n",
+      trips[i].tripid, trips[i].no_instants, tpoint_length(trip));
+
     /* Write line in the CSV file */
     char *date_str = date_out(trips[i].day);
     size_t length;
     /* Encode using server machine endian */
-    char *trip_str = temporal_as_hexwkb(trips[i].trip, WKB_EXTENDED, &length);
+    char *trip_str = temporal_as_hexwkb(trip, WKB_EXTENDED, &length);
     fprintf(file,"%d,%d,%s,%d,%s\n", trips[i].tripid, trips[i].vehid, date_str,
       trips[i].seq, trip_str);
-    free(date_str); free(trip_str);
+    free(trip); free(date_str); free(trip_str);
   }
 
   /* Close the file */
   fclose(file);
 
   /* Calculate the elapsed time */
-  t = clock() - t;
-  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  tm = clock() - tm;
+  double time_taken = ((double) tm) / CLOCKS_PER_SEC;
   printf("The program took %f seconds to execute\n", time_taken);
 
   exit_value = EXIT_SUCCESS;
@@ -267,11 +260,8 @@ cleanup:
 
  /* Free memory */
   for (i = 0; i < no_trips; i++)
-  {
-    free(trips[i].trip);
     for (j = 0; j < trips[i].no_instants; j++)
       free(trips[i].trip_instants[j]);
-  }
 
   /* Finalize MEOS */
   meos_finalize();

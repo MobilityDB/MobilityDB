@@ -43,8 +43,6 @@
  * @endcode
  */
 
-/*****************************************************************************/
-
 /* C */
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,13 +57,13 @@
 #include <meos_internal_geo.h>
 
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECORDS 20000000
+#define MAX_NO_RECS 20000000
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LEN_POINT 64
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECS_BATCH 100000
 
 typedef struct
 {
@@ -122,7 +120,7 @@ int main(void)
   /* Read the first line of the input file with the headers */
   fscanf(file_in, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
+  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
 
   /* Write the first line of the output file with the headers */
   fprintf(file_out, "# Timestamp,MMSI,Latitude,Longitude,SOG\n");
@@ -140,13 +138,13 @@ int main(void)
 
     no_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECORDS_BATCH == 0)
+    if (no_records % NO_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECORDS)
+    if (no_records == MAX_NO_RECS)
       break;
 
     /* Initialize record to 0 */

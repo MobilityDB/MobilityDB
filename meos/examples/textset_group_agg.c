@@ -135,8 +135,7 @@ int main(void)
     printf("-------------------------------\n");
     printf("%s\n", final_out);
     free(final_out);
-    free(final);    
-    free(state[i]);
+    free(final);
   }
 
   /* Calculate the elapsed time */
