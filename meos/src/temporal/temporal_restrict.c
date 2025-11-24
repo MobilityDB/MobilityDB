@@ -2307,6 +2307,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       seq->count - n, false, seq->period.upper_inc, interp, NORMALIZE_NO);
     pfree(instants[0]);
   }
+  pfree(instants);
   return nseqs;
 }
 

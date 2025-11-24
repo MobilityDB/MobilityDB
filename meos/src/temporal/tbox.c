@@ -39,6 +39,8 @@
 #include <limits.h>
 #include <assert.h>
 /* PostgreSQL */
+#include "common/hashfn.h"
+#include "port/pg_bitutils.h"
 #include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
@@ -1113,7 +1115,7 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
  * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
  */
 TBox *
-tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift,
+tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift,
   bool haswidth)
 {
   VALIDATE_NOT_NULL(box, NULL);
@@ -1136,7 +1138,7 @@ tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift,
  * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
  */
 TBox *
-tbox_shift_scale_float(const TBox *box, double shift, double width,
+tfloatbox_shift_scale(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
   VALIDATE_NOT_NULL(box, NULL);
@@ -1206,7 +1208,7 @@ tbox_expand(const TBox *box1, TBox *box2)
  * @csqlfn #Tbox_expand_value()
  */
 TBox *
-tbox_expand_int(const TBox *box, const int i)
+tintbox_expand(const TBox *box, const int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
@@ -1235,7 +1237,7 @@ tbox_expand_int(const TBox *box, const int i)
  * @csqlfn #Tbox_expand_value()
  */
 TBox *
-tbox_expand_float(const TBox *box, const double d)
+tfloatbox_expand(const TBox *box, const double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
@@ -1270,8 +1272,9 @@ tbox_expand_value(const TBox *box, Datum value, meosType basetype)
   assert(box); assert(tnumber_basetype(basetype));
   if (box->span.basetype == T_INT4)
   {
+    /* If it is a temporal integer box */
     if (basetype == T_INT4)
-      return tbox_expand_int(box, DatumGetInt32(value));
+      return tintbox_expand(box, DatumGetInt32(value));
     else /* basetype == T_FLOAT8 */
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1281,10 +1284,11 @@ tbox_expand_value(const TBox *box, Datum value, meosType basetype)
   }
   else
   {
+    /* If it is a temporal float box */
     if (basetype == T_INT4)
-      return tbox_expand_float(box, (double) DatumGetInt32(value));
+      return tfloatbox_expand(box, (double) DatumGetInt32(value));
     else /* basetype == T_FLOAT8 */
-      return tbox_expand_float(box, DatumGetFloat8(value));
+      return tfloatbox_expand(box, DatumGetFloat8(value));
   }
 }
 
@@ -1308,6 +1312,7 @@ tbox_expand_time(const TBox *box, const Interval *interv)
     return NULL;
   TBox *result = tbox_copy(box);
   memcpy(&result->period, s, sizeof(Span));
+  pfree(s);
   return result;
 }
 
@@ -1804,6 +1809,80 @@ inline bool
 tbox_gt(const TBox *box1, const TBox *box2)
 {
   return tbox_cmp(box1, box2) > 0;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return the 32-bit hash of a temporal box
+ * @param[in] box Temporal box
+ * @return On error return @p INT_MAX
+ * @csqlfn #Tbox_hash()
+ */
+uint32
+tbox_hash(const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, INT_MAX);
+
+  /* Determine the dimensions of the temporal box */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+
+  /* Merge hashes of period, span, and flags */
+  uint32 result = 0;
+  if (hast)
+    result = span_hash(&box->period);
+  if (hasx)
+  {
+    result ^= span_hash(&box->span);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    result = pg_rotate_left32(result, 1);
+#else
+    result =  (result << 1) | (result >> 31);
+#endif
+  }
+  result ^= hash_uint32(box->flags);
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  result = pg_rotate_left32(result, 1);
+#else
+  result =  (result << 1) | (result >> 31);
+#endif
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the 64-bit hash of a temporal box using a seed
+ * @param[in] box Temporal box
+ * @param[in] seed Seed
+ * @return On error return @p LONG_MAX
+ * @csqlfn #Tbox_hash_extended()
+ */
+uint64
+tbox_hash_extended(const TBox *box, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, LONG_MAX);
+
+  /* Determine the dimensions of the temporal box */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+
+  /* Merge hashes of period, span, and flags */
+  uint64 result = 0;
+  if (hast)
+    result = span_hash_extended(&box->period, seed);
+  if (hasx)
+  {
+    result ^= span_hash_extended(&box->span, seed);
+    result = ROTATE_HIGH_AND_LOW_32BITS(result);
+  }
+  result ^= hash_uint32_extended(box->flags, seed);
+  result = ROTATE_HIGH_AND_LOW_32BITS(result);
+
+  return result;
 }
 
 /*****************************************************************************/

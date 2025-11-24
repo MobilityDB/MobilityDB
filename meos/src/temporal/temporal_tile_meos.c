@@ -1169,6 +1169,9 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
       values[nfrags++] = bin_value;
     }
     bin_value = datum_add(bin_value, size, basetype);
+    /* Clean up */
+    for (int j = 0; j < nseqs[i]; j++)
+      pfree(binseqs[i * ss->totalcount + j]);
   }
   pfree(binseqs);
   pfree(nseqs);
@@ -1321,7 +1324,7 @@ tint_value_split(const Temporal *temp, int size, int origin, int **bins,
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Int32GetDatum(size),
     Int32GetDatum(origin), &datum_bins, count);
-  /* Transform the datum bins into float bins and return */
+  /* Transform the datum bins into integer bins and return */
   int *values = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     values[i] = DatumGetInt32(datum_bins[i]);

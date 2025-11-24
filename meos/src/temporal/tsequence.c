@@ -1768,7 +1768,7 @@ tsequence_time(const TSequence *seq)
  * @param[in] func Function used for the comparison
  */
 const TInstant *
-tsequence_minmax_inst(const TSequence *seq,
+tsequence_minmax_inst_p(const TSequence *seq,
   bool (*func)(Datum, Datum, meosType))
 {
   assert(seq);
@@ -1798,10 +1798,10 @@ tsequence_minmax_inst(const TSequence *seq,
  * two temporal points from their temporal distance
  * @csqlfn #Temporal_min_instant()
  */
-inline const TInstant *
-tsequence_min_inst(const TSequence *seq)
+const TInstant *
+tsequence_min_inst_p(const TSequence *seq)
 {
-  return tsequence_minmax_inst(seq, &datum_lt);
+  return tsequence_minmax_inst_p(seq, &datum_lt);
 }
 
 /**
@@ -1813,10 +1813,10 @@ tsequence_min_inst(const TSequence *seq)
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_max_instant()
  */
-inline const TInstant *
-tsequence_max_inst(const TSequence *seq)
+const TInstant *
+tsequence_max_inst_p(const TSequence *seq)
 {
-  return tsequence_minmax_inst(seq, &datum_gt);
+  return tsequence_minmax_inst_p(seq, &datum_gt);
 }
 
 /**
@@ -2825,7 +2825,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 /**
  * @ingroup meos_internal_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal sequence
- * is less than, equal, or greater than the second one
+ * is less than, equal to, or greater than the second one
  * @param[in] seq1,seq2 Temporal sequences
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling

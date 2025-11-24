@@ -103,15 +103,16 @@ lwcircle_make(double x, double y, double radius, int32_t srid)
   assert(radius > 0);
   LWPOINT *points[3];
   /* Shift the X coordinate of the point by +- radius */
-  points[0] = points[2] = lwpoint_make2d(srid, x - radius, y);
+  points[0] = lwpoint_make2d(srid, x - radius, y);
   points[1] = lwpoint_make2d(srid, x + radius, y);
+  points[2] = lwpoint_make2d(srid, x - radius, y);
   /* Construct the circle */
   LWGEOM *ring = lwcircstring_as_lwgeom(
     lwcircstring_from_lwpointarray(srid, 3, points));
   LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
   lwcurvepoly_add_ring(result, ring);
   /* Clean up and return */
-  lwpoint_free(points[0]); lwpoint_free(points[1]);
+  lwpoint_free(points[0]); lwpoint_free(points[1]); lwpoint_free(points[2]);
   /* We cannot lwgeom_free(ring); */
   return lwcurvepoly_as_lwgeom(result);
 }

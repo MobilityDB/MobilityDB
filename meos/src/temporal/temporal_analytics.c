@@ -1137,8 +1137,8 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   assert(temp1->temptype == temp2->temptype);
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
+  const TInstant **instants1 = temporal_insts_p(temp1, &count1);
+  const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   result = count1 > count2 ?
     tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
     tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
@@ -1393,8 +1393,8 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   assert(temp1); assert(temp2); assert(count);
   assert(temp1->temptype == temp2->temptype);
   int count1, count2;
-  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
+  const TInstant **instants1 = temporal_insts_p(temp1, &count1);
+  const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   Match *result = count1 > count2 ?
     tinstarr_similarity_matrix(instants1, count1, instants2, count2,
       simfunc, count) :
@@ -1508,8 +1508,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
+  const TInstant **instants1 = temporal_insts_p(temp1, &count1);
+  const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   result = tinstarr_hausdorff_distance(instants1, count1, instants2, count2);
   /* Free memory */
   pfree(instants1); pfree(instants2);

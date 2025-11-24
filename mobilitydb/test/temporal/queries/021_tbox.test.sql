@@ -184,6 +184,8 @@ SELECT MAX(tmax(b)) FROM tbl_tboxfloat;
 -- Transformation functions
 -------------------------------------------------------------------------------
 
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 1);
+
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 1.0);
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
 
@@ -204,6 +206,8 @@ SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -
 
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day', '1 hour');
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 day', '1 hour');
+/* Errors */
+SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day', interval '-1 day');
 
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
@@ -217,6 +221,7 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02))', interv
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day');
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-2 days');
 /* Errors */
+SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
@@ -320,6 +325,7 @@ SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT 
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-02-01,2000-02-02])';
 
 /* Errors */
+SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT X([3.0,4.0])';
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([3.0,4.0],[2000-01-01,2000-01-02])';
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' + tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-03, 2000-01-04])';
 
@@ -407,5 +413,16 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b < t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b <= t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b > t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b >= t2.b;
+
+-------------------------------------------------------------------------------
+
+SELECT tbox_hash(tbox 'TBOXFLOAT X([1.0,1.0])');
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
+
+SELECT tbox_hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
+
+SELECT tbox_hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT tbox_hash_extended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
 
 -------------------------------------------------------------------------------
