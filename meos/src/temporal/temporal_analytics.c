@@ -34,6 +34,10 @@
 
 #include "temporal/temporal_analytics.h"
 
+#define _float_t double
+#define EKF_N 6 /* [x,vx,y,vy,z,vz] */
+#define EKF_M 3 /* measure positions [x,y,t] */
+
 /* C */
 #include <assert.h>
 #include <math.h>
@@ -54,23 +58,16 @@
 #include "temporal/temporal_tile.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "temporal/tinyekf_meos.h"
+#include "geo/tgeo_distance.h"
+#include "geo/tgeo_spatialfuncs.h"
+
 
 /*****************************************************************************
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
  *****************************************************************************/
 
-#define _float_t double
-#define EKF_N 6 /* [x,vx,y,vy,z,vz] */
-#define EKF_M 3 /* measure positions [x,y,z] */
-
-/* Header-only tinyEKF core, uses _float_t/EKF_N/EKF_M above */
-#include "temporal/tinyekf_meos.h"
-
-/* MEOS / PostGIS helpers */
-#include "geo/tgeo_distance.h"
-#include "geo/tgeo_spatialfuncs.h"
-
-/* Build constant-velocity F matrix for given dt (seconds) */
+/* Build constant-velocity F matrix for given dt (seconds), Jacobian of state-transition function */
 static inline void
 ekf_build_F(_float_t F[EKF_N*EKF_N], double dt, int dims)
 {
@@ -81,7 +78,7 @@ ekf_build_F(_float_t F[EKF_N*EKF_N], double dt, int dims)
   if (dims >= 3) F[4*EKF_N + 5] = (_float_t) dt; /* z += vz*dt */
 }
 
-/* Build process noise Q for each used axis */
+/* Build process noise Q for each used axis, process noise matrix */
 static inline void
 ekf_build_Q(_float_t Q[EKF_N*EKF_N], double dt, double q, int dims)
 {
@@ -97,7 +94,7 @@ ekf_build_Q(_float_t Q[EKF_N*EKF_N], double dt, double q, int dims)
   }
 }
 
-/* Build H and hx given predicted state fx; only first dims are measured */
+/* Build H and hx given predicted state fx; only first dims are measured, sensor-function Jacobian matrix */
 static inline void
 ekf_build_H_hx(_float_t H[EKF_M*EKF_N], _float_t hx[EKF_M], const _float_t fx[EKF_N], int dims)
 {
@@ -111,7 +108,7 @@ ekf_build_H_hx(_float_t H[EKF_M*EKF_N], _float_t hx[EKF_M], const _float_t fx[EK
   }
 }
 
-/* Build R (measurement covariance) */
+/* Build R, measurement covariance */
 static inline void
 ekf_build_R(_float_t R[EKF_M*EKF_M], double variance, int dims)
 {
@@ -134,21 +131,19 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
   return sqrt(d2);
 }
 
-/* Filter a TSequence of tfloat or tgeompoint (2D/3D, non-geodetic) */
-static TSequence *
-tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,
-  double gate, double q, double variance, bool to_drop)
+/* Filter a TSequence tgeompoint */
+static TSequence * tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,double gate, double q, double variance, bool to_drop)
 {
   if (seq->count == 0)
     return tsequence_copy(seq);
 
   const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
 
-  /* Determine dimensionality and SRID / initial value depending on type */
+  /* Determine dimensionality */
   int dims = 1;
   bool hasz = false;
   bool geodetic = false;
-  int32_t srid = SRID_UNKNOWN;
+  int srid = 0;
 
   double x0 = 0.0, y0 = 0.0, z0 = 0.0;
 
@@ -165,12 +160,22 @@ tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,
     geodetic = FLAGS_GET_GEODETIC(flags);
     if (geodetic)
       return tsequence_copy(seq); /* v1: not supported on geodetic */
+
     dims = hasz ? 3 : 2;
 
-    POINT4D p0; datum_point4d(tinstant_value_p(inst0), &p0);
-    x0 = p0.x;
-    y0 = p0.y;
-    z0 = hasz ? p0.z : 0.0;
+    if (hasz)
+    {
+      const POINT3DZ *p0 = DATUM_POINT3DZ_P(tinstant_value_p(inst0));
+      x0 = p0->x;
+      y0 = p0->y;
+      z0 = p0->z;
+    }
+    else
+    {
+      const POINT2D *p0 = DATUM_POINT2D_P(tinstant_value_p(inst0));
+      x0 = p0->x;
+      y0 = p0->y;
+    }
     srid = spatial_srid(tinstant_value_p(inst0), basetype);
   }
   else
@@ -239,10 +244,19 @@ tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,
     }
     else /* T_TGEOMPOINT */
     {
-      POINT4D p; datum_point4d(tinstant_value_p(inst), &p);
-      z[0] = (_float_t) p.x;
-      if (dims >= 2) z[1] = (_float_t) p.y;
-      if (dims == 3) z[2] = (_float_t) p.z;
+      if (hasz)
+      {
+        const POINT3DZ *p = DATUM_POINT3DZ_P(tinstant_value_p(inst));
+        z[0] = (_float_t) p->x;
+        if (dims >= 2) z[1] = (_float_t) p->y;
+        if (dims == 3) z[2] = (_float_t) p->z;
+      }
+      else
+      {
+        const POINT2D *p = DATUM_POINT2D_P(tinstant_value_p(inst));
+        z[0] = (_float_t) p->x;
+        if (dims >= 2) z[1] = (_float_t) p->y;
+      }
     }
 
     _float_t Rm[EKF_M*EKF_M];
