@@ -170,9 +170,9 @@ int main(void)
   /* Fill the array of cluster numbers */
   for (i = 0; i < no_clusters; i++)
   {
-    for (j = 0; j < geo_ngeos(clusters[i]); j++)
+    for (j = 0; j < geo_num_geos(clusters[i]); j++)
     {
-      GSERIALIZED *subgeo = geo_geoN(clusters[i], j + 1);
+      GSERIALIZED *subgeo = geo_geo_n(clusters[i], j + 1);
       for (k = 0; k < no_records; k++)
       {
         if (geo_equals(subgeo, geoms[k]))

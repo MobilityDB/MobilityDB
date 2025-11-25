@@ -391,9 +391,9 @@ extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline
 
 extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
-extern int geo_npoints(const GSERIALIZED *gs);
-extern int geo_ngeos(const GSERIALIZED *gs);
-extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
+extern int geo_num_points(const GSERIALIZED *gs);
+extern int geo_num_geos(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_geo_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
