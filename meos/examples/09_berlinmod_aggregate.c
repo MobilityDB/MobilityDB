@@ -71,19 +71,19 @@ trip_record trip_rec;
  * -- 328178
  * @endcode
  */
-#define MAX_LENGTH_TRIP 400001
+#define MAX_LEN_TRIP 400001
 /* Maximum length in characters of a header in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a date in the input data */
-#define MAX_LENGTH_DATE 12
+#define MAX_LEN_DATE 12
 
 /* Main program */
 int main(void)
 {
   /* Variables to read the input CSV file */
-  char header_buffer[MAX_LENGTH_HEADER];
-  char date_buffer[MAX_LENGTH_DATE];
-  char trip_buffer[MAX_LENGTH_TRIP];
+  char header_buffer[MAX_LEN_HEADER];
+  char date_buffer[MAX_LEN_DATE];
+  char trip_buffer[MAX_LEN_TRIP];
 
   /* Get start time */
   clock_t t;
@@ -143,10 +143,7 @@ int main(void)
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
 
     /* Add the current value to the running aggregates */
-    STBox *new_extent = tspatial_extent_transfn(extent, trip_rec.trip);
-    if (extent)
-      free(extent);
-    extent = new_extent;
+    extent = tspatial_extent_transfn(extent, trip_rec.trip);
     /* Get the time of the trip at an hour granularity */
     SpanSet *temptime = temporal_time(trip_rec.trip);
     SpanSet *ps = tstzspanset_tprecision(temptime, interval, origin);

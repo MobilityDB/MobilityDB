@@ -55,11 +55,11 @@
 #include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_INST 64
+#define MAX_LEN_INST 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum number of trips */
 #define MAX_TRIPS 5
 
@@ -111,8 +111,8 @@ int main(void)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
+  char header_buffer[MAX_LEN_HEADER];
+  char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -174,15 +174,15 @@ int main(void)
     TInstant *inst1 = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[ship].trip)
-      trips[ship].trip = (Temporal *) tsequence_make_exp(
-        (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
+      trips[ship].trip = (Temporal *) tsequence_make_exp(&inst1, 1, 2, true,
+        true, LINEAR, false);
     else
       trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, 
         LINEAR, 0.0, NULL, true);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     if (! trips[ship].SOG)
-      trips[ship].SOG = (Temporal *) tsequence_make_exp(
-        (const TInstant **) &inst2, 1, 2, true, true, LINEAR, false);
+      trips[ship].SOG = (Temporal *) tsequence_make_exp(&inst2, 1, 2, true,
+        true, LINEAR, false);
     else
       trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2,
         LINEAR, 0.0, NULL, true);

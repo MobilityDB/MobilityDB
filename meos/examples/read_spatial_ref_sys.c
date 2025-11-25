@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Location of the spatial_ref_sys.csv file */
 #define SPATIAL_REF_SYS "/usr/local/share/spatial_ref_sys.csv"
 
@@ -74,7 +74,7 @@ typedef struct
 static PjStrs
 GetProjStringsSPI(int32_t srid)
 {
-  char header_buffer[MAX_LENGTH_HEADER];
+  char header_buffer[MAX_LEN_HEADER];
   char auth_name[256];
   int32_t auth_srid;
   char proj4text[2048];

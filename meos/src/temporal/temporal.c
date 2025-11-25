@@ -846,7 +846,7 @@ temporal_out(const Temporal *temp, int maxdd)
  * @param[in] maxdd Number of decimal digits
  */
 char **
-temparr_out(const Temporal **temparr, int count, int maxdd)
+temparr_out(Temporal **temparr, int count, int maxdd)
 {
   assert(temparr); assert(count > 0); assert(maxdd >=0);
   char **result = palloc(sizeof(text *) * count);
@@ -1236,7 +1236,7 @@ temporal_round(const Temporal *temp, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  */
 Temporal **
-temparr_round(const Temporal **temparr, int count, int maxdd)
+temparr_round(Temporal **temparr, int count, int maxdd)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temparr, NULL);
@@ -2635,7 +2635,7 @@ temporal_insts_p(const Temporal *temp, int *count)
     default: /* TSEQUENCESET */
     {
       const TInstant **result = tsequenceset_insts_p((TSequenceSet *) temp);
-      *count = tinstarr_remove_duplicates(result,
+      *count = tinstarr_remove_duplicates((TInstant **) result,
         ((TSequenceSet *) temp)->totalcount);
       return result;
     }
@@ -2845,7 +2845,7 @@ tsequence_derivative(const TSequence *seq)
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
     T_TFLOAT, seq->period.upper);
   /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
+  TSequence *result = tsequence_make(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
   pfree_array((void **) instants, seq->count);
   return result;
@@ -2965,10 +2965,10 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (! is_stopped && previously_stopped &&
       (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
-      const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+      TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
-        insts[i] = TSEQUENCE_INST_N(seq, start + i);
-      result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+        instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
+      result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
         NORMALIZE_NO);
       start = end;
     }
@@ -2978,10 +2978,10 @@ tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   inst2 = TSEQUENCE_INST_N(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
   {
-    const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+    TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
-      insts[i] = TSEQUENCE_INST_N(seq, start + i);
-    result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+      instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
+    result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
   return nseqs;

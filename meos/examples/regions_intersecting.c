@@ -88,7 +88,7 @@
 /* Maximum number of input rows */
 #define MAX_ROWS 100
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LINE_LENGTH 4096
+#define MAX_LEN_LINE 4096
 /* Define whether `ST_ClusterIntersecting` or `ST_ClusterWithin` is applied */
 #define CLUSTER_INTERSECTING false
 
@@ -122,7 +122,7 @@ int main(void)
 
   int no_records = 0;
   int no_nulls = 0;
-  char line_buffer[MAX_LINE_LENGTH];
+  char line_buffer[MAX_LEN_LINE];
 
   /* Read the first line of the file with the headers */
   fscanf(input_file, "%4095[^\n]\n", line_buffer);

@@ -331,7 +331,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
     inst2 = TSEQUENCE_INST_N(seq2, i);
     instants[i] = tposeinst_make(inst1, inst2);
   }
-  TSequence *result = tsequence_make((const TInstant **) instants, seq1->count,
+  TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
   return result;
 }
@@ -369,8 +369,7 @@ tposeseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
     seq2 = TSEQUENCESET_SEQ_N(ss2, i);
     sequences[i] = tposeseq_make(seq1, seq2);
   }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    ss1->count, NORMALIZE);
+  TSequenceSet *result = tsequenceset_make(sequences, ss1->count, NORMALIZE);
   return result;
 }
 

@@ -178,7 +178,7 @@ tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tgeoinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
+tgeoinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 {
   assert(instants); assert(box);
   /* Initialize the bounding box with the first instant */
@@ -219,8 +219,8 @@ tgeoinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
  * @param[out] box Bounding box
  */
 void
-tspatialinstarr_set_stbox(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, interpType interp, void *box)
+tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, void *box)
 {
   meosType temptype = instants[0]->temptype;
   assert(tspatial_type(temptype));
@@ -317,7 +317,7 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
  * @param[out] box Spatiotemporal box
  */
 void
-tspatialseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
+tspatialseqarr_set_stbox(TSequence **sequences, int count, STBox *box)
 {
   assert(sequences); assert(box);
   memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(STBox));

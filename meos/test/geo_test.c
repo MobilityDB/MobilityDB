@@ -809,10 +809,10 @@ int main(void)
   /* Constructor functions */
   printf("****************************************************************\n");
 
-  /* Set *geoset_make(const GSERIALIZED **values, int count); */
+  /* Set *geoset_make(GSERIALIZED **values, int count); */
   geomarray[0] = geom1;
   geomarray[1] = geom2;
-  geomset_result = geoset_make((const GSERIALIZED **) geomarray, 2);
+  geomset_result = geoset_make(geomarray, 2);
   char_result = spatialset_as_text(geomset_result, 6);
   printf("geoset_make({%s, %s}): %s\n", geom1_out, geom2_out, char_result);
   free(geomset_result); free(char_result);

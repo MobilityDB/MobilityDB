@@ -634,8 +634,8 @@ tgeoseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
   }
   TSequence *result = NULL;
   if (ninsts > 0)
-    result = tsequence_make((const TInstant **) instants, ninsts, true, true,
-        DISCRETE, NORMALIZE_NO);
+    result = tsequence_make(instants, ninsts, true, true, DISCRETE,
+      NORMALIZE_NO);
   /* Clean up and return */
   if (tpoint_type(seq->temptype))
     pfree(instants);
@@ -690,8 +690,8 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
         instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
         tofree = true;
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, upper_inc, STEP, NORMALIZE_NO);
+        sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          upper_inc, STEP, NORMALIZE_NO);
         if (tofree)
           pfree(instants[ninsts - 1]);
         ninsts = 0;
@@ -705,8 +705,8 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
     TimestampTz end = DatumGetTimestampTz(seq->period.upper);
     bool upper_inc = (instants[ninsts - 1]->t == end) ?
       seq->period.upper_inc : false;
-    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, upper_inc, STEP, NORMALIZE_NO);
+    sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
+      STEP, NORMALIZE_NO);
   }
 
   /* Clean up and return if no sequences have been found */
@@ -919,8 +919,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
        * and we have seq->lower_inc / seq->upper_inc being false.
        * Don't create a sequence, but still reset ninsts and lower_inc */
       if (ninsts > 1 || lower_inc || upper_inc)
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-          lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+        sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          upper_inc, LINEAR, NORMALIZE_NO);
       ninsts = 0;
       lower_inc = true;
     }
@@ -929,8 +929,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   }
   /* See above for explanation of condition */
   if (ninsts > 0 && (ninsts > 1 || lower_inc || upper_inc))
-    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+    sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
+      LINEAR, NORMALIZE_NO);
   pfree_array((void **) tofree, nfree);
   pfree(instants);
   if (nseqs == 0)
@@ -1235,7 +1235,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
@@ -1265,8 +1265,8 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
     if (inter)
     {
       if (ninsts == 0)
-        instants[ninsts++] = inst1;
-      instants[ninsts++] = inst2;
+        instants[ninsts++] = (TInstant *) inst1;
+      instants[ninsts++] = (TInstant *) inst2;
     }
     else if (ninsts > 0)
     {
@@ -1497,7 +1497,7 @@ tgeoseq_disc_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
 
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
   {
@@ -1561,8 +1561,8 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
         instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
         tofree = true;
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, upper_inc, STEP, NORMALIZE_NO);
+        sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          upper_inc, STEP, NORMALIZE_NO);
         if (tofree)
           pfree(instants[ninsts - 1]);
         ninsts = 0;
@@ -1576,8 +1576,8 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
     TimestampTz end = DatumGetTimestampTz(seq->period.upper);
     bool upper_inc = (instants[ninsts - 1]->t == end) ?
       seq->period.upper_inc : false;
-    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, upper_inc, STEP, NORMALIZE_NO);
+    sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
+      STEP, NORMALIZE_NO);
   }
   if (tpoint_type(seq->temptype))
     pfree(instants);

@@ -69,11 +69,11 @@
  * -- 328178
  * @endcode
  */
-#define MAX_LENGTH_TRIP 400001
+#define MAX_LEN_TRIP 400001
 /* Maximum length in characters of a header in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a date in the input data */
-#define MAX_LENGTH_DATE 12
+#define MAX_LEN_DATE 12
 /* Maximum number of trips */
 #define MAX_NO_TRIPS 256
 
@@ -91,9 +91,9 @@ typedef struct
 int main(void)
 {
   /* Variables to read the input CSV file */
-  char header_buffer[MAX_LENGTH_HEADER];
-  char date_buffer[MAX_LENGTH_DATE];
-  char trip_buffer[MAX_LENGTH_TRIP];
+  char header_buffer[MAX_LEN_HEADER];
+  char date_buffer[MAX_LEN_DATE];
+  char trip_buffer[MAX_LEN_TRIP];
   /* Arrays to compute the results */
   trip_record trips[MAX_NO_TRIPS] = {0};
   int curr_inst[MAX_NO_TRIPS];

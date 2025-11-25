@@ -48,9 +48,9 @@
 #include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a set in the input data */
-#define MAX_LENGTH_SET 1024
+#define MAX_LEN_SET 1024
 
 typedef struct
 {
@@ -84,8 +84,8 @@ int main(void)
   textset_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char set_buffer[MAX_LENGTH_SET];
+  char header_buffer[MAX_LEN_HEADER];
+  char set_buffer[MAX_LEN_SET];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -135,8 +135,7 @@ int main(void)
     printf("-------------------------------\n");
     printf("%s\n", final_out);
     free(final_out);
-    free(final);    
-    free(state[i]);
+    free(final);
   }
 
   /* Calculate the elapsed time */

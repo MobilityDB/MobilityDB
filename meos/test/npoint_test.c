@@ -448,10 +448,10 @@ int main(void)
   /* Constructor functions */
   printf("****************************************************************\n");
 
-  /* Set *npointset_make(const Npoint **values, int count); */
+  /* Set *npointset_make(Npoint **values, int count); */
   npointarray[0] = npoint1;
   npointarray[1] = npoint2;
-  npointset_result = npointset_make((const Npoint **) npointarray, 2);
+  npointset_result = npointset_make(npointarray, 2);
   char_result = spatialset_as_text(npointset_result, 6);
   printf("npointset_make({%s, %s}, 2): %s\n", npoint1_out, npoint2_out, char_result);
   free(npointset_result); free(char_result);

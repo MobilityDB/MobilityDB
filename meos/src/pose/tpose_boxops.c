@@ -134,7 +134,7 @@ tposeinst_set_stbox(const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-tposeinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
+tposeinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 {
   assert(instants); assert(box); assert(count > 0);
   /* Initialize the bounding box with the first instant */

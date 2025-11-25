@@ -46,9 +46,9 @@
 #include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a span in the input data */
-#define MAX_LENGTH_SPAN 64
+#define MAX_LEN_SPAN 64
 
 typedef struct
 {
@@ -82,8 +82,8 @@ int main(void)
   intspan_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char span_buffer[MAX_LENGTH_SPAN];
+  char header_buffer[MAX_LEN_HEADER];
+  char span_buffer[MAX_LEN_SPAN];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -131,7 +131,6 @@ int main(void)
   char *spanset_out = intspanset_out(final);
   printf("spanset: %s\n", spanset_out);
   free(spanset_out);
-  free(state);
   free(final);
 
   /* Calculate the elapsed time */

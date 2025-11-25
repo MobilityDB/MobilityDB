@@ -36,7 +36,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o tint_benchmark tint_benchmark.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o tint_creation tint_creation.c -L/usr/local/lib -lmeos
  * @endcode
  *
  * The output of the program is as follows
@@ -56,16 +56,16 @@
 #include <meos_internal.h>
 
 /* Maximum number of instants generated */
-#define MAX_INSTANTS 500000
+#define MAX_NO_INSTS 500000
 /* Maximum length in characters of an instant string */
-#define MAX_LENGTH_INST 64
+#define MAX_LEN_INST 64
 
 int main(void)
 {
   /* Input string */
   const char *input_str = "5@2025-01-01 12:00:00";
   /* Array to hold the instants created */
-  Temporal *instants[MAX_INSTANTS] = {0};
+  Temporal *instants[MAX_NO_INSTS] = {0};
 
   /* Initialize MEOS */
   meos_initialize();
@@ -74,20 +74,20 @@ int main(void)
   clock_t time = clock();
 
   /* Create temporal instants from a string input */
-  printf("Number of instants to generate: %d\n", MAX_INSTANTS);
-  for (int i = 0; i < MAX_INSTANTS; i++)
+  printf("Number of instants to generate: %d\n", MAX_NO_INSTS);
+  for (int i = 0; i < MAX_NO_INSTS; i++)
     instants[i] = temporal_in(input_str, T_TINT);
   
   time = clock() - time;
   double time_taken = ((double) time) / CLOCKS_PER_SEC;
   printf("The generation using 'temporal_in()' took %f seconds\n", time_taken);
-  for (int i = 0; i < MAX_INSTANTS; i++)
+  for (int i = 0; i < MAX_NO_INSTS; i++)
     free(instants[i]);
 
   /* Create temporal instants using the constructor */
   time = clock();
   TimestampTz t = pg_timestamptz_in("2025-01-01 12:00:00", -1);
-  for (int i = 0; i < MAX_INSTANTS; i++)
+  for (int i = 0; i < MAX_NO_INSTS; i++)
   {
     int value = i % 2 + 1;
     instants[i] = (Temporal *) tinstant_make(value, T_TINT, t);
@@ -95,7 +95,7 @@ int main(void)
   time = clock() - time;
   time_taken = ((double) time) / CLOCKS_PER_SEC;
   printf("The generation using 'tinstant_make()' took %f seconds\n", time_taken);
-  for (int i = 0; i < MAX_INSTANTS; i++)
+  for (int i = 0; i < MAX_NO_INSTS; i++)
     free(instants[i]);
 
   /* Finalize MEOS */

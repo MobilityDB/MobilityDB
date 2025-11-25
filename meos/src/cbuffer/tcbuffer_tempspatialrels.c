@@ -537,7 +537,7 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
     pfree(res_seq);
     return result;
   }
-  result = temporal_merge_array((const Temporal **) res_seq, count);
+  result = temporal_merge_array(res_seq, count);
   pfree_array((void *) res_seq, count);
   return result;
 }

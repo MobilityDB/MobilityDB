@@ -69,7 +69,7 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBox *box)
+tnpointinstarr_step_set_stbox(TInstant **instants, int count, STBox *box)
 {
   tnpointinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
@@ -89,8 +89,7 @@ tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
-  STBox *box)
+tnpointinstarr_linear_set_stbox(TInstant **instants, int count, STBox *box)
 {
   Npoint *np = DatumGetNpointP(tinstant_value_p(instants[0]));
   int64 rid = np->rid;
@@ -125,8 +124,8 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
  * @param[out] box Spatiotemporal box
  */
 void
-tnpointinstarr_set_stbox(const TInstant **instants, int count,
-  interpType interp, STBox *box)
+tnpointinstarr_set_stbox(TInstant **instants, int count, interpType interp,
+  STBox *box)
 {
   if (interp == LINEAR)
     tnpointinstarr_linear_set_stbox(instants, count, box);

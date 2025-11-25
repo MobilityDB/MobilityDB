@@ -605,11 +605,11 @@ int main(void)
   printf("spanset_make({%s, %s}): %s\n", ispan1_out, ispan2_out, char_result);
   free(ispanset_result); free(char_result);
 
-  /* Set *textset_make(const text **values, int count); */
+  /* Set *textset_make(text **values, int count); */
   text *textarray[2];
   textarray[0] = text1;
   textarray[1] = text2;
-  textset_result = textset_make((const text **) textarray, 2);
+  textset_result = textset_make(textarray, 2);
   char_result = textset_out(textset_result);
   printf("textset_make({%s, %s}): %s\n", text1_out, text2_out, char_result);
   free(textset_result); free(char_result);

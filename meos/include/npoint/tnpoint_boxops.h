@@ -51,7 +51,7 @@ extern bool npoint_tstzspan_set_stbox(const Npoint *np, const Span *s,
   STBox *box);
 
 extern void tnpointinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tnpointinstarr_set_stbox(const TInstant **inst, int count,
+extern void tnpointinstarr_set_stbox(TInstant **inst, int count,
   interpType interp, STBox *box);
 extern void tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst);
 

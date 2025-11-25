@@ -65,25 +65,25 @@
 
 /*
  * IMPORTANT !!!
- * Please fix the values MAX_NO_RECORDS and MAX_SHIPS according to the
+ * Please fix the values MAX_NO_RECS and MAX_NO_SHIPS according to the
  * available memory in your computer
  */
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECORDS 20000000
+#define MAX_NO_RECS 20000000
 /* Maximum number of trips */
-#define MAX_SHIPS 6500
+#define MAX_NO_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
-#define INITIAL_INSTANTS 64
+#define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LENGTH_LINE 1024
+#define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum length in characters of all other strings in the input data */
-#define MAX_LENGTH_STRING 64
+#define MAX_LEN_STRING 64
 
 typedef struct
 {
@@ -110,9 +110,9 @@ typedef struct
 int main(void)
 {
   /* Input buffers to read the CSV file */
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_SHIPS] = {0};
+  trip_record trips[MAX_NO_SHIPS] = {0};
   /* Record storing one line read from the CSV file*/
   AIS_record rec;
   /* Number of records read */
@@ -147,7 +147,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
+  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -167,13 +167,13 @@ int main(void)
 
     no_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECORDS_BATCH == 0)
+    if (no_records % NO_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records have been read */
-    if (no_records == MAX_NO_RECORDS)
+    if (no_records == MAX_NO_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -258,17 +258,17 @@ int main(void)
     if (j < 0)
     {
       /* If we have reached the maximum number of ships */
-      if (no_ships == MAX_SHIPS)
+      if (no_ships == MAX_NO_SHIPS)
         continue;
       j = no_ships++;
       trips[j].MMSI = rec.MMSI;
       /* Allocate initial space for storing the instants */
-      trips[j].trip_instants = calloc(INITIAL_INSTANTS, sizeof(TInstant *));
-      trips[j].SOG_instants = calloc(INITIAL_INSTANTS, sizeof(TInstant *));
+      trips[j].trip_instants = calloc(INITIAL_INSTS, sizeof(TInstant *));
+      trips[j].SOG_instants = calloc(INITIAL_INSTS, sizeof(TInstant *));
       trips[j].no_trip_instants = 0;
-      trips[j].free_trip_instants = INITIAL_INSTANTS;
+      trips[j].free_trip_instants = INITIAL_INSTS;
       trips[j].no_SOG_instants = 0;
-      trips[j].free_SOG_instants = INITIAL_INSTANTS;
+      trips[j].free_SOG_instants = INITIAL_INSTS;
     }
     trips[j].no_records++;
 
@@ -382,8 +382,7 @@ int main(void)
       trips[i].no_records, trips[i].no_trip_instants, trips[i].no_SOG_instants);
     if (trips[i].no_trip_instants != 0)
     {
-      Temporal *trip = (Temporal *) tsequence_make(
-        (const TInstant **) trips[i].trip_instants,
+      Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
         trips[i].no_trip_instants, true, true, LINEAR, true);
       printf(" %15.6lf |", tpoint_length(trip));
       free(trip);
@@ -393,8 +392,7 @@ int main(void)
 
     if (trips[i].no_SOG_instants != 0)
     {
-      Temporal *SOG = (Temporal *) tsequence_make(
-        (const TInstant **) trips[i].SOG_instants,
+      Temporal *SOG = (Temporal *) tsequence_make(trips[i].SOG_instants,
         trips[i].no_SOG_instants, true, true, LINEAR, true);
       printf(" %13.6lf |\n", tnumber_twavg(SOG));
       free(SOG);

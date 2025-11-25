@@ -45,12 +45,12 @@
 #include <meos.h>
 
 /* Maximum length in characters of a line in the output data */
-#define MAX_LINE_LENGTH 1024
+#define MAX_LEN_LINE 1024
 
 /* Main program */
 int main(void)
 {
-  char output_buffer[MAX_LINE_LENGTH];
+  char output_buffer[MAX_LEN_LINE];
 
   /* Set this parameter to choose between a temporal integer and a temporal 
    * float box */
@@ -106,7 +106,7 @@ int main(void)
   {
     char *tile_str = valuesplit ?
       tbox_out(&boxes[i], 3) : tstzspan_out(&spans[i]);
-    snprintf(output_buffer, MAX_LINE_LENGTH - 1, "%d: %s\n", i + 1, tile_str);
+    snprintf(output_buffer, MAX_LEN_LINE - 1, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);
   }

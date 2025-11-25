@@ -312,7 +312,7 @@ tnumber_set_tbox(const Temporal *temp, TBox *box)
  * @param[in] box Box
  */
 static void
-tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
+tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, TBox *box)
 {
   assert(tnumber_type(instants[0]->temptype));
@@ -375,7 +375,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
  * @param[out] box Bounding box
  */
 void
-tinstarr_set_bbox(const TInstant **instants, int count, bool lower_inc,
+tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
   assert(instants); assert(box);
@@ -470,7 +470,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
  * @param[out] s Result
  */
 static void
-tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
+tseqarr_set_tstzspan(TSequence **sequences, int count, Span *s)
 {
   const Span *first = &sequences[0]->period;
   const Span *last = &sequences[count - 1]->period;
@@ -487,7 +487,7 @@ tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
+tnumberseqarr_set_tbox(TSequence **sequences, int count, TBox *box)
 {
   memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(TBox));
   for (int i = 1; i < count; i++)
@@ -503,7 +503,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
  * array of temporal sequences
  */
 void
-tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
+tseqarr_compute_bbox(TSequence **sequences, int count, void *box)
 {
   assert(talpha_type(sequences[0]->temptype) || 
     tnumber_type(sequences[0]->temptype) ||
@@ -528,9 +528,9 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 void
 tsequence_compute_bbox(TSequence *seq)
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = TSEQUENCE_INST_N(seq, i);
+    instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   tinstarr_set_bbox(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
@@ -546,9 +546,9 @@ tsequence_compute_bbox(TSequence *seq)
 void
 tsequenceset_compute_bbox(TSequenceSet *ss)
 {
-  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = TSEQUENCESET_SEQ_N(ss, i);
+    sequences[i] = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
   tseqarr_compute_bbox(sequences, ss->count, TSEQUENCESET_BBOX_PTR(ss));
   pfree(sequences);
   return;

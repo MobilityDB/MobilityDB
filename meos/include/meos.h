@@ -461,7 +461,7 @@ extern Set *set_copy(const Set *s);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ss);
 extern SpanSet *spanset_make(Span *spans, int count);
-extern Set *textset_make(const text **values, int count);
+extern Set *textset_make(text **values, int count);
 extern Set *tstzset_make(const TimestampTz *values, int count);
 extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 
@@ -1241,9 +1241,9 @@ extern TInstant *tintinst_make(int i, TimestampTz t);
 extern TSequence *tintseq_from_base_tstzset(int i, const Set *s);
 extern TSequence *tintseq_from_base_tstzspan(int i, const Span *s);
 extern TSequenceSet *tintseqset_from_base_tstzspanset(int i, const SpanSet *ss);
-extern TSequence *tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize);
-extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp, const Interval *maxt, double maxdist);
+extern TSequence *tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
+extern TSequenceSet *tsequenceset_make(TSequence **sequences, int count, bool normalize);
+extern TSequenceSet *tsequenceset_make_gaps(TInstant **instants, int count, interpType interp, const Interval *maxt, double maxdist);
 extern Temporal *ttext_from_base_temp(const text *txt, const Temporal *temp);
 extern TInstant *ttextinst_make(const text *txt, TimestampTz t);
 extern TSequence *ttextseq_from_base_tstzset(const text *txt, const Set *s);
@@ -1328,7 +1328,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
  *****************************************************************************/
 
 extern double float_degrees(double value, bool normalize);
-extern Temporal **temparr_round(const Temporal **temp, int count, int maxdd);
+extern Temporal **temparr_round(Temporal **temp, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
@@ -1360,7 +1360,7 @@ extern Temporal *temporal_delete_tstzspan(const Temporal *temp, const Span *s, b
 extern Temporal *temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *temporal_merge_array(const Temporal **temparr, int count);
+extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect);
 
 /*****************************************************************************

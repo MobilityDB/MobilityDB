@@ -1754,8 +1754,8 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   double tolsq = tolerance * tolerance;
   double dsq = FLT_MAX;
 
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = TSEQUENCE_INST_N(seq, 0);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   const POINT2D *last = DATUM_POINT2D_P(tinstant_value_p(instants[0]));
   int npoints = 1;
   for (int i = 1; i < seq->count; i++)
@@ -1793,7 +1793,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
     }
 
     /* Save the point */
-    instants[npoints++] = inst;
+    instants[npoints++] = (TInstant *) inst;
     last = pt;
   }
   /* Construct the result */
@@ -2793,8 +2793,8 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
         instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
         upper_inc = true;
         /* Resulting sequence has step interpolation */
-        result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-          lower_inc, upper_inc, STEP, NORMALIZE);
+        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          upper_inc, STEP, NORMALIZE);
         for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
         ninsts = 0;
@@ -2808,8 +2808,8 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   {
     instants[ninsts++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     /* Resulting sequence has step interpolation */
-    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, upper_inc, STEP, NORMALIZE);
+    result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
+      STEP, NORMALIZE);
     for (int j = 0; j < ninsts; j++)
       pfree(instants[j]);
   }
@@ -3442,11 +3442,11 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (! is_stopped && previously_stopped &&
       (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
     {
-      const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+      TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
-        insts[i] = TSEQUENCE_INST_N(seq, start + i);
-      result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
-        NORMALIZE_NO);
+        instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
+      result[nseqs++] = tsequence_make(instants, end - start, true, true,
+        LINEAR, NORMALIZE_NO);
       start = end;
       rebuild_geom = true;
     }
@@ -3457,10 +3457,10 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   inst2 = TSEQUENCE_INST_N(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
   {
-    const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+    TInstant **instants = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
-      insts[i] = TSEQUENCE_INST_N(seq, start + i);
-    result[nseqs++] = tsequence_make(insts, end - start, true, true, LINEAR,
+      instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, start + i);
+    result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
   finishGEOS();
@@ -3974,7 +3974,7 @@ tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
   assert(seq); assert(splits); assert(seq->count > 1);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
 
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
   int start = 0, nseqs = 0;
@@ -3985,7 +3985,7 @@ tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
       end++;
     /* Construct piece from start to end */
     for (int j = 0; j < end - start; j++)
-      instants[j] = TSEQUENCE_INST_N(seq, j + start);
+      instants[j] = (TInstant *) TSEQUENCE_INST_N(seq, j + start);
     result[nseqs++] = tsequence_make(instants, end - start, true, true,
       DISCRETE, NORMALIZE_NO);
     /* Continue with the next split */
@@ -4038,8 +4038,8 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
       tofree = true;
       upper_inc1 = false;
     }
-    result[nseqs++] = tsequence_make((const TInstant **) instants, end - start + 1,
-      lower_inc1, upper_inc1, linear ? LINEAR : STEP, NORMALIZE_NO);
+    result[nseqs++] = tsequence_make(instants, end - start + 1, lower_inc1,
+      upper_inc1, linear ? LINEAR : STEP, NORMALIZE_NO);
     if (tofree)
       /* Free the last instant created for the step interpolation */
       pfree(instants[end - start]);
@@ -4052,9 +4052,8 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
     if (seq->count - start > 1 || seq->period.upper_inc)
     {
       instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
-      result[nseqs++] = tsequence_make((const TInstant **) instants,
-        seq->count - start, true, seq->period.upper_inc,
-        linear, NORMALIZE_NO);
+      result[nseqs++] = tsequence_make(instants, seq->count - start, true,
+        seq->period.upper_inc, linear, NORMALIZE_NO);
     }
   }
   pfree(instants);

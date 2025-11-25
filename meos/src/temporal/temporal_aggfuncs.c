@@ -343,14 +343,12 @@ temporal_skiplist_merge(void **spliced, int spliced_count, void **values,
   void **newvalues;
   uint8 subtype = ((Temporal *) values[0])->subtype;
   if (subtype == TINSTANT)
-    newvalues = (void **) tinstant_tagg((const TInstant **) spliced,
-      spliced_count, (const TInstant **) values, count, func, newcount,
-      tofree, nfree);
+    newvalues = (void **) tinstant_tagg((TInstant **) spliced, spliced_count,
+      (TInstant **) values, count, func, newcount, tofree, nfree);
   else /* subtype == TSEQUENCE */
   {
-    newvalues = (void **) tsequence_tagg((const TSequence **) spliced,
-      spliced_count, (const TSequence **) values, count, func, crossings,
-      newcount);
+    newvalues = (void **) tsequence_tagg((TSequence **) spliced, spliced_count,
+      (TSequence **) values, count, func, crossings, newcount);
     *tofree = newvalues;
     *nfree = *newcount;
   }
@@ -386,9 +384,8 @@ temporal_skiplist_splice(SkipList *list, void **values, int count,
  * @param[out] nfree Number of values that must be freed
  */
 TInstant **
-tinstant_tagg(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, datum_func2 func, int *newcount,
-  void ***tofree, int *nfree)
+tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
+  int count2, datum_func2 func, int *newcount, void ***tofree, int *nfree)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
   void **tofree1 = palloc(sizeof(TInstant *) * Max(count1, count2));
@@ -471,7 +468,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   Span inter;
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
   {
-    const TSequence *sequences[2];
+    TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
     if (span_cmp(&seq1->period, &seq2->period) < 0)
     {
@@ -600,8 +597,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     return 1;
   }
   int count;
-  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, nseqs,
-    &count);
+  TSequence **normseqs = tseqarr_normalize(sequences, nseqs, &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];
   pfree(normseqs);
@@ -622,7 +618,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
  * @note Return new sequences that must be freed by the calling function.
  */
 TSequence **
-tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **sequences2,
+tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   int count2, datum_func2 func, bool crossings, int *newcount)
 {
   /*
@@ -707,7 +703,7 @@ tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **seque
     return result;
   }
   int count;
-  result = tseqarr_normalize((const TSequence **) sequences, k, &count);
+  result = tseqarr_normalize(sequences, k, &count);
   pfree_array((void **) sequences, k);
   *newcount = count;
   return result;
@@ -1057,15 +1053,15 @@ tstzspan_transform_tcount(const Span *s)
   TSequence *result;
   if (s->lower == s->upper)
   {
-    result = tsequence_make((const TInstant **) instants, 1, s->lower_inc,
-      s->upper_inc, STEP, NORMALIZE_NO);
+    result = tsequence_make(instants, 1, s->lower_inc, s->upper_inc, STEP,
+      NORMALIZE_NO);
   }
   else
   {
     t = s->upper;
     instants[1] = tinstant_make(datum_one, T_TINT, t);
-    result = tsequence_make((const TInstant **) instants, 2,
-      s->lower_inc, s->upper_inc, STEP, NORMALIZE_NO);
+    result = tsequence_make(instants, 2, s->lower_inc, s->upper_inc, STEP,
+      NORMALIZE_NO);
     pfree(instants[1]);
   }
   pfree(instants[0]);
@@ -1134,8 +1130,8 @@ tcontseq_transform_tcount(const TSequence *seq)
   instants[0] = tinstant_make(datum_one, T_TINT, t);
   t = seq->period.upper;
   instants[1] = tinstant_make(datum_one, T_TINT, t);
-  result = tsequence_make((const TInstant **) instants, 2,
-    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
+  result = tsequence_make(instants, 2, seq->period.lower_inc,
+    seq->period.upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -1366,7 +1362,7 @@ tnumberinst_transform_tavg(const TInstant *inst)
  * values
  */
 TSequence *
-tinstant_tavg_finalfn(const TInstant **instants, int count)
+tinstant_tavg_finalfn(TInstant **instants, int count)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
@@ -1385,7 +1381,7 @@ tinstant_tavg_finalfn(const TInstant **instants, int count)
  * values
  */
 TSequenceSet *
-tsequence_tavg_finalfn(const TSequence **sequences, int count)
+tsequence_tavg_finalfn(TSequence **sequences, int count)
 {
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)
@@ -1422,10 +1418,10 @@ tnumber_tavg_finalfn(SkipList *state)
   Temporal *result;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tavg_finalfn((const TInstant **) values,
+    result = (Temporal *) tinstant_tavg_finalfn((TInstant **) values,
       state->length);
   else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequence_tavg_finalfn((const TSequence **) values,
+    result = (Temporal *) tsequence_tavg_finalfn((TSequence **) values,
       state->length);
   pfree(values);
   skiplist_free(state);
@@ -1524,9 +1520,8 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
     /* Arbitrary initialization to 64 elements */
-    Temporal *result = (Temporal *) tsequence_make_exp(
-      (const TInstant **) &inst, 1, 64, true, true, interp, 
-      NORMALIZE_NO);
+    Temporal *result = (Temporal *) tsequence_make_exp((TInstant **) &inst,
+      1, 64, true, true, interp, NORMALIZE_NO);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
@@ -1555,8 +1550,8 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
     /* Arbitrary initialization to 64 elements */
-    Temporal *result = (Temporal *) tsequenceset_make_exp(
-      (const TSequence **) &seq, 1, 64, NORMALIZE_NO);
+    Temporal *result = (Temporal *) tsequenceset_make_exp((TSequence **) &seq,
+      1, 64, NORMALIZE_NO);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */

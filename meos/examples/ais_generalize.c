@@ -53,9 +53,9 @@
 #include <meos_internal.h> /* For temporal_mem_size */
 
 /* Maximum number of ships */
-#define MAX_SHIPS 10
+#define MAX_NO_SHIPS 10
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LENGTH_LINE 2000001
+#define MAX_LEN_LINE 2000001
 
 typedef struct
 {
@@ -68,9 +68,9 @@ typedef struct
 int main(void)
 {
   /* Input buffers to read the CSV file */
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_SHIPS] = {0};
+  trip_record trips[MAX_NO_SHIPS] = {0};
   /* Number of ship records read */
   int no_ships = 0;
   /* Iterator variable */

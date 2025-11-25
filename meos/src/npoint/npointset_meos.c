@@ -92,7 +92,7 @@ npointset_out(const Set *s, int maxdd)
  * @csqlfn #Set_constructor()
  */
 Set *
-npointset_make(const Npoint **values, int count)
+npointset_make(Npoint **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);

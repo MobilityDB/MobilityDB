@@ -184,7 +184,7 @@ extern char *cbufferset_out(const Set *s, int maxdd);
 
 /* Constructor functions */
 
-extern Set *cbufferset_make(const Cbuffer **values, int count);
+extern Set *cbufferset_make(Cbuffer **values, int count);
 
 /* Conversion functions */
 
