@@ -460,7 +460,7 @@ int main(void)
   printf("geom_perimeter(%s): %lf\n", geom1_out, float8_result);
 
   /* int line_numpoints(const GSERIALIZED *gs); */
-  int32_result = line_numpoints(line1);
+  int32_result = line_num_points(line1);
   printf("line_numpoints(%s): %d\n", line1_out, int32_result);
 
   /* GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n); */
@@ -528,18 +528,18 @@ int main(void)
   printf("geo_makeline_garray({%s, %s}): %s\n", geompt1_out, geompt2_out, char_result);
   free(geom_result); free(char_result);
 
-  /* int geo_npoints(const GSERIALIZED *gs); */
-  int32_result = geo_npoints(geom1);
-  printf("geo_npoints(%s): %d\n", geom1_out, int32_result);
+  /* int geo_num_points(const GSERIALIZED *gs); */
+  int32_result = geo_num_points(geom1);
+  printf("geo_num_points(%s): %d\n", geom1_out, int32_result);
 
-  /* int geo_ngeos(const GSERIALIZED *gs); */
-  int32_result = geo_ngeos(geom1);
-  printf("geo_ngeos(%s): %d\n", geom1_out, int32_result);
+  /* int geo_num_geos(const GSERIALIZED *gs); */
+  int32_result = geo_num_geos(geom1);
+  printf("geo_num_geos(%s): %d\n", geom1_out, int32_result);
 
-  /* GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n); */
-  geom_result = geo_geoN(geom1, 1);
+  /* GSERIALIZED *geo_geo_n(const GSERIALIZED *geom, int n); */
+  geom_result = geo_geo_n(geom1, 1);
   char_result = geo_as_ewkt(geom_result, 6);
-  printf("geo_geoN(%s, 1): %s\n", geom1_out, char_result);
+  printf("geo_geo_n(%s, 1): %s\n", geom1_out, char_result);
   free(geom_result); free(char_result);
 
   /* GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count); */

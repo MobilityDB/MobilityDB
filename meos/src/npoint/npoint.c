@@ -911,7 +911,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
   }
   else /* geomtype == LINETYPE */
   {
-    int numpoints = line_numpoints(gs);
+    int numpoints = line_num_points(gs);
     points = palloc0(sizeof(Npoint *) * numpoints);
     for (int i = 0; i < numpoints; i++)
     {

@@ -285,4 +285,26 @@ SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]'
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX X((40,40),(60,60))', 0);
 
+--------------------------------------------------------
+
+-- Weighted Local Outlier Factor (WLOF)
+
+WITH Points(Geom) AS (
+  SELECT ST_Makepoint(7,6) UNION ALL
+  SELECT ST_Makepoint(1,5) UNION ALL
+  SELECT ST_Makepoint(1,4) UNION ALL
+  SELECT ST_Makepoint(4,1) UNION ALL
+  SELECT ST_Makepoint(3,1) UNION ALL
+  SELECT ST_Makepoint(3,0) UNION ALL
+  SELECT ST_Makepoint(4,0) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) UNION ALL
+  SELECT ST_Makepoint(5,5) ),
+PointArr(GeomArr) AS (
+  SELECT array_agg(Geom) FROM Points )
+SELECT ST_AsText((rec).Geom) AS Geom, (rec).Score
+FROM ( SELECT wLocalOutlierFactor(GeomArr, 3) AS rec FROM PointArr ) T
+ORDER BY Score DESC;
+
 -------------------------------------------------------------------------------

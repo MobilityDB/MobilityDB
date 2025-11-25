@@ -372,7 +372,7 @@ extern double geog_perimeter(const GSERIALIZED *g, bool use_spheroid);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern double geom_length(const GSERIALIZED *gs);
 extern double geom_perimeter(const GSERIALIZED *gs);
-extern int line_numpoints(const GSERIALIZED *gs);
+extern int line_num_points(const GSERIALIZED *gs);
 extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 
 /* Transformation functions */
@@ -391,9 +391,9 @@ extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline
 
 extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
-extern int geo_npoints(const GSERIALIZED *gs);
-extern int geo_ngeos(const GSERIALIZED *gs);
-extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
+extern int geo_num_points(const GSERIALIZED *gs);
+extern int geo_num_geos(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_geo_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
@@ -894,7 +894,8 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
 extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints, int *count);
 extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
-extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);
+extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, uint32_t *count);
+extern double *geo_wlof(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k, double epsilon, uint32_t *newcount, GSERIALIZED ***clusters);
 
 /*****************************************************************************/
 
