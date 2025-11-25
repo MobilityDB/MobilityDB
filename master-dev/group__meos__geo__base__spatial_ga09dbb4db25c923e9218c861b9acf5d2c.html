@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_npoints</title>
+<title>MobilityDB: geo_num_geos</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,10 +84,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga39b03dbde3abdad356eb09d892da4e6a.html#ga39b03dbde3abdad356eb09d892da4e6a">geo_cluster_kmeans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gad00e6711f9332171153d6f7f75f16b7a.html#gad00e6711f9332171153d6f7f75f16b7a">geo_cluster_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga53bd251c74e0484a3e1c7a87aab460e7.html#ga53bd251c74e0484a3e1c7a87aab460e7">geo_collect_garray</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga9d05d623ac27b39d30b786c4ca812b97.html#ga9d05d623ac27b39d30b786c4ca812b97">geo_geoN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga8d5149137ee7f32cd1ca22021695ba91.html#ga8d5149137ee7f32cd1ca22021695ba91">geo_geo_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga54012101cfc886480899eba81abd152a.html#ga54012101cfc886480899eba81abd152a">geo_makeline_garray</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga707ff8c92d3f4c6c071af9969cb80512.html#ga707ff8c92d3f4c6c071af9969cb80512">geo_ngeos</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__spatial_gabbcf789594527a36a48787926893e9a9.html#gabbcf789594527a36a48787926893e9a9">geo_npoints</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__spatial_ga09dbb4db25c923e9218c861b9acf5d2c.html#ga09dbb4db25c923e9218c861b9acf5d2c">geo_num_geos</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga4fdb794157bcbf4dd25207dcbb605233.html#ga4fdb794157bcbf4dd25207dcbb605233">geo_num_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga34e1bc1f056f140793ef76f9ef49ec8d.html#ga34e1bc1f056f140793ef76f9ef49ec8d">geo_pointarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga42daacfab74905d5cd9693fec91d39d6.html#ga42daacfab74905d5cd9693fec91d39d6">geo_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5c6b62f78eb896585e14a37b0a67c062.html#ga5c6b62f78eb896585e14a37b0a67c062">geom_array_union</a></td></tr>
@@ -109,14 +109,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gabbcf789594527a36a48787926893e9a9" name="gabbcf789594527a36a48787926893e9a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabbcf789594527a36a48787926893e9a9">&#9670;&#160;</a></span>geo_npoints()</h2>
+<a id="ga09dbb4db25c923e9218c861b9acf5d2c" name="ga09dbb4db25c923e9218c861b9acf5d2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga09dbb4db25c923e9218c861b9acf5d2c">&#9670;&#160;</a></span>geo_num_geos()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int geo_npoints </td>
+          <td class="memname">int geo_num_geos </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs</em></td><td>)</td>
@@ -125,14 +125,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the number of points of a geometry. </p>
+<p>Return the number of composing geometries of a geometry. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry/geography </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Points(PG_FUNCTION_ARGS)</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_aeafd7b5a91fbc2708f9e796e8de475e5.html#aeafd7b5a91fbc2708f9e796e8de475e5">LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)</a></code> </dd></dl>
 
 </div>
 </div>
