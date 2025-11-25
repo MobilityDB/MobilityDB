@@ -11,9 +11,7 @@ var searchData=
   ['tempunneststate_8',['TempUnnestState',['../structTempUnnestState.html',1,'']]],
   ['textset_5frecord_9',['textset_record',['../structtextset__record.html',1,'']]],
   ['tinstant_10',['TInstant',['../structTInstant.html',1,'']]],
-  ['trip_5finput_5frecord_11',['trip_input_record',['../structtrip__input__record.html',1,'']]],
-  ['trip_5foutput_5frecord_12',['trip_output_record',['../structtrip__output__record.html',1,'']]],
-  ['trip_5frecord_13',['trip_record',['../structtrip__record.html',1,'']]],
-  ['tsequence_14',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_15',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
+  ['trip_5frecord_11',['trip_record',['../structtrip__record.html',1,'']]],
+  ['tsequence_12',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_13',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];
