@@ -36,13 +36,10 @@
 
 /* C */
 #include <stdbool.h>
-/* PostgreSQL */
-#include <postgres.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
-#include "geo/stbox.h"
 
 /*****************************************************************************
  * Validity macros

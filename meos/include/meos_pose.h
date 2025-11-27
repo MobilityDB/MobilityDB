@@ -40,7 +40,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
-#include "temporal/set.h"
 
 /*****************************************************************************
  * Struct definitions
