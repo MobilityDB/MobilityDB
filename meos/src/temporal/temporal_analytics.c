@@ -131,10 +131,10 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
   return sqrt(d2);
 }
 
-/* Filter a TSequence tgeompoint */
+/* Filter a TSequence */
 static TSequence * tsequence_ext_kalman_filter(const TSequence *seq, meosType temptype,double gate, double q, double variance, bool to_drop)
 {
-  if (seq->count == 0)
+  if (seq->count < 2)
     return tsequence_copy(seq);
 
   const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
