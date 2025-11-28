@@ -387,7 +387,7 @@ cbuffer_trav_area(const Cbuffer *cb)
  * @return Number of elements in the output array
  */
 int
-cbufferarr_circles(const TInstant **instants, int count, GSERIALIZED **result)
+cbufferarr_circles(TInstant **instants, int count, GSERIALIZED **result)
 {
   assert(instants); assert(count > 1);
   for (int i = 0; i < count; i++)
@@ -426,7 +426,7 @@ tcbufferseq_discstep_trav_area(const TSequence *seq, GSERIALIZED **result)
   assert(seq); assert(seq->count > 1);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR);
   const TInstant **instants = tsequence_insts_p(seq);
-  int res = cbufferarr_circles(instants, seq->count, result);
+  int res = cbufferarr_circles((TInstant **) instants, seq->count, result);
   pfree(instants);
   return res;
 }
@@ -593,7 +593,7 @@ tcbufferseqset_step_trav_area(const TSequenceSet *ss, GSERIALIZED **result)
   assert(ss); assert(ss->count > 1);
   assert(MEOS_FLAGS_GET_INTERP(ss->flags) == STEP);
   const TInstant **instants = tsequenceset_insts_p(ss);
-  return cbufferarr_circles(instants, ss->count, result);
+  return cbufferarr_circles((TInstant **) instants, ss->count, result);
 }
 
 /**

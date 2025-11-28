@@ -1178,8 +1178,8 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   {
     tinstant_set(instants[0], datum_false, lower);
     tinstant_set(instants[1], datum_false, upper);
-    result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, upper_inc1, STEP, NORMALIZE_NO);
+    result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc1, STEP,
+      NORMALIZE_NO);
   }
   /*
    *  <  T  >               2 solutions, lower == t1, upper == t2
@@ -1198,14 +1198,14 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
     tinstant_set(instants[ninsts++], datum_true, t1);
     if (solutions == 2 && t1 != t2)
       tinstant_set(instants[ninsts++], datum_true, t2);
-    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
+    result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+      (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
     if (t2 != upper)
     {
       tinstant_set(instants[0], datum_false, t2);
       tinstant_set(instants[1], datum_false, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2, false,
-        upper_inc1, STEP, NORMALIZE_NO);
+      result[nseqs++] = tsequence_make(instants, 2, false, upper_inc1, STEP,
+        NORMALIZE_NO);
     }
   }
   return nseqs;
@@ -1270,8 +1270,8 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       Datum value = func(sv1, sv2, dist);
       tinstant_set(instants[0], value, lower);
       tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, upper_inc, STEP, NORMALIZE_NO);
+      result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, STEP,
+        NORMALIZE_NO);
     }
     /* General case */
     else
@@ -1404,8 +1404,8 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
       Datum value = func(startvalue, point, dist);
       tinstant_set(instants[0], value, lower);
       tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, upper_inc, STEP, NORMALIZE_NO);
+      result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, STEP,
+        NORMALIZE_NO);
     }
     /* General case */
     else

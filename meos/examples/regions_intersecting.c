@@ -88,7 +88,7 @@
 /* Maximum number of input rows */
 #define MAX_ROWS 100
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LINE_LENGTH 4096
+#define MAX_LEN_LINE 4096
 /* Define whether `ST_ClusterIntersecting` or `ST_ClusterWithin` is applied */
 #define CLUSTER_INTERSECTING false
 
@@ -122,7 +122,7 @@ int main(void)
 
   int no_records = 0;
   int no_nulls = 0;
-  char line_buffer[MAX_LINE_LENGTH];
+  char line_buffer[MAX_LEN_LINE];
 
   /* Read the first line of the file with the headers */
   fscanf(input_file, "%4095[^\n]\n", line_buffer);
@@ -170,9 +170,9 @@ int main(void)
   /* Fill the array of cluster numbers */
   for (i = 0; i < no_clusters; i++)
   {
-    for (j = 0; j < geo_ngeos(clusters[i]); j++)
+    for (j = 0; j < geo_num_geos(clusters[i]); j++)
     {
-      GSERIALIZED *subgeo = geo_geoN(clusters[i], j + 1);
+      GSERIALIZED *subgeo = geo_geo_n(clusters[i], j + 1);
       for (k = 0; k < no_records; k++)
       {
         if (geo_equals(subgeo, geoms[k]))

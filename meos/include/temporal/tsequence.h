@@ -67,8 +67,8 @@ extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
   bool removelast, bool removefirst);
-extern TInstant **tinstarr_normalize(const TInstant **instants,
-  interpType interp, int count, int *newcount);
+extern TInstant **tinstarr_normalize(TInstant **instants, interpType interp,
+  int count, int *newcount);
 
 /* General functions */
 
@@ -77,9 +77,9 @@ extern int tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t);
 extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
   int count, int totalseqs);
 
-extern bool ensure_valid_tinstarr_common(const TInstant **instants, int count,
+extern bool ensure_valid_tinstarr_common(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
-extern TSequence *tsequence_make_exp1(const TInstant **instants, int count,
+extern TSequence *tsequence_make_exp1(TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize, void *bbox);
 
@@ -124,9 +124,9 @@ extern char *tsequence_to_string(const TSequence *seq, int maxdd,
 extern bool ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void bbox_expand(const void *box1, void *box2, meosType temptype);
-extern bool ensure_valid_tinstarr(const TInstant **instants, int count,
-  bool merge, interpType interp);
-extern bool tsequence_make_valid(const TInstant **instants, int count,
+extern bool ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
+  interpType interp);
+extern bool tsequence_make_valid(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
 
 /* Transformation functions */

@@ -45,7 +45,7 @@ extern bool pose_set_stbox(const Pose *pose, STBox *box);
 extern void posearr_set_stbox(const Datum *values, int count, STBox *box);
 
 extern void tposeinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tposeinstarr_set_stbox(const TInstant **instants, int count,
+extern void tposeinstarr_set_stbox(TInstant **instants, int count,
   STBox *box);
 extern void tposeseq_expand_stbox(TSequence *seq, const TInstant *inst);
 

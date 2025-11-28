@@ -55,15 +55,15 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the file  */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence */
-#define NO_INSTANTS_KEEP 2
+#define NO_INSTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum number of trips */
-#define MAX_TRIPS 5
+#define MAX_NO_TRIPS 5
 
 typedef struct
 {
@@ -86,9 +86,9 @@ main(int argc, char **argv)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char text_buffer[MAX_LENGTH_HEADER];
+  char text_buffer[MAX_LEN_HEADER];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_TRIPS] = {0};
+  trip_record trips[MAX_NO_TRIPS] = {0};
   /* Number of ships */
   int no_ships = 0;
   /* Number of writes */
@@ -132,7 +132,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   printf("Accumulating %d instants before sending them to the output file\n"
-    "(one '*' marker every output file update)\n", NO_INSTANTS_BATCH);
+    "(one '*' marker every output file update)\n", NO_INSTS_BATCH);
 
   /* Read the first line of the file with the headers */
   fscanf(file_in, "%1023s\n", text_buffer);
@@ -170,10 +170,10 @@ main(int argc, char **argv)
     if (j < 0)
     {
       j = no_ships++;
-      if (j == MAX_TRIPS)
+      if (j == MAX_NO_TRIPS)
       {
         printf("The maximum number of ships in the input file is bigger than %d",
-          MAX_TRIPS);
+          MAX_NO_TRIPS);
         fclose(file_in);
         goto cleanup;
       }
@@ -181,7 +181,7 @@ main(int argc, char **argv)
     }
 
     /* Send to the output file the trip if reached the maximum number of instants */
-    if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
+    if (trips[j].trip && trips[j].trip->count == NO_INSTS_BATCH)
     {
       char *temp_out = tsequence_out(trips[j].trip, 15);
       fprintf(file_out, "%ld, %s\n",trips[j].MMSI, temp_out);
@@ -191,7 +191,7 @@ main(int argc, char **argv)
       printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last instants */
-      tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
+      tsequence_restart(trips[j].trip, NO_INSTS_KEEP);
     }
 
     /* Transform the string representing the timestamp into a timestamp value */
@@ -207,8 +207,8 @@ main(int argc, char **argv)
     TInstant *inst = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[j].trip)
-      trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
-        NO_INSTANTS_BATCH, true, true, LINEAR, false);
+      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTS_BATCH, true,
+      true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
     free(inst);

@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /* Maximum length in characters of a geometry string in the input data */
-#define MAX_LENGTH_GEOM 100001
+#define MAX_LEN_GEOM 100001
 
 /* Location of the ways CSV file */
 // #define WAYS_CSV "/usr/local/share/ways.csv"
@@ -246,7 +246,7 @@ get_ways_record(int64 rid, ways_record *rec)
   /* Continue reading the file */
   do
   {
-    char geo_buffer[MAX_LENGTH_GEOM];
+    char geo_buffer[MAX_LEN_GEOM];
     int read = fscanf(file, "%ld,%100000s\n", &rec->gid, geo_buffer);
     if (ferror(file))
     {
@@ -413,7 +413,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
      *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
      */
     /* Buffer for reading the geometry string */
-    char geo_buffer[MAX_LENGTH_GEOM];
+    char geo_buffer[MAX_LEN_GEOM];
     int read = fscanf(file, "%ld,%100000s\n", &rec.gid, geo_buffer);
     if (ferror(file))
     {

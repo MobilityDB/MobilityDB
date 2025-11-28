@@ -49,11 +49,11 @@
 extern void trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst,
   STBox *box);
 extern void trgeoinstarr_static_stbox(const GSERIALIZED *geom, 
-  const TInstant **instants, int count, STBox *box);
+  TInstant **instants, int count, STBox *box);
 extern void trgeoinstarr_rotating_stbox(const GSERIALIZED *geom,
-  const TInstant **instants, int count, STBox *box);
+  TInstant **instants, int count, STBox *box);
 extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
-  const TInstant **instants, int count, interpType interp, void *box);
+  TInstant **instants, int count, interpType interp, void *box);
 
 /*****************************************************************************/
 

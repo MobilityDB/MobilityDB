@@ -45,12 +45,12 @@
 #include <meos_geo.h>
 
 /* Maximum length in characters of a line in the output data */
-#define MAX_LINE_LENGTH 1024
+#define MAX_LEN_LINE 1024
 
 /* Main program */
 int main(void)
 {
-  char output_buffer[MAX_LINE_LENGTH];
+  char output_buffer[MAX_LEN_LINE];
   int i;
 
   /* Initialize MEOS */
@@ -98,7 +98,7 @@ int main(void)
       geo_as_ewkt(space_bins[i], 3) : "";
     char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
     char *temp_str = tspatial_as_ewkt(result[i], 3);
-    snprintf(output_buffer, MAX_LINE_LENGTH - 1,
+    snprintf(output_buffer, MAX_LEN_LINE - 1,
       "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
       time_str, timesplit ? ", " : "", temp_str);
     printf("%s", output_buffer);

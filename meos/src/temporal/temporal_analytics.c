@@ -571,8 +571,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
           }
         }
         /* Construct the sequence with the accumulated values */
-        seq1 = tsequence_make((const TInstant **) ininsts, k, true,
-          (k == 1) ? true : false, interp, NORMALIZE);
+        seq1 = tsequence_make(ininsts, k, true, (k == 1) ? true : false,
+          interp, NORMALIZE);
         /* Compute the twAvg/twCentroid for the bin */
         value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
           PointerGetDatum(tpointseq_twcentroid(seq1));
@@ -623,7 +623,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   /* Compute the twAvg/twCentroid of the last bin */
   if (k > 0)
   {
-    seq1 = tsequence_make((const TInstant **) ininsts, k, true,
+    seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
     value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
       PointerGetDatum(tpointseq_twcentroid(seq1));
@@ -700,8 +700,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
       {
         /* The lower and upper bounds are both true since the tprecision
          * operation amounts to a granularity change */
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, true, true, interp, NORMALIZE);
+        sequences[nseqs++] = tsequence_make(instants, ninsts, true, true,
+          interp, NORMALIZE);
         for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
         ninsts = 0;
@@ -715,8 +715,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   {
     /* The lower and upper bounds are both true since the tprecision
      * operation amounts to a granularity change */
-    sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      true, true, interp, NORMALIZE);
+    sequences[nseqs++] = tsequence_make(instants, ninsts, true, true, interp,
+      NORMALIZE);
     for (int j = 0; j < ninsts; j++)
       pfree(instants[j]);
   }
@@ -1042,8 +1042,8 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
  * @note Only two rows of the full matrix are used
  */
 static double
-tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, SimFunc simfunc)
+tinstarr_similarity1(double *dist, TInstant **instants1, int count1,
+  TInstant **instants2, int count2, SimFunc simfunc)
 {
   datum_func2 func = pt_distance_fn(instants1[0]->flags);
   for (int i = 0; i < count1; i++)
@@ -1108,8 +1108,8 @@ tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
  * @note Only two rows of the full matrix are used
  */
 static double
-tinstarr_similarity(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, SimFunc simfunc)
+tinstarr_similarity(TInstant **instants1, int count1, TInstant **instants2,
+  int count2, SimFunc simfunc)
 {
   /* Allocate memory for two rows of the distance matrix */
   double *dist = palloc(sizeof(double) * 2 * count2);
@@ -1140,8 +1140,10 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   result = count1 > count2 ?
-    tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
-    tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
+    tinstarr_similarity((TInstant **) instants1, count1,
+      (TInstant **) instants2, count2, simfunc) :
+    tinstarr_similarity((TInstant **) instants2, count2,
+      (TInstant **) instants1, count1, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1296,8 +1298,8 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
  * @param[out] dist Matrix keeping the distances
  */
 static void
-tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, SimFunc simfunc, double *dist)
+tinstarr_similarity_matrix1(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
   datum_func2 func = pt_distance_fn(instants1[0]->flags);
   for (int i = 0; i < count1; i++)
@@ -1361,8 +1363,8 @@ tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
  * @param[out] count Number of elements in the resulting array
  */
 static Match *
-tinstarr_similarity_matrix(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, SimFunc simfunc, int *count)
+tinstarr_similarity_matrix(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, SimFunc simfunc, int *count)
 {
   /* Allocate memory for dist */
   double *dist = palloc(sizeof(double) * count1 * count2);
@@ -1396,10 +1398,10 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
   Match *result = count1 > count2 ?
-    tinstarr_similarity_matrix(instants1, count1, instants2, count2,
-      simfunc, count) :
-    tinstarr_similarity_matrix(instants2, count2, instants1, count1,
-      simfunc, count);
+    tinstarr_similarity_matrix((TInstant **) instants1, count1,
+      (TInstant **) instants2, count2, simfunc, count) :
+    tinstarr_similarity_matrix((TInstant **) instants2, count2,
+      (TInstant **) instants1, count1, simfunc, count);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1450,8 +1452,8 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  * @param[in] count1,count2 Number of instants in the arrays
  */
 static double
-tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2)
+tinstarr_hausdorff_distance(TInstant **instants1, int count1,
+  TInstant **instants2, int count2)
 {
   datum_func2 func = pt_distance_fn(instants1[0]->flags);
   const TInstant *inst1, *inst2;
@@ -1510,7 +1512,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
   int count1, count2;
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
   const TInstant **instants2 = temporal_insts_p(temp2, &count2);
-  result = tinstarr_hausdorff_distance(instants1, count1, instants2, count2);
+  result = tinstarr_hausdorff_distance((TInstant **) instants1, count1,
+    (TInstant **) instants2, count2);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -1534,8 +1537,8 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
   datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = inst1;
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = (TInstant *) inst1;
   int ninsts = 1;
   bool last = false;
   /* Loop for every instant */
@@ -1546,14 +1549,14 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
     if (d > dist)
     {
       /* Add instant to output sequence */
-      instants[ninsts++] = inst2;
+      instants[ninsts++] = (TInstant *) inst2;
       inst1 = inst2;
       if (i == seq->count - 1)
         last = true;
     }
   }
   if (seq->count > 1 && ! last)
-    instants[ninsts++] = TSEQUENCE_INST_N(seq, seq->count - 1);
+    instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, ninsts,
     (ninsts == 1) ? true : seq->period.lower_inc,
     (ninsts == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
@@ -1630,8 +1633,8 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
 {
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = inst1;
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = (TInstant *) inst1;
   int ninsts = 1;
   bool last = false;
   /* Loop for every instant */
@@ -1642,7 +1645,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
     if (pg_interval_cmp(duration, mint) > 0)
     {
       /* Add instant to output sequence */
-      instants[ninsts++] = inst2;
+      instants[ninsts++] = (TInstant *) inst2;
       inst1 = inst2;
       if (i == seq->count - 1)
         last = true;
@@ -1650,7 +1653,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
     pfree(duration);
   }
   if (seq->count > 1 && ! last)
-    instants[ninsts++] = TSEQUENCE_INST_N(seq, seq->count - 1);
+    instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, ninsts,
     (ninsts == 1) ? true : seq->period.lower_inc,
     (ninsts == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
@@ -1955,7 +1958,7 @@ TSequence *
 tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *prev = NULL;
   const TInstant *cur = NULL;
   uint32_t start = 0,   /* Lower index for finding the split */
@@ -1967,7 +1970,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
     cur = TSEQUENCE_INST_N(seq, i);
     if (prev == NULL)
     {
-      instants[ninsts++] = cur;
+      instants[ninsts++] = (TInstant *) cur;
       prev = cur;
       continue;
     }
@@ -1980,13 +1983,13 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
     if (dosplit)
     {
       prev = cur;
-      instants[ninsts++] = TSEQUENCE_INST_N(seq, split);
+      instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, split);
       start = split;
       continue;
     }
   }
   if (ninsts > 0 && instants[ninsts - 1] != cur)
-    instants[ninsts++] = cur;
+    instants[ninsts++] = (TInstant *) cur;
   TSequence *result = tsequence_make(instants, ninsts,
     (ninsts == 1) ? true : seq->period.lower_inc,
     (ninsts == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
@@ -2130,9 +2133,9 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   /* Order the list of points kept */
   qsort(outlist, outn, sizeof(int), int_cmp);
   /* Create a new temporal sequence */
-  const TInstant **instants = palloc(sizeof(TInstant *) * outn);
+  TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
-    instants[i] = TSEQUENCE_INST_N(seq, outlist[i]);
+    instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, outlist[i]);
   TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);

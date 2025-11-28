@@ -44,12 +44,12 @@
 #include <meos.h>
 
 /* Maximum length in characters of a line in the output data */
-#define MAX_LINE_LENGTH 1024
+#define MAX_LEN_LINE 1024
 
 /* Main program */
 int main(void)
 {
-  char output_buffer[MAX_LINE_LENGTH];
+  char output_buffer[MAX_LEN_LINE];
 
   /* Initialize MEOS */
   meos_initialize();

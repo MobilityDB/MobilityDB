@@ -47,14 +47,14 @@
 /* Functions computing the bounding box at the creation of a temporal point */
 
 extern void tgeoinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tgeoinstarr_set_stbox(const TInstant **instants, int count,
+extern void tgeoinstarr_set_stbox(TInstant **instants, int count,
   STBox *box);
 extern void tgeoseq_expand_stbox(TSequence *seq, const TInstant *inst);
 
 extern void tspatialinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tspatialinstarr_set_stbox(const TInstant **instants, int count,
+extern void tspatialinstarr_set_stbox(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, void *box);
-extern void tspatialseqarr_set_stbox(const TSequence **sequences, int count,
+extern void tspatialseqarr_set_stbox(TSequence **sequences, int count,
   STBox *box);
 extern void tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst);
 

@@ -494,8 +494,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
       {
         /* Close the current sequence at the start */
         instants[ninsts++] = tinstant_make(startresult, restype, start->t);
-        result[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, true, STEP, NORMALIZE);
+        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, true,
+          STEP, NORMALIZE);
         for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
         ninsts = 0;
@@ -539,8 +539,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
           /* The upper_inc bound of the closing sequence is true if lower_eq,
            * false if upper_eq */
-          result[nseqs++] = tsequence_make((const TInstant **) instants,
-            ninsts, lower_inc, lower_eq, STEP, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+            lower_eq, STEP, NORMALIZE);
           for (int j = 0; j < ninsts; j++)
             pfree(instants[j]);
           ninsts = 0;
@@ -556,15 +556,15 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
           /* The crossing is at the middle: close the current sequence */
           instants[ninsts++] = tinstant_make(startresult, restype, start->t);
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
-          result[nseqs++] = tsequence_make((const TInstant **) instants,
-            ninsts, lower_inc, false, STEP, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
+            STEP, NORMALIZE);
           for (int j = 0; j < ninsts; j++)
             pfree(instants[j]);
           ninsts = 0;
           /* Add a singleton sequence with the crossing */
           instants[0] = tinstant_make_free(tpresult, restype, tpt1);
-          result[nseqs++] = tsequence_make((const TInstant **) instants, 1,
-            true, true, STEP, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, 1, true, true, STEP,
+            NORMALIZE);
           pfree(instants[0]);
           /* Start a new sequence from the crossing to the end of the segment */
           lower_inc = false;
@@ -593,7 +593,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         instants[ninsts - 1]->t);
       pfree(inst);
     }
-    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+    result[nseqs++] = tsequence_make(instants, ninsts,
       (ninsts == 1) ? true : lower_inc,
       (ninsts == 1) ? true : seq->period.upper_inc, STEP, NORMALIZE);
   }
@@ -1212,8 +1212,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       {
         /* Close the current sequence at the start instant */
         instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
-        result[nseqs++] = tsequence_make((const TInstant **) instants,
-          ninsts, lower_inc, true, interp, NORMALIZE);
+        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, true,
+          interp, NORMALIZE);
         for (int k = 0; k < ninsts; k++)
           pfree(instants[k]);
         ninsts = 0;
@@ -1255,8 +1255,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
           /* The upper_inc bound of the closing sequence is true if lower_eq,
            * false if upper_eq */
-          result[nseqs++] = tsequence_make((const TInstant **) instants,
-            ninsts, lower_inc, lower_eq, interp, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+            lower_eq, interp, NORMALIZE);
           for (int k = 0; k < ninsts; k++)
             pfree(instants[k]);
           ninsts = 0;
@@ -1270,15 +1270,15 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           /* The crossing is at the middle: close the current sequence */
           instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
-          result[nseqs++] = tsequence_make((const TInstant **) instants,
-            ninsts, lower_inc, false, interp, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
+            interp, NORMALIZE);
           for (int k = 0; k < ninsts; k++)
             pfree(instants[k]);
           ninsts = 0;
           /* Add a singleton sequence with the crossing */
           instants[0] = tinstant_make_free(tpresult, restype, tpt1);
-          result[nseqs++] = tsequence_make((const TInstant **) instants, 1,
-            true, true, interp, NORMALIZE);
+          result[nseqs++] = tsequence_make(instants, 1, true, true, interp,
+            NORMALIZE);
           pfree(instants[0]);
           /* Start a new sequence from the crossing to the end of the segment */
           lower_inc = false;
@@ -1380,8 +1380,8 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
         tfunc_base_base(endvalue1, startvalue2, lfinfo) :
         tfunc_base_base(startvalue1, endvalue2, lfinfo);
       instants[ninsts++] = tinstant_make_free(closeresult, restype, end1->t);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-        lower_inc, false, LINEAR, NORMALIZE_NO);
+      result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
+        LINEAR, NORMALIZE_NO);
       for (int k = 0; k < ninsts; k++)
         pfree(instants[k]);
       ninsts = 0;
@@ -1396,7 +1396,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   if (inter->upper_inc)
     instants[ninsts++] = tinstant_make_free(startresult, restype, start1->t);
   if (ninsts > 0)
-    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+    result[nseqs++] = tsequence_make(instants, ninsts,
       (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : inter->upper_inc,
       LINEAR, NORMALIZE);
   pfree_array((void **) tofree, nfree);

@@ -66,12 +66,12 @@ extern void temporal_skiplist_splice(SkipList *list, void **values, int count,
 
 /* Generic aggregation functions */
 
-extern TInstant **tinstant_tagg(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, datum_func2 func, int *newcount,
+extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, datum_func2 func, int *newcount,
   void ***tofree, int *nfree);
-extern TSequence **tsequence_tagg(const TSequence **sequences1, int count1,
-  const TSequence **sequences2, int count2, datum_func2 func,
-  bool crossings, int *newcount);
+extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
+  TSequence **sequences2, int count2, datum_func2 func, bool crossings,
+  int *newcount);
 extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);
 extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
@@ -79,8 +79,8 @@ extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
 
 extern SkipList *tinstant_tagg_transfn(SkipList *state, const TInstant *inst,
   datum_func2 func);
-extern TSequence *tinstant_tavg_finalfn(const TInstant **instants, int count);
-extern TSequenceSet *tsequence_tavg_finalfn(const TSequence **sequences, int count);
+extern TSequence *tinstant_tavg_finalfn(TInstant **instants, int count);
+extern TSequenceSet *tsequence_tavg_finalfn(TSequence **sequences, int count);
 extern TInstant *tnumberinst_transform_tavg(const TInstant *inst);
 extern Temporal **temporal_transform_tcount(const Temporal *temp, int *count);
 extern Temporal **temporal_transform_tagg(const Temporal *temp, int *count,

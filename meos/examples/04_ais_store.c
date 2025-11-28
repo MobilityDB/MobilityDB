@@ -71,11 +71,11 @@
 #include <meos_geo.h>
 
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 10000
+#define NO_INSTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length for a SQL output query */
-#define MAX_LENGTH_SQL 16384
+#define MAX_LEN_SQL 16384
 /* Number of inserts that are sent in bulk */
 #define NO_BULK_INSERT 20
 
@@ -116,9 +116,9 @@ main(int argc, char **argv)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char text_buffer[MAX_LENGTH_HEADER];
+  char text_buffer[MAX_LEN_HEADER];
   /* Maximum length in characters of the string for the bulk insert */
-  char insert_buffer[MAX_LENGTH_SQL];
+  char insert_buffer[MAX_LEN_SQL];
   /* Exit value initialized to failure to quickly exit upon error */
   int exit_value = EXIT_FAILURE;
 
@@ -210,7 +210,7 @@ main(int argc, char **argv)
   fscanf(file, "%1023s\n", text_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTANTS_BATCH);
+    NO_INSTS_BATCH);
 
   /* Continue reading the file */
   int len;
@@ -232,7 +232,7 @@ main(int argc, char **argv)
     }
 
     no_records++;
-    if (no_records % NO_INSTANTS_BATCH == 0)
+    if (no_records % NO_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -243,11 +243,11 @@ main(int argc, char **argv)
 
     /* Create the INSERT command with the values read */
     if ((no_records - 1) % NO_BULK_INSERT == 0)
-      len = snprintf(insert_buffer, MAX_LENGTH_SQL - 1,
+      len = snprintf(insert_buffer, MAX_LEN_SQL - 1,
         "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
     char *t_out = timestamp_out(rec.T);
-    len += snprintf(insert_buffer + len, MAX_LENGTH_SQL - 1 - len,
+    len += snprintf(insert_buffer + len, MAX_LEN_SQL - 1 - len,
       "(%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00'),",
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);
     free(t_out);
@@ -281,7 +281,7 @@ main(int argc, char **argv)
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
 
-  snprintf(text_buffer, MAX_LENGTH_SQL - 1, 
+  snprintf(text_buffer, MAX_LEN_SQL - 1, 
     "SELECT COUNT(*) FROM public.AISInstants;");
   PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)

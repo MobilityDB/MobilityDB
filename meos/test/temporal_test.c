@@ -829,26 +829,26 @@ int main(void)
   printf("tintseqset_from_base_tstzspanset(%d, %s): %s\n", int32_in1, tstzspanset1_out, char_result);
   free(tint_result); free(char_result);
 
-  /* TSequence *tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize); */
+  /* TSequence *tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize); */
   tfloatinstarray[0] = tfloatinst1;
   tfloatinstarray[1] = tfloatinst2;
-  tfloat_result = (Temporal *) tsequence_make((const TInstant **) tfloatinstarray, 1, true, true, LINEAR, true);
+  tfloat_result = (Temporal *) tsequence_make(tfloatinstarray, 1, true, true, LINEAR, true);
   char_result = tfloat_out(tfloat_result, 6);
   printf("tsequence_make({%s, %s}, 1, true, true, LINEAR, true): %s\n", tfloatseq1_out, tfloatseq2_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize); */
+  /* TSequenceSet *tsequenceset_make(TSequence **sequences, int count, bool normalize); */
   tfloatseqarray[0] = tfloatseq1;
   tfloatseqarray[1] = tfloatseq2;
-  tfloat_result = (Temporal *) tsequenceset_make((const TSequence **) tfloatseqarray, 2, true);
+  tfloat_result = (Temporal *) tsequenceset_make(tfloatseqarray, 2, true);
   char_result = tfloat_out(tfloat_result, 6);
   printf("tsequenceset_make({%s, %s}, 2, true): %s\n", tfloatseq1_out, tfloatseq2_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* TSequenceSet *tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp, const Interval *maxt, double maxdist); */
+  /* TSequenceSet *tsequenceset_make_gaps(TInstant **instants, int count, interpType interp, const Interval *maxt, double maxdist); */
   tfloatinstarray[0] = tfloatinst1;
   tfloatinstarray[1] = tfloatinst2;
-  tfloat_result =  (Temporal *) tsequenceset_make_gaps((const TInstant **) tfloatinstarray, 2, LINEAR, interv1, float8_in2);
+  tfloat_result =  (Temporal *) tsequenceset_make_gaps(tfloatinstarray, 2, LINEAR, interv1, float8_in2);
   char_result = tfloat_out(tfloat_result, 6);
   printf("tsequenceset_make_gaps({%s, %s}, 2, LINEAR, %s, %lf): %s\n", tfloatinst1_out, tfloatinst2_out, interv1_out, float8_in2, char_result);
   free(tfloat_result); free(char_result);
@@ -1293,10 +1293,10 @@ int main(void)
   float8_result = float_degrees(float8_in1, true);
   printf("float_degrees(%lf, true): %lf\n", float8_in1, float8_result);
 
-  /* Temporal **temparr_round(const Temporal **temp, int count, int maxdd); */
+  /* Temporal **temparr_round(Temporal **temp, int count, int maxdd); */
   tfloatarray[0] = tfloat1;
   tfloatarray[1] = tfloat2;
-  tfloatarray_result = temparr_round((const Temporal **) tfloatarray, 2, 6);
+  tfloatarray_result = temparr_round(tfloatarray, 2, 6);
   printf("temparr_round({%s, %s}, 2, 6): {", tfloatinst1_out, tfloatinst2_out);
   for (int i = 0; i < 2; i++)
   {
@@ -1482,10 +1482,10 @@ int main(void)
   printf("temporal_merge(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_merge); free(tfloat_result); free(char_result);
 
-  /* Temporal *temporal_merge_array(const Temporal **temparr, int count); */
+  /* Temporal *temporal_merge_array(Temporal **temparr, int count); */
   tfloatseqarray[0] = tfloatseq1;
   tfloatseqarray[1] = tfloatseq2;
-  tfloat_result = temporal_merge_array((const Temporal **) tfloatseqarray, 2);
+  tfloat_result = temporal_merge_array(tfloatseqarray, 2);
   char_result = tfloat_out(tfloat_result, 6);
   printf("temporal_merge_array({%s, %s}, 2): %s\n", tfloatinst1_out, tfloatinst2_out, char_result);
   free(tfloat_result); free(char_result);

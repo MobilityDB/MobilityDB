@@ -46,11 +46,11 @@
 #include <meos_internal.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a span set in the input data */
-#define MAX_LENGTH_SPANSET 1024
+#define MAX_LEN_SPANSET 1024
 /* Number of groups for accumulating the input span sets */
-#define NUMBER_GROUPS 10
+#define NO_GROUPS 10
 
 typedef struct
 {
@@ -69,7 +69,7 @@ int main(void)
   t = clock();
 
   /* Array of state values for aggregating the spans */
-  SpanSet *state[NUMBER_GROUPS] = {0};
+  SpanSet *state[NO_GROUPS] = {0};
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/floatspanset.csv", "r");
@@ -83,8 +83,8 @@ int main(void)
   floatspanset_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char spanset_buffer[MAX_LENGTH_SPANSET];
+  char header_buffer[MAX_LEN_HEADER];
+  char spanset_buffer[MAX_LEN_SPANSET];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
@@ -110,8 +110,8 @@ int main(void)
     /* Transform the string representing the span set into a span set value */
     rec.ss = floatspanset_in(spanset_buffer);
 
-    state[rec.k%NUMBER_GROUPS] = 
-      spanset_union_transfn(state[rec.k%NUMBER_GROUPS], rec.ss);
+    state[rec.k%NO_GROUPS] = 
+      spanset_union_transfn(state[rec.k%NO_GROUPS], rec.ss);
 
     /* Output the float spanset value read */
     char *spanset_out = floatspanset_out(rec.ss, 3);
@@ -127,7 +127,7 @@ int main(void)
     no_records, no_nulls);
 
   /* Compute the final result */
-  for (int i = 0; i < NUMBER_GROUPS; i++)
+  for (int i = 0; i < NO_GROUPS; i++)
   {
     SpanSet *final = spanset_union_finalfn(state[i]);
     /* Print the accumulated span set */
@@ -137,7 +137,6 @@ int main(void)
     char *spanset_out = floatspanset_out(final, 3);
     printf("spanset: %s\n", spanset_out);
     free(spanset_out);
-    free(state[i]);
     free(final);
   }
 

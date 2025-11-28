@@ -1230,7 +1230,7 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
  * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
  */
 int
-geo_npoints(const GSERIALIZED *gs)
+geo_num_points(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   int npoints = lwgeom_count_vertices(lwgeom);
@@ -1245,7 +1245,7 @@ geo_npoints(const GSERIALIZED *gs)
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
  */
 int
-geo_ngeos(const GSERIALIZED *gs)
+geo_num_geos(const GSERIALIZED *gs)
 {
   /* Ensure validity of arguments */
   if (! ensure_not_null((void *) gs))
@@ -1274,7 +1274,7 @@ geo_ngeos(const GSERIALIZED *gs)
  * @note PostGIS function: @p LWGEOM_geometryn_collection(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geo_geoN(const GSERIALIZED *gs, int n)
+geo_geo_n(const GSERIALIZED *gs, int n)
 {
   /* Ensure validity of arguments */
   if (!ensure_not_null((void *) gs))

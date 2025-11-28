@@ -50,11 +50,11 @@
 #include <meos_geo.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 
 typedef struct
 {
@@ -84,8 +84,8 @@ int main(void)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char header_buffer[MAX_LENGTH_HEADER];
-  char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
+  char header_buffer[MAX_LEN_HEADER];
+  char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);

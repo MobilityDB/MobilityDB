@@ -1216,7 +1216,7 @@ PG_FUNCTION_INFO_V1(Tbox_hash_extended);
 /**
  * @ingroup mobilitydb_temporal_box_comp
  * @brief Return the hash value of a temporal box
- * @sqlfn tbox_hash()
+ * @sqlfn tbox_hash_extended()
  */
 Datum
 Tbox_hash_extended(PG_FUNCTION_ARGS)

@@ -68,25 +68,25 @@
 
 /*
  * IMPORTANT !!!
- * Please fix the values MAX_NO_RECORDS and MAX_SHIPS according to the
+ * Please fix the values MAX_NO_RECS and MAX_NO_SHIPS according to the
  * available memory in your computer
  */
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECORDS 20000000
+#define MAX_NO_RECS 20000000
 /* Maximum number of trips */
-#define MAX_SHIPS 6500
+#define MAX_NO_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
-#define INITIAL_INSTANTS 64
+#define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
-#define MAX_LENGTH_LINE 1024
+#define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
-#define MAX_LENGTH_POINT 64
+#define MAX_LEN_POINT 64
 /* Maximum length in characters of a timestamp in the input data */
-#define MAX_LENGTH_TIMESTAMP 32
+#define MAX_LEN_TIMESTAMP 32
 /* Maximum length in characters of all other strings in the input data */
-#define MAX_LENGTH_STRING 64
+#define MAX_LEN_STRING 64
 
 typedef struct
 {
@@ -111,9 +111,9 @@ typedef struct
 int main(void)
 {
   /* Input buffer to read the CSV file */
-  char line_buffer[MAX_LENGTH_LINE];
+  char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_SHIPS] = {0};
+  trip_record trips[MAX_NO_SHIPS] = {0};
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */
@@ -148,7 +148,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECORDS_BATCH);
+  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -168,13 +168,13 @@ int main(void)
 
     no_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECORDS_BATCH == 0)
+    if (no_records % NO_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECORDS)
+    if (no_records == MAX_NO_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -259,7 +259,7 @@ int main(void)
     if (j < 0)
     {
       /* If we have reached the maximum number of ships */
-      if (no_ships == MAX_SHIPS)
+      if (no_ships == MAX_NO_SHIPS)
         continue;
       j = no_ships++;
       trips[j].MMSI = rec.MMSI;
@@ -285,8 +285,8 @@ int main(void)
       /* Ensure there is still space for storing the temporal point instant */
       if (! trips[j].trip)
       {
-        trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
-          INITIAL_INSTANTS, true, true, LINEAR, false);
+        trips[j].trip = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true,
+          true, LINEAR, false);
         if (! trips[j].trip)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
@@ -337,8 +337,8 @@ int main(void)
         // printf("Speed %d -> %d ", trips[j].no_SOG_instants,
           // trips[j].no_SOG_instants * 2);
         // fflush(stdout);
-        trips[j].SOG = tsequence_make_exp((const TInstant **) &inst, 1,
-          INITIAL_INSTANTS, true,  true, LINEAR, false);
+        trips[j].SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true,
+          true, LINEAR, false);
         if (trips[j].SOG == NULL)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the speed\n",

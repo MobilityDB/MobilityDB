@@ -567,8 +567,8 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
     upper_inc = PG_GETARG_BOOL(3);
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
-  TSequence *result = tsequence_make((const TInstant **) instants, count,
-    lower_inc, upper_inc, interp, NORMALIZE);
+  TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
+    interp, NORMALIZE);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_TSEQUENCE_P(result);
@@ -588,8 +588,7 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temparr_extract(array, &count);
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    count, NORMALIZE);
+  TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
   pfree(sequences);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_TSEQUENCESET_P(result);
@@ -629,8 +628,8 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   /* Extract the array of instants */
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
-  TSequenceSet *result = tsequenceset_make_gaps((const TInstant **) instants,
-    count, interp, maxt, maxdist);
+  TSequenceSet *result = tsequenceset_make_gaps(instants, count, interp, maxt,
+    maxdist);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_TSEQUENCESET_P(result);
@@ -1551,7 +1550,7 @@ Temporalarr_round(PG_FUNCTION_ARGS)
   int maxdd = PG_GETARG_INT32(1);
 
   Temporal **temparr = temparr_extract(array, &count);
-  Temporal **resarr = temparr_round((const Temporal **) temparr, count, maxdd);
+  Temporal **resarr = temparr_round(temparr, count, maxdd);
   ArrayType *result = temparr_to_array(resarr, count, FREE_ALL);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
@@ -1956,7 +1955,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temparr_extract(array, &count);
-  Temporal *result = temporal_merge_array((const Temporal **) temparr, count);
+  Temporal *result = temporal_merge_array(temparr, count);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_TEMPORAL_P(result);

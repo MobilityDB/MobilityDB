@@ -53,7 +53,7 @@
 #include <time.h>
 #include <meos.h>
 
-#define MAX_INSTANTS 1000000
+#define MAX_NO_INSTS 1000000
 
 /* Main program */
 int main(void)
@@ -66,7 +66,7 @@ int main(void)
   meos_initialize();
 
   /* Input instants that are accumulated */
-  TInstant *instants[MAX_INSTANTS] = {0};
+  TInstant *instants[MAX_NO_INSTS] = {0};
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -77,15 +77,15 @@ int main(void)
   srandom (time (0));
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_NO_INSTS; i++)
   {
     t = add_timestamptz_interval(t, oneday);
     instants[i] = tfloatinst_make(i % 2 + 1, t);
   }
 
-  seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
-    true, true, STEP, true);
-  for (i = 0; i < MAX_INSTANTS; i++)
+  seq = (Temporal *) tsequence_make(instants, MAX_NO_INSTS, true, true, STEP,
+    true);
+  for (i = 0; i < MAX_NO_INSTS; i++)
     free(instants[i]);
 
   /* Print information about the sequence */

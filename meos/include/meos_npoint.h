@@ -200,7 +200,7 @@ extern char *npointset_out(const Set *s, int maxdd);
 
 /* Constructor functions */
 
-extern Set *npointset_make(const Npoint **values, int count);
+extern Set *npointset_make(Npoint **values, int count);
 
 /* Conversion functions */
 

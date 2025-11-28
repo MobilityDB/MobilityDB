@@ -391,9 +391,9 @@ extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline
 
 extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
-extern int geo_npoints(const GSERIALIZED *gs);
-extern int geo_ngeos(const GSERIALIZED *gs);
-extern GSERIALIZED *geo_geoN(const GSERIALIZED *geom, int n);
+extern int geo_num_points(const GSERIALIZED *gs);
+extern int geo_num_geos(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_geo_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED **geo_pointarr(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
@@ -456,7 +456,7 @@ extern char *spatialset_as_ewkt(const Set *set, int maxdd);
 
 /* Constructor functions */
 
-extern Set *geoset_make(const GSERIALIZED **values, int count);
+extern Set *geoset_make(GSERIALIZED **values, int count);
 
 /* Conversion functions */
 
@@ -615,7 +615,6 @@ extern bool stbox_ne(const STBox *box1, const STBox *box2);
 
 /* Input and output functions */
 
-extern char *tgeo_out(const Temporal *temp, int maxdd);
 extern Temporal *tgeogpoint_from_mfjson(const char *str);
 extern Temporal *tgeogpoint_in(const char *str);
 extern Temporal *tgeography_from_mfjson(const char *mfjson);
@@ -626,6 +625,7 @@ extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd);
+extern char *tspatial_out(const Temporal *temp, int maxdd);
 
 /* Constructor functions */
 

@@ -54,14 +54,14 @@
 #include <meos_pose.h>
 
 /* Maximum length in characters of a header record in the input CSV file1 */
-#define MAX_LENGTH_HEADER 1024
-#define MAX_LENGTH_VALUE 12001
+#define MAX_LEN_HEADER 1024
+#define MAX_LEN_VALUE 12001
 /* Maximum length in characters of a temporal circular buffer in the input
  * data as computed by the following query on the corresponding table
  * SELECT MAX(length(temp::text)) FROM tbl_tgeometry;
  * -- 6273
  */
-#define MAX_LENGTH_TEMP 8192
+#define MAX_LEN_TEMP 8192
 
 /* Main program */
 int main(void)
@@ -113,9 +113,9 @@ int main(void)
     return 1;
   }
 
-  char header_buffer[MAX_LENGTH_HEADER];
-  char value1_buffer[MAX_LENGTH_VALUE];
-  char value2_buffer[MAX_LENGTH_VALUE];
+  char header_buffer[MAX_LEN_HEADER];
+  char value1_buffer[MAX_LEN_VALUE];
+  char value2_buffer[MAX_LEN_VALUE];
 
   /* Read the first line of the first file with the headers */
   fscanf(file1, "%1023s\n", header_buffer);

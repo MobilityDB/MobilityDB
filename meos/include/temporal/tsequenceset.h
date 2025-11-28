@@ -46,13 +46,13 @@
 
 extern bool tsequenceset_find_timestamptz(const TSequenceSet *ss,
   TimestampTz t, int *loc);
-extern TSequence **tseqarr_normalize(const TSequence **sequences, int count,
+extern TSequence **tseqarr_normalize(TSequence **sequences, int count,
   int *newcount);
 extern double datum_distance(Datum value1, Datum value2, meosType basetype,
   int16 flags);
-extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
+extern int *ensure_valid_tinstarr_gaps(TInstant **instants, int count,
   bool merge, double maxdist, const Interval *maxt, int *nsplits);
-extern bool ensure_valid_tseqarr(const TSequence **sequences, int count);
+extern bool ensure_valid_tseqarr(TSequence **sequences, int count);
 
 /* Synchronize functions */
 

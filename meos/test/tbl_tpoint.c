@@ -53,13 +53,13 @@
 #include <meos_geo.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
+#define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a temporal point in the input data as
  * computed by the following query on the corresponding table
  * SELECT MAX(length(temp::text)) FROM tbl_tgeompoint;
  * -- 3770
  */
-#define MAX_LENGTH_TGEO 7501
+#define MAX_LEN_TGEO 7501
 
 /* Main program */
 int main(void)
@@ -77,8 +77,8 @@ int main(void)
     return 1;
   }
 
-  char header_buffer[MAX_LENGTH_HEADER];
-  char tpoint_buffer[MAX_LENGTH_TGEO];
+  char header_buffer[MAX_LEN_HEADER];
+  char tpoint_buffer[MAX_LEN_TGEO];
 
   /* Read the first line of the first file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
