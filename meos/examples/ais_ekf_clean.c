@@ -345,7 +345,7 @@ int main(int argc, char **argv)
       continue;
 
     /* Build sequence and run EKF filter ----------------*/
-    TSequence *seq = tsequence_make((const TInstant **) trips[i].inst, trips[i].n_inst,
+    TSequence *seq = tsequence_make((TInstant **) trips[i].inst, trips[i].n_inst,
       true, true, LINEAR, false);
 
     /* Free instants and the array after building the sequence */
