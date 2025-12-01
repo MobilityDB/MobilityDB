@@ -54,7 +54,7 @@ RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION extendedKalmanFilter(tfloat, gate float, q float, variance float, boolean to_drop DEFAULT TRUE)
+CREATE FUNCTION extendedKalmanFilter(tfloat, gate float, q float, variance float, to_drop boolean DEFAULT TRUE)
 RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Temporal_ext_kalman_filter'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
