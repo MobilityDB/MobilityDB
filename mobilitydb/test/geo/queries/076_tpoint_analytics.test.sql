@@ -306,8 +306,7 @@ SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]'
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(2 2)@2001-01-03]', 1e-5, 5e-10, 5e-10, false));
 
   -- 4) Sequence set with outliers in both sequences
-  -- In both modes the middle instants are treated as outliers.
-  -- Fill-mode replaces them by predicted endpoints, but normalization removes the redundant middle instants, so drop and fill have only endpoints.
+  -- In both modes the middle instants are treated as outliers. Fill-mode replaces them by predicted endpoints, but normalization removes the redundant middle instants, so drop and fill have only endpoints.
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '{[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(1 1)@2001-01-03],[Point(2 2)@2001-01-04, Point(50 50)@2001-01-05,Point(2 2)@2001-01-06]}', 1e-5, 5e-10, 5e-10, true));
 
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '{[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(50 50)@2001-01-05, Point(2 2)@2001-01-06]}', 1e-5, 5e-10, 5e-10, false));
