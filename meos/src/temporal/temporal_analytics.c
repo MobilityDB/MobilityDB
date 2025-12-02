@@ -315,7 +315,7 @@ static TSequence * tsequence_ext_kalman_filter(const TSequence *seq, meosType te
     prev_t = inst->t;
   }
 
-  TSequence *result = tsequence_make((const TInstant **) outinsts, outcount,
+  TSequence *result = tsequence_make((TInstant **) outinsts, outcount,
     seq->period.lower_inc, seq->period.upper_inc,
     MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(outinsts);

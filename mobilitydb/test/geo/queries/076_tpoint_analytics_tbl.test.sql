@@ -111,3 +111,31 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
 
 -------------------------------------------------------------------------------
+  -- Extended Kalman Filter (EKF) for tbl_tgeompoint
+
+  -- 1) Maximum number of instants removed by EKF
+  SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+
+  -- 2) Fill mode should preserve the number of instants exception of normalized points
+  SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS min_diff,
+         MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS max_diff
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+
+  -- 3) EKF drops vs fills outliers
+  SELECT k,
+         numInstants(temp) AS n_before,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))  AS n_after_drop,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false)) AS n_after_fill,
+         asEWKT(temp)                                                   AS original,
+         asEWKT(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))      AS ekf_drop,
+         asEWKT(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))     AS ekf_fill
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3
+    AND numInstants(temp) > numInstants(
+          extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))
+  ORDER BY (numInstants(temp) - numInstants(
+             extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))) DESC
+  LIMIT 5;
