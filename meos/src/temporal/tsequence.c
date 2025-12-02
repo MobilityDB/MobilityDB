@@ -1046,7 +1046,7 @@ tsequence_make_exp(TInstant **instants, int count, int maxcount,
  * @ingroup meos_temporal_constructor
  * @brief Return a temporal sequence from an array of temporal instants
  * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
+ * @param[in] count Number of  elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
@@ -1065,33 +1065,6 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 }
 
 /**
- * @brief Return a temporal sequence from an array of temporal instants
- * and free the array and the instants after the creation
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] maxcount Maximum number of elements in the array
- * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
- * @param[in] interp Interpolation
- * @param[in] normalize True if the resulting value should be normalized
- * @see #tsequence_make
- */
-TSequence *
-tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
-  bool lower_inc, bool upper_inc, interpType interp, bool normalize)
-{
-  assert(instants);
-  if (count == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
-  TSequence *result = tsequence_make_exp(instants, count, maxcount, lower_inc,
-    upper_inc, interp, normalize);
-  pfree_array((void **) instants, count);
-  return result;
-}
-
-/**
  * @ingroup meos_internal_temporal_constructor
  * @brief Return a temporal sequence from an array of temporal instants
  * and free the array and the instants after the creation
@@ -1106,8 +1079,16 @@ inline TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
-  return tsequence_make_free_exp(instants, count, count, lower_inc, upper_inc,
+  assert(instants);
+  if (count == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
     interp, normalize);
+  pfree_array((void **) instants, count);
+  return result;
 }
 
 #if MEOS
