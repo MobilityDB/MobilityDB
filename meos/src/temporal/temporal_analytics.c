@@ -317,7 +317,7 @@ static TSequence * tsequence_ext_kalman_filter(const TSequence *seq, meosType te
 
   TSequence *result = tsequence_make((TInstant **) outinsts, outcount,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
   pfree(outinsts);
   return result;
 }
@@ -356,7 +356,7 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
         seqs[i] = tsequence_ext_kalman_filter(seq, temp->temptype,
           gate, q, variance, to_drop);
       }
-      return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
+      return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE_NO);
     }
   }
 }
