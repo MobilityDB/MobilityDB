@@ -276,6 +276,38 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="ttype_kalmanFilter">
+		<title>Extended Kalman Filter</title>
+		<itemizedlist>
+			<listitem xml:id="ttype_extendedKalmanFilter">
+				<indexterm significance="normal"><primary><varname>extendedKalmanFilter</varname></primary></indexterm>
+				<para>Return a smoothed temporal float or temporal point obtained by filtering a noisy trajectory with an <ulink url="https://en.wikipedia.org/wiki/Kalman_filter">Extended Kalman Filter</ulink> &Z_support;
+</para>
+				<para><varname>extendedKalmanFilter(tfloat, gate float, q float, variance float, to_drop boolean DEFAULT TRUE) → tfloat</varname></para>
+				<para><varname>extendedKalmanFilter(tgeompoint, gate float, q float, variance float, to_drop boolean DEFAULT TRUE) → tgeompoint</varname></para>
+				<para>The filter models the underlying motion of a moving object and separates it from measurement noise and occasional outliers. The <varname>gate</varname> parameter controls how strict the outlier detection is, <varname>q</varname> is the process-noise scale, <varname>variance</varname> is the measurement-noise variance, and <varname>to_drop</varname> chooses whether outliers are removed (<literal>true</literal>) or replaced by the predicted trajectory (<literal>false</literal>).</para>
+				<para>These functions are intended for trajectories with at least three instants and are typically applied to temporal values with linear interpolation.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(
+  extendedKalmanFilter(
+    tgeompoint '[Point(1 1)@2001-01-01,
+                 Point(50 50)@2001-01-02,
+                 Point(2 2)@2001-01-03]',
+    1e-5, 5e-10, 5e-10, true));
+-- Drop mode: the outlier at 2001-01-02 is removed
+
+SELECT asEWKT(
+  extendedKalmanFilter(
+    tgeompoint '[Point(1 1)@2001-01-01,
+                 Point(50 50)@2001-01-02,
+                 Point(2 2)@2001-01-03]',
+    1e-5, 5e-10, 5e-10, false));
+-- Fill mode: the outlier is replaced by a point predicted from the surrounding motion
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="ttype_splitting">
 		<title>Splitting Operations</title>
 
@@ -999,4 +1031,3 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-02-01,
 	</sect1>
 
 </chapter>
-

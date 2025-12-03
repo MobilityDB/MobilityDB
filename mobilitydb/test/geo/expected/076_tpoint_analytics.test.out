@@ -777,3 +777,63 @@ ERROR:  Mapbox Vector Tiles: Geometric bounds are too small
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX X((40,40),(60,60))', 0);
 ERROR:  Mapbox Vector Tiles: Extent must be greater than 0
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]', 8, 5e-10, 5e-10, true));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-03]', 8, 5e-10, 5e-10, false));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', 8, 5e-10, 5e-10, true));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]', 8, 5e-10, 5e-10, false));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(2 2)@2001-01-03]', 1e-5, 5e-10, 5e-10, true));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(2 2)@2001-01-03]', 1e-5, 5e-10, 5e-10, false));
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST, POINT(2 2)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '{[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(1 1)@2001-01-03],[Point(2 2)@2001-01-04, Point(50 50)@2001-01-05,Point(2 2)@2001-01-06]}', 1e-5, 5e-10, 5e-10, true));
+                                                                                  asewkt                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST, POINT(2 2)@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '{[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(50 50)@2001-01-05, Point(2 2)@2001-01-06]}', 1e-5, 5e-10, 5e-10, false));
+                                                                                  asewkt                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Wed Jan 03 00:00:00 2001 PST], [POINT(2 2)@Thu Jan 04 00:00:00 2001 PST, POINT(2 2)@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2000-01-01 00:00:00, Point(1000 0)@2000-01-01 00:00:10, Point(0 0)@2000-01-01 00:00:20]', 1.0, 0, 1, true));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(0 0)@Sat Jan 01 00:00:00 2000 PST, POINT(0 0)@Sat Jan 01 00:00:20 2000 PST]
+(1 row)
+
+SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2000-01-01 00:00:00, Point(1000 0)@2000-01-01 00:00:10, Point(0 0)@2000-01-01 00:00:20]', 1.0, 0, 1, false));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(0 0)@Sat Jan 01 00:00:00 2000 PST, POINT(0 0)@Sat Jan 01 00:00:20 2000 PST]
+(1 row)
+
