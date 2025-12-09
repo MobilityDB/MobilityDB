@@ -1,11 +1,3 @@
-
-if(MEOS)
-  # Enable code specific to MEOS, typically user-oriented wrapper functions
-  # hiding internal implementation details from the API. Such functions are
-  # not used in the MobilityDB PostgreSQL extension.
-  add_definitions(-DMEOS=1)
-endif()
-
 # PostgreSQL Types
 configure_file(pg_config.h.in pg_config.h)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/pgtypes")

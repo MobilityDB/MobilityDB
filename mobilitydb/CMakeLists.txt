@@ -6,10 +6,6 @@ message(STATUS "-------------------")
 message(STATUS "Building MobilityDB")
 message(STATUS "-------------------")
 
-# Disable code specific to MEOS which is not used in the MobilityDB PostgreSQL
-# extension.
-add_definitions(-DMEOS=0)
-
 # Set the version and name of the MobilityDB library
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
@@ -19,12 +15,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${PROJECT_VERSION}.sql")
 set(MOBILITYDB_DATAGEN_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}_datagen--${PROJECT_VERSION}.sql")
-
-# Option to build MEOS as a shared or static library
-option(BUILD_SHARED_LIBS
-  "Set BUILD_SHARED_LIBS (default=ON) to build MEOS as a shared library"
-  ON
-)
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -101,8 +91,6 @@ set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
 
 # Embed PostGIS
-configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
-configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
@@ -196,24 +184,10 @@ if(RGEO)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_rgeo>")
 endif()
 
-# PostgreSQL
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:access>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:catalog>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:conversion_procs>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:parser>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:mb>")
-
-# Build the library: PostGIS
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
 # Build the library
-add_library(${MOBILITYDB_LIB_NAME} ${PROJECT_OBJECTS})
+add_library(${MOBILITYDB_LIB_NAME} SHARED ${PROJECT_OBJECTS})
 if(APPLE)
   set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
     SUFFIX ".dylib"
@@ -225,8 +199,11 @@ endif()
 # Specify libraries to link
 #--------------------------------
 
+# Link to MEOS static library (built with MEOS=0)
+# This was built by the meos subdirectory before mobilitydb subdirectory
+target_link_libraries(${MOBILITYDB_LIB_NAME} meos)
+
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-# target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
@@ -236,10 +213,9 @@ if(WIN32)
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${POSTGIS_LIBRARY})
 endif()
 
-# Link the application to pgtypes
+# Link the application to pgtypes and postgis
 target_link_libraries(${MOBILITYDB_LIB_NAME} pgtypes)
-# Link the application to meos
-target_link_libraries(${MOBILITYDB_LIB_NAME} meos)
+target_link_libraries(${MOBILITYDB_LIB_NAME} postgis)
 
 #--------------------------------
 # Belongs to MobilityDB
@@ -249,11 +225,14 @@ message(STATUS "Including SQL definitions and tests")
 add_subdirectory(sql)
 add_subdirectory(datagen)
 add_subdirectory(test)
+
 add_custom_target(mobilitydb_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(mobilitydb_datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
 add_custom_target(mobilitydb_control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
+
 # add_custom_target(datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
 # add_custom_target(datagen_control ALL DEPENDS ${CMAKE_BINARY_DIR}/datagen/mobilitydb_datagen.control)
+
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")

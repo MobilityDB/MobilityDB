@@ -55,10 +55,6 @@ include(CMakeDependentOption)
     # set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # endif("${isSystemDir}" STREQUAL "-1")
 
-#-------------------------------------
-# MobilityDB definitions
-#-------------------------------------
-
 # Windows build with MSVC
 
 if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
@@ -70,7 +66,10 @@ if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
 endif()
 
-# Option for including network points
+#-------------------------------------
+# Build MEOS or MobilityDB
+#-------------------------------------
+
 option(MEOS
   "Set MEOS (default=OFF) to build the MEOS library instead of the MobilityDB
   PostgreSQL extension
@@ -78,41 +77,23 @@ option(MEOS
   OFF
 )
 
+if(MEOS)
+  # Enable code specific to MEOS, typically user-oriented wrapper functions
+  # hiding internal implementation details from the API. Such functions are
+  # not used in the MobilityDB PostgreSQL extension.
+  message(STATUS "MEOS=1: Including user-facing MEOS API functions")
+  add_definitions(-DMEOS=1)
+else()
+  message(STATUS "MEOS=0: Building MEOS core for MobilityDB (internal API only)")
+  add_definitions(-DMEOS=0)
+endif()
+
 # Option for including circular buffers
-option(CBUFFER
-  "Set ON|OFF (default=OFF) to include circular buffers
-  "
-  OFF
-  )
-
-# Option for including geoposes
-option(JSON
-  "Set ON|OFF (default=ON) to include json types
-  "
-  ON
-  )
-
-# Option for including network points
-option(NPOINT
-  "Set ON|OFF (default=ON) to include network points
-  "
-  ON
-  )
-
-# Option for including geoposes
-option(POSE
-  "Set ON|OFF (default=OFF) to include geoposes
-  "
-  OFF
-  )
-
-# Option for including rigid geometries, which depend on geoposes
-CMAKE_DEPENDENT_OPTION(RGEO
-  "Set ON|OFF (default=OFF) to include rigid geometries
-  "
-  ON "POSE"
-  OFF
-  )
+option(CBUFFER "Set ON|OFF (default=OFF) to include circular buffers" OFF)
+option(JSON "Set ON|OFF (default=ON) to include json types" ON)
+option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
+option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
+CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)
 
 if(CBUFFER)
   message(STATUS "Including circular buffers")
@@ -341,9 +322,9 @@ endif()
 #-------------------------------------
 
 add_subdirectory(pgtypes)
+add_subdirectory(postgis)
 add_subdirectory(meos)
-if(MEOS)
-else()
+if(NOT MEOS)
   add_subdirectory(mobilitydb)
 endif()
 

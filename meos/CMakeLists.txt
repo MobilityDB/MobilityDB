@@ -6,24 +6,10 @@ message(STATUS "-------------------------")
 message(STATUS "Building the MEOS library")
 message(STATUS "-------------------------")
 
-# Set MEOS option for building the MEOS library
-set(MEOS ON)
-
-# Enable code specific to MEOS, typically user-oriented wrapper functions
-# hiding internal implementation details from the API. Such functions are
-# not used in the MobilityDB PostgreSQL extension.
-add_definitions(-DMEOS=1)
-
 # Set the version and name of the MEOS library
 set(MEOS_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MEOS_LIB_NAME "meos")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-# Option to build MEOS as a shared or static library
-option(BUILD_SHARED_LIBS
-  "Set BUILD_SHARED_LIBS (default=ON) to build MEOS as a shared library"
-  ON
-)
 
 # Option to show debug messages for analyzing the expandable data structures
 option(DEBUG_EXPAND
@@ -42,7 +28,9 @@ endif()
 # Install directories
 #-----------------------------------------------------------------------------
 
-include(GNUInstallDirs)
+if(MEOS)
+  include(GNUInstallDirs)
+endif()
 
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS
@@ -52,6 +40,25 @@ set(POSTGRESQL_VERSION_STRING "PostgreSQL 18.0")
 set(POSTGRESQL_VERSION_NUMBER "180000")
 set(POSTGRESQL_VERSION_MAJOR "18")
 set(POSTGRESQL_VERSION_MINOR "0")
+
+if (NOT MEOS)
+  set(PG_MIN_MAJOR_VERSION "14")
+  set(PG_MAX_MAJOR_VERSION "18")
+  find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
+  if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
+    message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
+  endif()
+
+  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
+  if(WIN32)
+    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
+    if(MSVC)
+      include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+    endif()
+    link_directories(${POSTGRESQL_LIBRARIES})
+    link_libraries(postgres)
+  endif()
+endif()
 
 # MobilityDB definitions for PostgreSQL version-dependent code
 add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
@@ -89,14 +96,15 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/pgtypes")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/pgtypes")
 
-# Embed PostGIS
-configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
-configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
+# PostGIS
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis/liblwgeom")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis")
-add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
+
+if (NOT MEOS)
+  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
+endif()
 
 # MEOS
 include_directories("include")
@@ -155,47 +163,43 @@ string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GE
 file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
 # MEOS
-set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
+set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
+set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
 if(NPOINT)
   message(STATUS "Including network points")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
 if(POSE)
   message(STATUS "Including geoposes")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pose>")
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
 
-# PostgreSQL
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:access>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:catalog>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:conversion_procs>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:parser>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:port>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:timezone>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:utils>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:mb>")
+if(MEOS)
+  # Build as SHARED library for standalone use
+  add_library(${MEOS_LIB_NAME} SHARED ${MEOS_OBJECTS})
+  message(STATUS "Building MEOS as SHARED library")
 
-# Build the library: PostGIS
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
+  if(APPLE)
+    set_target_properties(${MEOS_LIB_NAME} PROPERTIES
+      SUFFIX ".dylib"
+      LINK_FLAGS "-Wl,-undefined,dynamic_lookup"
+    )
+  endif()
+else()
+  # Build as STATIC library for linking into MobilityDB
+  add_library(${MEOS_LIB_NAME} STATIC ${MEOS_OBJECTS})
+  message(STATUS "Building MEOS as STATIC library for MobilityDB")
 
-# Build the library: All
-add_library(${MEOS_LIB_NAME} ${PROJECT_OBJECTS})
-if(APPLE)
-  set_target_properties(${MEOS_LIB_NAME} PROPERTIES
-    SUFFIX ".dylib"
-    LINK_FLAGS "-Wl,-undefined,dynamic_lookup"
-  )
+  # Make sure the static library is position-independent (needed for shared lib)
+  set_target_properties(${MEOS_LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 #--------------------------------
@@ -208,145 +212,150 @@ target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 target_link_libraries(${MEOS_LIB_NAME} ${GSL_LIBRARY})
 target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 
-# Link the application to pgtypes
+# Link the application to pgtypes and postgis
 target_link_libraries(${MEOS_LIB_NAME} pgtypes)
+target_link_libraries(${MEOS_LIB_NAME} postgis)
 
 #--------------------------------
 # Belongs to MEOS
 #--------------------------------
 
-# Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
+if(MEOS)
+  # Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
 
-# Read files
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
+  # Read files
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 
-# Generate meos_export.h
-string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")
-string(REPLACE "#ifndef __MEOS_ERROR_H__\n#define __MEOS_ERROR_H__\n" "" MEOS_EXP_H2 "${MEOS_EXP_H1}")
-string(REPLACE "\n\n#endif /* __MEOS_ERROR_H__ */\n" "" MEOS_EXP_H "${MEOS_EXP_H2}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_H}")
+  # Generate meos_export.h
+  string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")
+  string(REPLACE "#ifndef __MEOS_ERROR_H__\n#define __MEOS_ERROR_H__\n" "" MEOS_EXP_H2 "${MEOS_EXP_H1}")
+  string(REPLACE "\n\n#endif /* __MEOS_ERROR_H__ */\n" "" MEOS_EXP_H "${MEOS_EXP_H2}")
+  file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_H}")
 
-# Generate meos_internal_export.h
-string(REGEX REPLACE "#include \"temporal/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
+  # Generate meos_internal_export.h
+  string(REGEX REPLACE "#include \"temporal/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
+  file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
 
-# Generate meos_geo_export.h
-string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
+  # Generate meos_geo_export.h
+  string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
+  file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
-# Files from ${CMAKE_BINARY_DIR}
-install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  RENAME "meos.h")
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  RENAME "meos_internal.h")
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_geo_export.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  RENAME "meos_geo.h")
-
-# Files from ${CMAKE_SOURCE_DIR}
-
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_bool.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_date.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_float.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_int.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_interval.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_numeric.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_text.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_time.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_timestamp.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_json.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-  
-install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pgtypes.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
-  DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
-
-if(CBUFFER)
+  # Files from ${CMAKE_BINARY_DIR}
+  install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    RENAME "meos.h")
   install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+    FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    RENAME "meos_internal.h")
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_geo_export.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    RENAME "meos_geo.h")
+
+  # Files from ${CMAKE_SOURCE_DIR}
+
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_bool.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
-if(NPOINT)
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_date.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_float.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_int.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_interval.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_numeric.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_text.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_time.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_timestamp.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_json.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pgtypes.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
   install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways.csv"
+    FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
-  install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways1000.csv"
-    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
-endif()
-if(POSE)
-  install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
-if(RGEO)
-  install(
-    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
 
-install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/temporal/meos_catalog.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(TARGETS ${MEOS_LIB_NAME} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-message(STATUS "Building MEOS:")
-message(STATUS "  Install prefix: '${CMAKE_INSTALL_PREFIX}'")
-message(STATUS "  Library file: '${CMAKE_INSTALL_LIBDIR}'")
-message(STATUS "  Include file: '${CMAKE_INSTALL_INCLUDEDIR}'")
+  if(CBUFFER)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(NPOINT)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways.csv"
+      DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways1000.csv"
+      DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+  endif()
+  if(POSE)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(RGEO)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/temporal/meos_catalog.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(TARGETS ${MEOS_LIB_NAME} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+  message(STATUS "Building MEOS:")
+  message(STATUS "  Install prefix: '${CMAKE_INSTALL_PREFIX}'")
+  message(STATUS "  Library file: '${CMAKE_INSTALL_LIBDIR}'")
+  message(STATUS "  Include file: '${CMAKE_INSTALL_INCLUDEDIR}'")
+endif()
 
 #-----------------------------------------------------------------------------
 # Configure pkg-config file meos.pc
 #-----------------------------------------------------------------------------
 
-# Consider CMAKE_INSTALL_PREFIX with spaces
-string(REPLACE " " "\\ " prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "$\{prefix\}")
-if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
-  set(includedir "${CMAKE_INSTALL_INCLUDEDIR}")
-else()
-  set(includedir "$\{prefix\}/${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
-if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
-  set(libdir "${CMAKE_INSTALL_LIBDIR}")
-else()
-  set(libdir "$\{exec_prefix\}/${CMAKE_INSTALL_LIBDIR}")
-endif()
-set(VERSION ${MEOS_LIB_VERSION})
+if(MEOS)
+  # Consider CMAKE_INSTALL_PREFIX with spaces
+  string(REPLACE " " "\\ " prefix ${CMAKE_INSTALL_PREFIX})
+  set(exec_prefix "$\{prefix\}")
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+  else()
+    set(includedir "$\{prefix\}/${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+    set(libdir "${CMAKE_INSTALL_LIBDIR}")
+  else()
+    set(libdir "$\{exec_prefix\}/${CMAKE_INSTALL_LIBDIR}")
+  endif()
+  set(VERSION ${MEOS_LIB_VERSION})
 
-configure_file(
-  ${CMAKE_SOURCE_DIR}/tools/meos.pc.in
-  ${CMAKE_BINARY_DIR}/meos.pc
-  @ONLY)
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/tools/meos.pc.in
+    ${CMAKE_BINARY_DIR}/meos.pc
+    @ONLY)
 
-install(
-  FILES ${CMAKE_BINARY_DIR}/meos.pc
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  install(
+    FILES ${CMAKE_BINARY_DIR}/meos.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
 
 #-----------------------------------------------------------------------------
 # The End
