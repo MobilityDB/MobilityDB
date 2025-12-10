@@ -90,8 +90,7 @@ varstr_levenshtein(const char *source, int slen,
    * m.
    */
 #ifdef LEVENSHTEIN_LESS_EQUAL
-  int      start_column,
-        stop_column;
+  int start_column, stop_column;
 
 #undef START_COLUMN
 #undef STOP_COLUMN
@@ -126,7 +125,8 @@ varstr_levenshtein(const char *source, int slen,
    */
   if (!trusted &&  (m > MAX_LEVENSHTEIN_STRLEN || n > MAX_LEVENSHTEIN_STRLEN))
   {
-    elog(ERROR, "levenshtein argument exceeds maximum length of %d characters",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "levenshtein argument exceeds maximum length of %d characters",
       MAX_LEVENSHTEIN_STRLEN);
   }
 

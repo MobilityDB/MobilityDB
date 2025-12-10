@@ -136,7 +136,7 @@ int main(void)
 
   /* char *text_to_cstring(const text *txt); */
   char_result = text_to_cstring(text1);
-  printf("text2cstring(%s): %s\n", text1_out, char_result);
+  printf("text_to_cstring(%s): %s\n", text1_out, char_result);
   free(char_result);
 
   /* text *text_cat(const text *txt1, const text *txt2); */

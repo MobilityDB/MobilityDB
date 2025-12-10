@@ -145,6 +145,10 @@
  * @ingroup meos_api
  * @brief Functions for temporal temporal circular buffers
  *
+ * @defgroup meos_json Functions for temporal JSON types
+ * @ingroup meos_api
+ * @brief Functions for temporal temporal JSON types
+ *
  * @defgroup meos_npoint Functions for temporal network points
  * @ingroup meos_api
  * @brief Functions for temporal network points

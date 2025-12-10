@@ -1143,7 +1143,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   if (ngeoms == 0)
   {
     /* TODO: should we return LINESTRING EMPTY here ? */
-    meos_error(NOTICE, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
       "No points or linestrings in input array");
     for (int i = 0; i < ngeoms; i++)
       lwgeom_free(geoms[i]);
@@ -1157,7 +1157,6 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   pfree(geoms); lwgeom_free(outlwg);
   return result;
 }
-
 
 /**
  * @ingroup meos_geo_base_spatial

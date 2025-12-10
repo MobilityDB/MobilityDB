@@ -252,7 +252,8 @@ pg_tzset(const char *tzname)
     if (! tzparse(uppername, &tzstate, true))
     {
       /* This really, really should not happen ... */
-      elog(ERROR, "could not initialize GMT time zone");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not initialize GMT time zone");
       return NULL;
     }
     /* Use uppercase name as canonical */
@@ -374,7 +375,8 @@ pg_tzenumerate_start(void)
   ret->dirdesc[0] = AllocateDir(startdir);
   if (! ret->dirdesc[0])
   {
-    elog(ERROR, "could not open directory \"%s\": %m", startdir);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not open directory \"%s\": %m", startdir);
     return NULL;
   }
   return ret;
@@ -420,7 +422,8 @@ pg_tzenumerate_next(pg_tzenum *dir)
       /* Step into the subdirectory */
       if (dir->depth >= MAX_TZDIR_DEPTH - 1)
       {
-        elog(ERROR, "timezone directory stack overflow");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "timezone directory stack overflow");
         return NULL;
       }
       dir->depth++;
@@ -428,7 +431,8 @@ pg_tzenumerate_next(pg_tzenum *dir)
       dir->dirdesc[dir->depth] = AllocateDir(fullname);
       if (! dir->dirdesc[dir->depth])
       {
-        elog(ERROR, "could not open directory \"%s\": %m", fullname);
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "could not open directory \"%s\": %m", fullname);
         return NULL;
       }
 

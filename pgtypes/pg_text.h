@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_TEXT_H
-#define PG_TEXT_H
+#ifndef __PG_TEXT_H__
+#define __PG_TEXT_H__
 
 typedef struct varlena;
 typedef struct varlena text;
@@ -106,4 +106,4 @@ extern text *unistr(const text *txt);
 
 /*****************************************************************************/
 
-#endif /* PG_TEXT_H */
+#endif /* __PG_TEXT_H__ */

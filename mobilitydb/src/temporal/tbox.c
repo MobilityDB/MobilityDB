@@ -90,6 +90,8 @@ Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
+  if (! box)
+    PG_RETURN_NULL();
   PG_RETURN_CSTRING(tbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 

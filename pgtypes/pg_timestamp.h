@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_TIMESTAMP_H
-#define PG_TIMESTAMP_H
+#ifndef __PG_TIMESTAMP_H__
+#define __PG_TIMESTAMP_H__
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -133,4 +133,4 @@ extern Timestamp timestamptz_zone(TimestampTz tstz, const text *zone);
 
 /*****************************************************************************/
 
-#endif /* PG_TIMESTAMP_H */
+#endif /* __PG_TIMESTAMP_H__ */

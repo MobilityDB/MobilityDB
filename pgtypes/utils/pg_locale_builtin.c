@@ -169,7 +169,8 @@ get_collation_actual_version_builtin(const char *collcollate)
   else if (strcmp(collcollate, "PG_UNICODE_FAST") == 0)
     return "1";
   else
-    elog(ERROR, "invalid locale name \"%s\" for builtin provider",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid locale name \"%s\" for builtin provider",
       collcollate);
   return NULL;
 }

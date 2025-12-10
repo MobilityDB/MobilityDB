@@ -85,55 +85,17 @@
  * Text and binary string functions
  *****************************************************************************/
 
-// /**
- // * @brief Convert a C binary string into a bytea
- // */
-// bytea *
-// bstring2bytea(const uint8_t *wkb, size_t size)
-// {
-  // bytea *result = palloc(size + VARHDRSZ);
-  // memcpy(VARDATA(result), wkb, size);
-  // SET_VARSIZE(result, size + VARHDRSZ);
-  // return result;
-// }
-
-// /**
- // * @ingroup meos_base_text
- // * @brief Convert a C string into a text
- // * @param[in] str String
- // * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
- // */
-// text *
-// cstring2text(const char *str)
-// {
-  // /* Ensure the validity of the arguments */
-  // VALIDATE_NOT_NULL(str, NULL);
-
-  // size_t len = strlen(str);
-  // text *result = palloc(len + VARHDRSZ);
-  // SET_VARSIZE(result, len + VARHDRSZ);
-  // memcpy(VARDATA(result), str, len);
-  // return result;
-// }
-
-// /**
- // * @ingroup meos_base_text
- // * @brief Convert a text into a C string
- // * @param[in] txt Text
- // * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
- // */
-// char *
-// text2cstring(const text *txt)
-// {
-  // /* Ensure the validity of the arguments */
-  // VALIDATE_NOT_NULL(txt, NULL);
-
-  // size_t size = VARSIZE_ANY_EXHDR(txt);
-  // char *str = palloc(size + 1);
-  // memcpy(str, VARDATA(txt), size);
-  // str[size] = '\0';
-  // return str;
-// }
+/**
+ * @brief Convert a C binary string into a bytea
+ */
+bytea *
+bstring2bytea(const uint8_t *wkb, size_t size)
+{
+  bytea *result = palloc(size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, size);
+  SET_VARSIZE(result, size + VARHDRSZ);
+  return result;
+}
 
 /**
  * @ingroup meos_base_text

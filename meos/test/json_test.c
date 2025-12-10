@@ -104,7 +104,7 @@ int main(void)
   /* text **json_array_elements_text(const text *txt, int *count); */
   txtarray = json_in("[\"a\", \"b\", \"c\"]");
   textarray_result = json_array_elements_text(txtarray, &count);
-  printf("jsonb_array_elements_text([\"a\", \"b\", \"c\"]): {");
+  printf("json_array_elements_text([\"a\", \"b\", \"c\"]): {");
   for (int i = 0; i < count; i++)
   {
     char_result = text_out(textarray_result[i]);
@@ -165,15 +165,15 @@ int main(void)
   printf("json_in('{\"a\":1, \"b\":[1,2]}'): %s\n", char_result);
   free(text_result); free(char_result);
 
-  /* text *json_object(text **keys_vals, int count); */
+  /* text *json_make(text **keys_vals, int count); */
   text *keys_vals[4];
   keys_vals[0] = text_in("a");
   keys_vals[1] = text_in("1");
   keys_vals[2] = text_in("b");
   keys_vals[3] = text_in("X");
-  text_result = json_object((text **) keys_vals, 4);
+  text_result = json_make((text **) keys_vals, 4);
   char_result = text_out(text_result);
-  printf("json_object({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
+  printf("json_make({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
   free(keys_vals[0]); free(keys_vals[1]);
   free(keys_vals[2]); free(keys_vals[3]);
   free(text_result); free(char_result);
@@ -194,16 +194,16 @@ int main(void)
   }
   free(textarray_result);
 
-  /* text *json_object_two_arg(text **keys, text **values, int count); */
+  /* text *json_make_two_arg(text **keys, text **values, int count); */
   text *keys[2];
   text *vals[2];
   keys[0] = text_in("a");
   vals[0] = text_in("1");
   keys[1] = text_in("b");
   vals[1] = text_in("X");
-  text_result = json_object_two_arg((text **) keys, (text **) vals, 2);
+  text_result = json_make_two_arg((text **) keys, (text **) vals, 2);
   char_result = text_out(text_result);
-  printf("jsonb_object_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
+  printf("json_make_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
   free(keys[0]); free(keys[1]);
   free(vals[0]); free(vals[1]);
   free(text_result); free(char_result);
@@ -273,7 +273,7 @@ int main(void)
 
   /* bool jsonb_contained(const Jsonb *jb1, const Jsonb *jb2); */
   bool_result = jsonb_contained(jb1, jb2);
-  printf("jsonb_contains(%s, %s): %c\n", jb1_out, jb2_out, bool_result ? 't' : 'f');
+  printf("jsonb_contained(%s, %s): %c\n", jb1_out, jb2_out, bool_result ? 't' : 'f');
 
   /* bool jsonb_contains(const Jsonb *jb1, const Jsonb *jb2); */
   bool_result = jsonb_contains(jb1, jb2);
@@ -436,14 +436,14 @@ int main(void)
   bool_result = jsonb_le(jb1, jb2);
   printf("jsonb_le(%s, %s): %c\n", jb1_out, jb2_out, bool_result ? 't' : 'f');
 
-  /* Jsonb *jsonb_object(text **keys_vals, int count); */
+  /* Jsonb *jsonb_make(text **keys_vals, int count); */
   keys_vals[0] = text_in("a");
   keys_vals[1] = text_in("1");
   keys_vals[2] = text_in("b");
   keys_vals[3] = text_in("X");
-  jsonb_result = jsonb_object((text **) keys_vals, 4);
+  jsonb_result = jsonb_make((text **) keys_vals, 4);
   char_result = jsonb_out(jsonb_result);
-  printf("jsonb_object({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
+  printf("jsonb_make({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
   free(keys_vals[0]); free(keys_vals[1]);
   free(keys_vals[2]); free(keys_vals[3]);
   free(jsonb_result); free(char_result);
@@ -478,14 +478,14 @@ int main(void)
   }
   free(textarray_result);
 
-  /* Jsonb *jsonb_object_two_arg(text **keys, text **values, int count); */
+  /* Jsonb *jsonb_make_two_arg(text **keys, text **values, int count); */
   keys[0] = text_in("a");
   vals[0] = text_in("1");
   keys[1] = text_in("b");
   vals[1] = text_in("X");
-  jsonb_result = jsonb_object_two_arg((text **) keys, (text **) vals, 2);
+  jsonb_result = jsonb_make_two_arg((text **) keys, (text **) vals, 2);
   char_result = jsonb_out(jsonb_result);
-  printf("jsonb_object_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
+  printf("jsonb_make_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
   free(keys[0]); free(keys[1]);
   free(vals[0]); free(vals[1]);
   free(jsonb_result); free(char_result);

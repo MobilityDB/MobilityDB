@@ -19,23 +19,23 @@
 #include <stdlib.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <miscadmin.h>
+#include "miscadmin.h"
 #include "catalog/pg_type.h"
-#include <common/hashfn.h>
-#include <common/int.h>
-#include <common/jsonapi.h>
-#include <port/simd.h>
+#include "common/hashfn.h"
+#include "common/int.h"
+#include "common/jsonapi.h"
+#include "port/simd.h"
 #include "utils/builtins.h"
-#include <utils/date.h>
-#include <utils/datetime.h>
-#include <utils/timestamp.h>
-#include <utils/hsearch.h>
-#include <utils/json.h>
-#include <utils/jsonb.h>
-#include <utils/jsonfuncs.h>
-#include <utils/varlena.h> /* For DatumGetTextP */
-
+#include "utils/date.h"
+#include "utils/datetime.h"
+#include "utils/timestamp.h"
+#include "utils/hsearch.h"
+#include "utils/json.h"
 #include "utils/jsonb.h"
+#include "utils/jsonb.h"
+#include "utils/jsonfuncs.h"
+#include "utils/varlena.h" /* For DatumGetTextP */
+
 #include <pgtypes.h>
 
 // #include "postgres.h"
@@ -122,7 +122,7 @@ typedef struct JsonAggState
 // static text *catenate_stringinfo_string(StringInfo buffer, const char *addon);
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_inout
  * @brief Return a JSON value from its string representation
  * @param[in] str String
  * @note Derived from PostgreSQL function @p json_in()
@@ -150,7 +150,7 @@ pg_json_in(const char *str)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_inout
  * @brief Return the string representation of a JSON value
  * @param[in] json JSON value
  * @note Derived from PostgreSQL function @p json_out()
@@ -229,7 +229,8 @@ JsonEncodeDateTime(char *buf, Datum value, Oid typid, const int *tzp)
           EncodeDateTime(&tm, fsec, false, 0, NULL, USE_XSD_DATES, buf);
         else
         {
-          elog(ERROR, "timestamp out of range");
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "timestamp out of range");
           return NULL;
         }
       }
@@ -266,13 +267,15 @@ JsonEncodeDateTime(char *buf, Datum value, Oid typid, const int *tzp)
         }
         else
         {
-          elog(ERROR, "timestamp out of range");
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "timestamp out of range");
           return NULL;
         }
       }
       break;
     default:
-      elog(ERROR, "unknown jsonb value datetime type oid %u", typid);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unknown jsonb value datetime type oid %u", typid);
       return NULL;
   }
 
@@ -360,8 +363,8 @@ json_unique_check_key(JsonUniqueCheckState *cxt, const char *key,
 // }
 
 /**
- * @ingroup meos_base_json
- * @brief Return a JSON value constructed from an array of alternating keys
+ * @ingroup meos_json_base_constructor
+ * @brief Construct a JSON value from an array of alternating keys
  * and values
  * @param[in] keys_vals Array of alternating keys and vals 
  * @param[in] count Number of elements in the input array 
@@ -369,13 +372,13 @@ json_unique_check_key(JsonUniqueCheckState *cxt, const char *key,
  */
 #if MEOS
 text *
-json_object(text **keys_vals, int count)
+json_make(text **keys_vals, int count)
 {
-  return pg_json_object(keys_vals, count);
+  return pg_json_make(keys_vals, count);
 }
 #endif /* MEOS */
 text *
-pg_json_object(text **keys_vals, int count)
+pg_json_make(text **keys_vals, int count)
 {
   StringInfoData res;
   int count1 = count / 2;
@@ -385,7 +388,8 @@ pg_json_object(text **keys_vals, int count)
   {
     if (! keys_vals[i * 2])
     {
-      elog(ERROR, "null value not allowed for object key");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "null value not allowed for object key");
       return NULL;
     }
 
@@ -405,23 +409,23 @@ pg_json_object(text **keys_vals, int count)
 }
 
 /**
- * @ingroup meos_base_json
- * @brief Return a JSON value constructed from separate key and value arrays
- * of text values
+ * @ingroup meos_json_base_constructor
+ * @brief Construct a JSON value from separate key and value arrays of text
+ * values
  * @param[in] keys Keys
  * @param[in] values Keys
  * @param[in] count Number of elements in the input arrays
- * @note Derived from PostgreSQL function @p json_object_two_arg()
+ * @note Derived from PostgreSQL function @p json_make_two_arg()
  */
 #if MEOS
 text *
-json_object_two_arg(text **keys, text **values, int count)
+json_make_two_arg(text **keys, text **values, int count)
 {
-  return pg_json_object_two_arg(keys, values, count);
+  return pg_json_make_two_arg(keys, values, count);
 }
 #endif /* MEOS */
 text *
-pg_json_object_two_arg(text **keys, text **values, int count)
+pg_json_make_two_arg(text **keys, text **values, int count)
 {
   StringInfoData res;
   initStringInfo(&res);
@@ -430,7 +434,8 @@ pg_json_object_two_arg(text **keys, text **values, int count)
   {
     if (! keys[i])
     {
-      elog(ERROR, "null value not allowed for object key");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "null value not allowed for object key");
       return NULL;
     }
 
@@ -719,7 +724,8 @@ json_validate(text *json, bool check_unique_keys, bool throw_error)
   {
     if (throw_error)
     {
-      elog(ERROR, "duplicate JSON object key value");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "duplicate JSON object key value");
     }
     return false;      /* not unique keys */
   }
@@ -729,7 +735,7 @@ json_validate(text *json, bool check_unique_keys, bool throw_error)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Returns the type of the outermost JSON value as `text`
  * @details Possible types are "object", "array", "string", "number",
  * "boolean", and "null".
@@ -783,7 +789,9 @@ pg_json_typeof(const text *json)
       type = "null";
       break;
     default:
-      elog(ERROR, "unexpected json token: %d", lex.token_type);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unexpected json token: %d", lex.token_type);
+      return NULL;
   }
 
   return cstring_to_text(type);

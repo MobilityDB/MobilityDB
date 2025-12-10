@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_INT_H
-#define PG_INT_H
+#ifndef __PG_INT_H__
+#define __PG_INT_H__
 
 typedef int16_t int16;
 typedef int32_t int32;
@@ -210,4 +210,4 @@ extern bool ne_int64_int64(int64 num1, int64 num2);
 
 /*****************************************************************************/
 
-#endif /* PG_INT_H */
+#endif /* __PG_INT_H__ */

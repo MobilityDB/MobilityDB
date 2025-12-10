@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_JSON_H
-#define PG_JSON_H
+#ifndef __PG_JSON_H__
+#define __PG_JSON_H__
 
 typedef struct varlena;
 typedef struct varlena text __attribute__((aligned(8)));
@@ -56,18 +56,26 @@ typedef struct
 
 /* Functions for JSON */
 
+extern text *json_array_element(const text *json, int element);
+extern text *json_array_element_text(const text *json, int element);
 extern text **json_array_elements(const text *json, int *count);
 extern text **json_array_elements_text(const text *json, int *count);
 extern int json_array_length(const text *json);
 extern text **json_each(const text *json, text **values, int *count);
 extern text **json_each_text(const text *json, text **values, int *count);
+extern text *json_extract_path(const text *json, text **path_elems, int path_len);
+extern text *json_extract_path_text(const text *json, text **path_elems, int path_len);
 extern text *json_in(const char *str);
-extern text *json_object(text **keys_vals, int count);
+extern text *json_make(text **keys_vals, int count);
+extern text *json_make_two_arg(text **keys, text **values, int count);
+extern text *json_object_field(const text *json, const text *key);
+extern text *json_object_field_text(const text *json, const text *key);
 extern text **json_object_keys(const text *json, int *count);
-extern text *json_object_two_arg(text **keys, text **values, int count);
 extern char *json_out(const text *json);
 extern text *json_strip_nulls(const text *json, bool strip_in_arrays);
 extern text *json_typeof(const text *json);
+extern Jsonb *jsonb_array_element(const Jsonb *jb, int element);
+extern text *jsonb_array_element_text(const Jsonb *jb, int element);
 extern Jsonb **jsonb_array_elements(const Jsonb *jb, int *count);
 extern text **jsonb_array_elements_text(const Jsonb *jb, int *count);
 extern int jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
@@ -95,17 +103,18 @@ extern Jsonb *jsonb_insert(const Jsonb *jb, text **path_elems, int path_len, Jso
 extern bool jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
 extern bool jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);
 extern bool jsonb_ne(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *jsonb_object(text **keys_vals, int count);
+extern Jsonb *jsonb_make(text **keys_vals, int count);
+extern Jsonb *jsonb_make_two_arg(text **keys, text **values, int count);
 extern Jsonb *jsonb_object_field(const Jsonb *jb, const text *key);
 extern text *jsonb_object_field_text(const Jsonb *jb, const text *key);
 extern text **jsonb_object_keys(const Jsonb *jb, int *count);
-extern Jsonb *jsonb_object_two_arg(text **keys, text **values, int count);
-extern char *jsonb_out(Jsonb *jb);
+extern char *jsonb_out(const Jsonb *jb);
 extern text *jsonb_pretty(const Jsonb *jb);
 extern Jsonb *jsonb_set(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create);
 extern Jsonb *jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create, const text *handle_null);
 extern Jsonb *jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays);
 
+
 /*****************************************************************************/
 
-#endif /* PG_JSON_H */
+#endif /* __PG_JSON_H__ */

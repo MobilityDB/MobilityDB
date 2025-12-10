@@ -24,12 +24,12 @@
 #include <common/int.h>
 #include <common/jsonapi.h>
 #include <nodes/nodes.h>
+#include <utils/date.h>
 #include <utils/json.h>
 #include <utils/jsonb.h>
 #include "utils/jsonfuncs.h"
 #include <utils/varlena.h> /* For DatumGetTextP */
 
-#include <utils/date.h>
 #include <pgtypes.h>
 
 extern void escape_json_with_len(StringInfo buf, const char *str, int len);
@@ -80,60 +80,60 @@ extern int GetDatabaseEncoding(void);
 /*****************************************************************************/
 
 /**
- * @ingroup meos_jsonb_base
+ * @ingroup meos_json_base_inout
  * @brief Return a JSONB value from its string representation
  * @note Derived from PostgreSQL function @p jsonb_in()
  */
 #if MEOS
 Jsonb *
-jsonb_in(char *str)
+jsonb_in(const char *str)
 {
-  return jsonb_from_cstring(str, strlen(str), false, NULL);
+  return jsonb_from_cstring((char *) str, strlen(str), false, NULL);
 }
 #endif /* MEOS */
 Jsonb *
-pg_jsonb_in(char *str)
+pg_jsonb_in(const char *str)
 {
-  return jsonb_from_cstring(str, strlen(str), false, NULL);
+  return jsonb_from_cstring((char *) str, strlen(str), false, NULL);
 }
 
 /**
- * @ingroup meos_jsonb_base
+ * @ingroup meos_json_base_inout
  * @brief Return the string representation if a JSONB value
  * @note Derived from PostgreSQL function @p jsonb_out()
  */
 #if MEOS
 char *
-jsonb_out(Jsonb *jb)
+jsonb_out(const Jsonb *jb)
 {
   return pg_jsonb_out(jb);
 }
 #endif /* MEOS */
 char *
-pg_jsonb_out(Jsonb *jb)
+pg_jsonb_out(const Jsonb *jb)
 {
   StringInfo out = makeStringInfo(); // MEOS
-  char *str = JsonbToCString(out, &jb->root, VARSIZE(jb));
+  char *str = JsonbToCString(out, &((Jsonb *)jb)->root, VARSIZE(jb));
   char *result = pstrdup(str);
   pfree(out); pfree(str);
   return (void *) result;
 }
 
 /**
- * @ingroup meos_jsonb_base
+ * @ingroup meos_json_base_inout
  * @brief Return a JSONB value from its text representation
  * @note Derived from PostgreSQL function @p jsonb_from_text()
  */
 #if MEOS
 Jsonb *
-jsonb_from_text(text *txt, bool unique_keys)
+jsonb_from_text(const text *txt, bool unique_keys)
 {
   return jsonb_from_cstring(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     unique_keys, NULL);
 }
 #endif /* MEOS */
 Jsonb *
-pg_jsonb_from_text(text *txt, bool unique_keys)
+pg_jsonb_from_text(const text *txt, bool unique_keys)
 {
   return jsonb_from_cstring(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
     unique_keys, NULL);
@@ -154,7 +154,8 @@ JsonbContainerTypeName(JsonbContainer *jbc)
     return "object";
   else
   {
-    elog(ERROR, "invalid jsonb container type: 0x%08x", jbc->header);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid jsonb container type: 0x%08x", jbc->header);
     return "unknown";
   }
 }
@@ -195,12 +196,14 @@ JsonbTypeName(JsonbValue *val)
         case TIMESTAMPTZOID:
           return "timestamp with time zone";
         default:
-          elog(ERROR, "unrecognized jsonb value datetime type: %d",
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "unrecognized jsonb value datetime type: %d",
              val->val.datetime.typid);
       }
       return "unknown";
     default:
-      elog(ERROR, "unrecognized jsonb value type: %d", val->type);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized jsonb value type: %d", val->type);
       return "unknown";
   }
 }
@@ -265,7 +268,8 @@ checkStringLen(size_t len, Node *escontext UNUSED)
 {
   if (len > JENTRY_OFFLENMASK)
   {
-    elog(ERROR, "string too long to represent as jsonb string");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "string too long to represent as jsonb string");
     return false;
   }
   return true;
@@ -344,7 +348,8 @@ jsonb_put_escaped_value(StringInfo out, JsonbValue *scalarVal)
         appendBinaryStringInfo(out, "false", 5);
       break;
     default:
-      elog(ERROR, "unknown jsonb scalar type");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unknown jsonb scalar type");
   }
 }
 
@@ -394,11 +399,12 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
       break;
     default:
       /* should not be possible */
-      elog(ERROR, "invalid json token type");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid json token type");
       break;
   }
 
-  if (_state->parseState == NULL)
+  if (! _state->parseState)
   {
     /* single scalar */
     JsonbValue va;
@@ -422,7 +428,9 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
         _state->res = pushJsonbValue(&_state->parseState, WJB_VALUE, &v);
         break;
       default:
-        elog(ERROR, "unexpected parent of nested structure");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unexpected parent of nested structure");
+        return JSON_INVALID_TOKEN;
     }
   }
 
@@ -479,7 +487,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
   bool raw_scalar = false;
   bool last_was_key = false;
 
-  if (out == NULL)
+  if (! out)
     out = makeStringInfo();
 
   enlargeStringInfo(out, (estimated_len >= 0) ? estimated_len : 64);
@@ -569,7 +577,9 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
         first = false;
         break;
       default:
-        elog(ERROR, "unknown jsonb iterator token type");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unknown jsonb iterator token type");
+        return NULL;
     }
     use_indent = indent;
     last_was_key = redo_switch;
@@ -591,7 +601,7 @@ add_indent(StringInfo out, bool indent, int level)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_constructor
  * @brief Return a JSONB value constructed from an array of alternating keys
  * and values
  * @param[in] keys_vals Array of alternating keys and vals 
@@ -600,17 +610,18 @@ add_indent(StringInfo out, bool indent, int level)
  */
 #if MEOS
 Jsonb *
-jsonb_object(text **keys_vals, int count)
+jsonb_make(text **keys_vals, int count)
 {
-  return pg_jsonb_object(keys_vals, count);
+  return pg_jsonb_make(keys_vals, count);
 }
 #endif /* MEOS */
 Jsonb *
-pg_jsonb_object(text **keys_vals, int count)
+pg_jsonb_make(text **keys_vals, int count)
 {
   if (count % 2)
   {
-    elog(ERROR, "number of elements of the array must be an even value");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "number of elements of the array must be an even value");
     return NULL;
   }
 
@@ -631,7 +642,8 @@ pg_jsonb_object(text **keys_vals, int count)
   {
     if (! keys_vals_str[i * 2])
     {
-      elog(ERROR, "null value not allowed for object key");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "null value not allowed for object key");
       return NULL;
     }
 
@@ -672,7 +684,7 @@ pg_jsonb_object(text **keys_vals, int count)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_constructor
  * @brief Return a JSONB value constructed from separate key and value arrays
  * of text values
  * @param[in] keys Keys
@@ -682,13 +694,13 @@ pg_jsonb_object(text **keys_vals, int count)
  */
 #if MEOS
 Jsonb *
-jsonb_object_two_arg(text **keys, text **values, int count)
+jsonb_make_two_arg(text **keys, text **values, int count)
 {
-  return pg_jsonb_object_two_arg(keys, values, count);
+  return pg_jsonb_make_two_arg(keys, values, count);
 }
 #endif /* MEOS */
 Jsonb *
-pg_jsonb_object_two_arg(text **keys, text **values, int count)
+pg_jsonb_make_two_arg(text **keys, text **values, int count)
 {
   JsonbInState state;
   memset(&state, 0, sizeof(JsonbInState));
@@ -701,7 +713,8 @@ pg_jsonb_object_two_arg(text **keys, text **values, int count)
   {
     if (! keys[i])
     {
-      elog(ERROR, "null value not allowed for object key");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "null value not allowed for object key");
       return NULL;
     }
     keys_str[i] = text_to_cstring(keys[i]);
@@ -803,11 +816,13 @@ cannotCastJsonbValue(enum jbvType type, const char *sqltype)
   for (int i = 0; i < (int) lengthof(messages); i++)
     if (messages[i].type == type)
     {
-      elog(ERROR, messages[i].msg, sqltype);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        messages[i].msg, sqltype);
     }
 
   /* should be unreachable */
-  elog(ERROR, "unknown jsonb type: %d", (int) type);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unknown jsonb type: %d", (int) type);
 }
 
 bool
@@ -926,7 +941,8 @@ JsonbUnquote(Jsonb *jb)
       return pstrdup("null");
     else
     {
-      elog(ERROR, "unrecognized jsonb value type %d", v.type);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized jsonb value type %d", v.type);
       return NULL;
     }
   }

@@ -13,7 +13,6 @@
 #include "postgres.h"
 #include "utils/mb/pg_wchar.h"
 
-
 /*
  * local2local: a generic single byte charset encoding
  * conversion between two ASCII-superset encodings.
@@ -518,7 +517,8 @@ UtfToLocal(const unsigned char *utf, int len,
 
   if (!PG_VALID_ENCODING(encoding))
   {
-    elog(ERROR, "invalid encoding number: %d", encoding);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid encoding number: %d", encoding);
     return -1;
   }
 
@@ -568,7 +568,8 @@ UtfToLocal(const unsigned char *utf, int len,
     }
     else
     {
-      elog(ERROR, "unsupported character length %d", l);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unsupported character length %d", l);
       iutf = 0;      /* keep compiler quiet */
     }
     iutf = (b1 << 24 | b2 << 16 | b3 << 8 | b4);
@@ -625,7 +626,8 @@ UtfToLocal(const unsigned char *utf, int len,
         }
         else
         {
-          elog(ERROR, "unsupported character length %d", l);
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "unsupported character length %d", l);
           iutf2 = 0;  /* keep compiler quiet */
         }
 
@@ -730,7 +732,8 @@ LocalToUtf(const unsigned char *iso, int len,
 
   if (!PG_VALID_ENCODING(encoding))
   {
-    elog(ERROR, "invalid encoding number: %d", encoding);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid encoding number: %d", encoding);
     return -1;
   }
 
@@ -780,7 +783,8 @@ LocalToUtf(const unsigned char *iso, int len,
     }
     else
     {
-      elog(ERROR, "unsupported character length %d", l);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unsupported character length %d", l);
       iiso = 0;      /* keep compiler quiet */
     }
     iiso = (b1 << 24 | b2 << 16 | b3 << 8 | b4);

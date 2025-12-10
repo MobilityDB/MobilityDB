@@ -23,12 +23,12 @@
 #include "postgres.h"
 #include "common/int.h"
 #include "common/shortest_dec.h"
-#include "utils/float.h"
-
 #include "utils/date.h"
 #include "utils/datetime.h"
 #include "utils/numeric.h"
 #include "utils/jsonb.h"
+#include "utils/float.h"
+
 #include "pgtypes.h"
 
 /*****************************************************************************
@@ -185,9 +185,10 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
    */
   if (*num == '\0')
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
-    return get_float4_infinity();
+    return FLT_MAX;
   }
 
   errno = 0;
@@ -196,7 +197,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
   /* did we not see anything that looks like a double? */
   if (endptr == num || errno != 0)
   {
-    int      save_errno = errno;
+    int save_errno = errno;
 
     /*
      * C99 requires that strtof() accept NaN, [+-]Infinity, and [+-]Inf,
@@ -261,17 +262,19 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
         )
       {
         /* see comments in float8in_internal for rationale */
-        char     *errnumber = pstrdup(num);
+        char *errnumber = pstrdup(num);
         errnumber[endptr - num] = '\0';
-        elog(ERROR, "\"%s\" is out of range for type real", errnumber);
-        return get_float4_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "\"%s\" is out of range for type real", errnumber);
+        return FLT_MAX;
       }
     }
     else
     {
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid input syntax for type %s: \"%s\"",
         type_name, orig_string);
-      return get_float4_infinity();
+      return FLT_MAX;
     }
   }
 
@@ -284,9 +287,10 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
     *endptr_p = endptr;
   else if (*endptr != '\0')
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
-    return get_float4_infinity();
+    return FLT_MAX;
   }
   return val;
 }
@@ -358,9 +362,10 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
    */
   if (*num == '\0')
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
-    return get_float8_infinity();
+    return DBL_MAX;
   }
 
   errno = 0;
@@ -434,16 +439,18 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
         char     *errnumber = pstrdup(num);
 
         errnumber[endptr - num] = '\0';
-        elog(ERROR, "\"%s\" is out of range for type double precision",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "\"%s\" is out of range for type double precision",
           errnumber);
-        return get_float8_infinity();
+        return DBL_MAX;
       }
     }
     else
     {
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid input syntax for type %s: \"%s\"",
         type_name, orig_string);
-      return get_float8_infinity();
+      return DBL_MAX;
     }
   }
 
@@ -456,9 +463,10 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
     *endptr_p = endptr;
   else if (*endptr != '\0')
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
-    return get_float8_infinity();
+    return DBL_MAX;
   }
 
   return val;
@@ -467,6 +475,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
 /**
  * @ingroup meos_base_float
  * @brief Return a float8 number from its string representation
+ * @return On error return `DBL_MAX`
  * @note Derived from PostgreSQL function @p float8in()
  */
 float8
@@ -990,13 +999,15 @@ float8_to_float4(float8 num)
   float4 result = (float4) num;
   if (unlikely(isinf(result)) && !isinf(num))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return FLT_MAX;
   }
   if (unlikely(result == 0.0f) && num != 0.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return FLT_MAX;
   }
   return result;
 }
@@ -1019,7 +1030,8 @@ float8_to_int32(float8 num)
   /* Range check */
   if (unlikely(isnan(num) || !FLOAT8_FITS_IN_INT32(num)))
   {
-    elog(ERROR, "integer out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "integer out of range");
     return INT_MAX;
   }
 
@@ -1044,7 +1056,8 @@ float8_to_int16(float8 num)
   /* Range check */
   if (unlikely(isnan(num) || !FLOAT8_FITS_IN_INT16(num)))
   {
-    elog(ERROR, "smallint out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "smallint out of range");
     return INT16_MAX;
   }
 
@@ -1091,7 +1104,8 @@ float4_to_int32(float4 num)
   /* Range check */
   if (unlikely(isnan(num) || !FLOAT4_FITS_IN_INT32(num)))
   {
-    elog(ERROR, "integer out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "integer out of range");
     return INT_MAX;
   }
 
@@ -1116,7 +1130,8 @@ float4_to_int16(float4 num)
   /* Range check */
   if (unlikely(isnan(num) || !FLOAT4_FITS_IN_INT16(num)))
   {
-    elog(ERROR, "smallint out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "smallint out of range");
     return INT16_MAX;
   }
 
@@ -1256,20 +1271,23 @@ float8_sqrt(float8 num)
 {
   if (num < 0)
   {
-    elog(ERROR, "cannot take square root of a negative number");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot take square root of a negative number");
+    return DBL_MAX;
   }
 
   float8 result = sqrt(num);
   if (unlikely(isinf(result)) && !isinf(num))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && num != 0.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -1285,13 +1303,15 @@ float8_cbrt(float8 num)
   float8 result = cbrt(num);
   if (unlikely(isinf(result)) && !isinf(num))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && num != 0.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -1330,14 +1350,15 @@ float8_pow(float8 num1, float8 num2)
    */
   if (num1 == 0 && num2 < 0)
   {
-    elog(ERROR, "zero raised to a negative power is undefined");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "zero raised to a negative power is undefined");
+    return DBL_MAX;
   }
   if (num1 < 0 && floor(num2) != num2)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "a negative number raised to a non-integer power yields a complex result");
-    return get_float8_infinity();
+    return DBL_MAX;
   }
 
   /*
@@ -1427,13 +1448,15 @@ float8_pow(float8 num1, float8 num2)
           result = 1.0;
         else if (num2 >= 0.0 ? (absx > 1.0) : (absx < 1.0))
         {
-          elog(ERROR, "value out of range: overflow");
-          return get_float8_infinity();
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "value out of range: overflow");
+          return DBL_MAX;
         }
         else
         {
-          elog(ERROR, "value out of range: underflow");
-          return get_float8_infinity();
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "value out of range: underflow");
+          return DBL_MAX;
         }
       }
     }
@@ -1441,26 +1464,30 @@ float8_pow(float8 num1, float8 num2)
     {
       if (result != 0.0)
       {
-        elog(ERROR, "value out of range: overflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: overflow");
+        return DBL_MAX;
       }
       else
       {
-        elog(ERROR, "value out of range: underflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: underflow");
+        return DBL_MAX;
      }
     }
     else
     {
       if (unlikely(isinf(result)))
       {
-        elog(ERROR, "value out of range: overflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: overflow");
+        return DBL_MAX;
       }
       if (unlikely(result == 0.0) && num1 != 0.0)
       {
-        elog(ERROR, "value out of range: underflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: underflow");
+        return DBL_MAX;
       }
     }
   }
@@ -1501,24 +1528,28 @@ float8_exp(float8 num)
     {
       if (result != 0.0)
       {
-        elog(ERROR, "value out of range: overflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: overflow");
+        return DBL_MAX;
       }
       else
       {
-        elog(ERROR, "value out of range: underflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: underflow");
+        return DBL_MAX;
      }
     }
     else if (unlikely(isinf(result)))
       {
-        elog(ERROR, "value out of range: overflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: overflow");
+        return DBL_MAX;
       }
     else if (unlikely(result == 0.0))
     {
-      elog(ERROR, "value out of range: underflow");
-      return get_float8_infinity();
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "value out of range: underflow");
+      return DBL_MAX;
     }
   }
   return result;
@@ -1538,25 +1569,29 @@ float8_ln(float8 num)
    */
   if (num == 0.0)
   {
-    elog(ERROR, "cannot take logarithm of zero");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot take logarithm of zero");
+    return DBL_MAX;
   }
   if (num < 0)
   {
-    elog(ERROR, "cannot take logarithm of a negative number");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot take logarithm of a negative number");
+    return DBL_MAX;
   }
 
   float8 result = log(num);
   if (unlikely(isinf(result)) && !isinf(num))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && num != 1.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
 
   return result;
@@ -1577,25 +1612,29 @@ float8_log10(float8 num)
    */
   if (num == 0.0)
   {
-    elog(ERROR, "cannot take logarithm of zero");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot take logarithm of zero");
+    return DBL_MAX;
   }
   if (num < 0)
   {
-    elog(ERROR, "cannot take logarithm of a negative number");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot take logarithm of a negative number");
+    return DBL_MAX;
   }
 
   float8 result = log10(num);
   if (unlikely(isinf(result)) && !isinf(num))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && num != 1.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -1618,15 +1657,17 @@ float8_acos(float8 num)
    */
   if (num < -1.0 || num > 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   float8 result = acos(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -1650,15 +1691,17 @@ float8_asin(float8 num)
    */
   if (num < -1.0 || num > 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   float8 result = asin(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
 
   return result;
@@ -1684,8 +1727,9 @@ float8_atan(float8 num)
   float8 result = atan(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
 
   return result;
@@ -1710,8 +1754,9 @@ float8_atan2(float8 num1, float8 num2)
   float8 result = atan2(num1, num2);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
 
   return result;
@@ -1749,13 +1794,15 @@ float8_cos(float8 num)
   float8 result = cos(num);
   if (errno != 0 || isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
 
   return result;
@@ -1779,8 +1826,9 @@ float8_cot(float8 num)
   float8 result = tan(num);
   if (errno != 0 || isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   result = 1.0 / result;
@@ -1806,13 +1854,15 @@ float8_sin(float8 num)
   float8 result = sin(num);
   if (errno != 0 || isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -1835,16 +1885,15 @@ float8_tan(float8 num)
   float8 result = tan(num);
   if (errno != 0 || isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
   /* Not checking for overflow because tan(pi/2) == Inf */
   return result;
 }
 
-
 /* ========== DEGREE-BASED TRIGONOMETRIC FUNCTIONS ========== */
-
 
 /*
  * Initialize the cached constants declared at the head of this file
@@ -1974,8 +2023,9 @@ float8_acosd(float8 num)
    */
   if (num < -1.0 || num > 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   float8 result;
@@ -1986,8 +2036,9 @@ float8_acosd(float8 num)
 
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2013,8 +2064,9 @@ float8_asind(float8 num)
    */
   if (num < -1.0 || num > 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   float8 result;
@@ -2025,8 +2077,9 @@ float8_asind(float8 num)
 
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2055,8 +2108,9 @@ float8_atand(float8 num)
   float8 result = (atan_num / atan_1_0) * 45.0;
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2088,8 +2142,9 @@ float8_atan2d(float8 num1, float8 num2)
   float8 result = (atan2_num1_num2 / atan_1_0) * 45.0;
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2173,8 +2228,9 @@ float8_cosd(float8 num)
 
   if (isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   INIT_DEGREE_CONSTANTS();
@@ -2205,8 +2261,9 @@ float8_cosd(float8 num)
   float8 result = sign * cosd_q1(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2228,8 +2285,9 @@ float8_cotd(float8 num)
 
   if (isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   INIT_DEGREE_CONSTANTS();
@@ -2289,8 +2347,9 @@ float8_sind(float8 num)
     return get_float8_nan();
   if (isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   INIT_DEGREE_CONSTANTS();
@@ -2321,8 +2380,9 @@ float8_sind(float8 num)
   float8 result = sign * sind_q1(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2343,8 +2403,9 @@ float8_tand(float8 num)
     return get_float8_nan();
   if (isinf(num))
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   INIT_DEGREE_CONSTANTS();
@@ -2462,8 +2523,9 @@ float8_cosh(float8 num)
     result = get_float8_infinity();
   if (unlikely(result == 0.0))
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2482,8 +2544,9 @@ float8_tanh(float8 num)
   float8  result = tanh(num);
   if (unlikely(isinf(result)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2519,8 +2582,9 @@ float8_acosh(float8 num)
    */
   if (num < 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
   float8 result = acosh(num);
   return result;
@@ -2541,8 +2605,9 @@ float8_atanh(float8 num)
    */
   if (num < -1.0 || num > 1.0)
   {
-    elog(ERROR, "input is out of range");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "input is out of range");
+    return DBL_MAX;
   }
 
   /*
@@ -2582,8 +2647,9 @@ float8_gamma(float8 num)
     /* Per POSIX, an input of -Inf causes a domain error */
     if (num < 0)
     {
-      elog(ERROR, "value out of range: overflow");
-      return get_float8_infinity();
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "value out of range: overflow");
+      return DBL_MAX;
     }
     else
       result = num;
@@ -2604,19 +2670,22 @@ float8_gamma(float8 num)
     {
       if (result != 0.0)
       {
-        elog(ERROR, "value out of range: overflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: overflow");
+        return DBL_MAX;
       }
       else
       {
-        elog(ERROR, "value out of range: underflow");
-        return get_float8_infinity();
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "value out of range: underflow");
+        return DBL_MAX;
       }
     }
     else if (result == 0.0)
     {
-      elog(ERROR, "value out of range: underflow");
-      return get_float8_infinity();
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "value out of range: underflow");
+      return DBL_MAX;
     }
   }
   return result;
@@ -2647,8 +2716,9 @@ float8_lgamma(float8 num)
    */
   if (errno == ERANGE || (isinf(result) && !isinf(num)))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float8_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   return result;
 }
@@ -2934,19 +3004,22 @@ float8_width_bucket(float8 operand, float8 bound1, float8 bound2, int32 count)
 {
   if (count <= 0)
   {
-    elog(ERROR, "count must be greater than zero");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "count must be greater than zero");
     return INT_MAX;
   }
 
   if (isnan(operand) || isnan(bound1) || isnan(bound2))
   {
-    elog(ERROR, "operand, lower bound, and upper bound cannot be NaN");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "operand, lower bound, and upper bound cannot be NaN");
     return INT_MAX;
   }
   /* Note that we allow "operand" to be infinite */
   if (isinf(bound1) || isinf(bound2))
   {
-    elog(ERROR, "lower and upper bounds must be finite");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "lower and upper bounds must be finite");
     return INT_MAX;
   }
 
@@ -2959,7 +3032,8 @@ float8_width_bucket(float8 operand, float8 bound1, float8 bound2, int32 count)
     {
       if (pg_add_s32_overflow(count, 1, &result))
       {
-        elog(ERROR, "integer out of range");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "integer out of range");
         return INT_MAX;
       }
     }
@@ -2998,7 +3072,8 @@ float8_width_bucket(float8 operand, float8 bound1, float8 bound2, int32 count)
     {
       if (pg_add_s32_overflow(count, 1, &result))
       {
-        elog(ERROR, "integer out of range");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "integer out of range");
         return INT_MAX;
       }
     }
@@ -3015,7 +3090,8 @@ float8_width_bucket(float8 operand, float8 bound1, float8 bound2, int32 count)
   }
   else
   {
-    elog(ERROR, "lower bound cannot equal upper bound");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "lower bound cannot equal upper bound");
     return INT_MAX;
   }
   return result;

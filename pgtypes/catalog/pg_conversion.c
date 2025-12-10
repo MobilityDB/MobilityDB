@@ -323,7 +323,8 @@ FindDefaultConversion(int32 for_encoding, int32 to_encoding)
   FILE *file = fopen(PG_CONVERSION_CSV, "r");
   if (! file)
   {
-    elog(ERROR, "Cannot open the pg_conversion.csv file");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Cannot open the pg_conversion.csv file");
     return NULL;
   }
 
@@ -336,7 +337,8 @@ FindDefaultConversion(int32 for_encoding, int32 to_encoding)
   int read = fscanf(file, "%1023s\n", header_buffer);
   if (ferror(file) || read != 1)
   {
-    elog(ERROR, "Error reading the pg_conversion.csv file");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Error reading the pg_conversion.csv file");
     return NULL;
   }
 
@@ -349,7 +351,8 @@ FindDefaultConversion(int32 for_encoding, int32 to_encoding)
       rec.conproc);
     if (ferror(file))
     {
-      elog(ERROR, "Error reading the pg_conversion.csv file");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error reading the pg_conversion.csv file");
       return NULL;
     }
 
@@ -367,7 +370,8 @@ FindDefaultConversion(int32 for_encoding, int32 to_encoding)
   
   if (! found)
   {
-    elog(ERROR, "Conversion function from %d to %d was not found\n", 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Conversion function from %d to %d was not found\n", 
       for_encoding, to_encoding);
     return NULL;
   }

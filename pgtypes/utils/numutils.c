@@ -339,11 +339,13 @@ slow:
   return (int16) tmp;
 
 out_of_range:
-  elog(ERROR, "value \"%s\" is out of range for type %s", s, "smallint");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "value \"%s\" is out of range for type %s", s, "smallint");
   return SHRT_MAX;
 
 invalid_syntax:
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "smallint", s);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid input syntax for type %s: \"%s\"", "smallint", s);
   return SHRT_MAX;
 }
 
@@ -603,11 +605,13 @@ slow:
   return (int32) tmp;
 
 out_of_range:
-  elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "value \"%s\" is out of range for type %s", s, "integer");
   return INT_MAX;
 
 invalid_syntax:
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid input syntax for type %s: \"%s\"", "integer", s);
   return INT_MAX;
 }
 
@@ -854,11 +858,13 @@ slow:
   return (int64) tmp;
 
 out_of_range:
-  elog(ERROR, "value \"%s\" is out of range for type %s", s, "bigint");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "value \"%s\" is out of range for type %s", s, "bigint");
   return LONG_MAX;
 
 invalid_syntax:
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "bigint", s);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid input syntax for type %s: \"%s\"", "bigint", s);
   return LONG_MAX;
 }
 
@@ -895,13 +901,15 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
    */
   if ((errno && errno != ERANGE) || endptr == s)
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", typname, s);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"", typname, s);
     return UINT_MAX;
   }
 
   if (errno == ERANGE)
   {
-    elog(ERROR, "value \"%s\" is out of range for type %s", s, typname);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value \"%s\" is out of range for type %s", s, typname);
     return UINT_MAX ;
   }
 
@@ -917,7 +925,8 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
       endptr++;
     if (*endptr)
     {
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"", typname, s);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid input syntax for type %s: \"%s\"", typname, s);
       return UINT_MAX ;
     }
   }
@@ -940,7 +949,8 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
   if (cvt != (unsigned long) result &&
     cvt != (unsigned long) ((int) result))
   {
-    elog(ERROR, "value \"%s\" is out of range for type %s", s, typname);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value \"%s\" is out of range for type %s", s, typname);
     return UINT_MAX ;
   }
 #endif
@@ -975,13 +985,15 @@ uint64in_subr(const char *s, char **endloc, const char *typname,
    */
   if ((errno && errno != ERANGE) || endptr == s)
   {
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", typname, s);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid input syntax for type %s: \"%s\"", typname, s);
     return ULONG_MAX;
   }
 
   if (errno == ERANGE)
   {
-    elog(ERROR, "value \"%s\" is out of range for type %s", s, typname);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value \"%s\" is out of range for type %s", s, typname);
     return ULONG_MAX;
   }
 
@@ -997,7 +1009,8 @@ uint64in_subr(const char *s, char **endloc, const char *typname,
       endptr++;
     if (*endptr)
     {
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"", typname, s);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid input syntax for type %s: \"%s\"", typname, s);
       return ULONG_MAX;
     }
   }

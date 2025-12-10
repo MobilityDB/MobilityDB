@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef POSTGRES_TYPES_H
-#define POSTGRES_TYPES_H
+#ifndef __PGTYPES_H__
+#define __PGTYPES_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -710,57 +710,85 @@ extern Interval *pg_interval_trunc(const Interval *interv, const text *units);
 
 /* Functions for JSON types */
 
-extern Jsonb *jsonb_copy(const Jsonb *jb);
+/* Input and output functions */
+
+extern text *pg_json_in(const char *str);
+extern char *pg_json_out(const text *json);
+extern Jsonb *pg_jsonb_from_text(const text *txt, bool unique_keys);
+extern Jsonb *pg_jsonb_in(const char *str);
+extern char *pg_jsonb_out(const Jsonb *jb);
+
+/* Constructor functions */
+
+extern text *pg_json_make(text **keyvalarr, int count);
+extern text *pg_json_make_two_arg(text **keys, text **values, int count);
+extern Jsonb *pg_jsonb_copy(const Jsonb *jb);
+extern Jsonb *pg_jsonb_make(text **keys_vals, int count);
+extern Jsonb *pg_jsonb_make_two_arg(text **keys, text **values, int count);
+
+/* Conversion functions */
+
+
+/* Accessor functions */
 
 extern text **pg_json_array_elements(const text *json, int *count);
 extern text **pg_json_array_elements_text(const text *json, int *count);
 extern int pg_json_array_length(const text *json);
 extern text **pg_json_each(const text *json, text **values, int *count);
 extern text **pg_json_each_text(const text *json, text **values, int *count);
-extern text *pg_json_in(const char *str);
-extern text *pg_json_object(text **keyvalarr, int count);
 extern text **pg_json_object_keys(const text *json, int *count);
-extern text *pg_json_object_two_arg(text **keys, text **values, int count);
-extern char *pg_json_out(const text *json);
-extern text *pg_json_strip_nulls(const text *json, bool strip_in_arrays);
 extern text *pg_json_typeof(const text *json);
 
 extern Jsonb **pg_jsonb_array_elements(const Jsonb *jb, int *count);
 extern text **pg_jsonb_array_elements_text(const Jsonb *jb, int *count);
-extern int pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *pg_jsonb_concat(const Jsonb *jb1, const Jsonb *jb2);
-extern bool pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *pg_jsonb_delete(const Jsonb *jb, const text *key);
-extern Jsonb *pg_jsonb_delete_array(const Jsonb *jb, const text **keys_elems, int keys_len);
-extern Jsonb *pg_jsonb_delete_idx(const Jsonb *in, int idx);
-extern Jsonb *pg_jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len);
-extern text **pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count);
-extern text **pg_jsonb_each_text(const Jsonb *jb, text **values, int *count);
-extern bool pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
-extern bool pg_jsonb_exists(const Jsonb *jb, const text *key);
-extern Jsonb *pg_jsonb_extract_path(const Jsonb *jb, text **path_elems, int path_len);
-extern text *pg_jsonb_extract_path_text(const Jsonb *jb, text **path_elems, int path_len);
-extern Jsonb *pg_jsonb_from_text(text *txt, bool unique_keys);
-extern bool pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2);
-extern bool pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_contained(const Jsonb *jb1, const Jsonb *jb2); 
+extern bool pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2); 
+extern text **pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count); 
+extern text **pg_jsonb_each_text(const Jsonb *jb, text **values, int *count); 
+extern bool pg_jsonb_exists(const Jsonb *jb, const text *key); 
 extern uint32 pg_jsonb_hash(const Jsonb *jb);
 extern uint64 pg_jsonb_hash_extended(const Jsonb *jb, uint64 seed);
-extern Jsonb * pg_jsonb_in(char *str);
+extern text **pg_jsonb_object_keys(const Jsonb *jb, int *count);
+
+/* Transformation functions */
+
+extern text *pg_json_array_element(const text *json, int element);
+extern text *pg_json_array_element_text(const text *json, int element);
+extern text *pg_json_extract_path(const text *json, text **path_elems, int path_len);
+extern text *pg_json_extract_path_text(const text *json, text **path_elems, int path_len);
+extern text *pg_json_object_field(const text *json, const text *key);
+extern text *pg_json_object_field_text(const text *json, const text *key);
+extern text *pg_json_strip_nulls(const text *json, bool strip_in_arrays);
+extern Jsonb *pg_jsonb_array_element(const Jsonb *jb, int element);
+extern text *pg_jsonb_array_element_text(const Jsonb *jb, int element);
+extern Jsonb *pg_jsonb_concat(const Jsonb *jb1, const Jsonb *jb2);
+extern Jsonb *pg_jsonb_delete(const Jsonb *jb, const text *key);
+extern Jsonb *pg_jsonb_delete_array(const Jsonb *jb, const text **keys_elems, int keys_len);
+extern Jsonb *pg_jsonb_delete_idx(const Jsonb *jb, int idx);
+extern Jsonb *pg_jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len);
+extern Jsonb *pg_jsonb_extract_path(const Jsonb *jb, text **path_elems, int path_len);
+extern text *pg_jsonb_extract_path_text(const Jsonb *jb, text **path_elems, int path_len);
 extern Jsonb *pg_jsonb_insert(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool after);
-extern bool pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
-extern bool pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);
-extern bool pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *pg_jsonb_object(text **keys_vals, int count);
 extern Jsonb *pg_jsonb_object_field(const Jsonb *jb, const text *key);
 extern text *pg_jsonb_object_field_text(const Jsonb *jb, const text *key);
-extern text **pg_jsonb_object_keys(const Jsonb *jb, int *count);
-extern Jsonb *pg_jsonb_object_two_arg(text **keys, text **values, int count);
-extern char *pg_jsonb_out(Jsonb *jb);
 extern text *pg_jsonb_pretty(const Jsonb *jb);
 extern Jsonb *pg_jsonb_set(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create);
 extern Jsonb *pg_jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create, const text *handle_null);
-extern Jsonb *pg_jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays);
+extern Jsonb *pg_jsonb_strip_nulls (const Jsonb *jb, bool strip_in_arrays);
+
+/* Bounding box functions */
+
+
+/* Comparison functions */
+
+extern int pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2);
+extern bool pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2);
 
 /*****************************************************************************/
 
-#endif /* POSTGRES_TYPES_H */
+#endif /* __PGTYPES_H__ */

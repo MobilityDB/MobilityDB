@@ -24,12 +24,13 @@
  *-------------------------------------------------------------------------
  */
 
-#include "postgres.h"
+#include <limits.h>
 
+#include "postgres.h"
+#include "varatt.h"
 #include "common/hashfn.h"
 #include "utils/float.h"
 #include "utils/pg_locale.h"
-#include "varatt.h"
 
 /*
  * Datatype-specific hash functions.
@@ -255,12 +256,14 @@ text_hash(const text *txt, Oid collid)
 {
   if (!collid)
   {
-    elog(ERROR, "could not determine which collation to use for string hashing");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not determine which collation to use for string hashing");
+    return UINT_MAX;
   }
 
   uint32 result;
   pg_locale_t mylocale = pg_newlocale_from_collation(collid);
-  if (mylocale->deterministic)
+  if (! mylocale || mylocale->deterministic)
   {
     result = hash_any((unsigned char *) VARDATA_ANY(txt),
       VARSIZE_ANY_EXHDR(txt));
@@ -277,7 +280,9 @@ text_hash(const text *txt, Oid collid)
     /* the second call may return a smaller value than the first */
     if (rsize > bsize)
     {
-      elog(ERROR, "pg_strnxfrm() returned unexpected result");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "pg_strnxfrm() returned unexpected result");
+      return UINT_MAX;
     }
 
     /*
@@ -301,15 +306,17 @@ text_hash_extended(const text *txt, uint64 seed, Oid collid)
 {
   if (!collid)
   {
-    elog(ERROR, "could not determine which collation to use for string hashing");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not determine which collation to use for string hashing");
+    return ULONG_MAX;
   }
 
   uint64 result;
   pg_locale_t mylocale = pg_newlocale_from_collation(collid);
-  if (mylocale->deterministic)
+  if (! mylocale || mylocale->deterministic)
   {
     result = hash_any_extended((unsigned char *) VARDATA_ANY(txt),
-       VARSIZE_ANY_EXHDR(txt), seed);
+      VARSIZE_ANY_EXHDR(txt), seed);
   }
   else
   {
@@ -323,7 +330,9 @@ text_hash_extended(const text *txt, uint64 seed, Oid collid)
     /* the second call may return a smaller value than the first */
     if (rsize > bsize)
     {
-      elog(ERROR, "pg_strnxfrm() returned unexpected result");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "pg_strnxfrm() returned unexpected result");
+      return ULONG_MAX;
     }
 
     /*

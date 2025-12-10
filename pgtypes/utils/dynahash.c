@@ -295,7 +295,11 @@ add_size(Size s1, Size s2)
   Size result = s1 + s2;
   /* We are assuming Size is an unsigned type here... */
   if (result < s1 || result < s2)
-    elog(ERROR, "requested memory size overflows size_t");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "requested memory size overflows size_t");
+    return 0;
+  }
   return result;
 }
 
@@ -310,7 +314,11 @@ mul_size(Size s1, Size s2)
   Size result = s1 * s2;
   /* We are assuming Size is an unsigned type here... */
   if (result / s2 != s1)
-    elog(ERROR, "requested shared memory size overflows size_t");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "requested shared memory size overflows size_t");
+    return 0;
+  }
   return result;
 }
 
@@ -563,7 +571,8 @@ hash_create(const char *tabname, long nelem, const HASHCTL *info, int flags)
     // hashp->hctl = (HASHHDR *) hashp->alloc(sizeof(HASHHDR));
     // if (!hashp->hctl)
     // {
-      // elog(ERROR, "out of memory");
+      // meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        // "out of memory");
       // return NULL;
     // }
   // }
@@ -601,7 +610,8 @@ hash_create(const char *tabname, long nelem, const HASHCTL *info, int flags)
   /* Build the hash directory structure */
   if (!init_htab(hashp, nelem))
   {
-    elog(ERROR, "failed to initialize hash table \"%s\"", hashp->tabname);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "failed to initialize hash table \"%s\"", hashp->tabname);
     return NULL;
   }
 
@@ -614,7 +624,8 @@ hash_create(const char *tabname, long nelem, const HASHCTL *info, int flags)
   {
     if (!element_alloc(hashp, nelem))
     {
-      elog(ERROR, "out of memory");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "out of memory");
       return NULL;
     }
   }
@@ -1000,8 +1011,12 @@ hash_search_with_hash_value(HTAB *hashp, const void *keyPtr, uint32 hashvalue,
 
       /* disallow inserts if frozen */
       if (hashp->frozen)
-        elog(ERROR, "cannot insert into frozen hashtable \"%s\"",
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "cannot insert into frozen hashtable \"%s\"",
            hashp->tabname);
+        return NULL;
+      }
 
       currBucket = get_hash_entry(hashp);
       if (currBucket == NULL)
@@ -1010,7 +1025,8 @@ hash_search_with_hash_value(HTAB *hashp, const void *keyPtr, uint32 hashvalue,
         if (action == HASH_ENTER_NULL)
           return NULL;
         /* report a generic message */
-        elog(ERROR, "out of memory");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "out of memory");
         return NULL;
       }
 
@@ -1031,7 +1047,8 @@ hash_search_with_hash_value(HTAB *hashp, const void *keyPtr, uint32 hashvalue,
       return ELEMENTKEY(currBucket);
   }
 
-  elog(ERROR, "unrecognized hash action code: %d", (int) action);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unrecognized hash action code: %d", (int) action);
   return NULL;
 }
 
@@ -1062,7 +1079,8 @@ hash_update_hash_key(HTAB *hashp, void *existingEntry, const void *newKeyPtr)
   /* disallow updates if frozen */
   if (hashp->frozen)
   {
-    elog(ERROR, "cannot update in frozen hashtable \"%s\"", hashp->tabname);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot update in frozen hashtable \"%s\"", hashp->tabname);
     return false;
   }
 
@@ -1086,7 +1104,8 @@ hash_update_hash_key(HTAB *hashp, void *existingEntry, const void *newKeyPtr)
 
   if (currBucket == NULL)
   {
-    elog(ERROR, "hash_update_hash_key argument is not in hashtable \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "hash_update_hash_key argument is not in hashtable \"%s\"",
        hashp->tabname);
     return false;
   }
@@ -1542,7 +1561,8 @@ hash_initial_lookup(HTAB *hashp, uint32 hashvalue, HASHBUCKET **bucketptr)
 static void
 hash_corrupted(HTAB *hashp)
 {
-  elog(ERROR, "hash table \"%s\" corrupted", hashp->tabname);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "hash table \"%s\" corrupted", hashp->tabname);
 }
 
 /* calculate ceil(log base 2) of num */

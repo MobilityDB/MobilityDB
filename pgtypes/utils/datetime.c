@@ -427,7 +427,8 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
     if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec,
              NULL, session_timezone) != 0)
    {
-      elog(ERROR, "timestamp out of range");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "timestamp out of range");
       return; // TODO
    }
 
@@ -733,7 +734,7 @@ ParseFractionalSecond(char *cp, fsec_t *fsec)
 }
 
 
-/* ParseDateTime()
+/* pg_ParseDateTime()
  *  Break string into tokens based on a date/time context.
  *  Returns 0 if successful, DTERR code if bogus input detected.
  *
@@ -764,13 +765,15 @@ ParseFractionalSecond(char *cp, fsec_t *fsec)
  *  DTK_STRING can hold months (January) and time zones (PST)
  *  DTK_DATE can hold time zone names (America/New_York, GMT-8)
  */
+// MEOS The prefix 'pg_' was added to avoid the function with the same name
+// is executed from the server code which may be of a different PG version
 int
-ParseDateTime(const char *timestr, char *workbuf, size_t buflen,
-        char **field, int *ftype, int maxfields, int *numfields)
+pg_ParseDateTime(const char *timestr, char *workbuf, size_t buflen,
+  char **field, int *ftype, int maxfields, int *numfields)
 {
-  int      nf = 0;
+  int nf = 0;
   const char *cp = timestr;
-  char     *bufp = workbuf;
+  char *bufp = workbuf;
   const char *bufend = workbuf + buflen;
 
   /*
@@ -1377,7 +1380,8 @@ DecodeDateTime(char **field, int *ftype, int nf, int *dtype, struct pg_tm *tm,
                 break;
 
               default:
-                elog(ERROR, "unrecognized RESERV datetime token: %d",
+                meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unrecognized RESERV datetime token: %d",
                    val);
             }
 
@@ -1813,7 +1817,8 @@ DetermineTimeZoneAbbrevOffsetTS(TimestampTz ts, const char *abbr,
    */
   if (timestamp2tm(ts, &tz, &tm, &fsec, NULL, tzp) != 0)
   {
-    elog(ERROR, "timestamp out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "timestamp out of range");
     return INT_MAX;
   }
 
@@ -3099,7 +3104,7 @@ DecodeTimezone(const char *str, int *tzp)
  * The function result is 0 or a DTERR code; in the latter case, *extra
  * is filled as needed.  Note that unknown-abbreviation is not considered
  * an error case.  Also note that many callers assume that the DTERR code
- * is one that DateTimeParseError does not require "str" or "datatype"
+ * is one that pg_DateTimeParseError does not require "str" or "datatype"
  * strings for.
  *
  * Given string must be lowercased already.
@@ -3266,7 +3271,7 @@ DecodeTimezoneName(const char *tzname, int *offset, pg_tz **tz)
   DateTimeErrorExtra extra;
   int dterr = DecodeTimezoneAbbrev(0, lowzone, &type, offset, tz, &extra);
   if (dterr)
-    DateTimeParseError(dterr, &extra, NULL, NULL, NULL);
+    pg_DateTimeParseError(dterr, &extra, NULL, NULL, NULL);
 
   pfree(lowzone);
   if (type == TZ || type == DTZ)
@@ -3285,7 +3290,8 @@ DecodeTimezoneName(const char *tzname, int *offset, pg_tz **tz)
     *tz = pg_tzset(tzname);
     if (*tz == NULL)
     {
-      elog(ERROR, "time zone \"%s\" not recognized", tzname);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "time zone \"%s\" not recognized", tzname);
       return -1;
     }
     return TZNAME_ZONE;
@@ -4154,33 +4160,40 @@ DecodeUnits(int field, const char *lowtoken, int *val)
  * separate SQLSTATE codes, so ...
  */
 void
-DateTimeParseError(int dterr, DateTimeErrorExtra *extra, const char *str,
+pg_DateTimeParseError(int dterr, DateTimeErrorExtra *extra, const char *str,
   const char *datatype, Node *escontext UNUSED)
 {
   switch (dterr)
   {
     case DTERR_FIELD_OVERFLOW:
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_MD_FIELD_OVERFLOW:
       /* <nanny>same as above, but add hint about DateStyle</nanny> */
-      elog(ERROR, "date/time field value out of range: \"%s\"", str);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_INTERVAL_OVERFLOW:
-      elog(ERROR, "interval field value out of range: \"%s\"", str);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "interval field value out of range: \"%s\"", str);
       break;
     case DTERR_TZDISP_OVERFLOW:
-      elog(ERROR, "time zone displacement out of range: \"%s\"", str);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "time zone displacement out of range: \"%s\"", str);
       break;
     case DTERR_BAD_TIMEZONE:
-      elog(ERROR, "time zone \"%s\" not recognized", extra->dtee_timezone);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "time zone \"%s\" not recognized", extra->dtee_timezone);
       break;
     case DTERR_BAD_ZONE_ABBREV:
-      elog(ERROR, "time zone \"%s\" not recognized", extra->dtee_timezone);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "time zone \"%s\" not recognized", extra->dtee_timezone);
       break;
     case DTERR_BAD_FORMAT:
     default:
-      elog(ERROR, "invalid input syntax for type %s: \"%s\"", datatype, str);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
 }
@@ -4595,7 +4608,7 @@ AddVerboseIntPart(char *cp, int64 value, const char *units, bool *is_zero,
   return cp + strlen(cp);
 }
 
-/* EncodeInterval()
+/* pg_EncodeInterval()
  * Interpret time structure as a delta time and convert to string.
  *
  * Support "traditional Postgres" and ISO-8601 styles.
@@ -4615,18 +4628,18 @@ AddVerboseIntPart(char *cp, int64 value, const char *units, bool *is_zero,
  * "day-time literal"s (that look like ('4 5:6:7')
  */
 void
-EncodeInterval(struct pg_itm *itm, int style, char *str)
+pg_EncodeInterval(struct pg_itm *itm, int style, char *str)
 {
-  char    *cp = str;
-  int     year = itm->tm_year;
-  int     mon = itm->tm_mon;
-  int64   mday = itm->tm_mday;  /* tm_mday could be INT_MIN */
-  int64   hour = itm->tm_hour;
-  int     min = itm->tm_min;
-  int     sec = itm->tm_sec;
-  int     fsec = itm->tm_usec;
-  bool    is_before = false;
-  bool    is_zero = true;
+  char *cp = str;
+  int year = itm->tm_year;
+  int mon = itm->tm_mon;
+  int64 mday = itm->tm_mday;  /* tm_mday could be INT_MIN */
+  int64 hour = itm->tm_hour;
+  int min = itm->tm_min;
+  int sec = itm->tm_sec;
+  int fsec = itm->tm_usec;
+  bool is_before = false;
+  bool is_zero = true;
 
   /*
    * The sign of year and month are guaranteed to match, since they are
@@ -4804,17 +4817,17 @@ EncodeInterval(struct pg_itm *itm, int style, char *str)
 static bool
 CheckDateTokenTable(const char *tablename, const datetkn *base, int nel)
 {
-  bool    ok = true;
-  int      i;
-
+  bool ok = true;
+  int i;
   for (i = 0; i < nel; i++)
   {
     /* check for token strings that don't fit */
     if (strlen(base[i].token) > TOKMAXLEN)
     {
       /* %.*s is safe since all our tokens are ASCII */
-      elog(WARNING, "token too long in %s table: \"%.*s\"", tablename,
-         TOKMAXLEN + 1, base[i].token);
+      meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+        "token too long in %s table: \"%.*s\"", tablename,
+        TOKMAXLEN + 1, base[i].token);
       ok = false;
       break;        /* don't risk applying strcmp */
     }
@@ -4822,10 +4835,9 @@ CheckDateTokenTable(const char *tablename, const datetkn *base, int nel)
     if (i > 0 &&
       strcmp(base[i - 1].token, base[i].token) >= 0)
     {
-      elog(WARNING, "ordering error in %s table: \"%s\" >= \"%s\"",
-         tablename,
-         base[i - 1].token,
-         base[i].token);
+      meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+        "ordering error in %s table: \"%s\" >= \"%s\"",
+        tablename, base[i - 1].token, base[i].token);
       ok = false;
     }
   }
@@ -4990,7 +5002,6 @@ pg_timezone_abbrevs_zone(PG_FUNCTION_ARGS)
 
   pindex = (int *) palloc(sizeof(int));
   *pindex = 0;
-
   while ((abbrev = 
           pg_get_next_timezone_abbrev(pindex, session_timezone)) != NULL)
   {
@@ -5066,7 +5077,7 @@ pg_timezone_abbrevs_abbrevs(PG_FUNCTION_ARGS)
         DateTimeErrorExtra extra;
         pg_tz *tzp = FetchDynamicTimeZone(zoneabbrevtbl, tp, &extra);
         if (tzp == NULL)
-          DateTimeParseError(DTERR_BAD_ZONE_ABBREV, &extra, NULL, NULL, NULL);
+          pg_DateTimeParseError(DTERR_BAD_ZONE_ABBREV, &extra, NULL, NULL, NULL);
         TimestampTz now = GetCurrentTimestamp();
         int isdst;
         gmtoffset = -DetermineTimeZoneAbbrevOffsetTS(now, tp->token, tzp,
@@ -5075,7 +5086,8 @@ pg_timezone_abbrevs_abbrevs(PG_FUNCTION_ARGS)
         break;
       }
     default:
-      elog(ERROR, "unrecognized timezone type %d", (int) tp->type);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unrecognized timezone type %d", (int) tp->type);
       gmtoffset = 0;    /* keep compiler quiet */
       is_dst = false;
       break;
@@ -5083,28 +5095,24 @@ pg_timezone_abbrevs_abbrevs(PG_FUNCTION_ARGS)
 
   /*
    * Convert name to text, using upcasing conversion that is the inverse of
-   * what ParseDateTime() uses.
+   * what pg_ParseDateTime() uses.
    */
   strlcpy(buffer, tp->token, sizeof(buffer));
   for (p = (unsigned char *) buffer; *p; p++)
     *p = pg_toupper(*p);
 
   values[0] = CStringGetTextDatum(buffer);
-
   /* Convert offset (in seconds) to an interval; can't overflow */
   MemSet(&itm_in, 0, sizeof(struct pg_itm_in));
   itm_in.tm_usec = (int64) gmtoffset * USECS_PER_SEC;
   resInterval = (Interval *) palloc(sizeof(Interval));
   (void) itmin2interval(&itm_in, resInterval);
   values[1] = IntervalPGetDatum(resInterval);
-
   values[2] = BoolGetDatum(is_dst);
-
   (*pindex)++;
 
   tuple = heap_form_tuple(funcctx->tuple_desc, values, nulls);
   result = HeapTupleGetDatum(tuple);
-
   SRF_RETURN_NEXT(funcctx, result);
 }
 

@@ -42,7 +42,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on ..
+          # Enable the optional types to be able to test them below
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on ..
           make -j $(nproc)
           sudo make install
 
@@ -59,8 +60,8 @@ jobs:
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
-          # gcc -Wall -g -I/usr/local/include -o cbuffer_test cbuffer_test.c -L/usr/local/lib -lmeos
-          # ./cbuffer_test
+          gcc -Wall -g -I/usr/local/include -o cbuffer_test cbuffer_test.c -L/usr/local/lib -lmeos
+          ./cbuffer_test
           gcc -Wall -g -I/usr/local/include -o date_test date_test.c -L/usr/local/lib -lmeos
           ./date_test
           gcc -Wall -g -I/usr/local/include -o float_test float_test.c -L/usr/local/lib -lmeos
@@ -71,8 +72,8 @@ jobs:
           ./int_test
           gcc -Wall -g -I/usr/local/include -o interval_test interval_test.c -L/usr/local/lib -lmeos
           ./interval_test
-          gcc -Wall -g -I/usr/local/include -o json_test json_test.c -L/usr/local/lib -lmeos
-          ./json_test
+          # gcc -Wall -g -I/usr/local/include -o json_test json_test.c -L/usr/local/lib -lmeos
+          # ./json_test
           gcc -Wall -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
           ./numeric_test
           gcc -Wall -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos

@@ -1486,9 +1486,9 @@ int main(void)
   free(tfloat_merge); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_merge_array(Temporal **temparr, int count); */
-  tfloatseqarray[0] = tfloatseq1;
-  tfloatseqarray[1] = tfloatseq2;
-  tfloat_result = temporal_merge_array(tfloatseqarray, 2);
+  tfloatarray[0] = (Temporal *) tfloatseq1;
+  tfloatarray[1] = (Temporal *) tfloatseq2;
+  tfloat_result = temporal_merge_array(tfloatarray, 2);
   char_result = tfloat_out(tfloat_result, 6);
   printf("temporal_merge_array({%s, %s}, 2): %s\n", tfloatinst1_out, tfloatinst2_out, char_result);
   free(tfloat_result); free(char_result);

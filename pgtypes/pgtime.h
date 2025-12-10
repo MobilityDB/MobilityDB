@@ -1,18 +1,17 @@
 /*-------------------------------------------------------------------------
  *
  * pgtime.h
- *	  PostgreSQL internal timezone library
+ *    PostgreSQL internal timezone library
  *
  * Portions Copyright (c) 1996-2025, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
- *	  src/include/pgtime.h
+ *    src/include/pgtime.h
  *
  *-------------------------------------------------------------------------
  */
-#ifndef _PGTIME_H
-#define _PGTIME_H
-
+#ifndef __PGTIME_H__
+#define __PGTIME_H__
 
 /*
  * The API of this library is generally similar to the corresponding
@@ -33,17 +32,17 @@ typedef int64 pg_time_t;
  */
 struct pg_tm
 {
-	int			tm_sec;
-	int			tm_min;
-	int			tm_hour;
-	int			tm_mday;
-	int			tm_mon;			/* see above */
-	int			tm_year;		/* see above */
-	int			tm_wday;
-	int			tm_yday;
-	int			tm_isdst;
-	long int	tm_gmtoff;
-	const char *tm_zone;
+  int         tm_sec;
+  int         tm_min;
+  int         tm_hour;
+  int         tm_mday;
+  int         tm_mon;      /* see above */
+  int         tm_year;    /* see above */
+  int         tm_wday;
+  int         tm_yday;
+  int         tm_isdst;
+  long int    tm_gmtoff;
+  const char *tm_zone;
 };
 
 /* These structs are opaque outside the timezone library */
@@ -57,25 +56,14 @@ typedef struct pg_tzenum pg_tzenum;
 
 extern struct pg_tm *pg_localtime(const pg_time_t *timep, const pg_tz *tz);
 extern struct pg_tm *pg_gmtime(const pg_time_t *timep);
-extern int	pg_next_dst_boundary(const pg_time_t *timep,
-								 long int *before_gmtoff,
-								 int *before_isdst,
-								 pg_time_t *boundary,
-								 long int *after_gmtoff,
-								 int *after_isdst,
-								 const pg_tz *tz);
+extern int  pg_next_dst_boundary(const pg_time_t *timep,
+  long int *before_gmtoff, int *before_isdst, pg_time_t *boundary,
+  long int *after_gmtoff, int *after_isdst, const pg_tz *tz);
 extern bool pg_interpret_timezone_abbrev(const char *abbrev,
-										 const pg_time_t *timep,
-										 long int *gmtoff,
-										 int *isdst,
-										 const pg_tz *tz);
-extern bool pg_timezone_abbrev_is_known(const char *abbrev,
-										bool *isfixed,
-										long int *gmtoff,
-										int *isdst,
-										const pg_tz *tz);
-extern const char *pg_get_next_timezone_abbrev(int *indx,
-											   const pg_tz *tz);
+  const pg_time_t *timep, long int *gmtoff, int *isdst, const pg_tz *tz);
+extern bool pg_timezone_abbrev_is_known(const char *abbrev, bool *isfixed,
+  long int *gmtoff, int *isdst, const pg_tz *tz);
+extern const char *pg_get_next_timezone_abbrev(int *indx, const pg_tz *tz);
 extern bool pg_get_timezone_offset(const pg_tz *tz, long int *gmtoff);
 extern const char *pg_get_timezone_name(pg_tz *tz);
 extern bool pg_tz_acceptable(pg_tz *tz);
@@ -83,7 +71,7 @@ extern bool pg_tz_acceptable(pg_tz *tz);
 /* these functions are in strftime.c */
 
 extern size_t pg_strftime(char *s, size_t maxsize, const char *format,
-						  const struct pg_tm *t);
+  const struct pg_tm *t);
 
 /* these functions and variables are in pgtz.c */
 
@@ -98,4 +86,4 @@ extern pg_tzenum *pg_tzenumerate_start(void);
 extern pg_tz *pg_tzenumerate_next(pg_tzenum *dir);
 extern void pg_tzenumerate_end(pg_tzenum *dir);
 
-#endif							/* _PGTIME_H */
+#endif /* __PGTIME_H__ */

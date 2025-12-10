@@ -67,13 +67,15 @@ anytime_typmod_check(bool istz, int32 typmod)
 {
   if (typmod < 0)
   {
-    elog(ERROR, "TIME(%d)%s precision must not be negative",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "TIME(%d)%s precision must not be negative",
       typmod, (istz ? " WITH TIME ZONE" : ""));
     return INT_MAX;
   }
   if (typmod > MAX_TIME_PRECISION)
   {
-    elog(WARNING, "TIME(%d)%s precision reduced to maximum allowed, %d",
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+      "TIME(%d)%s precision reduced to maximum allowed, %d",
       typmod, (istz ? " WITH TIME ZONE" : ""));
     typmod = MAX_TIME_PRECISION;
   }
@@ -114,25 +116,24 @@ DateADT
 pg_date_in(const char *str)
 {
   DateADT date;
-  fsec_t    fsec;
-  struct pg_tm tt,
-         *tm = &tt;
-  int      tzp;
-  int      dtype;
-  int      nf;
-  int      dterr;
-  char     *field[MAXDATEFIELDS];
-  int      ftype[MAXDATEFIELDS];
-  char    workbuf[MAXDATELEN + 1];
+  fsec_t fsec;
+  struct pg_tm tt, *tm = &tt;
+  int tzp;
+  int dtype;
+  int nf;
+  int dterr;
+  char *field[MAXDATEFIELDS];
+  int ftype[MAXDATEFIELDS];
+  char workbuf[MAXDATELEN + 1];
   DateTimeErrorExtra extra;
 
-  dterr = ParseDateTime((char *) str, workbuf, sizeof(workbuf), field, ftype,
-    MAXDATEFIELDS, &nf);
+  dterr = pg_ParseDateTime((char *) str, workbuf, sizeof(workbuf), field,
+    ftype, MAXDATEFIELDS, &nf);
   if (dterr == 0)
     dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tzp, &extra);
   if (dterr != 0)
   {
-    DateTimeParseError(dterr, &extra, (char *) str, "date", NULL);
+    pg_DateTimeParseError(dterr, &extra, (char *) str, "date", NULL);
     return INT_MAX;
   }
 
@@ -154,14 +155,16 @@ pg_date_in(const char *str)
       return (date);
 
     default:
-      DateTimeParseError(DTERR_BAD_FORMAT, &extra, (char *) str, "date", NULL);
+      pg_DateTimeParseError(DTERR_BAD_FORMAT, &extra, (char *) str, "date",
+        NULL);
       return INT_MAX;
   }
 
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm->tm_year, tm->tm_mon, tm->tm_mday))
   {
-    elog(ERROR, "date out of range: \"%s\"", (char *) str);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range: \"%s\"", (char *) str);
     return INT_MAX;
   }
 
@@ -170,7 +173,8 @@ pg_date_in(const char *str)
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
   {
-    elog(ERROR, "date out of range: \"%s\"", (char *) str);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range: \"%s\"", (char *) str);
     return INT_MAX;
   }
 
@@ -241,7 +245,8 @@ pg_date_make(int year, int mon, int mday)
     bc = true;
     if (pg_neg_s32_overflow(year, &year))
     {
-      elog(ERROR, "date field value out of range: %d-%02d-%02d",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "date field value out of range: %d-%02d-%02d",
         tm.tm_year, tm.tm_mon, tm.tm_mday);
       return INT_MAX;
     }
@@ -252,7 +257,8 @@ pg_date_make(int year, int mon, int mday)
 
   if (dterr != 0)
   {
-    elog(ERROR, "date field value out of range: %d-%02d-%02d",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date field value out of range: %d-%02d-%02d",
       tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
   }
@@ -260,7 +266,8 @@ pg_date_make(int year, int mon, int mday)
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
   {
-    elog(ERROR, "date out of range: %d-%02d-%02d",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range: %d-%02d-%02d",
       tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
   }
@@ -270,8 +277,9 @@ pg_date_make(int year, int mon, int mday)
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
   {
-    elog(ERROR, "date out of range: %d-%02d-%02d",
-        tm.tm_year, tm.tm_mon, tm.tm_mday);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range: %d-%02d-%02d",
+      tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
   }
 
@@ -289,7 +297,8 @@ EncodeSpecialDate(DateADT dt, char *str)
   else if (DATE_IS_NOEND(dt))
     strcpy(str, LATE);
   else            /* shouldn't happen */
-    elog(ERROR, "invalid argument for EncodeSpecialDate");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid argument for EncodeSpecialDate");
   return;
 }
 
@@ -456,7 +465,8 @@ minus_date_date(DateADT date1, DateADT date2)
 {
   if (DATE_NOT_FINITE(date1) || DATE_NOT_FINITE(date2))
   {
-    elog(ERROR, "cannot subtract infinite dates");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot subtract infinite dates");
     return INT_MAX;
   }
   return ((int32) (date1 - date2));
@@ -480,7 +490,8 @@ add_date_int(DateADT date, int32 days)
   if ((days >= 0 ? (result < date) : (result > date)) ||
     !IS_VALID_DATE(result))
   {
-    elog(ERROR, "date out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range");
     return DATEVAL_NOEND;
   }
 
@@ -504,7 +515,8 @@ minus_date_int(DateADT date, int32 days)
   if ((days >= 0 ? (result > date) : (result < date)) ||
     !IS_VALID_DATE(result))
   {
-    elog(ERROR, "date out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "date out of range");
     return DATEVAL_NOEND;
   }
 
@@ -551,7 +563,8 @@ date2timestamp_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        elog(ERROR, "date out of range for timestamp");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "date out of range for timestamp");
         return DT_NOEND;
       }
     }
@@ -612,7 +625,8 @@ date2timestamptz_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        elog(ERROR, "date out of range for timestamp");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "date out of range for timestamp");
         return DT_NOEND;
       }
     }
@@ -647,7 +661,8 @@ date2timestamptz_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        elog(ERROR, "date out of range for timestamp");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "date out of range for timestamp");
         return DT_NOEND;
       }
     }
@@ -1096,7 +1111,8 @@ date_extract(DateADT date, const text *units)
         else
           return pg_numeric_in("Infinity", -1);
       default:
-        elog(ERROR, "unit \"%s\" not supported for type %s",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(DATEOID));
           lowunits, "date");
         pfree(lowunits);
@@ -1181,7 +1197,8 @@ date_extract(DateADT date, const text *units)
         break;
 
       default:
-        elog(ERROR, "unit \"%s\" not supported for type %s",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(DATEOID));
           lowunits, "date");
         intresult = 0;
@@ -1196,7 +1213,8 @@ date_extract(DateADT date, const text *units)
         break;
 
       default:
-        elog(ERROR, "unit \"%s\" not supported for type %s",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(DATEOID));
           lowunits, "date");
         intresult = 0;
@@ -1204,9 +1222,10 @@ date_extract(DateADT date, const text *units)
   }
   else
   {
-    elog(ERROR, "unit \"%s\" not recognized for type %s",
-        // lowunits, format_type_be(DATEOID));
-        lowunits, "date");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unit \"%s\" not recognized for type %s",
+      // lowunits, format_type_be(DATEOID));
+      lowunits, "date");
     intresult = 0;
   }
 
@@ -1275,7 +1294,8 @@ timestamp_to_date(Timestamp ts)
   {
     if (timestamp2tm(ts, NULL, tm, &fsec, NULL, NULL) != 0)
     {
-      elog(ERROR, "timestamp out of range");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "timestamp out of range");
       return DATEVAL_NOEND;
     }
     result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
@@ -1315,7 +1335,8 @@ timestamptz_to_date(TimestampTz tstz)
   {
     if (timestamp2tm(tstz, &tz, tm, &fsec, NULL, NULL) != 0)
     {
-      elog(ERROR, "timestamp out of range");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "timestamp out of range");
       return DATEVAL_NOEND;
     }
     result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
@@ -1354,13 +1375,13 @@ pg_time_in(const char *str, int32 typmod)
   int ftype[MAXDATEFIELDS];
   DateTimeErrorExtra extra;
 
-  dterr = ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
+  dterr = pg_ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
     MAXDATEFIELDS, &nf);
   if (dterr == 0)
     dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
   if (dterr != 0)
   {
-    DateTimeParseError(dterr, &extra, str, "time", NULL);
+    pg_DateTimeParseError(dterr, &extra, str, "time", NULL);
     return PG_INT64_MAX;
   }
   tm2time(tm, fsec, &result);
@@ -1497,7 +1518,8 @@ time_make(int hour, int min, double sec)
   /* Check for time overflow */
   if (float_time_overflows(hour, min, sec))
   {
-    elog(ERROR, "time field value out of range: %d:%02d:%02g",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "time field value out of range: %d:%02d:%02g",
       hour, min, sec);
     return PG_INT64_MAX;
   }
@@ -1845,7 +1867,8 @@ timestamp_to_time(Timestamp ts)
 
   if (timestamp2tm(ts, NULL, tm, &fsec, NULL, NULL) != 0)
   {
-    elog(ERROR, "timestamp out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "timestamp out of range");
     return PG_INT64_MAX;
   }
 
@@ -1876,7 +1899,8 @@ timestamptz_to_time(TimestampTz tstz)
 
   if (timestamp2tm(tstz, &tz, tm, &fsec, NULL, NULL) != 0)
   {
-    elog(ERROR, "timestamp out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "timestamp out of range");
     return PG_INT64_MAX;
   }
 
@@ -1904,7 +1928,8 @@ date_time_to_timestamp(DateADT date, TimeADT time)
     result += time;
     if (!IS_VALID_TIMESTAMP(result))
     {
-      elog(ERROR, "timestamp out of range");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "timestamp out of range");
       return PG_INT64_MAX;
     }
   }
@@ -1941,7 +1966,8 @@ interval_to_time(const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    elog(ERROR, "cannot convert infinite interval to time");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot convert infinite interval to time");
     return PG_INT64_MAX;
   }
 
@@ -1978,7 +2004,8 @@ plus_time_interval(TimeADT time, Interval *interv)
 
   if (INTERVAL_NOT_FINITE(interv))
   {
-    elog(ERROR, "cannot add infinite interval to time");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot add infinite interval to time");
     return PG_INT64_MAX;
   }
 
@@ -2000,7 +2027,8 @@ minus_time_interval(TimeADT time, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    elog(ERROR, "cannot subtract infinite interval from time");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot subtract infinite interval from time");
     return PG_INT64_MAX;
   }
 
@@ -2081,7 +2109,8 @@ time_part_common(TimeADT time, text *units, bool retnumeric)
       case DTK_MILLENNIUM:
       case DTK_ISOYEAR:
       default:
-        elog(ERROR, "unit \"%s\" not supported for type %s",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMEOID));
           lowunits, "time without time zone");
         intresult = 0;
@@ -2097,7 +2126,8 @@ time_part_common(TimeADT time, text *units, bool retnumeric)
   }
   else
   {
-    elog(ERROR, "unit \"%s\" not recognized for type %s",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMEOID));
       lowunits, "time without time zone");
     intresult = 0;
@@ -2171,27 +2201,25 @@ timetz_in(const char *str, int32 typmod)
 TimeTzADT *
 pg_timetz_in(const char *str, int32 typmod)
 {
-  TimeTzADT  *result;
-  fsec_t    fsec;
-  struct pg_tm tt,
-         *tm = &tt;
-  int      tz;
-  int      nf;
-  int      dterr;
-  char    workbuf[MAXDATELEN + 1];
-  char     *field[MAXDATEFIELDS];
-  int      dtype;
-  int      ftype[MAXDATEFIELDS];
+  TimeTzADT *result;
+  fsec_t fsec;
+  struct pg_tm tt, *tm = &tt;
+  int tz;
+  int nf;
+  int dterr;
+  char workbuf[MAXDATELEN + 1];
+  char *field[MAXDATEFIELDS];
+  int dtype;
+  int ftype[MAXDATEFIELDS];
   DateTimeErrorExtra extra;
 
-  dterr = ParseDateTime(str, workbuf, sizeof(workbuf),
-              field, ftype, MAXDATEFIELDS, &nf);
+  dterr = pg_ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
+    MAXDATEFIELDS, &nf);
   if (dterr == 0)
-    dterr = DecodeTimeOnly(field, ftype, nf,
-                 &dtype, tm, &fsec, &tz, &extra);
+    dterr = DecodeTimeOnly(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
   if (dterr != 0)
   {
-    DateTimeParseError(dterr, &extra, str, "time with time zone", NULL);
+    pg_DateTimeParseError(dterr, &extra, str, "time with time zone", NULL);
     return NULL;
   }
 
@@ -2542,7 +2570,8 @@ plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    elog(ERROR, "cannot add infinite interval to time");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot add infinite interval to time");
     return NULL;
   }
 
@@ -2565,7 +2594,8 @@ minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    elog(ERROR, "cannot subtract infinite interval from time");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cannot subtract infinite interval from time");
     return NULL;
   }
 
@@ -2678,7 +2708,8 @@ timestamptz_to_timetz(TimestampTz tztz)
 
   if (timestamp2tm(tztz, &tz, tm, &fsec, NULL, NULL) != 0)
   {
-    elog(ERROR, "timestamp out of range");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "timestamp out of range");
     return NULL;
   }
 
@@ -2710,7 +2741,8 @@ date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz)
      */
     if (date >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
     {
-      elog(ERROR, "date out of range for timestamp");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "date out of range for timestamp");
       return DT_NOEND;
     }
 
@@ -2723,7 +2755,8 @@ date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz)
      */
     if (!IS_VALID_TIMESTAMP(result))
     {
-      elog(ERROR, "date out of range for timestamp");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "date out of range for timestamp");
       return DT_NOEND;
     }
 
@@ -2808,7 +2841,8 @@ timetz_part_common(TimeTzADT *time, text *units, bool retnumeric)
       case DTK_CENTURY:
       case DTK_MILLENNIUM:
       default:
-        elog(ERROR, "unit \"%s\" not supported for type %s",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMETZOID));
           lowunits, "time with time zone");
         intresult = 0;
@@ -2827,7 +2861,8 @@ timetz_part_common(TimeTzADT *time, text *units, bool retnumeric)
   }
   else
   {
-    elog(ERROR, "unit \"%s\" not recognized for type %s",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMETZOID));
       lowunits, "time with time zone");
     intresult = 0;
@@ -2919,7 +2954,8 @@ pg_timetz_zone(const TimeTzADT *timetz, const text *zone)
     fsec_t fsec;
     if (timestamp2tm(now, &tz, &tm, &fsec, NULL, tzp) != 0)
     {
-      elog(ERROR, "timestamp out of range");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "timestamp out of range");
       return NULL;
     }
   }
@@ -2953,13 +2989,15 @@ pg_timetz_izone(const TimeTzADT *timetz, const Interval *zone)
 {
   if (INTERVAL_NOT_FINITE(zone))
   {
-    elog(ERROR, "interval time zone \"%s\" must be finite", 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "interval time zone \"%s\" must be finite", 
       pg_interval_out(zone));
     return NULL;
   }
   if (zone->month != 0 || zone->day != 0)
   {
-    elog(ERROR, "interval time zone \"%s\" must not include months or days",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "interval time zone \"%s\" must not include months or days",
       pg_interval_out(zone));
     return NULL;
   }

@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_FLOAT_H
-#define PG_FLOAT_H
+#ifndef __PG_FLOAT_H__
+#define __PG_FLOAT_H__
 
 typedef float float4;
 typedef double float8;
@@ -157,4 +157,4 @@ extern bool ne_float8_float8(float8 num1, float8 num2);
 
 /*****************************************************************************/
 
-#endif /* PG_FLOAT_H */
+#endif /* __PG_FLOAT_H__ */

@@ -16,6 +16,7 @@
 #define FLOAT_H
 
 #include <math.h>
+#include <float.h>
 
 #include <postgres.h>
 #include "nodes/nodes.h"
@@ -144,13 +145,12 @@ get_float8_nan(void)
 static inline float4
 float4_pl(const float4 val1, const float4 val2)
 {
-  float4    result;
-
-  result = val1 + val2;
+  float4 result = val1 + val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return FLT_MAX;
   }
   return result;
 }
@@ -158,135 +158,127 @@ float4_pl(const float4 val1, const float4 val2)
 static inline float8
 float8_pl(const float8 val1, const float8 val2)
 {
-  float8    result;
-
-  result = val1 + val2;
+  float8 result = val1 + val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
-
   return result;
 }
 
 static inline float4
 float4_mi(const float4 val1, const float4 val2)
 {
-  float4    result;
-
-  result = val1 - val2;
+  float4 result = val1 - val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return FLT_MAX;
   }
-
   return result;
 }
 
 static inline float8
 float8_mi(const float8 val1, const float8 val2)
 {
-  float8    result;
-
-  result = val1 - val2;
+  float8 result = val1 - val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
-
   return result;
 }
 
 static inline float4
 float4_mul(const float4 val1, const float4 val2)
 {
-  float4    result;
-
-  result = val1 * val2;
+  float4 result = val1 * val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return FLT_MAX;
   }
   if (unlikely(result == 0.0f) && val1 != 0.0f && val2 != 0.0f)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return FLT_MAX;
   }
-
   return result;
 }
 
 static inline float8
 float8_mul(const float8 val1, const float8 val2)
 {
-  float8    result;
-
-  result = val1 * val2;
+  float8 result = val1 * val2;
   if (unlikely(isinf(result)) && !isinf(val1) && !isinf(val2))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && val1 != 0.0 && val2 != 0.0)
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
-
   return result;
 }
 
 static inline float4
 float4_div(const float4 val1, const float4 val2)
 {
-  float4    result;
-
   if (unlikely(val2 == 0.0f) && !isnan(val1))
   {
-    elog(ERROR, "division by zero");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "division by zero");
+    return FLT_MAX;
   }
-  result = val1 / val2;
+  float4 result = val1 / val2;
   if (unlikely(isinf(result)) && !isinf(val1))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return FLT_MAX;
   }
   if (unlikely(result == 0.0f) && val1 != 0.0f && !isinf(val2))
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return FLT_MAX;
   }
-
   return result;
 }
 
 static inline float8
 float8_div(const float8 val1, const float8 val2)
 {
-  float8    result;
-
   if (unlikely(val2 == 0.0) && !isnan(val1))
   {
-    elog(ERROR, "division by zero");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "division by zero");
+    return DBL_MAX;
   }
-  result = val1 / val2;
+  float8 result = val1 / val2;
   if (unlikely(isinf(result)) && !isinf(val1))
   {
-    elog(ERROR, "value out of range: overflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: overflow");
+    return DBL_MAX;
   }
   if (unlikely(result == 0.0) && val1 != 0.0 && !isinf(val2))
   {
-    elog(ERROR, "value out of range: underflow");
-    return get_float4_infinity();
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "value out of range: underflow");
+    return DBL_MAX;
   }
-
   return result;
 }
 
@@ -301,19 +293,19 @@ float8_div(const float8 val1, const float8 val2)
 static inline bool
 float4_eq(const float4 val1, const float4 val2)
 {
-  return isnan(val1) ? isnan(val2) : !isnan(val2) && val1 == val2;
+  return isnan(val1) ? isnan(val2) : ! isnan(val2) && val1 == val2;
 }
 
 static inline bool
 float8_eq(const float8 val1, const float8 val2)
 {
-  return isnan(val1) ? isnan(val2) : !isnan(val2) && val1 == val2;
+  return isnan(val1) ? isnan(val2) : ! isnan(val2) && val1 == val2;
 }
 
 static inline bool
 float4_ne(const float4 val1, const float4 val2)
 {
-  return isnan(val1) ? !isnan(val2) : isnan(val2) || val1 != val2;
+  return isnan(val1) ? ! isnan(val2) : isnan(val2) || val1 != val2;
 }
 
 static inline bool

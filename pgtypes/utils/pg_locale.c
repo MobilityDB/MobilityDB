@@ -65,7 +65,8 @@
 
 /* Error triggered for locale-sensitive subroutines */
 #define    PGLOCALE_SUPPORT_ERROR(provider) \
-  elog(ERROR, "unsupported collprovider for %s: %c", __func__, provider)
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, \
+    "unsupported collprovider for %s: %c", __func__, provider)
 
 /*
  * This should be large enough that most strings will fit, but small enough
@@ -254,7 +255,8 @@ FindCollation(Oid collid)
   FILE *file = fopen(PG_COLLATION_CSV, "r");
   if (! file)
   {
-    elog(ERROR, "Cannot open the pg_collation.csv file");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Cannot open the pg_collation.csv file");
     return NULL;
   }
 
@@ -267,7 +269,8 @@ FindCollation(Oid collid)
   int read = fscanf(file, "%1023s\n", header_buffer);
   if (ferror(file) || read != 1)
   {
-    elog(ERROR, "Error reading the pg_collation.csv file");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Error reading the pg_collation.csv file");
     return NULL;
   }
 
@@ -281,7 +284,8 @@ FindCollation(Oid collid)
 
     if (ferror(file))
     {
-      elog(ERROR, "Error reading the pg_collation.csv file");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error reading the pg_collation.csv file");
       return NULL;
     }
 
@@ -298,7 +302,8 @@ FindCollation(Oid collid)
   
   if (! found)
   {
-    elog(ERROR, "Collation %d was not found\n", collid);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Collation %d was not found\n", collid);
     return NULL;
   }
 
@@ -403,7 +408,8 @@ pg_perm_setlocale(int category, const char *locale)
       envvar = "LC_TIME";
       break;
     default:
-      elog(ERROR, "unrecognized LC category: %d", category);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized LC category: %d", category);
       return NULL;
   }
 
@@ -429,7 +435,8 @@ check_locale(int category, const char *locale, char **canonname)
   /* Don't let Windows' non-ASCII locale names in. */
   if (!pg_is_ascii(locale))
   {
-    elog(WARNING, "locale name \"%s\" contains non-ASCII characters", locale);
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+      "locale name \"%s\" contains non-ASCII characters", locale);
     return false;
   }
 
@@ -452,13 +459,15 @@ check_locale(int category, const char *locale, char **canonname)
 
   /* restore old value. */
   if (!setlocale(category, save))
-    elog(WARNING, "failed to restore old locale \"%s\"", save);
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+      "failed to restore old locale \"%s\"", save);
   pfree(save);
 
   /* Don't let Windows' non-ASCII locale names out. */
   if (canonname && *canonname && !pg_is_ascii(*canonname))
   {
-    elog(WARNING, "locale name \"%s\" contains non-ASCII characters",
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+      "locale name \"%s\" contains non-ASCII characters",
       *canonname);
     pfree(*canonname);
     *canonname = NULL;
@@ -562,7 +571,7 @@ assign_locale_messages(const char *newval, void *extra UNUSED)
 
 /*
  * Frees the malloced content of a struct lconv.  (But not the struct
- * itself.)  It's important that this not throw elog(ERROR).
+ * itself.)  It's important that this not throw meos_error(ERROR).
  */
 static void
 free_struct_lconv(struct lconv *s)
@@ -625,7 +634,8 @@ db_encoding_convert(int encoding, char **str)
   char *mstr = strdup(pstr);
   if (mstr == NULL)
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
   }
 
   /* replace old string */
@@ -666,9 +676,10 @@ PGLC_localeconv(void)
    */
   if (pg_localeconv_r(locale_monetary, locale_numeric, &tmp) != 0)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
        "could not get lconv for LC_MONETARY = \"%s\", LC_NUMERIC = \"%s\": %m",
        locale_monetary, locale_numeric);
+    return NULL;
   }
 
   /* Must copy data now so we can re-encode it. */
@@ -697,14 +708,16 @@ PGLC_localeconv(void)
   pg_localeconv_free(&tmp);
 
   /* If any of the preceding strdup calls failed, complain now. */
-  if (!struct_lconv_is_valid(&worklconv))
+  if (! struct_lconv_is_valid(&worklconv))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
+    return NULL;
   }
 
   // PG_TRY();
   // {
-    int      encoding;
+    int encoding;
 
     /*
      * Now we must perform encoding conversion from whatever's associated
@@ -781,8 +794,10 @@ strftime_l_win32(char *dst, size_t dstlen, const char *format,
     lengthof(wformat));
   if (len == 0)
   {
-    elog(ERROR, "could not convert format string from UTF-8: error code %lu",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not convert format string from UTF-8: error code %lu",
        GetLastError());
+    return 0;
   }
 
   len = _wcsftime_l(wbuf, MAX_L10N_DATA, wformat, tm, locale);
@@ -798,7 +813,8 @@ strftime_l_win32(char *dst, size_t dstlen, const char *format,
   len = WideCharToMultiByte(CP_UTF8, 0, wbuf, len, dst, dstlen - 1,
                 NULL, NULL);
   if (len == 0)
-    elog(ERROR, "could not convert string to UTF-8: error code %lu",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not convert string to UTF-8: error code %lu",
        GetLastError());
 
   dst[len] = '\0';
@@ -829,15 +845,15 @@ cache_single_string(char **dst, const char *src, int encoding)
 void
 cache_locale_time(void)
 {
-  char    buf[(2 * 7 + 2 * 12) * MAX_L10N_DATA];
-  char     *bufptr;
-  time_t    timenow;
-  struct tm  *timeinfo;
-  struct tm  timeinfobuf;
-  bool    strftimefail = false;
-  int      encoding;
-  int      i;
-  locale_t  locale;
+  char buf[(2 * 7 + 2 * 12) * MAX_L10N_DATA];
+  char *bufptr;
+  time_t timenow;
+  struct tm *timeinfo;
+  struct tm timeinfobuf;
+  bool strftimefail = false;
+  int encoding;
+  int i;
+  locale_t locale;
 
   /* did we do this already? */
   if (CurrentLCTimeValid)
@@ -907,7 +923,11 @@ cache_locale_time(void)
    * call functions that might throw errors, with a clean conscience.
    */
   if (strftimefail)
-    elog(ERROR, "strftime_l() failed");
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "strftime_l() failed");
+    return;
+  }
 
 #ifndef WIN32
 
@@ -1175,7 +1195,8 @@ create_pg_locale(Oid collid)
   pg_collation_record *rec = FindCollation(collid);
   if (! rec)
   {
-    elog(ERROR, "cache lookup failed for collation %u", collid);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cache lookup failed for collation %u", collid);
     return NULL;
   }
   
@@ -1208,14 +1229,14 @@ create_pg_locale(Oid collid)
 
     char *actual_versionstr = get_collation_actual_version(rec->provider,
       versionstr);
-    if (!actual_versionstr)
+    if (! actual_versionstr)
     {
       /*
        * This could happen when specifying a version in CREATE COLLATION
        * but the provider does not support versioning, or manually
        * creating a mess in the catalogs.
        */
-      elog(ERROR, 
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "collation \"%s\" has no actual version, but a version was recorded",
         rec->name);
       return NULL;
@@ -1223,7 +1244,9 @@ create_pg_locale(Oid collid)
 
     if (strcmp(actual_versionstr, rec->version) != 0)
     {
-      elog(WARNING, "collation \"%s\" has version mismatch", rec->name);
+      meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+        "collation \"%s\" has version mismatch", rec->name);
+      return NULL;
     }
   }
   return result;
@@ -1236,7 +1259,7 @@ void
 meos_initialize_collation(void)
 {
   Assert(default_locale == NULL);
-  pg_locale_t result;
+  pg_locale_t result = {0};
   if (strcmp(database_locprovider, COLLATIONPROVIDER[COLLPROV_BUILTIN]) == 0)
     result = create_pg_locale_builtin(DEFAULT_COLLATION_OID);
   else if (strcmp(database_locprovider, COLLATIONPROVIDER[COLLPROV_ICU]) == 0)
@@ -1285,8 +1308,12 @@ pg_newlocale_from_collation(Oid collid)
   if (collid == DEFAULT_COLLATION_OID)
     return default_locale;
 
-  if (!OidIsValid(collid))
-    elog(ERROR, "cache lookup failed for collation %u", collid);
+  if (! OidIsValid(collid))
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "cache lookup failed for collation %u", collid);
+    return NULL;
+  }
 
   if (last_collation_cache_oid == collid)
     return last_collation_cache_locale;
@@ -1297,7 +1324,7 @@ pg_newlocale_from_collation(Oid collid)
   }
 
   cache_entry = collation_cache_insert(CollationCache, collid, &found);
-  if (!found)
+  if (! found)
   {
     /*
      * Make sure cache entry is marked invalid, in case we fail before
@@ -1310,10 +1337,8 @@ pg_newlocale_from_collation(Oid collid)
   {
     cache_entry->locale = create_pg_locale(collid);
   }
-
   last_collation_cache_oid = collid;
   last_collation_cache_locale = cache_entry->locale;
-
   return cache_entry->locale;
 }
 
@@ -1557,9 +1582,9 @@ builtin_locale_encoding(const char *locale)
   else if (strcmp(locale, "PG_UNICODE_FAST") == 0)
     return PG_UTF8;
 
-  elog(ERROR, "invalid locale name \"%s\" for builtin provider", locale);
-
-  return 0;          /* keep compiler quiet */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid locale name \"%s\" for builtin provider", locale);
+  return 0;
 }
 
 /*
@@ -1570,7 +1595,6 @@ const char *
 builtin_validate_locale(int encoding, const char *locale)
 {
   const char *canonical_name = NULL;
-  int required_encoding;
 
   if (strcmp(locale, "C") == 0)
     canonical_name = "C";
@@ -1578,16 +1602,21 @@ builtin_validate_locale(int encoding, const char *locale)
     canonical_name = "C.UTF-8";
   else if (strcmp(locale, "PG_UNICODE_FAST") == 0)
     canonical_name = "PG_UNICODE_FAST";
-
-  if (!canonical_name)
+  if (! canonical_name)
   {
-    elog(ERROR, "invalid locale name \"%s\" for builtin provider", locale);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid locale name \"%s\" for builtin provider", locale);
+    return NULL;
   }
 
-  required_encoding = builtin_locale_encoding(canonical_name);
+  int required_encoding = builtin_locale_encoding(canonical_name);
   if (required_encoding >= 0 && encoding != required_encoding)
-    elog(ERROR, "encoding \"%s\" does not match locale \"%s\"",
-    pg_encoding_to_char(encoding), locale);
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "encoding \"%s\" does not match locale \"%s\"",
+      pg_encoding_to_char(encoding), locale);
+    return NULL;
+  }
 
   return canonical_name;
 }
@@ -1640,14 +1669,16 @@ icu_language_tag(const char *loc_str UNUSED, int elevel UNUSED)
     pfree(langtag);
 
     if (elevel > 0)
-      elog(elevel, "could not convert locale name \"%s\" to language tag: %s",
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not convert locale name \"%s\" to language tag: %s",
         loc_str, u_errorName(status));
     return NULL;
   }
 
   return langtag;
 #else              /* not USE_ICU */
-  elog(ERROR, "ICU is not supported in this build");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "ICU is not supported in this build");
   return NULL;        /* keep compiler quiet */
 #endif              /* not USE_ICU */
 }
@@ -1678,7 +1709,8 @@ icu_validate_locale(const char *loc_str UNUSED)
   uloc_getLanguage(loc_str, lang, ULOC_LANG_CAPACITY, &status);
   if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING)
   {
-    elog(elevel, "could not get language from ICU locale \"%s\": %s",
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not get language from ICU locale \"%s\": %s",
       loc_str, u_errorName(status));
     return;
   }
@@ -1705,7 +1737,8 @@ icu_validate_locale(const char *loc_str UNUSED)
 
   if (!found)
   {
-    elog(elevel, "ICU locale \"%s\" has unknown language \"%s\"", loc_str, lang);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "ICU locale \"%s\" has unknown language \"%s\"", loc_str, lang);
   }
 
   /* check that it can be opened */
@@ -1713,7 +1746,8 @@ icu_validate_locale(const char *loc_str UNUSED)
   ucol_close(collator);
 #else              /* not USE_ICU */
   /* could get here if a collation was created by a build with ICU */
-  elog(ERROR, "ICU is not supported in this build");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "ICU is not supported in this build");
 #endif              /* not USE_ICU */
 }
 

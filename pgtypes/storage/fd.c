@@ -496,8 +496,8 @@ pg_file_exists(const char *name)
   if (stat(name, &st) == 0)
     return !S_ISDIR(st.st_mode);
   else if (!(errno == ENOENT || errno == ENOTDIR || errno == EACCES))
-    elog(ERROR,"could not access file \"%s\": %m", name);
-
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not access file \"%s\": %m", name);
   return false;
 }
 
@@ -562,7 +562,8 @@ retry:
       else
         elevel = data_sync_elevel(WARNING);
 
-      elog(elevel, "could not flush dirty data: %m");
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not flush dirty data: %m");
     }
 
     return;
@@ -590,7 +591,8 @@ retry:
       nbytes = lseek(fd, 0, SEEK_END);
       if (nbytes < 0)
       {
-        elog(WARNING, "could not determine dirty data size: %m");
+        meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+          "could not determine dirty data size: %m");
         return;
       }
     }
@@ -628,7 +630,8 @@ retry:
       int rc = msync(p, (size_t) nbytes, MS_ASYNC);
       if (rc != 0)
       {
-        elog(WARNING, "could not flush dirty data: %m");
+        meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+          "could not flush dirty data: %m");
         /* NB: need to fall through to munmap()! */
       }
 
@@ -636,7 +639,8 @@ retry:
       if (rc != 0)
       {
         /* FATAL error because mapping would remain */
-        elog(ERROR, "could not munmap() while flushing data: %m");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "could not munmap() while flushing data: %m");
       }
 
       return;
@@ -657,7 +661,8 @@ retry:
     if (rc != 0)
     {
       /* don't error out, this is just a performance optimization */
-      elog(WARNING, "could not flush dirty data: %m");
+      meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+        "could not flush dirty data: %m");
     }
 
     return;
@@ -760,7 +765,8 @@ durable_rename(const char *oldfile, const char *newfile, int elevel)
   {
     if (errno != ENOENT)
     {
-      elog(elevel, "could not open file \"%s\": %m", newfile);
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not open file \"%s\": %m", newfile);
       return -1;
     }
   }
@@ -773,13 +779,15 @@ durable_rename(const char *oldfile, const char *newfile, int elevel)
       CloseTransientFile(fd);
       errno = save_errno;
 
-      elog(elevel, "could not fsync file \"%s\": %m", newfile);
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not fsync file \"%s\": %m", newfile);
       return -1;
     }
 
     if (CloseTransientFile(fd) != 0)
     {
-      elog(elevel, "could not close file \"%s\": %m", newfile);
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not close file \"%s\": %m", newfile);
       return -1;
     }
   }
@@ -787,7 +795,8 @@ durable_rename(const char *oldfile, const char *newfile, int elevel)
   /* Time to do the real deal... */
   if (rename(oldfile, newfile) < 0)
   {
-    elog(elevel, "could not rename file \"%s\" to \"%s\": %m", oldfile, 
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not rename file \"%s\" to \"%s\": %m", oldfile, 
       newfile);
     return -1;
   }
@@ -825,7 +834,8 @@ durable_unlink(const char *fname, int elevel)
 {
   if (unlink(fname) < 0)
   {
-    elog(elevel, "could not remove file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not remove file \"%s\": %m", fname);
     return -1;
   }
 
@@ -856,11 +866,13 @@ InitFileAccess(void)
   /* initialize cache header entry */
   VfdCache = (Vfd *) malloc(sizeof(Vfd));
   if (VfdCache == NULL)
-    elog(ERROR, "out of memory");
-
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
+    return;
+  }
   MemSet(&(VfdCache[0]), 0, sizeof(Vfd));
   VfdCache->fd = VFD_CLOSED;
-
   SizeVfdCache = 1;
 }
 
@@ -928,7 +940,8 @@ count_usable_fds(int max_to_probe, int *usable_fds, int *already_open)
   getrlimit_status = getrlimit(RLIMIT_NOFILE, &rlim);
   if (getrlimit_status != 0)
   {
-    elog(WARNING, "getrlimit failed: %m");
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+      "getrlimit failed: %m");
   }
 #endif              /* HAVE_GETRLIMIT */
 
@@ -949,7 +962,7 @@ count_usable_fds(int max_to_probe, int *usable_fds, int *already_open)
     {
       /* Expect EMFILE or ENFILE, else it's fishy */
       if (errno != EMFILE && errno != ENFILE)
-        elog(WARNING, 
+        meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
           "duplicating stderr file descriptor failed after %d successes: %m",
           used);
       break;
@@ -1016,7 +1029,7 @@ set_max_safe_fds(void)
    */
   if (max_safe_fds < FD_MINFREE)
   {
-    elog(ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "insufficient file descriptors available to start server process");
   }
 }
@@ -1037,7 +1050,7 @@ BasicOpenFile(const char *fileName, int fileFlags)
  * This is exported for use by places that really want a plain kernel FD,
  * but need to be proof against running out of FDs.  Once an FD has been
  * successfully returned, it is the caller's responsibility to ensure that
- * it will not be leaked on elog()!  Most users should *not* call this
+ * it will not be leaked on meos_error()!  Most users should *not* call this
  * routine directly, but instead use the VFD abstraction level, which
  * provides protection against descriptor leaks as well as management of
  * files that need to be open for more than a short period of time.
@@ -1097,7 +1110,8 @@ tryAgain:
   if (errno == EMFILE || errno == ENFILE)
   {
     int save_errno = errno;
-    elog(ERROR, "out of file descriptors: %m; release and retry");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of file descriptors: %m; release and retry");
     errno = 0;
     if (ReleaseLruFile())
       goto tryAgain;
@@ -1197,7 +1211,8 @@ _dump_lru(void)
     snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%d ", mru);
   }
   snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "LEAST");
-  elog(ERROR, "%s", buf);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "%s", buf);
 }
 #endif              /* FDDEBUG */
 
@@ -1206,7 +1221,8 @@ Delete(File file)
 {
   Assert(file != 0);
 
-  DO_DB(elog(ERROR, "Delete %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "Delete %d (%s)", file, VfdCache[file].fileName));
   DO_DB(_dump_lru());
 
   Vfd *vfdP = &VfdCache[file];
@@ -1221,7 +1237,8 @@ static void
 LruDelete(File file)
 {
   Assert(file != 0);
-  DO_DB(elog(ERROR, "LruDelete %d (%s)",  file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+     "LruDelete %d (%s)",  file, VfdCache[file].fileName));
   Vfd *vfdP = &VfdCache[file];
 
   pgaio_closing_fd(vfdP->fd);
@@ -1231,8 +1248,9 @@ LruDelete(File file)
    * to leak the FD than to mess up our internal state.
    */
   if (close(vfdP->fd) != 0)
-    elog(vfdP->fdstate & FD_TEMP_FILE_LIMIT ? LOG : data_sync_elevel(LOG),
-       "could not close file \"%s\": %m", vfdP->fileName);
+    meos_error(vfdP->fdstate & FD_TEMP_FILE_LIMIT ? LOG : data_sync_elevel(LOG),
+      MEOS_ERR_INTERNAL_ERROR,
+      "could not close file \"%s\": %m", vfdP->fileName);
   vfdP->fd = VFD_CLOSED;
   --nfile;
 
@@ -1245,7 +1263,8 @@ Insert(File file)
 {
   Assert(file != 0);
 
-  DO_DB(elog(ERROR, "Insert %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "Insert %d (%s)", file, VfdCache[file].fileName));
   DO_DB(_dump_lru());
 
   Vfd *vfdP = &VfdCache[file];
@@ -1263,7 +1282,8 @@ static int
 LruInsert(File file)
 {
   Assert(file != 0);
-  DO_DB(elog(ERROR, "LruInsert %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "LruInsert %d (%s)", file, VfdCache[file].fileName));
   Vfd *vfdP = &VfdCache[file];
   if (FileIsNotOpen(file))
   {
@@ -1279,7 +1299,8 @@ LruInsert(File file)
       vfdP->fileMode);
     if (vfdP->fd < 0)
     {
-      DO_DB(elog(ERROR, "re-open failed: %m"));
+      DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "re-open failed: %m"));
       return -1;
     }
     else
@@ -1303,7 +1324,8 @@ LruInsert(File file)
 static bool
 ReleaseLruFile(void)
 {
-  DO_DB(elog(ERROR, "ReleaseLruFile. Opened %d", nfile));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "ReleaseLruFile. Opened %d", nfile));
 
   if (nfile > 0)
   {
@@ -1338,7 +1360,8 @@ AllocateVfd(void)
   Index    i;
   File    file;
 
-  DO_DB(elog(ERROR, "AllocateVfd. Size %zu", SizeVfdCache));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "AllocateVfd. Size %zu", SizeVfdCache));
 
   Assert(SizeVfdCache > 0);  /* InitFileAccess not called? */
 
@@ -1360,7 +1383,8 @@ AllocateVfd(void)
     newVfdCache = (Vfd *) realloc(VfdCache, sizeof(Vfd) * newCacheSize);
     if (newVfdCache == NULL)
     {
-      elog(ERROR, "out of memory");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "out of memory");
     }
     VfdCache = newVfdCache;
 
@@ -1394,7 +1418,8 @@ FreeVfd(File file)
 {
   Vfd *vfdP = &VfdCache[file];
 
-  DO_DB(elog(ERROR, "FreeVfd: %d (%s)", file,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "FreeVfd: %d (%s)", file,
     vfdP->fileName ? vfdP->fileName : ""));
 
   if (vfdP->fileName != NULL)
@@ -1414,7 +1439,8 @@ FileAccess(File file)
 {
   int returnValue;
 
-  DO_DB(elog(ERROR, "FileAccess %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "FileAccess %d (%s)", file, VfdCache[file].fileName));
 
   /*
    * Is the file open?  If not, open it and put it at the head of the LRU
@@ -1451,8 +1477,9 @@ ReportTemporaryFileUsage(const char *path, off_t size)
   if (log_temp_files >= 0)
   {
     if ((size / 1024) >= log_temp_files)
-      elog(ERROR, "temporary file: path \"%s\", size %lu", path,
-         (unsigned long) size);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "temporary file: path \"%s\", size %lu",
+        path, (unsigned long) size);
   }
 }
 
@@ -1508,8 +1535,9 @@ PathNameOpenFilePerm(const char *fileName, int fileFlags, mode_t fileMode)
   File    file;
   Vfd       *vfdP;
 
-  DO_DB(elog(ERROR, "PathNameOpenFilePerm: %s %x %o",
-         fileName, fileFlags, fileMode));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "PathNameOpenFilePerm: %s %x %o",
+      fileName, fileFlags, fileMode));
 
   /*
    * We need a malloc'd copy of the file name; fail cleanly if no room.
@@ -1517,7 +1545,8 @@ PathNameOpenFilePerm(const char *fileName, int fileFlags, mode_t fileMode)
   char *fnamecopy = strdup(fileName);
   if (fnamecopy == NULL)
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
   }
 
   file = AllocateVfd();
@@ -1545,7 +1574,8 @@ PathNameOpenFilePerm(const char *fileName, int fileFlags, mode_t fileMode)
     return -1;
   }
   ++nfile;
-  DO_DB(elog(ERROR, "PathNameOpenFile: success %d", vfdP->fd));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "PathNameOpenFile: success %d", vfdP->fd));
 
   vfdP->fileName = fnamecopy;
   /* Saved flags are adjusted to be OK for re-opening file */
@@ -1585,11 +1615,13 @@ PathNameCreateTemporaryDir(const char *basedir, const char *directory)
      * algorithm.
      */
     if (MakePGDirectory(basedir) < 0 && errno != EEXIST)
-      elog(ERROR, "cannot create temporary directory \"%s\": %m", basedir);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "cannot create temporary directory \"%s\": %m", basedir);
 
     /* Try again. */
     if (MakePGDirectory(directory) < 0 && errno != EEXIST)
-      elog(ERROR, "cannot create temporary subdirectory \"%s\": %m",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "cannot create temporary subdirectory \"%s\": %m",
         directory);
   }
 }
@@ -1743,7 +1775,8 @@ OpenTemporaryFileInTablespace(Oid tblspcOid, bool rejectError)
     file = PathNameOpenFile(tempfilepath,
       O_RDWR | O_CREAT | O_TRUNC | PG_BINARY);
     if (file <= 0 && rejectError)
-      elog(ERROR, "could not create temporary file \"%s\": %m", tempfilepath);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not create temporary file \"%s\": %m", tempfilepath);
   }
 
   return file;
@@ -1779,7 +1812,8 @@ PathNameCreateTemporaryFile(const char *path, bool error_on_failure)
   if (file <= 0)
   {
     if (error_on_failure)
-      elog(ERROR, "could not create temporary file \"%s\": %m", path);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not create temporary file \"%s\": %m", path);
     else
       return file;
   }
@@ -1808,7 +1842,8 @@ PathNameOpenTemporaryFile(const char *path, int mode)
 
   /* If no such file, then we don't raise an error. */
   if (file <= 0 && errno != ENOENT)
-    elog(ERROR, "could not open temporary file \"%s\": %m", path);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not open temporary file \"%s\": %m", path);
 
   if (file > 0)
   {
@@ -1845,7 +1880,8 @@ PathNameDeleteTemporaryFile(const char *path, bool error_on_failure)
   if (unlink(path) < 0)
   {
     if (errno != ENOENT)
-      elog(error_on_failure ? ERROR : LOG,
+      meos_error(error_on_failure ? ERROR : LOG,
+        MEOS_ERR_INTERNAL_ERROR,
         "could not unlink temporary file \"%s\": %m", path);
     return false;
   }
@@ -1855,7 +1891,8 @@ PathNameDeleteTemporaryFile(const char *path, bool error_on_failure)
   else
   {
     errno = stat_errno;
-    elog(ERROR, "could not stat file \"%s\": %m", path);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not stat file \"%s\": %m", path);
   }
 
   return true;
@@ -1868,7 +1905,8 @@ void
 FileClose(File file)
 {
   Assert(FileIsValid(file));
-  DO_DB(elog(ERROR, "FileClose: %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileClose: %d (%s)", file, VfdCache[file].fileName));
   Vfd *vfdP = &VfdCache[file];
   if (!FileIsNotOpen(file))
   {
@@ -1880,8 +1918,9 @@ FileClose(File file)
        * We may need to panic on failure to close non-temporary files;
        * see LruDelete.
        */
-      elog(vfdP->fdstate & FD_TEMP_FILE_LIMIT ? LOG : data_sync_elevel(LOG),
-         "could not close file \"%s\": %m", vfdP->fileName);
+      meos_error(vfdP->fdstate & FD_TEMP_FILE_LIMIT ? LOG : data_sync_elevel(LOG),
+        MEOS_ERR_INTERNAL_ERROR,
+        "could not close file \"%s\": %m", vfdP->fileName);
     }
 
     --nfile;
@@ -1907,7 +1946,7 @@ FileClose(File file)
     int stat_errno;
 
     /*
-     * If we get an error, as could happen within the elog/elog calls,
+     * If we get an error, as could happen within the meos_error calls,
      * we'll come right back here during transaction abort.  Reset the
      * flag to ensure that we can't get into an infinite loop.  This code
      * is arranged to ensure that the worst-case consequence is failing to
@@ -1924,7 +1963,8 @@ FileClose(File file)
 
     /* in any case do the unlink */
     if (unlink(vfdP->fileName))
-      elog(ERROR, "could not delete file \"%s\": %m", vfdP->fileName); 
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not delete file \"%s\": %m", vfdP->fileName); 
 
     /* and last report the stat results */
     if (stat_errno == 0)
@@ -1932,7 +1972,8 @@ FileClose(File file)
     else
     {
       errno = stat_errno;
-      elog(ERROR, "could not stat file \"%s\": %m", vfdP->fileName);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not stat file \"%s\": %m", vfdP->fileName);
     }
   }
 
@@ -1959,7 +2000,8 @@ FilePrefetch(File file, off_t offset, off_t amount, uint32 wait_event_info)
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FilePrefetch: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FilePrefetch: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
     file, VfdCache[file].fileName, (int64) offset, (int64) amount));
 
 #if defined(USE_POSIX_FADVISE) && defined(POSIX_FADV_WILLNEED)
@@ -2014,7 +2056,8 @@ FileWriteback(File file, off_t offset, off_t nbytes, uint32 wait_event_info)
 
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileWriteback: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileWriteback: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
     file, VfdCache[file].fileName, (int64) offset, (int64) nbytes));
 
   if (nbytes <= 0)
@@ -2038,7 +2081,8 @@ FileReadV(File file, const struct iovec *iov, int iovcnt, off_t offset,
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileReadV: %d (%s) " INT64_FORMAT " %d", file,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileReadV: %d (%s) " INT64_FORMAT " %d", file,
     VfdCache[file].fileName, (int64) offset, iovcnt));
 
   ssize_t returnCode = FileAccess(file);
@@ -2088,7 +2132,8 @@ FileStartReadV(PgAioHandle *ioh, File file, int iovcnt, off_t offset,
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileStartReadV: %d (%s) " INT64_FORMAT " %d",
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileStartReadV: %d (%s) " INT64_FORMAT " %d",
     file, VfdCache[file].fileName, (int64) offset, iovcnt));
 
   int returnCode = FileAccess(file);
@@ -2108,7 +2153,8 @@ FileWriteV(File file, const struct iovec *iov, int iovcnt, off_t offset,
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileWriteV: %d (%s) " INT64_FORMAT " %d",
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileWriteV: %d (%s) " INT64_FORMAT " %d",
     file, VfdCache[file].fileName, (int64) offset, iovcnt));
 
   ssize_t returnCode = FileAccess(file);
@@ -2137,7 +2183,8 @@ FileWriteV(File file, const struct iovec *iov, int iovcnt, off_t offset,
       uint64 newTotal = temporary_files_size;
       newTotal += past_write - vfdP->fileSize;
       if (newTotal > (uint64) temp_file_limit * (uint64) 1024)
-        elog(ERROR, "temporary file size exceeds \"temp_file_limit\" (%dkB)",
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "temporary file size exceeds \"temp_file_limit\" (%dkB)",
           temp_file_limit);
     }
   }
@@ -2202,7 +2249,8 @@ FileSync(File file, uint32 wait_event_info)
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileSync: %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileSync: %d (%s)", file, VfdCache[file].fileName));
 
   int returnCode = FileAccess(file);
   if (returnCode < 0)
@@ -2229,7 +2277,8 @@ FileZero(File file, off_t offset, off_t amount, uint32 wait_event_info)
 
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileZero: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileZero: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
     file, VfdCache[file].fileName, (int64) offset, (int64) amount));
 
   returnCode = FileAccess(file);
@@ -2271,7 +2320,8 @@ FileFallocate(File file, off_t offset, off_t amount, uint32 wait_event_info)
 #ifdef HAVE_POSIX_FALLOCATE
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileFallocate: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileFallocate: %d (%s) " INT64_FORMAT " " INT64_FORMAT,
     file, VfdCache[file].fileName, (int64) offset, (int64) amount));
 
   int returnCode = FileAccess(file);
@@ -2306,7 +2356,8 @@ FileSize(File file)
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileSize %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileSize %d (%s)", file, VfdCache[file].fileName));
   if (FileIsNotOpen(file))
   {
     if (FileAccess(file) < 0)
@@ -2320,7 +2371,8 @@ FileTruncate(File file, off_t offset, uint32 wait_event_info)
 {
   Assert(FileIsValid(file));
 
-  DO_DB(elog(ERROR, "FileTruncate %d (%s)", file, VfdCache[file].fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FileTruncate %d (%s)", file, VfdCache[file].fileName));
 
   int returnCode = FileAccess(file);
   if (returnCode < 0)
@@ -2420,7 +2472,8 @@ reserveAllocatedDesc(void)
     newDescs = (AllocateDesc *) malloc(newMax * sizeof(AllocateDesc));
     /* Out of memory already?  Treat as fatal error. */
     if (newDescs == NULL)
-      elog(ERROR, "out of memory");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "out of memory");
     allocatedDescs = newDescs;
     maxAllocatedDescs = newMax;
     return true;
@@ -2467,7 +2520,7 @@ reserveAllocatedDesc(void)
  *
  * fd.c will automatically close all files opened with AllocateFile at
  * transaction commit or abort; this prevents FD leakage if a routine
- * that calls AllocateFile is terminated prematurely by elog(ERROR).
+ * that calls AllocateFile is terminated prematurely by meos_error(ERROR).
  *
  * Ideally this should be the *only* direct call of fopen() in the backend.
  */
@@ -2476,12 +2529,13 @@ AllocateFile(const char *name, const char *mode)
 {
   FILE *file;
 
-  DO_DB(elog(ERROR, "AllocateFile: Allocated %d (%s)",
-         numAllocatedDescs, name));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "AllocateFile: Allocated %d (%s)",
+    numAllocatedDescs, name));
 
   /* Can we allocate another non-virtual FD? */
   if (!reserveAllocatedDesc())
-    elog(ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "exceeded maxAllocatedDescs (%d) while trying to open file \"%s\"",
       maxAllocatedDescs, name);
 
@@ -2503,7 +2557,8 @@ TryAgain:
   {
     int save_errno = errno;
 
-    elog(ERROR, "out of file descriptors: %m; release and retry");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of file descriptors: %m; release and retry");
     errno = 0;
     if (ReleaseLruFile())
       goto TryAgain;
@@ -2529,12 +2584,13 @@ OpenTransientFile(const char *fileName, int fileFlags)
 int
 OpenTransientFilePerm(const char *fileName, int fileFlags, mode_t fileMode)
 {
-  DO_DB(elog(ERROR, "OpenTransientFile: Allocated %d (%s)",
-         numAllocatedDescs, fileName));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "OpenTransientFile: Allocated %d (%s)",
+    numAllocatedDescs, fileName));
 
   /* Can we allocate another non-virtual FD? */
   if (!reserveAllocatedDesc())
-    elog(ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "exceeded maxAllocatedDescs (%d) while trying to open file \"%s\"",
       maxAllocatedDescs, fileName);
 
@@ -2572,12 +2628,13 @@ OpenPipeStream(const char *command, const char *mode)
   FILE *file;
   int save_errno;
 
-  DO_DB(elog(ERROR, "OpenPipeStream: Allocated %d (%s)",
-         numAllocatedDescs, command));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "OpenPipeStream: Allocated %d (%s)",
+    numAllocatedDescs, command));
 
   /* Can we allocate another non-virtual FD? */
   if (!reserveAllocatedDesc())
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "exceeded maxAllocatedDescs (%d) while trying to execute command \"%s\"",
       maxAllocatedDescs, command);
 
@@ -2604,7 +2661,8 @@ TryAgain:
 
   if (errno == EMFILE || errno == ENFILE)
   {
-    elog(ERROR, "out of file descriptors: %m; release and retry");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of file descriptors: %m; release and retry");
     if (ReleaseLruFile())
       goto TryAgain;
     errno = save_errno;
@@ -2640,7 +2698,8 @@ FreeDesc(AllocateDesc *desc)
       result = close(desc->desc.fd);
       break;
     default:
-      elog(ERROR, "AllocateDesc kind not recognized");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "AllocateDesc kind not recognized");
       result = 0;      /* keep compiler quiet */
       break;
   }
@@ -2661,7 +2720,8 @@ FreeDesc(AllocateDesc *desc)
 int
 FreeFile(FILE *file)
 {
-  DO_DB(elog(ERROR, "FreeFile: Allocated %d", numAllocatedDescs));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FreeFile: Allocated %d", numAllocatedDescs));
 
   /* Remove file from list of allocated files, if it's present */
   for (int i = numAllocatedDescs; --i >= 0;)
@@ -2673,7 +2733,8 @@ FreeFile(FILE *file)
   }
 
   /* Only get here if someone passes us a file not in allocatedDescs */
-  elog(WARNING, "file passed to FreeFile was not obtained from AllocateFile");
+  meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+    "file passed to FreeFile was not obtained from AllocateFile");
 
   return fclose(file);
 }
@@ -2687,7 +2748,8 @@ FreeFile(FILE *file)
 int
 CloseTransientFile(int fd)
 {
-  DO_DB(elog(ERROR, "CloseTransientFile: Allocated %d", numAllocatedDescs));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "CloseTransientFile: Allocated %d", numAllocatedDescs));
 
   /* Remove fd from list of allocated files, if it's present */
   for (int i = numAllocatedDescs; --i >= 0;)
@@ -2699,7 +2761,8 @@ CloseTransientFile(int fd)
   }
 
   /* Only get here if someone passes us a file not in allocatedDescs */
-  elog(WARNING, "fd passed to CloseTransientFile was not obtained from OpenTransientFile");
+  meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+    "fd passed to CloseTransientFile was not obtained from OpenTransientFile");
 
   pgaio_closing_fd(fd);
 
@@ -2709,7 +2772,7 @@ CloseTransientFile(int fd)
 /*
  * Routines that want to use <dirent.h> (ie, DIR*) should use AllocateDir
  * rather than plain opendir().  This lets fd.c deal with freeing FDs if
- * necessary to open the directory, and with closing it after an elog.
+ * necessary to open the directory, and with closing it after an meos_error.
  * When done, call FreeDir rather than closedir.
  *
  * Returns NULL, with errno set, on failure.  Note that failure detection
@@ -2721,12 +2784,13 @@ CloseTransientFile(int fd)
 DIR *
 AllocateDir(const char *dirname)
 {
-  DO_DB(elog(ERROR, "AllocateDir: Allocated %d (%s)", numAllocatedDescs,
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "AllocateDir: Allocated %d (%s)", numAllocatedDescs,
     dirname));
 
   /* Can we allocate another non-virtual FD? */
   if (!reserveAllocatedDesc())
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "exceeded maxAllocatedDescs (%d) while trying to open directory \"%s\"",
       maxAllocatedDescs, dirname);
 
@@ -2748,7 +2812,8 @@ TryAgain:
   if (errno == EMFILE || errno == ENFILE)
   {
     int save_errno = errno;
-    elog(ERROR, "out of file descriptors: %m; release and retry");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of file descriptors: %m; release and retry");
     errno = 0;
     if (ReleaseLruFile())
       goto TryAgain;
@@ -2759,7 +2824,7 @@ TryAgain:
 }
 
 /*
- * Read a directory opened with AllocateDir, elog'ing any error.
+ * Read a directory opened with AllocateDir, meos_error'ing any error.
  *
  * This is easier to use than raw readdir() since it takes care of some
  * otherwise rather tedious and error-prone manipulation of errno.  Also,
@@ -2801,7 +2866,8 @@ ReadDirExtended(DIR *dir, const char *dirname, int elevel)
   /* Give a generic message for AllocateDir failure, if caller didn't */
   if (dir == NULL)
   {
-    elog(elevel, "could not open directory \"%s\": %m", dirname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not open directory \"%s\": %m", dirname);
     return NULL;
   }
 
@@ -2810,7 +2876,8 @@ ReadDirExtended(DIR *dir, const char *dirname, int elevel)
     return dent;
 
   if (errno)
-    elog(elevel, "could not read directory \"%s\": %m", dirname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not read directory \"%s\": %m", dirname);
   return NULL;
 }
 
@@ -2831,7 +2898,8 @@ FreeDir(DIR *dir)
   if (dir == NULL)
     return 0;
 
-  DO_DB(elog(ERROR, "FreeDir: Allocated %d", numAllocatedDescs));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "FreeDir: Allocated %d", numAllocatedDescs));
 
   /* Remove dir from list of allocated dirs, if it's present */
   for (int i = numAllocatedDescs; --i >= 0;)
@@ -2842,7 +2910,8 @@ FreeDir(DIR *dir)
   }
 
   /* Only get here if someone passes us a dir not in allocatedDescs */
-  elog(WARNING, "dir passed to FreeDir was not obtained from AllocateDir");
+  meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+    "dir passed to FreeDir was not obtained from AllocateDir");
 
   return closedir(dir);
 }
@@ -2854,7 +2923,8 @@ FreeDir(DIR *dir)
 int
 ClosePipeStream(FILE *file)
 {
-  DO_DB(elog(ERROR, "ClosePipeStream: Allocated %d", numAllocatedDescs));
+  DO_DB(meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "ClosePipeStream: Allocated %d", numAllocatedDescs));
 
   /* Remove file from list of allocated files, if it's present */
   for (int i = numAllocatedDescs; --i >= 0;)
@@ -2866,7 +2936,8 @@ ClosePipeStream(FILE *file)
   }
 
   /* Only get here if someone passes us a file not in allocatedDescs */
-  elog(WARNING, "file passed to ClosePipeStream was not obtained from OpenPipeStream");
+  meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+    "file passed to ClosePipeStream was not obtained from OpenPipeStream");
 
   return pclose(file);
 }
@@ -3082,7 +3153,8 @@ CleanupTempFiles(bool isCommit, bool isProcExit)
           FileClose(i);
         else if (fdstate & FD_CLOSE_AT_EOXACT)
         {
-          elog(WARNING, "temporary file %s not closed at end-of-transaction",
+          meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+            "temporary file %s not closed at end-of-transaction",
              VfdCache[i].fileName);
           FileClose(i);
         }
@@ -3094,7 +3166,8 @@ CleanupTempFiles(bool isCommit, bool isProcExit)
 
   /* Complain if any allocated files remain open at commit. */
   if (isCommit && numAllocatedDescs > 0)
-    elog(WARNING, "%d temporary files and directories not closed at end-of-transaction",
+    meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
+        "%d temporary files and directories not closed at end-of-transaction",
        numAllocatedDescs);
 
   /* Clean up "allocated" stdio files, dirs and fds. */
@@ -3120,7 +3193,7 @@ CleanupTempFiles(bool isCommit, bool isProcExit)
  * collision with an existing temp file name.
  *
  * NOTE: this function and its subroutines generally report syscall failures
- * with elog(ERROR) and keep going.  Removing temp files is not so critical
+ * with meos_error(ERROR) and keep going.  Removing temp files is not so critical
  * that we should fail to start the database when we can't do it.
  */
 void
@@ -3214,16 +3287,19 @@ RemovePgTempFilesInDir(const char *tmpdirname, bool missing_ok, bool unlink_all)
         RemovePgTempFilesInDir(rm_path, false, true);
 
         if (rmdir(rm_path) < 0)
-          elog(ERROR, "could not remove directory \"%s\": %m", rm_path);
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "could not remove directory \"%s\": %m", rm_path);
       }
       else
       {
         if (unlink(rm_path) < 0)
-          elog(ERROR, "could not remove file \"%s\": %m", rm_path);
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "could not remove file \"%s\": %m", rm_path);
       }
     }
     else
-      elog(ERROR, "unexpected file found in temporary-files directory: \"%s\"",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unexpected file found in temporary-files directory: \"%s\"",
         rm_path);
   }
 
@@ -3271,7 +3347,8 @@ RemovePgTempRelationFilesInDbspace(const char *dbspacedirname)
     snprintf(rm_path, sizeof(rm_path), "%s/%s", dbspacedirname, de->d_name);
 
     if (unlink(rm_path) < 0)
-      elog(ERROR, "could not remove file \"%s\": %m", rm_path);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not remove file \"%s\": %m", rm_path);
   }
 
   FreeDir(dbspace_dir);
@@ -3334,11 +3411,13 @@ do_syncfs(const char *path)
   int fd = OpenTransientFile(path, O_RDONLY);
   if (fd < 0)
   {
-    elog(ERROR, "could not open file \"%s\": %m", path);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not open file \"%s\": %m", path);
     return;
   }
   if (syncfs(fd) < 0)
-    elog(ERROR, "could not synchronize file system for file \"%s\": %m", path);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not synchronize file system for file \"%s\": %m", path);
   CloseTransientFile(fd);
 }
 #endif
@@ -3381,7 +3460,8 @@ SyncDataDirectory(void)
   {
     struct stat st;
     if (lstat("pg_wal", &st) < 0)
-      elog(ERROR, "could not stat file \"%s\": %m", "pg_wal");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not stat file \"%s\": %m", "pg_wal");
     else if (S_ISLNK(st.st_mode))
       xlog_is_symlink = true;
   }
@@ -3539,7 +3619,8 @@ pre_sync_fname(const char *fname, bool isdir, int elevel)
   {
     if (errno == EACCES)
       return;
-    elog(elevel, "could not open file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not open file \"%s\": %m", fname);
     return;
   }
 
@@ -3549,7 +3630,8 @@ pre_sync_fname(const char *fname, bool isdir, int elevel)
    */
   pg_flush_data(fd, 0, 0);
   if (CloseTransientFile(fd) != 0)
-    elog(elevel, "could not close file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not close file \"%s\": %m", fname);
 }
 
 #endif              /* PG_FLUSH_DATA_WORKS */
@@ -3573,7 +3655,8 @@ unlink_if_exists_fname(const char *fname, bool isdir, int elevel)
   if (isdir)
   {
     if (rmdir(fname) != 0 && errno != ENOENT)
-      elog(elevel, "could not remove directory \"%s\": %m", fname);
+      meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+        "could not remove directory \"%s\": %m", fname);
   }
   else
   {
@@ -3618,7 +3701,8 @@ fsync_fname_ext(const char *fname, bool isdir, bool ignore_perm, int elevel)
     return 0;
   else if (fd < 0)
   {
-    elog(elevel, "could not open file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not open file \"%s\": %m", fname);
     return -1;
   }
 
@@ -3637,13 +3721,15 @@ fsync_fname_ext(const char *fname, bool isdir, bool ignore_perm, int elevel)
     (void) CloseTransientFile(fd);
     errno = save_errno;
 
-    elog(elevel, "could not fsync file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not fsync file \"%s\": %m", fname);
     return -1;
   }
 
   if (CloseTransientFile(fd) != 0)
   {
-    elog(elevel, "could not close file \"%s\": %m", fname);
+    meos_error(elevel, MEOS_ERR_INTERNAL_ERROR,
+      "could not close file \"%s\": %m", fname);
     return -1;
   }
 

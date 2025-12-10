@@ -26,7 +26,6 @@
 #include "common/hashfn.h"
 #include "port/pg_bitutils.h"
 
-
 /*
  * This hash function was written by Bob Jenkins
  * (bob_jenkins@burtleburtle.net), and superficially adapted
@@ -135,7 +134,7 @@
  * of 2.  There is no need to do mod a prime (mod is sooo slow!).
  * If you need less than 32 bits, use a bitmask.
  *
- * This procedure must never throw elog(ERROR); the ResourceOwner code
+ * This procedure must never throw meos_error(ERROR); the ResourceOwner code
  * relies on this not to fail.
  *
  * Note: we could easily change this function to return a 64-bit hash value
@@ -630,9 +629,7 @@ hash_bytes_uint32(uint32 k)
 uint64
 hash_bytes_uint32_extended(uint32 k, uint64 seed)
 {
-	uint32		a,
-				b,
-				c;
+	uint32 a, b, c;
 
 	a = b = c = 0x9e3779b9 + (uint32) sizeof(uint32) + 3923095;
 

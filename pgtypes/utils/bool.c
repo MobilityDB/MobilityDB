@@ -148,7 +148,8 @@ bool_in(const char *str)
   if (parse_bool_with_len(str1, len, &result))
     return result;
 
-  elog(ERROR, "invalid input syntax for type %s: \"%s\"", "boolean", str);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid input syntax for type %s: \"%s\"", "boolean", str);
   return false;
 }
 

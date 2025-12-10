@@ -10,8 +10,8 @@
  *
  *-------------------------------------------------------------------------
  */
-#ifndef PG_PORT_H
-#define PG_PORT_H
+#ifndef __PG_PORT_H__
+#define __PG_PORT_H__
 
 #include <ctype.h>
 
@@ -36,7 +36,8 @@ typedef SOCKET pgsocket;
 #endif
 
 /* if platform lacks socklen_t, we assume this will work */
-#ifndef HAVE_SOCKLEN_T
+#if !defined(HAVE_SOCKLEN_T) && !defined(_WIN32) // MEOS
+// #ifndef HAVE_SOCKLEN_T
 typedef unsigned int socklen_t;
 #endif
 
@@ -562,4 +563,4 @@ extern int	wait_result_to_exit_code(int exit_status);
 #define HAVE_SYMLINK 1
 #endif
 
-#endif							/* PG_PORT_H */
+#endif /* __PG_PORT_H__ */

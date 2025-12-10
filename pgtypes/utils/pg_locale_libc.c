@@ -56,46 +56,36 @@ extern char *database_ctype;
 extern pg_locale_t create_pg_locale_libc(Oid collid);
 
 extern size_t strlower_libc(char *dst, size_t dstsize, const char *src,
-              ssize_t srclen, pg_locale_t locale);
+  ssize_t srclen, pg_locale_t locale);
 extern size_t strtitle_libc(char *dst, size_t dstsize, const char *src,
-              ssize_t srclen, pg_locale_t locale);
+  ssize_t srclen, pg_locale_t locale);
 extern size_t strupper_libc(char *dst, size_t dstsize, const char *src,
-              ssize_t srclen, pg_locale_t locale);
+  ssize_t srclen, pg_locale_t locale);
 
-static int  strncoll_libc(const char *arg1, ssize_t len1,
-              const char *arg2, ssize_t len2,
-              pg_locale_t locale);
-static size_t strnxfrm_libc(char *dest, size_t destsize,
-              const char *src, ssize_t srclen,
-              pg_locale_t locale);
+static int strncoll_libc(const char *arg1, ssize_t len1, const char *arg2,
+  ssize_t len2, pg_locale_t locale);
+static size_t strnxfrm_libc(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
 extern char *get_collation_actual_version_libc(const char *collcollate);
-static locale_t make_libc_collator(const char *collate,
-                   const char *ctype);
+static locale_t make_libc_collator(const char *collate, const char *ctype);
 
 #ifdef WIN32
 static int  strncoll_libc_win32_utf8(const char *arg1, ssize_t len1,
-                   const char *arg2, ssize_t len2,
-                   pg_locale_t locale);
+  const char *arg2, ssize_t len2, pg_locale_t locale);
 #endif
 
-static size_t strlower_libc_sb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
-static size_t strlower_libc_mb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
-static size_t strtitle_libc_sb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
-static size_t strtitle_libc_mb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
-static size_t strupper_libc_sb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
-static size_t strupper_libc_mb(char *dest, size_t destsize,
-                 const char *src, ssize_t srclen,
-                 pg_locale_t locale);
+static size_t strlower_libc_sb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
+static size_t strlower_libc_mb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
+static size_t strtitle_libc_sb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
+static size_t strtitle_libc_mb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
+static size_t strupper_libc_sb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
+static size_t strupper_libc_mb(char *dest, size_t destsize, const char *src,
+  ssize_t srclen, pg_locale_t locale);
 
 static const struct collate_methods collate_methods_libc = {
   .strncoll = strncoll_libc,
@@ -132,8 +122,8 @@ static const struct collate_methods collate_methods_libc_win32_utf8 = {
 #endif
 
 size_t
-strlower_libc(char *dst, size_t dstsize, const char *src,
-        ssize_t srclen, pg_locale_t locale)
+strlower_libc(char *dst, size_t dstsize, const char *src, ssize_t srclen,
+  pg_locale_t locale)
 {
   if (pg_database_encoding_max_length() > 1)
     return strlower_libc_mb(dst, dstsize, src, srclen, locale);
@@ -142,8 +132,8 @@ strlower_libc(char *dst, size_t dstsize, const char *src,
 }
 
 size_t
-strtitle_libc(char *dst, size_t dstsize, const char *src,
-        ssize_t srclen, pg_locale_t locale)
+strtitle_libc(char *dst, size_t dstsize, const char *src, ssize_t srclen,
+  pg_locale_t locale)
 {
   if (pg_database_encoding_max_length() > 1)
     return strtitle_libc_mb(dst, dstsize, src, srclen, locale);
@@ -152,8 +142,8 @@ strtitle_libc(char *dst, size_t dstsize, const char *src,
 }
 
 size_t
-strupper_libc(char *dst, size_t dstsize, const char *src,
-        ssize_t srclen, pg_locale_t locale)
+strupper_libc(char *dst, size_t dstsize, const char *src, ssize_t srclen,
+  pg_locale_t locale)
 {
   if (pg_database_encoding_max_length() > 1)
     return strupper_libc_mb(dst, dstsize, src, srclen, locale);
@@ -163,7 +153,7 @@ strupper_libc(char *dst, size_t dstsize, const char *src,
 
 static size_t
 strlower_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
   if (srclen < 0)
     srclen = strlen(src);
@@ -200,14 +190,14 @@ strlower_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
 
 static size_t
 strlower_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
-  locale_t  loc = locale->info.lt;
-  size_t    result_size;
-  wchar_t    *workspace;
-  char     *result;
-  size_t    curr_char;
-  size_t    max_size;
+  locale_t loc = locale->info.lt;
+  size_t result_size;
+  wchar_t *workspace;
+  char *result;
+  size_t curr_char;
+  size_t max_size;
 
   if (srclen < 0)
     srclen = strlen(src);
@@ -215,7 +205,9 @@ strlower_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t)(srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
+    return 0;
   }
 
   /* Output workspace cannot have more codes than input bytes */
@@ -248,17 +240,16 @@ strlower_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
 
 static size_t
 strtitle_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
   if (srclen < 0)
     srclen = strlen(src);
 
   if ((size_t)(srclen + 1) <= destsize)
   {
-    locale_t  loc = locale->info.lt;
-    int      wasalnum = false;
-    char     *p;
-
+    locale_t loc = locale->info.lt;
+    int wasalnum = false;
+    char *p;
     memcpy(dest, src, srclen);
     dest[srclen] = '\0';
 
@@ -294,15 +285,15 @@ strtitle_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
 
 static size_t
 strtitle_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
-  locale_t  loc = locale->info.lt;
-  int      wasalnum = false;
-  size_t    result_size;
-  wchar_t    *workspace;
-  char     *result;
-  size_t    curr_char;
-  size_t    max_size;
+  locale_t loc = locale->info.lt;
+  int wasalnum = false;
+  size_t result_size;
+  wchar_t *workspace;
+  char *result;
+  size_t curr_char;
+  size_t max_size;
 
   if (srclen < 0)
     srclen = strlen(src);
@@ -310,14 +301,14 @@ strtitle_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t)(srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
+    return 0;
   }
 
   /* Output workspace cannot have more codes than input bytes */
   workspace = (wchar_t *) palloc((srclen + 1) * sizeof(wchar_t));
-
   char2wchar(workspace, srclen + 1, src, srclen, locale);
-
   for (curr_char = 0; workspace[curr_char] != 0; curr_char++)
   {
     if (wasalnum)
@@ -332,24 +323,20 @@ strtitle_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
    */
   max_size = curr_char * pg_database_encoding_max_length();
   result = palloc(max_size + 1);
-
   result_size = wchar2char(result, workspace, max_size + 1, locale);
-
   if (result_size + 1 > destsize)
     return result_size;
 
   memcpy(dest, result, result_size);
   dest[result_size] = '\0';
-
   pfree(workspace);
   pfree(result);
-
   return result_size;
 }
 
 static size_t
 strupper_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
   if (srclen < 0)
     srclen = strlen(src);
@@ -357,8 +344,7 @@ strupper_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   if ((size_t)(srclen + 1) <= destsize)
   {
     locale_t  loc = locale->info.lt;
-    char     *p;
-
+    char *p;
     memcpy(dest, src, srclen);
     dest[srclen] = '\0';
 
@@ -383,14 +369,14 @@ strupper_libc_sb(char *dest, size_t destsize, const char *src, ssize_t srclen,
 
 static size_t
 strupper_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
-         pg_locale_t locale)
+  pg_locale_t locale)
 {
-  locale_t  loc = locale->info.lt;
-  size_t    result_size;
-  wchar_t    *workspace;
-  char     *result;
-  size_t    curr_char;
-  size_t    max_size;
+  locale_t loc = locale->info.lt;
+  size_t result_size;
+  wchar_t *workspace;
+  char *result;
+  size_t curr_char;
+  size_t max_size;
 
   if (srclen < 0)
     srclen = strlen(src);
@@ -398,14 +384,14 @@ strupper_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t) (srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
+    return 0;
   }
 
   /* Output workspace cannot have more codes than input bytes */
   workspace = (wchar_t *) palloc((srclen + 1) * sizeof(wchar_t));
-
   char2wchar(workspace, srclen + 1, src, srclen, locale);
-
   for (curr_char = 0; workspace[curr_char] != 0; curr_char++)
     workspace[curr_char] = towupper_l(workspace[curr_char], loc);
 
@@ -445,7 +431,8 @@ create_pg_locale_libc(Oid collid)
     if (! rec)
     {
       // The error message has been ouput in function FindCollation
-      // elog(ERROR, "cache lookup failed for collation %u", collid);
+      // meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      //   "cache lookup failed for collation %u", collid);
       return NULL;
     }
     collate = rec->collate;
@@ -485,7 +472,7 @@ create_pg_locale_libc(Oid collid)
 static locale_t
 make_libc_collator(const char *collate, const char *ctype)
 {
-  locale_t  loc = 0;
+  locale_t loc = 0;
 
   if (strcmp(collate, ctype) == 0)
   {
@@ -494,8 +481,7 @@ make_libc_collator(const char *collate, const char *ctype)
       /* Normal case where they're the same */
       errno = 0;
 #ifndef WIN32
-      loc = newlocale(LC_COLLATE_MASK | LC_CTYPE_MASK, collate,
-              NULL);
+      loc = newlocale(LC_COLLATE_MASK | LC_CTYPE_MASK, collate, NULL);
 #else
       loc = _create_locale(LC_ALL, collate);
 #endif
@@ -507,8 +493,7 @@ make_libc_collator(const char *collate, const char *ctype)
   {
 #ifndef WIN32
     /* We need two newlocale() steps */
-    locale_t  loc1 = 0;
-
+    locale_t loc1 = 0;
     if (strcmp(collate, "C") != 0 && strcmp(collate, "POSIX") != 0)
     {
       errno = 0;
@@ -521,7 +506,7 @@ make_libc_collator(const char *collate, const char *ctype)
     {
       errno = 0;
       loc = newlocale(LC_CTYPE_MASK, ctype, loc1);
-      if (!loc)
+      if (! loc)
       {
         if (loc1)
           freelocale(loc1);
@@ -538,7 +523,7 @@ make_libc_collator(const char *collate, const char *ctype)
      * separate fields.
      */
   {
-    elog(ERROR, 
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "collations with different collate and ctype values are not supported on this platform");
   }
 #endif
@@ -556,15 +541,15 @@ make_libc_collator(const char *collate, const char *ctype)
  */
 int
 strncoll_libc(const char *arg1, ssize_t len1, const char *arg2, ssize_t len2,
-        pg_locale_t locale)
+  pg_locale_t locale)
 {
-  char    sbuf[TEXTBUFLEN];
-  char     *buf = sbuf;
-  size_t    bufsize1 = (len1 == -1) ? 0 : len1 + 1;
-  size_t    bufsize2 = (len2 == -1) ? 0 : len2 + 1;
+  char sbuf[TEXTBUFLEN];
+  char *buf = sbuf;
+  size_t bufsize1 = (len1 == -1) ? 0 : len1 + 1;
+  size_t bufsize2 = (len2 == -1) ? 0 : len2 + 1;
   const char *arg1n;
   const char *arg2n;
-  int      result;
+  int result;
 
   Assert(locale->provider == COLLPROVIDER_LIBC);
 
@@ -615,12 +600,12 @@ strncoll_libc(const char *arg1, ssize_t len1, const char *arg2, ssize_t len2,
  */
 size_t
 strnxfrm_libc(char *dest, size_t destsize, const char *src, ssize_t srclen,
-        pg_locale_t locale)
+  pg_locale_t locale)
 {
-  char    sbuf[TEXTBUFLEN];
-  char     *buf = sbuf;
-  size_t    bufsize = srclen + 1;
-  size_t    result;
+  char sbuf[TEXTBUFLEN];
+  char *buf = sbuf;
+  size_t bufsize = srclen + 1;
+  size_t result;
 
   Assert(locale->provider == COLLPROVIDER_LIBC);
 
@@ -648,7 +633,7 @@ strnxfrm_libc(char *dest, size_t destsize, const char *src, ssize_t srclen,
 char *
 get_collation_actual_version_libc(const char *collcollate)
 {
-  char     *collversion = NULL;
+  char *collversion = NULL;
 
   if (pg_strcasecmp("C", collcollate) != 0 &&
     pg_strncasecmp("C.", collcollate, 2) != 0 &&
@@ -670,7 +655,8 @@ get_collation_actual_version_libc(const char *collcollate)
     }
     else
     {
-      elog(ERROR, "could not load locale \"%s\"", collcollate);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not load locale \"%s\"", collcollate);
     }
 #elif defined(WIN32)
     /*
@@ -693,7 +679,7 @@ get_collation_actual_version_libc(const char *collcollate)
        * resulting error and report that we have no version data.
        */
       if (GetLastError() != ERROR_INVALID_PARAMETER)
-        elog(ERROR,
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "could not get collation version for locale \"%s\": error code %lu",
           collcollate, GetLastError());
       return NULL;
@@ -720,16 +706,15 @@ get_collation_actual_version_libc(const char *collcollate)
 #ifdef WIN32
 static int
 strncoll_libc_win32_utf8(const char *arg1, ssize_t len1, const char *arg2,
-             ssize_t len2, pg_locale_t locale)
+  ssize_t len2, pg_locale_t locale)
 {
-  char    sbuf[TEXTBUFLEN];
-  char     *buf = sbuf;
-  char     *a1p,
-         *a2p;
-  int      a1len;
-  int      a2len;
-  int      r;
-  int      result;
+  char sbuf[TEXTBUFLEN];
+  char *buf = sbuf;
+  char *a1p, *a2p;
+  int a1len;
+  int a2len;
+  int r;
+  int result;
 
   Assert(locale->provider == COLLPROVIDER_LIBC);
   Assert(GetDatabaseEncoding() == PG_UTF8);
@@ -753,11 +738,11 @@ strncoll_libc_win32_utf8(const char *arg1, ssize_t len1, const char *arg2,
     r = 0;
   else
   {
-    r = MultiByteToWideChar(CP_UTF8, 0, arg1, len1,
-                (LPWSTR) a1p, a1len / 2);
+    r = MultiByteToWideChar(CP_UTF8, 0, arg1, len1, (LPWSTR) a1p, a1len / 2);
     if (!r)
     {
-      elog(ERROR, "could not convert string to UTF-16: error code %lu",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not convert string to UTF-16: error code %lu",
         GetLastError());
     }
   }
@@ -767,11 +752,11 @@ strncoll_libc_win32_utf8(const char *arg1, ssize_t len1, const char *arg2,
     r = 0;
   else
   {
-    r = MultiByteToWideChar(CP_UTF8, 0, arg2, len2,
-                (LPWSTR) a2p, a2len / 2);
+    r = MultiByteToWideChar(CP_UTF8, 0, arg2, len2, (LPWSTR) a2p, a2len / 2);
     if (!r)
     {
-      elog(ERROR, "could not convert string to UTF-16: error code %lu",
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "could not convert string to UTF-16: error code %lu",
         GetLastError());
     }
   }
@@ -781,7 +766,8 @@ strncoll_libc_win32_utf8(const char *arg1, ssize_t len1, const char *arg2,
   result = wcscoll_l((LPWSTR) a1p, (LPWSTR) a2p, locale->info.lt);
   if (result == 2147483647)  /* _NLSCMPERROR; missing from mingw headers */
   {
-    elog(ERROR, "could not compare Unicode strings: %m");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "could not compare Unicode strings: %m");
   }
 
   if (buf != sbuf)
@@ -810,7 +796,8 @@ report_newlocale_failure(const char *localename)
    * errno with an errdetail message.
    */
   // int save_errno = errno;      /* auxiliary funcs might change errno */
-  elog(ERROR, "could not create locale \"%s\": %m", localename);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "could not create locale \"%s\": %m", localename);
 }
 
 /*
@@ -865,13 +852,12 @@ wcstombs_l(char *dest, const wchar_t *src, size_t n, locale_t loc)
 size_t
 wchar2char(char *to, const wchar_t *from, size_t tolen, pg_locale_t locale)
 {
-  size_t    result;
+  size_t result;
 
   if (tolen == 0)
     return 0;
 
 #ifdef WIN32
-
   /*
    * On Windows, the "Unicode" locales assume UTF16 not UTF8 encoding, and
    * for some reason mbstowcs and wcstombs won't do this for us, so we use
@@ -879,8 +865,7 @@ wchar2char(char *to, const wchar_t *from, size_t tolen, pg_locale_t locale)
    */
   if (GetDatabaseEncoding() == PG_UTF8)
   {
-    result = WideCharToMultiByte(CP_UTF8, 0, from, -1, to, tolen,
-                   NULL, NULL);
+    result = WideCharToMultiByte(CP_UTF8, 0, from, -1, to, tolen, NULL, NULL);
     /* A zero return is failure */
     if (result <= 0)
       result = -1;
@@ -912,7 +897,7 @@ wchar2char(char *to, const wchar_t *from, size_t tolen, pg_locale_t locale)
  *
  * This has almost the API of mbstowcs_l(), except that *from need not be
  * null-terminated; instead, the number of input bytes is specified as
- * fromlen.  Also, we elog() rather than returning -1 for invalid
+ * fromlen.  Also, we meos_error() rather than returning -1 for invalid
  * input encoding.  tolen is the maximum number of wchar_t's to store at *to.
  * The output will be zero-terminated iff there is room.
  */
@@ -940,7 +925,7 @@ char2wchar(wchar_t *to, size_t tolen, const char *from, size_t fromlen,
         result = -1;
     }
 
-    if (result != -1)
+    if (result != (size_t) -1)
     {
       Assert(result < tolen);
       /* Append trailing null wchar (MultiByteToWideChar() does not) */
@@ -962,7 +947,6 @@ char2wchar(wchar_t *to, size_t tolen, const char *from, size_t fromlen,
       /* Use mbstowcs_l for nondefault locales */
       result = mbstowcs_l(to, str, tolen, locale->info.lt);
     }
-
     pfree(str);
   }
 
@@ -978,7 +962,8 @@ char2wchar(wchar_t *to, size_t tolen, const char *from, size_t fromlen,
      */
     pg_verifymbstr(from, fromlen, false);  /* might not return */
     /* but if it does ... */
-    elog(ERROR, "invalid multibyte character for locale");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid multibyte character for locale");
   }
 
   return result;

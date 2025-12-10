@@ -11,8 +11,8 @@
  *
  *-------------------------------------------------------------------------
  */
-#ifndef _PG_NUMERIC_H_
-#define _PG_NUMERIC_H_
+#ifndef __PG_NUMERIC_H__
+#define __PG_NUMERIC_H__
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -111,6 +111,6 @@ extern Numeric numeric_uminus(Numeric num);
 extern Numeric numeric_uplus(Numeric num);
 extern int32 numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2, int32 count);
 
-#endif /* _PG_NUMERIC_H_ */
+#endif /* __PG_NUMERIC_H__ */
 
 /*****************************************************************************/

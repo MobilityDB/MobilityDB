@@ -91,7 +91,8 @@ truncate_identifier(char *ident, int len, bool warn)
   {
     len = pg_mbcliplen(ident, len, NAMEDATALEN - 1);
     if (warn)
-      elog(NOTICE, "identifier \"%s\" will be truncated to \"%.*s\"",
+      meos_error(NOTICE, MEOS_ERR_INTERNAL_ERROR,
+        "identifier \"%s\" will be truncated to \"%.*s\"",
         ident, len, ident);
     ident[len] = '\0';
   }

@@ -85,7 +85,8 @@ win_to_utf8(int src_id, int dest_id, unsigned char *src, unsigned char *dest, in
     }
   }
 
-  elog(ERROR, "unexpected encoding ID %d for WIN character sets", src_id);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "unexpected encoding ID %d for WIN character sets", src_id);
   return 0;
 }
 
@@ -103,6 +104,7 @@ utf8_to_win(int src_id, int dest_id, unsigned char *src, unsigned char *dest, in
     }
   }
 
-  elog(ERROR, "unexpected encoding ID %d for WIN character sets", src_id);
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "unexpected encoding ID %d for WIN character sets", src_id);
   return 0;
 }

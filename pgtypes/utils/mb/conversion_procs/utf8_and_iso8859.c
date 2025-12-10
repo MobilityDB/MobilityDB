@@ -104,7 +104,8 @@ iso8859_to_utf8(int src_id, int dest_id, unsigned char *src,
     }
   }
 
-  elog(ERROR, "unexpected encoding ID %d for ISO 8859 character sets",
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "unexpected encoding ID %d for ISO 8859 character sets",
     src_id);
   return 0;
 }
@@ -123,7 +124,8 @@ utf8_to_iso8859(int src_id, int dest_id, unsigned char *src,
     }
   }
 
-  elog(ERROR, "unexpected encoding ID %d for ISO 8859 character sets",
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "unexpected encoding ID %d for ISO 8859 character sets",
     src_id);
   return 0;
 }

@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_BOOL_H
-#define PG_BOOL_H
+#ifndef __PG_BOOL_H__
+#define __PG_BOOL_H__
 
 /*****************************************************************************/
 
@@ -54,4 +54,4 @@ extern text *bool_to_text(bool b);
 
 /*****************************************************************************/
 
-#endif /* PG_BOOL_H */
+#endif /* __PG_BOOL_H__ */

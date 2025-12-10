@@ -21,18 +21,18 @@
 #include <postgres.h>
 #include <common/hashfn.h>
 #include <common/int.h>
-#include <utils/jsonb.h>
-#include <utils/varlena.h> /* For DatumGetTextP */
-
 #include <utils/date.h>
+#include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <utils/timestamp.h>
+#include <utils/varlena.h> /* For DatumGetTextP */
+
 #include <pgtypes.h>
 
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Return true if the text string exist as a top-level key or array
  * element within the JSON value
  * @param[in] jb JSONB value
@@ -104,7 +104,7 @@ jsonb_exists_array(const Jsonb *jb, const text **keys_elems,
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Return true if the first JSON value contains the second one
  * @note Derived from PostgreSQL function @p jsonb_contains()
  */
@@ -128,7 +128,7 @@ pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Return true if the first JSON value is contained into the second one
  * @note Derived from PostgreSQL function @p jsonb_contained()
  */
@@ -164,7 +164,7 @@ datum_jsonb_contained(Datum l, Datum r)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the two JSONB values are equal
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_eq()
@@ -185,7 +185,7 @@ pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the two JSONB values are not equal
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_ne()
@@ -206,7 +206,7 @@ pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is less than the second one
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_lt()
@@ -227,7 +227,7 @@ pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is greater than the second one
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_gt()
@@ -248,7 +248,7 @@ pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is less than or equal to the
  * second one
  * @param[in] jb1,jb2 JSONB values
@@ -270,7 +270,7 @@ pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return true if the first JSONB value is greater than or equal to the
  * second one
  * @param[in] jb1,jb2 JSONB values
@@ -292,7 +292,7 @@ pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first JSONB value
  * is less than, equal to, or greater than the second one
  * @param[in] jb1,jb2 JSONB values
@@ -314,7 +314,7 @@ pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Return the hash value of a temporal value
  * @note Derived from PostgreSQL function @p jsonb_hash()
  */
@@ -355,14 +355,18 @@ pg_jsonb_hash(const Jsonb *jb)
       case WJB_END_OBJECT:
         break;
       default:
-        elog(ERROR, "invalid JsonbIteratorNext rc: %d", (int) r);
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "invalid JsonbIteratorNext rc: %d", (int) r);
+        return UINT_MAX;
+      }
     }
   }
   return hash;
 }
 
 /**
- * @ingroup meos_base_json
+ * @ingroup meos_json_base_accessor
  * @brief Return the 64-bit hash of a JSONB value using a seed
  * @note Derived from PostgreSQL function @p jsonb_hash_extended()
  */
@@ -403,7 +407,11 @@ pg_jsonb_hash_extended(const Jsonb *jb, uint64 seed)
       case WJB_END_OBJECT:
         break;
       default:
-        elog(ERROR, "invalid JsonbIteratorNext rc: %d", (int) r);
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "invalid JsonbIteratorNext rc: %d", (int) r);
+        return ULONG_MAX;
+      }
     }
   }
   return hash;

@@ -1,4 +1,4 @@
-set(POSE_SRCS
+set(POSE_SOURCES
   pose.c
   tpose.c
   tpose_compops.c
@@ -8,9 +8,9 @@ set(POSE_SRCS
 )
 
 if(MEOS)
-  list(APPEND POSE_SRCS
+  list(APPEND POSE_SOURCES
   poseset_meos.c
 )
 endif()
 
-add_library(pose OBJECT ${POSE_SRCS})
+add_library(pose OBJECT ${POSE_SOURCES})

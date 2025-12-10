@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
  *
  * psprintf.c
- *		sprintf into an allocated-on-demand buffer
+ *    sprintf into an allocated-on-demand buffer
  *
  *
  * Portions Copyright (c) 1996-2025, PostgreSQL Global Development Group
@@ -9,14 +9,13 @@
  *
  *
  * IDENTIFICATION
- *	  src/common/psprintf.c
+ *    src/common/psprintf.c
  *
  *-------------------------------------------------------------------------
  */
 
 #include "postgres.h"
 #include "utils/memutils.h"
-
 
 /*
  * psprintf
@@ -26,43 +25,43 @@
  * with palloc in the backend, or malloc in frontend builds.  Caller is
  * responsible to free the buffer when no longer needed, if appropriate.
  *
- * Errors are not returned to the caller, but are reported via elog(ERROR)
+ * Errors are not returned to the caller, but are reported via meos_error(ERROR)
  * in the backend, or printf-to-stderr-and-exit() in frontend builds.
  * One should therefore think twice about using this in libpq.
  */
 char *
 psprintf(const char *fmt,...)
 {
-	int			save_errno = errno;
-	size_t		len = 128;		/* initial assumption about buffer size */
+  int      save_errno = errno;
+  size_t    len = 128;    /* initial assumption about buffer size */
 
-	for (;;)
-	{
-		char	   *result;
-		va_list		args;
-		size_t		newlen;
+  for (;;)
+  {
+    char     *result;
+    va_list    args;
+    size_t    newlen;
 
-		/*
-		 * Allocate result buffer.  Note that in frontend this maps to malloc
-		 * with exit-on-error.
-		 */
-		result = (char *) palloc(len);
+    /*
+     * Allocate result buffer.  Note that in frontend this maps to malloc
+     * with exit-on-error.
+     */
+    result = (char *) palloc(len);
 
-		/* Try to format the data. */
-		errno = save_errno;
-		va_start(args, fmt);
+    /* Try to format the data. */
+    errno = save_errno;
+    va_start(args, fmt);
     // MEOS
-		// newlen = pvsnprintf(result, len, fmt, args);
-		newlen = vsnprintf(result, len, fmt, args);
-		va_end(args);
+    // newlen = pvsnprintf(result, len, fmt, args);
+    newlen = vsnprintf(result, len, fmt, args);
+    va_end(args);
 
-		if (newlen < len)
-			return result;		/* success */
+    if (newlen < len)
+      return result;    /* success */
 
-		/* Release buffer and loop around to try again with larger len. */
-		pfree(result);
-		len = newlen;
-	}
+    /* Release buffer and loop around to try again with larger len. */
+    pfree(result);
+    len = newlen;
+  }
 }
 
 /*
@@ -78,7 +77,7 @@ psprintf(const char *fmt,...)
  * needed to succeed (this *must* be more than the given len, else callers
  * might loop infinitely).
  *
- * Other error cases do not return, but exit via elog(ERROR) or exit().
+ * Other error cases do not return, but exit via meos_error(ERROR) or exit().
  * Hence, this shouldn't be used inside libpq.
  *
  * Caution: callers must be sure to preserve their entry-time errno
@@ -95,41 +94,44 @@ psprintf(const char *fmt,...)
 size_t
 pvsnprintf(char *buf, size_t len, const char *fmt, va_list args)
 {
-	int			nprinted;
+  int nprinted;
 
-	nprinted = vsnprintf(buf, len, fmt, args);
+  nprinted = vsnprintf(buf, len, fmt, args);
 
-	/* We assume failure means the fmt is bogus, hence hard failure is OK */
-	if (unlikely(nprinted < 0))
-	{
+  /* We assume failure means the fmt is bogus, hence hard failure is OK */
+  if (unlikely(nprinted < 0))
+  {
 #ifndef FRONTEND
-		elog(ERROR, "vsnprintf failed: %m with format string \"%s\"", fmt);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "vsnprintf failed: %m with format string \"%s\"", fmt);
+    return 0;
 #else
-		fprintf(stderr, "vsnprintf failed: %m with format string \"%s\"\n",
-				fmt);
-		exit(EXIT_FAILURE);
+    fprintf(stderr, "vsnprintf failed: %m with format string \"%s\"\n",
+        fmt);
+    exit(EXIT_FAILURE);
 #endif
-	}
+  }
 
-	if ((size_t) nprinted < len)
-	{
-		/* Success.  Note nprinted does not include trailing null. */
-		return (size_t) nprinted;
-	}
+  if ((size_t) nprinted < len)
+  {
+    /* Success.  Note nprinted does not include trailing null. */
+    return (size_t) nprinted;
+  }
 
-	/*
-	 * We assume a C99-compliant vsnprintf, so believe its estimate of the
-	 * required space, and add one for the trailing null.  (If it's wrong, the
-	 * logic will still work, but we may loop multiple times.)
-	 *
-	 * Choke if the required space would exceed MaxAllocSize.  Note we use
-	 * this palloc-oriented overflow limit even when in frontend.
-	 */
-	if (unlikely((size_t) nprinted > MaxAllocSize - 1))
-	{
+  /*
+   * We assume a C99-compliant vsnprintf, so believe its estimate of the
+   * required space, and add one for the trailing null.  (If it's wrong, the
+   * logic will still work, but we may loop multiple times.)
+   *
+   * Choke if the required space would exceed MaxAllocSize.  Note we use
+   * this palloc-oriented overflow limit even when in frontend.
+   */
+  if (unlikely((size_t) nprinted > MaxAllocSize - 1))
+  {
     // MEOS
-		elog(ERROR, "out of memory");
-	}
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, 
+      "out of memory");
+  }
 
-	return nprinted + 1;
+  return nprinted + 1;
 }

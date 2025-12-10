@@ -123,7 +123,7 @@ int main(void)
     char *value = malloc(sizeof(char) * (len + 2));
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
-    text *txt = cstring2text(value);
+    text *txt = cstring_to_text(value);
     t = add_timestamptz_interval(t, onehour);
     TInstant *inst = ttextinst_make(txt, t);
     free(value); free(txt);

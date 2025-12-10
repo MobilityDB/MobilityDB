@@ -122,7 +122,9 @@ format_type_extended(Oid type_oid, int32 typemod, bits16 flags)
       return pstrdup("???");
     else
     {
-      elog(ERROR, "cache lookup failed for type %u", type_oid);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "cache lookup failed for type %u", type_oid);
+      return NULL;
     }
   }
   typeform = (Form_pg_type) GETSTRUCT(tuple);
@@ -149,7 +151,9 @@ format_type_extended(Oid type_oid, int32 typemod, bits16 flags)
         return pstrdup("???[]");
       else
       {
-        elog(ERROR, "cache lookup failed for type %u", type_oid);
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "cache lookup failed for type %u", type_oid);
+        return NULL;
       }
     }
     typeform = (Form_pg_type) GETSTRUCT(tuple);

@@ -29,6 +29,8 @@
 
 #include "pgtypes.h"
 
+/*****************************************************************************/
+
 /**
  * @brief Global variable that keeps the elements to free after a JSON parsing
  */
@@ -331,10 +333,12 @@ compareJsonbContainers(JsonbContainer *a, JsonbContainer *b)
               res = (va.val.object.nPairs > vb.val.object.nPairs) ? 1 : -1;
             break;
           case jbvBinary:
-            elog(ERROR, "unexpected jbvBinary value");
+            meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+              "unexpected jbvBinary value");
             break;
           case jbvDatetime:
-            elog(ERROR, "unexpected jbvDatetime value");
+            meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+              "unexpected jbvDatetime value");
             break;
         }
       }
@@ -518,7 +522,8 @@ JsonbValue *
 getIthJsonbValueFromContainer(JsonbContainer *container, uint32 i)
 {
   if (!JsonContainerIsArray(container))
-    elog(ERROR, "not a jsonb array");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "not a jsonb array");
   uint32 nelements = JsonContainerSize(container);
   char *base_addr = (char *) &container->children[nelements];
   if (i >= nelements)
@@ -751,13 +756,15 @@ pushJsonbValueScalar(JsonbParseState **pstate, JsonbIteratorToken seq,
             appendValue(*pstate, result);
             break;
           default:
-            elog(ERROR, "invalid jsonb container type");
+            meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+              "invalid jsonb container type");
         }
         // pfree(tofree);
       }
       break;
     default:
-      elog(ERROR, "unrecognized jsonb sequential processing token");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized jsonb sequential processing token");
   }
   return result;
 }
@@ -788,7 +795,7 @@ appendKey(JsonbParseState *pstate, JsonbValue *string)
   Assert(string->type == jbvString);
   if (object->val.object.nPairs >= (int) JSONB_MAX_PAIRS)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "number of jsonb object pairs exceeds the maximum allowed (%zu)",
       JSONB_MAX_PAIRS);
     return;
@@ -827,7 +834,7 @@ appendElement(JsonbParseState *pstate, JsonbValue *scalarVal)
   Assert(array->type == jbvArray);
   if (array->val.array.nElems >= (int) JSONB_MAX_ELEMS)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "number of jsonb array elements exceeds the maximum allowed (%zu)",
       JSONB_MAX_ELEMS);
     return;
@@ -994,7 +1001,9 @@ recurse:
           (*it)->dataProper, (*it)->curDataOffset, val);
         if (val->type != jbvString)
         {
-          elog(ERROR, "unexpected jsonb type as object key");
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "unexpected jsonb type as object key");
+          return WJB_DONE;
         }
 
         /* Set state for next call */
@@ -1029,8 +1038,9 @@ recurse:
         return WJB_VALUE;
   }
 
-  elog(ERROR, "invalid jsonb iterator state");
-  /* satisfy compilers that don't know that elog(ERROR) doesn't return */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid jsonb iterator state");
+  /* satisfy compilers that don't know that meos_error(ERROR) doesn't return */
   val->type = jbvNull;
   return WJB_DONE;
 }
@@ -1068,7 +1078,8 @@ iteratorFromContainer(JsonbContainer *container, JsonbIterator *parent)
       break;
 
     default:
-      elog(ERROR, "unknown type of jsonb container");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unknown type of jsonb container");
   }
   return it;
 }
@@ -1318,10 +1329,12 @@ JsonbDeepContains(JsonbIterator **val, JsonbIterator **mContained)
   }
   else
   {
-    elog(ERROR, "invalid jsonb container type");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid jsonb container type");
   }
 
-  elog(ERROR, "unexpectedly fell off end of jsonb container");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "unexpectedly fell off end of jsonb container");
   return false;
 }
 
@@ -1356,7 +1369,8 @@ JsonbHashScalarValue(const JsonbValue *scalarVal, uint32 *hash)
 
       break;
     default:
-      elog(ERROR, "invalid jsonb scalar type");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid jsonb scalar type");
       tmp = 0;
       break;
   }
@@ -1398,7 +1412,8 @@ JsonbHashScalarValueExtended(const JsonbValue *scalarVal, uint64 *hash,
         tmp = scalarVal->val.boolean ? 0x02 : 0x04;
       break;
     default:
-      elog(ERROR, "invalid jsonb scalar type");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "invalid jsonb scalar type");
       break;
   }
 
@@ -1426,10 +1441,12 @@ equalsJsonbScalarValue(JsonbValue *a, JsonbValue *b)
         return a->val.boolean == b->val.boolean;
 
       default:
-        elog(ERROR, "invalid jsonb scalar type");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "invalid jsonb scalar type");
     }
   }
-  elog(ERROR, "jsonb scalar type mismatch");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "jsonb scalar type mismatch");
   return false;
 }
 
@@ -1461,10 +1478,12 @@ compareJsonbScalarValue(JsonbValue *a, JsonbValue *b)
         else
           return -1;
       default:
-        elog(ERROR, "invalid jsonb scalar type");
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "invalid jsonb scalar type");
     }
   }
-  elog(ERROR, "jsonb scalar type mismatch");
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "jsonb scalar type mismatch");
   return -1;
 }
 
@@ -1587,7 +1606,8 @@ convertJsonbValue(StringInfo buffer, JEntry *header, JsonbValue *val, int level)
   else if (val->type == jbvObject)
     convertJsonbObject(buffer, header, val, level);
   else
-    elog(ERROR, "unknown type of jsonb container to convert");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "unknown type of jsonb container to convert");
 }
 
 static void
@@ -1638,7 +1658,7 @@ convertJsonbArray(StringInfo buffer, JEntry *header, JsonbValue *val, int level)
      */
     if (totallen > JENTRY_OFFLENMASK)
     {
-      elog(ERROR,
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "total size of jsonb array elements exceeds the maximum of %d bytes",
         JENTRY_OFFLENMASK);
       return;
@@ -1660,7 +1680,7 @@ convertJsonbArray(StringInfo buffer, JEntry *header, JsonbValue *val, int level)
   /* Check length again, since we didn't include the metadata above */
   if (totallen > JENTRY_OFFLENMASK)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "total size of jsonb array elements exceeds the maximum of %d bytes",
       JENTRY_OFFLENMASK);
     return;
@@ -1720,7 +1740,7 @@ convertJsonbObject(StringInfo buffer, JEntry *header, JsonbValue *val, int level
      */
     if (totallen > JENTRY_OFFLENMASK)
     {
-      elog(ERROR,
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "total size of jsonb object elements exceeds the maximum of %d bytes",
         JENTRY_OFFLENMASK);
     }
@@ -1753,7 +1773,7 @@ convertJsonbObject(StringInfo buffer, JEntry *header, JsonbValue *val, int level
     totallen += len;
     if (totallen > JENTRY_OFFLENMASK)
     {
-      elog(ERROR,
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "total size of jsonb object elements exceeds the maximum of %d bytes",
         JENTRY_OFFLENMASK);
       return;
@@ -1774,7 +1794,7 @@ convertJsonbObject(StringInfo buffer, JEntry *header, JsonbValue *val, int level
   /* Check length again, since we didn't include the metadata above */
   if (totallen > JENTRY_OFFLENMASK)
   {
-    elog(ERROR,
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "total size of jsonb object elements exceeds the maximum of %d bytes",
       JENTRY_OFFLENMASK);
     return;
@@ -1800,11 +1820,13 @@ convertJsonbScalar(StringInfo buffer, JEntry *header, JsonbValue *scalarVal)
       break;
 
     case jbvNumeric:
+    {
       int numlen = VARSIZE_ANY(scalarVal->val.numeric);
       short padlen = padBufferToInt(buffer);
       appendToBuffer(buffer, scalarVal->val.numeric, numlen);
       *header = JENTRY_ISNUMERIC | (padlen + numlen);
       break;
+    }
 
     case jbvBool:
       *header = (scalarVal->val.boolean) ?
@@ -1823,7 +1845,8 @@ convertJsonbScalar(StringInfo buffer, JEntry *header, JsonbValue *scalarVal)
       break;
 
     default:
-      elog(ERROR, "invalid jsonb scalar type");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid jsonb scalar type");
   }
 }
 
@@ -1906,7 +1929,8 @@ uniqueifyJsonbObject(JsonbValue *object, bool unique_keys, bool skip_nulls)
     qsort_arg(object->val.object.pairs, object->val.object.nPairs, sizeof(JsonbPair),
           lengthCompareJsonbPair, &hasNonUniq);
   if (hasNonUniq && unique_keys)
-    elog(ERROR, "duplicate JSON object key value");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "duplicate JSON object key value");
   if (hasNonUniq || skip_nulls)
   {
     while (skip_nulls && object->val.object.nPairs > 0 &&

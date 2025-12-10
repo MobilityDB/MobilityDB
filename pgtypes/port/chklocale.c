@@ -14,13 +14,10 @@
  */
 
 #include "postgres.h"
-
 #ifndef WIN32
 #include <langinfo.h>
 #endif
-
 #include "utils/mb/pg_wchar.h"
-
 
 /*
  * This table needs to recognize all the CODESET spellings for supported
@@ -269,7 +266,8 @@ pg_codepage_to_encoding(UINT cp)
     if (pg_strcasecmp(sys, encoding_match_list[i].system_enc_name) == 0)
       return encoding_match_list[i].pg_enc_code;
 
-  elog(WARNING, "could not determine encoding for codeset \"%s\"", sys);
+  meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
+    "could not determine encoding for codeset \"%s\"", sys);
   return -1;
 }
 #endif              /* WIN32 */
@@ -285,7 +283,7 @@ pg_codepage_to_encoding(UINT cp)
  * with any desired encoding.
  *
  * If running in the backend and write_message is false, this function must
- * cope with the possibility that elog() and palloc() are not yet usable.
+ * cope with the possibility that meos_error() and palloc() are not yet usable.
  */
 int
 pg_get_encoding_from_locale(const char *ctype, bool write_message)
@@ -299,12 +297,13 @@ pg_get_encoding_from_locale(const char *ctype, bool write_message)
     pg_strcasecmp(ctype, "POSIX") == 0)
     return PG_SQL_ASCII;
 
+  char *sys;
 #ifndef WIN32
   locale_t loc = newlocale(LC_CTYPE_MASK, ctype, (locale_t) 0);
   if (loc == (locale_t) 0)
     return -1;        /* bogus ctype passed in? */
 
-  char *sys = nl_langinfo_l(CODESET, loc);
+  sys = nl_langinfo_l(CODESET, loc);
   if (sys)
     sys = strdup(sys);
 
@@ -313,7 +312,7 @@ pg_get_encoding_from_locale(const char *ctype, bool write_message)
   sys = win32_get_codeset(ctype);
 #endif
 
-  if (!sys)
+  if (! sys)
     return -1;        /* out of memory; unlikely */
 
   /* Check the table */
@@ -346,7 +345,8 @@ pg_get_encoding_from_locale(const char *ctype, bool write_message)
    */
   if (write_message)
   {
-    elog(WARNING, 
+    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
+    
       "could not determine encoding for locale \"%s\": codeset is \"%s\"",
       ctype, sys);
   }

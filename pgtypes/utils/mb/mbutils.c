@@ -137,7 +137,8 @@ InitializeClientEncoding(int client_encoding)
      * Oops, the requested conversion is not available. We couldn't fail
      * before, but we can now.
      */
-    elog(ERROR, "conversion between %s and %s is not supported",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "conversion between %s and %s is not supported",
       pg_enc2name_tbl[client_encoding].name, GetDatabaseEncodingName());
   }
 
@@ -204,7 +205,8 @@ pg_do_encoding_conversion(unsigned char *src, int len, int src_encoding,
   pg_con_fn proc = FindDefaultConversion(src_encoding, dest_encoding);
   if (! proc)
   {
-    elog(ERROR, "default conversion function for encoding \"%s\" to \"%s\" does not exist",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "default conversion function for encoding \"%s\" to \"%s\" does not exist",
       pg_encoding_to_char(src_encoding),
       pg_encoding_to_char(dest_encoding));
     return NULL;
@@ -221,7 +223,8 @@ pg_do_encoding_conversion(unsigned char *src, int len, int src_encoding,
    */
   if ((Size) len >= (MaxAllocHugeSize / (Size) MAX_CONVERSION_GROWTH))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
     return NULL;
   }
 
@@ -240,7 +243,8 @@ pg_do_encoding_conversion(unsigned char *src, int len, int src_encoding,
     Size resultlen = strlen((char *) result);
     if (resultlen >= MaxAllocSize)
     {
-      elog(ERROR, "out of memory");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "out of memory");
       return NULL;
     }
     result = (unsigned char *) repalloc(result, resultlen + 1);
@@ -342,12 +346,14 @@ pg_convert(const bytea *string, const char *src_encoding_name,
   int dest_encoding = pg_char_to_encoding(dest_encoding_name);
   if (src_encoding < 0)
   {
-    elog(ERROR, "invalid source encoding name \"%s\"", src_encoding_name);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid source encoding name \"%s\"", src_encoding_name);
     return NULL;
   }
   if (dest_encoding < 0)
   {
-    elog(ERROR, "invalid destination encoding name \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid destination encoding name \"%s\"",
       dest_encoding_name);
     return NULL;
   }
@@ -390,7 +396,8 @@ length_in_encoding(const bytea *string, char *src_encoding_name)
   int src_encoding = pg_char_to_encoding(src_encoding_name);
   if (src_encoding < 0)
   {
-    elog(ERROR, "invalid encoding name \"%s\"", src_encoding_name);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid encoding name \"%s\"", src_encoding_name);
     return -1;
   }
 
@@ -472,7 +479,8 @@ pg_any_to_server(const char *s, int len, int encoding)
       {
         if (s[i] == '\0' || IS_HIGHBIT_SET(s[i]))
         {
-          elog(ERROR, "invalid byte value for encoding \"%s\": 0x%02x",
+          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+            "invalid byte value for encoding \"%s\": 0x%02x",
             pg_enc2name_tbl[PG_SQL_ASCII].name, (unsigned char) s[i]);
           return NULL;
         }
@@ -561,7 +569,8 @@ perform_default_encoding_conversion(const char *src, int len,
    */
   if ((Size) len >= (MaxAllocHugeSize / (Size) MAX_CONVERSION_GROWTH))
   {
-    elog(ERROR, "out of memory");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "out of memory");
     return NULL;
   }
 
@@ -580,7 +589,8 @@ perform_default_encoding_conversion(const char *src, int len,
     Size resultlen = strlen(result);
     if (resultlen >= MaxAllocSize)
     {
-      elog(ERROR, "out of memory");
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "out of memory");
       return NULL;
     }
     result = (char *) repalloc(result, resultlen + 1);
@@ -613,7 +623,8 @@ pg_unicode_to_server(pg_wchar c, unsigned char *s)
    */
   if (!is_valid_unicode_codepoint(c))
   {
-    elog(ERROR, "invalid Unicode code point");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid Unicode code point");
     return;
   }
 
@@ -637,7 +648,8 @@ pg_unicode_to_server(pg_wchar c, unsigned char *s)
   /* For all other cases, we must have a conversion function available */
   if (Utf8ToServerConvProc == NULL)
   {
-    elog(ERROR, "conversion between %s and %s is not supported",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "conversion between %s and %s is not supported",
       pg_enc2name_tbl[PG_UTF8].name, GetDatabaseEncodingName());
     return;
   }
@@ -890,7 +902,8 @@ SetDatabaseEncoding(int encoding)
 {
   if (!PG_VALID_BE_ENCODING(encoding))
   {
-    elog(ERROR, "invalid database encoding: %d", encoding);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid database encoding: %d", encoding);
     return;
   }
 
@@ -901,7 +914,7 @@ SetDatabaseEncoding(int encoding)
 void
 SetMessageEncoding(int encoding)
 {
-  /* Some calls happen before we can elog()! */
+  /* Some calls happen before we can meos_error()! */
   Assert(PG_VALID_ENCODING(encoding));
   MessageEncoding = &pg_enc2name_tbl[encoding];
   Assert(MessageEncoding->encoding == encoding);
@@ -926,7 +939,8 @@ raw_pg_bind_textdomain_codeset(const char *domainname, int encoding)
     return true;
 
   if (elog_ok)
-    elog(LOG, "bind_textdomain_codeset failed");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "bind_textdomain_codeset failed");
   else
     write_stderr("bind_textdomain_codeset failed");
 
@@ -950,14 +964,14 @@ raw_pg_bind_textdomain_codeset(const char *domainname, int encoding)
  * APIs, but we don't do that.  Compel gettext to use database encoding or,
  * failing that, the LC_CTYPE encoding as it would on other platforms.
  *
- * This function is called before elog() and palloc() are usable.
+ * This function is called before meos_error() and palloc() are usable.
  */
 int
 pg_bind_textdomain_codeset(const char *domainname)
 {
-  bool    elog_ok = (CurrentMemoryContext != NULL);
-  int      encoding = GetDatabaseEncoding();
-  int      new_msgenc;
+  bool elog_ok = (CurrentMemoryContext != NULL);
+  int encoding = GetDatabaseEncoding();
+  int new_msgenc;
 
 #ifndef WIN32
   const char *ctype = setlocale(LC_CTYPE, NULL);
@@ -1299,7 +1313,7 @@ pg_verify_mbstr(int encoding, const char *mbstr, int len, bool noError)
  *
  * If OK, return length of string in the encoding.
  * If a problem is found, return -1 when noError is
- * true; when noError is false, elog() a descriptive message.
+ * true; when noError is false, meos_error() a descriptive message.
  *
  * Note: We cannot use the faster encoding-specific mbverifystr() function
  * here, because we need to count the number of characters in the string.
@@ -1362,8 +1376,8 @@ pg_verify_mbstr_len(int encoding, const char *mbstr, int len, bool noError)
  * "expected" arguments can be either an encoding ID or -1 to indicate that
  * the caller will check whether it accepts the ID.
  *
- * Note: the errors here are not really user-facing, so elog instead of
- * elog seems sufficient.  Also, we trust that the "expected" encoding
+ * Note: the errors here are not really user-facing, so meos_error instead of
+ * meos_error seems sufficient.  Also, we trust that the "expected" encoding
  * arguments are valid encoding IDs, but we don't trust the actuals.
  */
 void
@@ -1372,31 +1386,36 @@ check_encoding_conversion_args(int src_encoding, int dest_encoding, int len,
 {
   if (!PG_VALID_ENCODING(src_encoding))
   {
-    elog(ERROR, "invalid source encoding ID: %d", src_encoding);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid source encoding ID: %d", src_encoding);
     return;
   }
   if (src_encoding != expected_src_encoding && expected_src_encoding >= 0)
   {
-    elog(ERROR, "expected source encoding \"%s\", but got \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "expected source encoding \"%s\", but got \"%s\"",
        pg_enc2name_tbl[expected_src_encoding].name,
        pg_enc2name_tbl[src_encoding].name);
     return;
   }
   if (!PG_VALID_ENCODING(dest_encoding))
   {
-    elog(ERROR, "invalid destination encoding ID: %d", dest_encoding);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "invalid destination encoding ID: %d", dest_encoding);
     return;
   }
   if (dest_encoding != expected_dest_encoding && expected_dest_encoding >= 0)
   {
-    elog(ERROR, "expected destination encoding \"%s\", but got \"%s\"",
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "expected destination encoding \"%s\", but got \"%s\"",
        pg_enc2name_tbl[expected_dest_encoding].name,
        pg_enc2name_tbl[dest_encoding].name);
     return;
   }
   if (len < 0)
   {
-    elog(ERROR, "encoding conversion length must not be negative");
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "encoding conversion length must not be negative");
     return;
   }
 }
@@ -1424,7 +1443,8 @@ report_invalid_encoding(int encoding, const char *mbstr, int len)
       p += sprintf(p, " ");
   }
 
-  elog(ERROR, "invalid byte sequence for encoding \"%s\": %s",
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    "invalid byte sequence for encoding \"%s\": %s",
     pg_enc2name_tbl[encoding].name, buf);
   return;
 }
@@ -1460,7 +1480,7 @@ report_untranslatable_char(int src_encoding, int dest_encoding,
       p += sprintf(p, " ");
   }
 
-  elog(ERROR,
+  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
     "character with byte sequence %s in encoding \"%s\" has no equivalent in encoding \"%s\"",
     buf, pg_enc2name_tbl[src_encoding].name, 
     pg_enc2name_tbl[dest_encoding].name);
@@ -1507,14 +1527,14 @@ pgwin32_message_to_UTF16(const char *str, int len, int *utf16len)
      * XXX pg_do_encoding_conversion() requires a transaction.  In the
      * absence of one, hope for the input to be valid UTF8.
      */
-    if (IsTransactionState())
-    {
-      utf8 = (char *) pg_do_encoding_conversion((unsigned char *) str,
-        len, msgenc, PG_UTF8);
-      if (utf8 != str)
-        len = strlen(utf8);
-    }
-    else
+    // if (IsTransactionState())
+    // {
+      // utf8 = (char *) pg_do_encoding_conversion((unsigned char *) str,
+        // len, msgenc, PG_UTF8);
+      // if (utf8 != str)
+        // len = strlen(utf8);
+    // }
+    // else
       utf8 = (char *) str;
 
     utf16 = (WCHAR *) palloc(sizeof(WCHAR) * (len + 1));

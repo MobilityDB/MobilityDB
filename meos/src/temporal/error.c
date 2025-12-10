@@ -39,6 +39,9 @@
 #include <stdarg.h>
 /* Postgres */
 #include <postgres.h>
+#if ! MEOS
+  #include "utils/elog.h"
+#endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
 
@@ -179,6 +182,18 @@ meos_initialize_error_handler(error_handler_fn err_handler)
 
 /*****************************************************************************/
 
+#if ! MEOS
+/**
+ * @brief Output an error message in MobilityDB
+ */
+static void
+pg_error(int errlevel, const char *errmsg)
+{
+  ereport(errlevel, (errmsg_internal("%s", errmsg)));
+  return;
+}
+#endif /* ! MEOS */
+
 /**
  * @brief Function handling error messages
  */
@@ -195,15 +210,15 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   if (MEOS_ERROR_HANDLER)
     MEOS_ERROR_HANDLER(errlevel, errcode, buffer);
   else
-#if ! MEOS
-    elog(errlevel, "%s", buffer);
-#else
+#if MEOS
   {
     fprintf (stderr, "%s\n", buffer);
     if (errlevel == ERROR)
       exit(EXIT_FAILURE);
   }
-#endif /* ! MEOS */
+#else
+    pg_error(errlevel, strdup(buffer));
+#endif /* MEOS */
   return;
 }
 

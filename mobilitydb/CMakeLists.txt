@@ -126,6 +126,10 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
     # target_compile_options(cbuffer PRIVATE "/W4")
     target_compile_options(pg_cbuffer PRIVATE "/W4")
   endif()
+  if(JSON)
+    # target_compile_options(json PRIVATE "/W4")
+    target_compile_options(pg_json PRIVATE "/W4")
+  endif()
   if(NPOINT)
     # target_compile_options(npoint PRIVATE "/W4")
     target_compile_options(pg_npoint PRIVATE "/W4")
@@ -203,6 +207,10 @@ endif()
 # This was built by the meos subdirectory before mobilitydb subdirectory
 target_link_libraries(${MOBILITYDB_LIB_NAME} meos)
 
+# Link to pgtypes and postgis static libraries
+target_link_libraries(${MOBILITYDB_LIB_NAME} pgtypes)
+target_link_libraries(${MOBILITYDB_LIB_NAME} postgis)
+
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
@@ -212,10 +220,6 @@ if(WIN32)
   message(STATUS "Adding PostGIS as a target link library")
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${POSTGIS_LIBRARY})
 endif()
-
-# Link the application to pgtypes and postgis
-target_link_libraries(${MOBILITYDB_LIB_NAME} pgtypes)
-target_link_libraries(${MOBILITYDB_LIB_NAME} postgis)
 
 #--------------------------------
 # Belongs to MobilityDB

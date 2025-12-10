@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_INTERVAL_H
-#define PG_INTERVAL_H
+#ifndef __PG_INTERVAL_H__
+#define __PG_INTERVAL_H__
 
 typedef float float4;
 typedef double float8;
@@ -78,4 +78,4 @@ extern Interval *mul_interval_float8(const Interval *interv, float8 factor);
 
 /*****************************************************************************/
 
-#endif /* PG_INTERVAL_H */
+#endif /* __PG_INTERVAL_H__ */

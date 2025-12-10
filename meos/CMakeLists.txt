@@ -125,6 +125,9 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   if(CBUFFER)
     target_compile_options(cbuffer PRIVATE "/W4")
   endif()
+  if(JSON)
+    target_compile_options(json PRIVATE "/W4")
+  endif()
   if(NPOINT)
     target_compile_options(npoint PRIVATE "/W4")
   endif()
@@ -149,19 +152,6 @@ file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 
-# Generate meos_export.h
-string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")
-string(REPLACE "\n\n#endif /* __MEOS_ERROR_H__ */\n" "" MEOS_EXP_H "${MEOS_EXP_H1}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_H}")
-
-# Generate meos_internal_export.h
-string(REGEX REPLACE "#include \"temporal/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
-
-# Generate meos_geo_export.h
-string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
-file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
-
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
@@ -169,6 +159,10 @@ if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
+# if(JSON)
+  # message(STATUS "Including JSON types")
+  # set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
+# endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
@@ -202,6 +196,9 @@ else()
   set_target_properties(${MEOS_LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
+# Make include/*.h in meos (including meos_error.h) available in pgtypes
+target_include_directories(meos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 #--------------------------------
 # Specify libraries to link
 #--------------------------------
@@ -226,6 +223,7 @@ if(MEOS)
   # Read files
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_error.h" MEOS_ERROR_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
@@ -233,7 +231,7 @@ if(MEOS)
   # Generate meos_export.h
   string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")
   string(REPLACE "#ifndef __MEOS_ERROR_H__\n#define __MEOS_ERROR_H__\n" "" MEOS_EXP_H2 "${MEOS_EXP_H1}")
-  string(REPLACE "\n\n#endif /* __MEOS_ERROR_H__ */\n" "" MEOS_EXP_H "${MEOS_EXP_H2}")
+  string(REPLACE "#include \"meos_error.h\"\n" "${MEOS_ERROR_H}" MEOS_EXP_H "${MEOS_EXP_H2}")
   file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_H}")
 
   # Generate meos_internal_export.h
@@ -293,6 +291,11 @@ if(MEOS)
   if(CBUFFER)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(CBUFFER)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   endif()
   if(NPOINT)

@@ -87,6 +87,6 @@ extern Datum datum_to_json(Datum val, JsonTypeCategory tcategory,
   Oid outfuncoid);
 extern Datum datum_to_jsonb(Datum val, JsonTypeCategory tcategory,
   Oid outfuncoid);
-extern Jsonb *jsonb_from_text(text *js, bool unique_keys);
+extern Jsonb *jsonb_from_text(const text *json, bool unique_keys);
 
 #endif

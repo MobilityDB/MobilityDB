@@ -1419,7 +1419,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 
   /*
    * Get the text data directly from the varlena structure.
-   * This avoids the memory allocation of text2cstring.
+   * This avoids the memory allocation of text_to_cstring.
    */
   size_t size = VARSIZE_ANY_EXHDR(txt);
   char *str = VARDATA(txt);

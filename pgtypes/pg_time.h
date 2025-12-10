@@ -33,8 +33,8 @@
  * PostgreSQL functions
  */
 
-#ifndef PG_TIME_H
-#define PG_TIME_H
+#ifndef __PG_TIME_H__
+#define __PG_TIME_H__
 
 typedef int32_t int32;
 typedef int64_t int64;
@@ -110,4 +110,4 @@ extern TimeADT timestamptz_to_time(TimestampTz tztz);
 
 /*****************************************************************************/
 
-#endif /* PG_TIME_H */
+#endif /* __PG_TIME_H__ */

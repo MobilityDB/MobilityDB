@@ -53,8 +53,8 @@
  * MEOS: redefining elog
  * If WIN32 is set ERROR is defined in wingdi.h as #define ERROR 0
  * and is imported through windows.h. Since in MEOS we do not use ERROR
- * but keep it so elog(ERROR, "xxx") can be both used in MEOS and in MobilityDB
- * as soon as it is defined everything works fine.
+ * but meos_error(ERROR, MEOS_INTERNAL_ERROR, "xxx") which can be both used
+ * in MEOS and in MobilityDB as soon as it is defined everything works fine.
  */
 #define INFO      17      /* Messages specifically requested by user (eg
                  * VACUUM VERBOSE output); always sent to
@@ -71,7 +71,7 @@
 #endif
 #define EXIT_FAILURE 1
 
-extern void elog(int errlevel, const char *format, ...);
+#include "../../meos/include/meos_error.h"
 
 // /* MEOS: redefining palloc0, palloc, and pfree */
 // #if MEOS
