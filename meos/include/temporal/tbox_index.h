@@ -41,6 +41,43 @@
 #include <meos.h>
 #include "temporal/temporal.h"
 
+/*****************************************************************************
+ * Data structures
+ *****************************************************************************/
+
+/**
+ * @brief Structure to represent the bounding box of an inner node containing a
+ * set of temporal boxes
+ * @details The left box keeps, for the X and T dimensions, the ranges of the
+ * lower bounds of the boxes in the quadrant, while the right box keeps the
+ * ranges of the upper boxes.
+ *
+ * As an example, suppose that a quadrant contains two boxes 
+ * @code
+ * b1 = TBOXFLOAT XT([3, 5],[2001-01-03, 2001-01-05])
+ * b3 = TBOXFLOAT XT([7, 9],[2001-01-07, 2001-01-09])
+ * @endcode
+ * The corresponding `TboxNode` will be 
+ * @code
+ * left = TBOXFLOAT XT([3, 7],[2001-01-03, 2001-01-07])
+ * right = TBOXFLOAT XT([5, 9],[2001-01-05, 2001-01-09])
+ * @endcode
+ */
+typedef struct
+{
+  TBox left;
+  TBox right;
+} TboxNode;
+
+/**
+ * @brief Structure to sort the temporal boxes of an inner node
+ */
+typedef struct SortedTbox
+{
+  TBox box;
+  int i;
+} SortedTbox;
+
 /*****************************************************************************/
 
 extern bool tbox_index_leaf_consistent(const TBox *key, const TBox *query,
@@ -48,6 +85,32 @@ extern bool tbox_index_leaf_consistent(const TBox *key, const TBox *query,
 extern bool tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy);
 extern bool tbox_index_recheck(StrategyNumber strategy);
+
+extern void tboxnode_init(TBox *centroid, TboxNode *nodebox);
+extern TboxNode *tboxnode_copy(const TboxNode *box);
+extern uint8 getQuadrant4D(const TBox *centroid, const TBox *inBox);
+extern void tboxnode_quadtree_next(const TboxNode *nodebox,
+  const TBox *centroid, uint8 quadrant, TboxNode *next_nodebox);
+extern void tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,
+  uint8 node, int level, TboxNode *next_nodebox);
+extern bool overlap4D(const TboxNode *nodebox, const TBox *query);
+extern bool contain4D(const TboxNode *nodebox, const TBox *query);
+extern bool left4D(const TboxNode *nodebox, const TBox *query);
+extern bool overLeft4D(const TboxNode *nodebox, const TBox *query);
+extern bool right4D(const TboxNode *nodebox, const TBox *query);
+extern bool overRight4D(const TboxNode *nodebox, const TBox *query);
+extern bool before4D(const TboxNode *nodebox, const TBox *query);
+extern bool overBefore4D(const TboxNode *nodebox, const TBox *query);
+extern bool after4D(const TboxNode *nodebox, const TBox *query);
+extern bool overAfter4D(const TboxNode *nodebox, const TBox *query);
+extern double distance_tbox_nodebox(const TBox *query,
+  const TboxNode *nodebox);
+extern bool tnumber_spgist_get_tbox(Datum value, meosType type, TBox *result);
+extern int tbox_xmin_cmp(const TBox *box1, const TBox *box2);
+extern int tbox_xmax_cmp(const TBox *box1, const TBox *box2);
+extern int tbox_tmin_cmp(const TBox *box1, const TBox *box2);
+extern int tbox_tmax_cmp(const TBox *box1, const TBox *box2);
+extern int tbox_level_cmp(TBox *centroid, TBox *query, int level);
 
 /*****************************************************************************/
 

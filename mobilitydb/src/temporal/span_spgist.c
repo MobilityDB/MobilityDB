@@ -56,346 +56,6 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * Data structures
- *****************************************************************************/
-
-/**
- * @brief Structure to represent the bounding box of an inner node containing a
- * set of spans
- */
-typedef struct
-{
-  Span left;
-  Span right;
-} SpanNode;
-
-/**
- * @brief Structure to sort a set of spans of an inner node
- */
-typedef struct SortedSpan
-{
-  Span s;
-  int i;
-} SortedSpan;
-
-/*****************************************************************************
- * General functions
- *****************************************************************************/
-
-/**
- * @brief Comparator to sort spans on their lower bound
- */
-static int
-span_lower_qsort_cmp(const void *a, const void *b)
-{
-  Span *sa = (Span *) a;
-  Span *sb = (Span *) b;
-  return span_lower_cmp(sa, sb);
-}
-
-/**
- * @brief Comparator to sort spans on their upper bound
- */
-static int
-span_upper_qsort_cmp(const void *a, const void *b)
-{
-  Span *sa = (Span *) a;
-  Span *sb = (Span *) b;
-  return span_upper_cmp(sa, sb);
-}
-
-/**
- * @brief Initialize the traversal value
- *
- * In the beginning, we don't have any restrictions.  We have to
- * initialize the struct to cover the whole 2D space.
- */
-void
-spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
-{
-  memset(nodebox, 0, sizeof(SpanNode));
-  Datum min, max;
-  assert(span_type(spantype));
-  switch (spantype)
-  {
-    case T_TSTZSPAN:
-      min = TimestampTzGetDatum(DT_NOBEGIN);
-      max = TimestampTzGetDatum(DT_NOEND);
-      break;
-    case T_DATESPAN:
-      min = DateADTGetDatum(DATEVAL_NOBEGIN);
-      max = DateADTGetDatum(DATEVAL_NOEND);
-      break;
-    case T_INTSPAN:
-      min = Int32GetDatum(PG_INT32_MIN);
-      max = Int32GetDatum(PG_INT32_MAX);
-      break;
-    case T_BIGINTSPAN:
-      min = Int64GetDatum(PG_INT64_MIN);
-      max = Int64GetDatum(PG_INT64_MAX);
-      break;
-    case T_FLOATSPAN:
-      min = Float8GetDatum(-1 * DBL_MAX);
-      max = Float8GetDatum(DBL_MAX);
-      break;
-    default: /* Error */
-      elog(ERROR, "Unsupported span type for indexing: %d", spantype);
-  }
-  nodebox->left.lower = nodebox->left.upper = min;
-  nodebox->right.lower = nodebox->right.upper = max;
-  nodebox->left.spantype = nodebox->right.spantype = spantype;
-  nodebox->left.basetype = nodebox->right.basetype = basetype;
-  return;
-}
-
-/**
- * @brief Copy a traversal value
- */
-SpanNode *
-spannode_copy(const SpanNode *orig)
-{
-  SpanNode *result = palloc(sizeof(SpanNode));
-  memcpy(result, orig, sizeof(SpanNode));
-  return result;
-}
-
-/**
- * @brief Compute the next traversal value for a quadtree given the bounding
- * box and the centroid of the current node and the quadrant number (0 to 3)
- *
- * For example, given the bounding box of the root node (level 0) and
- * the centroid as follows
- *     nodebox = (-infinity, -infinity)(infinity, infinity)
- *     centroid = (2001-06-13 18:10:00+02, 2001-06-13 18:11:00+02)
- * the quadrants are as follows
- *     0 = (-infinity, 2001-06-13 18:10:00)(infinity, 2001-06-13 18:11:00)
- *     1 = (-infinity, 2001-06-13 18:10:00)(2001-06-13 18:11:00, infinity)
- *     2 = (2001-06-13 18:10:00, -infinity)(infinity, 2001-06-13 18:11:00)
- *     3 = (2001-06-13 18:10:00, -infinity)(2001-06-13 18:11:00, infinity)
- */
-void
-spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
-  uint8 quadrant, SpanNode *next_nodespan)
-{
-  memcpy(next_nodespan, nodebox, sizeof(SpanNode));
-  if (quadrant & 0x2)
-  {
-    next_nodespan->left.lower = centroid->lower;
-    next_nodespan->left.lower_inc = true;
-  }
-  else
-  {
-    next_nodespan->left.upper = centroid->lower;
-    next_nodespan->left.upper_inc = true;
-  }
-  if (quadrant & 0x1)
-  {
-    next_nodespan->right.lower = centroid->upper;
-    next_nodespan->right.lower_inc = true;
-  }
-  else
-  {
-    next_nodespan->right.upper = centroid->upper;
-    next_nodespan->right.upper_inc = true;
-  }
-  return;
-}
-
-/**
- * @brief Compute the next traversal value for a k-d tree given the bounding
- * box and the centroid of the current node, the half number (0 or 1), and the
- * level
- *
- * For example, given the bounding box of the root node (level 0) and
- * the centroid as follows
- *     nodebox = (-infinity, -infinity)(infinity, infinity)
- *     centroid = (2001-06-19 09:07:00, 2001-06-19 09:13:00]
- * the halves are as follows
- *     0 = (-infinity, -infinity)(2001-06-19 09:07:00+02, infinity)
- *     1 = [2001-06-19 09:07:00+02, -infinity)(infinity, infinity)
- */
-void
-spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
-  uint8 node, int level, SpanNode *next_nodespan)
-{
-  memcpy(next_nodespan, nodebox, sizeof(SpanNode));
-  if (level % 2)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-    {
-      next_nodespan->right.lower = centroid->lower;
-      next_nodespan->right.lower_inc = true;
-    }
-    else
-    {
-      /* The inclusive flag must be set to true so that the bounds with the
-       * same timestamp are in one of the two children */
-      next_nodespan->left.lower = centroid->lower;
-      next_nodespan->left.lower_inc = true;
-    }
-  }
-  else
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-    {
-      next_nodespan->right.upper = centroid->upper;
-      next_nodespan->right.upper_inc = true;
-    }
-    else
-    {
-      /* The inclusive flag must set to true so that the bounds with the
-       * same timestamp are in one of the two childs */
-      next_nodespan->left.upper = centroid->upper;
-      next_nodespan->left.upper_inc = true;
-    }
-  }
-  return;
-}
-
-/**
- * @brief Calculate the quadrant
- *
- * The quadrant is 8 bit unsigned integer with 2 least bits in use.
- * This function accepts Spans as input. The 2 bits are set by comparing
- * a corner of the box. This makes 4 quadrants in total.
- */
-static uint8
-getQuadrant2D(const Span *centroid, const Span *query)
-{
-  uint8 quadrant = 0;
-  if (span_lower_cmp(query, centroid) > 0)
-    quadrant |= 0x2;
-  if (span_upper_cmp(query, centroid) > 0)
-    quadrant |= 0x1;
-  return quadrant;
-}
-
-/**
- * @brief Can any span from nodebox overlap with the query?
- */
-bool
-overlap2D(const SpanNode *nodebox, const Span *query)
-{
-  Span s;
-  span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return overlaps_span_span(&s, query);
-}
-
-/**
- * @brief Can any span from nodebox contain the query?
- */
-bool
-contain2D(const SpanNode *nodebox, const Span *query)
-{
-  Span s;
-  span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return contains_span_span(&s, query);
-}
-
-/**
- * @brief Can any span from nodebox be to the left of the query?
- */
-bool
-left2D(const SpanNode *nodebox, const Span *query)
-{
-  return left_span_span(&nodebox->right, query);
-}
-
-/**
- * @brief Can any span from nodebox does not extend to the right of the query?
- */
-bool
-overLeft2D(const SpanNode *nodebox, const Span *query)
-{
-  return overleft_span_span(&nodebox->right, query);
-}
-
-/**
- * @brief Can any span from nodebox be right the query?
- */
-bool
-right2D(const SpanNode *nodebox, const Span *query)
-{
-  return right_span_span(&nodebox->left, query);
-}
-
-/**
- * @brief Can any span from nodebox does not extend to the left of the query?
- */
-bool
-overRight2D(const SpanNode *nodebox, const Span *query)
-{
-  return overright_span_span(&nodebox->left, query);
-}
-
-/**
- * @brief Can any span from nodebox be to the left of the query?
- */
-bool
-adjacent2D(const SpanNode *nodebox, const Span *query)
-{
-  return adjacent_span_span(&nodebox->left, query) ||
-    adjacent_span_span(&nodebox->right, query);
-}
-
-/**
- * @brief Distance between a query span and a box of spans
- */
-double
-distance_span_nodespan(Span *query, SpanNode *nodebox)
-{
-  /* Determine the maximum span of the nodebox */
-  Span s;
-  span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
-    nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-
-  /* Compute the distance between the query span and the nodebox span */
-  return distance_span_span(query, &s);
-}
-
-/**
- * @brief Transform a query argument into a span
- */
-bool
-span_spgist_get_span(const ScanKeyData *scankey, Span *result)
-{
-  meosType type = oid_type(scankey->sk_subtype);
-  if (span_basetype(type))
-  {
-    Datum value = scankey->sk_argument;
-    meosType spantype = basetype_spantype(type);
-    span_set(value, value, true, true, type, spantype, result);
-  }
-  else if (set_type(type))
-  {
-    Set *s = DatumGetSetP(scankey->sk_argument);
-    set_set_span(s, result);
-  }
-  else if (span_type(type))
-  {
-    Span *s = DatumGetSpanP(scankey->sk_argument);
-    memcpy(result, s, sizeof(Span));
-  }
-  else if (spanset_type(type))
-  {
-    spanset_span_slice(scankey->sk_argument, result);
-  }
-  /* For temporal types whose bounding box is a timestamptz span */
-  else if (temporal_type(type))
-  {
-    Temporal *temp = temporal_slice(scankey->sk_argument);
-    temporal_set_tstzspan(temp, result);
-  }
-  else
-    elog(ERROR, "Unsupported type for indexing: %d", type);
-  return true;
-}
-
-/*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
@@ -770,7 +430,12 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   {
     orderbys = palloc0(sizeof(Span) * in->norderbys);
     for (i = 0; i < in->norderbys; i++)
-      span_spgist_get_span(&in->orderbys[i], &orderbys[i]);
+    {
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      meosType type = oid_type(scankey->sk_subtype);
+      span_spgist_get_span(value, type, &orderbys[i]);
+    }
   }
 
   if (in->allTheSame)
@@ -811,7 +476,12 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   {
     queries = palloc0(sizeof(Span) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
-      span_spgist_get_span(&in->scankeys[i], &queries[i]);
+    {
+      const ScanKeyData *scankey = &in->scankeys[i];
+      Datum value = scankey->sk_argument;
+      meosType type = oid_type(scankey->sk_subtype);
+      span_spgist_get_span(value, type, &queries[i]);
+    }
   }
 
   /* Allocate enough memory for nodes */
@@ -965,7 +635,10 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->recheck |= span_index_recheck(strategy);
 
     /* Convert the query to a span and perform the test */
-    span_spgist_get_span(&in->scankeys[i], &span);
+    const ScanKeyData *scankey = &in->scankeys[i];
+    Datum value = scankey->sk_argument;
+    meosType type = oid_type(scankey->sk_subtype);
+    span_spgist_get_span(value, type, &span);
     result = span_index_leaf_consistent(key, &span, strategy);
 
     /* If any check is failed, we have found our answer. */
@@ -982,7 +655,10 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->norderbys; i++)
     {
       /* Convert the order by argument to a span and perform the test */
-      span_spgist_get_span(&in->orderbys[i], &span);
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      meosType type = oid_type(scankey->sk_subtype);
+      span_spgist_get_span(value, type, &span);
       distances[i] = distance_span_span(&span, key);
     }
   }
