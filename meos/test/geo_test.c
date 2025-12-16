@@ -45,6 +45,7 @@
 #include<string.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <pg_text.h>
 
 /* Main program */
 int main(void)
@@ -99,10 +100,11 @@ int main(void)
 
   char *geogset1_in = "SRID=5676;{Point(1 1), \"Linestring(2 2,3 3)\"}";
 
+  GBOX *gbox1 = gbox_make(true, true, false, 1, 1, 1, 1, 3, 3, 3, 3);
+  char *gbox1_out = gbox_out(gbox1, 6);
+
   BOX3D *box3d1 = box3d_make(1, 5, 1, 5, 1, 5, 5676);
   char *box3d1_out = box3d_out(box3d1, 6);
-  GBOX *gbox1 = gbox_make(false, 1, 5, 1, 5, 1, 5);
-  char *gbox1_out = gbox_out(gbox1, 6);
 
   char *geom1_in = "SRID=5676;Point(1 1)";
   GSERIALIZED *geom1 = geom_in(geom1_in, -1);
@@ -967,7 +969,7 @@ int main(void)
   fwrite(binchar_result, size, 1, stdout);
   printf("\n");
   free(binchar_result);
-  
+
   /* STBox *stbox_from_hexwkb(const char *hexwkb); */
   stbox_result = stbox_from_hexwkb(stbox1_hexwkb);
   char_result = stbox_out(stbox_result, 6);
@@ -2643,7 +2645,7 @@ int main(void)
     free(char_result);
   }
   free(stboxarray_result);
-
+  
   /* STBox *stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool border_inc, int *count); */
   stboxarray_result = stbox_space_time_tiles(stbox1, 1, 1, 1, interv1, geompt1, tstz1, true, &count);
   printf("stbox_space_time_tiles(%s, 1, 1, 1, %s, %s, %s, true, %d): {", stbox1_out, interv1_out, geompt1_out, tstz1_out, count);
@@ -2878,3 +2880,5 @@ int main(void)
 
   return 0;
 }
+
+

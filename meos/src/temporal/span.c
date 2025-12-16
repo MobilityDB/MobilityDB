@@ -40,6 +40,7 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <common/hashfn.h>
 #include "port/pg_bitutils.h"
 #include <utils/float.h>
@@ -48,13 +49,16 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/meos_catalog.h"
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Parameter tests
@@ -805,8 +809,8 @@ floatspan_round_set(const Span *s, int maxdd, Span *result)
 {
   assert(s); assert(s->spantype == T_FLOATSPAN); assert(result);
   /* Set precision of bounds */
-  double lower = float_round(DatumGetFloat8(s->lower), maxdd);
-  double upper = float_round(DatumGetFloat8(s->upper), maxdd);
+  double lower = float8_round(DatumGetFloat8(s->lower), maxdd);
+  double upper = float8_round(DatumGetFloat8(s->upper), maxdd);
   /* Fix the bounds */
   bool lower_inc, upper_inc;
   if (float8_eq(lower, upper))
@@ -1055,7 +1059,7 @@ tstzspan_expand(const Span *s, const Interval *interv)
     Interval *duration = tstzspan_duration(s);
     /* Negate the interval */
     interv_neg = interval_negate(interv);
-    Interval *interv_neg2 = mul_interval_double(interv_neg, 2.0);
+    Interval *interv_neg2 = mul_interval_float8(interv_neg, 2.0);
     int cmp = pg_interval_cmp(duration, interv_neg2);
     pfree(duration); pfree(interv_neg2);
     if (cmp < 0 || (cmp == 0 && (! s->lower_inc || ! s->upper_inc)))
@@ -1324,7 +1328,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
- * @ingroup meos_base_types
+ * @ingroup meos_base_timestamp
  * @brief Return a timestamptz shifted by an interval
  * @param[in] t Timestamp
  * @param[in] interv Interval to shift the instant
@@ -1667,8 +1671,8 @@ span_hash_extended(const Span *s, uint64 seed)
   uint64 type_hash = hash_uint32_extended((uint32) type, seed);
 
   /* Apply the hash function to each bound */
-  uint64 lower_hash = pg_hashint8extended(s->lower, seed);
-  uint64 upper_hash = pg_hashint8extended(s->upper, seed);
+  uint64 lower_hash = int64_hash_extended(s->lower, seed);
+  uint64 upper_hash = int64_hash_extended(s->upper, seed);
 
   /* Merge hashes of flags and bounds */
   uint64 result = hash_uint32_extended((uint32) flags, seed);

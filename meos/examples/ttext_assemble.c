@@ -94,7 +94,7 @@ int main(void)
     char *value = malloc(sizeof(char) * (len + 2));
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
-    text *txt = cstring2text(value);
+    text *txt = cstring_to_text(value);
     t = add_timestamptz_interval(t, oneday);
     instants[i] = ttextinst_make(txt, t);
     free(value); free(txt);
@@ -108,7 +108,7 @@ int main(void)
   // Uncomment the next line to see the resulting sequence value
   // printf("%s\n", ttext_out(seq));
   text *txt = ttext_end_value(seq);
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   printf("\nNumber of instants: %d, Last value : %s\n",
     temporal_num_instants(seq), str);
 

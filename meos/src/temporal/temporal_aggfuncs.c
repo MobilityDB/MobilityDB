@@ -40,10 +40,10 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
+#include "utils/varlena.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/skiplist.h"
 #include "temporal/span.h"
@@ -54,6 +54,10 @@
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
 #include "temporal/type_util.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();
@@ -108,7 +112,7 @@ datum_max_float8(Datum l, Datum r)
  Datum
 datum_min_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) < 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0 ? l : r;
 }
 
 /**
@@ -117,7 +121,7 @@ datum_min_text(Datum l, Datum r)
 Datum
 datum_max_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) > 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
 }
 
 /**
@@ -243,7 +247,7 @@ temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
  * @param[out] upper Array index of the end of the segment 
  * @param[out] update Array of indices keeping the levels of the elements to
  * insert
- * @result Number of elements in the list that will be aggregated with the new
+ * @return Number of elements in the list that will be aggregated with the new
  * values, on error return -1
  */
 int

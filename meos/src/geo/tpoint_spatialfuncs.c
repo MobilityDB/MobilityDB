@@ -32,11 +32,10 @@
  * @brief Spatial functions for temporal points
  */
 
-#include "geo/tgeo_spatialfuncs.h"
-
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -50,7 +49,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/tnumber_mathfuncs.h"
@@ -60,6 +58,7 @@
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
@@ -67,6 +66,10 @@
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /* Timestamps in PostgreSQL are encoded as MICROseconds since '2000-01-01'
  * while Unix epoch are encoded as MILLIseconds since '1970-01-01'.
@@ -631,21 +634,21 @@ lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
   /* We are sure the points are not empty */
   lwpoint_getPoint4d_p(p, &p4d);
   lwpoint_getPoint4d_p(q, &q4d);
-  int cmp = float8_cmp_internal(p4d.x, q4d.x);
+  int cmp = pg_float8_cmp(p4d.x, q4d.x);
   if (cmp != 0)
     return cmp;
-  cmp = float8_cmp_internal(p4d.y, q4d.y);
+  cmp = pg_float8_cmp(p4d.y, q4d.y);
   if (cmp != 0)
     return cmp;
   if (FLAGS_GET_Z(p->flags))
   {
-    cmp = float8_cmp_internal(p4d.z, q4d.z);
+    cmp = pg_float8_cmp(p4d.z, q4d.z);
     if (cmp != 0)
       return cmp;
   }
   if (FLAGS_GET_M(p->flags))
   {
-    cmp = float8_cmp_internal(p4d.m, q4d.m);
+    cmp = pg_float8_cmp(p4d.m, q4d.m);
     if (cmp != 0)
       return cmp;
   }
@@ -2935,7 +2938,7 @@ geom_bearing(Datum point1, Datum point2)
 
   if (fabs(p1->y - p2->y) > MEOS_EPSILON)
   {
-    double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
+    double bearing = float8_atan((p1->x - p2->x) / (p1->y - p2->y)) +
       alpha(p1, p2);
     if (fabs(bearing) <= MEOS_EPSILON)
       bearing = 0.0;
@@ -2968,11 +2971,11 @@ geog_bearing(Datum point1, Datum point2)
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
-  double lat = pg_dsin(diffLong) * pg_dcos(lat2);
-  double lgt = ( pg_dcos(lat1) * pg_dsin(lat2) ) -
-    ( pg_dsin(lat1) * pg_dcos(lat2) * pg_dcos(diffLong) );
+  double lat = float8_sin(diffLong) * float8_cos(lat2);
+  double lgt = ( float8_cos(lat1) * float8_sin(lat2) ) -
+    ( float8_sin(lat1) * float8_cos(lat2) * float8_cos(diffLong) );
   /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
-  double initial_bearing = pg_datan2(lat, lgt);
+  double initial_bearing = float8_atan2(lat, lgt);
   /* Normalize the bearing from -180° to + 180° (in radians) to
    * 0° to 360° (in radians) */
   double bearing = fmod(initial_bearing + M_PI * 2.0, M_PI * 2.0);

@@ -85,6 +85,46 @@
  * @ingroup meos_api
  * @brief Functions for base and time types
  *
+ *   @defgroup meos_base_bool Functions for the boolean type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the boolean type
+ *
+ *   @defgroup meos_base_int Functions for the integer types
+ *   @ingroup meos_base_types
+ *   @brief Functions for the integer types
+ *
+ *   @defgroup meos_base_float Functions for the float types
+ *   @ingroup meos_base_types
+ *   @brief Functions for the float types
+ *
+ *   @defgroup meos_base_text Functions for the text type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the text types
+ *
+ *   @defgroup meos_base_numeric Functions for the numeric type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the numeric type
+ *
+ *   @defgroup meos_base_date Functions for the date type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the date type
+ *
+ *   @defgroup meos_base_time Functions for the time type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the time type
+ *
+ *   @defgroup meos_base_timestamp Functions for the timestamp types
+ *   @ingroup meos_base_types
+ *   @brief Functions for the timestamp types
+ *
+ *   @defgroup meos_base_interval Functions for the interval type
+ *   @ingroup meos_base_types
+ *   @brief Functions for the interval types
+ *
+ *   @defgroup meos_base_json Functions for the JSON types
+ *   @ingroup meos_base_types
+ *   @brief Functions for the JSON types
+ *
  * @defgroup meos_setspan Functions for set and span types
  * @ingroup meos_api
  * @brief Functions for set and span types
@@ -104,6 +144,10 @@
  * @defgroup meos_cbuffer Functions for temporal circular buffers
  * @ingroup meos_api
  * @brief Functions for temporal temporal circular buffers
+ *
+ * @defgroup meos_json Functions for temporal JSON types
+ * @ingroup meos_api
+ * @brief Functions for temporal temporal JSON types
  *
  * @defgroup meos_npoint Functions for temporal network points
  * @ingroup meos_api

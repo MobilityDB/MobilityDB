@@ -123,7 +123,7 @@ int main(void)
     char *value = malloc(sizeof(char) * (len + 2));
     memset(value, i % 2 == 0 ? 'A' : 'B', len);
     value[len] = '\0';
-    text *txt = cstring2text(value);
+    text *txt = cstring_to_text(value);
     t = add_timestamptz_interval(t, onehour);
     TInstant *inst = ttextinst_make(txt, t);
     free(value); free(txt);
@@ -195,7 +195,7 @@ int main(void)
   /* Print information about the last sequence */
   seq = temporal_end_sequence((Temporal *) ss1);
   text *txt = ttext_end_value((Temporal *) seq);
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   printf("Number of instants in the last sequence: %d, Last value : %s\n",
     seq->count, str);
 

@@ -740,11 +740,6 @@ extern gsl_rng *gsl_get_aggregation_rng(void);
  * Generic type functions
  *****************************************************************************/
 
-#if MEOS
-#define TimestampTzGetDatum(X) Int64GetDatum(X)
-#define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
-#endif /* MEOS */
-
 extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);
 extern Datum datum_float_round(Datum value, Datum size);

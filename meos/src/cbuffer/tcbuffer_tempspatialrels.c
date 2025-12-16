@@ -122,8 +122,8 @@ tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_tspatial(temp1, temp2,
-    (Datum) NULL, (varfunc) func, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_tspatial(temp1, temp2, (Datum) NULL,
+    (varfunc) func, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)

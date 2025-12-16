@@ -65,6 +65,12 @@
 #endif
 
 /*****************************************************************************
+ * Error codes
+ *****************************************************************************/
+
+#include "meos_error.h"
+
+/*****************************************************************************
  * Type definitions
  *****************************************************************************/
 
@@ -278,57 +284,17 @@ extern void rtree_insert(RTree *rtree, void *box, int64 id);
 extern int *rtree_search(const RTree *rtree,const void *query, int *count);
 
 /*****************************************************************************
- * Error codes
- *****************************************************************************/
-
-typedef enum
-{
-  MEOS_SUCCESS                   = 0,  // Successful operation
-
-  MEOS_ERR_INTERNAL_ERROR        = 1,  // Unspecified internal error
-  MEOS_ERR_INTERNAL_TYPE_ERROR   = 2,  // Internal type error
-  MEOS_ERR_VALUE_OUT_OF_RANGE    = 3,  // Internal out of range error
-  MEOS_ERR_DIVISION_BY_ZERO      = 4,  // Internal division by zero error
-  MEOS_ERR_MEMORY_ALLOC_ERROR    = 5,  // Internal malloc error
-  MEOS_ERR_AGGREGATION_ERROR     = 6,  // Internal aggregation error
-  MEOS_ERR_DIRECTORY_ERROR       = 7,  // Internal directory error
-  MEOS_ERR_FILE_ERROR            = 8,  // Internal file error
-
-  MEOS_ERR_INVALID_ARG           = 10, // Invalid argument
-  MEOS_ERR_INVALID_ARG_TYPE      = 11, // Invalid argument type
-  MEOS_ERR_INVALID_ARG_VALUE     = 12, // Invalid argument value
-  MEOS_ERR_FEATURE_NOT_SUPPORTED = 13, // Feature not currently supported
-
-  MEOS_ERR_MFJSON_INPUT          = 20, // MFJSON input error
-  MEOS_ERR_MFJSON_OUTPUT         = 21, // MFJSON output error
-  MEOS_ERR_TEXT_INPUT            = 22, // Text input error
-  MEOS_ERR_TEXT_OUTPUT           = 23, // Text output error
-  MEOS_ERR_WKB_INPUT             = 24, // WKB input error
-  MEOS_ERR_WKB_OUTPUT            = 25, // WKB output error
-  MEOS_ERR_GEOJSON_INPUT         = 26, // GEOJSON input error
-  MEOS_ERR_GEOJSON_OUTPUT        = 27, // GEOJSON output error
-
-} errorCode;
-
-extern void meos_error(int errlevel, int errcode, const char *format, ...);
-
-/* Set or read error level */
-
-extern int meos_errno(void);
-extern int meos_errno_set(int err);
-extern int meos_errno_restore(int err);
-extern int meos_errno_reset(void);
-
-/*****************************************************************************
  * Initialization of the MEOS library
  *****************************************************************************/
 
 /* Definition of error handler function */
 typedef void (*error_handler_fn)(int, int, const char *);
 
-extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
+extern void meos_initialize_timezone(const char *name);
+extern void meos_initialize_collation(void);
 extern void meos_finalize_timezone(void);
+extern void meos_finalize_collation(void);
 extern void meos_finalize_projsrs(void);
 extern void meos_finalize_ways(void);
 
@@ -341,53 +307,6 @@ extern void meos_set_spatial_ref_sys_csv(const char* path);
 
 extern void meos_initialize(void);
 extern void meos_finalize(void);
-
-/******************************************************************************
- * Functions for base and time types
- ******************************************************************************/
-
-extern DateADT add_date_int(DateADT d, int32 days);
-extern Interval *add_interval_interval(const Interval *interv1, const Interval *interv2);
-extern TimestampTz add_timestamptz_interval(TimestampTz t, const Interval *interv);
-extern bool bool_in(const char *str);
-extern char *bool_out(bool b);
-extern text *cstring2text(const char *str);
-extern Timestamp date_to_timestamp(DateADT dateVal);
-extern TimestampTz date_to_timestamptz(DateADT d);
-extern double float_exp(double d);
-extern double float_ln(double d);
-extern double float_log10(double d);
-extern char *float_out(double d, int maxdd);
-extern double float_round(double d, int maxdd);
-extern int int32_cmp(int32 l, int32 r);
-extern int int64_cmp(int64 l, int64 r);
-extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, double secs);
-extern int minus_date_date(DateADT d1, DateADT d2);
-extern DateADT minus_date_int(DateADT d, int32 days);
-extern TimestampTz minus_timestamptz_interval(TimestampTz t, const Interval *interv);
-extern Interval *minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2);
-extern Interval *mul_interval_double(const Interval *interv, double factor);
-extern DateADT pg_date_in(const char *str);
-extern char *pg_date_out(DateADT d);
-extern int pg_interval_cmp(const Interval *interv1, const Interval *interv2);
-extern Interval *pg_interval_in(const char *str, int32 typmod);
-extern char *pg_interval_out(const Interval *interv);
-extern Timestamp pg_timestamp_in(const char *str, int32 typmod);
-extern char *pg_timestamp_out(Timestamp t);
-extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
-extern char *pg_timestamptz_out(TimestampTz t);
-extern char *text2cstring(const text *txt);
-extern int text_cmp(const text *txt1, const text *txt2);
-extern text *text_copy(const text *txt);
-extern text *text_in(const char *str);
-extern text *text_initcap(const text *txt);
-extern text *text_lower(const text *txt);
-extern char *text_out(const text *txt);
-extern text *text_upper(const text *txt);
-extern text *textcat_text_text(const text *txt1, const text *txt2);
-extern TimestampTz timestamptz_shift(TimestampTz t, const Interval *interv);
-extern DateADT timestamp_to_date(Timestamp t);
-extern DateADT timestamptz_to_date(TimestampTz t);
 
 /*============================================================================
  * Functions for set and span types
@@ -590,6 +509,7 @@ extern TimestampTz tstzspanset_upper(const SpanSet *ss);
  *****************************************************************************/
 
 extern Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth);
+extern Span *bigintspan_expand(const Span *s, int64 value);
 extern Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern SpanSet *bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
@@ -602,6 +522,7 @@ extern Set *floatset_radians(const Set *s);
 extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
 extern Span *floatspan_ceil(const Span *s);
 extern Span *floatspan_degrees(const Span *s, bool normalize);
+extern Span *floatspan_expand(const Span *s, double value);
 extern Span *floatspan_floor(const Span *s);
 extern Span *floatspan_radians(const Span *s);
 extern Span *floatspan_round(const Span *s, int maxdd);
@@ -613,6 +534,7 @@ extern SpanSet *floatspanset_radians(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
+extern Span *intspan_expand(const Span *s, int32 value);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
 extern Span *tstzspan_expand(const Span *s, const Interval *interv);
@@ -625,6 +547,7 @@ extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
 extern Set *tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin);
+extern Span *tstzspan_expand(const Span *s, const Interval *interv);
 extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
 extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
@@ -1143,8 +1066,12 @@ extern bool tboxint_xmin(const TBox *box, int *result);
  * Transformation functions for box types
  *****************************************************************************/
 
+extern TBox *tfloatbox_expand(const TBox *box, double d);
+extern TBox *tintbox_expand(const TBox *box, int i);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interv);
 extern TBox *tbox_round(const TBox *box, int maxdd);
+extern TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
+extern TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth);
 extern TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration);
 extern TBox *tfloatbox_expand(const TBox *box, double d);
 extern TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
@@ -1296,7 +1223,6 @@ extern SpanSet *temporal_time(const Temporal *temp);
 extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
 extern bool temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result);
 extern bool temporal_upper_inc(const Temporal *temp);
-extern double tfloat_avg_value(const Temporal *temp);
 extern double tfloat_end_value(const Temporal *temp);
 extern double tfloat_min_value(const Temporal *temp);
 extern double tfloat_max_value(const Temporal *temp);
@@ -1705,7 +1631,6 @@ extern Temporal *tfloat_exp(const Temporal *temp);
 extern Temporal *tfloat_ln(const Temporal *temp);
 extern Temporal *tfloat_log10(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
-extern double float_angular_difference(double degrees1, double degrees2);
 extern Temporal *tnumber_angular_difference(const Temporal *temp);
 extern Temporal *tnumber_delta_value(const Temporal *temp);
 
@@ -1774,8 +1699,8 @@ extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
 
 /* Simplification functions for temporal types */
 
-extern Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
-extern Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
+extern Temporal *temporal_simplify_dp(const Temporal *temp, double dist, bool synchronized);
+extern Temporal *temporal_simplify_max_dist(const Temporal *temp, double dist, bool synchronized);
 extern Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
 extern Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 

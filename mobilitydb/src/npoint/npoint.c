@@ -38,13 +38,15 @@
 #include "npoint/tnpoint.h"
 
 /* PostgreSQL */
+#include <postgres.h>
+#include <pgtypes.h>
 #include <libpq/pqformat.h>
+#include "pgtypes.h"
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
@@ -202,7 +204,7 @@ Datum
 Npoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
-  char *wkt = text2cstring(wkt_text);
+  char *wkt = text_to_cstring(wkt_text);
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
   Npoint *result = npoint_parse(&wkt_ptr, true);
@@ -241,7 +243,7 @@ Datum
 Npoint_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
+  char *hexwkb = text_to_cstring(hexwkb_text);
   Npoint *result = npoint_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
@@ -264,7 +266,7 @@ Npoint_as_text_common(FunctionCallInfo fcinfo, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = extended ? npoint_as_ewkt(np, dbl_dig_for_wkt) : 
     npoint_as_text(np, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
 }

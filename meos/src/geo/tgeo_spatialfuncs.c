@@ -50,7 +50,6 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
@@ -70,6 +69,10 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Utility functions

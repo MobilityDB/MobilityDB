@@ -40,6 +40,7 @@
 #include <geos_c.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -50,7 +51,6 @@
 #include <meos_internal_geo.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
-#include "temporal/postgres_types.h"
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_tile.h"
 #include "temporal/tinstant.h"
@@ -72,6 +72,10 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Parameter tests
@@ -557,7 +561,7 @@ ensure_not_month_duration(const Interval *duration)
 {
   if (! duration->month)
     return true;
-  char *str = pg_interval_out(duration);
+  char *str = pg_interval_out((Interval *) duration);
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Cannot have month intervals: %s", str);
   pfree(str);
@@ -579,7 +583,7 @@ ensure_valid_day_duration(const Interval *duration)
   int64 tunits = interval_units(duration);
   if (tunits < day)
   {
-    str = pg_interval_out(duration);
+    str = pg_interval_out((Interval *) duration);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The interval must not have sub-day precision: %s", str);
     pfree(str);
@@ -587,7 +591,7 @@ ensure_valid_day_duration(const Interval *duration)
   }
   if (tunits % day != 0)
   {
-    str = pg_interval_out(duration);
+    str = pg_interval_out((Interval *) duration);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The interval must be a multiple of a day: %s", str);
     pfree(str);
@@ -595,7 +599,7 @@ ensure_valid_day_duration(const Interval *duration)
   }
   if (tunits < 0)
   {
-    str = pg_interval_out(duration);
+    str = pg_interval_out((Interval *) duration);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The interval must be positive: %s", str);
     pfree(str);
@@ -614,7 +618,7 @@ positive_duration(const Interval *duration)
     return false;
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-  if (pg_interval_cmp(duration, &intervalzero) <= 0)
+  if (pg_interval_cmp((Interval *) duration, &intervalzero) <= 0)
     return false;
   return true;
 }
@@ -631,7 +635,7 @@ ensure_positive_duration(const Interval *duration)
   if (! ensure_not_month_duration(duration))
     return false;
 
-  char *str = pg_interval_out(duration);
+  char *str = pg_interval_out((Interval *) duration);
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The interval must be positive: %s", str);
   pfree(str);
@@ -1252,35 +1256,12 @@ temparr_round(Temporal **temparr, int count, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return a float number rounded to a given number of decimal places
- */
-double
-float_round(double d, int maxdd)
-{
-  assert(maxdd >= 0);
-  double inf = get_float8_infinity();
-  double result = d;
-  if (d != -1 * inf && d != inf)
-  {
-    if (maxdd == 0)
-      result = round(d);
-    else
-    {
-      double power10 = pow(10.0, maxdd);
-      result = round(d * power10) / power10;
-    }
-  }
-  return result;
-}
-
-/**
  * @brief Return a float number rounded to a given number of decimal places
  */
 Datum
 datum_float_round(Datum value, Datum size)
 {
-  return Float8GetDatum(float_round(DatumGetFloat8(value),
+  return Float8GetDatum(float8_round(DatumGetFloat8(value),
     DatumGetInt32(size)));
 }
 
@@ -1779,7 +1760,7 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
 size_t
 temporal_mem_size(const Temporal *temp)
 {
-  assert(temp);
+  VALIDATE_NOT_NULL(temp, -1);
   return VARSIZE(temp);
 }
 #endif /* MEOS || DEBUG_BUILD */
@@ -3060,7 +3041,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   /* We cannot call #ensure_positive_duration since the duration may be zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = pg_interval_cmp(minduration, &intervalzero);
+  int cmp = pg_interval_cmp((Interval *) minduration, &intervalzero);
   if (cmp < 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

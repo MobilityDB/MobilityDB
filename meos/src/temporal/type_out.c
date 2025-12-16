@@ -40,6 +40,7 @@
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+#include "utils/varlena.h"
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -49,7 +50,6 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -68,6 +68,10 @@
 #if RGEO
   #include "rgeo/trgeo_all.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")
 #define MEOS_WKT_INT4_SIZE sizeof("+2147483647")
@@ -89,43 +93,6 @@ size_t lwgeom_to_wkb_size(const LWGEOM *geom, uint8_t variant);
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return the string representation of a float8 number
- * @details This function uses the PostGIS function lwprint_double to print an
- * ordinate value using at most **maxdd** number of decimal digits. The actual 
- * number of printed decimal digits may be less than the requested ones if out 
- * of significant digits.
- *
- * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
- * terminating NULL.
- */
-char *
-float_out(double num, int maxdd)
-{
-  assert(maxdd >= 0);
-  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  lwprint_double(num, maxdd, ascii);
-  return ascii;
-}
-
-/**
- * @ingroup meos_base_types
- * @brief Return the string representation of a text value
- * @param[in] txt Text
- */
-char *
-text_out(const text *txt)
-{
-  assert(txt);
-  char *str = text2cstring(txt);
-  size_t size = strlen(str) + 4;
-  char *result = palloc(size);
-  snprintf(result, size, "\"%s\"", str);
-  pfree(str);
-  return result;
-}
-
-/**
  * @brief Return the string representation of a base value
  * @return On error return @p NULL
  */
@@ -143,9 +110,9 @@ basetype_out(Datum value, meosType type, int maxdd)
     case T_BOOL:
       return bool_out(DatumGetBool(value));
     case T_INT4:
-      return int4_out(DatumGetInt32(value));
+      return int32_out(DatumGetInt32(value));
     case T_INT8:
-      return int8_out(DatumGetInt64(value));
+      return int64_out(DatumGetInt64(value));
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
@@ -222,7 +189,7 @@ double_as_mfjson_sb(stringbuffer_t *sb, double d, int precision)
 static void
 text_as_mfjson_sb(stringbuffer_t *sb, const text *txt)
 {
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   stringbuffer_aprintf(sb, "\"%s\"", str);
   pfree(str);
   return;
@@ -1452,7 +1419,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 
   /*
    * Get the text data directly from the varlena structure.
-   * This avoids the memory allocation of text2cstring.
+   * This avoids the memory allocation of text_to_cstring.
    */
   size_t size = VARSIZE_ANY_EXHDR(txt);
   char *str = VARDATA(txt);

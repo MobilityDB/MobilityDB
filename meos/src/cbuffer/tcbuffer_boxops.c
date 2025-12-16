@@ -36,6 +36,9 @@
 
 #include "cbuffer/tcbuffer_boxops.h"
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

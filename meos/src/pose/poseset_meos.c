@@ -47,7 +47,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"

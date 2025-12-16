@@ -42,6 +42,8 @@
 #include <stdlib.h>
 #include <meos.h>
 #include <meos_cbuffer.h>
+#include <pg_bool.h>
+#include <pg_text.h>
 
 /* Main program */
 int main(void)

@@ -45,6 +45,9 @@
 /* MEOS */
 #include <meos.h>
 
+// TODO REMOVE
+extern void json_destroy_tofree();
+
 /***************************************************************************
  * Functions for the Gnu Scientific Library (GSL)
  ***************************************************************************/
@@ -555,6 +558,8 @@ meos_get_intervalstyle(void)
 
 /*****************************************************************************/
 
+extern void init_database_collation(void);
+
 /*
  * Initialize MEOS library
  */
@@ -563,6 +568,8 @@ meos_initialize(void)
 {
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
+  /* Initialize collation */
+  meos_initialize_collation();
   /* Initialize PROJ */
   proj_initialize();
   /* Initialize GSL */
@@ -579,6 +586,12 @@ meos_finalize(void)
   meos_finalize_timezone();
   /* Finalize PROJ SRS cache */
   meos_finalize_projsrs();
+  /* Finalize collation */
+  meos_finalize_collation();
+#if JSON
+  /* Finalize the list keeping the items to be freed after a JSON parsing */
+  json_destroy_tofree();
+#endif
 #if NPOINT
   /* Finalize Ways cache */
   meos_finalize_ways();

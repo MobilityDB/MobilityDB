@@ -51,12 +51,6 @@
 #define C_COLLATION_OID 950
 #define POSIX_COLLATION_OID 951
 
-#ifndef FMGR_H
-  /* To avoid including fmgr.h However this implies that the text values must
-   * be ALWAYS detoasted */
-  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // ((text *) PG_DETOAST_DATUM(X))
-#endif /* FMGR_H */
-
 /**
  * Floating point precision
  */
@@ -73,7 +67,14 @@
  */
 #define DIST_EPSILON    1.0e-06
 
-#define UNUSED          __attribute__((unused))
+/* only GCC supports the unused attribute */
+#if ! MEOS
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
+#endif /* ! MEOS */
 
 /** Symbolic constants for lifting */
 #define DISCONTINUOUS   true

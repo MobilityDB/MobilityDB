@@ -47,7 +47,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -56,6 +55,10 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Time precision functions for time values
@@ -1338,7 +1341,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Interval *duration = minus_timestamptz_timestamptz(inst2->t, inst1->t);
-    if (pg_interval_cmp(duration, mint) > 0)
+    if (pg_interval_cmp(duration, (Interval *) mint) > 0)
     {
       /* Add instant to output sequence */
       instants[ninsts++] = (TInstant *) inst2;

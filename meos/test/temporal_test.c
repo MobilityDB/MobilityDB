@@ -42,6 +42,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <pg_bool.h>
+#include <pg_float.h>
+#include <pg_text.h>
 
 /* Main program */
 int main(void)
@@ -1483,9 +1486,9 @@ int main(void)
   free(tfloat_merge); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_merge_array(Temporal **temparr, int count); */
-  tfloatseqarray[0] = tfloatseq1;
-  tfloatseqarray[1] = tfloatseq2;
-  tfloat_result = temporal_merge_array(tfloatseqarray, 2);
+  tfloatarray[0] = (Temporal *) tfloatseq1;
+  tfloatarray[1] = (Temporal *) tfloatseq2;
+  tfloat_result = temporal_merge_array(tfloatarray, 2);
   char_result = tfloat_out(tfloat_result, 6);
   printf("temporal_merge_array({%s, %s}, 2): %s\n", tfloatinst1_out, tfloatinst2_out, char_result);
   free(tfloat_result); free(char_result);
@@ -3606,7 +3609,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float_out(float8array_result[i], 6);
+    char1_result = float8_out(float8array_result[i], 6);
     printf("%s:%s", char_result, char1_result);
     if (i < count - 1)
       printf(", ");
@@ -3640,7 +3643,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float_out(float8array_result[i], 6);
+    char1_result = float8_out(float8array_result[i], 6);
     char2_result = timestamptz_out(tstzarray_result[i]);
     printf("%s:%s,%s", char_result, char1_result, char2_result);
     if (i < count - 1)
@@ -3730,7 +3733,6 @@ int main(void)
     free(char_result);
   }
   free(ispanarray_result);
-
 
   /* TBox *tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count); */
   tboxarray_result = tint_value_boxes(tint1, int32_in1, int32_in2, &count);

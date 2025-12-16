@@ -50,12 +50,15 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/meos_catalog.h"
-#include "temporal/postgres_types.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * General functions
@@ -494,7 +497,7 @@ tinstant_shift_time(const TInstant *inst, const Interval *interv)
 {
   assert(inst); assert(interv);
   TInstant *result = tinstant_copy(inst);
-  result->t = add_timestamptz_interval(inst->t, interv);
+  result->t = add_timestamptz_interval(inst->t, (Interval *) interv);
   return result;
 }
 
@@ -606,7 +609,7 @@ tinstant_hash(const TInstant *inst)
   /* Apply the hash function to the base type */
   uint32 value_hash = datum_hash(tinstant_value_p(inst), basetype);
   /* Apply the hash function to the timestamp */
-  uint32 time_hash = pg_hashint8(inst->t);
+  uint32 time_hash = int64_hash(inst->t);
   /* Merge hashes of value and timestamp */
   uint32 result = value_hash;
 #if POSTGRESQL_VERSION_NUMBER >= 150000
