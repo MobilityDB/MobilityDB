@@ -1908,27 +1908,6 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Return in the last argument the value of a temporal discrete sequence
- * at a timestamptz
- * @note In order to be compatible with the corresponding functions for
- * temporal sequences that need to interpolate the value, it is necessary to
- * return a copy of the value.
- */
-bool
-tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
-  Datum *result)
-{
-  assert(seq); assert(result);
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
-  int loc = tdiscseq_find_timestamptz(seq, t);
-  if (loc < 0)
-    return false;
-
-  *result = tinstant_value(TSEQUENCE_INST_N(seq, loc));
-  return true;
-}
-
-/**
  * @brief Restrict a temporal discrete sequence to (the complement of) a
  * timestamptz
  * @note In order to be compatible with the corresponding functions for temporal
@@ -3330,6 +3309,498 @@ tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps,
   /* It is necessary to normalize despite the fact that both the tsequenceset
   * and the periodset are normalized */
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/*****************************************************************************
+ * Restriction Functions: Before and after functions
+ *****************************************************************************/
+
+/**
+ * @brief Restrict a temporal discrete sequence to the instants after or equal
+ * to a timestamptz
+ */
+TSequence *
+tdiscseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
+  /* General case */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  int count = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (inst->t < t || (! strict && inst->t == t))
+      instants[count++] = (TInstant *) inst;
+  }
+  TSequence *result = (count == 0) ? NULL :
+    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Keep the instants of a continuous temporal sequence before or equal
+ * to a timestamptz
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ */
+TSequence *
+tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  assert(interp != DISCRETE);
+
+  /* General case */
+  TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
+  int ninsts = 0;
+  bool upper_inc1 = ! strict;
+  const TInstant *prev = NULL;
+  TInstant *tofree[2] = {0};
+  int nfree = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    Datum value;
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
+    if (cmp < 0)
+      instants[ninsts++] = (TInstant *) inst;
+    else if (cmp == 0)
+    {
+      value = strict ?
+        tinstant_value_p(instants[ninsts - 1]) : tinstant_value_p(inst);
+      instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+        inst->temptype, t);
+      break;
+    }
+    else /* inst->t > t  */
+    {
+      if (interp == STEP)
+      {
+        value = tinstant_value_p(inst);
+        instants[ninsts++] = tofree[nfree++] = tinstant_make(value,
+           inst->temptype, t);
+      }
+      else
+      {
+        /* Interpolate */
+        Datum startvalue, endvalue;
+        if (i == 0)
+        {
+          const TInstant *next = TSEQUENCE_INST_N(seq, 1);
+          startvalue = tinstant_value_p(inst);
+          endvalue = tinstant_value_p(next);
+          value = tsegment_value_at_timestamptz(startvalue, endvalue,
+            inst->temptype, inst->t, next->t, t);
+          instants[ninsts++] = tofree[nfree++] = tinstant_make_free(value,
+            inst->temptype, t);
+        }
+        if (i > 0)
+        {
+          startvalue = tinstant_value_p(prev);
+          endvalue = tinstant_value_p(inst);
+          value = tsegment_value_at_timestamptz(startvalue, endvalue,
+            inst->temptype, prev->t, inst->t, t);
+          instants[ninsts++] = tofree[nfree++] = tinstant_make_free(value,
+            inst->temptype, t);
+        }
+      }
+
+      break;
+    }
+    prev = inst;
+  }
+  /* Construct the result */
+  TSequence *result = NULL;
+  if (ninsts > 0)
+  {
+    if (ninsts == 1)
+      upper_inc1 = true;
+    else
+    {
+      /* The last two values of sequences with step interpolation and
+         exclusive upper bound must be equal */
+      meosType basetype = temptype_basetype(seq->temptype);
+      if (interp != LINEAR && datum_ne(tinstant_value_p(instants[ninsts - 2]),
+          tinstant_value_p(instants[ninsts - 1]), basetype))
+      {
+        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+          instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
+        tofree[nfree++] = instants[ninsts - 1];
+      }
+    }
+    result = tsequence_make(instants, ninsts, seq->period.lower_inc,
+      upper_inc1, interp, NORMALIZE);
+  }
+  pfree(instants);
+  if (nfree)
+  {
+    for (int i = 0; i < nfree; i++)
+      pfree(tofree[i]);
+  }
+  return result;
+}
+
+/**
+ * @brief Keep the instants of a temporal sequence before or equal to a
+ * timestamptz
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ */
+TSequence *
+tsequence_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq);
+
+  /* When not strict, compare the timestamp with the lower bound */
+  if (! strict)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (inst->t == t && seq->period.lower_inc)
+      return tinstant_to_tsequence(inst, MEOS_FLAGS_GET_INTERP(seq->flags));
+    inst = TSEQUENCE_INST_N(seq, seq->count - 1);
+    if (inst->t == t)
+      return tsequence_copy(seq);
+  }
+
+  /* Bounding box test */
+  if (left_span_value(&seq->period, TimestampTzGetDatum(t)))
+    return tsequence_copy(seq);
+  if (right_span_value(&seq->period, TimestampTzGetDatum(t)) || 
+      timestamptz_cmp_internal(t, seq->period.lower) == 0)
+    return NULL;
+
+  /* Dispatch according to the interpolation */
+  return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
+    tdiscseq_before_timestamptz(seq, t, strict) :
+    tcontseq_before_timestamptz(seq, t, strict);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Restrict a temporal discrete sequence to the instants before or equal
+ * to a timestamptz
+ * @note We cannot use the same approach as for continuous sequence because 
+ * function #tdiscseq_find_timestamptz returns -1 if the timestamp to findfirst
+ * is located between two instants.
+ */
+TSequence *
+tdiscseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
+  /* General case */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  int ninsts = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    int cmp = timestamptz_cmp_internal(inst->t, t);
+    if (cmp > 0 || (! strict && cmp == 0))
+      instants[ninsts++] = (TInstant *) inst;
+    else
+      break;
+  }
+  TSequence *result = (ninsts == 0) ? NULL :
+    tsequence_make(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Keep the instants of a continuous temporal sequence after or equal
+ * to a timestamptz
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly after, false when
+ * the restriction is after or equal
+ */
+TSequence *
+tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq); 
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  assert(interp != DISCRETE);
+
+  /* General case */
+  int n = tcontseq_find_timestamptz(seq, t);
+  if (n < 0)
+    return NULL;
+  int count = seq->count - n;
+  TInstant **instants = palloc0(sizeof(TInstant *) * count);
+
+  /* Set the first instant */
+  const TInstant *inst = TSEQUENCE_INST_N(seq, n);
+  TInstant *tofree[2] = {0};
+  int nfree = 0;
+  if (timestamptz_cmp_internal(inst->t, t) == 0)
+    instants[0] = (TInstant *) inst;
+  else /* (inst->t > t) */
+  {
+    Datum value;
+    if (interp == STEP)
+    {
+      value = tinstant_value_p(inst);
+      instants[0] = tofree[nfree++] = tinstant_make(value, inst->temptype, t);
+    }
+    else
+    {
+      /* Interpolate */
+      const TInstant *next = TSEQUENCE_INST_N(seq, 1);
+      Datum startvalue = tinstant_value_p(inst);
+      Datum endvalue = tinstant_value_p(next);
+      value = tsegment_value_at_timestamptz(startvalue, endvalue,
+        inst->temptype, inst->t, next->t, t);
+      instants[0] = tofree[nfree++] = tinstant_make_free(value, inst->temptype,
+        t);
+    }
+  }
+  bool lower_inc1 = ! strict;
+
+  /* Continue with the subsequent instants */
+  int ninsts = 1;
+  for (int i = n + 1; i < seq->count; i++)
+    instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, i);
+
+  /* Construct the result */
+  TSequence *result = NULL;
+  if (ninsts > 0)
+  {
+    if (ninsts == 1)
+      lower_inc1 = true;
+    else
+    {
+      /* The last two values of sequences with step interpolation and
+         exclusive upper bound must be equal */
+      meosType basetype = temptype_basetype(seq->temptype);
+      if (ninsts > 1 && interp != LINEAR &&
+          datum_ne(tinstant_value_p(instants[ninsts - 2]),
+            tinstant_value_p(instants[ninsts - 1]), basetype))
+      {
+        instants[ninsts - 1] = tinstant_make(tinstant_value_p(instants[ninsts - 2]),
+          instants[ninsts - 1]->temptype, instants[ninsts - 1]->t);
+        tofree[nfree++] = instants[ninsts - 1];
+      }
+    }
+    result = tsequence_make(instants, ninsts, lower_inc1,
+      seq->period.upper_inc, interp, NORMALIZE);
+  }
+  pfree(instants);
+  if (nfree)
+  {
+    for (int i = 0; i < nfree; i++)
+      pfree(tofree[i]);
+  }
+  return result;
+}
+
+/**
+ * @brief Keep the instants of a temporal sequence before or equal to a
+ * timestamptz
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ */
+TSequence *
+tsequence_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
+{
+  assert(seq); assert(seq->count > 0);
+
+  /* When not strict, compare the timestamp with the upper bound */
+  if (! strict)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (inst->t == t)
+      return tsequence_copy(seq);
+    inst = TSEQUENCE_INST_N(seq, seq->count - 1);
+    if (inst->t == t && seq->period.upper_inc)
+      return tinstant_to_tsequence(inst, MEOS_FLAGS_GET_INTERP(seq->flags));
+  }
+
+  /* Bounding box test */
+  if (left_span_value(&seq->period, TimestampTzGetDatum(t)) || 
+      timestamptz_cmp_internal(t, seq->period.upper) == 0)
+    return NULL;
+  if (right_span_value(&seq->period, TimestampTzGetDatum(t)))
+    return tsequence_copy(seq);
+
+  /* Dispatch according to the interpolation */
+  return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
+    tdiscseq_after_timestamptz(seq, t, strict) :
+    tcontseq_after_timestamptz(seq, t, strict);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Keep the instants of a temporal sequence set before or equal to a
+ * timestamptz
+ * @param[in] ss Temporal sequence set
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ * @csqlfn #Temporal_before_timestamptz()
+ */
+TSequenceSet *
+tsequenceset_before_timestamptz(const TSequenceSet *ss, TimestampTz t,
+  bool strict)
+{
+  assert(ss);
+
+  /* When not strict, compare the timestamp with the lower bound */
+  if (! strict)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0);
+    if (inst->t == t && ss->period.lower_inc)
+      return tinstant_to_tsequenceset(inst, MEOS_FLAGS_GET_INTERP(ss->flags));
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
+    inst = TSEQUENCE_INST_N(seq, seq->count - 1);
+    if (inst->t == t)
+      return tsequenceset_copy(ss);
+  }
+
+  /* Bounding box test */
+  if (left_span_value(&ss->period, TimestampTzGetDatum(t)))
+    return tsequenceset_copy(ss);
+  if (right_span_value(&ss->period, TimestampTzGetDatum(t)) || 
+      timestamptz_cmp_internal(t, ss->period.lower) == 0)
+    return NULL;
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * (ss->count));
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    /* We cannot call directly the function tcontseq_before_timestamptz */
+    TSequence *seq = tsequence_before_timestamptz(TSEQUENCESET_SEQ_N(ss, i), t,
+      strict);
+    if (seq)
+    {
+      sequences[nseqs++] = seq;
+      if (timestamptz_cmp_internal(t, seq->period.upper) <= 0)
+        break;
+    }
+  }
+  assert(nseqs > 0);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Keep the instants of a temporal sequence set after or equal to a
+ * timestamptz
+ * @param[in] ss Temporal sequence set
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly after, false when
+ * the restriction is after or equal
+ * @csqlfn #Temporal_after_timestamptz()
+ */
+TSequenceSet *
+tsequenceset_after_timestamptz(const TSequenceSet *ss, TimestampTz t,
+  bool strict)
+{
+  assert(ss);
+
+  /* When not strict, compare the timestamp with the lower bound */
+  if (! strict)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0);
+    if (inst->t == t)
+      return tsequenceset_copy(ss);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
+    inst = TSEQUENCE_INST_N(seq, seq->count - 1);
+    if (inst->t == t && ss->period.upper_inc)
+      return tinstant_to_tsequenceset(inst, MEOS_FLAGS_GET_INTERP(ss->flags));
+  }
+
+  /* Bounding box test */
+  if (left_span_value(&ss->period, TimestampTzGetDatum(t)) || 
+      timestamptz_cmp_internal(t, ss->period.upper) == 0)
+    return NULL;
+  if (right_span_value(&ss->period, TimestampTzGetDatum(t)))
+    return tsequenceset_copy(ss);
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    /* We cannot call directly the function tcontseq_before_timestamptz */
+    TSequence *seq = tsequence_after_timestamptz(TSEQUENCESET_SEQ_N(ss, i), t,
+      strict);
+    if (seq)
+      sequences[nseqs++] = seq;
+  }
+  assert(nseqs > 0);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE_NO);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the instants before or equal a
+ * timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ * @csqlfn #Temporal_before_timestamptz()
+ */
+Temporal *
+temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
+{
+  assert(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_before_timestamptz((TInstant *) temp, t,
+        strict);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_before_timestamptz((TSequence *) temp, t,
+          strict);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_before_timestamptz(
+        (TSequenceSet *) temp, t, strict);
+  }
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Restrict a temporal value to the instants after or equal a
+ * timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly after, false when
+ * the restriction is after or equal
+ * @csqlfn #Temporal_after_timestamptz(), Temporal_after_eq_timestamptz()
+ */
+Temporal *
+temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
+{
+  assert(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_after_timestamptz((TInstant *) temp, t,
+        strict);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_after_timestamptz((TSequence *) temp, t,
+          strict);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_after_timestamptz(
+        (TSequenceSet *) temp, t, strict);
+  }
 }
 
 /*****************************************************************************/

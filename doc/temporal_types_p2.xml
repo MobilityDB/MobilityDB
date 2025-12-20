@@ -80,6 +80,7 @@
 
 		<itemizedlist>
 			<listitem xml:id="insert">
+				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 				<para>Insert a temporal value into another one</para>
 				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -104,6 +105,7 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01
 				</listitem>
 
 			<listitem xml:id="update">
+				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 				<para>Update a temporal value with another one</para>
 				<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -127,12 +129,13 @@ SELECT asText(update(
 				</listitem>
 
 			<listitem xml:id="deleteTime">
+				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 				<para>Delete the instants of a temporal value that intersect a time value</para>
 				<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02', false);
 -- {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03]}
-SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
+SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-04');
 -- [1@2001-01-01, 1@2001-01-03]
 SELECT deleteTime(tfloat '[1@2001-01-01, 4@2001-01-02, 2@2001-01-04, 5@2001-01-05]',
   tstzspan '[2001-01-02, 2001-01-04]');
@@ -306,7 +309,7 @@ SELECT merge(inst) FROM temp;
 
 	<sect1 xml:id="ttype_restrictions">
 		<title>Restrictions</title>
-		<para>There are two complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <varname>atValues</varname> or <varname>atTime</varname>. The second set functions restricts the temporal value with respect to the <emphasis>complement</emphasis> of a value or a time extent. Examples are <varname>minusValues</varname> or <varname>minusTime</varname>.</para>
+		<para>There are three complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <varname>atValues</varname> or <varname>atTime</varname>. The second set functions restricts the temporal value with respect to the <emphasis>complement</emphasis> of a value or a time extent. Examples are <varname>minusValues</varname> or <varname>minusTime</varname>.  Finally, the third set functions restricts the temporal value before or after a timestamptz. Examples are <varname>beforeTimestamp</varname> or <varname>afterTimestamp</varname>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="type_atValues">
@@ -396,6 +399,30 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
    [1@2001-01-05, 1@2001-01-15)} */
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="beforeTimestamp">
+				<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
+				<para>Keep the instants of a temporal value that are before/after or equal a timestamp</para>
+				<para><varname>beforeTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</varname></para>
+				<para><varname>afterTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
+-- [1@2001-01-01, 1@2001-01-02)
+SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01');
+-- NULL
+SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01',
+  false);
+-- [1@2001-01-01]
+SELECT afterTimestamp(tfloat '[1@2001-01-01, 3@2001-01-03]', timestamptz '2001-01-02]',
+  false);
+-- [2@2001-01-02, 3@2001-01-03]
+SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
+  timestamptz '2001-01-03'));
+/* {[POINT Z (3 3 3)@2001-01-04, POINT Z (3 3 3)@2001-01-05]} */
+</programlisting>
+				</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -446,8 +473,11 @@ SELECT tgeography '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]' =
 					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>temporal_cmp</varname></primary></indexterm>
 					<para>Traditional comparisons</para>
 					<para><varname>ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean</varname></para>
+				<para><varname>temporal_cmp(ttype,ttype) → int</varname></para>
+				<para>Function <varname>temporal_cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
 -- false
@@ -455,12 +485,14 @@ SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;&gt; tint '[2@2001-01-03, 2@2001-
 -- true
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt; tint '[2@2001-01-03, 2@2001-01-05)';
 -- true
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt; tint '[2@2001-01-03, 2@2001-01-05)';
+SELECT ttfloat '[1@2001-01-01, 1@2001-01-04)' &gt; ttfloat '[2@2001-01-03, 2@2001-01-05)';
 -- false
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;= tint '[2@2001-01-03, 2@2001-01-05)';
 -- true
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-05)';
 -- false
+SELECT temporal_cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)');
+-- -1
 </programlisting>
 				</listitem>
 			</itemizedlist>

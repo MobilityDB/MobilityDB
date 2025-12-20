@@ -4281,6 +4281,198 @@ SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
  {(POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(beforeTimestamp(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01', false));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01', false));
+                  astext                   
+-------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01', false));
+                  astext                   
+-------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestamptz '2000-01-01', false));
+                   astext                    
+---------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestamptz '2000-01-01', false));
+                   astext                    
+---------------------------------------------
+ POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestamptz '2000-01-01', false));
+                    astext                     
+-----------------------------------------------
+ {POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestamptz '2000-01-01', false));
+                    astext                     
+-----------------------------------------------
+ [POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(beforeTimestamp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestamptz '2000-01-01', false));
+                     astext                      
+-------------------------------------------------
+ {[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01'));
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ (POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestamptz '2000-01-01'));
+                                                                                                      astext                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:00:00 2000 PST, POINT(3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestamptz '2000-01-01'));
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ (POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestamptz '2000-01-01'));
+                                                                                                                astext                                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01', false));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01', false));
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01', false));
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestamptz '2000-01-01', false));
+                                                                                                      astext                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:00:00 2000 PST, POINT(3 3)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestamptz '2000-01-01', false));
+                   astext                    
+---------------------------------------------
+ POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestamptz '2000-01-01', false));
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestamptz '2000-01-01', false));
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestamptz '2000-01-01', false));
+                                                                                                                astext                                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
 SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01'));
  astext 
 --------

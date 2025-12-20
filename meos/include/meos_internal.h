@@ -1197,8 +1197,12 @@ extern void tsequenceset_set_bbox(const TSequenceSet *ss, void *box);
 
 /* Restriction functions for temporal types */
 
-extern TSequence *tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
+extern TSequence *tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
 extern TSequenceSet *tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
+extern TSequence *tdiscseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tdiscseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc);
 extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc);
 extern Temporal *temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc);
@@ -1208,6 +1212,8 @@ extern Temporal *temporal_restrict_tstzspanset(const Temporal *temp, const SpanS
 extern Temporal *temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc);
 extern bool temporal_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Datum *result);
+extern TInstant *tinstant_after_timestamptz(const TInstant *inst, TimestampTz t, bool strict);
+extern TInstant *tinstant_before_timestamptz(const TInstant *inst, TimestampTz t, bool strict);
 extern TInstant *tinstant_restrict_tstzspan(const TInstant *inst, const Span *period, bool atfunc);
 extern TInstant *tinstant_restrict_tstzspanset(const TInstant *inst, const SpanSet *ss, bool atfunc);
 extern TInstant *tinstant_restrict_timestamptz(const TInstant *inst, TimestampTz t, bool atfunc);
@@ -1223,6 +1229,8 @@ extern TSequenceSet *tnumberseqset_restrict_spanset(const TSequenceSet *ss, cons
 extern TInstant *tsequence_at_timestamptz(const TSequence *seq, TimestampTz t);
 extern Temporal *tsequence_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc);
 extern Temporal *tsequence_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss, bool atfunc);
+extern TSequenceSet *tsequenceset_after_timestamptz(const TSequenceSet *ss, TimestampTz t, bool strict);
+extern TSequenceSet *tsequenceset_before_timestamptz(const TSequenceSet *ss, TimestampTz t, bool strict);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ss, bool min, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_tstzspan(const TSequenceSet *ss, const Span *s, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_tstzspanset(const TSequenceSet *ss, const SpanSet *ps, bool atfunc);

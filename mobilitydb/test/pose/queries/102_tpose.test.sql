@@ -421,6 +421,28 @@ SELECT asText(minusTime(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1
 SELECT asText(minusTime(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
 
 -------------------------------------------------------------------------------
+
+SELECT asText(beforeTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+SELECT asText(beforeTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+SELECT asText(beforeTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+SELECT asText(beforeTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+
+SELECT asText(beforeTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01', false));
+SELECT asText(beforeTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01', false));
+SELECT asText(beforeTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01', false));
+SELECT asText(beforeTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01', false));
+
+SELECT asText(afterTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+SELECT asText(afterTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+SELECT asText(afterTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+
+SELECT asText(afterTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01', false));
+SELECT asText(afterTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01', false));
+SELECT asText(afterTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01', false));
+SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01', false));
+
+-------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
 

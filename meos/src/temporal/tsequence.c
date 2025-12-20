@@ -553,10 +553,11 @@ tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t)
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, middle + 1);
     bool lower_inc = (middle == 0) ? seq->period.lower_inc : true;
     bool upper_inc = (middle == seq->count - 1) ? seq->period.upper_inc : false;
-    if ((inst1->t < t && t < inst2->t) ||
+    if ((timestamptz_cmp_internal(inst1->t, t) < 0 && 
+        timestamptz_cmp_internal(t, inst2->t) < 0) ||
         (lower_inc && inst1->t == t) || (upper_inc && inst2->t == t))
       return middle;
-    if (t <= inst1->t)
+    if (timestamptz_cmp_internal(t, inst1->t) <= 0)
       last = middle - 1;
     else
       first = middle + 1;
@@ -1295,9 +1296,8 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < to - from; i++)
     instants[i] = (TInstant *) TSEQUENCE_INST_N(seq, i + from);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
-    interp, NORMALIZE_NO);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -2085,9 +2085,34 @@ tsequence_timestamps(const TSequence *seq, int *count)
   return result;
 }
 
+/*****************************************************************************
+ * Value at timestamp function
+ *****************************************************************************/
+
 /**
- * @brief Return the base value of the segment of a temporal sequence at a
- * timestamptz
+ * @brief Return in the last argument the value of a temporal discrete sequence
+ * at a timestamptz
+ * @note In order to be compatible with the corresponding functions for
+ * temporal sequences that need to interpolate the value, it is necessary to
+ * return a copy of the value.
+ */
+bool
+tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
+  Datum *result)
+{
+  assert(seq); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  int loc = tdiscseq_find_timestamptz(seq, t);
+  if (loc < 0)
+    return false;
+
+  *result = tinstant_value(TSEQUENCE_INST_N(seq, loc));
+  return true;
+}
+
+/**
+ * @brief Return the base value of the segment of a temporal continuous
+ * sequence at a timestamptz
  * @param[in] start,end Base values defining the segment
  * @param[in] temptype Temporal type
  * @param[in] lower, upper Timestamps defining the segment
@@ -2120,7 +2145,7 @@ tsegment_value_at_timestamptz(Datum start, Datum end, meosType temptype,
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the value of a temporal
- * sequence at a timestamptz
+ * continuous sequence at a timestamptz
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
@@ -2129,10 +2154,12 @@ tsegment_value_at_timestamptz(Datum start, Datum end, meosType temptype,
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
-tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
+tcontseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
   Datum *result)
 {
-  assert(seq); assert(result);
+  assert(seq); assert(result); 
+  assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+
   const TInstant *inst;
   /* Return the value even when the timestamp is at an exclusive bound */
   if (! strict)
@@ -2178,6 +2205,26 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
       inst1->temptype, inst1->t, inst->t, t);
   }
   return true;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return in the last argument a copy of the value of a temporal
+ * sequence at a timestamptz (dispatch function)
+ * @param[in] seq Temporal sequence
+ * @param[in] t Timestamp
+ * @param[in] strict True if inclusive/exclusive bounds are taken into account
+ * @param[out] result Result
+ * @return Return true if the timestamp is contained in the temporal sequence
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t,
+  bool strict, Datum *result)
+{
+  return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
+    tdiscseq_value_at_timestamptz(seq, t, result) :
+    tcontseq_value_at_timestamptz(seq, t, strict, result);
 }
 
 /*****************************************************************************

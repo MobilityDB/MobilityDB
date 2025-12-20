@@ -1851,6 +1851,102 @@ SELECT minusTime(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02
  {(NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT beforeTimestamp(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01');
+ beforetimestamp 
+-----------------
+ 
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01');
+ beforetimestamp 
+-----------------
+ 
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', timestamptz '2000-01-01');
+ beforetimestamp 
+-----------------
+ 
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', timestamptz '2000-01-01');
+ beforetimestamp 
+-----------------
+ 
+(1 row)
+
+SELECT beforeTimestamp(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01', false);
+              beforetimestamp               
+--------------------------------------------
+ NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01', false);
+               beforetimestamp                
+----------------------------------------------
+ {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', timestamptz '2000-01-01', false);
+               beforetimestamp                
+----------------------------------------------
+ [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT beforeTimestamp(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', timestamptz '2000-01-01', false);
+                beforetimestamp                 
+------------------------------------------------
+ {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT afterTimestamp(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01');
+ aftertimestamp 
+----------------
+ 
+(1 row)
+
+SELECT afterTimestamp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01');
+ aftertimestamp 
+----------------
+ 
+(1 row)
+
+SELECT afterTimestamp(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', timestamptz '2000-01-01');
+                                                            aftertimestamp                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ (NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT afterTimestamp(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', timestamptz '2000-01-01');
+                                                                                                          aftertimestamp                                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT afterTimestamp(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01', false);
+               aftertimestamp               
+--------------------------------------------
+ NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT afterTimestamp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01', false);
+                                                            aftertimestamp                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.5)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT afterTimestamp(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', timestamptz '2000-01-01', false);
+                                                            aftertimestamp                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT afterTimestamp(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', timestamptz '2000-01-01', false);
+                                                                                                          aftertimestamp                                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
 SELECT deleteTime(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01');
  deletetime 
 ------------

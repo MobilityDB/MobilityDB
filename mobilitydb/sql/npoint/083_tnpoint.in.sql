@@ -504,6 +504,16 @@ CREATE FUNCTION minusTime(tnpoint, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION beforeTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION afterTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Stop Function
  *****************************************************************************/
