@@ -2476,6 +2476,58 @@ Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
   return Temporal_restrict_tstzspanset(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_before_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_before_timestamptz);
+/**
+ * @brief Return a temporal value restricted to the instants before or equal to
+ * a timestamptz
+ */
+Datum
+Temporal_before_timestamptz(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  bool strict = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_before_timestamptz(temp, t, strict) :
+    temporal_before_timestamptz(temp, t, strict);
+#else
+  Temporal *result = temporal_before_timestamptz(temp, t, strict);
+#endif /* RGEO */
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Temporal_after_timestamptz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_after_timestamptz);
+/**
+ * @brief Return a temporal value restricted to the instants after or equal to
+ * a timestamptz
+ */
+Datum
+Temporal_after_timestamptz(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  bool strict = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_after_timestamptz(temp, t, strict) :
+    temporal_after_timestamptz(temp, t, strict);
+#else
+  Temporal *result = temporal_after_timestamptz(temp, t, strict);
+#endif /* RGEO */
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/

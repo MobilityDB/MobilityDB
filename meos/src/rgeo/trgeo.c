@@ -1233,6 +1233,60 @@ trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
   return trgeo_restrict_tstzspanset(temp, ss, REST_MINUS);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to instants before or equal a
+ * timestamptz
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] t Timestamptz
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ * @csqlfn #Temporal_before_timestamptz()
+ */
+Temporal *
+trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *res = temporal_before_timestamptz(tpose, t, atfunc);
+  pfree(tpose); 
+  if (! res)
+    return NULL;
+  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  pfree(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to instants after or equal a
+ * timestamptz
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] t Timestamptz
+ * @param[in] strict True if the restriction is strictly after, false when
+ * the restriction is before or equal
+ * @csqlfn #Temporal_after_timestamptz()
+ */
+Temporal *
+trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *res = temporal_after_timestamptz(tpose, t, atfunc);
+  pfree(tpose); 
+  if (! res)
+    return NULL;
+  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  pfree(res);
+  return result;
+}
+
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/

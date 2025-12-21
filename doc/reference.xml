@@ -389,7 +389,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>set_cmp</varname>, <varname>span_cmp</varname>, and <varname>spanset_cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -614,7 +614,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname><varname>tbox_cmp</varname>, </link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -790,6 +790,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Keep the instants of a temporal value that are before/after or equal a timestamp</para>
+				</listitem>
+
+				<listitem>
 				<para><link linkend="appendInstant"><varname>appendInstant</varname></link>: Append a temporal instant to a temporal value</para>
 				</listitem>
 
@@ -822,7 +826,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				<para><link linkend="ttype_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>ttype_cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
 
 				<listitem>
@@ -2244,5 +2248,194 @@
 			</sect3>
 		</sect2>
 	</sect1>
+
+	<sect1>
+		<title>Temporal JSONB</title>
+
+		<sect2>
+		<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_asBinary"><varname>asBinary</varname>, <varname>asWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexEWKB) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonbFromText"><varname>tjsonbFromText</varname>, <varname>tjsonbFromWKT</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonbFromBinary"><varname>tjsonbFromBinary</varname>, <varname>tjsonbFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexEWKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonbFromMFJSON"><varname>tjsonbFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Constructors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_const"><varname>tjsonb</varname></link>: Constructor for temporal JSONB having a constant value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonbSeq"><varname>tjsonbSeq</varname></link>: Constructors for temporal JSONB of sequence subtype</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonbSeqSet"><varname>tjsonbSeqSet</varname>, <varname>tjsonbSeqSetGaps</varname></link>: Constructor for temporal JSONB of sequence set subtype</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_tstzspan"><varname>tjsonb::tstzspan</varname></link>: Convert a temporal JSONB to a temporal geometry point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_text"><varname>tjsonb::ttext</varname></link>: Convert a temporal JSONB to a temporal text</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_getValues"><varname>getValues</varname></link>: Return the values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Transformations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_subtype"><varname>tjsonbInst</varname>, <varname>tjsonbSeq</varname>, <varname>tjsonbSeqSet</varname></link>: Transform a temporal JSONB to another subtype</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_setInterp"><varname>setInterp</varname></link>: Transform a temporal JSONB to another interpolation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Temporal JSON operations</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjson_object_field"><varname>-></varname>, <varname>->></varname></link>: Extract a field from a temporal JSON value specified by a key</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjson_extract_path"><varname>#></varname>, <varname>#>></varname></link>: Extract a field from a temporal JSON value specified by a path</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjson_array_element"><varname>tjson_array_element</varname>, <varname>tjsonb_array_element</varname>, <varname>tjsonb_array_element_text</varname></link>: Extract an element from temporal JSON array</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_concat"><varname>||</varname></link>: Temporal JSONB concatenation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_delete"><varname>-</varname>, <varname>#-</varname></link>: Temporal JSONB deletion</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_set"><varname>tjsonb_set</varname>, <varname>tjsonb_set_lax</varname></link>: Temporal JSONB set</para>
+				</listitem>
+
+				<listitem>
+					<indexterm significance="normal"><primary><varname>?</varname></primary></indexterm>
+					<para><link linkend="tjsonb_exists"><varname>?</varname>, <varname>?|</varname>, <varname>?&amp;</varname></link>: Temporal JSONB exists</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_contains"><varname>@&gt;</varname>, <varname>&lt;@</varname></link>: Temporal JSONB contains/contained</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjson_strip_nulls"><varname>tjson_strip_nulls</varname>, <varname>tjsonb_strip_nulls</varname></link>: Return a temporal JSON value without nulls</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+    
+		<sect2>
+		<title>Restrictions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a set of values</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_pos"><varname>&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparisons</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always comparisons</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparisons</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Aggregations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tjsonb_tCount"><varname>tCount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_wCount"><varname>wCount</varname></link>: Window count</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
 </appendix>
 

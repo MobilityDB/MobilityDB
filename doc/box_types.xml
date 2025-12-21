@@ -872,8 +872,13 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
 				<para><varname>box {=, &lt;&gt;, &lt;, &lt;=, &gt;=} box → boolean</varname></para>
+				<para><varname>tbox_cmp(tbox,tbox) → int</varname></para>
+				<para><varname>stbox_cmp(stbox,stbox) → int</varname></para>
+				<para>Functions <varname>tbox_cmp</varname> and <varname>stbox_cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' =
   tbox 'TBOXINT XT([2,2],[2001-01-03,2001-01-05])';
@@ -893,6 +898,9 @@ SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' &lt;=
 SELECT tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])' &gt;=
   tbox 'TBOXFLOAT XT([2,2],[2001-01-03,2001-01-05])';
 -- false
+SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])',
+  tbox 'TBOXFLOAT XT([2,2],[2001-01-03,2001-01-05])');
+-- -1
 </programlisting>
 			</listitem>
 		</itemizedlist>

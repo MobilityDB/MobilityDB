@@ -1609,6 +1609,40 @@ CREATE FUNCTION minusTime(ttext, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION beforeTimestamp(tbool, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION beforeTimestamp(tint, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION beforeTimestamp(tfloat, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION beforeTimestamp(ttext, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION afterTimestamp(tbool, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION afterTimestamp(tint, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION afterTimestamp(tfloat, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION afterTimestamp(ttext, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Modification Functions
  *****************************************************************************/

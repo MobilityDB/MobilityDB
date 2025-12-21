@@ -129,6 +129,9 @@ extern TInstant *trgeo_to_tinstant(const Temporal *temp);
  * Restriction functions
  *****************************************************************************/
 
+extern Temporal *trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
+extern Temporal *trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
+
 extern Temporal *trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc);
 extern Temporal *trgeo_restrict_values(const Temporal *temp, const Set *s, bool atfunc);
 

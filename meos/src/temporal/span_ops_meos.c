@@ -1254,6 +1254,7 @@ minus_span_date(const Span *s, DateADT d)
   VALIDATE_DATESPAN(s, false);
   return minus_span_value(s, DateADTGetDatum(d));
 }
+
 /**
  * @ingroup meos_setspan_set
  * @brief Return the difference of a span and a timestamptz

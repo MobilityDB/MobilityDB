@@ -1251,9 +1251,16 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
 				<para><varname>set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean</varname></para>
 				<para><varname>spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean</varname></para>
+				<para><varname>set_cmp(set,set) → int</varname></para>
+				<para><varname>span_cmp(span,span) → int</varname></para>
+				<para><varname>spanset_cmp(spanset,spanset) → int</varname></para>
+				<para>Functions <varname>set_cmp</varname>, <varname>span_cmp</varname>, and <varname>spanset_cmp</varname> return -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
@@ -1280,6 +1287,8 @@ SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-
 -- true
 SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 -- false
+SELECT spanset_cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
+-- -1
 </programlisting>
 			</listitem>
 		</itemizedlist>

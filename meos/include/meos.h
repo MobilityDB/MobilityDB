@@ -1369,6 +1369,7 @@ extern Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, b
 
 extern Temporal *tbool_at_value(const Temporal *temp, bool b);
 extern Temporal *tbool_minus_value(const Temporal *temp, bool b);
+extern Temporal *temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
 extern Temporal *temporal_at_max(const Temporal *temp);
 extern Temporal *temporal_at_min(const Temporal *temp);
 extern Temporal *temporal_at_timestamptz(const Temporal *temp, TimestampTz t);
@@ -1376,6 +1377,7 @@ extern Temporal *temporal_at_tstzset(const Temporal *temp, const Set *s);
 extern Temporal *temporal_at_tstzspan(const Temporal *temp, const Span *s);
 extern Temporal *temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss);
 extern Temporal *temporal_at_values(const Temporal *temp, const Set *set);
+extern Temporal *temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict);
 extern Temporal *temporal_minus_max(const Temporal *temp);
 extern Temporal *temporal_minus_min(const Temporal *temp);
 extern Temporal *temporal_minus_timestamptz(const Temporal *temp, TimestampTz t);
