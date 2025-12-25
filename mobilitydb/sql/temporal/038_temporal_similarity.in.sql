@@ -61,6 +61,30 @@ CREATE FUNCTION hausdorffDistance(tfloat, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* 
+@note Functions written by Ossama BENAISSA 
+*/
+  CREATE FUNCTION averageHausdorffDistance(tint, tint)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION averageHausdorffDistance(tfloat, tfloat)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_average_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/* 
+@note Functions written by Ossama BENAISSA 
+*/
+CREATE FUNCTION lcssDistance(tint, tint, float)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lcssDistance(tfloat, tfloat, float)
+  RETURNS float
+AS 'MODULE_PATHNAME', 'Temporal_lcss_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 /*****************************************************************************/
 
 CREATE TYPE warp AS (
@@ -87,3 +111,5 @@ CREATE FUNCTION dynTimeWarpPath(tfloat, tfloat)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+
