@@ -659,10 +659,7 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
   assert(str);
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, temptype);
-  TSequence *result;
-  if (! tcontseq_parse(&str, temptype, interp, true, &result))
-    return NULL;
-  return result;
+  return tcontseq_parse(&str, temptype, interp, true);
 }
 #endif /* MEOS */
 

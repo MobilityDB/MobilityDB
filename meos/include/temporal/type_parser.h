@@ -64,11 +64,10 @@ extern bool span_parse(const char **str, meosType spantype, bool end,
 extern SpanSet *spanset_parse(const char **str, meosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
-extern bool tinstant_parse(const char **str, meosType temptype, bool end,
-  TInstant **result);
+extern TInstant *tinstant_parse(const char **str, meosType temptype, bool end);
 extern TSequence *tdiscseq_parse(const char **str, meosType temptype);
-extern bool tcontseq_parse(const char **str, meosType temptype, 
-  interpType interp, bool end, TSequence **result);
+extern TSequence *tcontseq_parse(const char **str, meosType temptype, 
+  interpType interp, bool end);
 extern TSequenceSet *tsequenceset_parse(const char **str, meosType temptype,
   interpType interp);
 extern Temporal *temporal_parse(const char **str, meosType temptype);
