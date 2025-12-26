@@ -53,6 +53,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "temporal/meos_catalog.h"
+#include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"

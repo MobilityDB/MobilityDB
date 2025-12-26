@@ -40,6 +40,27 @@
 
 /*****************************************************************************/
 
+/* Structure of an expandable array to keep track of the values parsed so far
+ * to avoid parsing twice a MEOS value input in text format */
+ 
+#define MEOS_ARRAY_INITIAL_SIZE 256
+
+typedef struct
+{
+  size_t size;
+  size_t count;
+  Datum *values;
+  meosType type;
+} meos_array;
+
+extern meos_array *meos_array_init(meosType type);
+extern void meos_array_add(meos_array *array, Datum value);
+extern Datum meos_array_get_n(meos_array *array,int n);
+extern void meos_array_reset(meos_array *array);
+extern void meos_array_destroy(meos_array *array);
+
+/*****************************************************************************/
+
 extern bool ensure_end_input(const char **str, const char *type);
 extern void p_whitespace(const char **str);
 extern bool p_delimchar(const char **str, char delim);
@@ -64,11 +85,10 @@ extern bool span_parse(const char **str, meosType spantype, bool end,
 extern SpanSet *spanset_parse(const char **str, meosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
-extern bool tinstant_parse(const char **str, meosType temptype, bool end,
-  TInstant **result);
+extern TInstant *tinstant_parse(const char **str, meosType temptype, bool end);
 extern TSequence *tdiscseq_parse(const char **str, meosType temptype);
-extern bool tcontseq_parse(const char **str, meosType temptype, 
-  interpType interp, bool end, TSequence **result);
+extern TSequence *tcontseq_parse(const char **str, meosType temptype, 
+  interpType interp, bool end);
 extern TSequenceSet *tsequenceset_parse(const char **str, meosType temptype,
   interpType interp);
 extern Temporal *temporal_parse(const char **str, meosType temptype);

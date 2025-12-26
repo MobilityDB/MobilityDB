@@ -52,6 +52,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/postgres_types.h"
 #include "temporal/type_util.h"
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
@@ -132,14 +133,14 @@ gbox_out(const GBOX *box, int maxdd)
     *zmax = NULL;
   bool hasz = FLAGS_GET_Z(box->flags);
 
-  xmin = float_out(box->xmin, maxdd);
-  xmax = float_out(box->xmax, maxdd);
-  ymin = float_out(box->ymin, maxdd);
-  ymax = float_out(box->ymax, maxdd);
+  xmin = float8_out(box->xmin, maxdd);
+  xmax = float8_out(box->xmax, maxdd);
+  ymin = float8_out(box->ymin, maxdd);
+  ymax = float8_out(box->ymax, maxdd);
   if (hasz)
   {
-    zmin = float_out(box->zmin, maxdd);
-    zmax = float_out(box->zmax, maxdd);
+    zmin = float8_out(box->zmin, maxdd);
+    zmax = float8_out(box->zmax, maxdd);
     snprintf(buf, size, "GBOX Z((%s,%s,%s),(%s,%s,%s))",
       xmin, ymin, zmin, xmax, ymax, zmax);
   }
@@ -213,12 +214,12 @@ box3d_out(const BOX3D *box, int maxdd)
   else
     srid[0] = '\0';
 
-  xmin = float_out(box->xmin, maxdd);
-  xmax = float_out(box->xmax, maxdd);
-  ymin = float_out(box->ymin, maxdd);
-  ymax = float_out(box->ymax, maxdd);
-  zmin = float_out(box->zmin, maxdd);
-  zmax = float_out(box->zmax, maxdd);
+  xmin = float8_out(box->xmin, maxdd);
+  xmax = float8_out(box->xmax, maxdd);
+  ymin = float8_out(box->ymin, maxdd);
+  ymax = float8_out(box->ymax, maxdd);
+  zmin = float8_out(box->zmin, maxdd);
+  zmax = float8_out(box->zmax, maxdd);
   snprintf(buf, size, "%sBOX3D((%s,%s,%s),(%s,%s,%s))",
       srid, xmin, ymin, zmin, xmax, ymax, zmax);
 
