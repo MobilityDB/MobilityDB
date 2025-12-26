@@ -97,7 +97,7 @@ Trgeometry_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = trgeo_parse(&input, oid_type(temptypid));
+  Temporal *result = trgeo_parse(&input, oid_meostype(temptypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -188,7 +188,7 @@ Trgeometry_from_ewkt(PG_FUNCTION_ARGS)
   char *wkt = text2cstring(wkt_text);
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
-  Temporal *result = trgeo_parse(&wkt_ptr, oid_type(temptypid));
+  Temporal *result = trgeo_parse(&wkt_ptr, oid_meostype(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);
@@ -282,7 +282,7 @@ Datum
 Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
   {
@@ -348,7 +348,7 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
-  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);

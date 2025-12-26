@@ -52,7 +52,7 @@
 #include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
-#include "pg_temporal/meos_catalog.h" /* For oid_type() */
+#include "pg_temporal/meos_catalog.h" /* For oid_meostype() */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
@@ -81,7 +81,7 @@ Tpoint_from_ewkt(PG_FUNCTION_ARGS)
   char *wkt = text2cstring(wkt_text);
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
-  Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
+  Temporal *result = tpoint_parse(&wkt_ptr, oid_meostype(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -106,7 +106,7 @@ Tspatial_from_ewkt(PG_FUNCTION_ARGS)
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = tspatial_parse(&wkt_ptr, oid_type(temptypid));
+  Temporal *result = tspatial_parse(&wkt_ptr, oid_meostype(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_TEMPORAL_P(result);

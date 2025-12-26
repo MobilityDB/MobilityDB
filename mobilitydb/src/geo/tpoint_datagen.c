@@ -98,7 +98,7 @@ Create_trip(PG_FUNCTION_ARGS)
   TupleDesc tupdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
   /* Verify the type of the attributes */
   att = TupleDescAttr(tupdesc, 0);
-  if (att->atttypid != type_oid(T_GEOMETRY))
+  if (att->atttypid != meostype_oid(T_GEOMETRY))
   {
     PG_FREE_IF_COPY(array, 0);
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),

@@ -124,7 +124,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 
   /* Transform the query into a box */
   TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_type(typid)))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
     PG_RETURN_BOOL(false);
 
   bool result;
@@ -1016,7 +1016,7 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
 
   /* Transform the query into a box */
   TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_type(typid)))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
     PG_RETURN_NULL();
 
   /* Since we only have boxes we'll return the minimum possible distance,

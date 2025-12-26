@@ -119,7 +119,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *value_lowers = NULL, *value_uppers = NULL; /* make compiler quiet */
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  meosType type = oid_type(stats->attrtypid);
+  meosType type = oid_meostype(stats->attrtypid);
   assert(temporal_type(type));
   bool tnumber = tnumber_type(type);
 
@@ -243,7 +243,7 @@ temporal_extra_info(VacAttrStats *stats)
   TemporalAnalyzeExtraData *extra_data;
 
   /* Check attribute data type is a temporal type. */
-  if (! temporal_type(oid_type(stats->attrtypid)))
+  if (! temporal_type(oid_meostype(stats->attrtypid)))
     elog(ERROR, "temporal_analyze was invoked with invalid temporal type %u",
        stats->attrtypid);
 
@@ -264,8 +264,8 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Gather information about the value type */
-  meosType basetype = temptype_basetype(oid_type(stats->attrtypid));
-  typentry = lookup_type_cache(type_oid(basetype),
+  meosType basetype = temptype_basetype(oid_meostype(stats->attrtypid));
+  typentry = lookup_type_cache(meostype_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
   extra_data->value_typid = typentry->type_id;
@@ -278,7 +278,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
   /* Gather information about the time type */
-  Oid per_typid = type_oid(T_TSTZSPAN);
+  Oid per_typid = meostype_oid(T_TSTZSPAN);
   typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);

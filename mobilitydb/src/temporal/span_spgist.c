@@ -363,7 +363,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
-  meosType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_meostype(scankey->sk_subtype);
   if (span_basetype(type))
   {
     Datum value = scankey->sk_argument;
@@ -408,9 +408,9 @@ Datum
 Intspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_INTSPAN);  /* A type represented by its bounding box */
+  cfg->prefixType = meostype_oid(T_INTSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_INTSPAN);
+  cfg->leafType = meostype_oid(T_INTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -425,9 +425,9 @@ Datum
 Bigintspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_BIGINTSPAN);  /* A type represented by its bounding box */
+  cfg->prefixType = meostype_oid(T_BIGINTSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_BIGINTSPAN);
+  cfg->leafType = meostype_oid(T_BIGINTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -442,9 +442,9 @@ Datum
 Floatspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_FLOATSPAN);  /* A type represented by its bounding box */
+  cfg->prefixType = meostype_oid(T_FLOATSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_FLOATSPAN);
+  cfg->leafType = meostype_oid(T_FLOATSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -459,9 +459,9 @@ Datum
 Datespan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_DATESPAN);  /* A type represented by its bounding box */
+  cfg->prefixType = meostype_oid(T_DATESPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_DATESPAN);
+  cfg->leafType = meostype_oid(T_DATESPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -476,9 +476,9 @@ Datum
 Tstzspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_TSTZSPAN);  /* A type represented by its bounding box */
+  cfg->prefixType = meostype_oid(T_TSTZSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_TSTZSPAN);
+  cfg->leafType = meostype_oid(T_TSTZSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();

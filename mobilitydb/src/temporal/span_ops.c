@@ -588,7 +588,7 @@ Distance_value_value(PG_FUNCTION_ARGS)
 {
   Datum value1 = PG_GETARG_DATUM(0);
   Datum value2 = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_DATUM(distance_value_value(value1, value2, basetype));
 }
 

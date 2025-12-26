@@ -229,7 +229,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
-  meosType argtype = oid_type(argoid);
+  meosType argtype = oid_meostype(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
 #if CBUFFER
@@ -268,7 +268,7 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
-  meosType argtype = oid_type(argoid);
+  meosType argtype = oid_meostype(argoid);
   if (argtype == T_TBOOL || argtype == T_TTEXT)
     funcname = "span";
   else if (argtype == T_INT4 || argtype == T_FLOAT8 ||
@@ -342,12 +342,12 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
-    meosType ltype = oid_type(leftoid);
-    meosType rtype = oid_type(rightoid);
+    meosType ltype = oid_meostype(leftoid);
+    meosType rtype = oid_meostype(rightoid);
     /* Convert base type to bbox type */
     meosType ltype1 = type_to_bbox(ltype);
     meosType rtype1 = type_to_bbox(rtype);
-    operid = oper_oid(OVERLAPS_OP, ltype1, rtype1);
+    operid = meosoper_oid(OVERLAPS_OP, ltype1, rtype1);
     if (req->is_join)
       req->selectivity = temporal_joinsel(req->root, operid, req->args,
         req->jointype, req->sjinfo, tempfamily);
@@ -463,8 +463,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
-      meosType lefttype = oid_type(leftoid);
-      meosType righttype = oid_type(rightoid);
+      meosType lefttype = oid_meostype(leftoid);
+      meosType righttype = oid_meostype(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired
@@ -479,10 +479,10 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        * which is a bounding box */
       exproid = rightoid;
       if (righttype == T_TBOOL || righttype == T_TTEXT)
-        exproid = type_oid(T_TSTZSPAN);
+        exproid = meostype_oid(T_TSTZSPAN);
       else if (righttype == T_INT4 || righttype == T_FLOAT8 ||
           righttype == T_TINT || righttype == T_TFLOAT || righttype == T_TBOX)
-        exproid = type_oid(T_TBOX);
+        exproid = meostype_oid(T_TBOX);
       else if (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
           righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
           righttype == T_STBOX
@@ -493,7 +493,7 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
           || righttype == T_NPOINT || righttype == T_TNPOINT
 #endif /* NPOINT */
           )
-        exproid = type_oid(T_STBOX);
+        exproid = meostype_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
 

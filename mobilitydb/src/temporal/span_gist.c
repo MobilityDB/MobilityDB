@@ -62,7 +62,7 @@
 bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
-  meosType type = oid_type(typid);
+  meosType type = oid_meostype(typid);
   if (span_basetype(type))
   {
     /* Since function span_gist_inner_consistent is strict, value is not NULL */

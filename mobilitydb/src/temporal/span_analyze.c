@@ -158,11 +158,11 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     stats->stakind[*slot_idx] = valuedim ?
       STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
       STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
-    stats->staop[*slot_idx] = oper_oid(LT_OP, lowers[0].basetype,
+    stats->staop[*slot_idx] = meosoper_oid(LT_OP, lowers[0].basetype,
       lowers[0].basetype);
     stats->stavalues[*slot_idx] = bound_hist_values;
     stats->numvalues[*slot_idx] = num_hist;
-    stats->statypid[*slot_idx] = type_oid(lowers[0].spantype);
+    stats->statypid[*slot_idx] = meostype_oid(lowers[0].spantype);
     stats->statyplen[*slot_idx] = sizeof(Span);
     stats->statypbyval[*slot_idx] = false;
     stats->statypalign[*slot_idx] = 'd';
@@ -247,7 +247,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 {
   int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
-  meosType type = oid_type(stats->attrtypid);
+  meosType type = oid_meostype(stats->attrtypid);
 
   /* Allocate memory to hold span bounds and lengths of the sample spans */
   SpanBound *lowers = palloc(sizeof(SpanBound) * samplerows);
@@ -357,7 +357,7 @@ Span_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a span as a bounding box */
-  assert(type_span_bbox(oid_type(stats->attrtypid)));
+  assert(type_span_bbox(oid_meostype(stats->attrtypid)));
 
   /*
    * Call the standard typanalyze function. It may fail to find needed

@@ -122,7 +122,7 @@ Value_bin(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum lower = datum_bin(value, size, origin, basetype);
   Datum upper = datum_add(lower, size, basetype);
   Span *result = span_make(lower, upper, true, false, basetype);
@@ -377,7 +377,7 @@ Tbox_get_value_time_tile_common(FunctionCallInfo fcinfo, bool valuetile,
     vorigin = PG_GETARG_DATUM(i++);
   if (timetile)
     torigin = PG_GETARG_TIMESTAMPTZ(i++);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   meosType spantype = basetype_spantype(basetype);
   PG_RETURN_TBOX_P(tbox_get_value_time_tile(value, t, vsize, duration, vorigin,
     torigin, basetype, spantype));

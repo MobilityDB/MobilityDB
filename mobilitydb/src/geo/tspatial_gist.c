@@ -109,7 +109,7 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
   *recheck = stbox_index_recheck(strategy);
 
   /* Transform the query into a box */
-  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_type(typid)))
+  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_meostype(typid)))
     PG_RETURN_BOOL(false);
 
   bool result;
@@ -392,7 +392,7 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
 
   /* Transform the query into a box */
   STBox query;
-  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_type(typid)))
+  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_meostype(typid)))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we return the minimum possible distance,

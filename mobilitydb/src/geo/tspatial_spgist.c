@@ -694,7 +694,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 static bool
 tspatial_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
-  meosType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_meostype(scankey->sk_subtype);
   if (type == T_TSTZSPAN)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
@@ -727,7 +727,7 @@ Datum
 Stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  Oid stbox_oid = type_oid(T_STBOX);
+  Oid stbox_oid = meostype_oid(T_STBOX);
   cfg->prefixType = stbox_oid;  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;     /* We don't need node labels. */
   cfg->leafType = stbox_oid;
