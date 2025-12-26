@@ -603,7 +603,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
      * This changes wrt the original PostGIS function. We get a spatial set or
      * a temporal point while the original function gets a geometry.
      */
-    meosType type = oid_type(stats->attrtypid);
+    meosType type = oid_meostype(stats->attrtypid);
     assert(spatialset_type(type) || tspatial_type(type));
     if (spatialset_type(type))
     {
@@ -1169,7 +1169,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a STBox as a bounding box */
-  assert(spatialset_type(oid_type(stats->attrtypid)));
+  assert(spatialset_type(oid_meostype(stats->attrtypid)));
 
   /*
    * Call the standard typanalyze function. It may fail to find needed

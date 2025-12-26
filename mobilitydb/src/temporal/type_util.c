@@ -82,7 +82,7 @@ call_recv(meosType type, StringInfo buf)
   if (type == T_DOUBLE4)
     return PointerGetDatum(double4_recv(buf));
 
-  Oid typid = type_oid(type);
+  Oid typid = meostype_oid(type);
   if (typid == 0)
     elog(ERROR, "Unknown type when calling receive function: %s",
       meostype_name(type));
@@ -107,7 +107,7 @@ call_send(meosType type, Datum value)
   if (type == T_DOUBLE4)
     return double4_send(DatumGetDouble4P(value));
 
-  Oid typid = type_oid(type);
+  Oid typid = meostype_oid(type);
   if (typid == 0)
     elog(ERROR, "Unknown type when calling send function: %s",
       meostype_name(type));
@@ -309,7 +309,7 @@ datumarr_to_array(Datum *values, int count, meosType type)
   bool elmbyval;
   char elmalign;
   assert(count > 0);
-  Oid typid = type_oid(type);
+  Oid typid = meostype_oid(type);
   get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
   return construct_array(values, count, typid, elmlen, elmbyval, elmalign);
 }
@@ -367,7 +367,7 @@ ArrayType *
 cbufferarr_to_array(Cbuffer **cbarr, int count, bool free_all)
 {
   assert(count > 0);
-  Oid cbuftypid = type_oid(T_CBUFFER);
+  Oid cbuftypid = meostype_oid(T_CBUFFER);
   ArrayType *result = construct_array((Datum *) cbarr, count, cbuftypid, -1,
     false, 'd');
   if (free_all)
@@ -386,7 +386,7 @@ ArrayType *
 posearr_to_array(Pose **posearr, int count, bool free_all)
 {
   assert(count > 0);
-  Oid posetypid = type_oid(T_POSE);
+  Oid posetypid = meostype_oid(T_POSE);
   ArrayType *result = construct_array((Datum *) posearr, count, posetypid, -1,
     false, 'd');
   if (free_all)
@@ -408,7 +408,7 @@ spanarr_to_array(Span *spanarr, int count)
   for (int i = 0; i < count; i++)
     spans[i] = &spanarr[i];
   ArrayType *result = construct_array((Datum *) spans, count,
-    type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
+    meostype_oid(spans[0]->spantype), sizeof(Span), false, 'd');
   pfree(spans);
   return result;
 }
@@ -423,7 +423,7 @@ tboxarr_to_array(TBox *boxarr, int count)
   TBox **boxes = palloc(sizeof(TBox *) * count);
   for (int i = 0; i < count; i++)
     boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count, type_oid(T_TBOX),
+  ArrayType *result = construct_array((Datum *) boxes, count, meostype_oid(T_TBOX),
     sizeof(TBox), false, 'd');
   pfree(boxes);
   return result;
@@ -440,7 +440,7 @@ stboxarr_to_array(STBox *boxarr, int count)
   for (int i = 0; i < count; i++)
     boxes[i] = &boxarr[i];
   ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBox), false, 'd');
+    meostype_oid(T_STBOX), sizeof(STBox), false, 'd');
   pfree(boxes);
   return result;
 }
@@ -452,7 +452,7 @@ ArrayType *
 temparr_to_array(Temporal **temparr, int count, bool free_all)
 {
   assert(count > 0);
-  Oid temptypid = type_oid(temparr[0]->temptype);
+  Oid temptypid = meostype_oid(temparr[0]->temptype);
   ArrayType *result = construct_array((Datum *) temparr, count, temptypid, -1,
     false, 'd');
   if (free_all)
@@ -479,13 +479,13 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_DATE ||
     basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
-    rangetypid = type_oid(T_INT4RANGE);
+    rangetypid = meostype_oid(T_INT4RANGE);
   else if (basetype == T_INT8)
-    rangetypid = type_oid(T_INT8RANGE);
+    rangetypid = meostype_oid(T_INT8RANGE);
   else if (basetype == T_DATE)
-    rangetypid = type_oid(T_DATERANGE);
+    rangetypid = meostype_oid(T_DATERANGE);
   else /* basetype == T_TIMESTAMPTZ */
-    rangetypid = type_oid(T_TSTZRANGE);
+    rangetypid = meostype_oid(T_TSTZRANGE);
 
   TypeCacheEntry* typcache = lookup_type_cache(rangetypid,
     TYPECACHE_RANGE_INFO);

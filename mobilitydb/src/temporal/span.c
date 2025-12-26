@@ -72,7 +72,7 @@ Span_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
   Oid spantypid = PG_GETARG_OID(1);
-  PG_RETURN_SPAN_P(span_in(str, oid_type(spantypid)));
+  PG_RETURN_SPAN_P(span_in(str, oid_meostype(spantypid)));
 }
 
 PGDLLEXPORT Datum Span_out(PG_FUNCTION_ARGS);
@@ -238,7 +238,7 @@ Span_constructor(PG_FUNCTION_ARGS)
   Datum upper = PG_GETARG_DATUM(1);
   bool lower_inc = PG_GETARG_BOOL(2);
   bool upper_inc = PG_GETARG_BOOL(3);
-  meosType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType spantype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   meosType basetype = spantype_basetype(spantype);
   PG_RETURN_SPAN_P(span_make(lower, upper, lower_inc, upper_inc, basetype));
 }
@@ -259,7 +259,7 @@ Datum
 Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_SPAN_P(value_span(value, basetype));
 }
 

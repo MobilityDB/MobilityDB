@@ -107,7 +107,7 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(1))
     PG_RETURN_SPAN_P(s);
   Datum value = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_SPAN_P(spanbase_extent_transfn(s, value, basetype));
 }
 
@@ -179,10 +179,10 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "Spanset_union_transfn called in non-aggregate context");
 
   Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  meosType spansettype = oid_type(spansetoid);
+  meosType spansettype = oid_meostype(spansetoid);
   assert(spanset_type(spansettype));
   meosType spantype = spansettype_spantype(spansettype);
-  Oid spanoid = type_oid(spantype);
+  Oid spanoid = meostype_oid(spantype);
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))

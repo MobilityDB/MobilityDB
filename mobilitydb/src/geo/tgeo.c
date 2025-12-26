@@ -126,7 +126,7 @@ Tpoint_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  PG_RETURN_TEMPORAL_P(tpoint_parse(&input, oid_type(temptypid)));
+  PG_RETURN_TEMPORAL_P(tpoint_parse(&input, oid_meostype(temptypid)));
 }
 
 PGDLLEXPORT Datum Tgeo_in(PG_FUNCTION_ARGS);
@@ -141,7 +141,7 @@ Tgeo_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = tspatial_parse(&input, oid_type(temptypid));
+  Temporal *result = tspatial_parse(&input, oid_meostype(temptypid));
   PG_RETURN_TEMPORAL_P(result);
 }
 
