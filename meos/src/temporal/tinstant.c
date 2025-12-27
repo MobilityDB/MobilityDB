@@ -139,10 +139,7 @@ TInstant *
 tinstant_in(const char *str, meosType temptype)
 {
   assert(str);
-  TInstant *result;
-  if (! tinstant_parse(&str, temptype, true, &result))
-    return NULL;
-  return result;
+  return tinstant_parse(&str, temptype, true);
 }
 #endif /* MEOS */
 

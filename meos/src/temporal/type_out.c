@@ -55,6 +55,7 @@
 #include "temporal/spanset.h"
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "geo/stbox.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
@@ -80,33 +81,17 @@
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
 
-/* Functions in lwout_wkb.c */
+/* Functions defined in lwout_wkb.c */
 uint8_t* lwgeom_to_wkb_buf(const LWGEOM *geom, uint8_t *buf, uint8_t variant);
 size_t lwgeom_to_wkb_size(const LWGEOM *geom, uint8_t variant);
+
+/* Function defined in */
+
+extern bool string_escape(const char *str, int quotes, char **result);
 
 /*****************************************************************************
  * Output of base types
  *****************************************************************************/
-
-/**
- * @ingroup meos_base_types
- * @brief Return the string representation of a float8 number
- * @details This function uses the PostGIS function lwprint_double to print an
- * ordinate value using at most **maxdd** number of decimal digits. The actual 
- * number of printed decimal digits may be less than the requested ones if out 
- * of significant digits.
- *
- * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
- * terminating NULL.
- */
-char *
-float_out(double num, int maxdd)
-{
-  assert(maxdd >= 0);
-  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  lwprint_double(num, maxdd, ascii);
-  return ascii;
-}
 
 /**
  * @ingroup meos_base_types
