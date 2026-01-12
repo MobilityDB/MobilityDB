@@ -909,7 +909,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 				<para><varname>SRID(spatialset) → integer</varname></para>
 				<para><varname>setSRID(spatialset) → spatialset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT SRID(geomset '{Point(1 1), Point(2 2)}');
+SELECT SRID(geomset '{"Point(1 1)", "Point(2 2)"}');
 -- 0
 SELECT SRID(geogset '{"Linestring(1 1,2 2)","Polygon((1 1,1 2,2 2,2 1,1 1))"}');
 -- 4326
