@@ -3552,7 +3552,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     else
     {
       /* Interpolate */
-      const TInstant *next = TSEQUENCE_INST_N(seq, 1);
+      const TInstant *next = TSEQUENCE_INST_N(seq, n + 1);
       Datum startvalue = tinstant_value_p(inst);
       Datum endvalue = tinstant_value_p(next);
       value = tsegment_value_at_timestamptz(startvalue, endvalue,
