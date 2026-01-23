@@ -592,6 +592,99 @@ tnumber_angular_difference(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Trend functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_math
+ * @brief Return the trend of a temporal sequence number
+ * @param[in] seq Temporal sequence number
+ * @csqlfn #Tnumber_trend()
+ */
+TSequence *
+tnumberseq_trend(const TSequence *seq)
+{
+  assert(seq); 
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  meosType basetype = temptype_basetype(seq->temptype);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Datum value1 = tinstant_value_p(inst1);
+  int trend = 0; /* make compiler quiet */
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    Datum value2 = tinstant_value_p(inst2);
+    trend = datum_cmp(value1, value2, basetype) * -1;
+    instants[i] = tinstant_make(Int32GetDatum(trend), T_TINT, inst1->t);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  instants[seq->count - 1] = tinstant_make(Int32GetDatum(trend),
+    T_TINT, seq->period.upper);
+  /* The resulting sequence has step interpolation */
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  pfree_array((void **) instants, seq->count);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_math
+ * @brief Return the trend of a temporal sequence set number
+ * @param[in] ss Temporal sequence set
+ * @csqlfn #Tnumber_trend()
+ */
+TSequenceSet *
+tnumberseqset_trend(const TSequenceSet *ss)
+{
+  assert(ss); assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    if (seq->count > 1)
+      sequences[nseqs++] = tnumberseq_trend(seq);
+  }
+  /* The resulting sequence set has step interpolation */
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the trend of a temporal number
+ * @param[in] temp Temporal number
+ * @see #tnumberseq_trend()
+ * @see #tnumberseqset_trend()
+ * @csqlfn #Tnumber_trend()
+ */
+Temporal *
+tnumber_trend(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tnumberseq_trend((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tnumberseqset_trend((TSequenceSet *) temp);
+  }
+}
+
+/*****************************************************************************
  * Exponential functions
  *****************************************************************************/
 

@@ -411,20 +411,6 @@ SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tnumber_deltaValue">
-				<indexterm significance="normal"><primary><varname>deltaValue</varname></primary></indexterm>
-				<para>Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
-				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
--- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
-SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
-  [2@2001-01-04, 2@2001-01-05]}');
-/* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
-  [0@2001-01-04, 0@2001-01-05)} */
-</programlisting>
-			</listitem>
-
 			<listitem xml:id="tnumber_floor">
 				<indexterm significance="normal"><primary><varname>floor</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>ceil</varname></primary></indexterm>
@@ -465,6 +451,33 @@ SELECT round(degrees(tfloat '[0.7853981633974@2001-01-01, 2.3561944901923@2001-0
 -- [45@2001-01-01, 135@2001-01-02]
 SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnumber_deltaValue">
+				<indexterm significance="normal"><primary><varname>deltaValue</varname></primary></indexterm>
+				<para>Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
+				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
+-- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
+SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
+  [2@2001-01-04, 2@2001-01-05]}');
+/* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
+  [0@2001-01-04, 0@2001-01-05)} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tfloat_trend">
+				<indexterm significance="normal"><primary><varname>trend</varname></primary></indexterm>
+				<para>Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1.</para>
+				<para><varname>trend(tfloat) → tint</varname></para>
+				<para>Nótese que la tendencia es NULL para secuencias instantáneas.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trend(tfloat '[1@2001-01-01, 2@2001-01-02, 4@2001-01-03, 4@2001-01-04, 3@2001-01-05, 2@2001-01-06]');
+-- [1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]
+SELECT trend(tfloat '[1@2001-01-01]');
+-- NULL
 </programlisting>
 			</listitem>
 

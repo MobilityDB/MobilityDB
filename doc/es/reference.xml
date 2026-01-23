@@ -947,10 +947,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos de un número temporal</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tnumber_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Redondear al entero inferior o superior</para>
 				</listitem>
 
@@ -960,6 +956,14 @@
 
 				<listitem>
 					<para><link linkend="tnumber_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos de un número temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tfloat_trend"><varname>trend</varname></link>: Devuelve la tendencia de un flotante temporal con interpolación lineal, que indica si su valor es creciente, constante o decreciente, representado, respectivamente, por 1, 0 y -1.</para>
 				</listitem>
 
 				<listitem>

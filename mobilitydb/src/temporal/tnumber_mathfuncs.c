@@ -435,6 +435,28 @@ Float_angular_difference(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Trend function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tnumber_trend(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_trend);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the trend of a temporal number
+ * @sqlfn trend()
+ */
+Datum
+Tnumber_trend(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_trend(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
  * Derivative functions
  *****************************************************************************/
 

@@ -1147,6 +1147,29 @@ SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_segmentMinDuration">
+				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
+				<para>Return a temporal boolean stating whether each segment of a continuous temporal sequence (set) has, respectively, at least or at most a given duration</para>
+				<para><varname>segmentMinDuration(temp,interval,bool strict=true) → tbool</varname></para>
+				<para><varname>segmentMaxDuration(temp,interval,bool strict=true) → tbool</varname></para>
+				<para>If <varname>strict</varname> is not specified, the value <varname>true</varname> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <varname>false</varname>, the function checks whether the segment duration is less/greater than or <emphasis>equal to</emphasis> the interval.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[t@2001-01-01, t@2001-01-06)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_shiftTime">
 				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>

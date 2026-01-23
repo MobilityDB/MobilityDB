@@ -1554,6 +1554,32 @@ SELECT round(tprecision(tfloat '[1@2001-01-01 07:40:30, 2@2001-01-01 07:40:40,
 2@2001-01-01 07:43:00]', '1 minute'), 4);
 
 -------------------------------------------------------------------------------
+-- segmentMinDuration and segmentMaxDuration functions
+-------------------------------------------------------------------------------
+
+SELECT segmentMinDuration(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
+SELECT segmentMinDuration(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+SELECT segmentMinDuration(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
+SELECT segmentMinDuration(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+/* NULL */
+SELECT segmentMinDuration(tfloat '[1.5@2000-01-01]', '1 day');
+SELECT segmentMinDuration(tfloat '{[1.5@2000-01-01],[3.5@2000-01-04]}', '1 day');
+/* Errors */
+SELECT segmentMinDuration(tfloat '1.5@2000-01-01', '1 day');
+SELECT segmentMinDuration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day');
+
+SELECT segmentMaxDuration(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
+SELECT segmentMaxDuration(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+SELECT segmentMaxDuration(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+SELECT segmentMaxDuration(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+/* NULL */
+SELECT segmentMaxDuration(tfloat '[1.5@2000-01-01]', '1 day');
+SELECT segmentMaxDuration(tfloat '{[1.5@2000-01-01],[3.5@2000-01-04]}', '1 day');
+/* Errors */
+SELECT segmentMaxDuration(tfloat '1.5@2000-01-01', '1 day');
+SELECT segmentMaxDuration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day');
+
+-------------------------------------------------------------------------------
 -- Restriction functions
 -------------------------------------------------------------------------------
 

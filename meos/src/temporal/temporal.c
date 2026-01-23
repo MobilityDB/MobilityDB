@@ -2807,6 +2807,143 @@ temporal_timestamps(const Temporal *temp, int *count)
 }
 
 /*****************************************************************************
+ * Segment duration functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the segments that have at least/at most a given duration
+ * (iterator function)
+ * @param[in] seq Temporal sequence
+ * @param[in] tunits Duration
+ * @param[in] oper Function to compare the segment duration
+ * @param[out] result Resulting sequences
+ */
+static int
+tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
+  TSequence **result)
+{
+  assert(seq); assert(seq->count > 1);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  TInstant *instants[2] = {0};
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  int64_t length = 0; /* make compiler quiet */
+  int nseqs = 0;
+  bool cmp;
+  bool lower_inc = seq->period.lower_inc;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    length = (int64)(inst2->t - inst1->t);
+    switch(oper)
+    {
+      case LT: cmp = length < tunits; break;
+      case LE: cmp = length <= tunits; break;
+      case GT: cmp = length > tunits; break;
+      case GE: cmp = length >= tunits; break;
+      default: cmp = false; /* Should not happen */
+    }
+    instants[0] = tinstant_make(BoolGetDatum(cmp), T_TBOOL, inst1->t);
+    instants[1] = tinstant_make(BoolGetDatum(cmp), T_TBOOL, inst2->t);
+    result[nseqs++] = tsequence_make(instants, 2, lower_inc, upper_inc, STEP,
+      NORMALIZE_NO);
+    pfree(instants[0]); pfree(instants[1]);
+    inst1 = inst2;
+  }
+  return nseqs;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the segments that have at least/at most a given duration
+ * @param[in] seq Temporal sequence
+ * @param[in] tunits Duration
+ * @param[in] oper Operator to compare the segment duration
+ */
+TSequenceSet *
+tsequence_segm_duration(const TSequence *seq, int64 tunits, CompOper oper)
+{
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  int nseqs = tsequence_segm_duration_iter(seq, tunits, oper, sequences);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the segments that have at least/at most a given duration
+ * @param[in] ss Temporal sequence set
+ * @param[in] tunits Duration
+ * @param[in] oper Operator to compare the segment duration
+ */
+TSequenceSet *
+tsequenceset_segm_duration(const TSequenceSet *ss, int64 tunits,
+  CompOper oper)
+{
+  assert(ss);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    /* Instantaneous sequences do not have duration */
+    if (seq->count == 1)
+      continue;
+    nseqs += tsequence_segm_duration_iter(seq, tunits, oper,
+      &sequences[nseqs]);
+  }
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the segments that have at least/at most a given duration
+ * @param[in] temp Temporal value
+ * @param[in] atleast True when the operator is at least, false for at most
+ * @param[in] strict True when the duration is strictly smaller or greater
+ * @param[in] duration Duration
+ * @csqlfn #Temporal_segm_duration
+ */
+TSequenceSet *
+temporal_segm_duration(const Temporal *temp, const Interval *duration, 
+  bool atleast, bool strict)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+
+  int64 tunits = interval_units(duration);
+  CompOper oper;
+  if (! atleast && ! strict)
+    oper = LE;
+  else if (! atleast && strict)
+    oper = LT;
+  else if (atleast && ! strict)
+    oper = GE;
+  else /* atleast && strict */
+    oper = GT;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT || 
+    MEOS_FLAGS_GET_INTERP(temp->flags) == DISCRETE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Input must be a temporal sequence (set) with continuous interpolation");
+    return NULL;
+  }
+  else if (temp->subtype == TSEQUENCE)
+    return tsequence_segm_duration((TSequence *) temp, tunits, oper);
+  else /* temp->subtype == TSEQUENCESET */
+    return tsequenceset_segm_duration((TSequenceSet *) temp, tunits, oper);
+}
+
+/*****************************************************************************
  * Derivative functions
  *****************************************************************************/
 

@@ -154,6 +154,18 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
     61
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tfloat_seq WHERE trend(seq) IS NOT NULL;
+ count 
+-------
+    89
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
+ count 
+-------
+    98
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
  count 
 -------
@@ -218,6 +230,18 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE log10(abs(temp)) IS NOT NULL;
  count 
 -------
     96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
+ count 
+-------
+    61
 (1 row)
 
 SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
