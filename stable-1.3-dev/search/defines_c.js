@@ -1,20 +1,14 @@
 var searchData=
 [
-  ['late_0',['LATE',['../datetime_8h_ac2e41de927d6382a0817b8fea0246dff.html#ac2e41de927d6382a0817b8fea0246dff',1,'datetime.h']]],
-  ['lengthof_1',['lengthof',['../c_8h_ad53b2827d15d4f100433764eea395a94.html#ad53b2827d15d4f100433764eea395a94',1,'c.h']]],
-  ['likely_2',['likely',['../c_8h_a217a0bd562b98ae8c2ffce44935351e1.html#a217a0bd562b98ae8c2ffce44935351e1',1,'c.h']]],
-  ['limit_5fratio_3',['LIMIT_RATIO',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_a447ebdddb8fd2f64a52e7e2fea2ba992.html#a447ebdddb8fd2f64a52e7e2fea2ba992',1,'temporal.h']]],
-  ['listen_4',['listen',['../win32__port_8h_ae6e6de5a20bed9fc7078f0e6c9c4aca4.html#ae6e6de5a20bed9fc7078f0e6c9c4aca4',1,'win32_port.h']]],
-  ['locale_5ft_5',['locale_t',['../win32__port_8h_a0180c4814a14ad7c042c752d2b6704c9.html#a0180c4814a14ad7c042c752d2b6704c9',1,'win32_port.h']]],
-  ['long_5falign_5fmask_6',['LONG_ALIGN_MASK',['../c_8h_a2ad604f9486c42f3b878c45362b55d72.html#a2ad604f9486c42f3b878c45362b55d72',1,'c.h']]],
-  ['longalign_7',['LONGALIGN',['../c_8h_a5fe365c52f7738f127946a57dfc2d399.html#a5fe365c52f7738f127946a57dfc2d399',1,'c.h']]],
-  ['longalign_5fdown_8',['LONGALIGN_DOWN',['../c_8h_a57fa77c00d337d2509fe70e1833220d1.html#a57fa77c00d337d2509fe70e1833220d1',1,'c.h']]],
-  ['lstat_9',['lstat',['../win32__port_8h_a66d9dea413399cd617511b68b5fc120c.html#a66d9dea413399cd617511b68b5fc120c',1,'win32_port.h']]],
-  ['lwflag_5fbbox_10',['LWFLAG_BBOX',['../postgis__ext__defs_8in_8h_a6ab6b8d3b2c6f6af28b69b9021a95abd.html#a6ab6b8d3b2c6f6af28b69b9021a95abd',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5fgeodetic_11',['LWFLAG_GEODETIC',['../postgis__ext__defs_8in_8h_ab6ca96468601e0590a2dd0aa0a71187b.html#ab6ca96468601e0590a2dd0aa0a71187b',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5fm_12',['LWFLAG_M',['../postgis__ext__defs_8in_8h_a4ab89f16958d130d26aadf3a4de39706.html#a4ab89f16958d130d26aadf3a4de39706',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5freadonly_13',['LWFLAG_READONLY',['../postgis__ext__defs_8in_8h_a90b766f35d3f072c18fbc5fbe92a3292.html#a90b766f35d3f072c18fbc5fbe92a3292',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5fsolid_14',['LWFLAG_SOLID',['../postgis__ext__defs_8in_8h_a5d34b5eef36ad2983f876098466a2e82.html#a5d34b5eef36ad2983f876098466a2e82',1,'postgis_ext_defs.in.h']]],
-  ['lwflag_5fversbit2_15',['LWFLAG_VERSBIT2',['../meos__internal__geo_8h_ae19ecee039e42f3e042bc4667fdaf7d2.html#ae19ecee039e42f3e042bc4667fdaf7d2',1,'meos_internal_geo.h']]],
-  ['lwflag_5fz_16',['LWFLAG_Z',['../postgis__ext__defs_8in_8h_a54418b6c4bdbaf46aee355e336d0dd4e.html#a54418b6c4bdbaf46aee355e336d0dd4e',1,'postgis_ext_defs.in.h']]]
+  ['order_0',['ORDER',['../meos_2include_2temporal_2temporal_8h_a826715579f0649bd271fb6702a175dbc.html#a826715579f0649bd271fb6702a175dbc',1,'temporal.h']]],
+  ['order_5fno_1',['ORDER_NO',['../meos_2include_2temporal_2temporal_8h_a53f0283d21c31b6a2daf0046a27187f2.html#a53f0283d21c31b6a2daf0046a27187f2',1,'temporal.h']]],
+  ['out_5fdefault_5fdecimal_5fdigits_2',['OUT_DEFAULT_DECIMAL_DIGITS',['../type__inout_8h_a28e7bebfef9609f69d1a63575a8dd923.html#a28e7bebfef9609f69d1a63575a8dd923',1,'type_inout.h']]],
+  ['out_5fdouble_5fbuffer_5fsize_3',['OUT_DOUBLE_BUFFER_SIZE',['../type__inout_8h_a7b4e1361958b9e9441e3f5b419e17e54.html#a7b4e1361958b9e9441e3f5b419e17e54',1,'type_inout.h']]],
+  ['out_5fmax_5fbytes_5fdouble_4',['OUT_MAX_BYTES_DOUBLE',['../type__inout_8h_a42392877f919bac2bb440b3b34c0d73d.html#a42392877f919bac2bb440b3b34c0d73d',1,'type_inout.h']]],
+  ['out_5fmax_5fdigits_5',['OUT_MAX_DIGITS',['../type__inout_8h_a09a503314142075391a658550b17d3b2.html#a09a503314142075391a658550b17d3b2',1,'type_inout.h']]],
+  ['out_5fmax_5fdigs_5fdouble_6',['OUT_MAX_DIGS_DOUBLE',['../meos_2src_2temporal_2type__out_8c_a592afcb79525826a9687659a6e2c5fd4.html#a592afcb79525826a9687659a6e2c5fd4',1,'type_out.c']]],
+  ['out_5fmax_5fdouble_7',['OUT_MAX_DOUBLE',['../type__inout_8h_a384825d792f071da7efa1ee9d31bb3b8.html#a384825d792f071da7efa1ee9d31bb3b8',1,'type_inout.h']]],
+  ['out_5fmax_5fdouble_5fprecision_8',['OUT_MAX_DOUBLE_PRECISION',['../meos_2src_2temporal_2type__out_8c_ac5840da3b0d5b6607a5c6aeab4e067bb.html#ac5840da3b0d5b6607a5c6aeab4e067bb',1,'type_out.c']]],
+  ['out_5fmin_5fdouble_9',['OUT_MIN_DOUBLE',['../type__inout_8h_a3a6bf254da105e3b0619ad53f86971e7.html#a3a6bf254da105e3b0619ad53f86971e7',1,'type_inout.h']]],
+  ['out_5fshow_5fdigs_5fdouble_10',['OUT_SHOW_DIGS_DOUBLE',['../meos_2src_2temporal_2type__out_8c_a95c27a8a79ae819ed6c624b94a653197.html#a95c27a8a79ae819ed6c624b94a653197',1,'type_out.c']]]
 ];

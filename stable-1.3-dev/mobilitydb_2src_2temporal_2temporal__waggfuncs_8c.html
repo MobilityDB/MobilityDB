@@ -83,8 +83,8 @@ $(function() {
 
 <p>Window aggregate functions for temporal types.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="datetime_8h_source.html">utils/datetime.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/datetime.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/skiplist.h&quot;</code><br />
@@ -94,13 +94,13 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a62f73cddb517dba61895b98a2df49c03"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a62f73cddb517dba61895b98a2df49c03.html#a62f73cddb517dba61895b98a2df49c03">INPUT_AGG_TRANS_STATE_ARG</a>(fcinfo,  <a class="el" href="structstate.html">state</a>)</td></tr>
+<tr class="memitem:a62f73cddb517dba61895b98a2df49c03"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a62f73cddb517dba61895b98a2df49c03.html#a62f73cddb517dba61895b98a2df49c03">INPUT_AGG_TRANS_STATE_ARG</a>(fcinfo,  state)</td></tr>
 <tr class="memdesc:a62f73cddb517dba61895b98a2df49c03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper macro to input the current aggregate state.  <a href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a62f73cddb517dba61895b98a2df49c03.html#a62f73cddb517dba61895b98a2df49c03">More...</a><br /></td></tr>
 <tr class="separator:a62f73cddb517dba61895b98a2df49c03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a99d3f5345037b07efaa5999b571eec9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a99d3f5345037b07efaa5999b571eec9f.html#a99d3f5345037b07efaa5999b571eec9f">Temporal_wagg_transfn</a> (FunctionCallInfo fcinfo, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> min, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> crossings)</td></tr>
+<tr class="memitem:a99d3f5345037b07efaa5999b571eec9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a99d3f5345037b07efaa5999b571eec9f.html#a99d3f5345037b07efaa5999b571eec9f">Temporal_wagg_transfn</a> (FunctionCallInfo fcinfo, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, bool min, bool crossings)</td></tr>
 <tr class="memdesc:a99d3f5345037b07efaa5999b571eec9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic moving window transition function for min, max, and sum aggregation.  <a href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a99d3f5345037b07efaa5999b571eec9f.html#a99d3f5345037b07efaa5999b571eec9f">More...</a><br /></td></tr>
 <tr class="separator:a99d3f5345037b07efaa5999b571eec9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a063e0925840d6ad66d1007da27825e92"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2temporal_2temporal__waggfuncs_8c_a063e0925840d6ad66d1007da27825e92.html#a063e0925840d6ad66d1007da27825e92">Temporal_wagg_transform_transfn</a> (FunctionCallInfo fcinfo, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, <a class="el" href="structTSequence.html">TSequence</a> **(*<a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform</a>)(const <a class="el" href="structTemporal.html">Temporal</a> *, const <a class="el" href="structInterval.html">Interval</a> *, int *))</td></tr>

@@ -105,7 +105,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="structstate.html">state</a>&#160;</td>
+          <td class="paramname">state&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -116,11 +116,11 @@ $(function() {
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {  \</div>
 <div class="line">    MemoryContext ctx = <a class="code hl_function" href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a8094da2a89c7c623e367b780d318bc2c.html#a8094da2a89c7c623e367b780d318bc2c">set_aggregation_context</a>(fcinfo); \</div>
-<div class="line">    <a class="code hl_struct" href="structstate.html">state</a> = PG_ARGISNULL(0) ? NULL : (<a class="code hl_struct" href="structSkipList.html">SkipList</a> *) PG_GETARG_POINTER(0);  \</div>
+<div class="line">    state = PG_ARGISNULL(0) ? NULL : (<a class="code hl_struct" href="structSkipList.html">SkipList</a> *) PG_GETARG_POINTER(0);  \</div>
 <div class="line">    if (PG_ARGISNULL(1))  \</div>
 <div class="line">    {  \</div>
-<div class="line">      if (<a class="code hl_struct" href="structstate.html">state</a>)  \</div>
-<div class="line">        PG_RETURN_POINTER(<a class="code hl_struct" href="structstate.html">state</a>);  \</div>
+<div class="line">      if (state)  \</div>
+<div class="line">        PG_RETURN_POINTER(state);  \</div>
 <div class="line">      else  \</div>
 <div class="line">        PG_RETURN_NULL();  \</div>
 <div class="line">    }  \</div>
@@ -128,7 +128,6 @@ $(function() {
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
 <div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a8094da2a89c7c623e367b780d318bc2c_html_a8094da2a89c7c623e367b780d318bc2c"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a8094da2a89c7c623e367b780d318bc2c.html#a8094da2a89c7c623e367b780d318bc2c">set_aggregation_context</a></div><div class="ttdeci">MemoryContext set_aggregation_context(FunctionCallInfo fcinfo)</div><div class="ttdoc">Switch to the memory context for aggregation.</div><div class="ttdef"><b>Definition:</b> skiplist.c:55</div></div>
 <div class="ttc" id="astructSkipList_html"><div class="ttname"><a href="structSkipList.html">SkipList</a></div><div class="ttdoc">Structure to represent skiplists that keep the current state of an aggregation.</div><div class="ttdef"><b>Definition:</b> meos_internal.h:696</div></div>
-<div class="ttc" id="astructstate_html"><div class="ttname"><a href="structstate.html">state</a></div><div class="ttdef"><b>Definition:</b> pgtz.h:42</div></div>
 </div><!-- fragment -->
 <p>Helper macros to input the current aggregate state. </p>
 

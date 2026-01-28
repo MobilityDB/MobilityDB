@@ -85,8 +85,8 @@ $(function() {
 <p>R-tree GiST index for span and span set types.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;access/gist.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
@@ -141,7 +141,7 @@ Functions</h2></td></tr>
 <tr class="memitem:aebc6ef6a2e50b3f3deb9c5fb90caa9f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__gist_8c_aebc6ef6a2e50b3f3deb9c5fb90caa9f4.html#aebc6ef6a2e50b3f3deb9c5fb90caa9f4">Span_gist_fetch</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:aebc6ef6a2e50b3f3deb9c5fb90caa9f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST fetch method for span types, which result in a span.  <a href="span__gist_8c_aebc6ef6a2e50b3f3deb9c5fb90caa9f4.html#aebc6ef6a2e50b3f3deb9c5fb90caa9f4">More...</a><br /></td></tr>
 <tr class="separator:aebc6ef6a2e50b3f3deb9c5fb90caa9f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab66892f3542e4d29ec2247339a70f1b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__gist_8c_ab66892f3542e4d29ec2247339a70f1b2.html#ab66892f3542e4d29ec2247339a70f1b2">span_gist_get_span</a> (FunctionCallInfo fcinfo, <a class="el" href="structSpan.html">Span</a> *result, <a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> typid)</td></tr>
+<tr class="memitem:ab66892f3542e4d29ec2247339a70f1b2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__gist_8c_ab66892f3542e4d29ec2247339a70f1b2.html#ab66892f3542e4d29ec2247339a70f1b2">span_gist_get_span</a> (FunctionCallInfo fcinfo, <a class="el" href="structSpan.html">Span</a> *result, Oid typid)</td></tr>
 <tr class="memdesc:ab66892f3542e4d29ec2247339a70f1b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform the query argument into a span.  <a href="span__gist_8c_ab66892f3542e4d29ec2247339a70f1b2.html#ab66892f3542e4d29ec2247339a70f1b2">More...</a><br /></td></tr>
 <tr class="separator:ab66892f3542e4d29ec2247339a70f1b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee718b148e53a3275657d9ce6b0a0438"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__gist_8c_aee718b148e53a3275657d9ce6b0a0438.html#aee718b148e53a3275657d9ce6b0a0438">Span_gist_penalty</a> (PG_FUNCTION_ARGS)</td></tr>

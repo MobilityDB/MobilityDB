@@ -83,9 +83,9 @@ $(function() {
 
 <p>Data generator for MobilityDB.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="float_8h_source.html">utils/float.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/float.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
@@ -97,7 +97,7 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a57a3ca085f5ab3f32294098c7246c812"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tpoint__datagen_8c_a57a3ca085f5ab3f32294098c7246c812.html#a57a3ca085f5ab3f32294098c7246c812">create_trip</a> (<a class="el" href="structLWLINE.html">LWLINE</a> **lines, const double *maxSpeeds, const int *categories, uint32_t noEdges, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> startTime, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> disturbData, int verbosity)</td></tr>
+<tr class="memitem:a57a3ca085f5ab3f32294098c7246c812"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tpoint__datagen_8c_a57a3ca085f5ab3f32294098c7246c812.html#a57a3ca085f5ab3f32294098c7246c812">create_trip</a> (<a class="el" href="structLWLINE.html">LWLINE</a> **lines, const double *maxSpeeds, const int *categories, uint32_t noEdges, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> startTime, bool disturbData, int verbosity)</td></tr>
 <tr class="memdesc:a57a3ca085f5ab3f32294098c7246c812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a trip using the BerlinMOD data generator.  <a href="meos_2src_2geo_2tpoint__datagen_8c_a57a3ca085f5ab3f32294098c7246c812.html#a57a3ca085f5ab3f32294098c7246c812">More...</a><br /></td></tr>
 <tr class="separator:a57a3ca085f5ab3f32294098c7246c812"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fbaf2516b450989bf6e1b68330a2782"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tpoint__datagen_8c_a3fbaf2516b450989bf6e1b68330a2782.html#a3fbaf2516b450989bf6e1b68330a2782">pt_angle</a> (<a class="el" href="structPOINT2D.html">POINT2D</a> p1, <a class="el" href="structPOINT2D.html">POINT2D</a> p2, <a class="el" href="structPOINT2D.html">POINT2D</a> p3)</td></tr>

@@ -80,7 +80,7 @@ $(function() {
   <div class="headertitle"><div class="title">postgis.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;lwgeodetic_tree.h&gt;</code><br />
@@ -100,9 +100,9 @@ Macros</h2></td></tr>
 <tr class="separator:a1601e747419b57badc0850a66a4d1e7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1601e747419b57badc0850a66a4d1e7e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a1601e747419b57badc0850a66a4d1e7e.html#a1601e747419b57badc0850a66a4d1e7e">PG_GETARG_GSERIALIZED_P_COPY</a>(varno)&#160;&#160;&#160;((<a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))</td></tr>
 <tr class="separator:a1601e747419b57badc0850a66a4d1e7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90c321a2985dda88b25f7649e78888a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a90c321a2985dda88b25f7649e78888a3.html#a90c321a2985dda88b25f7649e78888a3">PG_RETURN_GSERIALIZED_P</a>(x)&#160;&#160;&#160;return <a class="el" href="postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8">PointerGetDatum</a>(x)</td></tr>
+<tr class="memitem:a90c321a2985dda88b25f7649e78888a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a90c321a2985dda88b25f7649e78888a3.html#a90c321a2985dda88b25f7649e78888a3">PG_RETURN_GSERIALIZED_P</a>(x)&#160;&#160;&#160;return PointerGetDatum(x)</td></tr>
 <tr class="separator:a90c321a2985dda88b25f7649e78888a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90c321a2985dda88b25f7649e78888a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a90c321a2985dda88b25f7649e78888a3.html#a90c321a2985dda88b25f7649e78888a3">PG_RETURN_GSERIALIZED_P</a>(x)&#160;&#160;&#160;return <a class="el" href="postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8">PointerGetDatum</a>(x)</td></tr>
+<tr class="memitem:a90c321a2985dda88b25f7649e78888a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a90c321a2985dda88b25f7649e78888a3.html#a90c321a2985dda88b25f7649e78888a3">PG_RETURN_GSERIALIZED_P</a>(x)&#160;&#160;&#160;return PointerGetDatum(x)</td></tr>
 <tr class="separator:a90c321a2985dda88b25f7649e78888a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -157,7 +157,7 @@ Functions</h2></td></tr>
 <tr class="separator:a333e22945787c0e29eec8d341d4d691b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ddf235c90627fcedf3c130ea2a64580"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a0ddf235c90627fcedf3c130ea2a64580.html#a0ddf235c90627fcedf3c130ea2a64580">getSRIDbySRS</a> (FunctionCallInfo fcinfo, const char *srs)</td></tr>
 <tr class="separator:a0ddf235c90627fcedf3c130ea2a64580"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73b0edb89aa26f31af1df8a07337f3f1"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a73b0edb89aa26f31af1df8a07337f3f1.html#a73b0edb89aa26f31af1df8a07337f3f1">getSRSbySRID</a> (FunctionCallInfo fcinfo, int32_t srid, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> short_crs)</td></tr>
+<tr class="memitem:a73b0edb89aa26f31af1df8a07337f3f1"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a73b0edb89aa26f31af1df8a07337f3f1.html#a73b0edb89aa26f31af1df8a07337f3f1">getSRSbySRID</a> (FunctionCallInfo fcinfo, int32_t srid, bool short_crs)</td></tr>
 <tr class="separator:a73b0edb89aa26f31af1df8a07337f3f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74d867942f2875ba66afa5be324dfd82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis_8h_a74d867942f2875ba66afa5be324dfd82.html#a74d867942f2875ba66afa5be324dfd82">issimple</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="separator:a74d867942f2875ba66afa5be324dfd82"><td class="memSeparator" colspan="2">&#160;</td></tr>

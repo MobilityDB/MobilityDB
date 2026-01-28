@@ -80,7 +80,7 @@ $(function() {
   <div class="headertitle"><div class="title">skiplist.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 </div>
@@ -95,17 +95,17 @@ Macros</h2></td></tr>
 <tr class="separator:ad712866c261053f8e6e92823616d7dab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfb2a1550d04cbd81ac448593382db7a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_acfb2a1550d04cbd81ac448593382db7a.html#acfb2a1550d04cbd81ac448593382db7a">PG_RETURN_SKIPLIST_P</a>(x)&#160;&#160;&#160;return <a class="el" href="meos_2include_2temporal_2skiplist_8h_ac822eae3ca05f9bed88fb7329e3370fb.html#ac822eae3ca05f9bed88fb7329e3370fb">SkipListPGetDatum</a>(x)</td></tr>
 <tr class="separator:acfb2a1550d04cbd81ac448593382db7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac822eae3ca05f9bed88fb7329e3370fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_ac822eae3ca05f9bed88fb7329e3370fb.html#ac822eae3ca05f9bed88fb7329e3370fb">SkipListPGetDatum</a>(X)&#160;&#160;&#160;<a class="el" href="postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8">PointerGetDatum</a>(X)</td></tr>
+<tr class="memitem:ac822eae3ca05f9bed88fb7329e3370fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_ac822eae3ca05f9bed88fb7329e3370fb.html#ac822eae3ca05f9bed88fb7329e3370fb">SkipListPGetDatum</a>(X)&#160;&#160;&#160;PointerGetDatum(X)</td></tr>
 <tr class="separator:ac822eae3ca05f9bed88fb7329e3370fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad320a369aae7e08546477cf603bbda19"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_ad320a369aae7e08546477cf603bbda19.html#ad320a369aae7e08546477cf603bbda19">ensure_same_skiplist_subtype</a> (<a class="el" href="structSkipList.html">SkipList</a> *<a class="el" href="structstate.html">state</a>, <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> subtype)</td></tr>
+<tr class="memitem:ad320a369aae7e08546477cf603bbda19"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_ad320a369aae7e08546477cf603bbda19.html#ad320a369aae7e08546477cf603bbda19">ensure_same_skiplist_subtype</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> subtype)</td></tr>
 <tr class="separator:ad320a369aae7e08546477cf603bbda19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acae844ff2cd54b1c9b5c5b784f8727c4"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_acae844ff2cd54b1c9b5c5b784f8727c4.html#acae844ff2cd54b1c9b5c5b784f8727c4">skiplist_headval</a> (<a class="el" href="structSkipList.html">SkipList</a> *list)</td></tr>
 <tr class="memdesc:acae844ff2cd54b1c9b5c5b784f8727c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the value at the head of the skiplist.  <a href="meos_2include_2temporal_2skiplist_8h_acae844ff2cd54b1c9b5c5b784f8727c4.html#acae844ff2cd54b1c9b5c5b784f8727c4">More...</a><br /></td></tr>
 <tr class="separator:acae844ff2cd54b1c9b5c5b784f8727c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6caa8f63f8e6be92eae09486c5384e15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_a6caa8f63f8e6be92eae09486c5384e15.html#a6caa8f63f8e6be92eae09486c5384e15">skiplist_set_extra</a> (<a class="el" href="structSkipList.html">SkipList</a> *<a class="el" href="structstate.html">state</a>, void *data, size_t size)</td></tr>
+<tr class="memitem:a6caa8f63f8e6be92eae09486c5384e15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2include_2temporal_2skiplist_8h_a6caa8f63f8e6be92eae09486c5384e15.html#a6caa8f63f8e6be92eae09486c5384e15">skiplist_set_extra</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, void *data, size_t size)</td></tr>
 <tr class="memdesc:a6caa8f63f8e6be92eae09486c5384e15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the state value from the buffer.  <a href="meos_2include_2temporal_2skiplist_8h_a6caa8f63f8e6be92eae09486c5384e15.html#a6caa8f63f8e6be92eae09486c5384e15">More...</a><br /></td></tr>
 <tr class="separator:a6caa8f63f8e6be92eae09486c5384e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
