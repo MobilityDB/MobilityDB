@@ -2827,7 +2827,6 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
 
   TInstant *instants[2] = {0};
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  int64_t length = 0; /* make compiler quiet */
   int nseqs = 0;
   bool cmp;
   bool lower_inc = seq->period.lower_inc;
@@ -2835,7 +2834,7 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    length = (int64)(inst2->t - inst1->t);
+    int64_t length = (int64)(inst2->t - inst1->t);
     switch(oper)
     {
       case LT: cmp = length < tunits; break;
