@@ -777,6 +777,24 @@ CREATE FUNCTION minusTime(tgeography, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION beforeTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION beforeTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION afterTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION afterTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Modification Functions
  *****************************************************************************/

@@ -45,6 +45,11 @@
 
 /* Restriction Functions */
 
+extern TSequence *tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tdiscseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+extern TSequence *tdiscseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict);
+
 extern TInstant *tdiscseq_at_timestamptz(const TSequence *seq, TimestampTz t);
 extern TSequence *tdiscseq_restrict_value(const TSequence *seq, Datum value,
   bool atfunc);

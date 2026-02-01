@@ -421,6 +421,46 @@ tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t,
   return true;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Restrict a temporal value to the instants before or equal a
+ * timestamptz
+ * @param[in] inst Temporal instant
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly before, false when
+ * the restriction is before or equal
+ * @csqlfn #Temporal_before_timestamptz()
+ */
+TInstant *
+tinstant_before_timestamptz(const TInstant *inst, TimestampTz t, bool strict)
+{
+  assert(inst);
+  if (inst->t < t || (! strict && t == inst->t))
+    return tinstant_copy(inst);
+  return NULL;
+}
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Restrict a temporal value to the instants after or equal a
+ * timestamptz
+ * @param[in] inst Temporal instant
+ * @param[in] t Timestamp
+ * @param[in] strict True if the restriction is strictly after, false when
+ * the restriction is after or equal
+ * @csqlfn #Temporal_after_timestamptz()
+ */
+TInstant *
+tinstant_after_timestamptz(const TInstant *inst, TimestampTz t, bool strict)
+{
+  assert(inst);
+  if (inst->t > t|| (! strict && t == inst->t))
+    return tinstant_copy(inst);
+  return NULL;
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/

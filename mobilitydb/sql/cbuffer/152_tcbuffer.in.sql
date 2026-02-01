@@ -520,6 +520,16 @@ CREATE FUNCTION minusTime(tcbuffer, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION beforeTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION afterTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Unnest Function
  *****************************************************************************/

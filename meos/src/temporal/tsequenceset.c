@@ -1258,6 +1258,10 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
   return result;
 }
 
+/*****************************************************************************
+ * Value at timestamp function
+ *****************************************************************************/
+
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the value of a temporal
