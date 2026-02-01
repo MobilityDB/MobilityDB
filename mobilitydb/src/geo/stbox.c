@@ -263,7 +263,7 @@ Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   }
   if (hast)
   {
-    meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, i));
+    meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, i));
     assert(basetype == T_TSTZSPAN || basetype == T_TIMESTAMPTZ);
     if (basetype == T_TSTZSPAN)
       period = PG_GETARG_SPAN_P(i++);

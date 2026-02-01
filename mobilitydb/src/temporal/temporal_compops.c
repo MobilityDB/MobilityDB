@@ -652,7 +652,7 @@ Tcomp_base_temporal(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = tcomp_base_temporal(value, temp, func);
   assert(result);
   DATUM_FREE_IF_COPY(value, basetype, 0);
@@ -669,7 +669,7 @@ Tcomp_temporal_base(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = tcomp_temporal_base(temp, value, func);
   assert(result);
   PG_FREE_IF_COPY(temp, 0);

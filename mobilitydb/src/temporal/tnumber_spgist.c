@@ -643,7 +643,7 @@ static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 {
   Span *s;
-  meosType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_meostype(scankey->sk_subtype);
   if (tnumber_spantype(type))
   {
     s = DatumGetSpanP(scankey->sk_argument);
@@ -746,10 +746,11 @@ PG_FUNCTION_INFO_V1(Tbox_spgist_config);
 Datum
 Tbox_spgist_config(PG_FUNCTION_ARGS)
 {
+  Oid tbox_oid = meostype_oid(T_TBOX);
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
+  cfg->prefixType = tbox_oid; /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels */
-  cfg->leafType = type_oid(T_TBOX);
+  cfg->leafType = tbox_oid;
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();

@@ -766,7 +766,7 @@ void
 span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
-  meosType type = oid_type(consttype);
+  meosType type = oid_meostype(consttype);
   assert(span_basetype(type) || set_spantype(type) || span_type(type) ||
     spanset_type(type) || talpha_type(type));
   if (span_basetype(type))
@@ -864,7 +864,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   span_const_to_span(other, &span);
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
@@ -980,7 +980,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   bool value = (s->basetype != T_TIMESTAMPTZ);
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool found = value ?
     value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
   if (! found)
@@ -1466,7 +1466,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
 
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
@@ -1512,7 +1512,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! att1_num)
     elog(ERROR, "attribute \"%s\" does not exist", att1_name);
   // /* Get the attribute type */
-  // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+  // meosType atttype1 = oid_meostype(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (! table2_name)
@@ -1525,11 +1525,11 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! att2_num)
     elog(ERROR, "attribute \"%s\" does not exist", att2_name);
   // /* Get the attribute type */
-  // meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+  // meosType atttype2 = oid_meostype(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {

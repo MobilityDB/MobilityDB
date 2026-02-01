@@ -53,7 +53,7 @@
 #include "geo/tgeo.h"
 #include "geo/tspatial.h"
 /* MobilityDB */
-#include "pg_temporal/meos_catalog.h" /* For oid_type() */
+#include "pg_temporal/meos_catalog.h" /* For oid_meostype() */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
@@ -81,7 +81,7 @@ Spatialset_from_ewkt(PG_FUNCTION_ARGS)
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Set *result = set_parse(&wkt_ptr, oid_type(temptypid));
+  Set *result = set_parse(&wkt_ptr, oid_meostype(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_SET_P(result);
@@ -156,7 +156,7 @@ Spatialarr_as_text_common(FunctionCallInfo fcinfo, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Datum *datumarr = datumarr_extract(array, &count);
-  meosType basetype = oid_type(array->elemtype);
+  meosType basetype = oid_meostype(array->elemtype);
   char **strarr = spatialarr_wkt_out(datumarr, basetype, count, 
     dbl_dig_for_wkt, extended);
   /* We cannot use pfree_array */

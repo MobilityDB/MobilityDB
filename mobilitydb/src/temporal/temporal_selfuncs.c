@@ -75,7 +75,7 @@ temporal_const_to_tstzspan(Node *other, Span *s)
 {
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
-  meosType type = oid_type(consttype);
+  meosType type = oid_meostype(consttype);
   if (time_type(type))
     span_const_to_span(other, s);
   else if (talpha_type(type))
@@ -92,7 +92,7 @@ bool
 tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
-  meosType type = oid_type(consttypid);
+  meosType type = oid_meostype(consttypid);
   Span *span;
   if (numspan_type(type))
   {
@@ -139,7 +139,7 @@ tspatial_const_to_stbox(Node *other, STBox *box)
 {
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
-  meosType type = oid_type(consttype);
+  meosType type = oid_meostype(consttype);
   if (geo_basetype(type))
     geo_set_stbox(DatumGetGserializedP(constvalue), box);
   else if (type == T_TSTZSPAN)
@@ -445,7 +445,7 @@ temporal_sel_tstzspan(VariableStatData *vardata, Span *s, meosOper oper)
    */
   if (oper == SAME_OP)
   {
-    Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
+    Oid operid = meosoper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
       SpanPGetDatum(s), false, false, false);
   }
@@ -496,14 +496,14 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the value dimension */
     if (span)
     {
-      Oid value_oprid = oper_oid(EQ_OP, span->spantype, span->spantype);
+      Oid value_oprid = meosoper_oid(EQ_OP, span->spantype, span->spantype);
       selec *= var_eq_const(vardata, value_oprid, DEFAULT_COLLATION_OID,
         PointerGetDatum(span), false, false, false);
     }
     /* Selectivity for the time dimension */
     if (period)
     {
-      Oid tstzspan_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
+      Oid tstzspan_oprid = meosoper_oid(EQ_OP, period->spantype, period->spantype);
       selec *= var_eq_const(vardata, tstzspan_oprid, DEFAULT_COLLATION_OID,
         SpanPGetDatum(period), false, false, false);
     }
@@ -564,7 +564,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
 
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   if (! temporal_oper_sel_family(oper, ltype, rtype, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
@@ -881,7 +881,7 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
 
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   if (! temporal_oper_sel_family(oper, ltype, rtype, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
@@ -898,16 +898,16 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
-    meosType oprleft = oid_type(var1->vartype);
-    meosType oprright = oid_type(var2->vartype);
+    meosType oprleft = oid_meostype(var1->vartype);
+    meosType oprright = oid_meostype(var2->vartype);
     if (! tnumber_joinsel_components(oper, oprleft, oprright, &value, &time))
       /* In the case of unknown arguments */
       return tnumber_joinsel_default(oper);
   }
   else /* tempfamily == TSPATIALTYPE */
   {
-    meosType oprleft = oid_type(var1->vartype);
-    meosType oprright = oid_type(var2->vartype);
+    meosType oprleft = oid_meostype(var1->vartype);
+    meosType oprright = oid_meostype(var2->vartype);
     if (! tspatial_joinsel_components(oper, oprleft, oprright, &space, &time))
       /* In the case of unknown arguments */
       return tspatial_joinsel_default(oper);
