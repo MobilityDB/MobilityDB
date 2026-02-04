@@ -1799,6 +1799,13 @@ extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
+ 
+/* Extended Kalman Filter (EKF) outlier filtering */
+
+extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
+  double q, double variance, bool to_drop);
+
+/*****************************************************************************/
 
 /* Tile functions for temporal types */
 
