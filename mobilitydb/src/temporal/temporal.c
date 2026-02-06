@@ -2529,6 +2529,56 @@ Temporal_after_timestamptz(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Segment duration functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the segments that have at least/at most a given duration
+ * @csqlfn #Temporal_segm_duration
+ * @sqlfn segmentMinDuration(), segmentMaxDuration()
+ */
+Datum
+Temporal_segm_duration(FunctionCallInfo fcinfo, bool atleast)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  bool strict = PG_GETARG_BOOL(2);
+  TSequenceSet *result = temporal_segm_duration(temp, duration, atleast,
+    strict);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Temporal_segm_min_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_segm_min_duration);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the segments that have at least a given duration
+ * @csqlfn #Temporal_segm_min_duration
+ * @sqlfn segmentMinDuration()
+ */
+Datum
+Temporal_segm_min_duration(PG_FUNCTION_ARGS)
+{
+  return Temporal_segm_duration(fcinfo, true);
+}
+
+PGDLLEXPORT Datum Temporal_segm_max_duration(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_segm_max_duration);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the segments that have at most a given duration
+ * @sqlfn segmentMaxDuration()
+ */
+Datum
+Temporal_segm_max_duration(PG_FUNCTION_ARGS)
+{
+  return Temporal_segm_duration(fcinfo, false);
+}
+
+/*****************************************************************************
  * Modification functions
  *****************************************************************************/
 

@@ -1200,6 +1200,27 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
     POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
     POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
 </programlisting>
+
+			<listitem xml:id="ttype_segmentMinDuration">
+				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
+				<para>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada.</para>
+				<para><varname>segmentMinDuration(temp,interval,bool strict=true) → tbool</varname></para>
+				<para><varname>segmentMaxDuration(temp,interval,bool strict=true) → tbool</varname></para>
+				<para>Si el argumento <varname>strict</varname> no se especifica, se asume el valor <varname>true</varname> por defecto y, por lo tanto, la función verifica si la duración del segmento es estrictamente menor o mayor que el intervalo. Si el argumento es <varname>false</varname>, la función verifica si la duración del segmento es menor/mayor o <emphasis>igual</emphasis> que el intervalo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+-- {[t@2001-01-01, t@2001-01-06)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+-- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+</programlisting>
+			</listitem>
+
+
 			</listitem>
 
 			<listitem xml:id="ttype_unnest">

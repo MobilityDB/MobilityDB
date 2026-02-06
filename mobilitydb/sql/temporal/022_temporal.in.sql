@@ -1750,7 +1750,45 @@ CREATE FUNCTION deleteTime(ttext, tstzspanset, connect boolean DEFAULT TRUE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Stop Function
+ * Segment Duration Functions
+ *****************************************************************************/
+
+CREATE FUNCTION segmentMinDuration(tbool, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMinDuration(tint, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMinDuration(tfloat, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMinDuration(ttext, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION segmentMaxDuration(tbool, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMaxDuration(tint, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMaxDuration(tfloat, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentMaxDuration(ttext, interval, bool DEFAULT true)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Stops Functions
  *****************************************************************************/
 
 CREATE FUNCTION stops(tfloat, maxdist float DEFAULT 0.0,

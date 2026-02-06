@@ -512,6 +512,43 @@ SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_ttext_seq;
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------
+-- minDuration and maxDuration functions
+
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(ss, '5 min'))) FROM tbl_tfloat_seqset;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min'))) FROM tbl_tfloat_step_seq;
+SELECT MAX(numInstants(segmentMinDuration(ss, '5 min'))) FROM tbl_tfloat_step_seqset;
+
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(ss, '5 min', false))) FROM tbl_tfloat_seqset;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMinDuration(seq, '5 min', false))) FROM tbl_tfloat_step_seq;
+SELECT MAX(numInstants(segmentMinDuration(ss, '5 min', false))) FROM tbl_tfloat_step_seqset;
+/* Errors */
+SELECT MAX(numInstants(segmentMinDuration(inst, '5 min'))) FROM tbl_tfloat_inst;
+SELECT MAX(numInstants(segmentMinDuration(ti, '5 min'))) FROM tbl_tfloat_discseq;
+
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(ss, '5 min'))) FROM tbl_tfloat_seqset;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min'))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min'))) FROM tbl_tfloat_step_seq;
+SELECT MAX(numInstants(segmentMaxDuration(ss, '5 min'))) FROM tbl_tfloat_step_seqset;
+
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(ss, '5 min', false))) FROM tbl_tfloat_seqset;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min', false))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(segmentMaxDuration(seq, '5 min', false))) FROM tbl_tfloat_step_seq;
+SELECT MAX(numInstants(segmentMaxDuration(ss, '5 min', false))) FROM tbl_tfloat_step_seqset;
+/* Errors */
+SELECT MAX(numInstants(segmentMaxDuration(inst, '5 min'))) FROM tbl_tfloat_inst;
+SELECT MAX(numInstants(segmentMaxDuration(ti, '5 min'))) FROM tbl_tfloat_discseq;
+
+-------------------------------------------------------------------------------
 -- stop function
 
 SELECT MAX(numInstants(stops(seq))) FROM tbl_tfloat_seq;

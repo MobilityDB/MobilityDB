@@ -169,6 +169,17 @@ typedef enum
   MINUS
 } SetOper;
 
+/** Enumeration for the comparison operations */
+typedef enum
+{
+  EQ,
+  NE,
+  LT,
+  LE,
+  GT,
+  GE
+} CompOper;
+
 /* PostgreSQL removed pg_atoi in version 15 */
 #if POSTGRESQL_VERSION_NUMBER >= 150000
   extern int32 pg_strtoint32(const char *s);

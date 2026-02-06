@@ -945,10 +945,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of a temporal number</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tnumber_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Round down or up to the nearest integer</para>
 				</listitem>
 
@@ -958,6 +954,14 @@
 
 				<listitem>
 					<para><link linkend="tnumber_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert to degrees or radians</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of a temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tfloat_trend"><varname>trend</varname></link>: Return the trend of a temporal float with linear interpolation, which states whether its value is increasing, constant, or decreasing, represented, respectively, by 1, 0, and -1.</para>
 				</listitem>
 
 				<listitem>
