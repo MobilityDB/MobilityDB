@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['tarithmetic_0',['TArithmetic',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092',1,'tnumber_mathfuncs.h']]],
-  ['temporal_5ffunction_5fidx_1',['TEMPORAL_FUNCTION_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0e',1,'temporal_supportfn.c']]],
-  ['temporalfamily_2',['TemporalFamily',['../meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250b',1,'temporal.h']]],
-  ['tempsubtype_3',['tempSubtype',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6',1,'meos.h']]]
+  ['setoper_0',['SetOper',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97b',1,'temporal.h']]],
+  ['simfunc_1',['SimFunc',['../temporal__analytics_8h_a95466ee804101bbc942485fdc27bc615.html#a95466ee804101bbc942485fdc27bc615',1,'temporal_analytics.h']]],
+  ['skiplisttype_2',['SkipListType',['../meos__internal_8h_ae55cc4ffdb0eda3ab655388783c3f8ae.html#ae55cc4ffdb0eda3ab655388783c3f8ae',1,'meos_internal.h']]],
+  ['spatialrel_3',['spatialRel',['../meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264c',1,'meos_geo.h']]],
+  ['spgistindextype_4',['SPGistIndexType',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9',1,'temporal.h']]],
+  ['syncmode_5',['SyncMode',['../meos_2include_2temporal_2temporal_8h_a08e3b775868324e578c0fe6af893bf7d.html#a08e3b775868324e578c0fe6af893bf7d',1,'temporal.h']]]
 ];
