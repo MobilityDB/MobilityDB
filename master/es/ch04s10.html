@@ -59,7 +59,16 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
 /* {[POINT(1 1)@2001-01-02 00:00:00, LINESTRING(1 1,2 2)@2001-01-02 06:00:00, 
     POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
     POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
-</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id3791"></a><p>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre><span style="color: red">&lt;listitem&gt;<a class="indexterm" name="id3791"></a><a class="indexterm" name="id3794"></a><p>Devuelve un valor booleano temporal que indica si cada segmento de una secuencia (o conjunto de sequencias) temporal(es) continua tiene, respectivamente, al menos o como máximo una duración determinada.</p><p><code class="varname">segmentMinDuration(temp,interval,bool strict=true) → tbool</code></p><p><code class="varname">segmentMaxDuration(temp,interval,bool strict=true) → tbool</code></p><p>Si el argumento <code class="varname">strict</code> no se especifica, se asume el valor <code class="varname">true</code> por defecto y, por lo tanto, la función verifica si la duración del segmento es estrictamente menor o mayor que el intervalo. Si el argumento es <code class="varname">false</code>, la función verifica si la duración del segmento es menor/mayor o <span class="emphasis"><em>igual</em></span> que el intervalo.</p><pre class="programlisting">
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+-- {[t@2001-01-01, t@2001-01-06)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+-- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+</pre>&lt;/listitem&gt;</span></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id3809"></a><p>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 </p><p><code class="varname">unnest(ttype) → {(value,time)}</code></p><pre class="programlisting">
 SELECT (un).value, (un).time
 FROM (SELECT unnest(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}') AS un) t;

@@ -25,7 +25,20 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01,
 SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02]', 'linear');
 -- ERROR:  The temporal type cannot have linear interpolation
-</pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id4340"></a><a class="indexterm" name="id4343"></a><a class="indexterm" name="id4346"></a><p>Shift and/or scale the time span of a temporal value by one or two intervals</p><p>The given intervals must be strictly greater than zero. If the time span of the temporal value is zero (for example, for a temporal instant), the result of a scale operation is the temporal value.</p><p><code class="varname">shiftTime(ttype,interval) → ttype</code></p><p><code class="varname">scaleTime(ttype,interval) → ttype</code></p><p><code class="varname">shiftScaleTime(ttype,interval,interval) → ttype</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_segmentMinDuration"></a><a class="indexterm" name="id4340"></a><a class="indexterm" name="id4343"></a><p>Return a temporal boolean stating whether each segment of a continuous temporal sequence (set) has, respectively, at least or at most a given duration</p><p><code class="varname">segmentMinDuration(temp,interval,bool strict=true) → tbool</code></p><p><code class="varname">segmentMaxDuration(temp,interval,bool strict=true) → tbool</code></p><p>If <code class="varname">strict</code> is not specified, the value <code class="varname">true</code> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <code class="varname">false</code>, the function checks whether the segment duration is less/greater than or <span class="emphasis"><em>equal to</em></span> the interval.</p><pre class="programlisting">
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[t@2001-01-01, t@2001-01-06)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+</pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id4358"></a><a class="indexterm" name="id4361"></a><a class="indexterm" name="id4364"></a><p>Shift and/or scale the time span of a temporal value by one or two intervals</p><p>The given intervals must be strictly greater than zero. If the time span of the temporal value is zero (for example, for a temporal instant), the result of a scale operation is the temporal value.</p><p><code class="varname">shiftTime(ttype,interval) → ttype</code></p><p><code class="varname">scaleTime(ttype,interval) → ttype</code></p><p><code class="varname">shiftScaleTime(ttype,interval,interval) → ttype</code></p><pre class="programlisting">
 SELECT shiftTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
 -- {1@2001-01-02, 2@2001-01-04, 1@2001-01-06}
 SELECT shiftTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
@@ -59,7 +72,7 @@ SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01,
 /* {[POINT(1 1)@2001-01-02 00:00:00, LINESTRING(1 1,2 2)@2001-01-02 06:00:00, 
     POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
     POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
-</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id4359"></a><p>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id4377"></a><p>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
 
 </p><p><code class="varname">unnest(ttype) → {(value,time)}</code></p><pre class="programlisting">
 SELECT (un).value, (un).time
