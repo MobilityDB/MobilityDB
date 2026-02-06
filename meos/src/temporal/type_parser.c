@@ -93,7 +93,7 @@ Datum
 meos_array_get_n(meos_array *array, int n)
 {
   /* Ensure that the index is valid */
-  if ((size_t) n < 0 || (size_t) n >= array->count)
+  if (n < 0 || n >= (int) array->count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid array index: %d", n);
