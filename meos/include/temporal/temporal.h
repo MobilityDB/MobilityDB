@@ -319,8 +319,14 @@ typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
 
 #if MEOS
   #define DatumGetTemporalP(X)       ((Temporal *) DatumGetPointer(X))
+  #define DatumGetTInstantP(X)       ((TInstant *) DatumGetPointer(X))
+  #define DatumGetTSequenceP(X)      ((TSequence *) DatumGetPointer(X))
+  #define DatumGetTSequenceSetP(X)   ((TSequenceSet *) DatumGetPointer(X))
 #else
   #define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
+  #define DatumGetTInstantP(X)       ((TInstant *) PG_DETOAST_DATUM(X))
+  #define DatumGetTSequenceP(X)      ((TSequence *) PG_DETOAST_DATUM(X))
+  #define DatumGetTSequenceSetP(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 #endif /* MEOS */
 
 #define PG_GETARG_TEMPORAL_P(X)      ((Temporal *) PG_GETARG_VARLENA_P(X))

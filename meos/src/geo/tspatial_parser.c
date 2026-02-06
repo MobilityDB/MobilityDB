@@ -370,13 +370,13 @@ spatial_parse_elem(const char **str, meosType temptype, char delim,
  * @param[in,out] temp_srid SRID of the spatiotemporal value
  * @param[out] result New instant, may be NULL
  */
-bool 
+TInstant *
 tspatialinst_parse(const char **str, meosType temptype, bool end,
-  int *temp_srid, TInstant **result)
+  int *temp_srid)
 {
   Datum base;
   if (! spatial_parse_elem(str, temptype, '@', temp_srid, &base))
-    return false;
+    return NULL;
 
   p_delimchar(str, '@');
 
@@ -386,13 +386,12 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
     (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
     pfree(DatumGetPointer(base));
-    return false;
+    return NULL;
   }
 
-  if (result)
-    *result = tinstant_make(base, temptype, t);
+  TInstant *result = tinstant_make(base, temptype, t);
   pfree(DatumGetPointer(base));
-  return true;
+  return result;
 }
 
 /**
@@ -404,37 +403,42 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
 TSequence *
 tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function #tspatial_parse */
   p_obrace(str);
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
-    return NULL;
-  int count = 1;
+  TInstant *inst = tspatialinst_parse(str, temptype, false, temp_srid);
+  if (! inst)
+    goto error;
+  meos_array_add(array, PointerGetDatum(inst));
   while (p_comma(str))
   {
-    count++;
-    if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
-      return NULL;
+    inst = tspatialinst_parse(str, temptype, false, temp_srid);
+    if (! inst)
+      goto error;
+    meos_array_add(array, PointerGetDatum(inst));
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tspatialinst_parse(str, temptype, false, temp_srid, &instants[i]);
-  }
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbrace(str);
-  return tsequence_make_free(instants, count, true, true, DISCRETE,
+  result = tsequence_make(instants, array->count, true, true, DISCRETE,
     NORMALIZE_NO);
+  pfree(instants);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -447,11 +451,15 @@ tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
  * @param[in,out] temp_srid SRID of the spatiotemporal value
  * @param[out] result New sequence, may be NULL
  */
-bool
+TSequence *
 tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp, 
-  bool end, int *temp_srid, TSequence **result)
+  bool end, int *temp_srid)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
   /* We are sure to find an opening bracket or parenthesis because that was the
@@ -461,16 +469,16 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
   else if (p_oparen(str))
     lower_inc = false;
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
-    return false;
-  int count = 1;
+  TInstant *inst = tspatialinst_parse(str, temptype, false, temp_srid);
+  if (! inst)
+    goto error;
+  meos_array_add(array, PointerGetDatum(inst));
   while (p_comma(str))
   {
-    count++;
-    if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
-      return false;
+    inst = tspatialinst_parse(str, temptype, false, temp_srid);
+    if (! inst)
+      goto error;
+    meos_array_add(array, PointerGetDatum(inst));
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -481,27 +489,25 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing closing bracket/parenthesis", 
       type_str);
-    return false;
+    goto error;
   }
   /* Ensure there is no more input */
   if (end && ! ensure_end_input(str, type_str))
-    return false;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tspatialinst_parse(str, temptype, false, temp_srid, &instants[i]);
-  }
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbracket(str);
   p_cparen(str);
-  if (result)
-    *result = tsequence_make(instants, count, lower_inc, upper_inc, interp,
-      NORMALIZE);
-  pfree_array((void **) instants, count);
-  return true;
+  result = tsequence_make(instants, array->count, lower_inc, upper_inc,
+    interp, NORMALIZE);
+  pfree(instants);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -515,37 +521,42 @@ TSequenceSet *
 tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequenceSet *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function tspatial_parse */
   p_obrace(str);
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, NULL))
-    return NULL;
-  int count = 1;
+  TSequence *seq = tspatialseq_cont_parse(str, temptype, interp, false,
+    temp_srid);
+  if (! seq)
+    goto error;
+  meos_array_add(array, PointerGetDatum(seq));
   while (p_comma(str))
   {
-    count++;
-    if (! tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, NULL))
-      return NULL;
+    seq = tspatialseq_cont_parse(str, temptype, interp, false, temp_srid);
+    if (! seq)
+      goto error;
+    meos_array_add(array, PointerGetDatum(seq));
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, 
-      &sequences[i]);
-  }
+  /* Create the array of sequences now with the actual size */
+  TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
   p_cbrace(str);
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
+  result = tsequenceset_make(sequences, array->count, NORMALIZE);
+  pfree(sequences);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -584,15 +595,16 @@ tspatial_parse(const char **str, meosType temptype)
   if (**str != '{' && **str != '[' && **str != '(')
   {
     *str = bak;
-    TInstant *inst;
-    if (! tspatialinst_parse(str, temptype, true, &temp_srid, &inst))
+    TInstant *inst = tspatialinst_parse(str, temptype, true, &temp_srid);
+    if (! inst)
       return NULL;
     result = (Temporal *) inst;
   }
   else if (**str == '[' || **str == '(')
   {
-    TSequence *seq;
-    if (! tspatialseq_cont_parse(str, temptype, interp, true, &temp_srid, &seq))
+    TSequence *seq = tspatialseq_cont_parse(str, temptype, interp, true,
+      &temp_srid);
+    if (! seq)
       return NULL;
     result = (Temporal *) seq;
   }

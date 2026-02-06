@@ -54,16 +54,15 @@
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
- * @param[out] result New instant, may be NULL
  * @param[in] geom Reference geometry
  */
-bool 
+TInstant * 
 trgeoinst_parse(const char **str, meosType temptype, bool end,
-  int *temp_srid, const GSERIALIZED *geom, TInstant **result)
+  int *temp_srid, const GSERIALIZED *geom)
 {
   Datum base;
   if (! spatial_parse_elem(str, temptype, '@', temp_srid, &base))
-    return false;
+    return NULL;
   Pose *pose = DatumGetPoseP(base);
 
   p_delimchar(str, '@');
@@ -74,13 +73,12 @@ trgeoinst_parse(const char **str, meosType temptype, bool end,
     (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
     pfree(pose);
-    return false;
+    return NULL;
   }
 
-  if (result)
-    *result = trgeoinst_make(geom, pose, t);
+  TInstant *result = trgeoinst_make(geom, pose, t);
   pfree(pose);
-  return true;
+  return result;
 }
 
 /**
@@ -94,37 +92,38 @@ TSequence *
 trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
   GSERIALIZED *geom)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function #tspatial_parse */
   p_obrace(str);
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! trgeoinst_parse(str, temptype, false, temp_srid, geom, NULL))
-    return NULL;
-  int count = 1;
+  TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
+  if (! inst)
+    goto error;
   while (p_comma(str))
   {
-    count++;
-    if (! trgeoinst_parse(str, temptype, false, temp_srid, geom, NULL))
-      return NULL;
+    inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
+    if (! inst)
+      goto error;
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    trgeoinst_parse(str, temptype, false, temp_srid, geom, &instants[i]);
-  }
-  p_cbrace(str);
-  TSequence *result = trgeoseq_make_free(geom, instants, count, true, true,
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
+  result = trgeoseq_make_free(geom, instants, array->count, true, true,
     DISCRETE, NORMALIZE_NO);
+  pfree(instants);
+
+error:
+  meos_array_destroy(array);
   return result;
 }
 
@@ -139,11 +138,15 @@ trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
  * @param[in] geom Reference geometry
  * @param[out] result New sequence, may be NULL
  */
-bool
+TSequence *
 trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp, 
-  bool end, int *temp_srid, const GSERIALIZED *geom, TSequence **result)
+  bool end, int *temp_srid, const GSERIALIZED *geom)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
   /* We are sure to find an opening bracket or parenthesis because that was the
@@ -153,16 +156,16 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   else if (p_oparen(str))
     lower_inc = false;
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! trgeoinst_parse(str, temptype, false, temp_srid, geom, NULL))
-    return false;
-  int count = 1;
+  TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
+  if (! inst)
+    goto error;
+  meos_array_add(array, PointerGetDatum(inst));
   while (p_comma(str))
   {
-    count++;
-    if (! trgeoinst_parse(str, temptype, false, temp_srid, geom, NULL))
-      return false;
+    inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
+    if (! inst)
+      goto error;
+    meos_array_add(array, PointerGetDatum(inst));
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -173,27 +176,25 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing closing bracket/parenthesis", 
       type_str);
-    return false;
+    goto error;
   }
   /* Ensure there is no more input */
   if (end && ! ensure_end_input(str, type_str))
-    return false;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    trgeoinst_parse(str, temptype, false, temp_srid, geom, &instants[i]);
-  }
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbracket(str);
   p_cparen(str);
-  if (result)
-    *result = trgeoseq_make_free(geom, instants, count, lower_inc, upper_inc,
-      interp, NORMALIZE);
-  return true;
+  result = trgeoseq_make_free(geom, instants, array->count, lower_inc,
+    upper_inc, interp, NORMALIZE);
+  pfree(instants);
 
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -208,39 +209,41 @@ TSequenceSet *
 trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid, const GSERIALIZED *geom)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequenceSet *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function tspatial_parse */
   p_obrace(str);
-
-  /* First parsing */
-  const char *bak = *str;
-  if (! trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom,
-      NULL))
-    return NULL;
-  int count = 1;
+  TSequence *seq = trgeoseq_cont_parse(str, temptype, interp, false, temp_srid,
+    geom);
+  if (! seq)
+    goto error;
+  meos_array_add(array, PointerGetDatum(seq));
   while (p_comma(str))
   {
-    count++;
-    if (! trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom,
-        NULL))
-      return NULL;
+    seq = trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom);
+    if (! seq)
+      goto error;
+    meos_array_add(array, PointerGetDatum(seq));
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom, 
-      &sequences[i]);
-  }
+  /* Create the array of sequences now with the actual size */
+  TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
+  for (int i = 0; i < array->count; i++)
+    sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
   p_cbrace(str);
-  return trgeoseqset_make_free(geom, sequences, count, NORMALIZE);
+  result = trgeoseqset_make_free(geom, sequences, array->count, NORMALIZE);
+  pfree(sequences);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /*****************************************************************************/
@@ -337,16 +340,16 @@ trgeo_parse(const char **str, meosType temptype)
    * function corresponding to the subtype passing the SRID */
   if (**str != '{' && **str != '[' && **str != '(')
   {
-    TInstant *inst;
-    if (! trgeoinst_parse(str, temptype, true, &temp_srid, geom, &inst))
+    TInstant *inst = trgeoinst_parse(str, temptype, true, &temp_srid, geom);
+    if (! inst)
       return NULL;
     result = (Temporal *) inst;
   }
   else if (**str == '[' || **str == '(')
   {
-    TSequence *seq;
-    if (! trgeoseq_cont_parse(str, temptype, interp, true, &temp_srid, geom, 
-        &seq))
+    TSequence *seq = trgeoseq_cont_parse(str, temptype, interp, true,
+      &temp_srid, geom);
+    if (! seq)
       return NULL;
     result = (Temporal *) seq;
   }
