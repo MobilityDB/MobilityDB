@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tspatialseq_cont_parse</title>
+<title>MobilityDB: tspatialinst_parse</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,22 +85,22 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a09d1b9067863b96c22171ecbb59cdbc6.html#a09d1b9067863b96c22171ecbb59cdbc6">stbox_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a9276d281836475f6e0125c764a4b1934.html#a9276d281836475f6e0125c764a4b1934">tpoint_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a57576a08266cc311033c2988d317e549.html#a57576a08266cc311033c2988d317e549">tspatial_parse</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a0303fb18178675c90a0baa581960ccb2.html#a0303fb18178675c90a0baa581960ccb2">tspatialinst_parse</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tspatial__parser_8h_abb571ce40e31e5bbe6579fe7cff7bd56.html#abb571ce40e31e5bbe6579fe7cff7bd56">tspatialseq_cont_parse</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tspatial__parser_8h_ae30f525e4cfc81dacacb7d711034de72.html#ae30f525e4cfc81dacacb7d711034de72">tspatialinst_parse</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_aec1ed04d39c2753ea817739363a77c6d.html#aec1ed04d39c2753ea817739363a77c6d">tspatialseq_cont_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a677a79c440d3bf1a8b7ad4ca3822c0eb.html#a677a79c440d3bf1a8b7ad4ca3822c0eb">tspatialseq_disc_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a7c2f0d6e6f20be46cafcb8ce7573bd8e.html#a7c2f0d6e6f20be46cafcb8ce7573bd8e">tspatialseqset_parse</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="abb571ce40e31e5bbe6579fe7cff7bd56" name="abb571ce40e31e5bbe6579fe7cff7bd56"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb571ce40e31e5bbe6579fe7cff7bd56">&#9670;&#160;</a></span>tspatialseq_cont_parse()</h2>
+<a id="ae30f525e4cfc81dacacb7d711034de72" name="ae30f525e4cfc81dacacb7d711034de72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae30f525e4cfc81dacacb7d711034de72">&#9670;&#160;</a></span>tspatialinst_parse()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool tspatialseq_cont_parse </td>
+          <td class="memname"><a class="el" href="structTInstant.html">TInstant</a> * tspatialinst_parse </td>
           <td>(</td>
           <td class="paramtype">const char **&#160;</td>
           <td class="paramname"><em>str</em>, </td>
@@ -114,12 +114,6 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a>&#160;</td>
-          <td class="paramname"><em>interp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>end</em>, </td>
         </tr>
@@ -127,13 +121,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>temp_srid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structTSequence.html">TSequence</a> **&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramname"><em>temp_srid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -143,15 +131,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Parse a temporal sequence spatial value from the input buffer. </p>
+<p>Parse a spatiotemporal instant from the input buffer. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Input string </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">interp</td><td>Interpolation </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> to true when reading a single instant to ensure there is no moreinput after the sequence </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> to true when reading a single instant to ensure there is no more input after the sequence </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">temp_srid</td><td>SRID of the spatiotemporal value </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>New sequence, may be NULL </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>New instant, may be NULL </td></tr>
   </table>
   </dd>
 </dl>
