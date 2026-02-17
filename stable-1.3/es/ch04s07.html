@@ -1,0 +1,68 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)"><link rel="prev" href="ch04s06.html" title="Entrada y salida"><link rel="next" href="ch04s08.html" title="Conversión de tipos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s06.html">Anterior</a> </td><th width="60%" align="center">Capítulo 4. Tipos temporales (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch04s08.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_constructors"></a>Constructores</h2></div></div></div><p>
+			A continuación, damos las funciones de constructor para los distintos subtipos. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a name="ttype_const"></a>Constructores para tipos temporales que tienen un valor constante</p><p>Estos constructores tienen dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <code class="varname">timestamptz</code>, <code class="varname">tstzset</code>, <code class="varname">tstzspan</code> o <code class="varname">tstzspanset</code> para construir, respectivamente, un valor de subtipo instante, una secuencia con interpolación discreta, una secuencia con interpolación linear o escalonada o un conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo de base continuo tienen además un tercer argumento opcional que indica si el valor temporal resultante tiene interpolación lineal o escalonada. Se asume por defecto una interpolación lineal si el argumento no se especifica.</p><p><code class="varname">ttype(base,timestamptz) → ttypeInst</code></p><p><code class="varname">ttype(base,tstzset) → ttypeDiscSeq</code></p><p><code class="varname">ttype(base,tstzspan,interp='linear') → ttypeContSeq</code></p><p><code class="varname">ttype(base,tstzspanset,interp='linear') → ttypeSeqSet</code></p><pre class="programlisting">
+SELECT tbool(true, timestamptz '2001-01-01');
+SELECT tint(1, timestamptz '2001-01-01');
+SELECT tfloat(1.5, tstzset '{2001-01-01, 2001-01-02}');
+SELECT ttext('AAA', tstzset '{2001-01-01, 2001-01-02}');
+SELECT tfloat(1.5, tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tfloat(1.5, tstzspan '[2001-01-01, 2001-01-02]', 'step');
+SELECT tgeompoint('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tgeography('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02],
+  [2001-01-03, 2001-01-04]}', 'step');
+</pre></li><li class="listitem"><a name="ttypeSeq"></a><a class="indexterm" name="id3492"></a><p>Constructores para tipos temporales de subtipo secuencia</p><p>Estos constructores tienen un primer argumento obligatorio, que es una matriz de valores de los valores instantáneos correspondientes y argumentos opcionales adicionales. El segundo argumento establece la interpolación. Si no se proporciona el argumento, es por defecto escalonada para los tipos de base base discretos como los enteros y es lineal para tipos de base continuous como los flotantes. Se genera un error cuando se establece la interpolación lineal para valores temporales con tipos de base discretos. Para secuencias continuas, el tercero y el cuarto argumentos son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Se supone que estos argumentos son verdaderos de forma predeterminada si no se especifican.</p><p><code class="varname">ttypeSeq(ttypeInst[],interp={'step','linear'},leftInc bool=true,</code></p><p><code class="varname">  rightInc bool=true) → ttypeSeq</code></p><pre class="programlisting">
+SELECT tboolSeq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
+  'discrete');
+SELECT tintSeq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
+SELECT tintSeq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00'], 'linear');
+-- ERROR:  The temporal type cannot have linear interpolation
+SELECT tfloatSeq(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00'],
+  'step', false, true);
+SELECT ttextSeq(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
+SELECT tgeompointSeq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+  'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00'], 'discrete');
+SELECT tgeographySeq(ARRAY[tgeography 'Point(1 1)@2001-01-01 08:00:00',
+  'Point(2 2)@2001-01-01 08:05:00']);
+</pre></li><li class="listitem"><p><a name="ttypeSeqSet"></a>Constructores para tipos temporales de subtipo conjunto de secuencias</p><a class="indexterm" name="id3504"></a><a class="indexterm" name="id3507"></a><p><code class="varname">ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</code></p><p><code class="varname">ttypeSeqSetGaps(ttypeInst[],maxt=NULL,maxdist=NULL,interp='linear') → ttypeSeqSet</code></p><p>Un primer conjunto de constructores tiene un solo argumento, que es una matriz de valores de los valores de <span class="emphasis"><em>secuencia</em></span> correspondientes. La interpolación del valor temporal resultante depende de la interpolación de las secuencias que lo componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</p><pre class="programlisting">
+SELECT tboolSeqSet(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
+  '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
+SELECT tintSeqSet(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
+  2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
+SELECT tfloatSeqSet(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
+  2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
+  2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
+  'Interp=Step;[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+SELECT ttextSeqSet(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
+  '[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
+SELECT tgeompointSeqSet(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
+  Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
+  '[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
+SELECT tgeographySeqSet(ARRAY[tgeography
+  '[Point(0 0)@2001-01-01 08:00:00, Point(0 0)@2001-01-01 08:05:00)',
+  '[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
+SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
+  2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
+  '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+-- ERROR:  The temporal values must have the same interpolation
+</pre><p>Otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <span class="emphasis"><em>instante</em></span> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</p><p>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <code class="varname">tint</code>. De manera similar, el parámetro <code class="varname">maxdist</code> no está permitido para tipos escalares como <code class="varname">ttext</code> que no tienen una función de distancia estándar.</p><pre class="programlisting">
+SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
+  '5@2001-01-05']);
+-- {[1@2001-01-01, 3@2001-01-02, 4@2001-01-03, 5@2001-01-05]}
+SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
+  '5@2001-01-05'], '1 day', 1);
+-- {[1@2001-01-01], [3@2001-01-02, 4@2001-01-03], [5@2001-01-05]}
+SELECT ttextSeqSetGaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
+  'CC@2001-01-05'], '1 day');
+-- {["AA"@2001-01-01, "BB"@2001-01-02, "AA"@2001-01-03], ["CC"@2001-01-05]}
+SELECT asText(tgeometrySeqSetGaps(ARRAY[tgeometry 'Point(1 1)@2001-01-01',
+  'Linestring(2 2,3 3)@2001-01-02', 'Point(4 2)@2001-01-03', 
+  'Polygon((5 0,6 1,7 0,5 0))@2001-01-05'], '1 day', 1));
+/* {[POINT(1 1)@2001-01-01], [LINESTRING(2 2,3 3)@2001-01-02], 
+   [POINT(4 2)@2001-01-03], [POLYGON((5 0,6 1,7 0,5 0))@2001-01-05]} */
+SELECT asText(tgeompointSeqSetGaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
+  'Point(2 2)@2001-01-02', 'Point(3 2)@2001-01-03', 'Point(3 2)@2001-01-05'],
+  '1 day', 1, 'step'));
+/* Interp=Step;{[POINT(1 1)@2001-01-01], [POINT(2 2)@2001-01-02, POINT(3 2)@2001-01-03],
+   [POINT(3 2)@2001-01-05]} */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s06.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s08.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Entrada y salida </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversión de tipos</td></tr></table></div></body></html>

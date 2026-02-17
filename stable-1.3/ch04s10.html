@@ -1,0 +1,99 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Transformations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch04.html" title="Chapter 4. Temporal Types (Part 1)"><link rel="prev" href="ch04s09.html" title="Accessors"><link rel="next" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Transformations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s09.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Temporal Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_transformations"></a>Transformations</h2></div></div></div><p>A temporal value can be transformed to another subtype. An error is raised if the subtypes are incompatible.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_subtype"></a><a class="indexterm" name="id4314"></a><a class="indexterm" name="id4317"></a><a class="indexterm" name="id4320"></a><p>Transform a temporal value to another subtype</p><p><code class="varname">ttypeInst(ttype) → ttypeInst</code></p><p><code class="varname">ttypeSeq(ttype) → ttypeSeq</code></p><p><code class="varname">ttypeSeqSet(ttype) → ttypeSeqSet</code></p><pre class="programlisting">
+SELECT tboolInst(tbool '{[true@2001-01-01]}');
+-- t@2001-01-01
+SELECT tboolInst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+-- ERROR: Cannot transform input value to a temporal instant
+SELECT tintSeq(tint '1@2001-01-01');
+-- [1@2001-01-01]
+SELECT tfloatSeqSet(tfloat '2.5@2001-01-01');
+-- {[2.5@2001-01-01]}
+SELECT tfloatSeqSet(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
+-- {[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}
+</pre></li><li class="listitem"><a name="ttype_setInterp"></a><a class="indexterm" name="id4332"></a><p>Transform a temporal value to another interpolation</p><p><code class="varname">setInterp(ttype, interp) → ttype</code></p><pre class="programlisting">
+SELECT setInterp(tbool 'true@2001-01-01','discrete');
+-- {t@2001-01-01}
+SELECT setInterp(tfloat '{[1@2001-01-01], [2@2001-01-02], [1@2001-01-03]}', 'discrete');
+-- {1@2001-01-01, 2@2001-01-02, 1@2001-01-03}
+SELECT setInterp(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02,
+  1@2001-01-03, 2@2001-01-04]', 'linear');
+/* {[1@2001-01-01, 1@2001-01-02), [2@2001-01-02, 2@2001-01-03),
+   [1@2001-01-03, 1@2001-01-04), [2@2001-01-04]} */
+SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-02], [Point(3 3)@2001-01-05, Point(4 4)@2001-01-06]}', 'linear'));
+/* {[POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02), [POINT(2 2)@2001-01-02],
+   [POINT(3 3)@2001-01-05, POINT(3 3)@2001-01-06), [POINT(4 4)@2001-01-06]} */
+SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01,
+  Linestring(1 1,2 2)@2001-01-02]', 'linear');
+-- ERROR:  The temporal type cannot have linear interpolation
+</pre></li><li class="listitem"><a name="ttype_segmentMinDuration"></a><a class="indexterm" name="id4340"></a><a class="indexterm" name="id4343"></a><p>Return a temporal boolean stating whether each segment of a continuous temporal sequence (set) has, respectively, at least or at most a given duration</p><p><code class="varname">segmentMinDuration(temp,interval,bool strict=true) → tbool</code></p><p><code class="varname">segmentMaxDuration(temp,interval,bool strict=true) → tbool</code></p><p>If <code class="varname">strict</code> is not specified, the value <code class="varname">true</code> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <code class="varname">false</code>, the function checks whether the segment duration is less/greater than or <span class="emphasis"><em>equal to</em></span> the interval.</p><pre class="programlisting">
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[t@2001-01-01, t@2001-01-06)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day');
+-- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
+  -1@2001-01-06]', '1 day', false);
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+</pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id4358"></a><a class="indexterm" name="id4361"></a><a class="indexterm" name="id4364"></a><p>Shift and/or scale the time span of a temporal value by one or two intervals</p><p>The given intervals must be strictly greater than zero. If the time span of the temporal value is zero (for example, for a temporal instant), the result of a scale operation is the temporal value.</p><p><code class="varname">shiftTime(ttype,interval) → ttype</code></p><p><code class="varname">scaleTime(ttype,interval) → ttype</code></p><p><code class="varname">shiftScaleTime(ttype,interval,interval) → ttype</code></p><pre class="programlisting">
+SELECT shiftTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- {1@2001-01-02, 2@2001-01-04, 1@2001-01-06}
+SELECT shiftTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- [1@2001-01-02, 2@2001-01-04]
+SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
+  [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+/* {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
+   [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]} */
+SELECT scaleTime(tint '1@2001-01-01', '1 day');
+-- 1@2001-01-01
+SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- {1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}
+SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- [1@2001-01-01, 2@2001-01-02]
+SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+/* {[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
+   POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
+   POINT(1 1)@2001-01-02 00:00:00+01]} */
+SELECT scaleTime(tint '1@2001-01-01', '-1 day');
+-- ERROR:  The interval must be positive: -1 days
+SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
+-- 1@2001-01-02
+SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
+-- {1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}
+SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
+-- [1@2001-01-02, 2@2001-01-03]
+SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01, 
+  Linestring(1 1,2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, 
+  Polygon((1 1,2 2,3 1,1 1))@2001-01-05]}', '1 day', '1 day'));
+/* {[POINT(1 1)@2001-01-02 00:00:00, LINESTRING(1 1,2 2)@2001-01-02 06:00:00, 
+    POINT(1 1)@2001-01-02 12:00:00], [POINT(2 2)@2001-01-02 18:00:00, 
+    POLYGON((1 1,2 2,3 1,1 1))@2001-01-03 00:00:00]} */
+</pre></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id4377"></a><p>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value <span class="inlinemediaobject"><img src="images/srf.svg" width="13"></span>
+
+</p><p><code class="varname">unnest(ttype) → {(value,time)}</code></p><pre class="programlisting">
+SELECT (un).value, (un).time
+FROM (SELECT unnest(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}') AS un) t;
+-- 1 | {[2001-01-01, 2001-01-01], [2001-01-03, 2001-01-03]}
+-- 2 | {[2001-01-02, 2001-01-02]}
+SELECT (un).value, (un).time
+FROM (SELECT unnest(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
+-- 1 | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
+-- 2 | {[2001-01-02, 2001-01-03)}
+SELECT (un).value, (un).time
+FROM (SELECT unnest(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
+-- ERROR:  The temporal value cannot have linear interpolation
+SELECT ST_AsText((un).value), (un).time
+FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]') AS un) t;
+--  POINT(1 1) | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
+--  POINT(2 2) | {[2001-01-02, 2001-01-03)}
+SELECT ST_AsText((un).value), (un).time
+FROM (SELECT unnest(tgeometry '[Point(1 1)@2001-01-01,
+  Linestring(1 1,2 2)@2001-01-02, Point(1 1)@2001-01-03]') AS un) t;
+-- POINT(1 1)          | {[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-03]}
+-- LINESTRING(1 1,2 2) | {[2001-01-02, 2001-01-03)}
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Accessors </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 5. Temporal Types (Part 2)</td></tr></table></div></body></html>

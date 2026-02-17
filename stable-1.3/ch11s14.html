@@ -1,0 +1,26 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Spatial Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Poses"><link rel="prev" href="ch11s13.html" title="Distance Operations"><link rel="next" href="ch11s15.html" title="Comparisons"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Spatial Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s13.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Poses</th><td width="20%" align="right"> <a accesskey="n" href="ch11s15.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_spatial_rels"></a>Spatial Relationships</h2></div></div></div><p>
+			The topological and distance relationships described in <a class="xref" href="ch08s05.html" title="Spatial Relationships">the section called “Spatial Relationships”</a> such as <code class="varname">eIntersects</code>, <code class="varname">aDwithin</code>, or <code class="varname">tContains</code> only consider the location of the geometries, not their orientation. To be able to apply these spatial relationships to the temporal poses, they must be transformed to temporal geometry points. This can be easily performed using the functions <code class="varname">geometry</code> and <code class="varname">tgeompoint</code> or using an explicit casting <code class="varname">::</code> as shown in the examples below.
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a name="tpose_espatialrels"></a>Ever and always relationships</p><pre class="programlisting">
+SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- true
+SELECT eDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- true
+SELECT eIntersects(
+  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'::tgeompoint,
+  tpose '[Pose(Point(2 2),0.0)@2001-01-01, Pose(Point(2 2),1)@2001-01-03)'::tgeompoint);
+-- false
+</pre></li><li class="listitem"><p><a name="tpose_tspatialrels"></a>Spatiotemporal relationships</p><pre class="programlisting">
+SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+SELECT tDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- [t@2001-01-01, t@2001-01-03)
+SELECT tDwithin(
+ tpose '[Pose(Point(1 1),0.3)@2001-01-01,Pose(Point(1 1),0.5)@2001-01-03)'::tgeompoint, 
+ tpose '[Pose(Point(1 1),0.5)@2001-01-01,Pose(Point(3 3),0.3)@2001-01-03)'::tgeompoint,1);
+/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 16:58:14.025894+01],
+  (f@2001-01-01 16:58:14.025894+01, f@2001-01-03 00:00:00+01)} */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s15.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Distance Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Comparisons</td></tr></table></div></body></html>

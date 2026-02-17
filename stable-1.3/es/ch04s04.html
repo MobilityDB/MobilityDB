@@ -1,0 +1,49 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Temporalización de operaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch04.html" title="Capítulo 4. Tipos temporales (Parte 1)"><link rel="prev" href="ch04s03.html" title="Validez de los tipos temporales"><link rel="next" href="ch04s05.html" title="Notación"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Temporalización de operaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 4. Tipos temporales (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch04s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_ops"></a>Temporalización de operaciones</h2></div></div></div><p>
+			Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <span class="emphasis"><em>cada instante</em></span>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <code class="varname">#&lt;</code>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
+		</p><pre class="programlisting">
+-- Comparación temporal
+SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
+-- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
+-- NULL
+
+-- Adición temporal
+SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
+-- [3@2001-01-02, 3@2001-01-03)
+
+-- Intersección temporal
+SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+
+-- Distancia temporal
+SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
+tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
+-- [0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)
+</pre><p>
+			Otro requisito común es determinar si los operandos satisfacen <span class="emphasis"><em>alguna vez</em></span> o <span class="emphasis"><em>siempre</em></span> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez o siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <code class="varname">?</code> (alguna vez) y <code class="varname">%</code> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
+		</p><pre class="programlisting">
+-- ¿Se cruzan los operandos alguna vez?
+SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+  geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
+-- true
+
+-- ¿Se cruzan los operandos siempre?
+SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+  geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
+-- true
+
+-- ¿Es el operando izquierdo alguna vez menor que el derecho?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' ?&lt;
+  tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
+-- true
+
+-- ¿Es el operando izquierdo siempre menor que el derecho?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' %&lt;
+  tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
+-- true
+</pre><p>
+			Por ejemplo, la función <code class="varname">eIntersects</code> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.
+		</p><p>
+			A continuación describimos las funciones y operadores para tipos temporales. Para mayor concisión, en los ejemplos usamos principalmente secuencias compuestas por dos instantes.
+		</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de los tipos temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Notación</td></tr></table></div></body></html>

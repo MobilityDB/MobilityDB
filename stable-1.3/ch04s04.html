@@ -1,0 +1,49 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Temporalizing Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch04.html" title="Chapter 4. Temporal Types (Part 1)"><link rel="prev" href="ch04s03.html" title="Validity of Temporal Types"><link rel="next" href="ch04s05.html" title="Notation"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Temporalizing Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Temporal Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_ops"></a>Temporalizing Operations</h2></div></div></div><p>
+			A common way to generalize the traditional operations to the temporal types is to apply the operation <span class="emphasis"><em>at each instant</em></span>, which yields a temporal value as result. In that case, the operation is only defined on the intersection of the temporal extents of the operands; if the temporal extents are disjoint, then the result is null. For example, the temporal comparison operators, such as <code class="varname">#&lt;</code>, test whether the values taken by their operands at each instant satisfy the condition and return a temporal Boolean. Examples of the various generalizations of the operators are given next.
+		</p><pre class="programlisting">
+-- Temporal comparison
+SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
+-- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
+-- NULL
+
+-- Temporal addition
+SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
+-- [3@2001-01-02, 3@2001-01-03)
+
+-- Temporal intersects
+SELECT tIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+  geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+
+-- Temporal distance
+SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
+  tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
+-- [0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)
+</pre><p>
+			Another common requirement is to determine whether the operands <span class="emphasis"><em>ever</em></span> or <span class="emphasis"><em>always</em></span> satisfy a condition with respect to an operation. These can be obtained by applying the ever or always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <code class="varname">?</code> (ever) and <code class="varname">%</code> (always). Examples of ever and always comparison operators are given next.
+		</p><pre class="programlisting">
+-- Does the operands ever intersect?
+SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+  geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
+-- true
+
+-- Does the operands always intersect?
+SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
+  geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
+-- true
+
+-- Is the left operand ever less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+  tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
+-- true
+
+-- Is the left operand always less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+  tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
+-- true
+</pre><p>
+		For example, the <code class="varname">eIntersects</code> function determines whether there is an instant at which the two arguments spatially intersect.
+		</p><p>
+			We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.
+		</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Validity of Temporal Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Notation</td></tr></table></div></body></html>
