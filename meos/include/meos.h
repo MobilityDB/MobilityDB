@@ -357,7 +357,7 @@ extern TimestampTz date_to_timestamptz(DateADT d);
 extern double float_exp(double d);
 extern double float_ln(double d);
 extern double float_log10(double d);
-extern char *float_out(double d, int maxdd);
+extern char *float8_out(double d, int maxdd);
 extern double float_round(double d, int maxdd);
 extern int int32_cmp(int32 l, int32 r);
 extern int int64_cmp(int64 l, int64 r);

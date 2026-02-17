@@ -42,12 +42,102 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"
 
+// #include <utils/jsonb.h>
+// #include <utils/numeric.h>
+// #include <pgtypes.h>
+
 /*****************************************************************************/
+
+/**
+ * @brief Initializes an expandable array that keeps the elements parsed so far
+ * @details The array is initialized with a fix number of elements but it
+ * expands when adding elements and the array is full
+ */
+meos_array *
+meos_array_init(meosType type)
+{
+  meos_array *array = (meos_array *) palloc0(sizeof(meos_array));
+  array->size = MEOS_ARRAY_INITIAL_SIZE;
+  array->count = 0;
+  array->type = type;
+  array->values = (Datum *) palloc0(sizeof(Datum) * MEOS_ARRAY_INITIAL_SIZE);
+  return array;
+}
+
+/**
+ * @brief Add a value to the array
+ */
+void
+meos_array_add(meos_array *array, Datum value)
+{
+  /* Enlarge the values array if necessary */
+  if (array->count >= array->size)
+  {
+    array->size *= 2;
+    array->values = (Datum *) repalloc(array->values, sizeof(Datum) * 
+      array->size);
+  }
+  /* Store the value */
+  array->values[array->count++] = value;
+  return;
+}
+
+/**
+ * @brief Get the n-th value of the array (0-based)
+ */
+Datum
+meos_array_get_n(meos_array *array, int n)
+{
+  /* Ensure that the index is valid */
+  if (n < 0 || n >= (int) array->count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Invalid array index: %d", n);
+    return (Datum) NULL;
+  }
+  /* Return the value */
+  return array->values[n];
+}
+
+/**
+ * @brief Reset the array
+ */
+void
+meos_array_reset(meos_array *array)
+{
+  if (! array || ! array->count)
+    return;
+  for (size_t i = 0; i < array->count; i++)
+    DATUM_FREE(array->values[i], array->type);
+  array->count = 0;
+  return;
+}
+
+/**
+ * @brief Destroy the array
+ */
+void
+meos_array_destroy(meos_array *array)
+{
+  if (! array)
+    return;
+  if (array->values)
+  {
+    for (size_t i = 0; i < array->count; ++i)
+     DATUM_FREE(array->values[i], array->type);
+    pfree(array->values);
+  }
+  pfree(array);
+  return;
+}
+
+/*****************************************************************************
+ * Parsing functions
+ *****************************************************************************/
 
 /**
  * @brief Ensure there is no more input excepted white spaces
@@ -487,57 +577,52 @@ elem_parse(const char **str, meosType basetype, Datum *result)
 Set *
 set_parse(const char **str, meosType settype)
 {
-  const char *bak = *str;
+  meosType basetype = settype_basetype(settype);
+  meos_array *array = meos_array_init(basetype);
   const char *type_str = meostype_name(settype);
+  Set *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
 
   /* Determine whether there is an SRID. If there is one we decode it and
    * advance the bak pointer after the SRID to do not parse it again in the
    * second parsing */
   int set_srid = SRID_UNKNOWN;
-  if (srid_parse(str, &set_srid))
-    bak = *str;
+  (void) srid_parse(str, &set_srid);
 
   if (! ensure_obrace(str, type_str))
-    return NULL;
-  meosType basetype = settype_basetype(settype);
+    goto error;
 
-  /* First parsing */
   Datum d;
   if (! elem_parse(str, basetype, &d))
-    return NULL;
-  DATUM_FREE(d, basetype);
-  int count = 1;
+    goto error;
+  meos_array_add(array, d);
   while (p_comma(str))
   {
     if (! elem_parse(str, basetype, &d))
-      return NULL;
-    count++;
-    DATUM_FREE(d, basetype);
+      goto error;
+    meos_array_add(array, d);
   }
-  if (! ensure_cbrace(str, type_str) ||
-      ! ensure_end_input(str, type_str))
-    return NULL;
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    goto error;
 
-  /* Second parsing */
-  *str = bak;
+  /* Create the array of values now with the actual size */
   p_obrace(str);
-  Datum *values = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    elem_parse(str, basetype, &values[i]);
-  }
+  Datum *values = palloc(sizeof(Datum) * array->count);
+  for (int i = 0; i < (int) array->count; i++)
+    values[i] = meos_array_get_n(array, i);
   p_cbrace(str);
   if (set_srid != SRID_UNKNOWN)
   {
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < (int) array->count; i++)
       spatial_set_srid(values[i], basetype, set_srid);
   }
-  Set *result = set_make(values, count, basetype, ORDER);
-  for (int i = 0; i < count; ++i)
-    DATUM_FREE(values[i], basetype);
+  result = set_make(values, array->count, basetype, ORDER);
   pfree(values);
+
+error:
+  meos_array_destroy(array);
   return result;
 }
 
@@ -657,19 +742,17 @@ spanset_parse(const char **str, meosType spansettype)
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the instant
- * @param[out] result New instant, may be NULL
- * @return On error return false
+ * @return On error return NULL
  */
-bool
-tinstant_parse(const char **str, meosType temptype, bool end,
-  TInstant **result)
+TInstant *
+tinstant_parse(const char **str, meosType temptype, bool end)
 {
   p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem;
   if (! basetype_parse(str, basetype, '@', &elem))
-    return false;
+    return NULL;
   p_delimchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
@@ -677,12 +760,11 @@ tinstant_parse(const char **str, meosType temptype, bool end,
     (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
     DATUM_FREE(elem, basetype);
-    return false;
+    return NULL;
   }
-  if (result)
-    *result = tinstant_make(elem, temptype, t);
+  TInstant *result = tinstant_make(elem, temptype, t);
   DATUM_FREE(elem, basetype);
-  return true;
+  return result;
 }
 
 /**
@@ -694,37 +776,42 @@ tinstant_parse(const char **str, meosType temptype, bool end,
 TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function #temporal_parse */
   p_obrace(str);
 
-  /* First parsing */
-  const char *bak = *str;
-  if (! tinstant_parse(str, temptype, false, NULL))
-    return NULL;
-  int count = 1;
+  TInstant *inst = tinstant_parse(str, temptype, false);
+  if (! inst)
+    goto error;
+  meos_array_add(array, PointerGetDatum(inst));
   while (p_comma(str))
   {
-    count++;
-    if (! tinstant_parse(str, temptype, false, NULL))
-      return NULL;
+    inst = tinstant_parse(str, temptype, false);
+    if (! inst)
+      goto error;
+    meos_array_add(array, PointerGetDatum(inst));
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
-
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tinstant_parse(str, temptype, false, &instants[i]);
-  }
+    goto error;
   p_cbrace(str);
-  return tsequence_make_free(instants, count, true, true, DISCRETE,
+
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (size_t i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
+  result = tsequence_make(instants, array->count, true, true, DISCRETE,
     NORMALIZE_NO);
+  pfree(instants);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -737,10 +824,14 @@ tdiscseq_parse(const char **str, meosType temptype)
  * @param[out] result New sequence, may be NULL
  * @return On error return false
  */
-bool
+TSequence *
 tcontseq_parse(const char **str, meosType temptype, interpType interp,
-  bool end, TSequence **result)
+  bool end)
 {
+  meos_array *array = meos_array_init(temptype);
+  TSequence *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
   /* We are sure to find an opening bracket or parenthesis because that was the
@@ -749,17 +840,16 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
     lower_inc = true;
   else if (p_oparen(str))
     lower_inc = false;
-
-  /* First parsing */
-  const char *bak = *str;
-  if (! tinstant_parse(str, temptype, false, NULL))
-    return false;
-  int count = 1;
+  TInstant *inst = tinstant_parse(str, temptype, false);
+  if (! inst)
+    goto error;
+  meos_array_add(array, PointerGetDatum(inst));
   while (p_comma(str))
   {
-    count++;
-    if (! tinstant_parse(str, temptype, false, NULL))
-      return false;
+    inst = tinstant_parse(str, temptype, false);
+    if (! inst)
+      goto error;
+    meos_array_add(array, PointerGetDatum(inst));
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -770,27 +860,25 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing closing bracket/parenthesis",
       meostype_name(temptype));
-      return false;
+      goto error;
   }
   /* Ensure there is no more input */
   if (end && ! ensure_end_input(str, meostype_name(temptype)))
-    return NULL;
-
-  /* Second parsing */
-  *str = bak;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tinstant_parse(str, temptype, false, &instants[i]);
-  }
+    goto error;
   p_cbracket(str);
   p_cparen(str);
-  if (result)
-    *result = tsequence_make(instants, count, lower_inc, upper_inc, interp,
-      NORMALIZE);
-  pfree_array((void **) instants, count);
-  return true;
+
+  /* Create the array of instants now with the actual size */
+  TInstant **instants = palloc(sizeof(TInstant *) * array->count);
+  for (size_t i = 0; i < array->count; i++)
+    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
+  result = tsequence_make(instants, array->count, lower_inc, upper_inc, interp,
+    NORMALIZE);
+  pfree(instants);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -803,36 +891,40 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 {
+  meos_array *array = meos_array_init(temptype);
   const char *type_str = meostype_name(temptype);
+  TSequenceSet *result = NULL;
+
+  /* Parsing */
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function temporal_parse */
   p_obrace(str);
-
-  /* First parsing */
-  const char *bak = *str;
-  if (! tcontseq_parse(str, temptype, interp, false, NULL))
-    return NULL;
-  int count = 1;
+  TSequence *seq = tcontseq_parse(str, temptype, interp, false);
+  if (! seq)
+    goto error;
+  meos_array_add(array, PointerGetDatum(seq));
   while (p_comma(str))
   {
-    count++;
-    if (! tcontseq_parse(str, temptype, interp, false, NULL))
-      return NULL;
+    seq = tcontseq_parse(str, temptype, interp, false);
+    if (! seq)
+      goto error;
+    meos_array_add(array, PointerGetDatum(seq));
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
-
-  /* Second parsing */
-  *str = bak;
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    tcontseq_parse(str, temptype, interp, false, &sequences[i]);
-  }
+    goto error;
   p_cbrace(str);
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
+
+  /* Create the array of sequences now with the actual size */
+  TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
+  for (size_t i = 0; i < array->count; i++)
+    sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
+  result = tsequenceset_make(sequences, array->count, NORMALIZE);
+  pfree(sequences);
+
+error:
+  meos_array_destroy(array);
+  return result;
 }
 
 /**
@@ -860,15 +952,15 @@ temporal_parse(const char **str, meosType temptype)
 
   if (**str != '{' && **str != '[' && **str != '(')
   {
-    TInstant *inst;
-    if (! tinstant_parse(str, temptype, true, &inst))
+    TInstant *inst = tinstant_parse(str, temptype, true);
+    if (! inst)
       return NULL;
     result = (Temporal *) inst;
   }
   else if (**str == '[' || **str == '(')
   {
-    TSequence *seq;
-    if (! tcontseq_parse(str, temptype, interp, true, &seq))
+    TSequence *seq = tcontseq_parse(str, temptype, interp, true);
+    if (! seq)
       return NULL;
     result = (Temporal *) seq;
   }
