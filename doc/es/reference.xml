@@ -1287,6 +1287,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Detección de valores atípicos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geo_wlof"><varname>wlocalOutlierFactor</varname></link>: Devuelve el factor de valor atípico local ponderado (weighted local outlier factor o LOF) de una matriz de geometrías</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operaciones de división de cuadro delimitador</title>
 			<itemizedlist>
 				<listitem>
