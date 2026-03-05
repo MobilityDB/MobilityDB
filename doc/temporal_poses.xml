@@ -787,7 +787,7 @@ SELECT asText(merge(inst)) FROM temp;
 			<listitem xml:id="tpose_atValues">
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
-				<para>TODO Restrict to (the complement of) a set of values</para>
+				<para>Restrict to (the complement of) a set of values</para>
 				<para><varname>atValues(tpose,values) → tpose</varname></para>
 				<para><varname>minusValues(tpose,values) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -804,7 +804,7 @@ SELECT minusValues(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>TODO Restrict to (the complement of) a geometry</para>
+				<para>Restrict to (the complement of) a geometry</para>
 				<para><varname>atGeometry(tpose,geometry) → tpose</varname></para>
 				<para><varname>minusGeometry(tpose,geometry) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
