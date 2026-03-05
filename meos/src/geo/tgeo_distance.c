@@ -392,7 +392,6 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) geo_distance_fn(temp->flags);
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
@@ -422,7 +421,6 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) geo_distance_fn(temp1->flags);
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
@@ -727,18 +725,18 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
  * @csqlfn #NAD_tgeo_geo()
- * @return On error return infinity
+ * @return On error return -1
  */
 double
 nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
       gserialized_is_empty(gs))
-    return DBL_MAX;
+    return -1;
 
   datum_func2 func = geo_distance_fn(temp->flags);
   GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
@@ -757,16 +755,16 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] box Spatiotemporal box/geography
  * @param[in] gs Geometry
  * @csqlfn #NAD_stbox_geo()
- * @return On error return infinity
+ * @return On error return -1
  */
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  VALIDATE_NOT_NULL(box, -1); VALIDATE_NOT_NULL(gs, -1);
   if (! ensure_valid_stbox_geo(box, gs) ||
       ! ensure_same_spatial_dimensionality_stbox_geo(box, gs))
-    return DBL_MAX;
+    return -1;
 
   datum_func2 func = geo_distance_fn(box->flags);
   Datum geo = PointerGetDatum(stbox_geo(box));
@@ -780,22 +778,22 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
- * @return On error or if the time frames do not intersect return infinity
+ * @return On error or if the time frames do not intersect return -1
  * @csqlfn #NAD_stbox_stbox ()
  */
 double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, DBL_MAX); VALIDATE_NOT_NULL(box2, DBL_MAX);
+  VALIDATE_NOT_NULL(box1, -1); VALIDATE_NOT_NULL(box2, -1);
   if (! ensure_valid_spatial_stbox_stbox(box1, box2) ||
       ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
-    return DBL_MAX;
+    return -1;
 
-  /* If the boxes do not intersect in the time dimension return infinity */
+  /* If the boxes do not intersect in the time dimension return -1 */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-      return DBL_MAX;
+      return -1;
 
   /* If the boxes intersect in the value dimension return 0 */
   if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
@@ -818,26 +816,26 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * and a spatiotemporal box
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
- * @return On error or if the time frames do not intersect return infinity
+ * @return On error or if the time frames do not intersect return -1
  * @csqlfn #NAD_tgeo_stbox()
  */
 double
 nad_tgeo_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, DBL_MAX);  VALIDATE_NOT_NULL(box, DBL_MAX);
+  VALIDATE_TGEO(temp, -1);  VALIDATE_NOT_NULL(box, -1);
   if (! ensure_valid_tgeo_stbox(temp, box) ||
       ! ensure_same_spatial_dimensionality(temp->flags, box->flags))
-    return DBL_MAX;
+    return -1;
 
   /* Project the temporal geo to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  Span p, inter;
+  Span sp, inter;
   if (hast)
   {
-    temporal_set_tstzspan(temp, &p);
-    if (! inter_span_span(&p, &box->period, &inter))
-      return DBL_MAX;
+    temporal_set_tstzspan(temp, &sp);
+    if (! inter_span_span(&sp, &box->period, &inter))
+      return -1;
   }
 
   /* Select the distance function to be applied */
@@ -865,21 +863,21 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAD_tgeo_tgeo()
- * @return On error or if the time frames do not intersect return infinity
+ * @return On error or if the time frames do not intersect return -1
  */
 double
 nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp1, DBL_MAX); VALIDATE_TGEO(temp2, DBL_MAX);
+  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
-    return DBL_MAX;
+    return -1;
 
   Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2);
   if (dist == NULL)
-    return DBL_MAX;
+    return -1;
 
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);

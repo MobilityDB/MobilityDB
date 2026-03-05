@@ -225,7 +225,7 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return DBL_MAX;
+    return -1;
 
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, gs);
@@ -247,7 +247,7 @@ nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_stbox(temp, box) ||
       ! ensure_has_X(T_STBOX, box->flags))
-    return DBL_MAX;
+    return -1;
 
   GSERIALIZED *gs = stbox_geo(box);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
@@ -269,7 +269,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_npoint(temp, np))
-    return DBL_MAX;
+    return -1;
 
   GSERIALIZED *geom = npoint_to_geompoint(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
@@ -289,11 +289,11 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
-    return DBL_MAX;
+    return -1;
 
   Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
-    return DBL_MAX;
+    return -1;
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
