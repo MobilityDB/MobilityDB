@@ -121,7 +121,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
     {
       if (ever_eq_temporal_base(temp, Float8GetDatum(0.0)))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+        meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
         return NULL;
       }
     }
@@ -130,7 +130,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
       double d = datum_double(value, basetype);
       if (fabs(d) < MEOS_EPSILON)
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+        meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
         return NULL;
       }
     }
