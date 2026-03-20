@@ -46,14 +46,20 @@
 #include <meos.h>
 
 /***************************************************************************
- * Functions for the Gnu Scientific Library (GSL)
+ * Thread-Safe MEOS Global Variables
  ***************************************************************************/
 
-/* Global variables */
+/* GSL Global variables - now thread-local */
+static _Thread_local bool MEOS_GSL_INITIALIZED = false;
+static _Thread_local gsl_rng *MEOS_GENERATION_RNG = NULL;
+static _Thread_local gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
-static bool MEOS_GSL_INITIALIZED = false;
-static gsl_rng *MEOS_GENERATION_RNG = NULL;
-static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
+/* PROJ Global variables - now thread-local */
+static _Thread_local PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+
+/***************************************************************************
+ * Thread-Safe functions for the Gnu Scientific Library (GSL)
+ ***************************************************************************/
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -78,9 +84,14 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(MEOS_GENERATION_RNG);
-  gsl_rng_free(MEOS_AGGREGATION_RNG);
-  MEOS_GSL_INITIALIZED = false;
+  if (MEOS_GSL_INITIALIZED)
+  {
+    gsl_rng_free(MEOS_GENERATION_RNG);
+    gsl_rng_free(MEOS_AGGREGATION_RNG);
+    MEOS_GENERATION_RNG = NULL;
+    MEOS_AGGREGATION_RNG = NULL;
+    MEOS_GSL_INITIALIZED = false;
+  }
   return;
 }
 #endif /* MEOS */
@@ -108,22 +119,20 @@ gsl_get_aggregation_rng(void)
 }
 
 /***************************************************************************
- * Functions for the PROJ library
+ * Thread-Safe functions for the PROJ library
  ***************************************************************************/
 
-/* Global variables keeping Proj context */
-
-PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
-
 /**
- * @brief Initialize the PROJ library
+ * @brief Get the PROJ context
+ * @note PROJ contexts are NOT thread-safe for sharing. Each thread MUST have
+ * its own context.
  */
-static void
-proj_initialize(void)
+PJ_CONTEXT *
+proj_get_context(void)
 {
   if (! MEOS_PJ_CONTEXT)
     MEOS_PJ_CONTEXT = proj_context_create();
-  return;
+  return MEOS_PJ_CONTEXT;
 }
 
 #if MEOS
@@ -139,16 +148,7 @@ proj_finalize(void)
 }
 #endif /* MEOS */
 
-/**
- * @brief Get the random generator used by temporal aggregation
- */
-PJ_CONTEXT *
-proj_get_context(void)
-{
-  if (! MEOS_PJ_CONTEXT)
-    proj_initialize();
-  return MEOS_PJ_CONTEXT;
-}
+
 
 /*****************************************************************************/
 #if MEOS
@@ -555,8 +555,9 @@ meos_get_intervalstyle(void)
 
 /*****************************************************************************/
 
-/*
- * Initialize MEOS library
+/**
+ * @brief Initialize MEOS library
+ * @note PROJ and GSL are initialized for the current thread
  */
 void
 meos_initialize(void)
@@ -564,14 +565,17 @@ meos_initialize(void)
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
   /* Initialize PROJ */
-  proj_initialize();
+  proj_get_context();
   /* Initialize GSL */
   gsl_initialize();
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @brief Free the MEOS thread-local variables
+ * @note This is executed for the current thread.
+ * TODO implement a thread-pool cleanup mechanism to ensure the funcion is
+ * called automatically
  */
 void
 meos_finalize(void)
