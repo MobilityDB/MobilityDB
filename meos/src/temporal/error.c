@@ -43,13 +43,20 @@
 #include <meos.h>
 
 /*****************************************************************************
- * Global variables
+ * Thread-local variables
  *****************************************************************************/
 
 /**
- * @brief Global variable that keeps the last error number
+ * @brief Variable that keeps the last error number
  */
-static int MEOS_ERR_NO = 0;
+static _Thread_local int MEOS_ERR_NO = 0;
+
+/**
+ * @brief Variable that keeps the error handler function
+ */
+static _Thread_local void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
+
+/*****************************************************************************/
 
 /**
  * @brief Read an error number
@@ -130,11 +137,6 @@ int meos_errno_reset(void)
 #endif /* MEOS */
 
 /*****************************************************************************/
-
-/**
- * @brief Global variable that keeps the error handler function
- */
-void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
 
 #if MEOS
 /**
