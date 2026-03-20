@@ -73,7 +73,7 @@ typedef struct
   uint32_t last_index;   /* fast-path hint */
 } MEOSPROJCache;
 
-/* Global variable to hold the Proj object cache */
+/* Thread-local variable to hold the Proj object cache */
 static _Thread_local MEOSPROJCache *MEOS_PROJ_CACHE = NULL;
 
 /**
