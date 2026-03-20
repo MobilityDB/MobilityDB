@@ -70,6 +70,7 @@ typedef struct
   MEOSPROJCacheItem items[PROJ_CACHE_ITEMS];
   uint32_t count;
   uint64_t clock;
+  uint32_t last_index;   /* fast-path hint */
 } MEOSPROJCache;
 
 /* Global variable to hold the Proj object cache */
@@ -96,7 +97,7 @@ typedef struct
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LEN_SRS_RECORD 5120
 /* Location of the spatial_ref_sys.csv file */
-char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
+static char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 
 /**
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
@@ -104,8 +105,7 @@ char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 void
 meos_set_spatial_ref_sys_csv(const char* path)
 {
-  SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
-  strcpy(SPATIAL_REF_SYS_CSV, path);
+  SPATIAL_REF_SYS_CSV = strdup(path);
 }
 
 typedef struct
@@ -465,6 +465,7 @@ proj_cache_create(void)
     return NULL;
   }
   memset(cache, 0, sizeof(MEOSPROJCache));
+  cache->last_index = UINT32_MAX;
   return cache;
 }
 
@@ -495,6 +496,7 @@ meos_finalize_projsrs(void)
       PROJSRSDestroyPJ(cache->items[i].projection);
   }
   pfree(cache);
+  MEOS_PROJ_CACHE = NULL;
   return;
 }
 
@@ -509,6 +511,18 @@ meos_finalize_projsrs(void)
 static LWPROJ *
 proj_cache_lookup(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
 {
+  /* Fast path testing the last entry */
+  if (cache->last_index < cache->count)
+  {
+    MEOSPROJCacheItem *item = &cache->items[cache->last_index];
+    if (item->srid_from == srid_from && item->srid_to == srid_to)
+    {
+      item->last_used = ++cache->clock;
+      return item->projection;
+    }
+  }
+
+  /* Loop to find the entry */
   for (uint32_t i = 0; i < cache->count; i++)
   {
     MEOSPROJCacheItem *item = &cache->items[i];
