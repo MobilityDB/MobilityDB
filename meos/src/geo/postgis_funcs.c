@@ -4117,7 +4117,7 @@ line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 /**
  * @brief Global constant array containing the geometry type strings
  */
-static const char * _GEO_TYPENAME[] =
+static const char * const _GEO_TYPENAME[] =
 {
   "Unknown",
   "Point",

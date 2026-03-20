@@ -171,42 +171,6 @@ typedef enum
   ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
 } meosOper;
 
-/**
- * Structure to represent the temporal type cache array.
- */
-typedef struct
-{
-  meosType temptype;    /**< Enum value of the temporal type */
-  meosType basetype;    /**< Enum value of the base type */
-} temptype_catalog_struct;
-
-/**
- * Structure to represent the span type cache array.
- */
-typedef struct
-{
-  meosType settype;     /**< Enum value of the set type */
-  meosType basetype;    /**< Enum value of the base type */
-} settype_catalog_struct;
-
-/**
- * Structure to represent the span type cache array.
- */
-typedef struct
-{
-  meosType spantype;    /**< Enum value of the span type */
-  meosType basetype;    /**< Enum value of the base type */
-} spantype_catalog_struct;
-
-/**
- * Structure to represent the spanset type cache array.
- */
-typedef struct
-{
-  meosType spansettype;    /**< Enum value of the span type */
-  meosType spantype;       /**< Enum value of the base type */
-} spansettype_catalog_struct;
-
 /*****************************************************************************/
 
 #ifndef NDEBUG

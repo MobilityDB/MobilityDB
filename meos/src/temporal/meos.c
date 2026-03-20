@@ -264,7 +264,7 @@ split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 /**
  * @brief Global constant array containing the datestyle strings
  */
-static const char * _DATESTYLE_STRINGS[] =
+static const char * const _DATESTYLE_STRINGS[] =
 {
   [USE_POSTGRES_DATES] = "Postgres",
   [USE_ISO_DATES] = "ISO",
@@ -276,7 +276,7 @@ static const char * _DATESTYLE_STRINGS[] =
 /**
  * @brief Global constant array containing the dateorder strings
  */
-static const char * _DATEORDER_STRINGS[] =
+static const char * const _DATEORDER_STRINGS[] =
 {
   [DATEORDER_YMD] = "YMD",
   [DATEORDER_DMY] = "DMY",
@@ -286,7 +286,7 @@ static const char * _DATEORDER_STRINGS[] =
 /**
  * @brief Global constant array containing the intervalstyle string
  */
-static const char * _INTERVALSTYLE_STRINGS[] =
+static const char * const _INTERVALSTYLE_STRINGS[] =
 {
   [INTSTYLE_POSTGRES] = "postgres",
   [INTSTYLE_POSTGRES_VERBOSE] = "postgres_verbose",
