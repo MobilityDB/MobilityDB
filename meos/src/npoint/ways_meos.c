@@ -96,6 +96,9 @@ typedef struct
 /* Thread-local variable to hold the ways cache */
 static _Thread_local WaysCache *MEOS_WAYS_CACHE = NULL;
 
+/* Thread-local variable saving the SRID of the ways table */
+static _Thread_local int32_t SRID_WAYS = SRID_INVALID;
+
 /*****************************************************************************
  * Cache management functions
  *****************************************************************************/
@@ -302,7 +305,6 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
     if (! get_ways_record(gid, rec))
       return false;
     ways_entry = ways_cache_add(cache, rec);
-    return true;
   }
   /* The route was found in the cache */
   rec->gid = gid; rec->the_geom = ways_entry->the_geom;
@@ -363,6 +365,10 @@ route_length(int64 rid)
 int32_t
 get_srid_ways()
 {
+  /* Get the value from the global variable if it has been already set */
+  if (SRID_WAYS != SRID_INVALID)
+    return SRID_WAYS;
+
   ways_record rec;
   if (route_lookup(0, true, &rec) == LW_FAILURE)
     return SRID_INVALID;
