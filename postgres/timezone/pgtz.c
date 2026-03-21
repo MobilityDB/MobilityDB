@@ -87,7 +87,8 @@ hash_string_pointer(const char *s)
 /* MEOS */
 // typedef struct {...} pg_tz_cache;
 
-static tzcache_hash *timezone_cache = NULL;
+/* Thread-local variable to hold the time zone cache */
+static _Thread_local tzcache_hash *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
@@ -439,8 +440,8 @@ pg_tzset_offset(long gmtoffset)
   return pg_tzset(tzname);
 }
 
-/*
- * Initialize timezone cache
+/**
+ * @brief Initialize timezone cache
  */
 void
 meos_initialize_timezone(const char *tz_str)
@@ -461,8 +462,8 @@ meos_initialize_timezone(const char *tz_str)
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @brief Free the timezone cache
  */
 void
 meos_finalize_timezone(void)

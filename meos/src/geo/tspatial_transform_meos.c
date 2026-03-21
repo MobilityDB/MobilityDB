@@ -482,7 +482,7 @@ proj_cache_get()
 }
 
 /**
- * @brief Destroy all the malloc'ed PROJ objects stored in the PROJSRSCache
+ * @brief Destroy all the malloc'ed PROJ objects stored in the MEOSPROJCache
  */
 void
 meos_finalize_projsrs(void)

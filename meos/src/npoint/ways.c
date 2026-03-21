@@ -53,8 +53,8 @@
 
 #define SQL_ROUTE_MAXLEN  64
 
-/* Global variable saving the SRID of the ways table */
-static int32_t SRID_WAYS = SRID_INVALID;
+/* Thread-local variable saving the SRID of the ways table */
+static _Thread_local int32_t SRID_WAYS = SRID_INVALID;
 
 /*****************************************************************************
  * Route functions
@@ -76,8 +76,8 @@ get_srid_ways()
   int32_t result = 0; /* make compiler quiet */
   bool isNull = true;
   SPI_connect();
-  int ret = SPI_execute("SELECT public.ST_SRID(the_geom) FROM public.ways LIMIT 1;",
-    true, 1);
+  int ret = SPI_execute(
+    "SELECT public.ST_SRID(the_geom) FROM public.ways LIMIT 1;", true, 1);
   uint64 proc = SPI_processed;
   if (ret > 0 && proc > 0 && SPI_tuptable)
   {
