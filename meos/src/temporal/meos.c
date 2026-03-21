@@ -50,6 +50,7 @@
  ***************************************************************************/
 
 /* GSL Global variables - now thread-local */
+static _Thread_local bool MEOS_INITIALIZED = false;
 static _Thread_local bool MEOS_GSL_INITIALIZED = false;
 static _Thread_local gsl_rng *MEOS_GENERATION_RNG = NULL;
 static _Thread_local gsl_rng *MEOS_AGGREGATION_RNG = NULL;
@@ -86,8 +87,10 @@ gsl_finalize(void)
 {
   if (MEOS_GSL_INITIALIZED)
   {
-    gsl_rng_free(MEOS_GENERATION_RNG);
-    gsl_rng_free(MEOS_AGGREGATION_RNG);
+    if (MEOS_GENERATION_RNG)
+      gsl_rng_free(MEOS_GENERATION_RNG);
+    if (MEOS_AGGREGATION_RNG)
+      gsl_rng_free(MEOS_AGGREGATION_RNG);
     MEOS_GENERATION_RNG = NULL;
     MEOS_AGGREGATION_RNG = NULL;
     MEOS_GSL_INITIALIZED = false;
@@ -142,13 +145,14 @@ proj_get_context(void)
 static void
 proj_finalize(void)
 {
-  proj_context_destroy(MEOS_PJ_CONTEXT);
-  MEOS_PJ_CONTEXT = NULL;
+  if (MEOS_PJ_CONTEXT)
+  {
+    proj_context_destroy(MEOS_PJ_CONTEXT);
+    MEOS_PJ_CONTEXT = NULL;
+  }
   return;
 }
 #endif /* MEOS */
-
-
 
 /*****************************************************************************/
 #if MEOS
@@ -219,17 +223,19 @@ add_stringlist_item(_stringlist **listhead, const char *str)
 }
 
 /*
- * Free a stringlist.
+ * Free a stringlist
  */
 static void
 free_stringlist(_stringlist **listhead)
 {
-  if (listhead == NULL || *listhead == NULL)
-    return;
-  if ((*listhead)->next)
-    free_stringlist(&((*listhead)->next));
-  free((*listhead)->str);
-  free(*listhead);
+  _stringlist *cur = *listhead;
+  while (cur)
+  {
+    _stringlist *next = cur->next;
+    pfree(cur->str);
+    pfree(cur);
+    cur = next;
+  }
   *listhead = NULL;
 }
 
@@ -240,14 +246,14 @@ static void
 split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 {
   char *sc = pstrdup(s);
-  char *token = strtok(sc, delim);
-
+  char *saveptr;
+  char *token = strtok_r(sc, delim, &saveptr);
   while (token)
   {
     add_stringlist_item(listhead, token);
-    token = strtok(NULL, delim);
+    token = strtok_r(NULL, delim, &saveptr);
   }
-  free(sc);
+  pfree(sc);
 }
 
 /***************************************************************************
@@ -492,7 +498,7 @@ meos_get_datestyle(void)
   if (! result)
     return NULL;
   snprintf(result, DATESTYLE_STR_MAXLEN, "%s, %s", datestyle_string(DateStyle),
-    dateorder_string(DateStyle));
+    dateorder_string(DateOrder));
   return result;
 }
 
@@ -562,12 +568,15 @@ meos_get_intervalstyle(void)
 void
 meos_initialize(void)
 {
+  if (MEOS_INITIALIZED)
+    return;
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
   /* Initialize PROJ */
   proj_get_context();
   /* Initialize GSL */
   gsl_initialize();
+  MEOS_INITIALIZED = true;
   return;
 }
 
@@ -591,6 +600,7 @@ meos_finalize(void)
   proj_finalize();
   /* Finalize GSL */
   gsl_finalize();
+  MEOS_INITIALIZED = false;
   return;
 }
 
