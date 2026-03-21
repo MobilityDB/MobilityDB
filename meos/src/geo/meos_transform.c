@@ -42,35 +42,6 @@
 
 #define MAX_PROJ_LEN  512
 
-/* Static functions */
-static void proj_initialize(void);
-static void proj_finalize(void);
-static void proj_cache_destroy(void);
-
-/*****************************************************************************
- * Thread functions for the PROJ library, the PROJ cache, the location of the
- * spatial_ref_sys.csv file
- *****************************************************************************/
-
-/**
- * @brief Initialize the PROJ library and cache
- */
-void
-meos_initialize_proj(void)
-{
-  proj_initialize();
-}
-
-/**
- * @brief Finalize the PROJ library and cache
- */
-void
-meos_finalize_proj(void)
-{
-  proj_finalize();
-  proj_cache_destroy();
-}
-
 /***************************************************************************
  * Functions for the PROJ library
  ***************************************************************************/
@@ -742,5 +713,54 @@ spheroid_init_from_srid(int32_t srid, SPHEROID *s)
   return LW_SUCCESS;
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Thread functions for the PROJ library, the PROJ cache, the location of the
+ * spatial_ref_sys.csv file
+ *****************************************************************************/
+
+/**
+ * @brief Finalize the PROJ library and PROJ cache per thread
+ */
+static void
+meos_finalize_proj_thread(void)
+{
+  meos_finalize_proj();
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache per thread
+ */
+void
+meos_initialize_proj_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_proj_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache
+ */
+void
+meos_initialize_proj(void)
+{
+  /* Register thread for clean up */
+  meos_initialize_proj_thread();
+  proj_initialize();
+}
+
+/**
+ * @brief Finalize the PROJ library and PROJ cache
+ */
+void
+meos_finalize_proj(void)
+{
+  proj_finalize();
+  proj_cache_destroy();
+}
 
 /*****************************************************************************/

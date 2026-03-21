@@ -42,6 +42,7 @@
 #include <gsl/gsl_randist.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 /***************************************************************************
  * Thread-local MEOS variables
@@ -520,15 +521,41 @@ meos_get_intervalstyle(void)
   return result;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Thread functions for the MEOS library
+ *****************************************************************************/
+
+/**
+ * @brief Finalize the MEOS library per thread
+ */
+static void
+meos_finalize_thread(void)
+{
+  meos_finalize();
+}
+
+/**
+ * @brief Initialize the MEOS library per thread
+ */
+void
+meos_initialize_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_thread);
+    registered = 1;
+  }
+}
 
 /**
  * @brief Initialize MEOS library
- * @note PROJ and GSL are initialized for the current thread
  */
 void
 meos_initialize(void)
 {
+  /* Register thread for clean up */
+  meos_initialize_thread();
   if (MEOS_INITIALIZED)
     return;
   meos_initialize_error_handler(NULL);
@@ -537,15 +564,16 @@ meos_initialize(void)
   meos_initialize_proj();
   /* Initialize GSL */
   gsl_initialize();
+#if NPOINT
+  /* Initialize Ways cache */
+  meos_initialize_ways();
+#endif
   MEOS_INITIALIZED = true;
   return;
 }
 
 /**
  * @brief Free the MEOS thread-local variables
- * @note This is executed for the current thread.
- * TODO implement a thread-pool cleanup mechanism to ensure the funcion is
- * called automatically
  */
 void
 meos_finalize(void)
