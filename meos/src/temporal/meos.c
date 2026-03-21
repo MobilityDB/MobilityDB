@@ -40,23 +40,17 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
-/* Proj */
-#include <proj.h>
 /* MEOS */
 #include <meos.h>
 
 /***************************************************************************
- * Thread-Safe MEOS Global Variables
+ * Thread-local MEOS variables
  ***************************************************************************/
 
-/* GSL Global variables - now thread-local */
 static _Thread_local bool MEOS_INITIALIZED = false;
 static _Thread_local bool MEOS_GSL_INITIALIZED = false;
 static _Thread_local gsl_rng *MEOS_GENERATION_RNG = NULL;
 static _Thread_local gsl_rng *MEOS_AGGREGATION_RNG = NULL;
-
-/* PROJ Global variables - now thread-local */
-static _Thread_local PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
 
 /***************************************************************************
  * Thread-Safe functions for the Gnu Scientific Library (GSL)
@@ -120,39 +114,6 @@ gsl_get_aggregation_rng(void)
     gsl_initialize();
   return MEOS_AGGREGATION_RNG;
 }
-
-/***************************************************************************
- * Thread-Safe functions for the PROJ library
- ***************************************************************************/
-
-/**
- * @brief Get the PROJ context
- * @note PROJ contexts are NOT thread-safe for sharing. Each thread MUST have
- * its own context.
- */
-PJ_CONTEXT *
-proj_get_context(void)
-{
-  if (! MEOS_PJ_CONTEXT)
-    MEOS_PJ_CONTEXT = proj_context_create();
-  return MEOS_PJ_CONTEXT;
-}
-
-#if MEOS
-/**
- * @brief Finalize the PROJ library
- */
-static void
-proj_finalize(void)
-{
-  if (MEOS_PJ_CONTEXT)
-  {
-    proj_context_destroy(MEOS_PJ_CONTEXT);
-    MEOS_PJ_CONTEXT = NULL;
-  }
-  return;
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 #if MEOS
@@ -573,7 +534,7 @@ meos_initialize(void)
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
   /* Initialize PROJ */
-  proj_get_context();
+  meos_initialize_proj();
   /* Initialize GSL */
   gsl_initialize();
   MEOS_INITIALIZED = true;
@@ -590,16 +551,14 @@ void
 meos_finalize(void)
 {
   meos_finalize_timezone();
-  /* Finalize PROJ SRS cache */
-  meos_finalize_projsrs();
+  /* Finalize PROJ */
+  meos_finalize_proj();
+  /* Finalize GSL */
+  gsl_finalize();
 #if NPOINT
   /* Finalize Ways cache */
   meos_finalize_ways();
 #endif
-  /* Finalize PROJ */
-  proj_finalize();
-  /* Finalize GSL */
-  gsl_finalize();
   MEOS_INITIALIZED = false;
   return;
 }
