@@ -53,16 +53,40 @@ static void proj_cache_destroy(void);
  *****************************************************************************/
 
 /**
- * @brief Initialize the PROJ library and cache
+ * @brief Finalize the PROJ library and PROJ cache per thread
+ */
+static void
+meos_finalize_proj_thread(void)
+{
+  meos_finalize_proj();
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache per thread
+ */
+void
+meos_initialize_proj_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_proj_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache
  */
 void
 meos_initialize_proj(void)
 {
+  meos_initialize_proj_thread();
   proj_initialize();
 }
 
 /**
- * @brief Finalize the PROJ library and cache
+ * @brief Finalize the PROJ library and PROJ cache
  */
 void
 meos_finalize_proj(void)

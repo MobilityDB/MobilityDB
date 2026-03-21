@@ -440,8 +440,33 @@ pg_tzset_offset(long gmtoffset)
   return pg_tzset(tzname);
 }
 
+/*****************************************************************************/
+
 /**
- * @brief Initialize timezone cache
+ * @brief Finalize the session timezone and timezone cache per thread
+ */
+static void
+meos_finalize_timezone_thread(void)
+{
+  meos_finalize_timezone();
+}
+
+/**
+ * @brief Initialize the session timezone and timezone cache per thread
+ */
+void
+meos_initialize_timezone_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_timezone_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize session timezone and timezone cache
  */
 void
 meos_initialize_timezone(const char *tz_str)
@@ -463,7 +488,7 @@ meos_initialize_timezone(const char *tz_str)
 }
 
 /**
- * @brief Free the timezone cache
+ * @brief Free session timezone and timezone cache
  */
 void
 meos_finalize_timezone(void)

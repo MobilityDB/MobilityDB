@@ -96,6 +96,9 @@ typedef struct
 /* Thread-local variable to hold the ways cache */
 static _Thread_local WaysCache *MEOS_WAYS_CACHE = NULL;
 
+/* Thread-local variable saving the SRID of the ways table */
+static _Thread_local int32_t SRID_WAYS = SRID_INVALID;
+
 /*****************************************************************************
  * Cache management functions
  *****************************************************************************/
@@ -138,20 +141,6 @@ ways_cache_get()
     MEOS_WAYS_CACHE = cache;
   }
   return MEOS_WAYS_CACHE;
-}
-
-/**
- * @brief Destroy the ways cache
- */
-void
-meos_finalize_ways(void)
-{
-  if (MEOS_WAYS_CACHE)
-  {
-    ways_cache_destroy(MEOS_WAYS_CACHE);
-    MEOS_WAYS_CACHE = NULL;
-  }
-  return;
 }
 
 /**
@@ -286,6 +275,10 @@ get_ways_record(int64 rid, ways_record *rec)
 /**
  * @brief Return true if a Ways entry was read from the ways cache,
  * return false otherwise
+ * @param[in] gid Route identifier
+ * @param[in] any_gid True for finding any route identifier, for example, when
+ * fetching for the first time the SRID of the ways table
+ * @param[out] rec Record found in the cache
  */
 static bool
 route_lookup(int64 gid, bool any_gid, ways_record *rec)
@@ -308,6 +301,54 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
   rec->gid = gid; rec->the_geom = ways_entry->the_geom;
   rec->length = ways_entry->length;
   return true;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Finalize the ways cache at t
+ */
+static void
+meos_finalize_ways_thread(void)
+{
+  meos_finalize_ways();
+}
+
+/**
+ * @brief Initialize the ways cache
+ */
+void
+meos_initialize_ways_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_ways_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Destroy the ways cache
+ */
+void
+meos_initialize_ways(void)
+{
+  meos_initialize_ways_thread();
+}
+
+/**
+ * @brief Destroy the ways cache
+ */
+void
+meos_finalize_ways(void)
+{
+  if (MEOS_WAYS_CACHE)
+  {
+    ways_cache_destroy(MEOS_WAYS_CACHE);
+    MEOS_WAYS_CACHE = NULL;
+  }
+  return;
 }
 
 /*****************************************************************************
@@ -363,6 +404,10 @@ route_length(int64 rid)
 int32_t
 get_srid_ways()
 {
+  /* Get the value from the global variable if it has been already set */
+  if (SRID_WAYS != SRID_INVALID)
+    return SRID_WAYS;
+
   ways_record rec;
   if (route_lookup(0, true, &rec) == LW_FAILURE)
     return SRID_INVALID;

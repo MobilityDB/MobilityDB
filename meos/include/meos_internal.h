@@ -49,6 +49,22 @@
 #include "temporal/meos_catalog.h" /* For meosType */
 
 /*****************************************************************************
+ * Thread management
+ *****************************************************************************/
+
+#define MEOS_MAX_THREAD_CLEANUPS 16
+
+typedef void (*meos_thread_cleanup_fn)(void);
+
+typedef struct
+{
+  int count;
+  meos_thread_cleanup_fn cleanup[MEOS_MAX_THREAD_CLEANUPS];
+} MEOSThreadState;
+
+extern void meos_register_thread_cleanup(meos_thread_cleanup_fn fn);
+
+/*****************************************************************************
  * Validity macros
  *****************************************************************************/
 

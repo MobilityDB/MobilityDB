@@ -537,6 +537,10 @@ meos_initialize(void)
   meos_initialize_proj();
   /* Initialize GSL */
   gsl_initialize();
+#if NPOINT
+  /* Initialize Ways cache */
+  meos_initialize_ways();
+#endif
   MEOS_INITIALIZED = true;
   return;
 }
