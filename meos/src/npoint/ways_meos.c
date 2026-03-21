@@ -297,7 +297,7 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
 
   /* Add the route to the cache if it is not already there */
   WaysCacheEntry *ways_entry = ways_cache_lookup(cache, gid, any_gid);
-  if (ways_entry == NULL)
+  if (! ways_entry)
   {
     if (! get_ways_record(gid, rec))
       return false;

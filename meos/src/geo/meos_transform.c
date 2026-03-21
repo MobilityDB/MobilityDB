@@ -38,8 +38,74 @@
 #endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 #define MAX_PROJ_LEN  512
+
+/* Static functions */
+static void proj_initialize(void);
+static void proj_finalize(void);
+static void proj_cache_destroy(void);
+
+/*****************************************************************************
+ * Thread functions for the PROJ library, the PROJ cache, the location of the
+ * spatial_ref_sys.csv file
+ *****************************************************************************/
+
+/**
+ * @brief Initialize the PROJ library and cache
+ */
+void
+meos_initialize_proj(void)
+{
+  proj_initialize();
+}
+
+/**
+ * @brief Finalize the PROJ library and cache
+ */
+void
+meos_finalize_proj(void)
+{
+  proj_finalize();
+  proj_cache_destroy();
+}
+
+/***************************************************************************
+ * Functions for the PROJ library
+ ***************************************************************************/
+
+/* Thread-local variable */
+static _Thread_local PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+
+/**
+ * @brief Get the PROJ context
+ * @note PROJ contexts are NOT thread-safe for sharing. Each thread MUST have
+ * its own context.
+ */
+static void
+proj_initialize(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    MEOS_PJ_CONTEXT = proj_context_create();
+  return;
+}
+
+#if MEOS
+/**
+ * @brief Finalize the PROJ library
+ */
+static void
+proj_finalize(void)
+{
+  if (MEOS_PJ_CONTEXT)
+  {
+    proj_context_destroy(MEOS_PJ_CONTEXT);
+    MEOS_PJ_CONTEXT = NULL;
+  }
+  return;
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Data structures
@@ -496,8 +562,8 @@ proj_cache_get()
 /**
  * @brief Destroy all the malloc'ed PROJ objects stored in the MEOSPROJCache
  */
-void
-meos_finalize_projsrs(void)
+static void
+proj_cache_destroy(void)
 {
   MEOSPROJCache *cache = MEOS_PROJ_CACHE;
   if (! cache)
@@ -594,12 +660,11 @@ proj_cache_insert(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
    * one that gives us a usable transform. Note that we prefer
    * AUTH_NAME:AUTH_SRID over SRTEXT and SRTEXT over PROJ4TEXT
    * (3 entries * 3 entries = 9 combos) */
-  char *from_str, *to_str;
   LWPROJ *projection = NULL;
   for (uint32_t i = 0; i < 9; i++)
   {
-    from_str = pgstrs_get_entry(&from, i / 3);
-    to_str = pgstrs_get_entry(&to, i % 3);
+    char *from_str = pgstrs_get_entry(&from, i / 3);
+    char *to_str = pgstrs_get_entry(&to, i % 3);
     if (! from_str || ! to_str)
       continue;
     projection = lwproj_from_str(from_str, to_str);
@@ -614,7 +679,7 @@ proj_cache_insert(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
     return NULL;
   }
 
-  /* If the cache is already full then find the least used element and delete it */
+  /* If the cache is full then find the least used element and delete it */
   uint32_t pos;
   if (cache->count < PROJ_CACHE_ITEMS)
     pos = cache->count++;
