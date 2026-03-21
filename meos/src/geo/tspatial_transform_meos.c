@@ -96,8 +96,11 @@ typedef struct
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LEN_SRS_RECORD 5120
-/* Location of the spatial_ref_sys.csv file */
-static char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
+/* Default location of the spatial_ref_sys.csv file */
+static const char *DEFAULT_SPATIAL_REF_SYS_CSV =
+  "/usr/local/share/spatial_ref_sys.csv";
+/* Thread-local variable for the location of the spatial_ref_sys.csv file */
+static _Thread_local char *SPATIAL_REF_SYS_CSV = NULL;
 
 /**
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
@@ -105,7 +108,12 @@ static char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 void
 meos_set_spatial_ref_sys_csv(const char* path)
 {
-  SPATIAL_REF_SYS_CSV = strdup(path);
+  char *newpath = strdup(path);
+  if (! newpath)
+    return;
+
+  pfree(SPATIAL_REF_SYS_CSV);
+  SPATIAL_REF_SYS_CSV = newpath;
 }
 
 typedef struct
@@ -156,10 +164,14 @@ GetProjStringsSPI(int32_t srid)
   memset(&strs, 0, sizeof(strs));
 
   /* Substitute the full file path in the first argument of fopen */
-  FILE *file = fopen(SPATIAL_REF_SYS_CSV, "r");
+  const char *path = SPATIAL_REF_SYS_CSV ?
+    SPATIAL_REF_SYS_CSV : DEFAULT_SPATIAL_REF_SYS_CSV;
+  
+  FILE *file = fopen(path, "r");
   if (! file)
   {
-    printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n", SPATIAL_REF_SYS_CSV);
+    printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n",
+      path);
     return strs;
   }
 
@@ -529,6 +541,7 @@ proj_cache_lookup(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
     if (item->srid_from == srid_from && item->srid_to == srid_to)
     {
       item->last_used = ++cache->clock;
+      cache->last_index = i;
       return item->projection;
     }
   }
@@ -564,12 +577,18 @@ proj_cache_insert(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
    * or instantiating a magical value from a negative srid */
   PjStrs from = GetProjStrings(srid_from);
   if (! pjstrs_has_entry(&from))
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_from);
+    return NULL;
+  }
   PjStrs to = GetProjStrings(srid_to);
   if (! pjstrs_has_entry(&to))
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_to);
+    return NULL;
+  }
 
   /* Try combinations of AUTH_NAME:AUTH_SRID/SRTEXT/PROJ4TEXT until we find
    * one that gives us a usable transform. Note that we prefer
@@ -608,6 +627,7 @@ proj_cache_insert(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
   cache->items[pos].srid_to = srid_to;
   cache->items[pos].projection = projection;
   cache->items[pos].last_used = ++cache->clock;
+  cache->last_index = pos;
 
   pjstrs_pfree(&from);
   pjstrs_pfree(&to);
