@@ -1051,7 +1051,7 @@ tsequence_make_exp(TInstant **instants, int count, int maxcount,
  * @csqlfn #Tsequence_constructor()
  */
 TSequence *
-tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
+tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
   interpType interp, bool normalize)
 {
   /* Ensure the validity of the arguments */
