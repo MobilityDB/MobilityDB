@@ -48,7 +48,9 @@
  * Thread-local MEOS variables
  ***************************************************************************/
 
+#if MEOS
 static _Thread_local bool MEOS_INITIALIZED = false;
+#endif /* MEOS */
 static _Thread_local bool MEOS_GSL_INITIALIZED = false;
 static _Thread_local gsl_rng *MEOS_GENERATION_RNG = NULL;
 static _Thread_local gsl_rng *MEOS_AGGREGATION_RNG = NULL;

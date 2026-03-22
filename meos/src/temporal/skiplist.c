@@ -230,7 +230,6 @@ skiplist_search(SkipList *list, void *key, void *value)
     }
   }
   cur = elem->next[0];
-  elem = &list->elems[cur];
 
   /* If the element is found */
   if (skiplist_elempos(list, key, value, cur) == 0)

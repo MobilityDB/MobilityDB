@@ -234,13 +234,10 @@ findMemberByName(json_object *poObj, const char *pszName)
 {
   json_object *poTmp = poObj;
   json_object_iter it;
+  memset(&it, 0, sizeof(it));
 
   if (pszName == NULL || poObj == NULL)
     return NULL;
-
-  it.key = NULL;
-  it.val = NULL;
-  it.entry = NULL;
 
   if (json_object_get_object(poTmp))
   {
