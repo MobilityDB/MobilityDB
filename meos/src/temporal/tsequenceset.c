@@ -401,7 +401,7 @@ tsequenceset_make_exp(TSequence **sequences, int count, int maxcount,
  * @csqlfn #Tsequenceset_constructor()
  */
 TSequenceSet *
-tsequenceset_make(TSequence **sequences, int count, bool normalize)
+tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sequences, NULL);
@@ -527,7 +527,7 @@ tsequenceset_make_gaps_valid(TInstant **instants, int count, bool lower_inc,
  * @csqlfn #Tsequenceset_constructor_gaps()
  */
 TSequenceSet *
-tsequenceset_make_gaps(TInstant **instants, int count, interpType interp,
+tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   const Interval *maxt, double maxdist)
 {
   /* Ensure the validity of the arguments */
