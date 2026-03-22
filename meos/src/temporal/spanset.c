@@ -1200,7 +1200,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
   assert(ss); assert(numspan_type(ss->spantype));
   /* Ensure the validity of the arguments */
   if (! ensure_one_true(hasshift, haswidth) ||
-      (haswidth && ! ensure_positive_datum(haswidth, ss->basetype)))
+      (haswidth && ! ensure_positive_datum(width, ss->basetype)))
     return NULL;
 
   /* Copy the input span set to the output span set */
