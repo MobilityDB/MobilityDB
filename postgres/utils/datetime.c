@@ -3736,7 +3736,7 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
         "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
-  elog(ERROR, errmsg);
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT, errmsg);
   return;
 }
 
