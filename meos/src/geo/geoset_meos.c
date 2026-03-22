@@ -102,7 +102,7 @@ spatialset_out(const Set *s, int maxdd)
  * @csqlfn #Set_constructor()
  */
 Set *
-geoset_make(const GSERIALIZED **values, int count)
+geoset_make(GSERIALIZED **values, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
