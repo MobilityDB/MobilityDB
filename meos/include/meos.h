@@ -1361,7 +1361,7 @@ extern Temporal *temporal_delete_tstzspan(const Temporal *temp, const Span *s, b
 extern Temporal *temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *temporal_merge_array(const Temporal **temparr, int count);
+extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect);
 
 /*****************************************************************************

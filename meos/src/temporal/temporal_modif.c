@@ -695,7 +695,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
  * @csqlfn #Temporal_merge_array()
  */
 Temporal *
-temporal_merge_array(const Temporal **temparr, int count)
+temporal_merge_array(Temporal **temparr, int count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temparr, NULL);
