@@ -847,6 +847,7 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
+ * @return On error or empty geometries return DBL_MAX
  */
 double
 geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -863,7 +864,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * and makes us return NULL */
   if (mindist < FLT_MAX)
     return mindist;
-  return -1;
+  return DBL_MAX;
 }
 
 /**
@@ -871,6 +872,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return the 3D distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
+ * @return On error or empty geometries return DBL_MAX
  */
 double
 geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -886,7 +888,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * and makes us return NULL */
   if (mindist < FLT_MAX)
     return mindist;
-  return -1;
+  return DBL_MAX;
 }
 
 /**
@@ -1244,6 +1246,7 @@ geo_num_points(const GSERIALIZED *gs)
  * @brief Return the number of composing geometries of a geometry
  * @param[in] gs Geometry/geography
  * @note PostGIS function: @p LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS)
+ * @return On error return -1
  */
 int
 geo_num_geos(const GSERIALIZED *gs)
@@ -2985,7 +2988,7 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @note PostGIS function: @p geography_distance_uncached(PG_FUNCTION_ARGS).
  * We set by default both @p tolerance and @p use_spheroid and initialize the
  * spheroid to WGS84
- * @note Errors return -1 to replace return @p NULL
+ * @return On error or empty geometries return DBL_MAX
  */
 double
 geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -2994,7 +2997,7 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /* Return NULL on empty arguments. */
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
-    return -1;
+    return DBL_MAX;
 
   double tolerance = PGIS_FP_TOLERANCE;
   bool use_spheroid = true;
@@ -3020,12 +3023,12 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   lwgeom_free(lwgeom1);
   lwgeom_free(lwgeom2);
 
-  /* Something went wrong, negative return... should already be eloged, return NULL */
-  if ( distance < 0.0 )
+  /* Something went wrong, negative or infinite return... */
+  if (distance < 0.0 || distance == DBL_MAX)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "geography_distance returned distance < 0.0");
-    return -1;
+    return DBL_MAX;
   }
 
   return distance;
@@ -4203,7 +4206,7 @@ line_point_n(const GSERIALIZED *gs, int n)
  * @ingroup meos_geo_base_accessor
  * @brief Return the number of points of a line
  * @param[in] gs Geometry 
- * @return On error return -1.0
+ * @return On error return -1
 */
 int
 line_numpoints(const GSERIALIZED *gs)

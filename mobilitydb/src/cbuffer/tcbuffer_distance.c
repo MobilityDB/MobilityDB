@@ -32,6 +32,8 @@
  * @brief Temporal distance for temporal circular buffers
  */
 
+/* C */
+#include <float.h>
 /* MEOS */
 #include <meos.h>
 #include "geo/stbox.h"
@@ -393,7 +395,7 @@ NAD_tcbuffer_stbox(PG_FUNCTION_ARGS)
   STBox *box = PG_GETARG_STBOX_P(1);
   double result = nad_tcbuffer_stbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -414,7 +416,7 @@ NAD_stbox_tcbuffer(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tcbuffer_stbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -438,7 +440,7 @@ NAD_geo_tcbuffer(PG_FUNCTION_ARGS)
   double result = nad_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -460,7 +462,7 @@ NAD_tcbuffer_geo(PG_FUNCTION_ARGS)
   double result = nad_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -484,7 +486,7 @@ NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   double result = nad_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -506,7 +508,7 @@ NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   double result = nad_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(cb, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -530,7 +532,7 @@ NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
   double result = nad_tcbuffer_tcbuffer(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }

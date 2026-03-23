@@ -189,8 +189,8 @@ gbox_angular_height(const GBOX* gbox)
 {
 	double d[6];
 	int i;
-	double zmin = FLT_MAX;
-	double zmax = -1 * FLT_MAX;
+	double zmin = DBL_MAX; /* MEOS previously it was FLT_MAX */
+	double zmax = -1 * DBL_MAX; /* MEOS previously it was FLT_MAX */
 	POINT3D pt;
 
 	/* Take a copy of the box corners so we can treat them as a list */
@@ -235,7 +235,7 @@ gbox_angular_width(const GBOX* gbox)
 	/* Find the vector furthest from our seed vector */
 	for ( j = 0; j < 2; j++ )
 	{
-		maxangle = -1 * FLT_MAX;
+		maxangle = -1 * DBL_MAX; /* MEOS previously it was FLT_MAX */
 		for ( i = 0; i < 4; i++ )
 		{
 			double angle, dotprod;
@@ -1765,7 +1765,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 	int use_sphere = (s->a == s->b ? 1 : 0);
 
 	/* Make result really big, so that everything will be smaller than it */
-	distance = FLT_MAX;
+	distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 
 	/* Empty point arrays? Return negative */
 	if ( pa1->npoints == 0 || pa2->npoints == 0 )
@@ -2129,7 +2129,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 		const POINT2D *p;
 		LWPOLY *lwpoly;
 		LWPOINT *lwpt;
-		double distance = FLT_MAX;
+		double distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 		uint32_t i;
 
 		if ( type1 == POINTTYPE )
@@ -2169,7 +2169,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 		const POINT2D *p;
 		LWPOLY *lwpoly;
 		LWLINE *lwline;
-		double distance = FLT_MAX;
+		double distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 		uint32_t i;
 
 		if ( type1 == LINETYPE )
@@ -2214,7 +2214,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 		const POINT2D* p;
 		LWPOLY* lwpoly1 = (LWPOLY*)lwgeom1;
 		LWPOLY* lwpoly2 = (LWPOLY*)lwgeom2;
-		double distance = FLT_MAX;
+		double distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 		uint32_t i, j;
 
 		/* Point of 2 in polygon 1 implies zero distance */
@@ -2249,7 +2249,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 	if ( lwtype_is_collection(type1) )
 	{
 		uint32_t i;
-		double distance = FLT_MAX;
+		double distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 		LWCOLLECTION *col = (LWCOLLECTION*)lwgeom1;
 
 		for ( i = 0; i < col->ngeoms; i++ )
@@ -2268,7 +2268,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 	if ( lwtype_is_collection(type2) )
 	{
 		uint32_t i;
-		double distance = FLT_MAX;
+		double distance = DBL_MAX; /* MEOS previously it was FLT_MAX */
 		LWCOLLECTION *col = (LWCOLLECTION*)lwgeom2;
 
 		for ( i = 0; i < col->ngeoms; i++ )

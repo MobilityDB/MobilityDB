@@ -21,6 +21,7 @@
 #include "utils/timestamp_def.h"
 #include "utils/datetime.h"
 #include "utils/date.h"
+#include "../../meos/include/meos.h"
 
 static const datetkn *datebsearch(const char *key, const datetkn *base, int nel);
 
@@ -3736,7 +3737,7 @@ DateTimeParseError(int dterr, const char *str, const char *datatype)
         "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
-  elog(ERROR, errmsg);
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT, errmsg);
   return;
 }
 

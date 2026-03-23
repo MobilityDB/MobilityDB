@@ -313,7 +313,7 @@ NAD_trgeo_geo(PG_FUNCTION_ARGS)
   double result = nad_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -336,7 +336,7 @@ NAD_geo_trgeo(PG_FUNCTION_ARGS)
   double result = nad_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -358,7 +358,7 @@ NAD_trgeo_stbox(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   double result = nad_trgeo_stbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -380,7 +380,7 @@ NAD_stbox_trgeo(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   double result = nad_trgeo_stbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -403,7 +403,7 @@ NAD_trgeo_tpoint(PG_FUNCTION_ARGS)
   double result = nad_trgeo_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -426,7 +426,7 @@ NAD_tpoint_trgeo(PG_FUNCTION_ARGS)
   double result = nad_trgeo_tpoint(temp2, temp1);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -449,7 +449,7 @@ NAD_trgeo_trgeo(PG_FUNCTION_ARGS)
   double result = nad_trgeo_trgeo(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
