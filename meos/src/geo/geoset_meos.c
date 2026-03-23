@@ -113,7 +113,7 @@ geoset_make(GSERIALIZED **values, int count)
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
   meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
-    T_GEOMETRY : T_GEOGRAPHY;
+    T_GEOGRAPHY : T_GEOMETRY;
   return set_make_free(datums, count, geotype, ORDER);
 }
 
