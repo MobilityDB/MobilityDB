@@ -374,7 +374,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     typlen = DOUBLE_PAD(sizeof(Datum));
   else
     /* For base values passed by reference */
-    typlen = basetype_length(basetype);
+    typlen = meostype_length(basetype);
 
   /* Compute the size of the set for values passed by reference */
   size_t values_size = 0;
