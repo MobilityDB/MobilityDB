@@ -281,7 +281,7 @@ extern bool temporal_basetype(meosType type);
 extern bool temptype_continuous(meosType type);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
-extern int16 basetype_length(meosType type);
+extern int16 meostype_length(meosType type);
 #ifndef NDEBUG
 extern bool talphanum_type(meosType type);
 #endif

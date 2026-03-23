@@ -403,7 +403,7 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
 TSequence *
 tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -416,13 +416,15 @@ tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
   TInstant *inst = tspatialinst_parse(str, temptype, false, temp_srid);
   if (! inst)
     goto error;
-  meos_array_add(array, PointerGetDatum(inst));
+  Datum d = PointerGetDatum(inst);
+  meos_array_add(array, &d);
   while (p_comma(str))
   {
     inst = tspatialinst_parse(str, temptype, false, temp_srid);
     if (! inst)
       goto error;
-    meos_array_add(array, PointerGetDatum(inst));
+    d = PointerGetDatum(inst);
+    meos_array_add(array, &d);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -455,7 +457,7 @@ TSequence *
 tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp, 
   bool end, int *temp_srid)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -472,13 +474,15 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
   TInstant *inst = tspatialinst_parse(str, temptype, false, temp_srid);
   if (! inst)
     goto error;
-  meos_array_add(array, PointerGetDatum(inst));
+  Datum d = PointerGetDatum(inst);
+  meos_array_add(array, &d);
   while (p_comma(str))
   {
     inst = tspatialinst_parse(str, temptype, false, temp_srid);
     if (! inst)
       goto error;
-    meos_array_add(array, PointerGetDatum(inst));
+    d = PointerGetDatum(inst);
+    meos_array_add(array, &d);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -521,7 +525,7 @@ TSequenceSet *
 tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequenceSet *result = NULL;
 
@@ -535,13 +539,15 @@ tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
     temp_srid);
   if (! seq)
     goto error;
-  meos_array_add(array, PointerGetDatum(seq));
+  Datum d = PointerGetDatum(seq);
+  meos_array_add(array, &d);
   while (p_comma(str))
   {
     seq = tspatialseq_cont_parse(str, temptype, interp, false, temp_srid);
     if (! seq)
       goto error;
-    meos_array_add(array, PointerGetDatum(seq));
+    d = PointerGetDatum(seq);
+    meos_array_add(array, &d);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;

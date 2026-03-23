@@ -92,7 +92,7 @@ TSequence *
 trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
   GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -142,7 +142,7 @@ TSequence *
 trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp, 
   bool end, int *temp_srid, const GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -159,13 +159,15 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
   if (! inst)
     goto error;
-  meos_array_add(array, PointerGetDatum(inst));
-  while (p_comma(str))
+  Datum d = PointerGetDatum(inst);
+  meos_array_add(array, &d);
+  while (p_comma(str))  
   {
     inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
     if (! inst)
       goto error;
-    meos_array_add(array, PointerGetDatum(inst));
+    d = PointerGetDatum(inst);
+    meos_array_add(array, &d);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -209,7 +211,7 @@ TSequenceSet *
 trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid, const GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequenceSet *result = NULL;
 
@@ -222,13 +224,15 @@ trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
     geom);
   if (! seq)
     goto error;
-  meos_array_add(array, PointerGetDatum(seq));
+  Datum d = PointerGetDatum(seq);
+  meos_array_add(array, &d);
   while (p_comma(str))
   {
     seq = trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom);
     if (! seq)
       goto error;
-    meos_array_add(array, PointerGetDatum(seq));
+    d = PointerGetDatum(seq);
+    meos_array_add(array, &d);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
