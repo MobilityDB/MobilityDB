@@ -274,7 +274,7 @@ extern RTree *rtree_create_tstzspan();
 extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
 extern void rtree_free(RTree *rtree);
-extern void rtree_insert(RTree *rtree, void *box, int64 id);
+extern void rtree_insert(RTree *rtree, void *box, int id);
 extern int *rtree_search(const RTree *rtree,const void *query, int *count);
 
 /*****************************************************************************

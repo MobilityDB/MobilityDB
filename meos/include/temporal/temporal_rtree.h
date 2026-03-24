@@ -68,7 +68,7 @@ typedef struct RTreeNode
   union 
   {
     struct RTreeNode *nodes[MAXITEMS];
-    int64 ids[MAXITEMS];
+    int ids[MAXITEMS];
   };
   /* The bounding boxes can be of type Span, TBox, or STBox */
   char boxes[];
