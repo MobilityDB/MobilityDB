@@ -260,6 +260,16 @@ typedef struct SkipList SkipList;
 /*****************************************************************************/
 
 /**
+ * @brief Enumeration that defines the search operations for an RTree.
+ */
+typedef enum
+{
+  RTREE_OVERLAPS,      /**< Find stored boxes that overlap the query */
+  RTREE_CONTAINS,      /**< Find stored boxes that contain the query */
+  RTREE_CONTAINED_BY   /**< Find stored boxes contained by the query */
+} RTreeSearchOp;
+
+/**
  * Structure for the in-memory Rtree index
  */
 typedef struct RTree RTree;
@@ -275,7 +285,7 @@ extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
 extern void rtree_free(RTree *rtree);
 extern void rtree_insert(RTree *rtree, void *box, int id);
-extern int *rtree_search(const RTree *rtree,const void *query, int *count);
+extern int *rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query, int *count);
 
 /*****************************************************************************
  * Error codes
