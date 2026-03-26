@@ -688,25 +688,76 @@ add_answer(const int id, int **ids, int *count)
 }
 
 /**
+ * @brief Return true if a leaf entry is consistent with the search query
+ * @details This is the exact predicate applied at leaf level.
+ * @param[in] rtree Pointer to the RTree structure
+ * @param[in] key The bounding box of the leaf entry
+ * @param[in] query The bounding box that serves as query
+ * @param[in] op The search operation
+ */
+static bool
+leaf_consistent(const RTree *rtree, const void *key, const void *query,
+  RTreeSearchOp op)
+{
+  switch (op)
+  {
+    case RTREE_OVERLAPS:
+      return rtree->bbox_overlaps(key, query);
+    case RTREE_CONTAINS:
+      return rtree->bbox_contains(key, query);
+    case RTREE_CONTAINED_BY:
+      return rtree->bbox_contains(query, key);
+  }
+  return false;
+}
+
+/**
+ * @brief Return true if an inner node is consistent with the search query
+ * @details This is a looser check used for pruning subtrees during traversal.
+ * @param[in] rtree Pointer to the RTree structure
+ * @param[in] key The bounding box of the inner node
+ * @param[in] query The bounding box that serves as query
+ * @param[in] op The search operation
+ */
+static bool
+inner_consistent(const RTree *rtree, const void *key, const void *query,
+  RTreeSearchOp op)
+{
+  switch (op)
+  {
+    case RTREE_OVERLAPS:
+    case RTREE_CONTAINED_BY:
+      return rtree->bbox_overlaps(key, query);
+    case RTREE_CONTAINS:
+      return rtree->bbox_contains(key, query);
+  }
+  return false;
+}
+
+/**
  * @brief Searches recursively a node looking for hits with a query
  * @param[in] rtree Pointer to the RTree structure
  * @param[in] node The node to be searched
  * @param[in] query The bounding box that serves as query
+ * @param[in] op The search operation (overlaps, contains, or contained by)
  * @param[in] ids The array with the list of answers
  * @param[in] count Total of elements found
  */
-void
-node_search(const RTree *rtree, const RTreeNode *node, const void *query,
-  int **ids, int *count)
+static void
+node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
+  const void *query, int **ids, int *count)
 {
   for (int i = 0; i < node->count; ++i)
   {
-    if (rtree->bbox_overlaps(query, RTREE_NODE_BBOX_N(node, i)))
+    if (node->node_type == RTREE_LEAF)
     {
-      if (node->node_type == RTREE_LEAF)
+      if (leaf_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
         add_answer(node->ids[i], ids, count);
-      else
-        node_search(rtree, node->nodes[i], query, ids, count);
+    }
+    else
+    {
+      if (inner_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
+        node_search(rtree, node->nodes[i], op, query, ids, count);
     }
   }
   return;
@@ -873,18 +924,22 @@ rtree_insert(RTree *rtree, void *box, int id)
  * @brief Queries an RTree with a bounding box. Returns an array of ids of
  * bounding boxes.
  * @param[in] rtree The RTree to query
+ * @param[in] op The search operation: @p RTREE_OVERLAPS finds boxes that
+ * overlap the query, @p RTREE_CONTAINS finds boxes that contain the query,
+ * @p RTREE_CONTAINED_BY finds boxes contained by the query
  * @param[in] query The bounding box that serves as query
  * @param[out] count The number of hits the RTree found
  * @return Array of ids that have a hit.
  * @note The `count` will be the output size of the array given.
  */
 int *
-rtree_search(const RTree *rtree, const void *query, int *count)
+rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
+  int *count)
 {
   int *ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
   *count = 0;
   if (rtree->root)
-    node_search(rtree, rtree->root, query, &ids, count);
+    node_search(rtree, rtree->root, op, query, &ids, count);
   return ids;
 }
 

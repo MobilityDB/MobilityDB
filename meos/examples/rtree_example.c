@@ -181,7 +181,7 @@ int main()
 #endif /* BBOX_TYPE */
 
   t = clock();
-  int *ids = rtree_search(rtree, box, &count);
+  int *ids = rtree_search(rtree, RTREE_OVERLAPS, box, &count);
   t = clock() - t;
   time_taken = ((double) t) / CLOCKS_PER_SEC; // in seconds 
   printf("Index lookup took %f seconds to execute \n", time_taken);
