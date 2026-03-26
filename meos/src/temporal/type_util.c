@@ -518,7 +518,7 @@ datum_copy(Datum value, meosType basetype)
   if (basetype_byvalue(basetype))
     return value;
   /* For types passed by reference */
-  int typlen = basetype_length(basetype);
+  int typlen = meostype_length(basetype);
   size_t value_size = (typlen != -1) ? (size_t) typlen :
     VARSIZE(DatumGetPointer(value));
   void *result = palloc(value_size);

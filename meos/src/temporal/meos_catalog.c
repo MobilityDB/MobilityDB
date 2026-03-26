@@ -626,15 +626,18 @@ basetype_varlength(meosType type)
 }
 
 /**
- * @brief Return the length of a base type
+ * @brief Return the length of a MEOS type
  * @return On error return SHRT_MAX
  */
 int16
-basetype_length(meosType type)
+meostype_length(meosType type)
 {
-  assert(meos_basetype(type));
   if (basetype_byvalue(type))
     return sizeof(Datum);
+  if (span_type(type))
+    return sizeof(Span);
+  if (set_type(type) || spanset_type(type) || temporal_type(type))
+    return -1;
   if (type == T_DOUBLE2)
     return sizeof(double2);
   if (type == T_DOUBLE3)
