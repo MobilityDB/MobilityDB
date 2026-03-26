@@ -944,6 +944,82 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
 }
 
 /**
+ * @brief Return true if the RTree's bounding box type is compatible with the
+ * temporal type, report an error otherwise
+ * @param[in] rtree Pointer to the RTree structure
+ * @param[in] temp Temporal value
+ */
+static bool
+ensure_rtree_temporal_compatible(const RTree *rtree, const Temporal *temp)
+{
+  meosType temptype = temp->temptype;
+  bool compatible =
+    (talpha_type(temptype) && rtree->bboxtype == T_TSTZSPAN) ||
+    (tnumber_type(temptype) && rtree->bboxtype == T_TBOX) ||
+    (tspatial_type(temptype) && rtree->bboxtype == T_STBOX);
+  if (! compatible)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "RTree bounding box type (%s) is not compatible with temporal type (%s)",
+      meostype_name(rtree->bboxtype), meostype_name(temptype));
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Insert a temporal value into the RTree index
+ * @details The bounding box is automatically extracted from the temporal value.
+ * The temporal type must be compatible with the RTree's bounding box type:
+ * temporal alphas (tbool, ttext) require a span-based RTree, temporal numbers
+ * (tint, tfloat) require a TBox-based RTree, and spatiotemporal types
+ * (tgeompoint, tgeogpoint) require an STBox-based RTree.
+ * @param[in] rtree The RTree previously initialized
+ * @param[in] temp The temporal value to be inserted
+ * @param[in] id The id of the temporal value being inserted
+ */
+void
+rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
+{
+  if (! ensure_rtree_temporal_compatible(rtree, temp))
+    return;
+  /* Use a stack buffer large enough for any MEOS bounding box type */
+  char buf[sizeof(STBox)];
+  memset(buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, buf);
+  rtree_insert(rtree, buf, id);
+  return;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Search an RTree using a temporal value's bounding box
+ * @details The bounding box is automatically extracted from the temporal value
+ * and used as the search query.
+ * @param[in] rtree The RTree to query
+ * @param[in] op The search operation
+ * @param[in] temp The temporal value whose bounding box serves as query
+ * @param[out] count The number of hits the RTree found
+ * @return Array of ids that have a hit.
+ */
+int *
+rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
+  const Temporal *temp, int *count)
+{
+  if (! ensure_rtree_temporal_compatible(rtree, temp))
+  {
+    *count = 0;
+    return NULL;
+  }
+  /* Use a stack buffer large enough for any MEOS bounding box type */
+  char buf[sizeof(STBox)];
+  memset(buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, buf);
+  return rtree_search(rtree, op, buf, count);
+}
+
+/**
  * @brief Frees the memory allocated for an RTree node
  * @details The function recursively frees the memory of an RTree node.
  * If the node is a branch node, it first recursively frees all child nodes.

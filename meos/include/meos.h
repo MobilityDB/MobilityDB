@@ -285,7 +285,9 @@ extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
 extern void rtree_free(RTree *rtree);
 extern void rtree_insert(RTree *rtree, void *box, int id);
+extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id);
 extern int *rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query, int *count);
+extern int *rtree_search_temporal(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, int *count);
 
 /*****************************************************************************
  * Error codes
