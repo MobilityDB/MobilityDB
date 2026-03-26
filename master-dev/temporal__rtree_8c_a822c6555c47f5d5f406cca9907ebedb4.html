@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: node_move_box_at_index_into</title>
+<title>MobilityDB: leaf_consistent</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -97,14 +97,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_ad6d348b72765b7837c3dd61dbb83382f.html#ad6d348b72765b7837c3dd61dbb83382f">get_axis_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a14b765772e530761f7225da55025b42a.html#a14b765772e530761f7225da55025b42a">inner_consistent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a2c234ec53e9821c7c8cdc31a5a71eabc.html#a2c234ec53e9821c7c8cdc31a5a71eabc">is_power_of_two</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a822c6555c47f5d5f406cca9907ebedb4.html#a822c6555c47f5d5f406cca9907ebedb4">leaf_consistent</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a822c6555c47f5d5f406cca9907ebedb4.html#a822c6555c47f5d5f406cca9907ebedb4">leaf_consistent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a0358b384cbc44a240baec8232fbd225e.html#a0358b384cbc44a240baec8232fbd225e">node_box_calculate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a8ce6d4044b8f37a1da110e7a8c9b71f4.html#a8ce6d4044b8f37a1da110e7a8c9b71f4">node_choose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a31254566f2cd98fd721bc366462ceb17.html#a31254566f2cd98fd721bc366462ceb17">node_choose_least_enlargement</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_af7e78cff23b342d1d7d5245020628a8d.html#af7e78cff23b342d1d7d5245020628a8d">node_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_aea99cf1ce81f5e56415a63bbd6d064db.html#aea99cf1ce81f5e56415a63bbd6d064db">node_insert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a3c8a123c09a8d60ecf713e815b9a6d22.html#a3c8a123c09a8d60ecf713e815b9a6d22">node_make</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a6835d822a4d34d92fd74b7131239270c.html#a6835d822a4d34d92fd74b7131239270c">node_move_box_at_index_into</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a6835d822a4d34d92fd74b7131239270c.html#a6835d822a4d34d92fd74b7131239270c">node_move_box_at_index_into</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a28466b2d3d3f580e7a10314cb1ff075b.html#a28466b2d3d3f580e7a10314cb1ff075b">node_qsort</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_ae956949368be1da9cf46ead590ce7daf.html#ae956949368be1da9cf46ead590ce7daf">node_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a597d30f1bbc04ecc8f1d489d10debf88.html#a597d30f1bbc04ecc8f1d489d10debf88">node_sort_axis</a></td></tr>
@@ -126,8 +126,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6835d822a4d34d92fd74b7131239270c" name="a6835d822a4d34d92fd74b7131239270c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6835d822a4d34d92fd74b7131239270c">&#9670;&#160;</a></span>node_move_box_at_index_into()</h2>
+<a id="a822c6555c47f5d5f406cca9907ebedb4" name="a822c6555c47f5d5f406cca9907ebedb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a822c6555c47f5d5f406cca9907ebedb4">&#9670;&#160;</a></span>leaf_consistent()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -136,22 +136,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void node_move_box_at_index_into </td>
+          <td class="memname">static bool leaf_consistent </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structRTreeNode.html">RTreeNode</a> *&#160;</td>
-          <td class="paramname"><em>from</em>, </td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>rtree</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>index</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structRTreeNode.html">RTreeNode</a> *&#160;</td>
-          <td class="paramname"><em>into</em>&#160;</td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>query</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_8h_ad97f8a07a9d711b80480af3a6f2f9a9d.html#ad97f8a07a9d711b80480af3a6f2f9a9d">RTreeSearchOp</a>&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -166,12 +172,13 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Moves a bounding box from one <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> node to another. </p>
-<p >Changes the information from one node into another. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if a leaf entry is consistent with the search query. </p>
+<p >This is the exact predicate applied at leaf level. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">from</td><td>Pointer to the node from which the bounding box is being moved. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>The index of the bounding box in the <code>from</code> node that is to be moved. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">into</td><td>Pointer to the node where the bounding box is being moved to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Pointer to the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> structure </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The bounding box of the leaf entry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">query</td><td>The bounding box that serves as query </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>The search operation </td></tr>
   </table>
   </dd>
 </dl>

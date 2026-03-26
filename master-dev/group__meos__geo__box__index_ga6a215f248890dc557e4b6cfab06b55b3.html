@@ -80,13 +80,13 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gab1e349cb5ea00e3a0cf0a96b5e6e25c1.html#gab1e349cb5ea00e3a0cf0a96b5e6e25c1">rtree_insert</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_ga6ac37fbc1f3b066cf0abeac2628f135e.html#ga6ac37fbc1f3b066cf0abeac2628f135e">rtree_search</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_ga6a215f248890dc557e4b6cfab06b55b3.html#ga6a215f248890dc557e4b6cfab06b55b3">rtree_search</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6ac37fbc1f3b066cf0abeac2628f135e" name="ga6ac37fbc1f3b066cf0abeac2628f135e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6ac37fbc1f3b066cf0abeac2628f135e">&#9670;&#160;</a></span>rtree_search()</h2>
+<a id="ga6a215f248890dc557e4b6cfab06b55b3" name="ga6a215f248890dc557e4b6cfab06b55b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6a215f248890dc557e4b6cfab06b55b3">&#9670;&#160;</a></span>rtree_search()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -96,6 +96,12 @@ $(function() {
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
           <td class="paramname"><em>rtree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_8h_ad97f8a07a9d711b80480af3a6f2f9a9d.html#ad97f8a07a9d711b80480af3a6f2f9a9d">RTreeSearchOp</a>&#160;</td>
+          <td class="paramname"><em>op</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -121,6 +127,7 @@ $(function() {
 <p >Returns an array of ids of bounding boxes. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>The <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> to query </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>The search operation: <code>RTREE_OVERLAPS</code> finds boxes that overlap the query, <code>RTREE_CONTAINS</code> finds boxes that contain the query, <code>RTREE_CONTAINED_BY</code> finds boxes contained by the query </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">query</td><td>The bounding box that serves as query </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>The number of hits the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> found </td></tr>
   </table>

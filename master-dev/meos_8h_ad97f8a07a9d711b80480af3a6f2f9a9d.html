@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_initialize_timezone</title>
+<title>MobilityDB: RTreeSearchOp</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -582,7 +582,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_aa30a083e08860451ba92a1966939c82e.html#aa30a083e08860451ba92a1966939c82e">meos_get_intervalstyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_afc68cec9996f8934343c9d9a2174e14b.html#afc68cec9996f8934343c9d9a2174e14b">meos_initialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a79b411cce6b7a6993dee33dff2d2d018.html#a79b411cce6b7a6993dee33dff2d2d018">meos_initialize_error_handler</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_8h_a8869ea7c6db1f048206b14c8c8c3038a.html#a8869ea7c6db1f048206b14c8c8c3038a">meos_initialize_timezone</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a8869ea7c6db1f048206b14c8c8c3038a.html#a8869ea7c6db1f048206b14c8c8c3038a">meos_initialize_timezone</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a3298919e87e1827b68ac074b2bd65866.html#a3298919e87e1827b68ac074b2bd65866">meos_set_datestyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a497788e4d514f24789558b11980ab553.html#a497788e4d514f24789558b11980ab553">meos_set_intervalstyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a47ce3a65f4d1fea9fc82dbf351fa7edc.html#a47ce3a65f4d1fea9fc82dbf351fa7edc">meos_set_spatial_ref_sys_csv</a></td></tr>
@@ -808,7 +808,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a9ca05fc8a0a56a5984a16417c7cc9de0.html#a9ca05fc8a0a56a5984a16417c7cc9de0">rtree_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gab1e349cb5ea00e3a0cf0a96b5e6e25c1.html#gab1e349cb5ea00e3a0cf0a96b5e6e25c1">rtree_insert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_ga6a215f248890dc557e4b6cfab06b55b3.html#ga6a215f248890dc557e4b6cfab06b55b3">rtree_search</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_ad97f8a07a9d711b80480af3a6f2f9a9d.html#ad97f8a07a9d711b80480af3a6f2f9a9d">RTreeSearchOp</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_8h_ad97f8a07a9d711b80480af3a6f2f9a9d.html#ad97f8a07a9d711b80480af3a6f2f9a9d">RTreeSearchOp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga6db8f2cd3b9dffb8f4b8634931dabc55.html#ga6db8f2cd3b9dffb8f4b8634931dabc55">same_numspan_tnumber</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__bbox__topo_gac1d303641a59b6fcace5b2661c04cb43.html#gac1d303641a59b6fcace5b2661c04cb43">same_tbox_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga42fff0b520fed558bc79fc1f11fc266e.html#ga42fff0b520fed558bc79fc1f11fc266e">same_tbox_tnumber</a></td></tr>
@@ -1360,21 +1360,27 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8869ea7c6db1f048206b14c8c8c3038a" name="a8869ea7c6db1f048206b14c8c8c3038a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8869ea7c6db1f048206b14c8c8c3038a">&#9670;&#160;</a></span>meos_initialize_timezone()</h2>
+<a id="ad97f8a07a9d711b80480af3a6f2f9a9d" name="ad97f8a07a9d711b80480af3a6f2f9a9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad97f8a07a9d711b80480af3a6f2f9a9d">&#9670;&#160;</a></span>RTreeSearchOp</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void meos_initialize_timezone </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
-          <td></td>
+          <td class="memname">enum <a class="el" href="meos_8h_ad97f8a07a9d711b80480af3a6f2f9a9d.html#ad97f8a07a9d711b80480af3a6f2f9a9d">RTreeSearchOp</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Enumeration that defines the search operations for an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a>. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ad97f8a07a9d711b80480af3a6f2f9a9da79ea6a10cb787da16b4772aeee43430e" name="ad97f8a07a9d711b80480af3a6f2f9a9da79ea6a10cb787da16b4772aeee43430e"></a>RTREE_OVERLAPS&#160;</td><td class="fielddoc"><p >Find stored boxes that overlap the query. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad97f8a07a9d711b80480af3a6f2f9a9daf4e706e013edf66feb4379a34e0c6866" name="ad97f8a07a9d711b80480af3a6f2f9a9daf4e706e013edf66feb4379a34e0c6866"></a>RTREE_CONTAINS&#160;</td><td class="fielddoc"><p >Find stored boxes that contain the query. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad97f8a07a9d711b80480af3a6f2f9a9da431ab70973c95098e50e76f8d49f14e9" name="ad97f8a07a9d711b80480af3a6f2f9a9da431ab70973c95098e50e76f8d49f14e9"></a>RTREE_CONTAINED_BY&#160;</td><td class="fielddoc"><p >Find stored boxes contained by the query. </p>
+</td></tr>
+</table>
 
 </div>
 </div>
