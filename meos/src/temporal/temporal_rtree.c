@@ -277,11 +277,11 @@ box_area(const RTree *rtree, const void *box)
 static double
 unioned_area(const RTree *rtree, const void *box1, const void *box2)
 {
-  /* STBox is the largest MEOS bounding boxes */
-  STBox union_box;
-  memcpy(&union_box, box1, rtree->bboxsize);
-  rtree->bbox_expand(box2, &union_box);
-  return box_area(rtree, &union_box);
+  /* Use a stack buffer large enough for any MEOS bounding box type */
+  char union_buf[sizeof(STBox)];
+  memcpy(union_buf, box1, rtree->bboxsize);
+  rtree->bbox_expand(box2, union_buf);
+  return box_area(rtree, union_buf);
 }
 
 /**
@@ -340,7 +340,7 @@ node_choose(const RTree *rtree, const void *box, const RTreeNode *node)
   /* Check if the bounding box can be added without expanding any rectangle */
   for (int i = 0; i < node->count; ++i)
   {
-    if (rtree->bbox_contains(&rtree->box, box))
+    if (rtree->bbox_contains(RTREE_NODE_BBOX_N(node, i), box))
       return i;
   }
   /* Fallback to "least enlargement" */
@@ -439,12 +439,12 @@ node_move_box_at_index_into(RTreeNode *from, int index, RTreeNode *into)
 static void
 node_swap(const RTree *rtree, RTreeNode *node, int i, int j)
 {
-  /* STBox is the largest MEOS bounding boxes */
-  STBox box;
-  memcpy(&box, RTREE_NODE_BBOX_N(node, i), rtree->bboxsize);
+  /* Use a stack buffer large enough for any MEOS bounding box type */
+  char buf[sizeof(STBox)];
+  memcpy(buf, RTREE_NODE_BBOX_N(node, i), rtree->bboxsize);
   memcpy(RTREE_NODE_BBOX_N(node, i), RTREE_NODE_BBOX_N(node, j),
     rtree->bboxsize);
-  memcpy(RTREE_NODE_BBOX_N(node, j), &box, rtree->bboxsize);
+  memcpy(RTREE_NODE_BBOX_N(node, j), buf, rtree->bboxsize);
   if (node->node_type == RTREE_LEAF)
   {
     int tmp = node->ids[i];
@@ -835,7 +835,7 @@ rtree_create_stbox()
  * @param[in] id The id of the box being inserted
  */
 void
-rtree_insert(RTree *rtree, void *box, int64 id)
+rtree_insert(RTree *rtree, void *box, int id)
 {
   while (1)
   {
@@ -905,7 +905,7 @@ node_free(RTreeNode *node)
     for (int i = 0; i < node->count; ++i)
       node_free(node->nodes[i]);
   }
-  free(node);
+  pfree(node);
 }
 
 /**
@@ -918,7 +918,7 @@ rtree_free(RTree *rtree)
 {
   if (rtree->root)
     node_free(rtree->root);
-  free(rtree);
+  pfree(rtree);
   return;
 }
 
