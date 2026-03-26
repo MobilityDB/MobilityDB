@@ -29,215 +29,254 @@
 
 /**
  * @file
- * @brief A simple program to use an RTree index for searching MEOS bounding
- * boxes, i.e., `floatspan`, `tstzspan`, `tbox`, and `stbox`
+ * @brief A simple program that demonstrates the RTree index for searching
+ * MEOS bounding boxes: floatspan, tstzspan, tbox, and stbox.
  *
- * The program can be build as follows
+ * The program runs all four bounding box types, inserting random boxes into
+ * the index and verifying search results against a brute-force scan.
+ *
+ * The program can be built as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/lib -lproj -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/local/lib -lmeos -lproj
  * @endcode
  */
 
 /* C */
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
-#include <meos_internal.h>
-#include <meos_internal_geo.h>
 
-/* Maximum length in characters of a bounding box string to parse */
-#define MAX_LEN_BBOX 100
 /* Maximum number of bounding boxes */
 #define NO_BBOX 10000
-/* Type of the bounding boxes */
-#define FLOATSPAN 1
-#define TSTZSPAN 2
-#define TBOX 3
-/* Uncomment one of the lines below to select the bounding box type */
-// #define BBOX_TYPE FLOATSPAN
-// #define BBOX_TYPE TSTZSPAN
-// #define BBOX_TYPE TBOX
-#define BBOX_TYPE STBOX
+/* Maximum length in characters of a bounding box string */
+#define MAX_LEN_BBOX 128
 
-bool index_result[NO_BBOX];
-bool actual_result[NO_BBOX];
-/* STBox is the largest bounding box in MEOS */
-STBox *boxes;
-
-/* Print a bounding box according to its type */
-void
-print_bbox(const void *box, char *prefix)
-{
-  char *box_str;
-#if BBOX_TYPE == FLOATSPAN
-  box_str = floatspan_out((Span *) box, 3);
-#elif BBOX_TYPE == TSTZSPAN
-  box_str = tstzspan_out((Span *) box);
-#elif BBOX_TYPE == TBOX
-  box_str = tbox_out((TBox *) box, 3);
-#else /* BBOX_TYPE == STBOX */
-  box_str = stbox_out((STBox *) box, 3);
-#endif /* BBOX_TYPE */
-  printf("\n%s\n%s\n", prefix, box_str);
-  free(box_str);
-  return;
-}
-
-/* Get a random integer number */
-int
-get_random_number(int min, int max)
+/* Return a random integer in [min, max] */
+static int
+random_int(int min, int max)
 {
   return rand() % (max - min + 1) + min;
 }
 
-/* Main program */
-int main()
+/**
+ * @brief Generic test harness: compare R-tree search results against a
+ * brute-force overlap scan
+ * @param[in] name Label for the test (e.g., "FLOATSPAN")
+ * @param[in] rtree The R-tree to search
+ * @param[in] query The query bounding box
+ * @param[in] boxes Array of stored bounding boxes
+ * @param[in] bboxsize Size of each bounding box in bytes
+ * @param[in] overlaps_fn Function that checks if two boxes overlap
+ */
+static void
+verify_search(const char *name, const RTree *rtree, const void *query,
+  const char *boxes, size_t bboxsize,
+  bool (*overlaps_fn)(const void *, const void *))
+{
+  /* Index search */
+  clock_t t = clock();
+  int index_count;
+  int *ids = rtree_search(rtree, RTREE_OVERLAPS, query, &index_count);
+  double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
+
+  /* Brute-force search */
+  t = clock();
+  int brute_count = 0;
+  bool *actual = calloc(NO_BBOX, sizeof(bool));
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    if (overlaps_fn(boxes + i * bboxsize, query))
+    {
+      brute_count++;
+      actual[i] = true;
+    }
+  }
+  double brute_time = (double)(clock() - t) / CLOCKS_PER_SEC;
+
+  /* Compare results */
+  bool *indexed = calloc(NO_BBOX, sizeof(bool));
+  for (int i = 0; i < index_count; i++)
+    indexed[ids[i]] = true;
+
+  int errors = 0;
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    if (indexed[i] != actual[i])
+      errors++;
+  }
+
+  printf("  %-10s  index: %.6fs (%d hits)  brute: %.6fs (%d hits)  %s\n",
+    name, index_time, index_count, brute_time, brute_count,
+    errors == 0 ? "OK" : "MISMATCH");
+
+  free(actual);
+  free(indexed);
+  free(ids);
+}
+
+/*****************************************************************************/
+
+static bool
+overlaps_span_wrapper(const void *a, const void *b)
+{
+  return overlaps_span_span((Span *) a, (Span *) b);
+}
+
+static bool
+overlaps_tbox_wrapper(const void *a, const void *b)
+{
+  return overlaps_tbox_tbox((TBox *) a, (TBox *) b);
+}
+
+static bool
+overlaps_stbox_wrapper(const void *a, const void *b)
+{
+  return overlaps_stbox_stbox((STBox *) a, (STBox *) b);
+}
+
+/*****************************************************************************/
+
+static void
+test_floatspan(void)
+{
+  char str[MAX_LEN_BBOX];
+  Span *boxes = malloc(sizeof(Span) * NO_BBOX);
+  RTree *rtree = rtree_create_floatspan();
+
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    int lo = random_int(1, 1000);
+    int hi = lo + random_int(1, 10);
+    snprintf(str, sizeof(str), "[%d, %d]", lo, hi);
+    Span *s = floatspan_in(str);
+    boxes[i] = *s;
+    rtree_insert(rtree, &boxes[i], i);
+    free(s);
+  }
+
+  Span *query = floatspan_in("[0, 100]");
+  verify_search("FLOATSPAN", rtree, query, (char *) boxes, sizeof(Span),
+    overlaps_span_wrapper);
+
+  free(query);
+  rtree_free(rtree);
+  free(boxes);
+}
+
+static void
+test_tstzspan(void)
+{
+  char str[MAX_LEN_BBOX];
+  Span *boxes = malloc(sizeof(Span) * NO_BBOX);
+  RTree *rtree = rtree_create_tstzspan();
+
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    int tmin = random_int(1, 29);
+    int tmax = tmin + random_int(1, 29);
+    snprintf(str, sizeof(str),
+      "[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00]", tmin, tmax);
+    Span *s = tstzspan_in(str);
+    boxes[i] = *s;
+    rtree_insert(rtree, &boxes[i], i);
+    free(s);
+  }
+
+  Span *query = tstzspan_in(
+    "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00]");
+  verify_search("TSTZSPAN", rtree, query, (char *) boxes, sizeof(Span),
+    overlaps_span_wrapper);
+
+  free(query);
+  rtree_free(rtree);
+  free(boxes);
+}
+
+static void
+test_tbox(void)
+{
+  char str[MAX_LEN_BBOX];
+  TBox *boxes = malloc(sizeof(TBox) * NO_BBOX);
+  RTree *rtree = rtree_create_tbox();
+
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    int xmin = random_int(1, 1000);
+    int xmax = xmin + random_int(1, 10);
+    int tmin = random_int(1, 29);
+    int tmax = tmin + random_int(1, 29);
+    snprintf(str, sizeof(str),
+      "TBOX XT([%d, %d],[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
+      xmin, xmax, tmin, tmax);
+    TBox *b = tbox_in(str);
+    boxes[i] = *b;
+    rtree_insert(rtree, &boxes[i], i);
+    free(b);
+  }
+
+  TBox *query = tbox_in(
+    "TBOX XT([0,100],[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
+  verify_search("TBOX", rtree, query, (char *) boxes, sizeof(TBox),
+    overlaps_tbox_wrapper);
+
+  free(query);
+  rtree_free(rtree);
+  free(boxes);
+}
+
+static void
+test_stbox(void)
+{
+  char str[MAX_LEN_BBOX];
+  STBox *boxes = malloc(sizeof(STBox) * NO_BBOX);
+  RTree *rtree = rtree_create_stbox();
+
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    int xmin = random_int(1, 1000);
+    int xmax = xmin + random_int(1, 10);
+    int ymin = random_int(1, 1000);
+    int ymax = ymin + random_int(1, 10);
+    int tmin = random_int(1, 29);
+    int tmax = tmin + random_int(1, 29);
+    snprintf(str, sizeof(str),
+      "SRID=25832;STBOX XT(((%d %d),(%d %d)),"
+      "[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
+      xmin, xmax, ymin, ymax, tmin, tmax);
+    STBox *b = stbox_in(str);
+    boxes[i] = *b;
+    rtree_insert(rtree, &boxes[i], i);
+    free(b);
+  }
+
+  STBox *query = stbox_in(
+    "SRID=25832;STBOX XT(((0 0),(100 100)),"
+    "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
+  verify_search("STBOX", rtree, query, (char *) boxes, sizeof(STBox),
+    overlaps_stbox_wrapper);
+
+  free(query);
+  rtree_free(rtree);
+  free(boxes);
+}
+
+/*****************************************************************************/
+
+int main(void)
 {
   meos_initialize();
-  /* STBox is the largest bounding box in MEOS */
-  boxes = malloc(sizeof(STBox) * NO_BBOX);
-  /* This can be srand(time(NULL)) for random */
+  /* Use fixed seed for reproducibility */
   srand(1);
-  clock_t t;
-  double time_taken;
-  char box_str[MAX_LEN_BBOX];
 
-  RTree *rtree;
-#if BBOX_TYPE == FLOATSPAN
-  rtree = rtree_create_floatspan();
-#elif BBOX_TYPE == TSTZSPAN
-  rtree = rtree_create_tstzspan();
-#elif BBOX_TYPE == TBOX
-  rtree = rtree_create_tbox();
-#else /* BBOX_TYPE == STBOX */
-  rtree = rtree_create_stbox();
-#endif /* BBOX_TYPE */
-
-  for (int i = 0; i < NO_BBOX; ++i)
-  {
-#if BBOX_TYPE == FLOATSPAN || BBOX_TYPE == TBOX || BBOX_TYPE == STBOX
-    int xmin = get_random_number(1, 1000);
-    int xmax = xmin + get_random_number(1, 10);
-#endif
-#if BBOX_TYPE == STBOX
-    int ymin = get_random_number(1, 1000);
-    int ymax = ymin + get_random_number(1, 10);
-#endif
-#if BBOX_TYPE == TSTZSPAN || BBOX_TYPE == TBOX || BBOX_TYPE == STBOX
-    int time_min = get_random_number(1, 29);
-    int time_max = time_min + get_random_number(1, 29);
-#endif
-#if BBOX_TYPE == FLOATSPAN
-    snprintf(box_str, MAX_LEN_BBOX - 1,
-      "[%d, %d]",
-      xmin, xmax);
-    Span *box = floatspan_in(box_str);
-    memcpy(&boxes[i], box, sizeof(Span));
-#elif BBOX_TYPE == TSTZSPAN
-    snprintf(box_str, MAX_LEN_BBOX - 1,
-      "[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00]",
-      time_min, time_max);
-    Span *box = tstzspan_in(box_str);
-    memcpy(&boxes[i], box, sizeof(Span));
-#elif BBOX_TYPE == TBOX
-    snprintf(box_str, MAX_LEN_BBOX - 1,
-      "TBOX XT([%d, %d],[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
-      xmin, xmax, time_min, time_max);
-    TBox *box = tbox_in(box_str);
-    memcpy(&boxes[i], box, sizeof(TBox));
-#else /* BBOX_TYPE == STBOX */
-    snprintf(box_str, MAX_LEN_BBOX - 1,
-      "SRID=25832;STBOX XT(((%d %d),(%d %d)),[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
-      xmin, xmax, ymin, ymax, time_min, time_max);
-    STBox *box = stbox_in(box_str);
-    memcpy(&boxes[i], box, sizeof(STBox));
-#endif /* BBOX_TYPE */
-    rtree_insert(rtree, &boxes[i], i);
-    free(box);
-  }
-
-  int count = 0;
-  int real_count = 0;
-#if BBOX_TYPE == FLOATSPAN
-  snprintf(box_str, MAX_LEN_BBOX - 1,
-    "[0, 100]");
-  Span *box = floatspan_in(box_str);
-#elif BBOX_TYPE == TSTZSPAN
-  snprintf(box_str, MAX_LEN_BBOX - 1,
-    "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00]");
-  Span *box = tstzspan_in(box_str);
-#elif BBOX_TYPE == TBOX
-  snprintf(box_str, MAX_LEN_BBOX - 1,
-    "TBOX XT([0,100],[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
-  TBox *box = tbox_in(box_str);
-#else /* BBOX_TYPE == STBOX */
-  snprintf(box_str, MAX_LEN_BBOX - 1,
-    "SRID=25832;STBOX XT(((0 0),(100 100)),[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
-  STBox *box = stbox_in(box_str);
-#endif /* BBOX_TYPE */
-
-  t = clock();
-  int *ids = rtree_search(rtree, RTREE_OVERLAPS, box, &count);
-  t = clock() - t;
-  time_taken = ((double) t) / CLOCKS_PER_SEC; // in seconds 
-  printf("Index lookup took %f seconds to execute \n", time_taken);
-
-  t = clock();
-  for (int i = 0; i < NO_BBOX; ++i)
-  {
-#if BBOX_TYPE == FLOATSPAN || BBOX_TYPE == TSTZSPAN
-    if (overlaps_span_span((Span *) &boxes[i], (Span *) box))
-#elif BBOX_TYPE == TBOX
-    if (overlaps_tbox_tbox((TBox *) &boxes[i], (TBox *) box))
-#else /* BBOX_TYPE == STBOX */
-    if (overlaps_stbox_stbox((STBox *) &boxes[i], (STBox *) box))
-#endif /* BBOX_TYPE */
-    {
-      real_count++;
-      actual_result[i] = true;
-    }
-  }
-  t = clock() - t;
-  time_taken = ((double) t) / CLOCKS_PER_SEC; // in seconds 
-  printf("Brute foce took %f seconds to execute \n", time_taken);
-
-  for (int i = 0; i < count; ++i)
-  {
-    index_result[ids[i]] = true;
-  }
-
-  for (int i = 0; i < NO_BBOX; ++i)
-  {
-    /* Print if there is an error, if everything is ok, nothing
-     * should be printed. */
-    if (index_result[i] != actual_result[i])
-    {
-      printf("\n========\n%d) actual_result: %d index: %d\n", 
-        i, actual_result[i], index_result[i]);
-      print_bbox(&boxes[i], "-------------");
-    }
-  }
-
-#if BBOX_TYPE == FLOATSPAN
-  printf("\nBOUNDING BOX = FLOATSPAN\n");
-#elif BBOX_TYPE == TSTZSPAN
-  printf("\nBOUNDING BOX = TSTZSPAN\n");
-#elif BBOX_TYPE == TBOX
-  printf("\nBOUNDING BOX = TBOX\n");
-#else /* BBOX_TYPE == STBOX */
-  printf("\nBOUNDING BOX = STBOX\n");
-#endif /* BBOX_TYPE */
-
-  printf("EXPECTED HITS = %d \n", real_count);
-  printf("INDEX HITS    = %d\n", count);
-
-  /* Free memory */
-  rtree_free(rtree);
-  free(box); free(boxes); free(ids);
+  printf("RTree index test (%d boxes per type)\n", NO_BBOX);
+  test_floatspan();
+  test_tstzspan();
+  test_tbox();
+  test_stbox();
 
   meos_finalize();
   return EXIT_SUCCESS;
