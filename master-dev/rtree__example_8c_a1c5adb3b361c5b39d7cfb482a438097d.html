@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: boxes</title>
+<title>MobilityDB: overlaps_tbox_wrapper</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,32 +79,54 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ae6d801b7174c3965d6a7762ab3769bc0.html#ae6d801b7174c3965d6a7762ab3769bc0">actual_result</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a1053ea16cbdefebbfa02eb9ee19d797f.html#a1053ea16cbdefebbfa02eb9ee19d797f">BBOX_TYPE</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="rtree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29.html#a8a2ef2e59d3180e356f1ed8f36e2dc29">boxes</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a1d5f778222f4ae22387a1b2ffd955fee.html#a1d5f778222f4ae22387a1b2ffd955fee">FLOATSPAN</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ac907165df800f62ade81cea2b1087a4e.html#ac907165df800f62ade81cea2b1087a4e">get_random_number</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_af29e0c93c517f3c84fde6640d597c450.html#af29e0c93c517f3c84fde6640d597c450">index_result</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ae66f6b31b5ad750f1fe042a706a4e3d4.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aa7f21a8cabfc3d89d92799127bbfd67e.html#aa7f21a8cabfc3d89d92799127bbfd67e">MAX_LEN_BBOX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a9e4ed2a6de62126cf52507805a768454.html#a9e4ed2a6de62126cf52507805a768454">print_bbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a6d92e5c0cf08dbcca25d3059b7a09ab9.html#a6d92e5c0cf08dbcca25d3059b7a09ab9">TBOX</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a12beee97d557d967fedcfce5341f01b6.html#a12beee97d557d967fedcfce5341f01b6">TSTZSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ad58c9710c2c9d253612f78725340a227.html#ad58c9710c2c9d253612f78725340a227">overlaps_span_wrapper</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a50fc0050b1412cd8e5dca990094c3e66.html#a50fc0050b1412cd8e5dca990094c3e66">overlaps_stbox_wrapper</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="rtree__example_8c_a1c5adb3b361c5b39d7cfb482a438097d.html#a1c5adb3b361c5b39d7cfb482a438097d">overlaps_tbox_wrapper</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a636d972bd6309b69b957293ee08e0615.html#a636d972bd6309b69b957293ee08e0615">random_int</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a8d86da649d9a0cd94cc799b612c204d6.html#a8d86da649d9a0cd94cc799b612c204d6">test_floatspan</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a71ea328b45a71049f7536abd821c2dc9.html#a71ea328b45a71049f7536abd821c2dc9">test_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aa9c361f40dbbb3d863cb9a59bf910507.html#aa9c361f40dbbb3d863cb9a59bf910507">test_tbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aba927f74e0a98b114ab2b1d1283857ad.html#aba927f74e0a98b114ab2b1d1283857ad">test_tstzspan</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_abac0d5ee30e4e043bbbd6854ad146269.html#abac0d5ee30e4e043bbbd6854ad146269">verify_search</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8a2ef2e59d3180e356f1ed8f36e2dc29" name="a8a2ef2e59d3180e356f1ed8f36e2dc29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a2ef2e59d3180e356f1ed8f36e2dc29">&#9670;&#160;</a></span>boxes</h2>
+<a id="a1c5adb3b361c5b39d7cfb482a438097d" name="a1c5adb3b361c5b39d7cfb482a438097d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c5adb3b361c5b39d7cfb482a438097d">&#9670;&#160;</a></span>overlaps_tbox_wrapper()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSTBox.html">STBox</a>* boxes</td>
+          <td class="memname">static bool overlaps_tbox_wrapper </td>
+          <td>(</td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

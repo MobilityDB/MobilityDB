@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: NO_BBOX</title>
+<title>MobilityDB: verify_search</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,7 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aa7f21a8cabfc3d89d92799127bbfd67e.html#aa7f21a8cabfc3d89d92799127bbfd67e">MAX_LEN_BBOX</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_ad58c9710c2c9d253612f78725340a227.html#ad58c9710c2c9d253612f78725340a227">overlaps_span_wrapper</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a50fc0050b1412cd8e5dca990094c3e66.html#a50fc0050b1412cd8e5dca990094c3e66">overlaps_stbox_wrapper</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a1c5adb3b361c5b39d7cfb482a438097d.html#a1c5adb3b361c5b39d7cfb482a438097d">overlaps_tbox_wrapper</a></td></tr>
@@ -90,22 +90,81 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_a71ea328b45a71049f7536abd821c2dc9.html#a71ea328b45a71049f7536abd821c2dc9">test_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aa9c361f40dbbb3d863cb9a59bf910507.html#aa9c361f40dbbb3d863cb9a59bf910507">test_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_aba927f74e0a98b114ab2b1d1283857ad.html#aba927f74e0a98b114ab2b1d1283857ad">test_tstzspan</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__example_8c_abac0d5ee30e4e043bbbd6854ad146269.html#abac0d5ee30e4e043bbbd6854ad146269">verify_search</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="rtree__example_8c_abac0d5ee30e4e043bbbd6854ad146269.html#abac0d5ee30e4e043bbbd6854ad146269">verify_search</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab16e2c7828b7ddc8981343d1ce1e5e65" name="ab16e2c7828b7ddc8981343d1ce1e5e65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab16e2c7828b7ddc8981343d1ce1e5e65">&#9670;&#160;</a></span>NO_BBOX</h2>
+<a id="abac0d5ee30e4e043bbbd6854ad146269" name="abac0d5ee30e4e043bbbd6854ad146269"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abac0d5ee30e4e043bbbd6854ad146269">&#9670;&#160;</a></span>verify_search()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define NO_BBOX&#160;&#160;&#160;10000</td>
+          <td class="memname">static void verify_search </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>rtree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>query</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>boxes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>bboxsize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool(*)(const void *, const void *)&#160;</td>
+          <td class="paramname"><em>overlaps_fn</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Generic test harness: compare R-tree search results against a brute-force overlap scan. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Label for the test (e.g., "FLOATSPAN") </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>The R-tree to search </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">query</td><td>The query bounding box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">boxes</td><td>Array of stored bounding boxes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bboxsize</td><td>Size of each bounding box in bytes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">overlaps_fn</td><td>Function that checks if two boxes overlap </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

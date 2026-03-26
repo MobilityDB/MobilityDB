@@ -76,59 +76,55 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">rtree_example.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>A simple program to use an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes, i.e., <code>floatspan</code>, <code>tstzspan</code>, <code>tbox</code>, and <code>stbox</code>  
+<p>A simple program that demonstrates the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes: floatspan, tstzspan, tbox, and stbox.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
-<code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a1053ea16cbdefebbfa02eb9ee19d797f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a1053ea16cbdefebbfa02eb9ee19d797f.html#a1053ea16cbdefebbfa02eb9ee19d797f">BBOX_TYPE</a>&#160;&#160;&#160;STBOX</td></tr>
-<tr class="separator:a1053ea16cbdefebbfa02eb9ee19d797f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d5f778222f4ae22387a1b2ffd955fee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a1d5f778222f4ae22387a1b2ffd955fee.html#a1d5f778222f4ae22387a1b2ffd955fee">FLOATSPAN</a>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:a1d5f778222f4ae22387a1b2ffd955fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7f21a8cabfc3d89d92799127bbfd67e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aa7f21a8cabfc3d89d92799127bbfd67e.html#aa7f21a8cabfc3d89d92799127bbfd67e">MAX_LEN_BBOX</a>&#160;&#160;&#160;100</td></tr>
+<tr class="memitem:aa7f21a8cabfc3d89d92799127bbfd67e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aa7f21a8cabfc3d89d92799127bbfd67e.html#aa7f21a8cabfc3d89d92799127bbfd67e">MAX_LEN_BBOX</a>&#160;&#160;&#160;128</td></tr>
 <tr class="separator:aa7f21a8cabfc3d89d92799127bbfd67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab16e2c7828b7ddc8981343d1ce1e5e65"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>&#160;&#160;&#160;10000</td></tr>
 <tr class="separator:ab16e2c7828b7ddc8981343d1ce1e5e65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d92e5c0cf08dbcca25d3059b7a09ab9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a6d92e5c0cf08dbcca25d3059b7a09ab9.html#a6d92e5c0cf08dbcca25d3059b7a09ab9">TBOX</a>&#160;&#160;&#160;3</td></tr>
-<tr class="separator:a6d92e5c0cf08dbcca25d3059b7a09ab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12beee97d557d967fedcfce5341f01b6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a12beee97d557d967fedcfce5341f01b6.html#a12beee97d557d967fedcfce5341f01b6">TSTZSPAN</a>&#160;&#160;&#160;2</td></tr>
-<tr class="separator:a12beee97d557d967fedcfce5341f01b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac907165df800f62ade81cea2b1087a4e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ac907165df800f62ade81cea2b1087a4e.html#ac907165df800f62ade81cea2b1087a4e">get_random_number</a> (int min, int max)</td></tr>
-<tr class="separator:ac907165df800f62ade81cea2b1087a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ae66f6b31b5ad750f1fe042a706a4e3d4.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
-<tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e4ed2a6de62126cf52507805a768454"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a9e4ed2a6de62126cf52507805a768454.html#a9e4ed2a6de62126cf52507805a768454">print_bbox</a> (const void *box, char *prefix)</td></tr>
-<tr class="separator:a9e4ed2a6de62126cf52507805a768454"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ae6d801b7174c3965d6a7762ab3769bc0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ae6d801b7174c3965d6a7762ab3769bc0.html#ae6d801b7174c3965d6a7762ab3769bc0">actual_result</a> [<a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>]</td></tr>
-<tr class="separator:ae6d801b7174c3965d6a7762ab3769bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a2ef2e59d3180e356f1ed8f36e2dc29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29.html#a8a2ef2e59d3180e356f1ed8f36e2dc29">boxes</a></td></tr>
-<tr class="separator:a8a2ef2e59d3180e356f1ed8f36e2dc29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af29e0c93c517f3c84fde6640d597c450"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_af29e0c93c517f3c84fde6640d597c450.html#af29e0c93c517f3c84fde6640d597c450">index_result</a> [<a class="el" href="rtree__example_8c_ab16e2c7828b7ddc8981343d1ce1e5e65.html#ab16e2c7828b7ddc8981343d1ce1e5e65">NO_BBOX</a>]</td></tr>
-<tr class="separator:af29e0c93c517f3c84fde6640d597c450"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
+<tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad58c9710c2c9d253612f78725340a227"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_ad58c9710c2c9d253612f78725340a227.html#ad58c9710c2c9d253612f78725340a227">overlaps_span_wrapper</a> (const void *a, const void *b)</td></tr>
+<tr class="separator:ad58c9710c2c9d253612f78725340a227"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50fc0050b1412cd8e5dca990094c3e66"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a50fc0050b1412cd8e5dca990094c3e66.html#a50fc0050b1412cd8e5dca990094c3e66">overlaps_stbox_wrapper</a> (const void *a, const void *b)</td></tr>
+<tr class="separator:a50fc0050b1412cd8e5dca990094c3e66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c5adb3b361c5b39d7cfb482a438097d"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a1c5adb3b361c5b39d7cfb482a438097d.html#a1c5adb3b361c5b39d7cfb482a438097d">overlaps_tbox_wrapper</a> (const void *a, const void *b)</td></tr>
+<tr class="separator:a1c5adb3b361c5b39d7cfb482a438097d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a636d972bd6309b69b957293ee08e0615"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a636d972bd6309b69b957293ee08e0615.html#a636d972bd6309b69b957293ee08e0615">random_int</a> (int min, int max)</td></tr>
+<tr class="separator:a636d972bd6309b69b957293ee08e0615"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d86da649d9a0cd94cc799b612c204d6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a8d86da649d9a0cd94cc799b612c204d6.html#a8d86da649d9a0cd94cc799b612c204d6">test_floatspan</a> (void)</td></tr>
+<tr class="separator:a8d86da649d9a0cd94cc799b612c204d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71ea328b45a71049f7536abd821c2dc9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_a71ea328b45a71049f7536abd821c2dc9.html#a71ea328b45a71049f7536abd821c2dc9">test_stbox</a> (void)</td></tr>
+<tr class="separator:a71ea328b45a71049f7536abd821c2dc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9c361f40dbbb3d863cb9a59bf910507"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aa9c361f40dbbb3d863cb9a59bf910507.html#aa9c361f40dbbb3d863cb9a59bf910507">test_tbox</a> (void)</td></tr>
+<tr class="separator:aa9c361f40dbbb3d863cb9a59bf910507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba927f74e0a98b114ab2b1d1283857ad"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_aba927f74e0a98b114ab2b1d1283857ad.html#aba927f74e0a98b114ab2b1d1283857ad">test_tstzspan</a> (void)</td></tr>
+<tr class="separator:aba927f74e0a98b114ab2b1d1283857ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abac0d5ee30e4e043bbbd6854ad146269"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rtree__example_8c_abac0d5ee30e4e043bbbd6854ad146269.html#abac0d5ee30e4e043bbbd6854ad146269">verify_search</a> (const char *name, const <a class="el" href="structRTree.html">RTree</a> *rtree, const void *query, const char *boxes, size_t bboxsize, bool(*overlaps_fn)(const void *, const void *))</td></tr>
+<tr class="memdesc:abac0d5ee30e4e043bbbd6854ad146269"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic test harness: compare R-tree search results against a brute-force overlap scan.  <a href="rtree__example_8c_abac0d5ee30e4e043bbbd6854ad146269.html#abac0d5ee30e4e043bbbd6854ad146269">More...</a><br /></td></tr>
+<tr class="separator:abac0d5ee30e4e043bbbd6854ad146269"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A simple program to use an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes, i.e., <code>floatspan</code>, <code>tstzspan</code>, <code>tbox</code>, and <code>stbox</code> </p>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/lib -lproj -L/usr/local/lib -lmeos</div>
+<div class="textblock"><p >A simple program that demonstrates the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes: floatspan, tstzspan, tbox, and stbox. </p>
+<p >The program runs all four bounding box types, inserting random boxes into the index and verifying search results against a brute-force scan.</p>
+<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/local/lib -lmeos -lproj</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -25,7 +25,6 @@ var searchData=
   ['float8_5flt_22',['FLOAT8_LT',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_a285e683c206626b048fc14d5e0050410.html#a285e683c206626b048fc14d5e0050410',1,'temporal.h']]],
   ['float8_5fmax_23',['FLOAT8_MAX',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_afd158c9f0e23022c9efb22a903cbf8f8.html#afd158c9f0e23022c9efb22a903cbf8f8',1,'temporal.h']]],
   ['float8_5fmin_24',['FLOAT8_MIN',['../mobilitydb_2pg__include_2pg__temporal_2temporal_8h_a23881677871237f06e93c51fc4e48b0d.html#a23881677871237f06e93c51fc4e48b0d',1,'temporal.h']]],
-  ['floatspan_25',['FLOATSPAN',['../rtree__example_8c_a1d5f778222f4ae22387a1b2ffd955fee.html#a1d5f778222f4ae22387a1b2ffd955fee',1,'rtree_example.c']]],
-  ['free_26',['FREE',['../meos_2include_2temporal_2type__util_8h_a9a8e700d56e7d858108b755ad3edb52e.html#a9a8e700d56e7d858108b755ad3edb52e',1,'type_util.h']]],
-  ['free_5fall_27',['FREE_ALL',['../meos_2include_2temporal_2type__util_8h_a96ee1c04d0ee687ddd2f16f3a7a8c2aa.html#a96ee1c04d0ee687ddd2f16f3a7a8c2aa',1,'type_util.h']]]
+  ['free_25',['FREE',['../meos_2include_2temporal_2type__util_8h_a9a8e700d56e7d858108b755ad3edb52e.html#a9a8e700d56e7d858108b755ad3edb52e',1,'type_util.h']]],
+  ['free_5fall_26',['FREE_ALL',['../meos_2include_2temporal_2type__util_8h_a96ee1c04d0ee687ddd2f16f3a7a8c2aa.html#a96ee1c04d0ee687ddd2f16f3a7a8c2aa',1,'type_util.h']]]
 ];

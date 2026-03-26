@@ -116,8 +116,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">  ( (<span class="keywordtype">void</span> *)( \</div>
-<div class="line">  ((<span class="keywordtype">char</span> *) &amp;((node)-&gt;<a class="code hl_variable" href="rtree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29.html#a8a2ef2e59d3180e356f1ed8f36e2dc29">boxes</a>)) + (n) * (node)-&gt;bboxsize ) )</div>
-<div class="ttc" id="artree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29_html_a8a2ef2e59d3180e356f1ed8f36e2dc29"><div class="ttname"><a href="rtree__example_8c_a8a2ef2e59d3180e356f1ed8f36e2dc29.html#a8a2ef2e59d3180e356f1ed8f36e2dc29">boxes</a></div><div class="ttdeci">STBox * boxes</div><div class="ttdef"><b>Definition:</b> rtree_example.c:69</div></div>
+<div class="line">  ((<span class="keywordtype">char</span> *) &amp;((node)-&gt;boxes)) + (n) * (node)-&gt;bboxsize ) )</div>
 </div><!-- fragment -->
 <p>Return a pointer to the n-th bounding box of a node. </p>
 <p >The bouding boxes of a node can be of type <a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a>, <a class="el" href="structTBox.html" title="Structure to represent temporal boxes.">TBox</a>, or <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> </p>
