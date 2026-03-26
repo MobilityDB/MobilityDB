@@ -270,6 +270,18 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
+ * @brief Extract a C array from a PostgreSQL array containing geometries
+ */
+GSERIALIZED **
+geoarr_extract(ArrayType *array, int *count)
+{
+  GSERIALIZED **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+
+/**
  * @brief Extract a C array from a PostgreSQL array containing spatiotemporal
  * boxes
  */

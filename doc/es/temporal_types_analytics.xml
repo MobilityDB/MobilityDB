@@ -272,6 +272,57 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="ttype_outlier">
+		<title>Detección de valores atípicos</title>
+		<itemizedlist>
+			<listitem xml:id="geo_wlof">
+				<indexterm significance="normal"><primary><varname>localOutlierFactor</varname></primary></indexterm>
+				<para>Devuelve el factor de valor atípico local ponderado (<emphasis>weighted local outlier factor</emphasis> o WLOF) de una matriz de geometrías &SRF;</para>
+				<para><varname>wlocalOutlierFactor(geo[],k integer, distance float=0.0) → {(geom,score)}</varname></para>
+				<para>El <ulink url="https://en.wikipedia.org/wiki/Local_outlier_factor">factor de valor atípico local</ulink> se utiliza comúnmente para encontrar puntos de datos anómalos midiendo la densidad local de un punto de datos dado con respecto a sus vecinos, por ejemplo, en <ulink url="https://scikit-learn.org/stable/auto_examples/neighbors/plot_lof_outlier_detection.html">scikit-learn</ulink>. Cuando hay duplicados en los puntos de datos, se puede utilizar el algoritmo del factor de valor atípico local ponderado (WLOF), tal como se implementa, por ejemplo, en <ulink url="https://www.mathworks.com/help/stats/lof.html">Matlab</ulink>. En estos algoritmos, la densidad local de un punto de datos está dada por sus <emphasis>k</emphasis> vecinos más cercanos, cuya distancia se utiliza para estimar la densidad. La función PostGIS <ulink url="https://postgis.net/docs/ST_ClusterWithin.html"><varname>ST_ClusterWithin</varname></ulink> se utiliza con el parámetro <varname>distance</varname> para agrupar geometrías iguales o cercanas en clústeres. Si no se proporciona la distancia, se asume que es 0. La función devuelve un conjunto de registros <varname>(geom,score)</varname>, donde la primera columna es un clúster y la segunda es su puntuación.</para>
+				<programlisting language="sql" xml:space="preserve">
+WITH Points(Id, Geom) AS (
+  SELECT 'A', ST_Makepoint(7,6) UNION
+  SELECT 'B', ST_Makepoint(1,5) UNION
+  SELECT 'C', ST_Makepoint(1,4) UNION
+  SELECT 'D', ST_Makepoint(4,1) UNION
+  SELECT 'E', ST_Makepoint(3,1) UNION
+  SELECT 'F', ST_Makepoint(3,0) UNION
+  SELECT 'G', ST_Makepoint(4,0) UNION
+  -- Duplicate points so the distance to all their K nearest neighbors is 0
+  SELECT 'H', ST_Makepoint(5,5) UNION
+  SELECT 'I', ST_Makepoint(5,5) UNION
+  SELECT 'J', ST_Makepoint(5,5) UNION
+  SELECT 'K', ST_Makepoint(5,5) ),
+PointArr(GeomArr) AS (
+  SELECT array_agg(Geom) FROM Points )
+SELECT (rec).Score, ST_AsText((rec).Geom) AS Geom
+FROM ( SELECT wLocalOutlierFactor(GeomArr, 3) AS rec FROM PointArr ) T
+ORDER BY Score DESC;
+/* 1.8429962788294536 | GEOMETRYCOLLECTION(POINT(5 5),POINT(5 5),POINT(5 5),POINT(5 5))  
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(1 4))
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(3 1))
+   1.8429962788294536 | GEOMETRYCOLLECTION(POINT(3 0))
+   1.5554302084968223 | GEOMETRYCOLLECTION(POINT(4 1))
+   1                  | GEOMETRYCOLLECTION(POINT(4 0))
+   1                  | GEOMETRYCOLLECTION(POINT(1 5))
+   1                  | GEOMETRYCOLLECTION(POINT(7 6)) */
+</programlisting>
+				<para>
+					La <xref linkend="wlof" /> ilustra los puntos a los cuales se le aplica la función <varname>wlocalOutlierFactor</varname> en la consulta precedente. 
+				</para>
+				<figure xml:id="wlof" float="start">
+					<title>Ejemplo de puntos para estimar el factor atípico local ponderado.</title>
+					<mediaobject>
+						<imageobject role="html"><imagedata format="SVG" fileref='../images/wlof.svg'/></imageobject>
+						<imageobject role="dblatex"><imagedata format="PDF" fileref='../images/wlof.pdf'/></imageobject>
+						<imageobject role="dbtoepub"><imagedata format="PDF" fileref='../images/wlof.pdf'/></imageobject>
+					</mediaobject>
+				</figure>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="ttype_splitting">
 		<title>Operaciones de división</title>
 
