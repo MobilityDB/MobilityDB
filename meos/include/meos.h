@@ -259,6 +259,13 @@ typedef struct SkipList SkipList;
 
 /*****************************************************************************/
 
+/* Structure of an expandable arrays used in particular to avoid parsing twice
+ * a MEOS value input in text format */
+
+typedef struct MeosArray MeosArray;
+
+/*****************************************************************************/
+
 /**
  * @brief Enumeration that defines the search operations for an RTree.
  */
