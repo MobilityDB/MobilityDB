@@ -860,11 +860,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   double mindist = lwgeom_mindistance2d(geom1, geom2);
   lwgeom_free(geom1);
   lwgeom_free(geom2);
-  /* if called with empty geometries the ingoing mindistance is untouched,
-   * and makes us return NULL */
-  if (mindist < FLT_MAX)
-    return mindist;
-  return DBL_MAX;
+  return mindist;
 }
 
 /**
@@ -884,11 +880,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   double mindist = lwgeom_mindistance3d(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
-  /* if called with empty geometries the ingoing mindistance is untouched,
-   * and makes us return NULL */
-  if (mindist < FLT_MAX)
-    return mindist;
-  return DBL_MAX;
+  return mindist;
 }
 
 /**
@@ -908,7 +900,7 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, 0.0);
   lwgeom_free(geom1); lwgeom_free(geom2);
   /* empty geometries cases should be right handled since return from
-     underlying functions should be FLT_MAX which causes false as answer */
+     underlying functions should be DBL_MAX which causes false as answer */
   return (mindist == 0.0);
 }
 
@@ -934,7 +926,7 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double mindist = lwgeom_mindistance2d_tolerance(geom1, geom2, tolerance);
   lwgeom_free(geom1); lwgeom_free(geom2);
   /* empty geometries cases should be right handled since return from
-   underlying functions should be FLT_MAX which causes false as answer */
+   underlying functions should be DBL_MAX which causes false as answer */
   return (tolerance >= mindist);
 }
 
@@ -958,7 +950,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, tolerance);
   /*empty geometries cases should be right handled since return from underlying
-   functions should be FLT_MAX which causes false as answer*/
+   functions should be DBL_MAX which causes false as answer*/
   lwgeom_free(geom1); lwgeom_free(geom2);
   return (tolerance >= mindist);
 }
