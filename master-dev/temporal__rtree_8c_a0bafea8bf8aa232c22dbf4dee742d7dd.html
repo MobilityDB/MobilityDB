@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: bbox_expand_tbox</title>
+<title>MobilityDB: ensure_rtree_temporal_compatible</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,13 +85,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_abd7254f5d9b4d9b1691484054c434885.html#abd7254f5d9b4d9b1691484054c434885">bbox_contains_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a09402a6121f090139b627648020eab56.html#a09402a6121f090139b627648020eab56">bbox_expand_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_ad3190c8cf594c77e1c2f7d3c85f6208e.html#ad3190c8cf594c77e1c2f7d3c85f6208e">bbox_expand_stbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a872001f42d964f091b01d86ff5beb52a.html#a872001f42d964f091b01d86ff5beb52a">bbox_expand_tbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a872001f42d964f091b01d86ff5beb52a.html#a872001f42d964f091b01d86ff5beb52a">bbox_expand_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a3ffdf79867112eaa177e07b3564f6916.html#a3ffdf79867112eaa177e07b3564f6916">bbox_overlaps_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_affee716c2945f3a6e59d3f4107abfc71.html#affee716c2945f3a6e59d3f4107abfc71">bbox_overlaps_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a72a655c30487ac3aa6ea349e2e39170d.html#a72a655c30487ac3aa6ea349e2e39170d">bbox_overlaps_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a030f2b98d5573f821d4d5d9836860371.html#a030f2b98d5573f821d4d5d9836860371">box_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a1eb207a88cdec353b8e01c7b655ff607.html#a1eb207a88cdec353b8e01c7b655ff607">box_largest_axis</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a0bafea8bf8aa232c22dbf4dee742d7dd.html#a0bafea8bf8aa232c22dbf4dee742d7dd">ensure_rtree_temporal_compatible</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a0bafea8bf8aa232c22dbf4dee742d7dd.html#a0bafea8bf8aa232c22dbf4dee742d7dd">ensure_rtree_temporal_compatible</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_adf697f0ee03d3f78218db80963bf70f2.html#adf697f0ee03d3f78218db80963bf70f2">get_axis_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_af898a4e3a4def8ebdc5103c6da6bf40b.html#af898a4e3a4def8ebdc5103c6da6bf40b">get_axis_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a2b3a4b5efa66307ebd73242641998eb9.html#a2b3a4b5efa66307ebd73242641998eb9">get_axis_stbox</a></td></tr>
@@ -129,8 +129,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a872001f42d964f091b01d86ff5beb52a" name="a872001f42d964f091b01d86ff5beb52a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a872001f42d964f091b01d86ff5beb52a">&#9670;&#160;</a></span>bbox_expand_tbox()</h2>
+<a id="a0bafea8bf8aa232c22dbf4dee742d7dd" name="a0bafea8bf8aa232c22dbf4dee742d7dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bafea8bf8aa232c22dbf4dee742d7dd">&#9670;&#160;</a></span>ensure_rtree_temporal_compatible()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -139,16 +139,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void bbox_expand_tbox </td>
+          <td class="memname">static bool ensure_rtree_temporal_compatible </td>
           <td>(</td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>box1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>rtree</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>box2</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -158,15 +158,16 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Expand the second temporal box with the first one. </p>
+<p>Return true if the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a>'s bounding box type is compatible with the temporal type, report an error otherwise. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Pointer to the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> structure </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
   </table>
   </dd>
 </dl>
