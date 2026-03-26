@@ -82,26 +82,35 @@ array_slot(const MeosArray *array, int n)
 void
 meos_array_add(MeosArray *array, void *value)
 {
-  assert(array); assert(array->elem_size > 0);
+  assert(array);
   /* Enlarge the values array if necessary */
   if (array->count >= array->capacity)
   {
     array->capacity *= 2;
     array->elems = repalloc(array->elems, array->capacity * array->elem_size);
-    assert(array->elems);
   }
   /* Store the value */
   char *dest = array_slot(array, array->count);
-  memcpy(dest, value, array->elem_size);
+  if (array->varlength)
+  {
+    /* Store the pointer itself as a Datum */
+    Datum d = PointerGetDatum(value);
+    memcpy(dest, &d, sizeof(Datum));
+  }
+  else
+  {
+    /* Copy the value */
+    memcpy(dest, value, array->elem_size);
+  }
   array->count++;
-  return;
 }
 
 /**
- * @brief Get the n-th Datum value of the array (0-based) 
- * @note Function used to access Datum stored in the array
+ * @brief Get the n-th element of the array (0-based)
+ * @return For varlength arrays, the stored pointer; for fixed-size arrays,
+ * a pointer to the element in the internal buffer
  */
-Datum
+void *
 meos_array_get_n(const MeosArray *array, int n)
 {
   assert(array);
@@ -109,42 +118,45 @@ meos_array_get_n(const MeosArray *array, int n)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid array index %d", n);
-    return (Datum) 0;
+    return NULL;
   }
-  Datum d;
-  memcpy(&d, array_slot(array, n), sizeof(Datum));
-  return d;
+  void *slot = array_slot(array, n);
+  if (array->varlength)
+    return (void *) (*(Datum *) slot);
+  return slot;
 }
 
 /**
  * @brief Reset the array
+ * @param[in] free_elems If true and the array is varlength, pfree each stored
+ * pointer before resetting
  */
 void
-meos_array_reset(MeosArray *array)
+meos_array_reset(MeosArray *array, bool free_elems)
 {
-  if (! array || ! array->count)
+  if (! array)
     return;
-  if (array->varlength)
+  if (free_elems && array->varlength)
   {
-    /* For variable-length values the value stored in the array is a Datum */
     for (size_t i = 0; i < array->count; i++)
-      pfree((void *) ((Datum *)(array->elems))[i]);
+      pfree(meos_array_get_n(array, i));
   }
   array->count = 0;
-  return;
 }
 
 /**
  * @brief Destroy the array
+ * @param[in] free_elems If true and the array is varlength, pfree each stored
+ * pointer before freeing the array
  */
 void
-meos_array_destroy(MeosArray *array)
+meos_array_destroy(MeosArray *array, bool free_elems)
 {
   if (! array)
     return;
-  meos_array_reset(array);
+  meos_array_reset(array, free_elems);
+  pfree(array->elems);
   pfree(array);
-  return;
 }
 
 /*****************************************************************************/

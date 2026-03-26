@@ -626,11 +626,7 @@ basetype_varlength(meosType type)
 }
 
 /**
- * @brief Return the length of a base type
- * @return On error return SHRT_MAX
- */
-/**
- * @brief Return the length of a base type
+ * @brief Return the length of a MEOS type
  * @return On error return SHRT_MAX
  */
 int16

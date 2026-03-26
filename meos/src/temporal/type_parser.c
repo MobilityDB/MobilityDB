@@ -493,7 +493,7 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   meosType basetype = settype_basetype(settype);
-  MeosArray *array = meos_array_init(meostype_length(basetype));
+  MeosArray *array = meos_array_init(sizeof(Datum));
   const char *type_str = meostype_name(settype);
   Set *result = NULL;
 
@@ -526,10 +526,7 @@ set_parse(const char **str, meosType settype)
   p_obrace(str);
   Datum *values = palloc(sizeof(Datum) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-  {
-    Datum d = meos_array_get_n(array, i);
-    memcpy(&values[i], &d, sizeof(Datum));
-  }
+    values[i] = *(Datum *) meos_array_get_n(array, i);
   p_cbrace(str);
   if (set_srid != SRID_UNKNOWN)
   {
@@ -540,7 +537,7 @@ set_parse(const char **str, meosType settype)
   pfree(values);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, false);
   return result;
 }
 
@@ -644,11 +641,11 @@ spanset_parse(const char **str, meosType spansettype)
 
   SpanSet *result = spanset_make_exp((Span *) array->elems, array->count,
     array->count, true, true);
-  meos_array_destroy(array);
+  meos_array_destroy(array, false);
   return result;
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, false);
   return NULL;
 }
 
@@ -708,13 +705,13 @@ tdiscseq_parse(const char **str, meosType temptype)
   TInstant *inst = tinstant_parse(str, temptype, false);
   if (! inst)
     goto error;
-  meos_array_add(array, &inst);
+  meos_array_add(array, inst);
   while (p_comma(str))
   {
     inst = tinstant_parse(str, temptype, false);
     if (! inst)
       goto error;
-    meos_array_add(array, &inst);
+    meos_array_add(array, inst);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -729,7 +726,7 @@ tdiscseq_parse(const char **str, meosType temptype)
   pfree(instants);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 
@@ -762,13 +759,13 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
   TInstant *inst = tinstant_parse(str, temptype, false);
   if (! inst)
     goto error;
-  meos_array_add(array, &inst);
+  meos_array_add(array, inst);
   while (p_comma(str))
   {
     inst = tinstant_parse(str, temptype, false);
     if (! inst)
       goto error;
-    meos_array_add(array, &inst);
+    meos_array_add(array, inst);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -796,7 +793,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
   pfree(instants);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 
@@ -822,13 +819,13 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
   TSequence *seq = tcontseq_parse(str, temptype, interp, false);
   if (! seq)
     goto error;
-  meos_array_add(array, &seq);
+  meos_array_add(array, seq);
   while (p_comma(str))
   {
     seq = tcontseq_parse(str, temptype, interp, false);
     if (! seq)
       goto error;
-    meos_array_add(array, &seq);
+    meos_array_add(array, seq);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -842,7 +839,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
   pfree(sequences);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 
