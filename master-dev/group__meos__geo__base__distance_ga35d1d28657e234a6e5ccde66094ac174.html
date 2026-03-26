@@ -119,9 +119,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>geography_distance_uncached(PG_FUNCTION_ARGS)</code>. We set by default both <code>tolerance</code> and <code>use_spheroid</code> and initialize the spheroid to WGS84 </dd>
-<dd>
-Errors return -1 to replace return <code>NULL</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>geography_distance_uncached(PG_FUNCTION_ARGS)</code>. We set by default both <code>tolerance</code> and <code>use_spheroid</code> and initialize the spheroid to WGS84 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error or empty geometries return DBL_MAX </dd></dl>
 
 </div>
 </div>
