@@ -35,6 +35,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 /* MEOS */
 #include <meos.h>
@@ -94,14 +95,14 @@ tdistance_tfloat_float(const Temporal *temp, double d)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #NAD_tnumber_number()
  */
 int
 nad_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, -1.0);
+  VALIDATE_TINT(temp, INT_MAX);
   return (int) nad_tnumber_number(temp, Int32GetDatum(i));
 }
 
@@ -111,14 +112,14 @@ nad_tint_int(const Temporal *temp, int i)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] d Value
- * @return On error return -1
+ * @return On error return DBL_MAX
  * @csqlfn #NAD_tnumber_number()
  */
 double
 nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, -1.0);
+  VALIDATE_TFLOAT(temp, DBL_MAX);
   return nad_tnumber_number(temp, Float8GetDatum(d));
 }
 
@@ -128,7 +129,7 @@ nad_tfloat_float(const Temporal *temp, double d)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #NAD_tnumber_tbox()
  */
 int
@@ -136,7 +137,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
-    return -1;
+    return INT_MAX;
   return (int) nad_tnumber_tbox(temp, box);
 }
 
@@ -146,7 +147,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error return -1
+ * @return On error return DBL_MAX
  * @csqlfn #NAD_tnumber_tbox()
  */
 double
@@ -154,7 +155,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
-    return -1;
+    return DBL_MAX;
   return nad_tnumber_tbox(temp, box);
 }
 
@@ -162,7 +163,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the int temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #NAD_tbox_tbox()
  */
 int
@@ -170,7 +171,7 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
 {
   if (! ensure_span_isof_type(&box1->span, T_INTSPAN) ||
       ! ensure_span_isof_type(&box2->span, T_INTSPAN))
-    return -1;
+    return INT_MAX;
 
   return (int) nad_tbox_tbox(box1, box2);
 }
@@ -179,7 +180,7 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between the float temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
+ * @return On error return DBL_MAX
  * @csqlfn #NAD_tbox_tbox()
  */
 double
@@ -187,8 +188,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
 {
   if (! ensure_span_isof_type(&box1->span, T_FLOATSPAN) ||
       ! ensure_span_isof_type(&box2->span, T_FLOATSPAN))
-    return -1;
-
+    return DBL_MAX;
   return nad_tbox_tbox(box1, box2);
 }
 
@@ -196,14 +196,14 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between two temporal integers
  * @param[in] temp1,temp2 Temporal values
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #NAD_tnumber_tnumber()
  */
 int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp1, -1); VALIDATE_TINT(temp2, -1);
+  VALIDATE_TINT(temp1, INT_MAX); VALIDATE_TINT(temp2, INT_MAX);
     return (int) nad_tnumber_tnumber(temp1, temp2);
 }
 
@@ -211,14 +211,14 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance between two temporal floats
  * @param[in] temp1,temp2 Temporal values
- * @return On error return -1
+ * @return On error return DBL_MAX
  * @csqlfn #NAD_tnumber_tnumber()
  */
 double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp1, -1.0); VALIDATE_TFLOAT(temp2, -1.0);
+  VALIDATE_TFLOAT(temp1, DBL_MAX); VALIDATE_TFLOAT(temp2, DBL_MAX);
     return nad_tnumber_tnumber(temp1, temp2);
 }
 

@@ -116,7 +116,7 @@ trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   result = trgeoseq_make_free(geom, instants, array->count, true, true,
     DISCRETE, NORMALIZE_NO);
@@ -184,7 +184,7 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbracket(str);
   p_cparen(str);
@@ -235,7 +235,7 @@ trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
 
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
   p_cbrace(str);
   result = trgeoseqset_make_free(geom, sequences, array->count, NORMALIZE);

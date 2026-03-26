@@ -429,7 +429,7 @@ tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbrace(str);
   result = tsequence_make(instants, array->count, true, true, DISCRETE,
@@ -497,7 +497,7 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
   p_cbracket(str);
   p_cparen(str);
@@ -548,7 +548,7 @@ tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
 
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
-  for (int i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
   p_cbrace(str);
   result = tsequenceset_make(sequences, array->count, NORMALIZE);

@@ -243,7 +243,7 @@ temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
  * @param[out] upper Array index of the end of the segment 
  * @param[out] update Array of indices keeping the levels of the elements to
  * insert
- * @result Number of elements in the list that will be aggregated with the new
+ * @return Number of elements in the list that will be aggregated with the new
  * values, on error return -1
  */
 int
