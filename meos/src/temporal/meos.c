@@ -40,20 +40,24 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
-/* Proj */
-#include <proj.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 /***************************************************************************
- * Functions for the Gnu Scientific Library (GSL)
+ * Thread-local MEOS variables
  ***************************************************************************/
 
-/* Global variables */
+#if MEOS
+static _Thread_local bool MEOS_INITIALIZED = false;
+#endif /* MEOS */
+static _Thread_local bool MEOS_GSL_INITIALIZED = false;
+static _Thread_local gsl_rng *MEOS_GENERATION_RNG = NULL;
+static _Thread_local gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
-static bool MEOS_GSL_INITIALIZED = false;
-static gsl_rng *MEOS_GENERATION_RNG = NULL;
-static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
+/***************************************************************************
+ * Thread-Safe functions for the Gnu Scientific Library (GSL)
+ ***************************************************************************/
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -78,9 +82,16 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(MEOS_GENERATION_RNG);
-  gsl_rng_free(MEOS_AGGREGATION_RNG);
-  MEOS_GSL_INITIALIZED = false;
+  if (MEOS_GSL_INITIALIZED)
+  {
+    if (MEOS_GENERATION_RNG)
+      gsl_rng_free(MEOS_GENERATION_RNG);
+    if (MEOS_AGGREGATION_RNG)
+      gsl_rng_free(MEOS_AGGREGATION_RNG);
+    MEOS_GENERATION_RNG = NULL;
+    MEOS_AGGREGATION_RNG = NULL;
+    MEOS_GSL_INITIALIZED = false;
+  }
   return;
 }
 #endif /* MEOS */
@@ -105,49 +116,6 @@ gsl_get_aggregation_rng(void)
   if (! MEOS_GSL_INITIALIZED)
     gsl_initialize();
   return MEOS_AGGREGATION_RNG;
-}
-
-/***************************************************************************
- * Functions for the PROJ library
- ***************************************************************************/
-
-/* Global variables keeping Proj context */
-
-PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
-
-/**
- * @brief Initialize the PROJ library
- */
-static void
-proj_initialize(void)
-{
-  if (! MEOS_PJ_CONTEXT)
-    MEOS_PJ_CONTEXT = proj_context_create();
-  return;
-}
-
-#if MEOS
-/**
- * @brief Finalize the PROJ library
- */
-static void
-proj_finalize(void)
-{
-  proj_context_destroy(MEOS_PJ_CONTEXT);
-  MEOS_PJ_CONTEXT = NULL;
-  return;
-}
-#endif /* MEOS */
-
-/**
- * @brief Get the random generator used by temporal aggregation
- */
-PJ_CONTEXT *
-proj_get_context(void)
-{
-  if (! MEOS_PJ_CONTEXT)
-    proj_initialize();
-  return MEOS_PJ_CONTEXT;
 }
 
 /*****************************************************************************/
@@ -219,17 +187,19 @@ add_stringlist_item(_stringlist **listhead, const char *str)
 }
 
 /*
- * Free a stringlist.
+ * Free a stringlist
  */
 static void
 free_stringlist(_stringlist **listhead)
 {
-  if (listhead == NULL || *listhead == NULL)
-    return;
-  if ((*listhead)->next)
-    free_stringlist(&((*listhead)->next));
-  free((*listhead)->str);
-  free(*listhead);
+  _stringlist *cur = *listhead;
+  while (cur)
+  {
+    _stringlist *next = cur->next;
+    pfree(cur->str);
+    pfree(cur);
+    cur = next;
+  }
   *listhead = NULL;
 }
 
@@ -240,14 +210,14 @@ static void
 split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 {
   char *sc = pstrdup(s);
-  char *token = strtok(sc, delim);
-
+  char *saveptr;
+  char *token = strtok_r(sc, delim, &saveptr);
   while (token)
   {
     add_stringlist_item(listhead, token);
-    token = strtok(NULL, delim);
+    token = strtok_r(NULL, delim, &saveptr);
   }
-  free(sc);
+  pfree(sc);
 }
 
 /***************************************************************************
@@ -264,7 +234,7 @@ split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 /**
  * @brief Global constant array containing the datestyle strings
  */
-static const char * _DATESTYLE_STRINGS[] =
+static const char * const _DATESTYLE_STRINGS[] =
 {
   [USE_POSTGRES_DATES] = "Postgres",
   [USE_ISO_DATES] = "ISO",
@@ -276,7 +246,7 @@ static const char * _DATESTYLE_STRINGS[] =
 /**
  * @brief Global constant array containing the dateorder strings
  */
-static const char * _DATEORDER_STRINGS[] =
+static const char * const _DATEORDER_STRINGS[] =
 {
   [DATEORDER_YMD] = "YMD",
   [DATEORDER_DMY] = "DMY",
@@ -286,7 +256,7 @@ static const char * _DATEORDER_STRINGS[] =
 /**
  * @brief Global constant array containing the intervalstyle string
  */
-static const char * _INTERVALSTYLE_STRINGS[] =
+static const char * const _INTERVALSTYLE_STRINGS[] =
 {
   [INTSTYLE_POSTGRES] = "postgres",
   [INTSTYLE_POSTGRES_VERBOSE] = "postgres_verbose",
@@ -492,7 +462,7 @@ meos_get_datestyle(void)
   if (! result)
     return NULL;
   snprintf(result, DATESTYLE_STR_MAXLEN, "%s, %s", datestyle_string(DateStyle),
-    dateorder_string(DateStyle));
+    dateorder_string(DateOrder));
   return result;
 }
 
@@ -553,40 +523,73 @@ meos_get_intervalstyle(void)
   return result;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Thread functions for the MEOS library
+ *****************************************************************************/
 
-/*
- * Initialize MEOS library
+/**
+ * @brief Finalize the MEOS library per thread
+ */
+static void
+meos_finalize_thread(void)
+{
+  meos_finalize();
+}
+
+/**
+ * @brief Initialize the MEOS library per thread
+ */
+void
+meos_initialize_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize MEOS library
  */
 void
 meos_initialize(void)
 {
+  /* Register thread for clean up */
+  meos_initialize_thread();
+  if (MEOS_INITIALIZED)
+    return;
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
   /* Initialize PROJ */
-  proj_initialize();
+  meos_initialize_proj();
   /* Initialize GSL */
   gsl_initialize();
+#if NPOINT
+  /* Initialize Ways cache */
+  meos_initialize_ways();
+#endif
+  MEOS_INITIALIZED = true;
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @brief Free the MEOS thread-local variables
  */
 void
 meos_finalize(void)
 {
   meos_finalize_timezone();
-  /* Finalize PROJ SRS cache */
-  meos_finalize_projsrs();
+  /* Finalize PROJ */
+  meos_finalize_proj();
+  /* Finalize GSL */
+  gsl_finalize();
 #if NPOINT
   /* Finalize Ways cache */
   meos_finalize_ways();
 #endif
-  /* Finalize PROJ */
-  proj_finalize();
-  /* Finalize GSL */
-  gsl_finalize();
+  MEOS_INITIALIZED = false;
   return;
 }
 

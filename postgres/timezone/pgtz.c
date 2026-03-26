@@ -56,8 +56,8 @@ static void tzcache_my_destroy(tzcache_hash *tb);
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
 
-/* Current session timezone (controlled by TimeZone GUC) */
-pg_tz *session_timezone = NULL;
+/* Thread-local current session timezone (controlled by TimeZone GUC) */
+_Thread_local pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */
 // pg_tz *log_timezone = NULL; /* MEOS */
@@ -87,33 +87,34 @@ hash_string_pointer(const char *s)
 /* MEOS */
 // typedef struct {...} pg_tz_cache;
 
-static tzcache_hash *timezone_cache = NULL;
+/* Thread-local variable to hold the time zone cache */
+static _Thread_local tzcache_hash *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
 {
+  if (timezone_cache)
+    return true;
+
   /* MEOS: Create the timezone hash table */
   timezone_cache = tzcache_create(TZCACHE_INITIAL_SIZE, NULL);
-
-  if (!timezone_cache)
-    return false;
-
-  return true;
+  return timezone_cache != NULL;
 }
 
 /**
  * @brief Destroy function to free the memory allocated for the hash table
  */
-static void tzcache_my_destroy(tzcache_hash *tb)
+static void
+tzcache_my_destroy(tzcache_hash *tb)
 {
   tzcache_iterator it;
   tzentry *entry;
-  tzcache_start_iterate(timezone_cache, &it);
-  while ((entry = tzcache_iterate(timezone_cache, &it)) != NULL)
+  tzcache_start_iterate(tb, &it);
+  while ((entry = tzcache_iterate(tb, &it)) != NULL)
   {
-    if (entry->key != NULL)
-      pfree(entry->key); 
-    if (entry->data != NULL)
+    if (entry->key)
+      pfree(entry->key);
+    if (entry->data)
       pfree(entry->data);
   }
   tzcache_destroy(tb);
@@ -127,8 +128,8 @@ pg_TZDIR(void)
 {
 #ifndef SYSTEMTZDIR
   /* normal case: timezone stuff is under our share dir */
-  static bool done_tzdir = false;
-  static char tzdir[MAXPGPATH];
+  static _Thread_local bool done_tzdir = false;
+  static _Thread_local char tzdir[MAXPGPATH];
 
   if (done_tzdir)
     return tzdir;
@@ -387,7 +388,7 @@ pg_tzset(const char *name)
   entry = tzcache_insert(timezone_cache, uppername, &found);
   if (! found)
   {
-    entry->key = strdup(uppername);
+    entry->key = pstrdup(uppername);
     entry->data = cached_tz;
     return tz;
   }
@@ -439,12 +440,39 @@ pg_tzset_offset(long gmtoffset)
   return pg_tzset(tzname);
 }
 
-/*
- * Initialize timezone cache
+/*****************************************************************************/
+
+/**
+ * @brief Finalize the session timezone and timezone cache per thread
+ */
+static void
+meos_finalize_timezone_thread(void)
+{
+  meos_finalize_timezone();
+}
+
+/**
+ * @brief Initialize the session timezone and timezone cache per thread
+ */
+void
+meos_initialize_timezone_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_timezone_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize session timezone and timezone cache
  */
 void
 meos_initialize_timezone(const char *tz_str)
 {
+  /* Register thread for clean up */
+  meos_initialize_timezone_thread();
   if (tz_str == NULL || strlen(tz_str) == 0)
     /* fetch local timezone */
     tz_str = select_default_timezone(NULL);
@@ -461,16 +489,22 @@ meos_initialize_timezone(const char *tz_str)
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @brief Free session timezone and timezone cache
  */
 void
 meos_finalize_timezone(void)
 {
   if (session_timezone)
-    pfree(session_timezone); 
+  {
+    pfree(session_timezone);
+    session_timezone = NULL;
+  }
   if (timezone_cache)
+  {
     tzcache_my_destroy(timezone_cache);
+    timezone_cache = NULL;
+  }
   return;
 }
 /*****************************************************************************/

@@ -87,14 +87,17 @@ typedef struct struct_WaysCacheEntry
  * @note In normal usage we do not expect it to have many entries, so we
  * linearly scan the list
  */
-typedef struct struct_WaysCache
+typedef struct
 {
   WaysCacheEntry routes[WAYS_CACHE_SIZE];
   uint32_t count;
 } WaysCache;
 
-/* Global variable to hold the ways cache */
-WaysCache *MEOS_WAYS_CACHE = NULL;
+/* Thread-local variable to hold the ways cache */
+static _Thread_local WaysCache *MEOS_WAYS_CACHE = NULL;
+
+/* Thread-local variable saving the SRID of the ways table */
+static _Thread_local int32_t SRID_WAYS = SRID_INVALID;
 
 /*****************************************************************************
  * Cache management functions
@@ -105,17 +108,17 @@ WaysCache *MEOS_WAYS_CACHE = NULL;
  * the cache
  */
 static void
-DestroyWaysCache(WaysCache *ways_cache)
+ways_cache_destroy(WaysCache *cache)
 {
-  if (ways_cache)
+  if (cache)
   {
-    for (uint32_t i = 0; i < ways_cache->count; i++)
+    for (uint32_t i = 0; i < cache->count; i++)
     {
-      if (ways_cache->routes[i].the_geom)
-        pfree(ways_cache->routes[i].the_geom);
+      if (cache->routes[i].the_geom)
+        pfree(cache->routes[i].the_geom);
     }
   }
-  pfree(ways_cache);
+  pfree(cache);
   return;
 }
 
@@ -124,46 +127,35 @@ DestroyWaysCache(WaysCache *ways_cache)
  * If it doesn't exist, make a new blank one and return it.
 */
 static WaysCache *
-GetWaysCache()
+ways_cache_get()
 {
-  WaysCache *ways_cache = MEOS_WAYS_CACHE;
-  if (! ways_cache)
+  if (MEOS_WAYS_CACHE == NULL)
   {
-    /* Allocate memory */
-    ways_cache = palloc0(sizeof(WaysCache));
-    if (! ways_cache)
+    WaysCache *cache = palloc0(sizeof(WaysCache));
+    if (!cache)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Unable to allocate space for the ways cache");
       return NULL;
     }
+    MEOS_WAYS_CACHE = cache;
   }
-  MEOS_WAYS_CACHE = ways_cache;
-  return ways_cache;
-}
-
-/**
- * @brief Destroy the ways cache
- */
-void
-meos_finalize_ways(void)
-{
-  DestroyWaysCache(MEOS_WAYS_CACHE);
+  return MEOS_WAYS_CACHE;
 }
 
 /**
  * @brief Get a route from the ways cache, if not found return `NULL`
  */
 static WaysCacheEntry *
-GetRouteFromWaysCache(WaysCache *ways_cache, int64 gid, bool any_gid)
+ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid)
 {
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-  for (uint32_t i = 0; i < ways_cache->count; i++)
+  assert(cache->count <= WAYS_CACHE_SIZE);
+  for (uint32_t i = 0; i < cache->count; i++)
   {
-    if (any_gid || ways_cache->routes[i].gid == gid)
+    if (any_gid || cache->routes[i].gid == gid)
     {
-      ways_cache->routes[i].hits++;
-      return &ways_cache->routes[i];
+      cache->routes[i].hits++;
+      return &cache->routes[i];
     }
   }
   return NULL;
@@ -173,11 +165,12 @@ GetRouteFromWaysCache(WaysCache *ways_cache, int64 gid, bool any_gid)
  * @brief Remove from the ways cache the route in a given position 
  */
 static void
-DeleteRouteFromWaysCache(WaysCache *ways_cache, uint32_t position)
+ways_cache_delete(WaysCache *cache, uint32_t position)
 {
-  if (ways_cache->routes[position].the_geom)
-    pfree(ways_cache->routes[position].the_geom);
-  memset(&ways_cache->routes[position], 0, sizeof(WaysCacheEntry));
+  WaysCacheEntry *entry = &cache->routes[position];
+  if (entry->the_geom)
+    pfree(entry->the_geom);
+  memset(entry, 0, sizeof(WaysCacheEntry));
   return;
 }
 
@@ -185,43 +178,43 @@ DeleteRouteFromWaysCache(WaysCache *ways_cache, uint32_t position)
  * @brief Add a route to the ways cache
  */
 static WaysCacheEntry *
-AddRouteToWaysCache(WaysCache *ways_cache, ways_record *rec)
+ways_cache_add(WaysCache *cache, ways_record *rec)
 {
-  assert(ways_cache); assert(rec);
+  assert(cache); assert(rec);
 
   /* If the cache is full, find the least used element and delete it */
-  uint32_t cache_position = ways_cache->count;
+  uint32_t cache_position = cache->count;
   uint32_t hits = 1;
   if (cache_position == WAYS_CACHE_SIZE)
   {
     cache_position = 0;
-    hits = ways_cache->routes[0].hits;
+    hits = cache->routes[0].hits;
     for (uint32_t i = 1; i < WAYS_CACHE_SIZE; i++)
     {
-      if (ways_cache->routes[i].hits < hits)
+      if (cache->routes[i].hits < hits)
       {
         cache_position = i;
-        hits = ways_cache->routes[i].hits;
+        hits = cache->routes[i].hits;
       }
     }
-    DeleteRouteFromWaysCache(ways_cache, cache_position);
+    ways_cache_delete(cache, cache_position);
     /* To avoid the element we are introduced now being evicted next (as it
      * would have 1 hit, being most likely the lower one) we reuse the hits
      * from the evicted position and add some extra buffer */
     hits += 5;
   }
   else
-    ways_cache->count++;
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
+    cache->count++;
+  assert(cache->count <= WAYS_CACHE_SIZE);
 
   /* Store everything in new cache entry */
   assert(cache_position < WAYS_CACHE_SIZE);
-  ways_cache->routes[cache_position].gid = rec->gid;
-  ways_cache->routes[cache_position].the_geom = rec->the_geom;
-  ways_cache->routes[cache_position].length = rec->length;
-  ways_cache->routes[cache_position].hits = hits;
+  cache->routes[cache_position].gid = rec->gid;
+  cache->routes[cache_position].the_geom = rec->the_geom;
+  cache->routes[cache_position].length = rec->length;
+  cache->routes[cache_position].hits = hits;
 
-  return &ways_cache->routes[cache_position];
+  return &cache->routes[cache_position];
 }
 
 /**
@@ -269,7 +262,7 @@ get_ways_record(int64 rid, ways_record *rec)
           break;
         }
       }
-      free(rec->the_geom);
+      pfree(rec->the_geom);
     }
   } while (! feof(file));
 
@@ -282,28 +275,80 @@ get_ways_record(int64 rid, ways_record *rec)
 /**
  * @brief Return true if a Ways entry was read from the ways cache,
  * return false otherwise
+ * @param[in] gid Route identifier
+ * @param[in] any_gid True for finding any route identifier, for example, when
+ * fetching for the first time the SRID of the ways table
+ * @param[out] rec Record found in the cache
  */
 static bool
 route_lookup(int64 gid, bool any_gid, ways_record *rec)
 {
   /* Get or initialize the cache for this round */
-  WaysCache* ways_cache = GetWaysCache();
-  if (! ways_cache)
+  WaysCache* cache = ways_cache_get();
+  if (! cache)
     return true;
 
   /* Add the route to the cache if it is not already there */
-  WaysCacheEntry *ways_entry = GetRouteFromWaysCache(ways_cache, gid, any_gid);
-  if (ways_entry == NULL)
+  WaysCacheEntry *ways_entry = ways_cache_lookup(cache, gid, any_gid);
+  if (! ways_entry)
   {
     if (! get_ways_record(gid, rec))
       return false;
-    ways_entry = AddRouteToWaysCache(ways_cache, rec);
-    return true;
+    ways_entry = ways_cache_add(cache, rec);
   }
   /* The route was found in the cache */
   rec->gid = gid; rec->the_geom = ways_entry->the_geom;
   rec->length = ways_entry->length;
   return true;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Finalize the ways cache at t
+ */
+static void
+meos_finalize_ways_thread(void)
+{
+  meos_finalize_ways();
+}
+
+/**
+ * @brief Initialize the ways cache
+ */
+void
+meos_initialize_ways_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_ways_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Destroy the ways cache
+ */
+void
+meos_initialize_ways(void)
+{
+  /* Register thread for clean up */
+  meos_initialize_ways_thread();
+}
+
+/**
+ * @brief Destroy the ways cache
+ */
+void
+meos_finalize_ways(void)
+{
+  if (MEOS_WAYS_CACHE)
+  {
+    ways_cache_destroy(MEOS_WAYS_CACHE);
+    MEOS_WAYS_CACHE = NULL;
+  }
+  return;
 }
 
 /*****************************************************************************
@@ -359,6 +404,10 @@ route_length(int64 rid)
 int32_t
 get_srid_ways()
 {
+  /* Get the value from the global variable if it has been already set */
+  if (SRID_WAYS != SRID_INVALID)
+    return SRID_WAYS;
+
   ways_record rec;
   if (route_lookup(0, true, &rec) == LW_FAILURE)
     return SRID_INVALID;
@@ -430,14 +479,14 @@ geompoint_to_npoint(const GSERIALIZED *gs)
       /* Continue if the geometry is empty */
       if (geo_is_empty(rec.the_geom))
       {
-        free(rec.the_geom);
+        pfree(rec.the_geom);
         continue;
       }
       /* Continue if the point is not in the line */
       pos = line_locate_point(rec.the_geom, gs);
       if (pos < 0)
       {
-        free(rec.the_geom);
+        pfree(rec.the_geom);
         continue;
       }
       /* Compute minimal distance */
@@ -447,11 +496,11 @@ geompoint_to_npoint(const GSERIALIZED *gs)
         min_dist = dist;
         /* Previous previous candidate to shortest distance */
         if (the_geom)
-          free(the_geom);
+          pfree(the_geom);
         the_geom = rec.the_geom;
       }
       else
-        free(rec.the_geom);
+        pfree(rec.the_geom);
     }
   } while (! feof(file));
 
@@ -463,7 +512,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
     return NULL;
 
   Npoint *result = npoint_make(rec.gid, pos);
-  free(the_geom);
+  pfree(the_geom);
   return result;
 }
 

@@ -38,46 +38,80 @@
 #endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 #define MAX_PROJ_LEN  512
+
+/***************************************************************************
+ * Functions for the PROJ library
+ ***************************************************************************/
+
+/* Thread-local variable */
+static _Thread_local PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+
+/**
+ * @brief Get the PROJ context
+ * @note PROJ contexts are NOT thread-safe for sharing. Each thread MUST have
+ * its own context.
+ */
+static void
+proj_initialize(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    MEOS_PJ_CONTEXT = proj_context_create();
+  return;
+}
+
+#if MEOS
+/**
+ * @brief Finalize the PROJ library
+ */
+static void
+proj_finalize(void)
+{
+  if (MEOS_PJ_CONTEXT)
+  {
+    proj_context_destroy(MEOS_PJ_CONTEXT);
+    MEOS_PJ_CONTEXT = NULL;
+  }
+  return;
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Data structures
  *****************************************************************************/
 
+/**
+ * @brief Size of the Proj cache
+ */
+#define PROJ_CACHE_ITEMS 128
+
 /* An entry in the PROJ SRS cache */
-typedef struct struct_PROJSRSCacheItem
+typedef struct
 {
   int32_t srid_from;
   int32_t srid_to;
-  uint64_t hits;
   LWPROJ *projection;
-} PROJSRSCacheItem;
-
-/* PROJ 4 lookup transaction cache methods */
-#define PROJ_CACHE_ITEMS 128
+  uint64_t last_used; /* LRU timestamp */
+} MEOSPROJCacheItem;
 
 /**
- * @brief The proj4 cache holds a fixed number of reprojection entries
+ * @brief The Proj4 cache holds a fixed number of reprojection entries
  * @details In normal usage we don't expect it to have many entries, so we
  * always linearly scan the list.
- * @note The structure removes the context field from PostGIS PROJSRSCache
+ * @note The structure is derived from PostGIS PROJSRSCache
  */
-typedef struct struct_MEOSPROJSRSCache
+typedef struct
 {
-  PROJSRSCacheItem MEOSPROJSRSCache[PROJ_CACHE_ITEMS];
-  uint32_t PROJSRSCacheCount;
-} MEOSPROJSRSCache;
+  MEOSPROJCacheItem items[PROJ_CACHE_ITEMS];
+  uint32_t count;
+  uint64_t clock;
+  uint32_t last_index;   /* fast-path hint */
+} MEOSPROJCache;
 
-/**
- * @brief PROJ 4 backend hash table initial hash size (since 16 is the default
- * portal hash table size, and we would typically have 2 entries per portal
- * then we shall use a default size of 256)
- */
-#define PROJ_BACKEND_HASH_SIZE 256
-
-/* Global variable to hold the Proj object cache */
-MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
+/* Thread-local variable to hold the Proj object cache */
+static _Thread_local MEOSPROJCache *MEOS_PROJ_CACHE = NULL;
 
 /**
  * @brief Utility structure to get many potential string representations
@@ -99,8 +133,11 @@ typedef struct
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LEN_SRS_RECORD 5120
-/* Location of the spatial_ref_sys.csv file */
-char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
+/* Default location of the spatial_ref_sys.csv file */
+static const char *DEFAULT_SPATIAL_REF_SYS_CSV =
+  "/usr/local/share/spatial_ref_sys.csv";
+/* Thread-local variable for the location of the spatial_ref_sys.csv file */
+static _Thread_local char *SPATIAL_REF_SYS_CSV = NULL;
 
 /**
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
@@ -108,8 +145,12 @@ char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 void
 meos_set_spatial_ref_sys_csv(const char* path)
 {
-  SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
-  strcpy(SPATIAL_REF_SYS_CSV, path);
+  char *newpath = strdup(path);
+  if (! newpath)
+    return;
+
+  pfree(SPATIAL_REF_SYS_CSV);
+  SPATIAL_REF_SYS_CSV = newpath;
 }
 
 typedef struct
@@ -121,92 +162,7 @@ typedef struct
 } spatial_ref_sys_record;
 #endif /* MEOS */
 
-/*****************************************************************************
- * General functions
- *****************************************************************************/
-
-/**
- * @brief Delete a PROJ structure referenced by a PostGIS projection structure
- */
-static void
-PROJSRSDestroyPJ(void *projection)
-{
-  LWPROJ *pj = (LWPROJ *) projection;
-  if (pj->pj)
-  {
-    proj_destroy(pj->pj);
-    pj->pj = NULL;
-  }
-  pfree(pj);
-}
-
-/**
- * @brief Get the Proj cache entry from the global variable if one exists.
- * If it doesn't exist, make a new blank one and return it.
-*/
-MEOSPROJSRSCache *
-GetMEOSPROJSRSCache()
-{
-  MEOSPROJSRSCache* cache = MEOS_PROJ_CACHE;
-  if (! cache)
-  {
-    /* Allocate memory */
-    cache = palloc(sizeof(MEOSPROJSRSCache));
-    if (! cache)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unable to allocate space for MEOSPROJSRSCache");
-      return NULL;
-    }
-    cache->PROJSRSCacheCount = 0;
-    MEOS_PROJ_CACHE = cache;
-  }
-  return cache;
-}
-
-/**
- * @brief Destroy all the malloc'ed PROJ objects stored in the PROJSRSCache
- */
-void
-meos_finalize_projsrs(void)
-{
-  MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
-  if (cache)
-  {
-    for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
-    {
-      if (cache->MEOSPROJSRSCache[i].projection)
-        PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
-    }
-  }
-  pfree(cache);
-  return;
-}
-
-/*****************************************************************************
- * Per-cache management functions
- *****************************************************************************/
-
-/**
- * @brief Get a PROJ structure from the PROJ cache
- * @return On error return `NULL`
- */
-static LWPROJ *
-GetProjectionFromPROJCache(MEOSPROJSRSCache *cache, int32_t srid_from,
-  int32_t srid_to)
-{
-  uint32_t i;
-  for (i = 0; i < cache->PROJSRSCacheCount; i++)
-  {
-    if (cache->MEOSPROJSRSCache[i].srid_from == srid_from &&
-        cache->MEOSPROJSRSCache[i].srid_to == srid_to)
-    {
-      cache->MEOSPROJSRSCache[i].hits++;
-      return cache->MEOSPROJSRSCache[i].projection;
-    }
-  }
-  return NULL;
-}
+/*****************************************************************************/
 
 #if ! MEOS
 /**
@@ -226,7 +182,7 @@ SPI_pstrdup(const char *str)
 #endif /* ! MEOS */
 
 /**
- * @brief Return the PROJ strings of an SRID either from a CSV file
+ * @brief Return the PROJ strings of an SRID either from the CSV file
  * `spatial_ref_sys.csv` (for MEOS) or from the PostGIS table
  * `spatial_ref_sys` (for MobilityDB)
  * @note The PostGIS function is copied here since it is declared as `static`
@@ -245,10 +201,14 @@ GetProjStringsSPI(int32_t srid)
   memset(&strs, 0, sizeof(strs));
 
   /* Substitute the full file path in the first argument of fopen */
-  FILE *file = fopen(SPATIAL_REF_SYS_CSV, "r");
+  const char *path = SPATIAL_REF_SYS_CSV ?
+    SPATIAL_REF_SYS_CSV : DEFAULT_SPATIAL_REF_SYS_CSV;
+  
+  FILE *file = fopen(path, "r");
   if (! file)
   {
-    printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n", SPATIAL_REF_SYS_CSV);
+    printf("Cannot open the spatial_ref_sys.csv file (reading from %s)\n",
+      path);
     return strs;
   }
 
@@ -524,17 +484,121 @@ pgstrs_get_entry(const PjStrs *strs, int n)
   }
 }
 
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
 /**
- * @brief Remove an entry to the PROJ SRS cache
+ * @brief Delete a PROJ structure referenced by a PostGIS projection structure
  */
 static void
-DeleteFromMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, uint32_t position)
+PROJSRSDestroyPJ(void *projection)
 {
-  /* Call PROJSRSDestroyPJ to free the PROJ objects memory */
-  PROJSRSDestroyPJ(PROJCache->MEOSPROJSRSCache[position].projection);
-  PROJCache->MEOSPROJSRSCache[position].projection = NULL;
-  PROJCache->MEOSPROJSRSCache[position].srid_from = SRID_UNKNOWN;
-  PROJCache->MEOSPROJSRSCache[position].srid_to = SRID_UNKNOWN;
+  LWPROJ *pj = (LWPROJ *) projection;
+  if (pj->pj)
+    proj_destroy(pj->pj);
+  pfree(pj);
+}
+
+/**
+ * @brief Create a Proj cache .
+ */
+static MEOSPROJCache *
+proj_cache_create(void)
+{
+  MEOSPROJCache *cache = palloc(sizeof(MEOSPROJCache));
+  if (! cache)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unable to allocate space for MEOSPROJCache");
+    return NULL;
+  }
+  memset(cache, 0, sizeof(MEOSPROJCache));
+  cache->last_index = UINT32_MAX;
+  return cache;
+}
+
+/**
+ * @brief Get the Proj cache entry from the global variable if one exists.
+ * If it doesn't exist, make a new blank one and return it.
+*/
+MEOSPROJCache *
+proj_cache_get()
+{
+  if (! MEOS_PROJ_CACHE)
+    MEOS_PROJ_CACHE = proj_cache_create();
+  return MEOS_PROJ_CACHE;
+}
+
+/**
+ * @brief Destroy all the malloc'ed PROJ objects stored in the MEOSPROJCache
+ */
+static void
+proj_cache_destroy(void)
+{
+  MEOSPROJCache *cache = MEOS_PROJ_CACHE;
+  if (! cache)
+    return;
+  for (uint32_t i = 0; i < cache->count; i++)
+  {
+    if (cache->items[i].projection)
+      PROJSRSDestroyPJ(cache->items[i].projection);
+  }
+  pfree(cache);
+  MEOS_PROJ_CACHE = NULL;
+  return;
+}
+
+/*****************************************************************************
+ * Per-cache management functions
+ *****************************************************************************/
+
+/**
+ * @brief Get a PROJ structure from the PROJ cache
+ * @return On error return `NULL`
+ */
+static LWPROJ *
+proj_cache_lookup(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
+{
+  /* Fast path testing the last entry */
+  if (cache->last_index < cache->count)
+  {
+    MEOSPROJCacheItem *item = &cache->items[cache->last_index];
+    if (item->srid_from == srid_from && item->srid_to == srid_to)
+    {
+      item->last_used = ++cache->clock;
+      return item->projection;
+    }
+  }
+
+  /* Loop to find the entry */
+  for (uint32_t i = 0; i < cache->count; i++)
+  {
+    MEOSPROJCacheItem *item = &cache->items[i];
+    if (item->srid_from == srid_from && item->srid_to == srid_to)
+    {
+      item->last_used = ++cache->clock;
+      cache->last_index = i;
+      return item->projection;
+    }
+  }
+  return NULL;
+}
+
+static uint32_t
+proj_cache_lru_index(MEOSPROJCache *cache)
+{
+  uint32_t lru = 0;
+  uint64_t oldest = cache->items[0].last_used;
+  for (uint32_t i = 1; i < cache->count; i++)
+  {
+    if (cache->items[i].last_used < oldest)
+    {
+      oldest = cache->items[i].last_used;
+      lru = i;
+    }
+  }
+  return lru;
 }
 
 /**
@@ -544,83 +608,65 @@ DeleteFromMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, uint32_t position)
  * the other half of the transformation.
  */
 static LWPROJ *
-AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
-  int32_t srid_to)
+proj_cache_insert(MEOSPROJCache *cache, int32_t srid_from, int32_t srid_to)
 {
-  PjStrs from_strs, to_strs;
-  char *pj_from_str, *pj_to_str;
-
-  /* Turn the SRID number into a proj4 string, by reading from spatial_ref_sys
+  /* Turn the SRID number into a Proj4 string, by reading from spatial_ref_sys
    * or instantiating a magical value from a negative srid */
-  from_strs = GetProjStrings(srid_from);
-  if (! pjstrs_has_entry(&from_strs))
+  PjStrs from = GetProjStrings(srid_from);
+  if (! pjstrs_has_entry(&from))
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_from);
-  to_strs = GetProjStrings(srid_to);
-  if (! pjstrs_has_entry(&to_strs))
+    return NULL;
+  }
+  PjStrs to = GetProjStrings(srid_to);
+  if (! pjstrs_has_entry(&to))
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_to);
+    return NULL;
+  }
 
-  LWPROJ *projection = NULL;
   /* Try combinations of AUTH_NAME:AUTH_SRID/SRTEXT/PROJ4TEXT until we find
    * one that gives us a usable transform. Note that we prefer
    * AUTH_NAME:AUTH_SRID over SRTEXT and SRTEXT over PROJ4TEXT
    * (3 entries * 3 entries = 9 combos) */
-  uint32_t i;
-  for (i = 0; i < 9; i++)
+  LWPROJ *projection = NULL;
+  for (uint32_t i = 0; i < 9; i++)
   {
-    pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
-    pj_to_str = pgstrs_get_entry(&to_strs, i % 3);
-    if (! (pj_from_str && pj_to_str))
+    char *from_str = pgstrs_get_entry(&from, i / 3);
+    char *to_str = pgstrs_get_entry(&to, i % 3);
+    if (! from_str || ! to_str)
       continue;
-
-    projection = lwproj_from_str(pj_from_str, pj_to_str);
+    projection = lwproj_from_str(from_str, to_str);
     if (projection)
       break;
   }
   if (! projection)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-      "could not form projection (LWPROJ) from 'srid=%d' to 'srid=%d'", srid_from, srid_to);
+      "could not form projection (LWPROJ) from 'srid=%d' to 'srid=%d'",
+      srid_from, srid_to);
     return NULL;
   }
 
-  /* If the cache is already full then find the least used element and delete it */
-  uint32_t cache_position = PROJCache->PROJSRSCacheCount;
-  uint32_t hits = 1;
-  if (cache_position == PROJ_CACHE_ITEMS)
-  {
-    cache_position = 0;
-    hits = PROJCache->MEOSPROJSRSCache[0].hits;
-    for (uint32_t i = 1; i < PROJ_CACHE_ITEMS; i++)
-    {
-      if (PROJCache->MEOSPROJSRSCache[i].hits < hits)
-      {
-        cache_position = i;
-        hits = PROJCache->MEOSPROJSRSCache[i].hits;
-      }
-    }
-    DeleteFromMEOSPROJSRSCache(PROJCache, cache_position);
-    /* To avoid the element we are introduced now being evicted next (as
-     * it would have 1 hit, being most likely the lower one) we reuse the
-     * hits from the evicted position and add some extra buffer
-     */
-    hits += 5;
-  }
+  /* If the cache is full then find the least used element and delete it */
+  uint32_t pos;
+  if (cache->count < PROJ_CACHE_ITEMS)
+    pos = cache->count++;
   else
   {
-    PROJCache->PROJSRSCacheCount++;
+    pos = proj_cache_lru_index(cache);
+    PROJSRSDestroyPJ(cache->items[pos].projection);
   }
+  cache->items[pos].srid_from = srid_from;
+  cache->items[pos].srid_to = srid_to;
+  cache->items[pos].projection = projection;
+  cache->items[pos].last_used = ++cache->clock;
+  cache->last_index = pos;
 
-  /* Free the projection strings */
-  pjstrs_pfree(&from_strs);
-  pjstrs_pfree(&to_strs);
-
-  /* Store everything in new cache entry */
-  PROJCache->MEOSPROJSRSCache[cache_position].srid_from = srid_from;
-  PROJCache->MEOSPROJSRSCache[cache_position].srid_to = srid_to;
-  PROJCache->MEOSPROJSRSCache[cache_position].projection = projection;
-  PROJCache->MEOSPROJSRSCache[cache_position].hits = hits;
+  pjstrs_pfree(&from);
+  pjstrs_pfree(&to);
 
   return projection;
 }
@@ -635,18 +681,18 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
 int
 lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj)
 {
-  /* get or initialize the cache for this round */
-  MEOSPROJSRSCache* proj_cache = GetMEOSPROJSRSCache();
-  if (! proj_cache)
+  /* get or initialize the cache */
+  MEOSPROJCache* cache = proj_cache_get();
+  if (! cache)
     return LW_FAILURE;
 
   /* Add the output SRID to the cache if it is not already there */
-  *pj = GetProjectionFromPROJCache(proj_cache, srid_from, srid_to);
+  *pj = proj_cache_lookup(cache, srid_from, srid_to);
   if (*pj == NULL)
   {
-    *pj = AddToMEOSPROJSRSCache(proj_cache, srid_from, srid_to);
+    *pj = proj_cache_insert(cache, srid_from, srid_to);
   }
-  return *pj != NULL;
+  return (*pj != NULL);
 }
 #endif /* MEOS */
 
@@ -667,5 +713,54 @@ spheroid_init_from_srid(int32_t srid, SPHEROID *s)
   return LW_SUCCESS;
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Thread functions for the PROJ library, the PROJ cache, the location of the
+ * spatial_ref_sys.csv file
+ *****************************************************************************/
+
+/**
+ * @brief Finalize the PROJ library and PROJ cache per thread
+ */
+static void
+meos_finalize_proj_thread(void)
+{
+  meos_finalize_proj();
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache per thread
+ */
+void
+meos_initialize_proj_thread(void)
+{
+  static int registered = 0;
+  if (! registered)
+  {
+    meos_register_thread_cleanup(meos_finalize_proj_thread);
+    registered = 1;
+  }
+}
+
+/**
+ * @brief Initialize the PROJ library and PROJ cache
+ */
+void
+meos_initialize_proj(void)
+{
+  /* Register thread for clean up */
+  meos_initialize_proj_thread();
+  proj_initialize();
+}
+
+/**
+ * @brief Finalize the PROJ library and PROJ cache
+ */
+void
+meos_finalize_proj(void)
+{
+  proj_finalize();
+  proj_cache_destroy();
+}
 
 /*****************************************************************************/

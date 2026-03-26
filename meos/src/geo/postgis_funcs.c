@@ -2470,12 +2470,10 @@ geography_centroid_from_wpoints(const int32_t srid, const POINT3DM *points,
   double_t y_sum = 0;
   double_t z_sum = 0;
   double_t weight_sum = 0;
-  double_t weight = 1;
-  POINT3D* point;
   for (uint32_t i = 0; i < size; i++ )
   {
-    point = lonlat_to_cart(points[i].x, points[i].y);
-    weight = points[i].m;
+    POINT3D *point = lonlat_to_cart(points[i].x, points[i].y);
+    double_t weight = points[i].m;
     x_sum += point->x * weight;
     y_sum += point->y * weight;
     z_sum += point->z * weight;
@@ -3190,7 +3188,7 @@ geom_in(const char *str, int32 typmod)
     {
       meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "Could not parse geometry value: %s", str);
-      return false;
+      return NULL;
     }
 
     /* Check next character to see if we have WKB */
@@ -4117,7 +4115,7 @@ line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 /**
  * @brief Global constant array containing the geometry type strings
  */
-static const char * _GEO_TYPENAME[] =
+static const char * const _GEO_TYPENAME[] =
 {
   "Unknown",
   "Point",

@@ -16,6 +16,9 @@
 
 /* Prototypes */
 
+extern void meos_initialize_proj(void);
+extern void meos_finalize_proj(void);
+
 extern int lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj);
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 extern void srid_check_latlong(int32_t srid);
