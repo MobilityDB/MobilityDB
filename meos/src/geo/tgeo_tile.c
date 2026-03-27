@@ -501,7 +501,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 void
 stbox_tile_state_set(double x, double y, double z, TimestampTz t, double xsize,
   double ysize, double zsize, int64 tunits, bool hasx, bool hasz, bool hast,
-  int32 srid, STBox *result)
+  int32_t srid, STBox *result)
 {
   assert(hasx || hast);
 
@@ -682,7 +682,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
       return NULL;
   if (sorigin)
   {    
-    int32 srid = bounds->srid;
+    int32_t srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
       return NULL;
@@ -836,8 +836,8 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xmin = 0, ymin = 0, zmin = 0;
   bool hasz = false;
   int64 tunits = hast ? interval_units(duration) : 0;
-  int32 srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
-  int32 gs_srid = hasx ? gserialized_get_srid(sorigin) : SRID_UNKNOWN;
+  int32_t srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
+  int32_t gs_srid = hasx ? gserialized_get_srid(sorigin) : SRID_UNKNOWN;
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;

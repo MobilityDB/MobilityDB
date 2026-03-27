@@ -112,7 +112,7 @@ extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 
 /* Constructor functions for box types */
 
-extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *box);
+extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *box);
 
 /*****************************************************************************/
 

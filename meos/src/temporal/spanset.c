@@ -337,7 +337,7 @@ spanset_make(Span *spans, int count)
   VALIDATE_NOT_NULL(spans, NULL);
   if (! ensure_positive(count))
     return NULL;
-  return spanset_make_exp(spans, count, count, true, true);
+  return spanset_make_exp(spans, count, count, NORMALIZE, ORDER);
 }
 #endif /* MEOS */
 

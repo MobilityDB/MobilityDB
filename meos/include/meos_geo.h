@@ -330,7 +330,7 @@ extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
 extern char *geo_as_text(const GSERIALIZED *gs, int precision);
-extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid);
+extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
 extern char *geo_out(const GSERIALIZED *gs);
@@ -506,7 +506,7 @@ extern char *stbox_out(const STBox *box, int maxdd);
 extern STBox *geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t);
 extern STBox *geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s);
 extern STBox *stbox_copy(const STBox *box);
-extern STBox *stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s);
+extern STBox *stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s);
 
 /* Conversion functions */
 
@@ -631,7 +631,7 @@ extern Temporal *tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *te
 extern TInstant *tpointinst_make(const GSERIALIZED *gs, TimestampTz t);
 extern TSequence *tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s);
 extern TSequence *tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
-extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
+extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32_t srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss, interpType interp);
 
 /* Conversion functions */

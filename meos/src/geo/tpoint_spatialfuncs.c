@@ -3707,6 +3707,9 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
   return bitarr;
 }
 
+/**
+ * @brief Merge a POINT2D and a GBOX
+ */
 static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
 {
   if ( gbox->xmin > p->x ) gbox->xmin = p->x;
@@ -3715,6 +3718,9 @@ static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
   if ( gbox->ymax < p->y ) gbox->ymax = p->y;
 }
 
+/**
+ * @brief Initialize a GBOX with a POINT2D
+ */
 static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
 {
   gbox->xmin = gbox->xmax = p->x;

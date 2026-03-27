@@ -326,7 +326,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @csqlfn #Stbox_constructor()
  */
 STBox *
-stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s)
 {
@@ -359,7 +359,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
  * @note This function is equivalent to #stbox_make without memory allocation
  */
 void
-stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+stbox_set(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s, STBox *box)
 {

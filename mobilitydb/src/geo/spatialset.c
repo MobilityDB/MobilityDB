@@ -270,7 +270,7 @@ Datum
 Spatialset_set_srid(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   Set *result = spatialset_set_srid(s, srid);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
@@ -287,7 +287,7 @@ Datum
 Spatialset_transform(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   Set *result = spatialset_transform(s, srid);
   PG_FREE_IF_COPY(s, 0);
   if (! result)

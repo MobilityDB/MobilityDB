@@ -654,8 +654,7 @@ tstzarr_sort(TimestampTz *times, int count)
 void
 spanarr_sort(Span *spans, int count)
 {
-  qsort(spans, (size_t) count, sizeof(Span),
-    (qsort_comparator) &span_cmp);
+  qsort(spans, (size_t) count, sizeof(Span), (qsort_comparator) &span_cmp);
   return;
 }
 

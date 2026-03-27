@@ -242,7 +242,7 @@ Datum
 Tspatial_set_srid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   Temporal *result = tspatial_set_srid(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);

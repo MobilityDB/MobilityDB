@@ -32,6 +32,8 @@
  * @brief Temporal distance for temporal poses
  */
 
+/* C */
+#include <float.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>

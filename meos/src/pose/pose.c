@@ -1021,7 +1021,7 @@ pose_srid(const Pose *pose)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, SRID_INVALID);
 
-  int32 srid = 0;
+  int32_t srid = 0;
   srid = srid | (pose->srid[0] << 16);
   srid = srid | (pose->srid[1] << 8);
   srid = srid | (pose->srid[2]);
@@ -1346,8 +1346,7 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
 
-  int32 srid1 = pose_srid(pose1),
-        srid2 = pose_srid(pose2);
+  int32_t srid1 = pose_srid(pose1), srid2 = pose_srid(pose2);
   if (srid1 < srid2)
     return -1;
   else if (srid1 > srid2)

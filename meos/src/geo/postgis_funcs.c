@@ -168,7 +168,7 @@ gbox_out(const GBOX *box, int maxdd)
  */
 BOX3D *
 box3d_make(double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax, int32 srid)
+  double zmin, double zmax, int32_t srid)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   BOX3D *result = palloc0(sizeof(BOX3D));
@@ -3450,7 +3450,7 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
  * @note wkb is in *binary* not hex form
  */
 GSERIALIZED *
-geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
+geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(wkb, NULL);

@@ -56,6 +56,9 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 
+extern TSequenceSet *tpointseq_linear_at_geom(const TSequence *seq,
+  const GSERIALIZED *gs);
+
 /*****************************************************************************/
 
 #if MEOS
@@ -177,7 +180,7 @@ tpoint_force2d(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_force2d;
   lfinfo.numparam = 1;
-  int32 srid = tspatial_srid(temp);
+  int32_t srid = tspatial_srid(temp);
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
@@ -1395,7 +1398,7 @@ tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
 
 /**
  * @brief Return a temporal point instant restricted to (the complement of) a
- * spatiotemporal box (iterator function)
+ * geometry (iterator function)
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
@@ -1746,110 +1749,110 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
   return result;
 }
 
-/**
- * @brief Return a temporal point sequence with linear interpolation
- * restricted to a geometry
- * @details The computation is based on the PostGIS function @p ST_Intersection
- * which delegates the computation to GEOS. The geometry must be in 2D.
- * When computing the intersection the Z values of the temporal point must
- * be dropped since the Z values "are copied, averaged or interpolated"
- * as stated in https://postgis.net/docs/ST_Intersection.html
- * After this computation, the Z values are recovered by restricting the
- * original sequence to the time span of the 2D result.
- * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
- * This is verified in #tgeo_restrict_geom
- */
-static TSequenceSet *
-tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
-{
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
+// /**
+ // * @brief Return a temporal point sequence with linear interpolation
+ // * restricted to a geometry
+ // * @details The computation is based on the PostGIS function @p ST_Intersection
+ // * which delegates the computation to GEOS. The geometry must be in 2D.
+ // * When computing the intersection the Z values of the temporal point must
+ // * be dropped since the Z values "are copied, averaged or interpolated"
+ // * as stated in https://postgis.net/docs/ST_Intersection.html
+ // * After this computation, the Z values are recovered by restricting the
+ // * original sequence to the time span of the 2D result.
+ // * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
+ // * This is verified in #tgeo_restrict_geom
+ // */
+// static TSequenceSet *
+// tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
+// {
+  // assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
 
-  /* Bounding box test */
-  STBox box1, box2;
-  tspatialseq_set_stbox(seq, &box1);
-  /* Non-empty geometries have a bounding box */
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
-    return NULL;
+  // /* Bounding box test */
+  // STBox box1, box2;
+  // tspatialseq_set_stbox(seq, &box1);
+  // /* Non-empty geometries have a bounding box */
+  // geo_set_stbox(gs, &box2);
+  // if (! overlaps_stbox_stbox(&box1, &box2))
+    // return NULL;
 
-  /* Convert the point to 2D before computing the restriction to geometry */
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  TSequence *seq2d = hasz ?
-    (TSequence *) tpoint_force2d((Temporal *) seq) : (TSequence *) seq;
+  // /* Convert the point to 2D before computing the restriction to geometry */
+  // bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  // TSequence *seq2d = hasz ?
+    // (TSequence *) tpoint_force2d((Temporal *) seq) : (TSequence *) seq;
 
-  /* Split the temporal point in an array of non self-intersecting fragments
-   * to be able to recover the time dimension after obtaining the spatial
-   * intersection */
-  int nsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq2d, &nsimple);
-  Span *allperiods = NULL; /* make compiler quiet */
-  int totalpers = 0;
-  GSERIALIZED *traj, *inter;
+  // /* Split the temporal point in an array of non self-intersecting fragments
+   // * to be able to recover the time dimension after obtaining the spatial
+   // * intersection */
+  // int nsimple;
+  // TSequence **simpleseqs = tpointseq_make_simple(seq2d, &nsimple);
+  // Span *allperiods = NULL; /* make compiler quiet */
+  // int totalpers = 0;
+  // GSERIALIZED *traj, *inter;
 
-  if (nsimple == 1)
-  {
-    /* Particular case when the input sequence is simple */
-    pfree_array((void **) simpleseqs, nsimple);
-    traj = tpointseq_linear_trajectory(seq2d, UNARY_UNION_NO);
-    inter = geom_intersection2d(traj, gs);
-    if (! gserialized_is_empty(inter))
-      allperiods = tpointseq_interperiods(seq2d, inter, &totalpers);
-    pfree(inter); pfree(traj);
-    if (totalpers == 0)
-    {
-      if (hasz)
-        pfree(seq2d);
-      return NULL;
-    }
-  }
-  else
-  {
-    /* General case */
-    if (hasz)
-      pfree(seq2d);
-    Span **periods = palloc(sizeof(Span *) * nsimple);
-    int *npers = palloc0(sizeof(int) * nsimple);
-    /* Loop for every simple fragment of the sequence */
-    for (int i = 0; i < nsimple; i++)
-    {
-      traj = tpointseq_linear_trajectory(simpleseqs[i], UNARY_UNION_NO);
-      inter = geom_intersection2d(traj, gs);
-      if (! gserialized_is_empty(inter))
-      {
-        periods[i] = tpointseq_interperiods(simpleseqs[i], inter, &npers[i]);
-        totalpers += npers[i];
-      }
-      pfree(inter); pfree(traj);
-    }
-    pfree_array((void **) simpleseqs, nsimple);
-    if (totalpers == 0)
-    {
-      pfree(periods); pfree(npers);
-      return NULL;
-    }
+  // if (nsimple == 1)
+  // {
+    // /* Particular case when the input sequence is simple */
+    // pfree_array((void **) simpleseqs, nsimple);
+    // traj = tpointseq_linear_trajectory(seq2d, UNARY_UNION_NO);
+    // inter = geom_intersection2d(traj, gs);
+    // if (! gserialized_is_empty(inter))
+      // allperiods = tpointseq_interperiods(seq2d, inter, &totalpers);
+    // pfree(inter); pfree(traj);
+    // if (totalpers == 0)
+    // {
+      // if (hasz)
+        // pfree(seq2d);
+      // return NULL;
+    // }
+  // }
+  // else
+  // {
+    // /* General case */
+    // if (hasz)
+      // pfree(seq2d);
+    // Span **periods = palloc(sizeof(Span *) * nsimple);
+    // int *npers = palloc0(sizeof(int) * nsimple);
+    // /* Loop for every simple fragment of the sequence */
+    // for (int i = 0; i < nsimple; i++)
+    // {
+      // traj = tpointseq_linear_trajectory(simpleseqs[i], UNARY_UNION_NO);
+      // inter = geom_intersection2d(traj, gs);
+      // if (! gserialized_is_empty(inter))
+      // {
+        // periods[i] = tpointseq_interperiods(simpleseqs[i], inter, &npers[i]);
+        // totalpers += npers[i];
+      // }
+      // pfree(inter); pfree(traj);
+    // }
+    // pfree_array((void **) simpleseqs, nsimple);
+    // if (totalpers == 0)
+    // {
+      // pfree(periods); pfree(npers);
+      // return NULL;
+    // }
 
-    /* Assemble the periods into a single array */
-    allperiods = palloc(sizeof(Span) * totalpers);
-    int k = 0;
-    for (int i = 0; i < nsimple; i++)
-    {
-      for (int j = 0; j < npers[i]; j++)
-        allperiods[k++] = periods[i][j];
-      if (npers[i] != 0)
-        pfree(periods[i]);
-    }
-    pfree(periods); pfree(npers);
-    /* It is necessary to sort the periods */
-    spanarr_sort(allperiods, totalpers);
-  }
-  /* Compute the periodset */
-  assert(totalpers > 0);
-  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE, ORDER);
-  /* Recover the Z values from the original sequence */
-  TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
-  pfree(ss);
-  return result;
-}
+    // /* Assemble the periods into a single array */
+    // allperiods = palloc(sizeof(Span) * totalpers);
+    // int k = 0;
+    // for (int i = 0; i < nsimple; i++)
+    // {
+      // for (int j = 0; j < npers[i]; j++)
+        // allperiods[k++] = periods[i][j];
+      // if (npers[i] != 0)
+        // pfree(periods[i]);
+    // }
+    // pfree(periods); pfree(npers);
+    // /* It is necessary to sort the periods */
+    // spanarr_sort(allperiods, totalpers);
+  // }
+  // /* Compute the periodset */
+  // assert(totalpers > 0);
+  // SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE, ORDER);
+  // /* Recover the Z values from the original sequence */
+  // TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
+  // pfree(ss);
+  // return result;
+// }
 
 /**
  * @brief Return a temporal point sequence with linear interpolation
@@ -1877,11 +1880,12 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->count > 1);
 
-  /* Compute atGeometry for the sequence */
+  TSequenceSet *result_at = NULL;
+
+  /* Clip the temporal point to the geometry */
   TSequenceSet *at_xy = tpointseq_linear_at_geom(seq, gs);
 
   /* Restrict to the Z dimension */
-  TSequenceSet *result_at = NULL;
   if (at_xy)
   {
     if (zspan)
@@ -1890,14 +1894,15 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
       STBox box1;
       tspatialseqset_set_stbox(at_xy, &box1);
       Span zspan1;
-      span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax), true, true,
-        T_FLOAT8, T_FLOATSPAN, &zspan1);
+      span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax),
+        true, true, T_FLOAT8, T_FLOATSPAN, &zspan1);
       if (overlaps_span_span(&zspan1, zspan))
       {
         /* Get the Z coordinate values as a temporal float */
         Temporal *tfloat_z = tpoint_get_coord((Temporal *) at_xy, 2);
         /* Restrict to the zspan */
-        Temporal *tfloat_zspan = tnumber_restrict_span(tfloat_z, zspan, REST_AT);
+        Temporal *tfloat_zspan = tnumber_restrict_span(tfloat_z, zspan,
+          REST_AT);
         pfree(tfloat_z);
         if (tfloat_zspan)
         {
@@ -2043,7 +2048,6 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL); 
-  /* Ensure the validity of the arguments */
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_has_not_Z_geo(gs) ||
       (zspan && ! ensure_has_Z(temp->temptype, temp->flags)) ||

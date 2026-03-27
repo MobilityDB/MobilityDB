@@ -420,7 +420,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
   }
 
   for (i = 0; i < noEdges; i++)
-    lwgeom_free(lwline_as_lwgeom(lines[i]));
+    lwgeom_free((LWGEOM *) lines[i]);
   pfree(lines);
   return result;
 }

@@ -1012,7 +1012,7 @@ int main(void)
   printf("stbox_copy(%s): %s\n", stbox1_out, char_result);
   free(stbox_result); free(char_result);
 
-  /* STBox *stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s); */
+  /* STBox *stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s); */
   stbox_result = stbox_make(true, true, false, 4326, 1, 3, 1, 3, 1, 3, tstzspan1);
   char_result = stbox_out(stbox_result, 6);
   printf("stbox_make(true, true, false, 4326, 1, 3, 1, 3, 1, 3, %s): %s\n", tstzspan1_out, char_result);
@@ -1492,7 +1492,7 @@ int main(void)
   printf("tpointseq_from_base_tstzspan(%s, %s, LINEAR): %s\n", geompt1_out, tstzspan1_out, char_result);
   free(tgeompt_result); free(char_result);
 
-  /* TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize); */
+  /* TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32_t srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize); */
   float8array1[0] = float8array2[0] = float8array3[0] = 1;
   float8array1[1] = float8array2[1] = float8array3[1] = 1;
   tstzarray[0] = tstz1;

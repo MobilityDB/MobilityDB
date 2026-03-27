@@ -90,7 +90,7 @@ extern Temporal *tpoint_at_tile(const Temporal *temp, const STBox *box);
 
 extern void stbox_tile_state_set(double x, double y, double z, TimestampTz t,
   double xsize, double ysize, double zsize, int64 tunits, bool hasx, bool hasz,
-  bool hast, int32 srid, STBox *result);
+  bool hast, int32_t srid, STBox *result);
 extern STboxGridState *stbox_tile_state_make(const Temporal *temp,
   const STBox *box, double xsize, double ysize, double zsize, 
   const Interval *duration, POINT3DZ sorigin, TimestampTz torigin, 

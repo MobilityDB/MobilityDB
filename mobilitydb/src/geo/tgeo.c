@@ -376,7 +376,7 @@ Tspatial_typmod_out(PG_FUNCTION_ARGS)
   size_t len = 0;
   int32 typmod = PG_GETARG_INT32(0);
   int16 tempsubtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
-  int32 srid = TYPMOD_GET_SRID(typmod);
+  int32_t srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
 
@@ -422,7 +422,7 @@ tspatial_valid_typmod(Temporal *temp, int32_t typmod)
 {
   /* Get the characteristics of the temporal value */
   uint8 subtype = temp->subtype;
-  int32 srid = tspatial_srid(temp);
+  int32_t srid = tspatial_srid(temp);
   int32 hasz = MEOS_FLAGS_GET_Z(temp->flags);
   /* Get the characteristics of the typmod */
   uint8 typmod_subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);

@@ -310,7 +310,7 @@ span_decr_bound(Datum lower, meosType basetype)
  * The normalized spans are new spans that must be freed.
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
- * @param[in] order True if the spans should be ordered
+ * @param[in] order True if the spans should be ordered before normalization
  * @param[out] newcount Number of elements in the output array
  * @pre @p count is greater than 0
  */

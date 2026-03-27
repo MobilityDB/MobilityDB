@@ -71,7 +71,8 @@ ptarray_point_size(const POINTARRAY *pa)
  * WARNING: Don't cast this to a POINT!
  * it would not be reliable due to memory alignment constraints
  */
-static inline uint8_t *
+static 
+inline uint8_t *
 getPoint_internal(const POINTARRAY *pa, uint32_t n)
 {
 	size_t size;

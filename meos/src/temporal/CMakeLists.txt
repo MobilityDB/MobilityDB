@@ -25,6 +25,7 @@ set(TEMPORAL_SRCS
   temporal_compops.c
   temporal_modif.c
   temporal_restrict.c
+  temporal_rtree.c
   temporal_tile.c
   temporal_waggfuncs.c
   tinstant.c
@@ -57,7 +58,6 @@ if(MEOS)
     temporal_meos.c
     temporal_posops_meos.c
     temporal_restrict_meos.c
-    temporal_rtree.c
     temporal_tile_meos.c
     tinstant_meos.c
     tnumber_distance_meos.c
