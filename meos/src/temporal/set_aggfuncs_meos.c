@@ -142,7 +142,7 @@ set_append_value(Set *set, Datum value)
 
     /* Determine whether there is enough available space */
     size_t size_elem;
-    int16 typlen = basetype_length(set->basetype);
+    int16 typlen = meostype_length(set->basetype);
     if (typlen == -1)
       /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
       size_elem = VARSIZE_ANY(DatumGetPointer(value));

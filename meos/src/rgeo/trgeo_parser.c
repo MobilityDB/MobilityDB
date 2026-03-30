@@ -92,7 +92,7 @@ TSequence *
 trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
   GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -117,13 +117,13 @@ trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
+    instants[i] = (TInstant *) meos_array_get_n(array, i);
   result = trgeoseq_make_free(geom, instants, array->count, true, true,
     DISCRETE, NORMALIZE_NO);
   pfree(instants);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 
@@ -142,7 +142,7 @@ TSequence *
 trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp, 
   bool end, int *temp_srid, const GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -159,13 +159,13 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   TInstant *inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
   if (! inst)
     goto error;
-  meos_array_add(array, PointerGetDatum(inst));
+  meos_array_add(array, inst);
   while (p_comma(str))
   {
     inst = trgeoinst_parse(str, temptype, false, temp_srid, geom);
     if (! inst)
       goto error;
-    meos_array_add(array, PointerGetDatum(inst));
+    meos_array_add(array, inst);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -185,7 +185,7 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    instants[i] = DatumGetTInstantP(meos_array_get_n(array, i));
+    instants[i] = (TInstant *) meos_array_get_n(array, i);
   p_cbracket(str);
   p_cparen(str);
   result = trgeoseq_make_free(geom, instants, array->count, lower_inc,
@@ -193,7 +193,7 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   pfree(instants);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 
@@ -209,7 +209,7 @@ TSequenceSet *
 trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid, const GSERIALIZED *geom)
 {
-  meos_array *array = meos_array_init(temptype);
+  MeosArray *array = meos_array_init(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequenceSet *result = NULL;
 
@@ -222,13 +222,13 @@ trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
     geom);
   if (! seq)
     goto error;
-  meos_array_add(array, PointerGetDatum(seq));
+  meos_array_add(array, seq);
   while (p_comma(str))
   {
     seq = trgeoseq_cont_parse(str, temptype, interp, false, temp_srid, geom);
     if (! seq)
       goto error;
-    meos_array_add(array, PointerGetDatum(seq));
+    meos_array_add(array, seq);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     goto error;
@@ -236,13 +236,13 @@ trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    sequences[i] = DatumGetTSequenceP(meos_array_get_n(array, i));
+    sequences[i] = (TSequence *) meos_array_get_n(array, i);
   p_cbrace(str);
   result = trgeoseqset_make_free(geom, sequences, array->count, NORMALIZE);
   pfree(sequences);
 
 error:
-  meos_array_destroy(array);
+  meos_array_destroy(array, true);
   return result;
 }
 

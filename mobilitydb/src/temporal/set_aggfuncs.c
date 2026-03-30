@@ -152,7 +152,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   meosType settype = oid_meostype(setoid);
   meosType basetype = settype_basetype(settype);
   bool typbyval = basetype_byvalue(basetype);
-  int16 typlen = basetype_length(basetype);
+  int16 typlen = meostype_length(basetype);
 
   Datum *values = palloc0(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)

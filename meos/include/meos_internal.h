@@ -675,6 +675,33 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
 
 /*****************************************************************************/
 
+/* Structure of an expandable arrays used in particular to avoid parsing twice
+ * a MEOS value input in text format */
+
+#define MEOS_ARRAY_INITIAL_SIZE 256
+
+/**
+ * @brief Structure of an expandable arrays used in particular to avoid parsing
+ * twice a MEOS value input in text format
+ */
+typedef struct MeosArray
+{
+  size_t capacity;  /**< Total capacity in number of elements */
+  size_t count;     /**< Number of elements currently in use */
+  size_t elem_size; /**< Size of a single element in bytes */
+  bool varlength;   /**< True if elements are pointers (stored as Datums);
+                         the array does not own the pointed-to memory */
+  void *elems;      /**< Pointer to the array elements */
+} MeosArray;
+
+extern MeosArray *meos_array_init(int elem_size);
+extern void meos_array_add(MeosArray *array, void *value);
+extern void *meos_array_get_n(const MeosArray *array, int n);
+extern void meos_array_reset(MeosArray *array, bool free_elems);
+extern void meos_array_destroy(MeosArray *array, bool free_elems);
+
+/*****************************************************************************/
+
 /**
  * Structure to represent skiplist elements
  */

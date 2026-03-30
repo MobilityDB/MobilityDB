@@ -3,6 +3,7 @@ set(TEMPORAL_SRCS
   error.c
   lifting.c
   meos.c
+  meos_array.c
   meos_catalog.c
   postgres_types.c
   skiplist.c
