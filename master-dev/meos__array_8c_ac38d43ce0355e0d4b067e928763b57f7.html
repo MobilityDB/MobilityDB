@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_array::size</title>
+<title>MobilityDB: meos_array_reset</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structmeos__array.html">meos_array</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_92c74706ecb2aa1b9b75738cf4ec4b88.html">temporal</a></li><li class="navelem"><a class="el" href="meos__array_8c.html">meos_array.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,25 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="structmeos__array_a2802df560fffa3ec8e27ad43f9cff306.html#a2802df560fffa3ec8e27ad43f9cff306">count</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="structmeos__array_a199ccc99f001c6bdb3191f024ac91086.html#a199ccc99f001c6bdb3191f024ac91086">size</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structmeos__array_aaea774ab76bcdc86e5a2b5bd1a32c70c.html#aaea774ab76bcdc86e5a2b5bd1a32c70c">type</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structmeos__array_aa496da5e264c47a2b27dedd7bad07ad6.html#aa496da5e264c47a2b27dedd7bad07ad6">values</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__array_8c_ae1996aa3818dbff9bf193afb2b7c80b6.html#ae1996aa3818dbff9bf193afb2b7c80b6">array_slot</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__array_8c_a2f7999aed4728b9d5c3ddfa38cebb722.html#a2f7999aed4728b9d5c3ddfa38cebb722">meos_array_add</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__array_8c_a8d7c44673f91bf2d5c20446edbcc3995.html#a8d7c44673f91bf2d5c20446edbcc3995">meos_array_destroy</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__array_8c_a953b4ce82f364c8db8b9954eed29049d.html#a953b4ce82f364c8db8b9954eed29049d">meos_array_get_n</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__array_8c_ab706b474a799cf32e068ef37f691d93b.html#ab706b474a799cf32e068ef37f691d93b">meos_array_init</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__array_8c_ac38d43ce0355e0d4b067e928763b57f7.html#ac38d43ce0355e0d4b067e928763b57f7">meos_array_reset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a199ccc99f001c6bdb3191f024ac91086" name="a199ccc99f001c6bdb3191f024ac91086"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a199ccc99f001c6bdb3191f024ac91086">&#9670;&#160;</a></span>size</h2>
+<a id="ac38d43ce0355e0d4b067e928763b57f7" name="ac38d43ce0355e0d4b067e928763b57f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac38d43ce0355e0d4b067e928763b57f7">&#9670;&#160;</a></span>meos_array_reset()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">size_t meos_array::size</td>
+          <td class="memname">void meos_array_reset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>free_elems</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Reset the array. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">free_elems</td><td>If true and the array is varlength, pfree each stored pointer before resetting </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
