@@ -1852,8 +1852,16 @@ int main(void)
     free(tgeompt_result);
   free(char_result);
 
-  /* Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan); */
-  tgeompt_result = tpoint_at_geom(tgeompt3d1, geom1, fspan1);
+  /* Temporal *tpoint_at_elevation(const Temporal *temp, const Span *s); */
+  tgeompt_result = tpoint_at_elevation(tgeompt3d1, fspan1);
+  char_result = tgeompt_result ? tspatial_as_ewkt(tgeompt_result, 6) : text_out(text_null);
+  printf("tpoint_at_geom(%s, %s): %s\n", tgeompt3d1_out, fspan1_out, char_result);
+  if (tgeompt_result)
+    free(tgeompt_result);
+  free(char_result);
+
+  /* Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs); */
+  tgeompt_result = tpoint_at_geom(tgeompt3d1, geom1);
   char_result = tgeompt_result ? tspatial_as_ewkt(tgeompt_result, 6) : text_out(text_null);
   printf("tpoint_at_geom(%s, %s, %s): %s\n", tgeompt3d1_out, geom1_out, fspan1_out, char_result);
   if (tgeompt_result)
@@ -1868,14 +1876,22 @@ int main(void)
     free(tgeompt_result);
   free(char_result);
 
-  /* Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan); */
-  tgeompt_result = tpoint_minus_geom(tgeompt3d1, geom1, fspan1);
+  /* Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs); */
+  tgeompt_result = tpoint_minus_geom(tgeompt3d1, geom1);
   char_result = tgeompt_result ? tspatial_as_ewkt(tgeompt_result, 6) : text_out(text_null);
-  printf("tpoint_minus_geom(%s, %s, %s): %s\n", tgeompt3d1_out, geom1_out, fspan1_out, char_result);
+  printf("tpoint_minus_geom(%s, %s): %s\n", tgeompt3d1_out, geom1_out, char_result);
   if (tgeompt_result)
     free(tgeompt_result);
   free(char_result);
 
+  /* Temporal *tpoint_minus_elevation(const Temporal *temp, const Span *s); */
+  tgeompt_result = tpoint_minus_elevation(tgeompt3d1, fspan1);
+  char_result = tgeompt_result ? tspatial_as_ewkt(tgeompt_result, 6) : text_out(text_null);
+  printf("tpoint_minus_geom(%s, %s): %s\n", tgeompt3d1_out, fspan1_out, char_result);
+  if (tgeompt_result)
+    free(tgeompt_result);
+  free(char_result);
+  
   /* Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs); */
   tgeompt_result = tpoint_minus_value(tgeompt1, geom1);
   char_result = tgeompt_result ? tspatial_as_ewkt(tgeompt_result, 6) : text_out(text_null);
