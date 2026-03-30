@@ -696,9 +696,11 @@ extern Temporal *tgeo_at_value(const Temporal *temp, GSERIALIZED *gs);
 extern Temporal *tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_at_elevation(const Temporal *temp, const Span *s);
+extern Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_at_value(const Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_minus_elevation(const Temporal *temp, const Span *s);
+extern Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs);
 
 /* Ever and always comparisons */

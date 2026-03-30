@@ -16,9 +16,9 @@
 			<listitem xml:id="tgeo_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a geometry, a Z span, and/or a period &Z_support;</para>
-				<para><varname>atGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
-				<para><varname>minusGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
+				<para>Restrict to (the complement of) a geometry &Z_support;</para>
+				<para><varname>atGeometry(tgeom,geometry) → tgeom</varname></para>
+				<para><varname>minusGeometry(tgeom,geometry) → tgeom</varname></para>
 				<para>The geometry must be in 2D and the computation with respect to it is done in 2D. The result preserves the Z dimension of the temporal point, if it exists.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
@@ -28,8 +28,8 @@ SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2001-01-01, Point(4 4 4)@2001
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- {[POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03]}
 SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
-  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
--- {[POINT Z (2 1 1)@2001-01-02, POINT Z (3 1 1)@2001-01-03, POINT Z (3 1 2)@2001-01-04]}
+  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))'));
+-- {[POINT Z (2 1 1)@2001-01-02, POINT Z (3 1 1)@2001-01-03, POINT Z (3 1 3)@2001-01-05]}
 SELECT asText(atGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
   'Polygon((0 0,0 5,5 5,5 0,0 0))'));
 -- LINESTRING(1 1,5 1)@2001-01-01
@@ -44,9 +44,8 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2001-01-01,
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (2 2 2)@2001-01-03, POINT Z (4 4 4)@2001-01-05]} */
 SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
-  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
-/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 1 1)@2001-01-02),
-    (POINT Z (3 1 2)@2001-01-04, POINT Z (3 1 3)@2001-01-05]} */
+  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))'));
+-- {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 1 1)@2001-01-02)}
 SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
   'Polygon((0 0,0 5,5 5,5 0,0 0))'));
 -- LINESTRING(5 1,10 1)@2001-01-01
@@ -86,6 +85,24 @@ SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
 /* {[POINT(1 1)@2001-01-01, LINESTRING(1 1,2 2)@2001-01-03, 
    LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeo_atElevation">
+				<indexterm significance="normal"><primary><varname>atElevation</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
+				<para>Restrict to (the complement of) an elevation span &Z_support;</para>
+				<para><varname>atElevation(tgeom,zspan) → tgeom</varname></para>
+				<para><varname>minusElevation(tgeom,zspan) → tgeom</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT astext(atElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
+  Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+/* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03],
+  [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
+SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
+  Point(4 4 4)@2001-01-04, Point(1 1 1)@2001-01-07]', floatspan '[2,3]'));
+/* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03],
+  [POINT Z (3 3 3)@2001-01-05, POINT Z (2 2 2)@2001-01-06]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>

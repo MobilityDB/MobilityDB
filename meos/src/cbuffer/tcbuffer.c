@@ -1085,7 +1085,7 @@ tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
 
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
   Temporal *tfloat = tcbuffer_to_tfloat(temp);
-  Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
+  Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, atfunc);
   Temporal *result = NULL;
   if (tpoint_rest)
   {
