@@ -32,7 +32,6 @@
  * @brief Functions for expandable Datum arrays.
  */
 
-
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -107,6 +106,8 @@ meos_array_add(MeosArray *array, void *value)
 
 /**
  * @brief Get the n-th element of the array (0-based)
+ * @param[in] array Dynamic array
+ * @param[in] n Index
  * @return For varlength arrays, the stored pointer; for fixed-size arrays,
  * a pointer to the element in the internal buffer
  */
@@ -128,6 +129,7 @@ meos_array_get_n(const MeosArray *array, int n)
 
 /**
  * @brief Reset the array
+ * @param[in] array Dynamic array
  * @param[in] free_elems If true and the array is varlength, pfree each stored
  * pointer before resetting
  */
@@ -146,6 +148,7 @@ meos_array_reset(MeosArray *array, bool free_elems)
 
 /**
  * @brief Destroy the array
+ * @param[in] array Dynamic array
  * @param[in] free_elems If true and the array is varlength, pfree each stored
  * pointer before freeing the array
  */

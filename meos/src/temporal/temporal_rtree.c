@@ -79,7 +79,9 @@ get_axis_tbox(const void *box, int axis, bool upper)
   assert(box); assert(axis == 0 || axis == 1);
   TBox *tbox = (TBox *) box;
   if (axis == 0)
+  {
     return upper ? (double) tbox->span.upper : (double) tbox->span.lower;
+  }
   else /* axis == 1 */
     return upper ? (double)((int64) tbox->period.upper) :
       (double)((int64) tbox->period.lower);

@@ -54,19 +54,36 @@
 
 /* Minimum number of edges to use an R-tree index in order to compensate the
  * overhead of the tree construction and destruction */
-#define RTREE_MIN_NUMBER_ELEMS 100
+#define RTREE_MIN_NUMBER_ELEMS 100000 // TODO -> 100 
+  // CURRENTLY INDEX CREATION IS DISABLED SINCE IT BREAK THE CI/CD TESTS
 
 /*****************************************************************************
  * Data structures
  *****************************************************************************/
+
+/* Static global arrays for accumulating the results of the clipping process*/
+static MeosArray *events = NULL;
+static MeosArray *intervals = NULL;
+static MeosArray *periods = NULL;
+
+/**
+ * @brief Enumeration defining the edge types 
+ */
+typedef enum
+{
+  EDGE_POINT = 0,
+  EDGE_LINE,
+  EDGE_POLY
+} EdgeType;
 
 /**
  * @brief Structure keeping a geometry edge
  */
 typedef struct
 {
-  double x1, y1, x2, y2; /**< Coordinates of the start and end 2D points */
+  double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
   double xmin, ymin, xmax, ymax; /**< Bounding box of the edge */
+  EdgeType etype;                /**< Edge type */
 } Edge;
 
 /**
@@ -196,7 +213,7 @@ static bool
 point_on_segment(double px, double py, double x1, double y1, double x2,
   double y2)
 {
-  /* Vector AP and AB */
+  /* Vectors AP and AB */
   double apx = px - x1;
   double apy = py - y1;
   double abx = x2 - x1;
@@ -209,7 +226,7 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
   double dot = apx * abx + apy * aby;
   if (dot < -FP_TOLERANCE)
     return false;
-  /* Check P lies between A and B */
+  /* Check if P lies between A and B */
   double ab2 = abx * abx + aby * aby;
   if (dot > ab2 + FP_TOLERANCE)
     return false;
@@ -221,10 +238,10 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
  * @details The computation is done using vectors and an even-odd rule
  */
 static int
-point_in_polygon(double x, double y, Edge **edges, int n)
+point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
   /* Boundary check */
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < nedges; i++)
   {
     double x1 = edges[i]->x1, y1 = edges[i]->y1;
     double x2 = edges[i]->x2, y2 = edges[i]->y2;
@@ -246,7 +263,7 @@ point_in_polygon(double x, double y, Edge **edges, int n)
 
   /* Perform even‑odd crossing */
   int crossings = 0;
-  for (int i = 0; i < n; i++)
+  for (int i = 0; i < nedges; i++)
   {
     double x1 = edges[i]->x1, y1 = edges[i]->y1;
     double x2 = edges[i]->x2, y2 = edges[i]->y2;
@@ -262,33 +279,93 @@ point_in_polygon(double x, double y, Edge **edges, int n)
 
 /**
  * @brief Compute the intersection intervals of a trajectory segment with an
+ * array of point edges
+ */
+static void
+intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
+  int nedges)
+{
+  assert(a); assert(b); assert(edges); assert(nedges >= 0);
+
+  /* Segment vector */
+  double dx = b->x - a->x;
+  double dy = b->y - a->y;
+
+  /* Iterate through the points */
+  for (int i = 0; i < nedges; i++)
+  {
+    Edge *e = edges[i]; /* point: x1==x2, y1==y2 */
+    /* Iterate only for the points */
+    if (e->etype != EDGE_POINT)
+      continue;
+
+    /* Solve parameter t */
+    double t;
+    if (fabs(dx) >= fabs(dy))
+    {
+      if (fabs(dx) < FP_TOLERANCE)
+        continue;
+      t = (e->x1 - a->x) / dx;
+    }
+    else
+    {
+      if (fabs(dy) < FP_TOLERANCE)
+        continue;
+      t = (e->y1 - a->y) / dy;
+    }
+
+    /* Check bounds */
+    if (t < -FP_TOLERANCE || t > 1.0 + FP_TOLERANCE)
+      continue;
+
+    /* Reconstruct point and add interval */
+    double x = a->x + t * dx;
+    double y = a->y + t * dy;
+    if (fabs(x - e->x1) < FP_TOLERANCE && fabs(y - e->y1) < FP_TOLERANCE)
+    {
+      Span in;
+      span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
+        T_FLOAT8, T_FLOATSPAN, &in);
+      meos_array_add(intervals, &in);
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Compute the intersection intervals of a trajectory segment with an
  * array of linear or point edges
  */
 static void
-linear_intervals(POINT4D a, POINT4D b, Edge **edges, int nedges,
-  MeosArray *intervals)
+intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
+  int nedges)
 {
-  /* Compute the bounding box of the segment */
-  double seg_xmin = FP_MIN(a.x, b.x);
-  double seg_xmax = FP_MAX(a.x, b.x);
-  double seg_ymin = FP_MIN(a.y, b.y);
-  double seg_ymax = FP_MAX(a.y, b.y);
-  
+  assert(a); assert(b); assert(edges); assert(nedges >= 0);
+
+  /* Segment bounding box */
+  double seg_xmin = FP_MIN(a->x, b->x);
+  double seg_xmax = FP_MAX(a->x, b->x);
+  double seg_ymin = FP_MIN(a->y, b->y);
+  double seg_ymax = FP_MAX(a->y, b->y);
+  /* Segment vector */
+  double rx = b->x - a->x;  
+  double ry = b->y - a->y;  
   bool has_intersection = false;
   Span in;
-  /* To avoid recomputing the vector AB in the call to linesegm_intersect
-   * inside the loop, we pass the vector instead of the second point b */
-  double rx = b.x - a.x, ry = b.y - a.y;
+
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
+    /* Iterate only for the polygon edges */
+    if (e->etype != EDGE_LINE)
+      continue;
 
     /* Bounding box filter */
     if (e->xmax < seg_xmin || e->xmin > seg_xmax ||
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
     /* Compute the intersection */
-    IntersectResult r = linesegm_intersect(a.x, a.y, rx, ry,
+    IntersectResult r = linesegm_intersect(a->x, a->y, rx, ry,
       e->x1, e->y1, e->x2, e->y2);
     /* If there is no intersection  */
     if (r.type == INTERSECT_NONE)
@@ -309,11 +386,14 @@ linear_intervals(POINT4D a, POINT4D b, Edge **edges, int nedges,
   if (! has_intersection)
   {
     /* test midpoint */
-    double mx = (a.x + b.x) * 0.5;
-    double my = (a.y + b.y) * 0.5;
+    double mx = (a->x + b->x) * 0.5;
+    double my = (a->y + b->y) * 0.5;
     for (int i = 0; i < nedges; i++)
     {
       Edge *e = edges[i];
+      /* Iterate only for the polygon edges */
+      if (e->etype != EDGE_LINE)
+        continue;
       if (point_on_segment(mx, my, e->x1, e->y1, e->x2, e->y2))
       {
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
@@ -348,305 +428,123 @@ float8_qsort_cmp(const void *a1, const void *a2)
  * @note Function performing robust duplicate handling
  */
 static void
-polygon_intervals(POINT4D a, POINT4D b, Edge **edges, int nedges,
-  MeosArray *events, MeosArray *intervals, int *inside)
+intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
+  int nedges)
 {
-  assert(edges); assert(nedges >= 0); assert(events); assert(intervals);
-  assert(inside); 
+  assert(a); assert(b); assert(edges); assert(nedges >= 0);
   
   /* Reset event array */
   events->count = 0;
-  Span in;
 
-  /* Compute the bounding box of the segment */
-  double seg_xmin = FP_MIN(a.x, b.x);
-  double seg_xmax = FP_MAX(a.x, b.x);
-  double seg_ymin = FP_MIN(a.y, b.y);
-  double seg_ymax = FP_MAX(a.y, b.y);
+  /* Segment bounding box */
+  double seg_xmin = FP_MIN(a->x, b->x);
+  double seg_xmax = FP_MAX(a->x, b->x);
+  double seg_ymin = FP_MIN(a->y, b->y);
+  double seg_ymax = FP_MAX(a->y, b->y);
+  /* Segment vector */
+  double rx = b->x - a->x;
+  double ry = b->y - a->y;
 
-  /* To avoid recomputing the vector AB in the call to linesegm_intersect
-   * inside the loop, we pass the vector instead of the second point b */
-  double rx = b.x - a.x, ry = b.y - a.y;
-
-  /* Collect intersection events */
+  /* Collect all intersection parameters */
+  bool has_polys = false;
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
-    /* Bounding box filter  */
+    /* Iterate only for the polygon edges */
+    if (e->etype != EDGE_POLY)
+      continue;
+    has_polys = true;
+
+    /* Bounding box filter */
     if (e->xmax < seg_xmin || e->xmin > seg_xmax ||
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
-      
-    IntersectResult r = linesegm_intersect(a.x, a.y, rx, ry,
+
+    IntersectResult r = linesegm_intersect(a->x, a->y, rx, ry,
       e->x1, e->y1, e->x2, e->y2);
-
     if (r.type == INTERSECT_POINT)
-      meos_array_add(events, &r.t0);
-    else if (r.type == INTERSECT_OVERLAP)
     {
-      meos_array_add(events, &r.t0);
-      meos_array_add(events, &r.t1);
+      if (r.t0 > -FP_TOLERANCE && r.t0 < 1.0 + FP_TOLERANCE)
+        meos_array_add(events, &r.t0);
     }
   }
 
-  /* No intersections */
-  if (events->count == 0)
-  {
-    if (*inside)
-    {
-      span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
-        T_FLOAT8, T_FLOATSPAN, &in);
-      meos_array_add(intervals, &in);
-    }
+  /* If no polygon edges have been found, we do not continue */
+  if (! has_polys)
     return;
-  }
 
-  /* Sort events */
+  /* Add endpoints */
+  double t0 = 0.0, t1 = 1.0;
+  meos_array_add(events, &t0);
+  meos_array_add(events, &t1);
+
+  /* Sort */
   qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
-  double *evtarr = (double *) events->elems;
 
-  /* Robust duplicate clustering */
-  int inside_flag = *inside;
-  double start = 0.0;
-    double last_kept = evtarr[0]; // - 2 * FP_TOLERANCE; /* force first keep */
+  /* Deduplicate */
+  int newcount = 0;
+  double *evtarr = (double *) events->elems;
   for (int i = 0; i < (int) events->count; i++)
   {
-    double t = evtarr[i];
-    if (fabs(t - last_kept) < FP_TOLERANCE)
+    if (i == 0 || fabs(evtarr[i] - evtarr[newcount - 1]) > FP_TOLERANCE)
+      evtarr[newcount++] = evtarr[i];
+  }
+  events->count = newcount;
+
+  /* Build intervals using midpoint test */
+  for (int i = 0; i < (int) events->count - 1; i++)
+  {
+    double ta = evtarr[i];
+    double tb = evtarr[i + 1];
+    if (tb - ta <= FP_TOLERANCE)
       continue;
 
-    last_kept = t;
-    if (!inside_flag)
+    double tm = (ta + tb) * 0.5;
+    double x = a->x + tm * rx;
+    double y = a->y + tm * ry;
+    if (point_in_polygon(x, y, edges, nedges))
     {
-      start = t;
-      inside_flag = 1;
-    }
-    else
-    {
-      span_set(Float8GetDatum(start), Float8GetDatum(t), true, true,
+      Span in;
+      span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
       meos_array_add(intervals, &in);
-      inside_flag = 0;
     }
   }
-
-  /* If inside generate an interval */
-  if (inside_flag)
-  {
-    span_set(Float8GetDatum(start), Float8GetDatum(1.0), true, true,
-      T_FLOAT8, T_FLOATSPAN, &in);
-    meos_array_add(intervals, &in);
-  }
-  /* Set ouput parameter and return */
-  *inside = inside_flag;
   return;
 }
 
-/*****************************************************************************
- * Extract edges from a geometry that can be of type point, line, polygon or
- * collection of these
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
- * @brief Add to the dynamic array in the last argument the edges obtained
- * from a ring
+ * @brief Return true if a trajectory point intersects with an array of point
+ * and linear edges
  */
-static void
-emit_ring_edges(const POINTARRAY *pa, MeosArray *edges)
+static bool
+point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
 {
-  for (int i = 0; i < (int) pa->npoints - 1; i++)
-  {
-    POINT4D a, b;
-    (void) getPoint4d_p(pa, i, &a);
-    (void) getPoint4d_p(pa, i + 1, &b);
-    Edge e;
-    e.x1 = a.x; e.y1 = a.y;
-    e.x2 = b.x; e.y2 = b.y;
-    e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
-    e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
-    meos_array_add(edges, &e);
-  }
-  return;
-}
+  assert(a); assert(edges); assert(nedges >= 0);
 
-/**
- * @brief Add to the dynamic array in the last argument the edge obtained
- * from a point
- */
-static void
-extract_point(const LWPOINT *pt, MeosArray *edges)
-{
-  POINT4D p;
-  (void) getPoint4d_p(pt->point, 0, &p);
-  Edge e;
-  e.x1 = e.x2 = e.xmin = e.xmax = p.x;
-  e.y1 = e.y2 = e.ymin = e.ymax = p.y;
-  meos_array_add(edges, &e);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the edges obtained
- * from a multipoint
- */
-static void
-extract_mpoint(const LWMPOINT *mp, MeosArray *edges)
-{
-  for (int i = 0; i < (int) mp->ngeoms; i++)
-    extract_point((const LWPOINT *) mp->geoms[i], edges);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the segments obtained
- * from a line
- */
-static void
-extract_line(const LWLINE *line, MeosArray *edges)
-{
-  emit_ring_edges(line->points, edges);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the segments obtained
- * from a multiline
- */
-static void
-extract_mline(const LWMLINE *ml, MeosArray *edges)
-{
-  for (int i = 0; i < (int) ml->ngeoms; i++)
-    extract_line(ml->geoms[i], edges);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the edges obtained
- * from a polygon
- */
-static void
-extract_poly(const LWPOLY *poly, MeosArray *edges)
-{
-  for (int r = 0; r < (int) poly->nrings; r++)
-    emit_ring_edges(poly->rings[r], edges);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the edges obtained
- * from a multipolygon
- */
-static void
-extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
-{
-  for (int i = 0; i < (int) mp->ngeoms; i++)
-    extract_poly(mp->geoms[i], edges);
-  return;
-}
-
-/**
- * @brief Add to the dynamic array in the last argument the edges obtained
- * from a triangle
- * @details In PostGIS a triangle has a single (outer) ring stored as
- * POINTARRAY, which is already closed or implicitly closed
- */
-static void
-extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
-{
-  emit_ring_edges(tri->points, edges);
-  return;
-}
-
-/**
- * @brief Return the edges of a geometry in a dynamic array (iterator)
- */
-static void
-geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges,
-  bool *is_polygonal)
-{
-  if (! geom)
-    return;
-
-  switch (geom->type)
-  {
-    case POINTTYPE:
-      extract_point((const LWPOINT *) geom, edges);
-      break;
-
-    case MULTIPOINTTYPE:
-      extract_mpoint((const LWMPOINT *) geom, edges);
-      break;
-
-    case LINETYPE:
-      extract_line((const LWLINE *) geom, edges);
-      break;
-
-    case MULTILINETYPE:
-      extract_mline((const LWMLINE *) geom, edges);
-      break;
-
-    case POLYGONTYPE:
-      *is_polygonal = true;
-      extract_poly((const LWPOLY *) geom, edges);
-      break;
-
-    case MULTIPOLYGONTYPE:
-      *is_polygonal = true;
-      extract_mpoly((const LWMPOLY *) geom, edges);
-      break;
-
-    case TRIANGLETYPE:
-      *is_polygonal = true;
-      extract_triangle((const LWTRIANGLE *) geom, edges);
-      break;
-
-    case COLLECTIONTYPE:
-      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
-      for (int i = 0; i < (int) col->ngeoms; i++)
-        geom_extract_edges_iter(col->geoms[i], edges, is_polygonal);
-      break;
-
-    /* Unsupported type */
-    default:
-      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-        "Unsupported geometry type");
-      break;
-  }
-  return;
-}
-
-/**
- * @brief Return the edges of a geometry in a dynamic array 
- */
-static MeosArray *
-geom_extract_edges(const LWGEOM *geom, bool *is_polygonal)
-{
-  MeosArray *edges = meos_array_init(sizeof(Edge));
-  geom_extract_edges_iter(geom, edges, is_polygonal);
-  return edges;
-}
-
-/**
- * @brief Build an R-tree from edges
- */
-static RTree *
-build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
-{
-  RTree *rtree = rtree_create_stbox();
+  /* Iterate only through the point and linear edges */
   for (int i = 0; i < nedges; i++)
   {
-    const Edge *e = &edges[i];
-    STBox box;
-    stbox_set(true, false, false, srid, e->xmin, e->xmax, e->ymin, e->ymax,
-      0, 0, NULL, &box);
-    /* Store pointer to edge */
-    rtree_insert(rtree, &box, i);
+    Edge *e = edges[i];
+    if (e->etype == EDGE_POINT)
+    {
+      if (fabs(e->x1 - a->x) < FP_TOLERANCE &&
+          fabs(e->y1 - a->y) < FP_TOLERANCE)
+        return true;
+    }
+    else if (e->etype == EDGE_LINE)
+    {
+      if (point_on_segment(a->x, a->y, e->x1, e->y1, e->x2, e->y2))
+        return true;
+    }
   }
-  return rtree;
+  return false;
 }
 
 /*****************************************************************************
- * Clip a temporal geometry point sequence
+ * Clip a temporal geometry point
  *****************************************************************************/
 
 /**
@@ -659,58 +557,123 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
  * @param[in] cand_edges Edge array buffer of size `nedges` for storing the
  * result of an R-tree look up, may be `NULL` if no index is used
  */
-static TSequenceSet *
-tpointseq_clip_geom(const TSequence *seq, Edge **edges, int nedges,
-  RTree *rtree, Edge **cand_edges, bool is_polygonal)
+static void
+tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
+  RTree *rtree, Edge **cand_edges)
+{
+  assert(inst); assert(edges); assert(nedges > 0);
+  assert(inst->temptype == T_TGEOMPOINT);
+
+  bool use_index = (rtree != NULL);
+  int32_t srid = tspatial_srid((Temporal *) inst);
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst));
+
+  /* Edges to process: either all of them or those filtered by an R-tree */
+  Edge **sel_edges = NULL;
+  int sel_nedges = 0;
+  if (use_index)
+  {
+    /* Build the segment bounding box */
+    STBox query;
+    stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
+      &query);
+    /* Query the R-tree */
+    int *results = rtree_search(rtree, RTREE_OVERLAPS, &query, &sel_nedges);
+    if (sel_nedges == 0)
+      return;
+
+    /* Transform the result of the R-tree look up into an edge pointer array */
+    for (int j = 0; j < sel_nedges; j++)
+      cand_edges[j] = (Edge *) &edges[results[j]];
+    sel_edges = cand_edges;
+    pfree(results);
+  }
+  else /* no index */
+  {
+    sel_edges = edges;
+    sel_nedges = nedges;
+  }
+
+  /* Reset the interval array */
+  intervals->count = 0;
+  /* Compute the intervals for the points, lines, and polygon edges */
+  bool found = point_inter_points_lines(a, sel_edges, sel_nedges);
+  if (! found)
+  {
+    intervals_from_polygons(a, a, sel_edges, sel_nedges);
+    if (intervals->count == 0)
+      return;
+  }
+  
+  /* Generate the instantantaneous span */
+  Span s;
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+  meos_array_add(periods, &s);
+  return;
+}
+
+/**
+ * @brief Clip a 2D/3D trajectory with linear interpolation with respect to a
+ * geometry
+ * @param[in] seq Temporal sequence
+ * @param[in] edges Array of geometry edges
+ * @param[in] nedges Number of edges in the array
+ * @param[in] rtree R-tree for the edges, may be `NULL` if no index is used
+ * @param[in] cand_edges Edge array buffer of size `nedges` for storing the
+ * result of an R-tree look up, may be `NULL` if no index is used
+ */
+static void
+tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
+  RTree *rtree, Edge **cand_edges)
 {
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Singleton sequence */
+  if (seq->count == 1)
+    return tpointinst_clip_edges(TSEQUENCE_INST_N(seq, 0), edges, nedges,
+      rtree, cand_edges);
 
   bool use_index = (rtree != NULL);
   int32_t srid = tspatial_srid((Temporal *) seq);
-  MeosArray *events = meos_array_init(sizeof(double));
-  MeosArray *intervals = meos_array_init(sizeof(Span));
-  MeosArray *periods = meos_array_init(sizeof(Span));
 
   /* Initialize variables for the loop */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  POINT4D a;
-  datum_point4d(tinstant_value(inst1), &a);
-  int inside = is_polygonal ? point_in_polygon(a.x, a.y, edges, nedges) : 0;
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
+  /* Edges to process: either all of them or those filtered by an R-tree */
+  Edge **sel_edges = NULL;
+  int sel_nedges = 0;
+  if (! use_index)
+  {
+    sel_edges = edges;
+    sel_nedges = nedges;
+  }
   /* Loop for each segment */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    POINT4D b;
-    datum_point4d(tinstant_value(inst2), &b);
+    const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
     bool upper_inc = (i < seq->count - 1) ? false : seq->period.upper_inc;
     /* Reset the interval array */
     intervals->count = 0;
+    Span *intervarr = NULL;
 
-    /* Select the edges to process: either all of them or those filtered by
-     * an R-tree */
-    Edge **sel_edges;
-    int sel_nedges;
-    if (! use_index)
-    {
-      sel_edges = edges;
-      sel_nedges = nedges;
-    }
-    else
+    /* Filter the edges to process by a R-tree, if any */
+    if (use_index)
     {
       /* Build the segment bounding box */
       STBox query;
-      stbox_set(true, false, false, srid, FP_MIN(a.x, b.x), FP_MAX(a.x, b.x),
-        FP_MIN(a.y, b.y), FP_MAX(a.y, b.y), 0, 0, NULL, &query);
+      stbox_set(true, false, false, srid, FP_MIN(a->x, b->x),
+        FP_MAX(a->x, b->x), FP_MIN(a->y, b->y), FP_MAX(a->y, b->y),
+        0, 0, NULL, &query);
       /* Query the R-tree */
       int *results = rtree_search(rtree, RTREE_OVERLAPS, &query, &sel_nedges);
       if (sel_nedges == 0)
-      {
-        a = b;
-        continue;
-      }
+        goto next_segment;
+
       /* Transform the result of the R-tree look up into an edge pointer array */
       for (int j = 0; j < sel_nedges; j++)
         cand_edges[j] = (Edge *) &edges[results[j]];
@@ -718,20 +681,14 @@ tpointseq_clip_geom(const TSequence *seq, Edge **edges, int nedges,
       pfree(results);
     }
 
-    /* Compute the intervals */
-    if (is_polygonal)
-      polygon_intervals(a, b, sel_edges, sel_nedges, events, intervals,
-        &inside);
-    else
-      linear_intervals(a, b, sel_edges, sel_nedges, intervals);
+    /* Compute the intervals for the points, lines, and polygon edges */
+    intervals_from_points(a, b, sel_edges, sel_nedges);
+    intervals_from_lines(a, b, sel_edges, sel_nedges);
+    intervals_from_polygons(a, b, sel_edges, sel_nedges);
     if (intervals->count == 0)
-    {
-      a = b;
-      continue;
-    }
+      goto next_segment;
 
     /* Normalize the intervals */
-    Span *intervarr;
     int count;
     if (intervals->count > 1)
       intervarr = spanarr_normalize(intervals->elems, intervals->count,
@@ -779,46 +736,242 @@ tpointseq_clip_geom(const TSequence *seq, Edge **edges, int nedges,
       }
     }
     
+next_segment:
     /* Prepare the next iteration */
     if (intervals->count > 1)
       pfree(intervarr);
+    inst1 = inst2;
     a = b;
   }
 
-  TSequenceSet *result = NULL;
-  if (periods->count > 0)
+  return;
+}
+
+/*****************************************************************************
+ * Extract edges from a geometry that can be of type point, line, polygon or
+ * collection of these
+ *****************************************************************************/
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a ring
+ */
+static void
+emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
+{
+  for (int i = 0; i < (int) pa->npoints - 1; i++)
   {
-    SpanSet *ss = spanset_make_exp(periods->elems, periods->count,
-      periods->count, NORMALIZE, ORDER);
-    result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
-    pfree(ss);
+    POINT4D a, b;
+    (void) getPoint4d_p(pa, i, &a);
+    (void) getPoint4d_p(pa, i + 1, &b);
+    Edge e;
+    e.x1 = a.x; e.y1 = a.y;
+    e.x2 = b.x; e.y2 = b.y;
+    e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
+    e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
+    e.etype = etype;
+    meos_array_add(edges, &e);
   }
-  /* Clean up and return */
-  meos_array_destroy(events, false);
-  meos_array_destroy(intervals, false);
-  meos_array_destroy(periods, false);
-  return result;
+  return;
 }
 
 /**
- * @brief Return a temporal point sequence with linear interpolation
- * restricted to a geometry
- * @details For performance reasons we avoid the call to ST_Intersection
- * which delegates the computation to GEOS. 
+ * @brief Add to the dynamic array in the last argument the edge obtained
+ * from a point
+ */
+static void
+extract_point(const LWPOINT *pt, MeosArray *edges)
+{
+  POINT4D p;
+  (void) getPoint4d_p(pt->point, 0, &p);
+  Edge e;
+  e.x1 = e.x2 = e.xmin = e.xmax = p.x;
+  e.y1 = e.y2 = e.ymin = e.ymax = p.y;
+  e.etype = EDGE_POINT;
+  meos_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a multipoint
+ */
+static void
+extract_mpoint(const LWMPOINT *mp, MeosArray *edges)
+{
+  for (int i = 0; i < (int) mp->ngeoms; i++)
+    extract_point((const LWPOINT *) mp->geoms[i], edges);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the segments obtained
+ * from a line
+ */
+static void
+extract_line(const LWLINE *line, MeosArray *edges)
+{
+  emit_ring_edges(line->points, edges, EDGE_LINE);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the segments obtained
+ * from a multiline
+ */
+static void
+extract_mline(const LWMLINE *ml, MeosArray *edges)
+{
+  for (int i = 0; i < (int) ml->ngeoms; i++)
+    extract_line(ml->geoms[i], edges);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a polygon
+ */
+static void
+extract_poly(const LWPOLY *poly, MeosArray *edges)
+{
+  for (int r = 0; r < (int) poly->nrings; r++)
+    emit_ring_edges(poly->rings[r], edges, EDGE_POLY);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a multipolygon
+ */
+static void
+extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
+{
+  for (int i = 0; i < (int) mp->ngeoms; i++)
+    extract_poly(mp->geoms[i], edges);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a triangle
+ * @details In PostGIS a triangle has a single (outer) ring stored as
+ * POINTARRAY, which is already closed or implicitly closed
+ */
+static void
+extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
+{
+  emit_ring_edges(tri->points, edges, EDGE_POLY);
+  return;
+}
+
+/**
+ * @brief Return the edges of a geometry in a dynamic array (iterator)
+ */
+static void
+geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
+{
+  if (! geom)
+    return;
+
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      extract_point((const LWPOINT *) geom, edges);
+      break;
+
+    case MULTIPOINTTYPE:
+      extract_mpoint((const LWMPOINT *) geom, edges);
+      break;
+
+    case LINETYPE:
+      extract_line((const LWLINE *) geom, edges);
+      break;
+
+    case MULTILINETYPE:
+      extract_mline((const LWMLINE *) geom, edges);
+      break;
+
+    case POLYGONTYPE:
+      extract_poly((const LWPOLY *) geom, edges);
+      break;
+
+    case MULTIPOLYGONTYPE:
+      extract_mpoly((const LWMPOLY *) geom, edges);
+      break;
+
+    case TRIANGLETYPE:
+      extract_triangle((const LWTRIANGLE *) geom, edges);
+      break;
+
+    case COLLECTIONTYPE:
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (int i = 0; i < (int) col->ngeoms; i++)
+        geom_extract_edges_iter(col->geoms[i], edges);
+      break;
+
+    /* Unsupported type */
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      break;
+  }
+  return;
+}
+
+/**
+ * @brief Return the edges of a geometry in a dynamic array 
+ */
+static MeosArray *
+geom_extract_edges(const LWGEOM *geom)
+{
+  MeosArray *edges = meos_array_init(sizeof(Edge));
+  geom_extract_edges_iter(geom, edges);
+  return edges;
+}
+
+/**
+ * @brief Build an R-tree from edges
+ */
+static RTree *
+build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
+{
+  RTree *rtree = rtree_create_stbox();
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = &edges[i];
+    STBox box;
+    stbox_set(true, false, false, srid, e->xmin, e->xmax, e->ymin, e->ymax,
+      0, 0, NULL, &box);
+    /* Store pointer to edge */
+    rtree_insert(rtree, &box, i);
+  }
+  return rtree;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal geometric point with linear interpolation 
+ * restricted to a 2D geometry
+ * @details The temporal point may be 2D or 3D and the Z dimension is also
+ * computed
+ * @note For performance reasons we avoid the call to ST_Intersection
+ * which delegates the computation to GEOS
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
-TSequenceSet *
-tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
+Temporal *
+tpoint_linear_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(seq); assert(gs); assert(seq->temptype == T_TGEOMPOINT);
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
+  assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+  assert(temp->subtype != TINSTANT);
+  assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
   assert(! gserialized_is_empty(gs)); 
-  assert(! MEOS_FLAGS_GET_GEODETIC(seq->flags));
 
   /* Bounding box test */
   STBox box1, box2;
-  tspatialseq_set_stbox(seq, &box1);
+  tspatial_set_stbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
@@ -826,16 +979,15 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 
   /* Extract the edges */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  bool is_polygonal = false;
-  MeosArray *edges = geom_extract_edges(geom, &is_polygonal);
+  MeosArray *edges = geom_extract_edges(geom);
   /* Create an array of edge pointers */
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   /* Transform the edge array into an edge pointer array */
   for (int i = 0; i < (int) edges->count; i++)
     edge_ptrs[i] = (Edge *) meos_array_get_n(edges, i);
 
-  /* R-tree pointer: A NULL pointer passed to function #tpointseq_clip_geom means
-   * that no index is used */
+  /* R-tree pointer: A NULL pointer passed to function #tpointseq_clip_edges
+   * means that no index is used */
   RTree *rtree = NULL;
   /* Array of edge pointers for storing the edges filtered by the R-tree */
   Edge **cand_edges = NULL;
@@ -844,23 +996,89 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   if (edges->count > RTREE_MIN_NUMBER_ELEMS)
   {
     /* Build R-tree */
-    int32_t srid = tspatial_srid((Temporal *) seq);
+    int32_t srid = tspatial_srid(temp);
     rtree = build_edge_rtree(edges->elems, edges->count, srid);
     /* Array of edge pointers for storing the edges filtered by the R-tree */
     cand_edges = palloc(sizeof(Edge *) * edges->count);
   }
 
-  /* Perform the clipping */
-  TSequenceSet *result = tpointseq_clip_geom(seq, edge_ptrs, edges->count,
-    rtree, cand_edges, is_polygonal);
+  /* Initialize the static global arrays accumulating the clipping results */
+  events = meos_array_init(sizeof(double));
+  intervals = meos_array_init(sizeof(Span));
+  periods = meos_array_init(sizeof(Span));
+  
+  /* Collect the clipping periods */
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      tpointinst_clip_edges((TInstant *) temp, edge_ptrs, edges->count,
+        rtree, cand_edges);
+      break;
+    case TSEQUENCE:
+      tpointseq_clip_edges((TSequence *) temp, edge_ptrs, edges->count,
+        rtree, cand_edges);
+      break;
+    default: /* TSEQUENCESET */
+    {
+      /* Loop for each segment */
+      TSequenceSet *ss = (TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        tpointseq_clip_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
+          edges->count, rtree, cand_edges);
+    }
+  }
 
+  Temporal *result = NULL;
+  if (periods->count > 0)
+  {
+    SpanSet *ss = spanset_make_exp(periods->elems, periods->count,
+      periods->count, NORMALIZE, ORDER);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    pfree(ss);
+  }
+  
   /* Clean up and return */
+  meos_array_destroy(events, false);
+  meos_array_destroy(intervals, false);
+  meos_array_destroy(periods, false);
   if (edges->count > RTREE_MIN_NUMBER_ELEMS)
   {
     rtree_free(rtree); pfree(cand_edges);
   }
   lwgeom_free(geom); meos_array_destroy(edges, true);
   return result;  
+}
+
+/**
+ * @brief Return a temporal geometric point with linear interpolation 
+ * restricted to a 2D geometry
+ * @details The temporal point may be 2D or 3D and the Z dimension is also
+ * computed
+ * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
+ * This is verified in #tgeo_restrict_geom
+ */
+Temporal *
+tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool atfunc)
+{
+  assert(temp); assert(gs); assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+
+  /* Compute atGeometry for the temporal point */
+  Temporal *result_at = tpoint_linear_at_geom(temp, gs);
+
+  /* If "at" restriction, return */
+  if (atfunc)
+    return result_at;
+
+  /* If "minus" restriction, compute the complement wrt time */
+  if (! result_at)
+    return temporal_copy(temp);
+
+  SpanSet *ss = temporal_time(result_at);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
+  pfree(ss); pfree(result_at);
+  return result;
 }
 
 /*****************************************************************************/
