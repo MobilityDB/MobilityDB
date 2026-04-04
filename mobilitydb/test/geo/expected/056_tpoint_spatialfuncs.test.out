@@ -3106,8 +3106,7 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 3)@2000-01-01, Point(1 1)@2000-01-
  {[POINT(0.5 2)@Sat Jan 01 12:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(2 1.5)@Sun Jan 02 12:00:00 2000 PST]}
 (1 row)
 
-SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-02, Point(0 3)@2000-01-03, Point(
-3 0)@2000-01-04]', 'Polygon((1 1,2 1,2 2,1 2,1 1))'));
+SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-02, Point(0 3)@2000-01-03, Point(3 0)@2000-01-04]', 'Polygon((1 1,2 1,2 2,1 2,1 1))'));
                                                                                   astext                                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@Sat Jan 01 08:00:00 2000 PST, POINT(2 2)@Sat Jan 01 16:00:00 2000 PST], [POINT(1 2)@Mon Jan 03 08:00:00 2000 PST, POINT(2 1)@Mon Jan 03 16:00:00 2000 PST]}
@@ -3463,9 +3462,9 @@ SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, P
 (1 row)
 
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(0 1,2 1)'));
-                                        astext                                        
---------------------------------------------------------------------------------------
- {[POINT(0 0)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST)}
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(0 0)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST)
 (1 row)
 
 SELECT asText(minusGeometry(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)}', geometry 'Linestring(0 1,2 1)'));

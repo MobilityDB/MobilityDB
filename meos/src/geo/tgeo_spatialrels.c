@@ -61,7 +61,7 @@
 #include "geo/tgeo_tempspatialrels.h"
 
 /*****************************************************************************
- * Spatial relationship functions
+ * Spatial relationship functions computed in GEOS
  * disjoint and intersects are inverse to each other
  *****************************************************************************/
 
@@ -86,13 +86,37 @@ datum_geom_covers(Datum geom1, Datum geom2)
 }
 
 /**
+ * @brief Return a Datum true if two 2D geometries are within a distance
+ */
+Datum
+datum_geom_relate_pattern(Datum geom1, Datum geom2, Datum p)
+{
+  return BoolGetDatum(geom_relate_pattern(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), (char *) DatumGetPointer(p)));
+}
+
+/**
+ * @brief Return a Datum true if the first geometry covers the second one
+ */
+Datum
+datum_geom_touches(Datum geom1, Datum geom2)
+{
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), TOUCHES));
+}
+
+/*****************************************************************************
+ * Spatial relationship functions computed in PostGIS
+ *****************************************************************************/
+
+/**
  * @brief Return a Datum true if two geometries are disjoint in 2D
  */
 Datum
 datum_geom_disjoint2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! geom_spatialrel(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), INTERSECTS));
+  return BoolGetDatum(! geom_intersects2d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
 }
 
 /**
@@ -173,26 +197,6 @@ datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
   return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
-}
-
-/**
- * @brief Return a Datum true if two 2D geometries are within a distance
- */
-Datum
-datum_geom_relate_pattern(Datum geom1, Datum geom2, Datum p)
-{
-  return BoolGetDatum(geom_relate_pattern(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), (char *) DatumGetPointer(p)));
-}
-
-/**
- * @brief Return a Datum true if the first geometry covers the second one
- */
-Datum
-datum_geom_touches(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(geom_touches(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
 }
 
 /*****************************************************************************/
