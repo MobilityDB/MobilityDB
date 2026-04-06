@@ -36,121 +36,112 @@
  * tContains
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tContains(geometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tContains(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcontains_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tContains(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tContains(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcontains_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tContains(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tContains(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcontains_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tCovers
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tCovers(geometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tCovers(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcovers_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tCovers(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tCovers(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcovers_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tCovers(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tCovers(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcovers_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tDisjoint
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tDisjoint(geometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDisjoint(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDisjoint(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Alias for temporal not equals, that is, geo_tne or #<>
-CREATE FUNCTION tDisjoint(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDisjoint(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDisjoint(tgeography, tgeography, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tIntersects
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tIntersects(geometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tIntersects(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tIntersects(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Alias for temporal equals, that is, tgeo_teq or #=
-CREATE FUNCTION tIntersects(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tIntersects(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tIntersects(tgeography, tgeography, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tTouches
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tTouches(geometry, tgeometry, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tTouches(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tTouches(tgeometry, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tTouches(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tTouches(tgeometry, tgeometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tTouches(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tDwithin
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tDwithin(geometry, tgeometry, dist float,
-   atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDwithin(geometry, tgeometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDwithin(tgeometry, geometry, dist float,
-    atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeometry, geometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
   LANGUAGE C IMMUTABLE  PARALLEL SAFE;
-CREATE FUNCTION tDwithin(tgeometry, tgeometry, dist float,
-    atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDwithin(tgeometry, tgeometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
