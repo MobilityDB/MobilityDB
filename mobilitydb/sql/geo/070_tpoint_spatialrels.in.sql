@@ -52,6 +52,24 @@ CREATE FUNCTION aContains(geometry, tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * eCovers, aCovers
+ *****************************************************************************/
+
+CREATE FUNCTION eCovers(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ecovers_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION aCovers(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acovers_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * eDisjoint, aDisjoint
  *****************************************************************************/
 

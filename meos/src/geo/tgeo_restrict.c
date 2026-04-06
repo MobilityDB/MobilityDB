@@ -187,48 +187,6 @@ tpoint_force2d(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
-/*****************************************************************************/
-
-/**
- * @brief Return the timestamp at which a segment of a temporal point takes a
- * base value (iterator function)
- * @details To take into account roundoff errors, the function considers that
- * two values are equal even if their coordinates may differ by `MEOS_EPSILON`.
- * @param[in] inst1,inst2 Temporal values
- * @param[in] value Base value
- * @param[out] t Timestamp
- * @return Return true if the point is found in the temporal point segment
- * @pre The segment is not constant and has linear interpolation
- * @note The resulting timestamptz may be at an exclusive bound
- */
-static bool
-tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t)
-{
-  Datum value1 = tinstant_value_p(inst1);
-  Datum value2 = tinstant_value_p(inst2);
-  /* Is the lower bound the answer? */
-  bool result = true;
-  if (datum_point_eq(value1, value))
-    *t = inst1->t;
-  /* Is the upper bound the answer? */
-  else if (datum_point_eq(value2, value))
-    *t = inst2->t;
-  else
-  {
-    double dist;
-    double fraction = (double) pointsegm_locate(value1, value2, value, &dist);
-    if (fraction < 0 || fabs(dist) >= MEOS_EPSILON)
-      result = false;
-    else
-    {
-      double duration = (double) (inst2->t - inst1->t);
-      *t = inst1->t + (TimestampTz) (duration * fraction);
-    }
-  }
-  return result;
-}
-
 /*****************************************************************************
  * Restriction functions for a spatiotemporal box
  *****************************************************************************/
@@ -693,6 +651,48 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
 /*****************************************************************************/
 
 /**
+ * @brief Return the timestamp at which a segment of a temporal point takes a
+ * base value (iterator function)
+ * @details To take into account roundoff errors, the function considers that
+ * two values are equal even if their coordinates may differ by `MEOS_EPSILON`.
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] value Base value
+ * @param[out] t Timestamp
+ * @return Return true if the point is found in the temporal point segment
+ * @pre The segment is not constant and has linear interpolation
+ * @note The resulting timestamptz may be at an exclusive bound
+ */
+static bool
+tpointsegm_timestamp_at_value(const TInstant *inst1,
+  const TInstant *inst2, Datum value, TimestampTz *t)
+{
+  Datum value1 = tinstant_value_p(inst1);
+  Datum value2 = tinstant_value_p(inst2);
+  /* Is the lower bound the answer? */
+  bool result = true;
+  if (datum_point_eq(value1, value))
+    *t = inst1->t;
+  /* Is the upper bound the answer? */
+  else if (datum_point_eq(value2, value))
+    *t = inst2->t;
+  else
+  {
+    double dist;
+    double fraction = (double) pointsegm_locate(value1, value2, value, &dist);
+    if (fraction < 0 || fabs(dist) >= MEOS_EPSILON)
+      result = false;
+    else
+    {
+      double duration = (double) (inst2->t - inst1->t);
+      *t = inst1->t + (TimestampTz) (duration * fraction);
+    }
+  }
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Restrict the temporal point to the spatial dimensions of a
  * spatiotemporal box
  * @param[in] seq Temporal point sequence
@@ -778,9 +778,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else /* inst1->t < t1(p3) < inst2->t */
         {
           if (hasz_seq && ! hasz)
-            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
+            tpointsegm_timestamp_at_value(inst1_2d, inst2_2d, d3, &t1);
           else
-            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
+            tpointsegm_timestamp_at_value(inst1, inst2, d3, &t1);
         }
         /* Compute timestamp t2 of point p4  */
         if (geopoint_eq(p2, p4))
@@ -790,9 +790,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         else /* inst1->t < t2(p4) < inst2->t */
         {
           if (hasz_seq && ! hasz)
-            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
+            tpointsegm_timestamp_at_value(inst1_2d, inst2_2d, d4, &t2);
           else
-            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
+            tpointsegm_timestamp_at_value(inst1, inst2, d4, &t2);
         }
         if (hasz_seq && ! hasz)
         {
@@ -1519,8 +1519,8 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
       result = tgeoseq_restrict_geom((TSequence *) temp, gs, atfunc);
       break;
     default: /* TSEQUENCESET */
-      result = (Temporal *) tgeoseqset_restrict_geom((TSequenceSet *) temp,
-         gs, atfunc);
+      result = (Temporal *) tgeoseqset_restrict_geom((TSequenceSet *) temp, gs,
+        atfunc);
   }
   return result;
 }

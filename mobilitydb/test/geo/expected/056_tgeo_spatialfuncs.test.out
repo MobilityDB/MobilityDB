@@ -1048,16 +1048,16 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
  {"POINT(1 1)"}
 (1 row)
 
-SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
-                                                                 astext                                                                  
------------------------------------------------------------------------------------------------------------------------------------------
- Interp=Step;[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(4 2)@Mon Jan 03 00:00:00 2000 PST]
+SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,4 1,1 1))@2000-01-03]'));
+                                                                   astext                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(2.5 2.5)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
-                                                    astext                                                    
---------------------------------------------------------------------------------------------------------------
- Interp=Step;[POINT(4 2.001727)@Sat Jan 01 00:00:00 2000 PST, POINT(4 2.001727)@Sun Jan 02 00:00:00 2000 PST]
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,4 1,1 1))@2000-01-02]'),6);
+                                                       astext                                                       
+--------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(4 2.001727)@Sat Jan 01 00:00:00 2000 PST, POINT(2.99934 2.000508)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
 SELECT asText(atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));

@@ -581,7 +581,6 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   Cbuffer *result = cbuffer_make(gscenter, radius);
   pfree(gscenter);
   return result;
-  
 }
 
 /**

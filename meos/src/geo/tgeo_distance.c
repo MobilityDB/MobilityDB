@@ -385,7 +385,6 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
-      (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
       gserialized_is_empty(gs))
     return NULL;
 

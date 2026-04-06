@@ -368,8 +368,8 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
 
 ---------------------------------------------------------
 
-SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
-SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
+SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,4 1,1 1))@2000-01-03]'));
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,4 1,1 1))@2000-01-02]'),6);
 
 ---------------------------------------------------------
 -- Only 2D is allowed for atGeometry/minusGeometry on tgeometry

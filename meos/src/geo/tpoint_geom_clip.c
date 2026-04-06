@@ -727,7 +727,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
       {
         TimestampTz t1 = (lower == 0.0) ?
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
-        TimestampTz t2 = (upper == 0.0) ?
+        TimestampTz t2 = (upper == 1.0) ?
           inst2->t : inst1->t + (TimestampTz) (duration * upper);
         span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
           T_TIMESTAMPTZ, T_TSTZSPAN, &s);
@@ -1044,7 +1044,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     if (clip)
       return NULL;
     ss = temporal_time(temp);
-    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+    result = (Temporal *) tsequenceset_from_base_tstzspanset(
       BoolGetDatum(false), T_TBOOL, ss, STEP);
     pfree(ss);
     return result;
@@ -1053,9 +1053,26 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   {
     ss = spanset_make_exp(periods->elems, periods->count,
       periods->count, NORMALIZE, ORDER);
-    result = clip ? temporal_restrict_tstzspanset(temp, ss, REST_AT) :
-      (Temporal *) tsequenceset_from_base_tstzspanset(BoolGetDatum(true),
-        T_TBOOL, ss, STEP);
+    if (clip)
+      result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    else
+    {
+      SpanSet *ss1 = temporal_time(temp);
+      Temporal *temp1 = (Temporal *) tsequenceset_from_base_tstzspanset(
+        BoolGetDatum(false), T_TBOOL, ss1, STEP);
+      Temporal *temp2 = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
+      if (temp2)
+      {
+        Temporal *temp3 = (Temporal *) tsequenceset_from_base_tstzspanset(
+          BoolGetDatum(true), T_TBOOL, ss, STEP);
+        result = temporal_merge(temp2, temp3);
+        pfree(temp2); pfree(temp3);
+      }
+      else
+        result = (Temporal *) tsequenceset_from_base_tstzspanset(
+          BoolGetDatum(true), T_TBOOL, ss1, STEP);
+      pfree(ss1); pfree(temp1);
+    }
     pfree(ss);
   }
   

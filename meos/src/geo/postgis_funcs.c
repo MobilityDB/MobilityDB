@@ -232,6 +232,61 @@ box3d_out(const BOX3D *box, int maxdd)
 #endif /* MEOS */
 
 /*****************************************************************************
+ * Centroid function
+ * Original MEOS functions for a more efficient implementation
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the centroid of a geometry
+ * @note PostGIS function: @p centroid(PG_FUNCTION_ARGS). 
+ */
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Convert a geometry into a circular buffer
+ * @param[in] gs Geometry
+ */
+GSERIALIZED *
+geom_centroid(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  uint32_t type = gserialized_get_type(gs);
+
+  /* POINTTYPE */
+  if (type == POINTTYPE)
+    return geo_copy(gs);
+
+  /* CURVEPOLYTYPE */
+  GSERIALIZED *result;
+  double radius;
+  if (type == POINTTYPE)
+  {
+    int32_t srid = gserialized_get_srid(gs);
+    LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
+    LWLINE *ring = (LWLINE *) poly->rings[0];
+    POINT4D p1, p2;
+    getPoint4d_p(ring->points, 0, &p1);
+    getPoint4d_p(ring->points, 1, &p2);
+    /* Compute the radius. We cannot call the PostGIS function
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
+    double x = p1.x + (double) ((long double) (p2.x - p1.x) * 0.5);
+    double y = p1.y + (double) ((long double) (p2.y - p1.y) * 0.5);
+    radius = fabs(p2.x - p1.x) / 2;
+    LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, x, y);
+    result = geom_serialize(center);
+    lwgeom_free((LWGEOM *) poly); lwgeom_free(center); 
+  }
+  else
+  /* geotype != POINTTYPE && geotype != CURVEPOLYTYPE */
+  {
+    result = geom_min_bounding_radius(gs, &radius);
+  }
+  return result;
+}
+
+/*****************************************************************************
  * Interval tree functions
  * Functions copied from /postgis/lwgeom_itree.c
  *****************************************************************************/
@@ -1320,25 +1375,6 @@ geo_geo_n(const GSERIALIZED *gs, int n)
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
  *****************************************************************************/
-
-/**
- * @ingroup meos_geo_base_spatial
- * @brief Return the centroid of a geometry
- * @note PostGIS function: @p centroid(PG_FUNCTION_ARGS). 
- */
-GSERIALIZED *
-geom_centroid(const GSERIALIZED *gs)
-{
-  assert(gs);
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  LWGEOM *lwresult = lwgeom_centroid(lwgeom);
-  lwgeom_free(lwgeom);
-  if (! lwresult)
-    return NULL;
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwresult);
-  return result;
-}
 
 /**
  * @brief Return true if a geometry is a point
