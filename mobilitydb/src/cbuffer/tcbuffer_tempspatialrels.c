@@ -66,20 +66,11 @@
  */
 Datum
 Tspatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
-  Temporal *(*func)(const Temporal *, const Cbuffer *, bool, bool))
+  Temporal *(*func)(const Temporal *, const Cbuffer *))
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = func(temp, cb, restr, atvalue);
+  Temporal *result = func(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -94,20 +85,13 @@ Tspatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
  */
 Datum
 Tspatialrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
-  Temporal *(*func)(const Cbuffer *, const Temporal *, bool, bool))
+  Temporal *(*func)(const Cbuffer *, const Temporal *))
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = func(cb, temp, restr, atvalue);
+  Temporal *result = func(cb, temp);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -504,14 +488,7 @@ Tdwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist, restr, atvalue);
+  Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -534,14 +511,7 @@ Tdwithin_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist, restr, atvalue);
+  Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
