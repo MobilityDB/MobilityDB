@@ -55,7 +55,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_traversed_area);
  * @brief Return a temporal rigid geometry restricted to a geometry
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Trgeometry_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_at_geom);
  * @brief Return a temporal rigid geometry restricted to a geometry
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Trgeometry_at_geom(PG_FUNCTION_ARGS)
 {
   return Trgeometry_restrict_geom(fcinfo, REST_AT);
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_minus_geom);
  * geometry
  * @sqlfn minusGeometry()
  */
-inline Datum
+Datum
 Trgeometry_minus_geom(PG_FUNCTION_ARGS)
 {
   return Trgeometry_restrict_geom(fcinfo, REST_MINUS);
@@ -139,7 +139,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_at_stbox);
  * @brief Return a temporal rigid geometry restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
-inline Datum
+Datum
 Trgeometry_at_stbox(PG_FUNCTION_ARGS)
 {
   return Trgeometry_restrict_stbox(fcinfo, REST_AT);
@@ -153,7 +153,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_minus_stbox);
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
-inline Datum
+Datum
 Trgeometry_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Trgeometry_restrict_stbox(fcinfo, REST_MINUS);

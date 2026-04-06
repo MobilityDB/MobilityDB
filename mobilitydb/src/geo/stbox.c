@@ -290,7 +290,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_x);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox()
  */
-inline Datum
+Datum
 Stbox_constructor_x(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, false, false, false);
@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_z);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_z()
  */
-inline Datum
+Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, true, false, false);
@@ -316,7 +316,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_t);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_t()
  */
-inline Datum
+Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, false, false, true, false);
@@ -329,7 +329,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_xt()
  */
-inline Datum
+Datum
 Stbox_constructor_xt(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, false, true, false);
@@ -342,7 +342,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn stbox_zt()
  */
-inline Datum
+Datum
 Stbox_constructor_zt(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, true, true, false);
@@ -358,7 +358,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_z()
  */
-inline Datum
+Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, true, false, true);
@@ -371,7 +371,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_t()
  */
-inline Datum
+Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, false, false, true, true);
@@ -384,7 +384,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
  * @brief Return a spatiotemporal box constructed from the arguments
  * @sqlfn geodstbox_zt()
  */
-inline Datum
+Datum
 Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 {
   return Stbox_constructor(fcinfo, true, true, true, true);

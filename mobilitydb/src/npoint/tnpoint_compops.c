@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_npoint_tnpoint);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_npoint_tnpoint(fcinfo, &ever_eq_tnpoint_npoint);
@@ -111,7 +111,7 @@ PG_FUNCTION_INFO_V1(Always_eq_npoint_tnpoint);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_npoint_tnpoint(fcinfo, &always_eq_tnpoint_npoint);
@@ -126,7 +126,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_npoint_tnpoint);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_npoint_tnpoint(fcinfo, &ever_ne_tnpoint_npoint);
@@ -141,7 +141,7 @@ PG_FUNCTION_INFO_V1(Always_ne_npoint_tnpoint);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_npoint_tnpoint(fcinfo, &always_ne_tnpoint_npoint);
@@ -157,7 +157,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tnpoint_npoint);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_tnpoint_npoint(fcinfo, &ever_eq_tnpoint_npoint);
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tnpoint_npoint);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_tnpoint_npoint(fcinfo, &always_eq_tnpoint_npoint);
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tnpoint_npoint);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_tnpoint_npoint(fcinfo, &ever_ne_tnpoint_npoint);
@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tnpoint_npoint);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_tnpoint_npoint(fcinfo, &always_ne_tnpoint_npoint);
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tnpoint_tnpoint);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_eq_tnpoint_tnpoint);
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tnpoint_tnpoint);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_eq_tnpoint_tnpoint);
@@ -245,7 +245,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tnpoint_tnpoint);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_ne_tnpoint_tnpoint);
@@ -259,7 +259,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tnpoint_tnpoint);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_tnpoint_tnpoint);
@@ -316,7 +316,7 @@ PG_FUNCTION_INFO_V1(Teq_npoint_tnpoint);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-inline Datum
+Datum
 Teq_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_npoint_tnpoint(fcinfo, &teq_tnpoint_npoint);
@@ -332,7 +332,7 @@ PG_FUNCTION_INFO_V1(Tne_npoint_tnpoint);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-inline Datum
+Datum
 Tne_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_npoint_tnpoint(fcinfo, &tne_tnpoint_npoint);
@@ -347,7 +347,7 @@ PG_FUNCTION_INFO_V1(Teq_tnpoint_npoint);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-inline Datum
+Datum
 Teq_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_tnpoint_npoint(fcinfo, &teq_tnpoint_npoint);
@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(Tne_tnpoint_npoint);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-inline Datum
+Datum
 Tne_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_tnpoint_npoint(fcinfo, &tne_tnpoint_npoint);
@@ -379,7 +379,7 @@ PG_FUNCTION_INFO_V1(Teq_tnpoint_tnpoint);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-inline Datum
+Datum
 Teq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Tne_tnpoint_tnpoint);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-inline Datum
+Datum
 Tne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_ne);

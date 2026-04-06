@@ -107,7 +107,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
  * @sqlfn set_contains()
  * @sqlop @p \@>
  */
-inline Datum
+Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &contains_set_value);
@@ -121,7 +121,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
  * @sqlfn set_contains()
  * @sqlop @p \@>
  */
-inline Datum
+Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &contains_set_set);
@@ -138,7 +138,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
  * @sqlfn set_contained()
  * @sqlop @p <@
  */
-inline Datum
+Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &contained_value_set);
@@ -152,7 +152,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
  * @sqlfn set_contained()
  * @sqlop @p <@
  */
-inline Datum
+Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &contained_set_set);
@@ -169,7 +169,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
  * @sqlfn set_overlaps()
  * @sqlop @p &&
  */
-inline Datum
+Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overlaps_set_set);
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &left_value_set);
@@ -200,7 +200,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &left_set_value);
@@ -214,7 +214,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &left_set_set);
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &right_value_set);
@@ -245,7 +245,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &right_set_value);
@@ -259,7 +259,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &right_set_set);
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &overleft_value_set);
@@ -290,7 +290,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &overleft_set_value);
@@ -305,7 +305,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overleft_set_set);
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
  * @sqlfn set_overright()
  * @sqlop @p
  */
-inline Datum
+Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &overright_value_set);
@@ -336,7 +336,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
  * @sqlfn set_overright()
  * @sqlop @p &>
  */
-inline Datum
+Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &overright_set_value);
@@ -351,7 +351,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @sqlfn set_overright()
  * @sqlop @p &>
  */
-inline Datum
+Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overright_set_set);
@@ -430,7 +430,7 @@ PG_FUNCTION_INFO_V1(Union_value_set);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-inline Datum
+Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &union_value_set);
@@ -444,7 +444,7 @@ PG_FUNCTION_INFO_V1(Union_set_value);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-inline Datum
+Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &union_set_value);
@@ -458,7 +458,7 @@ PG_FUNCTION_INFO_V1(Union_set_set);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-inline Datum
+Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &union_set_set);
@@ -476,7 +476,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_set);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-inline Datum
+Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &intersection_value_set);
@@ -490,7 +490,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-inline Datum
+Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &intersection_set_value);
@@ -504,7 +504,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-inline Datum
+Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &intersection_set_set);
@@ -523,7 +523,7 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-inline Datum
+Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &minus_value_set);
@@ -539,7 +539,7 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-inline Datum
+Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &minus_set_value);
@@ -553,7 +553,7 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-inline Datum
+Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &minus_set_set);
@@ -571,7 +571,7 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
  * @sqlfn set_distance()
  * @sqlop @p <->
  */
-inline Datum
+Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);

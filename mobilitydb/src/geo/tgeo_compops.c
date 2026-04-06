@@ -100,7 +100,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_geo_tgeo);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_geo_tspatial(fcinfo, &ever_eq_geo_tgeo);
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Always_eq_geo_tgeo);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_geo_tspatial(fcinfo, &always_eq_geo_tgeo);
@@ -129,7 +129,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_geo_tgeo);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_geo_tspatial(fcinfo, &ever_ne_geo_tgeo);
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Always_ne_geo_tgeo);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_geo_tspatial(fcinfo, &always_ne_geo_tgeo);
@@ -160,7 +160,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tgeo_geo);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EAcomp_tspatial_geo(fcinfo, &ever_eq_tgeo_geo);
@@ -174,7 +174,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tgeo_geo);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EAcomp_tspatial_geo(fcinfo, &always_eq_tgeo_geo);
@@ -189,7 +189,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tgeo_geo);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EAcomp_tspatial_geo(fcinfo, &ever_ne_tgeo_geo);
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tgeo_geo);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EAcomp_tspatial_geo(fcinfo, &always_ne_tgeo_geo);
@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tgeo_tgeo);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-inline Datum
+Datum
 Ever_eq_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_eq_tgeo_tgeo);
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tgeo_tgeo);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-inline Datum
+Datum
 Always_eq_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_eq_tgeo_tgeo);
@@ -248,7 +248,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tgeo_tgeo);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-inline Datum
+Datum
 Ever_ne_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_ne_tgeo_tgeo);
@@ -262,7 +262,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tgeo_tgeo);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-inline Datum
+Datum
 Always_ne_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_tgeo_tgeo);
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Teq_geo_tgeo);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-inline Datum
+Datum
 Teq_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tcomp_geo_tspatial(fcinfo, &teq_geo_tgeo);
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_tgeo);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-inline Datum
+Datum
 Tne_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tcomp_geo_tspatial(fcinfo, &tne_geo_tgeo);
@@ -355,7 +355,7 @@ PG_FUNCTION_INFO_V1(Teq_tgeo_geo);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-inline Datum
+Datum
 Teq_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return Tcomp_tspatial_geo(fcinfo, &teq_tgeo_geo);
@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Tne_tgeo_geo);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-inline Datum
+Datum
 Tne_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return Tcomp_tspatial_geo(fcinfo, &tne_tgeo_geo);

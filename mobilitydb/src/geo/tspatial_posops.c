@@ -63,7 +63,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_tspatial);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &left_stbox_stbox);
@@ -78,7 +78,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_tspatial);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overleft_stbox_stbox);
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_tspatial);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &right_stbox_stbox);
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_tspatial);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-inline Datum
+Datum
 Overright_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overright_stbox_stbox);
@@ -122,7 +122,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_tspatial);
  * @sqlfn temporal_below()
  * @sqlop @p <<|
  */
-inline Datum
+Datum
 Below_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &below_stbox_stbox);
@@ -137,7 +137,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_tspatial);
  * @sqlfn temporal_overbelow()
  * @sqlop @p &<|
  */
-inline Datum
+Datum
 Overbelow_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overbelow_stbox_stbox);
@@ -151,7 +151,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_tspatial);
  * @sqlfn temporal_above()
  * @sqlop @p |>>
  */
-inline Datum
+Datum
 Above_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &above_stbox_stbox);
@@ -166,7 +166,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_tspatial);
  * @sqlfn temporal_overabove()
  * @sqlop @p |&>
  */
-inline Datum
+Datum
 Overabove_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overabove_stbox_stbox);
@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_tspatial);
  * @sqlfn temporal_front()
  * @sqlop @p <</
  */
-inline Datum
+Datum
 Front_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &front_stbox_stbox);
@@ -196,7 +196,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_tspatial);
  * @sqlfn temporal_overfront()
  * @sqlop @p &</
  */
-inline Datum
+Datum
 Overfront_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overfront_stbox_stbox);
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_tspatial);
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
-inline Datum
+Datum
 Back_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &back_stbox_stbox);
@@ -226,7 +226,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_tspatial);
  * @sqlfn temporal_overback()
  * @sqlop @p /&>
  */
-inline Datum
+Datum
 Overback_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overback_stbox_stbox);
@@ -241,7 +241,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_tspatial);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-inline Datum
+Datum
 Before_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &before_stbox_stbox);
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_tspatial);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-inline Datum
+Datum
 Overbefore_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overbefore_stbox_stbox);
@@ -270,7 +270,7 @@ PG_FUNCTION_INFO_V1(After_stbox_tspatial);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-inline Datum
+Datum
 After_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &after_stbox_stbox);
@@ -285,7 +285,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_tspatial);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-inline Datum
+Datum
 Overafter_stbox_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_stbox_tspatial(fcinfo, &overafter_stbox_stbox);
@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Left_tspatial_stbox);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &left_stbox_stbox);
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(Overleft_tspatial_stbox);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overleft_stbox_stbox);
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(Right_tspatial_stbox);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &right_stbox_stbox);
@@ -348,7 +348,7 @@ PG_FUNCTION_INFO_V1(Overright_tspatial_stbox);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-inline Datum
+Datum
 Overright_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overright_stbox_stbox);
@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(Below_tspatial_stbox);
  * @sqlfn temporal_below()
  * @sqlop @p <<|
  */
-inline Datum
+Datum
 Below_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &below_stbox_stbox);
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tspatial_stbox);
  * @sqlfn temporal_overbelow()
  * @sqlop @p &<|
  */
-inline Datum
+Datum
 Overbelow_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overbelow_stbox_stbox);
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Above_tspatial_stbox);
  * @sqlfn temporal_above()
  * @sqlop @p |>>
  */
-inline Datum
+Datum
 Above_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &above_stbox_stbox);
@@ -406,7 +406,7 @@ PG_FUNCTION_INFO_V1(Overabove_tspatial_stbox);
  * @sqlfn temporal_overabove()
  * @sqlop @p |&>
  */
-inline Datum
+Datum
 Overabove_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overabove_stbox_stbox);
@@ -421,7 +421,7 @@ PG_FUNCTION_INFO_V1(Front_tspatial_stbox);
  * @sqlfn temporal_front()
  * @sqlop @p <</
  */
-inline Datum
+Datum
 Front_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &front_stbox_stbox);
@@ -436,7 +436,7 @@ PG_FUNCTION_INFO_V1(Overfront_tspatial_stbox);
  * @sqlfn temporal_overfront()
  * @sqlop @p &</
  */
-inline Datum
+Datum
 Overfront_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overfront_stbox_stbox);
@@ -451,7 +451,7 @@ PG_FUNCTION_INFO_V1(Back_tspatial_stbox);
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
-inline Datum
+Datum
 Back_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &back_stbox_stbox);
@@ -466,7 +466,7 @@ PG_FUNCTION_INFO_V1(Overback_tspatial_stbox);
  * @sqlfn temporal_overback()
  * @sqlop @ /&>
  */
-inline Datum
+Datum
 Overback_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overback_stbox_stbox);
@@ -481,7 +481,7 @@ PG_FUNCTION_INFO_V1(Before_tspatial_stbox);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-inline Datum
+Datum
 Before_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &before_stbox_stbox);
@@ -496,7 +496,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tspatial_stbox);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-inline Datum
+Datum
 Overbefore_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overbefore_stbox_stbox);
@@ -510,7 +510,7 @@ PG_FUNCTION_INFO_V1(After_tspatial_stbox);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-inline Datum
+Datum
 After_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &after_stbox_stbox);
@@ -525,7 +525,7 @@ PG_FUNCTION_INFO_V1(Overafter_tspatial_stbox);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-inline Datum
+Datum
 Overafter_tspatial_stbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_stbox(fcinfo, &overafter_stbox_stbox);
@@ -543,7 +543,7 @@ PG_FUNCTION_INFO_V1(Left_tspatial_tspatial);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-inline Datum
+Datum
 Left_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &left_stbox_stbox);
@@ -558,7 +558,7 @@ PG_FUNCTION_INFO_V1(Overleft_tspatial_tspatial);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-inline Datum
+Datum
 Overleft_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overleft_stbox_stbox);
@@ -573,7 +573,7 @@ PG_FUNCTION_INFO_V1(Right_tspatial_tspatial);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-inline Datum
+Datum
 Right_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &right_stbox_stbox);
@@ -588,7 +588,7 @@ PG_FUNCTION_INFO_V1(Overright_tspatial_tspatial);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-inline Datum
+Datum
 Overright_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overright_stbox_stbox);
@@ -603,7 +603,7 @@ PG_FUNCTION_INFO_V1(Below_tspatial_tspatial);
  * @sqlfn temporal_below()
  * @sqlop @p <<|
  */
-inline Datum
+Datum
 Below_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &below_stbox_stbox);
@@ -618,7 +618,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tspatial_tspatial);
  * @sqlfn temporal_overbelow()
  * @sqlop @p &<|
  */
-inline Datum
+Datum
 Overbelow_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overbelow_stbox_stbox);
@@ -633,7 +633,7 @@ PG_FUNCTION_INFO_V1(Above_tspatial_tspatial);
  * @sqlfn temporal_above()
  * @sqlop @p |>>
  */
-inline Datum
+Datum
 Above_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &above_stbox_stbox);
@@ -648,7 +648,7 @@ PG_FUNCTION_INFO_V1(Overabove_tspatial_tspatial);
  * @sqlfn temporal_overabove()
  * @sqlop @p |&>
  */
-inline Datum
+Datum
 Overabove_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overabove_stbox_stbox);
@@ -663,7 +663,7 @@ PG_FUNCTION_INFO_V1(Front_tspatial_tspatial);
  * @sqlfn temporal_front()
  * @sqlop @p <</
  */
-inline Datum
+Datum
 Front_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &front_stbox_stbox);
@@ -678,7 +678,7 @@ PG_FUNCTION_INFO_V1(Overfront_tspatial_tspatial);
  * @sqlfn temporal_overfront()
  * @sqlop @p &</
  */
-inline Datum
+Datum
 Overfront_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overfront_stbox_stbox);
@@ -693,7 +693,7 @@ PG_FUNCTION_INFO_V1(Back_tspatial_tspatial);
  * @sqlfn temporal_back()
  * @sqlop @p />>
  */
-inline Datum
+Datum
 Back_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &back_stbox_stbox);
@@ -708,7 +708,7 @@ PG_FUNCTION_INFO_V1(Overback_tspatial_tspatial);
  * @sqlfn temporal_overback()
  * @sqlop @p /&>
  */
-inline Datum
+Datum
 Overback_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overback_stbox_stbox);
@@ -723,7 +723,7 @@ PG_FUNCTION_INFO_V1(Before_tspatial_tspatial);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-inline Datum
+Datum
 Before_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &before_stbox_stbox);
@@ -738,7 +738,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tspatial_tspatial);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-inline Datum
+Datum
 Overbefore_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overbefore_stbox_stbox);
@@ -753,7 +753,7 @@ PG_FUNCTION_INFO_V1(After_tspatial_tspatial);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-inline Datum
+Datum
 After_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &after_stbox_stbox);
@@ -768,7 +768,7 @@ PG_FUNCTION_INFO_V1(Overafter_tspatial_tspatial);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-inline Datum
+Datum
 Overafter_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
   return Boxop_tspatial_tspatial(fcinfo, &overafter_stbox_stbox);

@@ -67,7 +67,7 @@ PG_FUNCTION_INFO_V1(Econtains_geo_trgeo);
  * @brief Return true if a geometry ever contains a temporal rigid geometry
  * @sqlfn eContains()
  */
-inline Datum
+Datum
 Econtains_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeo, EVER);
@@ -80,7 +80,7 @@ PG_FUNCTION_INFO_V1(Acontains_geo_trgeo);
  * @brief Return true if a geometry always contains a temporal rigid geometry
  * @sqlfn aContains()
  */
-inline Datum
+Datum
 Acontains_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeo, ALWAYS);
@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(Ecovers_geo_trgeo);
  * @brief Return true if a geometry ever covers a temporal rigid geometry
  * @sqlfn eCovers()
  */
-inline Datum
+Datum
 Ecovers_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, EVER);
@@ -110,7 +110,7 @@ PG_FUNCTION_INFO_V1(Acovers_geo_trgeo);
  * @brief Return true if a geometry always covers a temporal rigid geometry
  * @sqlfn aCovers()
  */
-inline Datum
+Datum
 Acovers_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, ALWAYS);
@@ -125,7 +125,7 @@ PG_FUNCTION_INFO_V1(Ecovers_trgeo_geo);
  * @brief Return true if a geometry ever covers a temporal rigid geometry
  * @sqlfn eCovers()
  */
-inline Datum
+Datum
 Ecovers_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, EVER);
@@ -138,7 +138,7 @@ PG_FUNCTION_INFO_V1(Acovers_trgeo_geo);
  * @brief Return true if a geometry always covers a temporal rigid geometry
  * @sqlfn aCovers()
  */
-inline Datum
+Datum
 Acovers_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, ALWAYS);
@@ -156,7 +156,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_trgeo);
  * disjoint
  * @sqlfn eDisjoint()
  */
-inline Datum
+Datum
 Edisjoint_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeo, EVER);
@@ -170,7 +170,7 @@ PG_FUNCTION_INFO_V1(Adisjoint_geo_trgeo);
  * disjoint
  * @sqlfn aDisjoint()
  */
-inline Datum
+Datum
 Adisjoint_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeo, ALWAYS);
@@ -184,7 +184,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_trgeo_geo);
  * disjoint
  * @sqlfn eDisjoint()
  */
-inline Datum
+Datum
 Edisjoint_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeo_geo, EVER);
@@ -198,7 +198,7 @@ PG_FUNCTION_INFO_V1(Adisjoint_trgeo_geo);
  * disjoint
  * @sqlfn aDisjoint()
  */
-inline Datum
+Datum
 Adisjoint_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeo_geo, ALWAYS);
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_trgeo_trgeo);
  * @brief Return true if two temporal rigid geometries are ever disjoint
  * @sqlfn eDisjoint()
  */
-inline Datum
+Datum
 Edisjoint_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeo_trgeo,
@@ -225,7 +225,7 @@ PG_FUNCTION_INFO_V1(Adisjoint_trgeo_trgeo);
  * @brief Return true if two temporal rigid geometries are ever disjoint
  * @sqlfn aDisjoint()
  */
-inline Datum
+Datum
 Adisjoint_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeo_trgeo,
@@ -244,7 +244,7 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_trgeo);
  * intersect
  * @sqlfn eIntersects()
  */
-inline Datum
+Datum
 Eintersects_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeo, EVER);
@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(Aintersects_geo_trgeo);
  * intersect
  * @sqlfn aIntersects()
  */
-inline Datum
+Datum
 Aintersects_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeo, ALWAYS);
@@ -272,7 +272,7 @@ PG_FUNCTION_INFO_V1(Eintersects_trgeo_geo);
  * intersect
  * @sqlfn eIntersects()
  */
-inline Datum
+Datum
 Eintersects_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeo_geo, EVER);
@@ -286,7 +286,7 @@ PG_FUNCTION_INFO_V1(Aintersects_trgeo_geo);
  * intersect
  * @sqlfn aIntersects()
  */
-inline Datum
+Datum
 Aintersects_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeo_geo, ALWAYS);
@@ -299,7 +299,7 @@ PG_FUNCTION_INFO_V1(Eintersects_trgeo_trgeo);
  * @brief Return true if two temporal rigid geometries ever intersect
  * @sqlfn eIntersects()
  */
-inline Datum
+Datum
 Eintersects_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeo_trgeo,
@@ -313,7 +313,7 @@ PG_FUNCTION_INFO_V1(Aintersects_trgeo_trgeo);
  * @brief Return true if two temporal rigid geometries ever intersect
  * @sqlfn aIntersects()
  */
-inline Datum
+Datum
 Aintersects_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeo_trgeo,
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(Etouches_geo_trgeo);
  * @brief Return true if a geometry and a temporal rigid geometry ever touch
  * @sqlfn eTouches()
  */
-inline Datum
+Datum
 Etouches_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeo, EVER);
@@ -346,7 +346,7 @@ PG_FUNCTION_INFO_V1(Atouches_geo_trgeo);
  * @brief Return true if a geometry and a temporal rigid geometry ever touch
  * @sqlfn aTouches()
  */
-inline Datum
+Datum
 Atouches_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeo, ALWAYS);
@@ -359,7 +359,7 @@ PG_FUNCTION_INFO_V1(Etouches_trgeo_geo);
  * @brief Return true if a temporal rigid geometry and a geometry ever touch
  * @sqlfn eTouches()
  */
-inline Datum
+Datum
 Etouches_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeo_geo, EVER);
@@ -372,7 +372,7 @@ PG_FUNCTION_INFO_V1(Atouches_trgeo_geo);
  * @brief Return true if a temporal rigid geometry and a geometry always touch
  * @sqlfn aTouches()
  */
-inline Datum
+Datum
 Atouches_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeo_geo, ALWAYS);
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_trgeo);
  * within a distance
  * @sqlfn eDwithin()
  */
-inline Datum
+Datum
 Edwithin_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_geo_tspatial(fcinfo, EVER);
@@ -405,7 +405,7 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_trgeo);
  * within a distance
  * @sqlfn aDwithin()
  */
-inline Datum
+Datum
 Adwithin_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_geo_tspatial(fcinfo, ALWAYS);
@@ -419,7 +419,7 @@ PG_FUNCTION_INFO_V1(Edwithin_trgeo_geo);
  * within a distance
  * @sqlfn eDwithin()
  */
-inline Datum
+Datum
 Edwithin_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_tspatial_geo(fcinfo, EVER);
@@ -433,7 +433,7 @@ PG_FUNCTION_INFO_V1(Adwithin_trgeo_geo);
  * within a distance
  * @sqlfn aDwithin()
  */
-inline Datum
+Datum
 Adwithin_trgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_tspatial_geo(fcinfo, ALWAYS);
@@ -466,7 +466,7 @@ PG_FUNCTION_INFO_V1(Edwithin_trgeo_trgeo);
  * distance
  * @sqlfn eDwithin()
  */
-inline Datum
+Datum
 Edwithin_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_trgeo_trgeo(fcinfo, EVER);
@@ -480,7 +480,7 @@ PG_FUNCTION_INFO_V1(Adwithin_trgeo_trgeo);
  * distance
  * @sqlfn aDwithin()
  */
-inline Datum
+Datum
 Adwithin_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);

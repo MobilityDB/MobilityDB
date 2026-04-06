@@ -122,7 +122,7 @@ PG_FUNCTION_INFO_V1(Tint_wmin_transfn);
  * temporal integers
  * @sqlfn wMin()
  */
-inline Datum
+Datum
 Tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
@@ -136,7 +136,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
  * temporal floats
  * @sqlfn wMin()
  */
-inline Datum
+Datum
 Tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_min_float8, GET_MIN, CROSSINGS);
@@ -150,7 +150,7 @@ PG_FUNCTION_INFO_V1(Tint_wmax_transfn);
  * temporal integers
  * @sqlfn wMax()
  */
-inline Datum
+Datum
 Tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
@@ -164,7 +164,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
  * temporal floats
  * @sqlfn wMax()
  */
-inline Datum
+Datum
 Tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_max_float8, GET_MAX, CROSSINGS);
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Tint_wsum_transfn);
  * integers
  * @sqlfn wSum()
  */
-inline Datum
+Datum
 Tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
  * floats
  * @sqlfn wSum()
  */
-inline Datum
+Datum
 Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN, CROSSINGS);
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(Temporal_wcount_transfn);
  * values
  * @sqlfn wCount()
  */
-inline Datum
+Datum
 Temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transform_transfn(fcinfo, &datum_sum_int32,
@@ -221,7 +221,7 @@ PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
  * temporal numbers
  * @sqlfn wAvg()
  */
-inline Datum
+Datum
 Tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transform_transfn(fcinfo, &datum_sum_double2,

@@ -56,7 +56,7 @@ PG_FUNCTION_INFO_V1(Tpose_trajectory);
  * @brief Return the trajectory of a temporal pose
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Tpose_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Tpose_at_geom);
  * @brief Return a temporal pose restricted to a geometry
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Tpose_at_geom(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_geom(fcinfo, REST_AT);
@@ -107,7 +107,7 @@ PG_FUNCTION_INFO_V1(Tpose_minus_geom);
  * @brief Return a temporal pose restricted to the complement of a geometry
  * @sqlfn minusGeometry()
  */
-inline Datum
+Datum
 Tpose_minus_geom(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_geom(fcinfo, REST_MINUS);
@@ -139,7 +139,7 @@ PG_FUNCTION_INFO_V1(Tpose_at_stbox);
  * @brief Return a temporal pose restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
-inline Datum
+Datum
 Tpose_at_stbox(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_stbox(fcinfo, REST_AT);
@@ -153,7 +153,7 @@ PG_FUNCTION_INFO_V1(Tpose_minus_stbox);
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
-inline Datum
+Datum
 Tpose_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_stbox(fcinfo, REST_MINUS);

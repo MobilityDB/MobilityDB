@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-inline Datum
+Datum
 Tbox_value_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_common(fcinfo, true, false);
@@ -328,7 +328,7 @@ PG_FUNCTION_INFO_V1(Tbox_time_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-inline Datum
+Datum
 Tbox_time_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_common(fcinfo, false, true);
@@ -341,7 +341,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_time_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-inline Datum
+Datum
 Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_common(fcinfo, true, true);
@@ -390,7 +390,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-inline Datum
+Datum
 Tbox_get_value_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_common(fcinfo, true, false);
@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_time_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-inline Datum
+Datum
 Tbox_get_time_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_common(fcinfo, false, true);
@@ -416,7 +416,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_time_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-inline Datum
+Datum
 Tbox_get_value_time_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_common(fcinfo, true, true);
@@ -470,7 +470,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_boxes);
  * value bins
  * @sqlfn valueBoxes()
  */
-inline Datum
+Datum
 Tnumber_value_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_common(fcinfo, true, false);
@@ -484,7 +484,7 @@ PG_FUNCTION_INFO_V1(Tnumber_time_boxes);
  * time bins
  * @sqlfn timeBoxes()
  */
-inline Datum
+Datum
 Tnumber_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_common(fcinfo, false, true);
@@ -498,7 +498,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_boxes);
  * a value and time grid
  * @sqlfn valueTimeBoxes()
  */
-inline Datum
+Datum
 Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_common(fcinfo, true, true);
@@ -831,7 +831,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
  * bins
  * @sqlfn valueSplit()
  */
-inline Datum
+Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_common(fcinfo, true, false);
@@ -845,7 +845,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
  * and time bins
  * @sqlfn valueTimeSplit()
  */
-inline Datum
+Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_common(fcinfo, true, true);

@@ -730,7 +730,7 @@ PG_FUNCTION_INFO_V1(Tgeo_at_geom);
  * @brief Return a temporal geo restricted to a geometry
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Tgeo_at_geom(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_geom(fcinfo, REST_AT);
@@ -743,7 +743,7 @@ PG_FUNCTION_INFO_V1(Tgeo_minus_geom);
  * @brief Return a temporal geo restricted to the complement of a geometry
  * @sqlfn minusGeometry()
  */
-inline Datum
+Datum
 Tgeo_minus_geom(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_geom(fcinfo, REST_MINUS);
@@ -777,7 +777,7 @@ PG_FUNCTION_INFO_V1(Tgeo_at_stbox);
  * @brief Return a temporal geo restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
-inline Datum
+Datum
 Tgeo_at_stbox(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_stbox(fcinfo, REST_AT);
@@ -791,7 +791,7 @@ PG_FUNCTION_INFO_V1(Tgeo_minus_stbox);
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
-inline Datum
+Datum
 Tgeo_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_stbox(fcinfo, REST_MINUS);
@@ -824,7 +824,7 @@ PG_FUNCTION_INFO_V1(Tgeo_at_elevation);
  * @brief Return a temporal geo restricted to an elevation span
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Tgeo_at_elevation(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_elevation(fcinfo, REST_AT);
@@ -837,7 +837,7 @@ PG_FUNCTION_INFO_V1(Tgeo_minus_elevation);
  * @brief Return a temporal geo restricted to the complement an elevation span
  * @sqlfn minusGeometry()
  */
-inline Datum
+Datum
 Tgeo_minus_elevation(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_elevation(fcinfo, REST_MINUS);

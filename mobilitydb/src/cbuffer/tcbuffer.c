@@ -329,7 +329,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_at_cbuffer);
  * @note Only 2D is supported
  * @sqlfn atValue()
  */
-inline Datum
+Datum
 Tcbuffer_at_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_cbuffer(fcinfo, REST_AT);
@@ -343,7 +343,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_minus_cbuffer);
  * circular buffer
  * @sqlfn minusValue()
  */
-inline Datum
+Datum
 Tcbuffer_minus_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_cbuffer(fcinfo, REST_MINUS);
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_at_stbox);
  * @note Only 2D is supported
  * @sqlfn atValue()
  */
-inline Datum
+Datum
 Tcbuffer_at_stbox(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_stbox(fcinfo, REST_AT);
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_minus_stbox);
  * circular buffer
  * @sqlfn minusValue()
  */
-inline Datum
+Datum
 Tcbuffer_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_stbox(fcinfo, REST_MINUS);
@@ -425,7 +425,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_at_geom);
  * @note Only 2D is supported
  * @sqlfn atGeometry()
  */
-inline Datum
+Datum
 Tcbuffer_at_geom(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_geom(fcinfo, REST_AT);
@@ -440,7 +440,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_minus_geom);
  * @note Only 2D is supported
  * @sqlfn minusGeometry()
  */
-inline Datum
+Datum
 Tcbuffer_minus_geom(PG_FUNCTION_ARGS)
 {
   return Tcbuffer_restrict_geom(fcinfo, REST_MINUS);

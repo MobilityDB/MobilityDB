@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_cbuffer_tcbuffer);
  * buffer is disjoint from a circular buffer
  * @sqlfn tDisjoint()
  */
-inline Datum
+Datum
 Tdisjoint_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tdisjoint_cbuffer_tcbuffer);
@@ -272,7 +272,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_cbuffer);
  * bufffer is disjoint from a circular buffer
  * @sqlfn tDisjoint()
  */
-inline Datum
+Datum
 Tdisjoint_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tdisjoint_tcbuffer_cbuffer);
@@ -286,7 +286,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tcbuffer);
  * from a temporal circular buffer 
  * @sqlfn tDisjoint()
  */
-inline Datum
+Datum
 Tdisjoint_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tdisjoint_geo_tcbuffer);
@@ -300,7 +300,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_geo);
  * buffer is disjoint from a geometry
  * @sqlfn tDisjoint()
  */
-inline Datum
+Datum
 Tdisjoint_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tdisjoint_tcbuffer_geo);
@@ -314,7 +314,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_tcbuffer);
  * buffers are disjoint
  * @sqlfn tDisjoint()
  */
-inline Datum
+Datum
 Tdisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tdisjoint_tcbuffer_tcbuffer);
@@ -332,7 +332,7 @@ PG_FUNCTION_INFO_V1(Tintersects_cbuffer_tcbuffer);
  * buffer intersects a circular buffer
  * @sqlfn tIntersects()
  */
-inline Datum
+Datum
 Tintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tintersects_cbuffer_tcbuffer);
@@ -346,7 +346,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_cbuffer);
  * buffer intersects a circular buffer
  * @sqlfn tIntersects()
  */
-inline Datum
+Datum
 Tintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tintersects_tcbuffer_cbuffer);
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tcbuffer);
  * temporal circular buffer  
  * @sqlfn tIntersects()
  */
-inline Datum
+Datum
 Tintersects_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tintersects_geo_tcbuffer);
@@ -374,7 +374,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_geo);
  * buffer intersects a geometry
  * @sqlfn tIntersects()
  */
-inline Datum
+Datum
 Tintersects_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tintersects_tcbuffer_geo);
@@ -388,7 +388,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_tcbuffer);
  * buffers are disjoint
  * @sqlfn tIntersects()
  */
-inline Datum
+Datum
 Tintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tintersects_tcbuffer_tcbuffer);
