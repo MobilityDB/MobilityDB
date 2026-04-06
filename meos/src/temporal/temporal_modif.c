@@ -455,8 +455,7 @@ tcontseq_merge_array_iter(TSequence **sequences, int count, int *totalcount)
 Temporal *
 tsequence_merge_array(TSequence **sequences, int count)
 {
-  assert(sequences);
-  assert(count > 0);
+  assert(sequences); assert(count > 0);
 
   /* Discrete sequences */
   if (MEOS_FLAGS_DISCRETE_INTERP(sequences[0]->flags))

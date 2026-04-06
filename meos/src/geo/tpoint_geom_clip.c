@@ -950,17 +950,18 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal geometric point with linear interpolation 
- * restricted to a 2D geometry
- * @details The temporal point may be 2D or 3D and the Z dimension is also
- * computed
+ * @brief Return the temporal intersection/intersects of a temporal  geometric
+ * point with linear interpolation and a 2D geometry
+ * @details The temporal geometric point may be in 2D or 3D and the Z dimension 
+ * is also computed
  * @note For performance reasons we avoid the call to ST_Intersection
  * which delegates the computation to GEOS
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
 Temporal *
-tpoint_linear_at_geom(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool clip)
 {
   assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
@@ -974,7 +975,15 @@ tpoint_linear_at_geom(const Temporal *temp, const GSERIALIZED *gs)
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
-    return NULL;
+  {
+    if (clip)
+      return NULL;
+    SpanSet *ss = temporal_time(temp);
+    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+    return result;
+  }
 
   /* Extract the edges */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -1029,11 +1038,24 @@ tpoint_linear_at_geom(const Temporal *temp, const GSERIALIZED *gs)
   }
 
   Temporal *result = NULL;
-  if (periods->count > 0)
+  SpanSet *ss;
+  if (periods->count == 0)
   {
-    SpanSet *ss = spanset_make_exp(periods->elems, periods->count,
+    if (clip)
+      return NULL;
+    ss = temporal_time(temp);
+    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+    return result;
+  }
+  else
+  {
+    ss = spanset_make_exp(periods->elems, periods->count,
       periods->count, NORMALIZE, ORDER);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    result = clip ? temporal_restrict_tstzspanset(temp, ss, REST_AT) :
+      (Temporal *) tsequenceset_from_base_tstzspanset(BoolGetDatum(true),
+        T_TBOOL, ss, STEP);
     pfree(ss);
   }
   
@@ -1064,7 +1086,7 @@ tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs); assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
 
   /* Compute atGeometry for the temporal point */
-  Temporal *result_at = tpoint_linear_at_geom(temp, gs);
+  Temporal *result_at = tpoint_linear_inter_geom(temp, gs, true);
 
   /* If "at" restriction, return */
   if (atfunc)

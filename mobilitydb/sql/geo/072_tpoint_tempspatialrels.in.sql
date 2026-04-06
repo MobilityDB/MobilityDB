@@ -43,6 +43,16 @@ CREATE FUNCTION tContains(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
+ * tCovers
+ *****************************************************************************/
+
+-- ALL the following functions are not STRICT
+CREATE FUNCTION tCovers(geometry, tgeompoint, atvalue bool DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tcovers_geo_tgeo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/*****************************************************************************
  * tDisjoint
  *****************************************************************************/
 

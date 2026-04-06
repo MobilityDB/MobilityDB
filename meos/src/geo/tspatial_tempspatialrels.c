@@ -69,6 +69,10 @@
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/tcbuffer_spatialrels.h"
 
+extern Temporal *
+tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool clip);
+
 /*****************************************************************************
  * Generic functions for computing the spatiotemporal relationships
  * with arbitrary geometries
@@ -377,209 +381,20 @@ tinterrel_tspatialseq_discstep_base(const TSequence *seq, Datum base,
 }
 
 /**
- * @brief Return an array of temporal Boolean sequences that state whether a
- * temporal point sequence with linear interpolation that is simple and a
- * geometry intersect or are disjoint
- * @param[in] seq Temporal point
- * @param[in] gs Geometry
- * @param[in] box Bounding box of the base value
- * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[out] count Number of elements in the resulting array
- * @pre The temporal point has linear interpolation and is simple, that is,
- * it is non self-intersecting
- */
-static TSequence **
-tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
-  const STBox *box, bool tinter, int *count)
-{
-  /* The temporal sequence has at least 2 instants since
-   * (1) the instantaneous full sequence test is done in the calling function
-   * (2) the simple components of a non self-intersecting sequence have at
-   *     least two instants */
-  assert(seq->count > 1); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  TSequence **result;
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Datum datum_yes = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
-  Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
-
-  /* Bounding box test */
-  STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
-  if (! overlaps_stbox_stbox(box1, box))
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
-      STEP);
-    *count = 1;
-    return result;
-  }
-
-  GSERIALIZED *traj = tpointseq_linear_trajectory(seq, UNARY_UNION_NO);
-  GSERIALIZED *inter = geom_intersection2d(traj, gs);
-  pfree(traj);
-  if (gserialized_is_empty(inter))
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
-      STEP);
-    *count = 1;
-    pfree(inter);
-    return result;
-  }
-
-  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  const TInstant *end = TSEQUENCE_INST_N(seq, seq->count - 1);
-  /* If the trajectory is a point the result is true due to the
-   * non-empty intersection test above */
-  if (seq->count == 2 &&
-    datum_point_eq(tinstant_value_p(start), tinstant_value_p(end)))
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &seq->period,
-      STEP);
-    *count = 1;
-    pfree(inter);
-    return result;
-  }
-
-  /* Get the periods at which the temporal point intersects the geometry */
-  int npers;
-  Span *periods = tpointseq_interperiods(seq, inter, &npers);
-  pfree(inter);
-  if (npers == 0)
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_tstzspan(datum_no, T_TBOOL, &seq->period,
-      STEP);
-    *count = 1;
-    return result;
-  }
-  SpanSet *ss;
-  if (npers == 1)
-    ss = minus_span_span(&seq->period, &periods[0]);
-  else
-  {
-    /* It is necessary to sort the periods */
-    SpanSet *ps1 = spanset_make_exp(periods, npers, npers, NORMALIZE, ORDER);
-    ss = minus_span_spanset(&seq->period, ps1);
-    pfree(ps1);
-  }
-  int nseqs = npers;
-  if (ss)
-    nseqs += ss->count;
-  result = palloc(sizeof(TSequence *) * nseqs);
-  for (int i = 0; i < npers; i++)
-    result[i] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &periods[i],
-      STEP);
-  if (ss)
-  {
-    for (int i = 0; i < ss->count; i++)
-      result[i + npers] = tsequence_from_base_tstzspan(datum_no, T_TBOOL,
-        SPANSET_SP_N(ss, i), STEP);
-    tseqarr_sort(result, nseqs);
-    pfree(ss);
-  }
-  *count = nseqs;
-  pfree(periods);
-  return result;
-}
-
-/**
- * @brief Return an array of temporal Boolean sequences that state whether a
- * temporal point sequence with linear interpolation and a geometry intersect
- * or are disjoint (iterator function)
- * @details The function splits the temporal geo in an array of fragments that
- * are simple (that is, not self-intersecting) and loops for each fragment
- * @param[in] seq Temporal point
- * @param[in] gs Geometry
- * @param[in] box Bounding box of the base value
- * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] func Spatial relationship function to be applied
- * @param[out] count Number of elements in the output array
- */
-static TSequence **
-tinterrel_tpointseq_linear_geo_iter(const TSequence *seq, const GSERIALIZED *gs,
-  const STBox *box, bool tinter, datum_func2 func, int *count)
-{
-  assert(seq); assert(box); assert(count); assert(tpoint_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    TInstant *inst = tinterrel_tspatialinst_base(TSEQUENCE_INST_N(seq, 0),
-      PointerGetDatum(gs), tinter, func);
-    TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tinstant_to_tsequence_free(inst, STEP);
-    *count = 1;
-    return result;
-  }
-
-  /* Split the temporal point in an array of non self-intersecting temporal
-   * points */
-  int nsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq, &nsimple);
-  TSequence ***sequences = palloc(sizeof(TSequence *) * nsimple);
-  /* palloc0 used to initialize the counters to 0 */
-  int *countseqs = palloc0(sizeof(int) * nsimple);
-  int totalcount = 0;
-  for (int i = 0; i < nsimple; i++)
-  {
-    sequences[i] = tinterrel_tpointseq_simple_geo(simpleseqs[i], gs, box,
-      tinter, &countseqs[i]);
-    totalcount += countseqs[i];
-    pfree(simpleseqs[i]);
-  }
-  pfree(simpleseqs);
-  *count = totalcount;
-  return tseqarr2_to_tseqarr(sequences, countseqs, nsimple, totalcount);
-}
-
-/**
- * @brief Return a temporal Boolean that states whether a temporal point with
- * linear interpolation and a geometry intersect or are disjoint
- * @details The function splits the temporal point in an array of temporal
- * point sequences that are simple (that is, not self-intersecting) and loops
- * for each piece.
- * @param[in] seq Temporal point
- * @param[in] gs Geometry
- * @param[in] box Bounding box of the base value
- * @param[in] func Spatial relationship function to be applied
- * @param[in] tinter True when computing tintersects, false for tdisjoint
- */
-TSequenceSet *
-tinterrel_tpointseq_linear_geo(const TSequence *seq, const GSERIALIZED *gs,
-  const STBox *box, bool tinter, datum_func2 func)
-{
-  assert(seq); assert(box); assert(tpoint_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
-
-  /* Split the temporal point in an array of non self-intersecting
-   * temporal points */
-  int count;
-  TSequence **sequences = tinterrel_tpointseq_linear_geo_iter(seq, gs, box,
-    tinter, func, &count);
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
-}
-
-/**
  * @brief Return a temporal Boolean that states whether a spatiotemporal
  * sequence set and a base value intersect or are disjoint
  * @param[in] ss Spatiotemporal value
  * @param[in] base Base value
- * @param[in] box Bounding box of the base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func Spatial relationship function to be applied
  */
 TSequenceSet *
-tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
-  const STBox *box, bool tinter, datum_func2 func)
+tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base, bool tinter,
+  datum_func2 func)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
-      return tinterrel_tpointseq_linear_geo(TSEQUENCESET_SEQ_N(ss, 0), 
-        DatumGetGserializedP(base), box, tinter, func);
     TSequence *res = tinterrel_tspatialseq_discstep_base(
       TSEQUENCESET_SEQ_N(ss, 0), base, tinter, func);
     TSequenceSet *result = tsequence_to_tsequenceset(res);
@@ -588,32 +403,11 @@ tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
   }
 
   int totalcount;
-  TSequence **allseqs;
-
-  /* Linear interpolation */
-  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
-  {
-    TSequence ***sequences = palloc(sizeof(TSequence *) * ss->count);
-    /* palloc0 used to initialize the counters to 0 */
-    int *countseqs = palloc0(sizeof(int) * ss->count);
-    totalcount = 0;
-    for (int i = 0; i < ss->count; i++)
-    {
-      sequences[i] = tinterrel_tpointseq_linear_geo_iter(
-        TSEQUENCESET_SEQ_N(ss, i), DatumGetGserializedP(base), box, tinter,
-          func, &countseqs[i]);
-      totalcount += countseqs[i];
-    }
-    allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count, totalcount);
-  }
-  else
-  {
-    allseqs = palloc(sizeof(TSequence *) * ss->count);
-    for (int i = 0; i < ss->count; i++)
-      allseqs[i] = tinterrel_tspatialseq_discstep_base(
-        TSEQUENCESET_SEQ_N(ss, i), base, tinter, func);
-    totalcount = ss->count;
-  }
+  TSequence **allseqs = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    allseqs[i] = tinterrel_tspatialseq_discstep_base(
+      TSEQUENCESET_SEQ_N(ss, i), base, tinter, func);
+  totalcount = ss->count;
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
@@ -660,15 +454,12 @@ tinterrel_tspatial_base(const Temporal *temp, Datum base, bool tinter,
         base, tinter, func);
       break;
     case TSEQUENCE:
-      result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        (Temporal *) tinterrel_tpointseq_linear_geo((TSequence *) temp,
-          DatumGetGserializedP(base), &box2, tinter, func) :
-        (Temporal *) tinterrel_tspatialseq_discstep_base((TSequence *) temp,
-          base, tinter, func);
+      result = (Temporal *) tinterrel_tspatialseq_discstep_base(
+        (TSequence *) temp, base, tinter, func);
       break;
     default: /* TSEQUENCESET */
       result = (Temporal *) tinterrel_tspatialseqset_base(
-        (TSequenceSet *) temp, base, &box2, tinter, func);
+        (TSequenceSet *) temp, base, tinter, func);
   }
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result && restr)
@@ -699,6 +490,18 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
+
+  /* Call the specific function for temporal points with linear interpolation */
+  if (temp->temptype == T_TGEOMPOINT &&
+      MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
+  {
+    Temporal *res = tpoint_linear_inter_geom(temp, gs, false);
+    if (tinter)
+      return res;
+    Temporal *result = tnot_tbool(res);
+    pfree(res);
+    return result;
+  }
 
   /* 3D only if both arguments are 3D */
   datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
@@ -920,14 +723,13 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   /* Temporal point case */
   if (tpoint_type(temp->temptype))
   {
-    Temporal *inter = tinterrel_tspatial_base(temp, PointerGetDatum(gs),
-      TINTERSECTS, restr, atvalue, &datum_geom_intersects2d);
+    Temporal *inter = tinterrel_tgeo_geo(temp, gs, TINTERSECTS, restr,
+      atvalue);
     GSERIALIZED *gsbound = geom_boundary(gs);
     if (! gserialized_is_empty(gsbound))
     {
-      Temporal *inter_bound = tinterrel_tspatial_base(temp,
-        PointerGetDatum(gsbound), TINTERSECTS, restr, atvalue,
-        &datum_geom_intersects2d);
+      Temporal *inter_bound = tinterrel_tgeo_geo(temp, gsbound, TINTERSECTS,
+        restr, atvalue);
         if (! inter_bound)
           return NULL;
       Temporal *not_inter_bound = tnot_tbool(inter_bound);
@@ -1220,8 +1022,7 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     GSERIALIZED *gsbound = geom_boundary(gs);
     if (! gserialized_is_empty(gsbound))
     {
-      result = tinterrel_tspatial_base(temp, PointerGetDatum(gsbound),
-        TINTERSECTS, restr, atvalue, &datum_geom_intersects2d);
+      result = tinterrel_tgeo_geo(temp, gsbound, TINTERSECTS, restr, atvalue);
     }
     else
       result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
