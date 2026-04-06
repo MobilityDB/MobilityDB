@@ -85,8 +85,12 @@ meos_array_add(MeosArray *array, void *value)
   /* Enlarge the values array if necessary */
   if (array->count >= array->capacity)
   {
+    size_t oldsize = array->capacity * array->elem_size;
     array->capacity *= 2;
+    size_t newsize = array->capacity * array->elem_size;
     array->elems = repalloc(array->elems, array->capacity * array->elem_size);
+    /* Set to 0 the new allocated space */
+    memset((char *) array->elems + oldsize, 0, newsize - oldsize);
   }
   /* Store the value */
   char *dest = array_slot(array, array->count);
