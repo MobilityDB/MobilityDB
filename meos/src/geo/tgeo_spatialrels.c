@@ -1223,7 +1223,7 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  VALIDATE_TPOINT(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure validity of the arguments */
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       /* The validity function ensures that both have the same geodetic flag */

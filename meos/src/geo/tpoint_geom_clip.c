@@ -1076,7 +1076,7 @@ tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
     return temporal_copy(temp);
 
   SpanSet *ss = temporal_time(result_at);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
   pfree(ss); pfree(result_at);
   return result;
 }
