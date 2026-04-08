@@ -928,7 +928,7 @@ span_canon_basetype(meosType type)
 /**
  * @brief Return true if the type is a span type
  */
-bool
+inline bool
 span_type(meosType type)
 {
   return (type == T_TSTZSPAN || type == T_DATESPAN || type == T_INTSPAN ||

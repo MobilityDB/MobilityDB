@@ -69,7 +69,7 @@
 bool
 bbox_type(meosType bboxtype)
 {
-  if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
+  if (span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
   return false;
 }

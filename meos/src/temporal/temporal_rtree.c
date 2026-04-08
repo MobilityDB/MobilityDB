@@ -678,10 +678,10 @@ is_power_of_two(const int n)
 static void
 add_answer(const int id, int **ids, int *count)
 {
-  /* Every power of two that exceeds the size of the array must be resized to
-   * double the current size */
-  if (*count >= SEARCH_ARRAY_STARTING_SIZE && is_power_of_two(*count))
-    *ids = repalloc(*ids, sizeof(int) * (*count) * 2);
+  // /* Every power of two that exceeds the size of the array must be resized to
+   // * double the current size */
+  // if (*count >= SEARCH_ARRAY_STARTING_SIZE && is_power_of_two(*count))
+    // *ids = repalloc(*ids, sizeof(int) * (*count) * 2);
   (*ids)[*count] = id;
   (*count)++;
   return;
@@ -761,6 +761,29 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
     }
   }
   return;
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Queries an RTree with a bounding box. Returns an array of ids of
+ * bounding boxes.
+ * @param[in] rtree The RTree to query
+ * @param[in] op The search operation: @p RTREE_OVERLAPS finds boxes that
+ * overlap the query, @p RTREE_CONTAINS finds boxes that contain the query,
+ * @p RTREE_CONTAINED_BY finds boxes contained by the query
+ * @param[in] query The bounding box that serves as query
+ * @param[in] ids Array of ids that have a hit
+ * @return The number of hits the RTree found
+ * @note The `count` will be the output size of the array given.
+ */
+int
+rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
+  int **ids)
+{
+  int result = 0;
+  if (rtree->root)
+    node_search(rtree, rtree->root, op, query, ids, &result);
+  return result;
 }
 
 /**
@@ -920,30 +943,6 @@ rtree_insert(RTree *rtree, void *box, int id)
 }
 
 /**
- * @ingroup meos_geo_box_index
- * @brief Queries an RTree with a bounding box. Returns an array of ids of
- * bounding boxes.
- * @param[in] rtree The RTree to query
- * @param[in] op The search operation: @p RTREE_OVERLAPS finds boxes that
- * overlap the query, @p RTREE_CONTAINS finds boxes that contain the query,
- * @p RTREE_CONTAINED_BY finds boxes contained by the query
- * @param[in] query The bounding box that serves as query
- * @param[out] count The number of hits the RTree found
- * @return Array of ids that have a hit.
- * @note The `count` will be the output size of the array given.
- */
-int *
-rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
-  int *count)
-{
-  int *ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
-  *count = 0;
-  if (rtree->root)
-    node_search(rtree, rtree->root, op, query, &ids, count);
-  return ids;
-}
-
-/**
  * @brief Return true if the RTree's bounding box type is compatible with the
  * temporal type, report an error otherwise
  * @param[in] rtree Pointer to the RTree structure
@@ -1000,23 +999,21 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
  * @param[in] rtree The RTree to query
  * @param[in] op The search operation
  * @param[in] temp The temporal value whose bounding box serves as query
- * @param[out] count The number of hits the RTree found
+ * @param[in] ids Integer array where the ids of an R-tree search are stored
  * @return Array of ids that have a hit.
  */
-int *
+int
 rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
-  const Temporal *temp, int *count)
+  const Temporal *temp, int **ids)
 {
   if (! ensure_rtree_temporal_compatible(rtree, temp))
-  {
-    *count = 0;
-    return NULL;
-  }
+    return 0;
+
   /* Use a stack buffer large enough for any MEOS bounding box type */
   char buf[sizeof(STBox)];
   memset(buf, 0, sizeof(buf));
   temporal_set_bbox(temp, buf);
-  return rtree_search(rtree, op, buf, count);
+  return rtree_search(rtree, op, buf, ids);
 }
 
 /**

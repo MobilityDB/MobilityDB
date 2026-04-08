@@ -101,11 +101,11 @@ int main(void)
   // FILE *file2 = fopen("csv/tbl_floatset.csv", "r");
   // FILE *file2 = fopen("csv/tbl_floatspan.csv", "r");
   // FILE *file2 = fopen("csv/tbl_floatspanset.csv", "r");
-  FILE *file2 = fopen("csv/tbl_interval.csv", "r");
+  // FILE *file2 = fopen("csv/tbl_interval.csv", "r");
   // FILE *file2 = fopen("csv/tbl_timestamptz.csv", "r");
   // FILE *file2 = fopen("csv/tbl_tstzset.csv", "r");
   // FILE *file2 = fopen("csv/tbl_tstzspan.csv", "r");
-  // FILE *file2 = fopen("csv/tbl_tstzspanset.csv", "r");
+  FILE *file2 = fopen("csv/tbl_geom.csv", "r");
 
   if (! file2)
   {
@@ -180,7 +180,7 @@ int main(void)
       {
 
         /* Transform the string read into a value */
-        Interval *i = interval_in(value_buffer, -1);
+        // Interval *i = interval_in(value_buffer, -1);
         // double d = float_in(value_buffer);
         // Set *t = floatset_in(value_buffer);
         // Span *t = floatspan_in(value_buffer);
@@ -189,22 +189,26 @@ int main(void)
         // Set *s = tstzset_in(value_buffer);
         // Span *s = tstzspan_in(value_buffer);
         // SpanSet *ss = tstzspanset_in(value_buffer);
+        GSERIALIZED *geo = geom_in(value_buffer, -1);
+
+        /******************* Restriction functions *******************/
 
         /* Uncomment the desired function to compute */
         // Temporal *rest = temporal_at_value(temp, t);
         // Temporal *rest = temporal_at_values(temp, t);
         // Temporal *rest = tnumber_at_span(temp, t);
         // Temporal *rest = tnumber_at_spanset(temp, t);
-       // Temporal *rest = temporal_at_timestamptz(temp, t);
+        // Temporal *rest = temporal_at_timestamptz(temp, t);
         // Temporal *rest = temporal_at_tstzset(temp, t);
         // Temporal *rest = temporal_at_tstzspan(temp, t);
         // Temporal *rest = temporal_at_tstzspanset(temp, t);
+        Temporal *rest = tpoint_at_geom(temp, geo);
 
         /******************* Reduction functions *******************/
 
-        TimestampTz origin = timestamptz_in("2000-01-03", -1);
+        // TimestampTz origin = timestamptz_in("2000-01-03", -1);
         // Temporal *rest = temporal_tprecision(temp, i, origin);
-        Temporal *rest = temporal_tsample(temp, i, origin, "Step");
+        // Temporal *rest = temporal_tsample(temp, i, origin, "Step");
 
         /******************* Modification functions *******************/
 
@@ -223,7 +227,7 @@ int main(void)
           nrows++;
         }
         /* Free value, uncomment as necessary */
-        free(i); 
+        free(geo); 
       }
     } while (! feof(file2));
     free(temp);
