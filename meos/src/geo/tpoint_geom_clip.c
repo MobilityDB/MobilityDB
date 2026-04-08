@@ -54,16 +54,17 @@
 
 /* Minimum number of edges to use an R-tree index in order to compensate the
  * overhead of the tree construction and destruction */
-#define RTREE_MIN_NUMBER_ELEMS 100
+#define RTREE_MIN_NUMBER_ELEMS 100000
 
 /*****************************************************************************
  * Data structures
  *****************************************************************************/
 
-/* Static global arrays for accumulating the results of the clipping process*/
+/* Global static arrays for accumulating the results of the clipping process */
 static MeosArray *events = NULL;
 static MeosArray *intervals = NULL;
 static MeosArray *periods = NULL;
+static int *rtree_results = NULL;
 
 /**
  * @brief Enumeration defining the edge types 
@@ -563,37 +564,28 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);
 
-  bool use_index = (rtree != NULL && cand_edges != NULL);
-  int32_t srid = tspatial_srid((Temporal *) inst);
   const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst));
 
-  /* Edges to process: either all of them or those filtered by an R-tree */
-  Edge **sel_edges = NULL;
-  int sel_nedges = 0;
+  /* Edges to process: all of them (default) or those filtered by an R-tree */
+  Edge **sel_edges = edges;
+  int sel_nedges = nedges;
+  bool use_index = (rtree != NULL && cand_edges != NULL);
   if (use_index)
   {
     /* Build the segment bounding box */
     STBox query;
+    int32_t srid = tspatial_srid((Temporal *) inst);
     stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
       &query);
     /* Query the R-tree */
-    int *results = rtree_search(rtree, RTREE_OVERLAPS, &query, &sel_nedges);
+    sel_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
     if (sel_nedges == 0)
-    {
-      pfree(results);
       return;
-    }
 
-    /* Transform the result of the R-tree look up into an edge pointer array */
+    /* Convert the result of an R-tree look up into an edge pointer array */
     for (int j = 0; j < sel_nedges; j++)
-      cand_edges[j] = (Edge *) &edges[results[j]];
+      cand_edges[j] = (Edge *) &edges[rtree_results[j]];
     sel_edges = cand_edges;
-    pfree(results);
-  }
-  else /* no index */
-  {
-    sel_edges = edges;
-    sel_nedges = nedges;
   }
 
   /* Reset the interval array */
@@ -659,6 +651,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
     bool upper_inc = (i < seq->count - 1) ? false : seq->period.upper_inc;
+    Span *intervarr = NULL;
 
     /* Filter the edges to process by a R-tree, if any */
     if (use_index)
@@ -669,24 +662,18 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
         FP_MAX(a->x, b->x), FP_MIN(a->y, b->y), FP_MAX(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
-      sel_nedges = 0;
-      int *results = rtree_search(rtree, RTREE_OVERLAPS, &query, &sel_nedges);
+      sel_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
       if (sel_nedges == 0)
-      {
-        pfree(results);
         goto next_segment;
-      }
 
-      /* Transform the result of the R-tree look up into an edge pointer array */
+      /* Convert the result of an R-tree look up into an edge pointer array */
       for (int j = 0; j < sel_nedges; j++)
-        cand_edges[j] = (Edge *) &edges[results[j]];
+        cand_edges[j] = (Edge *) &edges[rtree_results[j]];
       sel_edges = cand_edges;
-      pfree(results);
     }
 
     /* Reset the interval array */
     intervals->count = 0;
-    Span *intervarr = NULL;
     /* Compute the intervals for the points, lines, and polygon edges */
     intervals_from_points(a, b, sel_edges, sel_nedges);
     intervals_from_lines(a, b, sel_edges, sel_nedges);
@@ -744,7 +731,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     
 next_segment:
     /* Prepare the next iteration */
-    if (intervals->count > 1)
+    if (intervarr && intervals->count > 1)
       pfree(intervarr);
     inst1 = inst2;
     a = b;
@@ -1014,8 +1001,28 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     /* Build R-tree */
     int32_t srid = tspatial_srid(temp);
     rtree = build_edge_rtree(edges->elems, edges->count, srid);
+    if (! rtree)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error when creating R-tree");
+      return NULL;
+    }
     /* Array of edge pointers for storing the edges filtered by the R-tree */
     cand_edges = palloc(sizeof(Edge *) * edges->count);
+    if (! cand_edges)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error when creating R-tree");
+      return NULL;
+    }
+    /* Array of integer pointers for storing the results of an R-tree search */
+    rtree_results = palloc(sizeof(int) * edges->count);
+    if (! rtree_results)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error when creating R-tree");
+      return NULL;
+    }
   }
 
   /* Initialize the static global arrays accumulating the clipping results */
@@ -1090,7 +1097,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   meos_array_destroy(periods, false);
   if (edges->count > RTREE_MIN_NUMBER_ELEMS)
   {
-    rtree_free(rtree); pfree(cand_edges);
+    rtree_free(rtree); pfree(cand_edges); pfree(rtree_results);
   }
   lwgeom_free(geom); meos_array_destroy(edges, true);
   return result;  
