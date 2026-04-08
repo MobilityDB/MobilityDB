@@ -1785,15 +1785,13 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
-  if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
-    box2->ymin < box1->ymin || box2->ymax > box1->ymax))
-      return false;
-  if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
-      return false;
-  if (hast && (
-    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
-      return false;
+  if ((hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
+       box2->ymin < box1->ymin || box2->ymax > box1->ymax)) ||
+      (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax)) ||
+      (hast && (
+        datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
+        datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ))))
+    return false;
   return true;
 }
 
@@ -1823,14 +1821,12 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
-  if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
-    box1->ymax < box2->ymin || box1->ymin > box2->ymax))
-    return false;
-  if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
-    return false;
-  if (hast && (
-    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+  if ((hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
+        box1->ymax < box2->ymin || box1->ymin > box2->ymax)) ||
+      (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax)) ||
+      (hast && (
+        datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
+        datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ))))
     return false;
   return true;
 }
@@ -1850,13 +1846,11 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
-  if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
-    box1->ymin != box2->ymin || box1->ymax != box2->ymax))
-    return false;
-  if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
-    return false;
-  if (hast && (box1->period.lower != box2->period.lower ||
-               box1->period.upper != box2->period.upper))
+  if ((hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
+        box1->ymin != box2->ymin || box1->ymax != box2->ymax)) ||
+      (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax)) |
+      (hast && (box1->period.lower != box2->period.lower ||
+         box1->period.upper != box2->period.upper)))
     return false;
   return true;
 }

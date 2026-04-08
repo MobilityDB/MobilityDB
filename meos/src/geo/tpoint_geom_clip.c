@@ -54,7 +54,7 @@
 
 /* Minimum number of edges to use an R-tree index in order to compensate the
  * overhead of the tree construction and destruction */
-#define RTREE_MIN_NUMBER_ELEMS 100000
+#define RTREE_MIN_NUMBER_ELEMS 100
 
 /*****************************************************************************
  * Data structures
@@ -82,7 +82,8 @@ typedef enum
 typedef struct
 {
   double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
-  double xmin, ymin, xmax, ymax; /**< Bounding box of the edge */
+  double xmin, ymin, xmax, ymax; /**< Precomputed bounding box of the edge */
+  double dx, dy, length;         /**< Precomputed dx, dy, and length */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -125,7 +126,7 @@ typedef struct
  * @param[in] ax,ay Coordinates of the first point defining the first segment
  * @param[in] rx,ry Vector AB
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
- * @note To avoid recomputing vector AB in EVERY call to linesegm_intersect,
+ * @note To avoid recomputing vector AB in EVERY call to the functions,
  * we pass the vector instead of the second point b computed as follows
  * @code
  * double rx = bx - ax, ry = by - ay;
@@ -162,8 +163,10 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
 
     /* Order t0 < t1 */
     if (t0 > t1) { double tmp = t0; t0 = t1; t1 = tmp; }
+    /* No intersection */
     if (t1 < 0 || t0 > 1)
       return res;
+
     /* Clamp values */
     if (t0 < 0) t0 = 0;
     if (t1 > 1) t1 = 1;
@@ -202,12 +205,10 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
  * Compute the intervals in [0,1] resulting from the intersection of a
  * trajectory segment and an array of edges obtained from a (collection of)
  * polygon/line/point geometries
- * N.B. A point is a particular case of a line
  *****************************************************************************/
 
 /**
  * @brief Return true if a point is located on a segment
- * @details The computation is done using vectors
  */
 static bool
 point_on_segment(double px, double py, double x1, double y1, double x2,
@@ -218,14 +219,24 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
   double apy = py - y1;
   double abx = x2 - x1;
   double aby = y2 - y1;
+
+  /* Fast bounding-box rejection */
+  if ((px < fmin(x1, x2) - FP_TOLERANCE) ||
+      (px > fmax(x1, x2) + FP_TOLERANCE) ||
+      (py < fmin(y1, y2) - FP_TOLERANCE) ||
+      (py > fmax(y1, y2) + FP_TOLERANCE))
+    return false;
+
   /* Collinearity check via cross product */
   double cross = apx * aby - apy * abx;
   if (fabs(cross) > FP_TOLERANCE)
     return false;
+
   /* Projection check via dot product */
   double dot = apx * abx + apy * aby;
   if (dot < -FP_TOLERANCE)
     return false;
+
   /* Check if P lies between A and B */
   double ab2 = abx * abx + aby * aby;
   if (dot > ab2 + FP_TOLERANCE)
@@ -235,46 +246,41 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
 
 /**
  * @brief Return true if a point is located in a polygon 
- * @details The computation is done using vectors and an even-odd rule
  */
-static int
+static inline int
 point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
-  /* Boundary check */
+  int inside = 0;
   for (int i = 0; i < nedges; i++)
   {
-    double x1 = edges[i]->x1, y1 = edges[i]->y1;
-    double x2 = edges[i]->x2, y2 = edges[i]->y2;
+    const Edge *restrict e = edges[i];
 
-    double dx = x2 - x1;
-    double dy = y2 - y1;
-    double dxp = x - x1;
-    double dyp = y - y1;
+    const double dx  = e->dx;
+    const double dy  = e->dy;
+    const double x1  = e->x1;
+    const double y1  = e->y1;
 
-    double crossp = dx * dyp - dy * dxp;
-    if (fabs(crossp) < FP_TOLERANCE)
+    const double dxp = x - x1;
+    const double dyp = y - y1;
+
+    /* Boundary check */
+    const double cross = dx * dyp - dy * dxp;
+    if (fabs(cross) < FP_TOLERANCE)
     {
-      double dotp = dxp * dx + dyp * dy;
-      if (dotp >= -FP_TOLERANCE &&
-          dotp <= (dx * dx + dy * dy) + FP_TOLERANCE)
-        return 1;  /* On boundary */
+      const double dot = dxp * dx + dyp * dy;
+      if (dot >= -FP_TOLERANCE && dot <= (e->length) + FP_TOLERANCE)
+        return 1;
+    }
+
+    /* Ray casting */
+    if ((y1 > y) != ((y1 + dy) > y))
+    {
+      const double rhs = dx * dyp;
+      const double lhs = dxp * dy;
+      inside ^= ((dy > 0) ? (rhs > lhs) : (rhs < lhs));
     }
   }
-
-  /* Perform even‑odd crossing */
-  int crossings = 0;
-  for (int i = 0; i < nedges; i++)
-  {
-    double x1 = edges[i]->x1, y1 = edges[i]->y1;
-    double x2 = edges[i]->x2, y2 = edges[i]->y2;
-    if ((y1 <= y && y < y2) || (y2 <= y && y < y1))
-    {
-      double xinters = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
-      if (xinters > x)
-        crossings ^= 1;
-    }
-  }
-  return crossings;
+  return inside;
 }
 
 /**
@@ -291,29 +297,26 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
   double dx = b->x - a->x;
   double dy = b->y - a->y;
 
+  /* Improve performance by removing the division inside the loop */
+  bool use_x = fabs(dx) >= fabs(dy);
+  double inv = use_x ?
+    ((fabs(dx) > FP_TOLERANCE) ? 1.0 / dx : 0.0) :
+    ((fabs(dy) > FP_TOLERANCE) ? 1.0 / dy : 0.0);
+
+  if (inv == 0.0)
+    return;
+  
   /* Iterate through the points */
   for (int i = 0; i < nedges; i++)
   {
-    Edge *e = edges[i]; /* point: x1==x2, y1==y2 */
+    Edge *e = edges[i]; 
     /* Iterate only for the points */
     if (e->etype != EDGE_POINT)
       continue;
+    // assert(e->x1 == e->x2 && e->y1 == e->y2);
 
     /* Solve parameter t */
-    double t;
-    if (fabs(dx) >= fabs(dy))
-    {
-      if (fabs(dx) < FP_TOLERANCE)
-        continue;
-      t = (e->x1 - a->x) / dx;
-    }
-    else
-    {
-      if (fabs(dy) < FP_TOLERANCE)
-        continue;
-      t = (e->y1 - a->y) / dy;
-    }
-
+    double t = use_x ? (e->x1 - a->x) * inv : (e->y1 - a->y) * inv;
     /* Check bounds */
     if (t < -FP_TOLERANCE || t > 1.0 + FP_TOLERANCE)
       continue;
@@ -342,21 +345,26 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
+  const double ax = a->x, ay = a->y;
+  const double bx = b->x, by = b->y;
+
   /* Segment bounding box */
-  double seg_xmin = FP_MIN(a->x, b->x);
-  double seg_xmax = FP_MAX(a->x, b->x);
-  double seg_ymin = FP_MIN(a->y, b->y);
-  double seg_ymax = FP_MAX(a->y, b->y);
+  const double seg_xmin = FP_MIN(ax, bx);
+  const double seg_xmax = FP_MAX(ax, bx);
+  const double seg_ymin = FP_MIN(ay, by);
+  const double seg_ymax = FP_MAX(ay, by);
   /* Segment vector */
-  double rx = b->x - a->x;  
-  double ry = b->y - a->y;  
+  const double rx = bx - ax;  
+  const double ry = by - ay;  
+
   bool has_intersection = false;
   Span in;
 
+  /* Iterate through the lines */
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
-    /* Iterate only for the polygon edges */
+    /* Iterate only for the line edges */
     if (e->etype != EDGE_LINE)
       continue;
 
@@ -364,8 +372,9 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
     if (e->xmax < seg_xmin || e->xmin > seg_xmax ||
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
+
     /* Compute the intersection */
-    IntersectResult r = linesegm_intersect(a->x, a->y, rx, ry,
+    IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
       e->x1, e->y1, e->x2, e->y2);
     /* If there is no intersection  */
     if (r.type == INTERSECT_NONE)
@@ -385,15 +394,21 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
   /* Full collinear segment */
   if (! has_intersection)
   {
-    /* test midpoint */
-    double mx = (a->x + b->x) * 0.5;
-    double my = (a->y + b->y) * 0.5;
+    /* Test midpoint */
+    double mx = (ax + bx) * 0.5;
+    double my = (ay + by) * 0.5;
     for (int i = 0; i < nedges; i++)
     {
       Edge *e = edges[i];
-      /* Iterate only for the polygon edges */
+      /* Iterate only for the lines edges */
       if (e->etype != EDGE_LINE)
         continue;
+
+      /* Fast bbox check first */
+      if (mx < e->xmin - FP_TOLERANCE || mx > e->xmax + FP_TOLERANCE ||
+          my < e->ymin - FP_TOLERANCE || my > e->ymax + FP_TOLERANCE)
+        continue;
+
       if (point_on_segment(mx, my, e->x1, e->y1, e->x2, e->y2))
       {
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
@@ -408,70 +423,79 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
 
 /**
  * @brief Comparison function for sorting float8 values
- * @note Derived from PostgreSQL file rangetypes_typanalyze.c
  */
 static int
 float8_qsort_cmp(const void *a1, const void *a2)
 {
-  const float8 *f1 = (const float8 *) a1;
-  const float8 *f2 = (const float8 *) a2;
-  if (*f1 < *f2)
-    return -1;
-  if (*f1 == *f2)
-    return 0;
-  return 1;
+  double diff = *(const double *)a1 - *(const double *)a2;
+  return (diff > 0) - (diff < 0);
 }
 
 /**
  * @brief Compute the intersection intervals of a trajectory segment with an
- * array of polygon edges using an even-odd rule
- * @note Function performing robust duplicate handling
+ * array of polygon edges
+ * @details For the #point_in_polygon ray-casting we must use ALL edges, not
+ * only those filtered by the R-tree, otherwise the even-odd containment test
+ * breaks
  */
 static void
 intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
-  int nedges)
+  int nedges, Edge **all_edges, int all_nedges)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
-  
+
   /* Reset event array */
   events->count = 0;
 
-  /* Segment bounding box */
-  double seg_xmin = FP_MIN(a->x, b->x);
-  double seg_xmax = FP_MAX(a->x, b->x);
-  double seg_ymin = FP_MIN(a->y, b->y);
-  double seg_ymax = FP_MAX(a->y, b->y);
-  /* Segment vector */
-  double rx = b->x - a->x;
-  double ry = b->y - a->y;
+  const double ax = a->x, ay = a->y;
+  const double bx = b->x, by = b->y;
 
-  /* Collect all intersection parameters */
+  /* Segment bounding box */
+  const double seg_xmin = FP_MIN(ax, bx);
+  const double seg_xmax = FP_MAX(ax, bx);
+  const double seg_ymin = FP_MIN(ay, by);
+  const double seg_ymax = FP_MAX(ay, by);
+  /* Segment vector */
+  const double rx = bx - ax;
+  const double ry = by - ay;
+
+  /* Check whether any polygon edges exist using the full edge array */
   bool has_polys = false;
+  for (int i = 0; i < all_nedges; i++)
+  {
+    if (all_edges[i]->etype == EDGE_POLY)
+    {
+      has_polys = true;
+      break;
+    }
+  }
+  /* If no polygon edges have been found, we do not continue */
+  if (! has_polys)
+    return;
+
+  /* Collect all intersection parameters from the (possibly filtered) edges */
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
     /* Iterate only for the polygon edges */
     if (e->etype != EDGE_POLY)
       continue;
-    has_polys = true;
 
     /* Bounding box filter */
     if (e->xmax < seg_xmin || e->xmin > seg_xmax ||
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
 
-    IntersectResult r = linesegm_intersect(a->x, a->y, rx, ry,
+    /* Compute the intersection */
+    IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
       e->x1, e->y1, e->x2, e->y2);
     if (r.type == INTERSECT_POINT)
     {
-      if (r.t0 > -FP_TOLERANCE && r.t0 < 1.0 + FP_TOLERANCE)
-        meos_array_add(events, &r.t0);
+      double t = r.t0;
+      if (t >= -FP_TOLERANCE && t <= 1.0 + FP_TOLERANCE)
+        meos_array_add(events, &t);
     }
   }
-
-  /* If no polygon edges have been found, we do not continue */
-  if (! has_polys)
-    return;
 
   /* Add endpoints */
   double t0 = 0.0, t1 = 1.0;
@@ -486,8 +510,11 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   double *evtarr = (double *) events->elems;
   for (int i = 0; i < (int) events->count; i++)
   {
-    if (i == 0 || fabs(evtarr[i] - evtarr[newcount - 1]) > FP_TOLERANCE)
+    if (i == 0 ||
+        fabs(evtarr[i] - evtarr[newcount - 1]) > FP_TOLERANCE)
+    {
       evtarr[newcount++] = evtarr[i];
+    }
   }
   events->count = newcount;
 
@@ -499,10 +526,11 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     if (tb - ta <= FP_TOLERANCE)
       continue;
 
+    /* Midpoint test */
     double tm = (ta + tb) * 0.5;
-    double x = a->x + tm * rx;
-    double y = a->y + tm * ry;
-    if (point_in_polygon(x, y, edges, nedges))
+    double x = ax + tm * rx;
+    double y = ay + tm * ry;
+    if (point_in_polygon(x, y, all_edges, all_nedges))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
@@ -524,19 +552,20 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
 {
   assert(a); assert(edges); assert(nedges >= 0);
 
+  const double ax = a->x, ay = a->y;
+
   /* Iterate only through the point and linear edges */
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
     if (e->etype == EDGE_POINT)
     {
-      if (fabs(e->x1 - a->x) < FP_TOLERANCE &&
-          fabs(e->y1 - a->y) < FP_TOLERANCE)
+      if (fabs(e->x1 - ax) < FP_TOLERANCE && fabs(e->y1 - ay) < FP_TOLERANCE)
         return true;
     }
     else if (e->etype == EDGE_LINE)
     {
-      if (point_on_segment(a->x, a->y, e->x1, e->y1, e->x2, e->y2))
+      if (point_on_segment(ax, ay, e->x1, e->y1, e->x2, e->y2))
         return true;
     }
   }
@@ -578,14 +607,13 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
     stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
       &query);
     /* Query the R-tree */
-    sel_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
-    if (sel_nedges == 0)
-      return;
+    int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
 
     /* Convert the result of an R-tree look up into an edge pointer array */
-    for (int j = 0; j < sel_nedges; j++)
-      cand_edges[j] = (Edge *) &edges[rtree_results[j]];
+    for (int j = 0; j < cand_nedges; j++)
+      cand_edges[j] = edges[rtree_results[j]];
     sel_edges = cand_edges;
+    sel_nedges = cand_nedges;
   }
 
   /* Reset the interval array */
@@ -594,7 +622,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   bool found = point_inter_points_lines(a, sel_edges, sel_nedges);
   if (! found)
   {
-    intervals_from_polygons(a, a, sel_edges, sel_nedges);
+    intervals_from_polygons(a, a, sel_edges, sel_nedges, edges, nedges);
     if (intervals->count == 0)
       return;
   }
@@ -638,20 +666,14 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
   const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
   /* Edges to process: either all of them or those filtered by an R-tree */
-  Edge **sel_edges = NULL;
-  int sel_nedges = 0;
-  if (! use_index)
-  {
-    sel_edges = edges;
-    sel_nedges = nedges;
-  }
+  Edge **sel_edges = edges;
+  int sel_nedges = nedges;
   /* Loop for each segment */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
     bool upper_inc = (i < seq->count - 1) ? false : seq->period.upper_inc;
-    Span *intervarr = NULL;
 
     /* Filter the edges to process by a R-tree, if any */
     if (use_index)
@@ -662,14 +684,13 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
         FP_MAX(a->x, b->x), FP_MIN(a->y, b->y), FP_MAX(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
-      sel_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
-      if (sel_nedges == 0)
-        goto next_segment;
+      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
 
       /* Convert the result of an R-tree look up into an edge pointer array */
-      for (int j = 0; j < sel_nedges; j++)
-        cand_edges[j] = (Edge *) &edges[rtree_results[j]];
+      for (int j = 0; j < cand_nedges; j++)
+        cand_edges[j] = edges[rtree_results[j]];
       sel_edges = cand_edges;
+      sel_nedges = cand_nedges;
     }
 
     /* Reset the interval array */
@@ -677,12 +698,13 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     /* Compute the intervals for the points, lines, and polygon edges */
     intervals_from_points(a, b, sel_edges, sel_nedges);
     intervals_from_lines(a, b, sel_edges, sel_nedges);
-    intervals_from_polygons(a, b, sel_edges, sel_nedges);
+    intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges);
     if (intervals->count == 0)
       goto next_segment;
 
     /* Normalize the intervals */
     int count;
+    Span *intervarr = NULL;
     if (intervals->count > 1)
       intervarr = spanarr_normalize(intervals->elems, intervals->count,
         ORDER_NO, &count);
@@ -761,6 +783,8 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     e.x2 = b.x; e.y2 = b.y;
     e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
     e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
+    e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+    e.length = e.dx * e.dx + e.dy * e.dy;
     e.etype = etype;
     meos_array_add(edges, &e);
   }
@@ -779,6 +803,7 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   Edge e;
   e.x1 = e.x2 = e.xmin = e.xmax = p.x;
   e.y1 = e.y2 = e.ymin = e.ymax = p.y;
+  e.dx = e.dy = e.length = 0;
   e.etype = EDGE_POINT;
   meos_array_add(edges, &e);
   return;
@@ -980,9 +1005,13 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     return result;
   }
 
+  /* Initialize result to NULL to quickly clean up and return */
+  Temporal *result = NULL;
+
   /* Extract the edges */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   MeosArray *edges = geom_extract_edges(geom);
+  lwgeom_free(geom);
   /* Create an array of edge pointers */
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   /* Transform the edge array into an edge pointer array */
@@ -1013,6 +1042,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Error when creating R-tree");
+      rtree_free(rtree); 
       return NULL;
     }
     /* Array of integer pointers for storing the results of an R-tree search */
@@ -1021,6 +1051,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Error when creating R-tree");
+      rtree_free(rtree); 
       return NULL;
     }
   }
@@ -1052,17 +1083,15 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     }
   }
 
-  Temporal *result = NULL;
   SpanSet *ss;
   if (periods->count == 0)
   {
     if (clip)
-      return NULL;
+      goto cleanup_return;
     ss = temporal_time(temp);
     result = (Temporal *) tsequenceset_from_base_tstzspanset(
       BoolGetDatum(false), T_TBOOL, ss, STEP);
     pfree(ss);
-    return result;
   }
   else
   {
@@ -1092,14 +1121,15 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   }
   
   /* Clean up and return */
-  meos_array_destroy(events, false);
-  meos_array_destroy(intervals, false);
-  meos_array_destroy(periods, false);
+cleanup_return:
   if (edges->count > RTREE_MIN_NUMBER_ELEMS)
   {
     rtree_free(rtree); pfree(cand_edges); pfree(rtree_results);
   }
-  lwgeom_free(geom); meos_array_destroy(edges, true);
+  meos_array_destroy(events, false);
+  meos_array_destroy(intervals, false);
+  meos_array_destroy(periods, false);
+  meos_array_destroy(edges, false); pfree(edge_ptrs);
   return result;  
 }
 

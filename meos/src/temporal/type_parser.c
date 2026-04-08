@@ -722,7 +722,7 @@ tdiscseq_parse(const char **str, meosType temptype)
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (size_t i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = (TInstant *) meos_array_get_n(array, i);
   result = tsequence_make(instants, array->count, true, true, DISCRETE,
     NORMALIZE_NO);
@@ -788,7 +788,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
 
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
-  for (size_t i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     instants[i] = (TInstant *) meos_array_get_n(array, i);
   result = tsequence_make(instants, array->count, lower_inc, upper_inc, interp,
     NORMALIZE);
@@ -835,7 +835,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
-  for (size_t i = 0; i < array->count; i++)
+  for (int i = 0; i < (int) array->count; i++)
     sequences[i] = (TSequence *) meos_array_get_n(array, i);
   result = tsequenceset_make(sequences, array->count, NORMALIZE);
   pfree(sequences);

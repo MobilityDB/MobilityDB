@@ -67,7 +67,7 @@
 #include <meos_internal.h>
 
 /* Maximum number of instants */
-#define MAX_NO_INSTS 50000000
+#define MAX_NUM_INSTS 50000000
 /* Initial number of instants allocated when creating a sequence */
 #define INITIAL_INSTS_SEQ 64
 /* Initial number of sequences allocated when creating a sequence set */
@@ -109,13 +109,13 @@ int main(void)
   /* Seed the random number generator with the current time in seconds. */
   srandom(time(0));
 
-  printf("Total number of instants generated: %d\n", MAX_NO_INSTS);
+  printf("Total number of instants generated: %d\n", MAX_NUM_INSTS);
   printf("Maximum number of instants in a sequence: %d\n", MAX_INSTS_SEQ);
   printf("Generating the instants (one '*' marker every %d instants)\n",
     NO_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("2000-01-01", -1);
-  for (i = 0; i < MAX_NO_INSTS; i++)
+  for (i = 0; i < MAX_NUM_INSTS; i++)
   {
     /* Generate the instant */
     /* Use a random generator to set the length of the text value */

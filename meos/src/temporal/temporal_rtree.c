@@ -917,7 +917,7 @@ rtree_insert(RTree *rtree, void *box, int id)
     {
       RTreeNode *new_root = node_make(RTREE_LEAF, rtree->bboxsize);
       if (rtree->dims < 0)
-        rtree->dims = 3 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
+        rtree->dims = 2 + MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
       rtree->root = new_root;
       memcpy(rtree->box, box, rtree->bboxsize);
     }
