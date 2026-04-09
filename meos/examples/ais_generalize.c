@@ -53,7 +53,7 @@
 #include <meos_internal.h> /* For temporal_mem_size */
 
 /* Maximum number of ships */
-#define MAX_NO_SHIPS 10
+#define MAX_NUM_SHIPS 10
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LEN_LINE 2000001
 
@@ -70,9 +70,9 @@ int main(void)
   /* Input buffers to read the CSV file */
   char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_NO_SHIPS] = {0};
+  trip_record trips[MAX_NUM_SHIPS] = {0};
   /* Number of ship records read */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Iterator variable */
   int i;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -127,13 +127,13 @@ int main(void)
       switch (field)
       {
         case 0:
-          trips[no_ships].MMSI = strtoll(token, NULL, 0);
+          trips[num_ships].MMSI = strtoll(token, NULL, 0);
           break;
         case 1:
-          trips[no_ships].trip = temporal_from_hexwkb(token);
+          trips[num_ships].trip = temporal_from_hexwkb(token);
           break;
         case 2:
-          trips[no_ships].SOG = temporal_from_hexwkb(token);
+          trips[num_ships].SOG = temporal_from_hexwkb(token);
           break;
         default:
           break;
@@ -141,13 +141,13 @@ int main(void)
       token = strtok(NULL, ",");
       field++;
     }
-    no_ships++;
+    num_ships++;
   } while (! feof(file));
 
   /* Close the file */
   fclose(file);
 
-  printf("\n%d trips read.\n", no_ships);
+  printf("\n%d trips read.\n", num_ships);
 
   printf("Generalizing trips\n");
   printf("  one '*' marker every ship record\n");
@@ -160,7 +160,7 @@ int main(void)
     no_max_dist_ed_1 = 0, no_max_dist_ed_10 = 0, no_max_dist_sed_1 = 0, no_max_dist_sed_10 = 0,
     no_min_dist_1 = 0, no_min_dist_10 = 0, no_min_tdelta_1 = 0, no_min_tdelta_10 = 0,
     no_tprec_1s = 0, no_tprec_10s = 0;
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     /* Print a marker every ship */
     printf("*");
@@ -270,7 +270,7 @@ int main(void)
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     free(trips[i].trip);
     free(trips[i].SOG);

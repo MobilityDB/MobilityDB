@@ -66,13 +66,13 @@
 #include <meos_internal_geo.h>
 
 /*
- * You may fix the value MAX_NO_RECS to only process the given number of
+ * You may fix the value MAX_NUM_RECS to only process the given number of
  * records
  */
 /* Maximum number of records read from the CSV file */
-#define MAX_NO_RECS 20000000
+#define MAX_NUM_RECS 20000000
 /* Number of instants in a batch for printing a marker */
-#define NO_RECS_BATCH 100000
+#define NUM_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -96,9 +96,9 @@ typedef struct
 typedef struct
 {
   long int MMSI;          /* Identifier of the trip */
-  int no_records;         /* Number of input records for the trip */
-  int no_trip_instants;   /* Number of input instants for the trip */
-  int no_SOG_instants;    /* Number of input instants for the SOG */
+  int num_records;        /* Number of input records for the trip */
+  int num_trip_instants;  /* Number of input instants for the trip */
+  int num_SOG_instants;   /* Number of input instants for the SOG */
   TSequence *trip;        /* Sequence accumulating the trip observations */
   TSequence *SOG;         /* Sequence accumulating the SOG observations */
 } trip_record;
@@ -166,9 +166,9 @@ int main(void)
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */
-  int no_records = 0;
+  int num_records = 0;
   /* Number of erroneous records */
-  int no_err_records = 0;
+  int num_err_records = 0;
   /* Iterator variables */
   int i;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -200,7 +200,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
+  printf("  one '*' marker every %d records\n", NUM_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -218,15 +218,15 @@ int main(void)
       goto cleanup;
     }
 
-    no_records++;
+    num_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECS_BATCH == 0)
+    if (num_records % NUM_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECS)
+    if (num_records == MAX_NUM_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -294,7 +294,7 @@ int main(void)
        * an incomplete record or an erroneous field has been read */
       // printf("-");
       // fflush(stdout);
-      no_err_records++;
+      num_err_records++;
       continue;
     }
 
@@ -342,8 +342,8 @@ int main(void)
           fclose(file);
           goto cleanup;
         }
-        rec1->no_records++;
-        rec1->no_trip_instants++;
+        rec1->num_records++;
+        rec1->num_trip_instants++;
       }
       /* Ignore the instant if has the same timestamp as the last one */
       last = TSEQUENCE_INST_N(rec1->trip, rec1->trip->count - 1);
@@ -368,7 +368,7 @@ int main(void)
           // fflush(stdout);
         // }
         rec1->trip = new_seq;
-        rec1->no_trip_instants++;
+        rec1->num_trip_instants++;
       }
     }
     /* Create an SOG instant from the record */
@@ -381,8 +381,8 @@ int main(void)
         /* Uncomment the next lines to display debug messages showing how
          * the data structures are expanded */
         // printf("MMSI: %ld ", rec1->MMSI);
-        // printf("Speed %d -> %d ", rec1->no_SOG_instants,
-          // rec1->no_SOG_instants * 2);
+        // printf("Speed %d -> %d ", rec1->num_SOG_instants,
+          // rec1->num_SOG_instants * 2);
         // fflush(stdout);
         rec1->SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true, true,
           LINEAR, false);
@@ -417,7 +417,7 @@ int main(void)
           // fflush(stdout);
         // }
         rec1->SOG = new_seq;
-        rec1->no_SOG_instants++;
+        rec1->num_SOG_instants++;
       }
     }
   } while (! feof(file));
@@ -436,7 +436,7 @@ int main(void)
   {
     trip_record *rec = (trip_record *) values[i];
     printf("| %.9ld |   %5d |   %5d |   %5d |", rec->MMSI,
-      rec->no_records, rec->no_trip_instants, rec->no_SOG_instants);
+      rec->num_records, rec->num_trip_instants, rec->num_SOG_instants);
     if (rec->trip)
     {
       printf(" %15.6lf |", tpointseq_length(rec->trip));
@@ -452,8 +452,8 @@ int main(void)
       printf("       ---     |\n");
   }
   printf("-----------------------------------------------------------------------------\n");
-  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records,
-    no_err_records);
+  printf("\n%d records read.\n%d erroneous records ignored.\n", num_records,
+    num_err_records);
   printf("%d trips read.\n", list->length);
 
   /* Calculate the elapsed time */

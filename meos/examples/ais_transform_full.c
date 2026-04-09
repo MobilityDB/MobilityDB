@@ -57,13 +57,13 @@
 #include <meos_internal_geo.h>
 
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECS 20000000
+#define MAX_NUM_RECS 20000000
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LEN_LINE 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LEN_POINT 64
 /* Number of instants in a batch for printing a marker */
-#define NO_RECS_BATCH 100000
+#define NUM_RECS_BATCH 100000
 
 typedef struct
 {
@@ -81,11 +81,11 @@ int main(void)
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */
-  int no_records = 0;
+  int num_records = 0;
   /* Number of erroneous records read */
-  int no_err_records = 0;
+  int num_err_records = 0;
   /* Number of records written */
-  int no_writes = 0;
+  int num_writes = 0;
 
   /* Initialize MEOS */
   meos_initialize();
@@ -120,7 +120,7 @@ int main(void)
   /* Read the first line of the input file with the headers */
   fscanf(file_in, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
+  printf("  one '*' marker every %d records\n", NUM_RECS_BATCH);
 
   /* Write the first line of the output file with the headers */
   fprintf(file_out, "# Timestamp,MMSI,Latitude,Longitude,SOG\n");
@@ -136,15 +136,15 @@ int main(void)
       goto cleanup;
     }
 
-    no_records++;
+    num_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECS_BATCH == 0)
+    if (num_records % NUM_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECS)
+    if (num_records == MAX_NUM_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -212,7 +212,7 @@ int main(void)
        * an incomplete record or an erroneous field has been read */
       // printf("-");
       // fflush(stdout);
-      no_err_records++;
+      num_err_records++;
       continue;
     }
     else
@@ -231,12 +231,12 @@ int main(void)
         fclose(file_in);
         goto cleanup;
       }
-      no_writes++;
+      num_writes++;
     }
   } while (! feof(file_in));
 
   printf("\n%d records read\n%d incomplete records ignored\n"
-    "%d writes to the output file\n", no_records, no_err_records, no_writes);
+    "%d writes to the output file\n", num_records, num_err_records, num_writes);
 
   /* Calculate the elapsed time */
   t = clock() - t;

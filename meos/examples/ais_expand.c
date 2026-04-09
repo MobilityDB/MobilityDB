@@ -94,7 +94,7 @@ int main(void)
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Iterator variable */
   int i;
 
@@ -109,8 +109,8 @@ int main(void)
   }
 
   AIS_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
@@ -127,7 +127,7 @@ int main(void)
       printf("Error reading input file\n");
       fclose(file);
       /* Free memory */
-      for (i = 0; i < no_ships; i++)
+      for (i = 0; i < num_ships; i++)
       {
         free(trips[i].trip);
         free(trips[i].SOG);
@@ -138,11 +138,11 @@ int main(void)
     if (read != 5 && !feof(file))
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
 
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = timestamp_in(timestamp_buffer, -1);
@@ -159,7 +159,7 @@ int main(void)
     }
     if (ship < 0)
     {
-      ship = no_ships++;
+      ship = num_ships++;
       trips[ship].MMSI = rec.MMSI;
     }
     trips[ship].numinstants++;
@@ -193,11 +193,11 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
-  printf("%d trips read.\n", no_ships);
+    num_records, num_nulls);
+  printf("%d trips read.\n", num_ships);
 
   /* Print information about the trips */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);
@@ -208,7 +208,7 @@ int main(void)
   }
 
   /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     free(trips[i].trip);
     free(trips[i].SOG);

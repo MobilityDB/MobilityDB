@@ -65,15 +65,15 @@
 
 /*
  * IMPORTANT !!!
- * Please fix the values MAX_NO_RECS and MAX_NO_SHIPS according to the
+ * Please fix the values MAX_NUM_RECS and MAX_NUM_SHIPS according to the
  * available memory in your computer
  */
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECS 20000000
+#define MAX_NUM_RECS 20000000
 /* Maximum number of trips */
-#define MAX_NO_SHIPS 6500
+#define MAX_NUM_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECS_BATCH 100000
+#define NUM_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -97,10 +97,10 @@ typedef struct
 typedef struct
 {
   long int MMSI;          /* Identifier of the trip */
-  int no_records;         /* Number of input records for the trip */
-  int no_trip_instants;   /* Number of input instants for the trip */
+  int num_records;        /* Number of input records for the trip */
+  int num_trip_instants;  /* Number of input instants for the trip */
   int free_trip_instants; /* Number of available input instants for the trip */
-  int no_SOG_instants;    /* Number of input instants for the SOG */
+  int num_SOG_instants;   /* Number of input instants for the SOG */
   int free_SOG_instants;  /* Number of available input instants for the SOG */
   TInstant **trip_instants; /* Array of instants for the trip */
   TInstant **SOG_instants;  /* Array of instants for the SOG */
@@ -112,15 +112,15 @@ int main(void)
   /* Input buffers to read the CSV file */
   char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_NO_SHIPS] = {0};
+  trip_record trips[MAX_NUM_SHIPS] = {0};
   /* Record storing one line read from the CSV file*/
   AIS_record rec;
   /* Number of records read */
-  int no_records = 0;
+  int num_records = 0;
   /* Number of erroneous records */
-  int no_err_records = 0;
+  int num_err_records = 0;
   /* Number of ships */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -147,7 +147,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
+  printf("  one '*' marker every %d records\n", NUM_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -165,15 +165,15 @@ int main(void)
       goto cleanup;
     }
 
-    no_records++;
+    num_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECS_BATCH == 0)
+    if (num_records % NUM_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records have been read */
-    if (no_records == MAX_NO_RECS)
+    if (num_records == MAX_NUM_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -241,13 +241,13 @@ int main(void)
        * an incomplete record or an erroneous field has been read */
       // printf("-");
       // fflush(stdout);
-      no_err_records++;
+      num_err_records++;
       continue;
     }
 
     /* Find the place to store the new instant */
     j = -1;
-    for (i = 0; i < no_ships; i++)
+    for (i = 0; i < num_ships; i++)
     {
       if (trips[i].MMSI == rec.MMSI)
       {
@@ -258,19 +258,19 @@ int main(void)
     if (j < 0)
     {
       /* If we have reached the maximum number of ships */
-      if (no_ships == MAX_NO_SHIPS)
+      if (num_ships == MAX_NUM_SHIPS)
         continue;
-      j = no_ships++;
+      j = num_ships++;
       trips[j].MMSI = rec.MMSI;
       /* Allocate initial space for storing the instants */
       trips[j].trip_instants = calloc(INITIAL_INSTS, sizeof(TInstant *));
       trips[j].SOG_instants = calloc(INITIAL_INSTS, sizeof(TInstant *));
-      trips[j].no_trip_instants = 0;
+      trips[j].num_trip_instants = 0;
       trips[j].free_trip_instants = INITIAL_INSTS;
-      trips[j].no_SOG_instants = 0;
+      trips[j].num_SOG_instants = 0;
       trips[j].free_SOG_instants = INITIAL_INSTS;
     }
-    trips[j].no_records++;
+    trips[j].num_records++;
 
     /*
      * Create the instants and store them in the arrays of the ship.
@@ -293,11 +293,11 @@ int main(void)
         /* Uncomment the next lines to display debug messages showing how the
          * the data structures are expanded */
         // printf("MMSI: %ld ", trips[j].MMSI);
-        // printf("Trip %d -> %d ", trips[j].no_trip_instants,
-          // trips[j].no_trip_instants * 2);
+        // printf("Trip %d -> %d ", trips[j].num_trip_instants,
+          // trips[j].num_trip_instants * 2);
         // fflush(stdout);
         new_instants = realloc(trips[j].trip_instants,
-          sizeof(TInstant *) * trips[j].no_trip_instants * 2);
+          sizeof(TInstant *) * trips[j].num_trip_instants * 2);
         if (! new_instants)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
@@ -306,11 +306,11 @@ int main(void)
           goto cleanup;
         }
         trips[j].trip_instants = new_instants;
-        trips[j].free_trip_instants = trips[j].no_trip_instants;
+        trips[j].free_trip_instants = trips[j].num_trip_instants;
       }
       /* Ignore the instant if has the same timestamp as the last one */
-      last = trips[j].no_trip_instants ?
-        trips[j].trip_instants[trips[j].no_trip_instants - 1] : NULL;
+      last = trips[j].num_trip_instants ?
+        trips[j].trip_instants[trips[j].num_trip_instants - 1] : NULL;
       if (last && last->t == inst->t)
       {
         free(inst);
@@ -321,7 +321,7 @@ int main(void)
       }
       else
       {
-        trips[j].trip_instants[trips[j].no_trip_instants++] = inst;
+        trips[j].trip_instants[trips[j].num_trip_instants++] = inst;
         trips[j].free_trip_instants--;
       }
     }
@@ -335,11 +335,11 @@ int main(void)
         /* Uncomment the next lines to display debug messages showing how
          * the data structures are expanded */
         // printf("MMSI: %ld ", trips[j].MMSI);
-        // printf("Speed %d -> %d ", trips[j].no_SOG_instants,
-          // trips[j].no_SOG_instants * 2);
+        // printf("Speed %d -> %d ", trips[j].num_SOG_instants,
+          // trips[j].num_SOG_instants * 2);
         // fflush(stdout);
         new_instants = realloc(trips[j].SOG_instants,
-          sizeof(TInstant *) * trips[j].no_SOG_instants * 2);
+          sizeof(TInstant *) * trips[j].num_SOG_instants * 2);
         if (new_instants == NULL)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the speed\n",
@@ -348,11 +348,11 @@ int main(void)
           goto cleanup;
         }
         trips[j].SOG_instants = new_instants;
-        trips[j].free_SOG_instants = trips[j].no_SOG_instants;
+        trips[j].free_SOG_instants = trips[j].num_SOG_instants;
       }
       /* Ignore the instant if has the same timestamp as the last one */
-      last = trips[j].no_SOG_instants ? 
-        trips[j].SOG_instants[trips[j].no_SOG_instants - 1] : NULL;
+      last = trips[j].num_SOG_instants ? 
+        trips[j].SOG_instants[trips[j].num_SOG_instants - 1] : NULL;
       if (last && last->t == inst->t)
       {
         free(inst);
@@ -363,7 +363,7 @@ int main(void)
       }
       else
       {
-        trips[j].SOG_instants[trips[j].no_SOG_instants++] = inst;
+        trips[j].SOG_instants[trips[j].num_SOG_instants++] = inst;
         trips[j].free_SOG_instants--;
       }
     }
@@ -376,24 +376,24 @@ int main(void)
   printf("\n-----------------------------------------------------------------------------\n");
   printf("|   MMSI    |   #Rec  | #TrInst |  #SInst |     Distance    |     Speed     |\n");
   printf("-----------------------------------------------------------------------------\n");
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     printf("| %.9ld |   %5d |   %5d |   %5d |", trips[i].MMSI,
-      trips[i].no_records, trips[i].no_trip_instants, trips[i].no_SOG_instants);
-    if (trips[i].no_trip_instants != 0)
+      trips[i].num_records, trips[i].num_trip_instants, trips[i].num_SOG_instants);
+    if (trips[i].num_trip_instants != 0)
     {
       Temporal *trip = (Temporal *) tsequence_make(trips[i].trip_instants,
-        trips[i].no_trip_instants, true, true, LINEAR, true);
+        trips[i].num_trip_instants, true, true, LINEAR, true);
       printf(" %15.6lf |", tpoint_length(trip));
       free(trip);
     }
     else
       printf("        ---      |");
 
-    if (trips[i].no_SOG_instants != 0)
+    if (trips[i].num_SOG_instants != 0)
     {
       Temporal *SOG = (Temporal *) tsequence_make(trips[i].SOG_instants,
-        trips[i].no_SOG_instants, true, true, LINEAR, true);
+        trips[i].num_SOG_instants, true, true, LINEAR, true);
       printf(" %13.6lf |\n", tnumber_twavg(SOG));
       free(SOG);
     }
@@ -401,9 +401,9 @@ int main(void)
       printf("       ---     |\n");
   }
   printf("-----------------------------------------------------------------------------\n");
-  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records,
-    no_err_records);
-  printf("%d trips read.\n", no_ships);
+  printf("\n%d records read.\n%d erroneous records ignored.\n", num_records,
+    num_err_records);
+  printf("%d trips read.\n", num_ships);
 
 
   /* Calculate the elapsed time */
@@ -418,12 +418,12 @@ int main(void)
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
-    for (j = 0; j < trips[i].no_trip_instants; j++)
+    for (j = 0; j < trips[i].num_trip_instants; j++)
       free(trips[i].trip_instants[j]);
     free(trips[i].trip_instants);
-    for (j = 0; j < trips[i].no_SOG_instants; j++)
+    for (j = 0; j < trips[i].num_SOG_instants; j++)
       free(trips[i].SOG_instants[j]);
     free(trips[i].SOG_instants);
   }

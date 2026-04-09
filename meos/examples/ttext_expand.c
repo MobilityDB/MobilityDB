@@ -75,7 +75,7 @@
 /* Maximum number of instants in a sequence */
 #define MAX_INSTS_SEQ 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 500000
+#define NUM_INSTS_BATCH 500000
 /* Maximum length in characters of the text values in the instants */
 #define MAX_LEN_TEXT 10
 /* State whether a message is shown every time a sequence set is expanded */
@@ -112,7 +112,7 @@ int main(void)
   printf("Total number of instants generated: %d\n", MAX_NO_INSTS);
   printf("Maximum number of instants in a sequence: %d\n", MAX_INSTS_SEQ);
   printf("Generating the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("2000-01-01", -1);
   for (i = 0; i < MAX_NO_INSTS; i++)
@@ -170,7 +170,7 @@ int main(void)
     free(inst);
 
     /* Print a '*' marker every X instants generated */
-    if (i % NO_INSTS_BATCH == 0)
+    if (i % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
