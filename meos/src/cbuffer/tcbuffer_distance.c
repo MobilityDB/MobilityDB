@@ -147,13 +147,6 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
 
   if (dist > 0.0)
   {
-    /* Check if the turning point is truly internal */
-    if (t_turn <= lower || t_turn >= upper)
-    {
-      /* No true internal turning point */
-      *t1 = *t2 = (TimestampTz) 0;
-      return 0;
-    }
     /* Single turning point: return t1 and value1 */
     *t1 = *t2 = t_turn;
     return 1;
@@ -241,7 +234,6 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
 
   double dx1 = ept1->x - ept2->x;
   double dy1 = ept1->y - ept2->y;
-  double r1 = end1->radius + end2->radius;
 
   /* Compute relative velocities */
   double vx = (ept1->x - spt1->x) / duration - (ept2->x - spt2->x) / duration;
@@ -280,6 +272,7 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
   else
   {
     /* Crossing: compute entrance and exit times */
+    double r1 = end1->radius + end2->radius;
     double dist0 = sqrt(dx0 * dx0 + dy0 * dy0) - r0;
     double dist1 = sqrt(dx1 * dx1 + dy1 * dy1) - r1;
     double alpha_in = (dist_turn - dist0 == 0.0) ? 
