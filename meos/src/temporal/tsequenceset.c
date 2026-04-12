@@ -166,7 +166,8 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
 /**
  * @brief Return the distance between two datums
  * @param[in] value1,value2 Values
- * @param[in] type Type of the values
+ * @param[in] basetype Base type of the values
+ * @param[in] temptype Temporal type of the values
  * @param[in] flags Flags
  * @return On error return -1.0
  */

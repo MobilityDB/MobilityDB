@@ -1441,17 +1441,13 @@ Span *
 temporal_extent_transfn(Span *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! state && ! temp)
-    return NULL;
-  /* Non-null state and null temporal, return the state */
-  if (! temp)
-    return state;
-  /* Null state and non-null temporal, return the bbox of the temporal */
-  if (! state)
+  if (! state || ! temp)
   {
-    Span *result = palloc0(sizeof(Span));
-    temporal_set_tstzspan(temp, result);
-    return result;
+    if (! state && ! temp)
+      return NULL;
+    if (! state)
+      return temporal_to_tstzspan(temp);
+    return state;
   }
 
   Span s;

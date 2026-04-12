@@ -636,7 +636,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
   for (double i = 0; i < 4; ++i)
   {
     double tl = i / 4, tr = (i + 1) / 4, t0 = -1;
-    double vl, vr, v0;
+    double vl, vr;
     if (cfp_s->cf_1 % 2 == 0)
     {
       vl = f_turnpoints_v_v_tpoint_poly(p, q, cfp_s->pose_1, cfp_e->pose_1, tl);
@@ -654,6 +654,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       uint8_t j = 0;
       while(fabs(tr - tl) >= MEOS_EPSILON && j < 100)
       {
+        double v0;
         ++j;
         t0 = (tl * vr - tr * vl) / (vr - vl);
         if (cfp_s->cf_1 % 2 == 0)

@@ -422,12 +422,10 @@ tcontseq_merge_array_iter(TSequence **sequences, int count, int *totalcount)
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
     const TSequence *seq2 = sequences[i];
     const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
-    char *str1;
     if (inst1->t > inst2->t)
     {
-      char *str2;
-      str1 = pg_timestamptz_out(inst1->t);
-      str2 = pg_timestamptz_out(inst2->t);
+      char *str1 = pg_timestamptz_out(inst1->t);
+      char *str2 = pg_timestamptz_out(inst2->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The temporal values cannot overlap on time: %s, %s", str1, str2);
       pfree(str1); pfree(str2);

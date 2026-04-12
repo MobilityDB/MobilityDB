@@ -168,12 +168,10 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
-  SpanSet *ss;
-  Temporal * projtemp2;
   if (oper == DIV)
   {
-    ss = temporal_time(temp1);
-    projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
+    SpanSet *ss = temporal_time(temp1);
+    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
     if (! projtemp2)
     {
       pfree(ss);

@@ -276,7 +276,7 @@ int main(void)
   char_result = tbox_out(tbox_result, 6);
   printf("temporal_from_wkb(");
   fwrite(tbox1_wkb, tbox_size_wkb, 1, stdout);
-  printf(", %ld): %s\n", size, char_result);
+  printf(", %zu): %s\n", size, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_in(const char *str); */
@@ -674,7 +674,7 @@ int main(void)
   char_result = tfloat_out(tfloat_result, 6);
   printf("temporal_from_wkb(");
   fwrite(tfloat1_wkb, tfloat_size_wkb, 1, stdout);
-  printf(", %ld): %s\n", size, char_result);
+  printf(", %zu): %s\n", size, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_from_mfjson(const char *str); */

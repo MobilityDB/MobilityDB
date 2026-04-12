@@ -1524,7 +1524,7 @@ int main(void)
   free(stbox_result); free(char_result);
 
   /* Temporal *geomeas_to_tpoint(const GSERIALIZED *gs); */
-  bool_result = tpoint_tfloat_to_geomeas(tgeompt1_step, tfloat1, true, &geom_result);
+  (void) tpoint_tfloat_to_geomeas(tgeompt1_step, tfloat1, true, &geom_result);
   tgeompt_result = geomeas_to_tpoint(geom_result);
   char_result = tspatial_as_ewkt(tgeompt_result, 6);
   printf("geomeas_to_tpoint(%s): %s\n", geom1_out, char_result);

@@ -141,11 +141,9 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
   /* Interpolate the distances at start and end */
   double dx_start = xa1 - xb;
   double dy_start = ya1 - yb;
-  double dist_start = sqrt(dx_start * dx_start + dy_start * dy_start) - ra1 - rb;
 
   double dx_end = xa2 - xb;
   double dy_end = ya2 - yb;
-  double dist_end = sqrt(dx_end * dx_end + dy_end * dy_end) - ra2 - rb;
 
   if (dist > 0.0)
   {
@@ -163,6 +161,8 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
   else
   {
     /* Crossing zero: compute entrance and exit times */
+    double dist_start = sqrt(dx_start * dx_start + dy_start * dy_start) - ra1 - rb;
+    double dist_end = sqrt(dx_end * dx_end + dy_end * dy_end) - ra2 - rb;
     double alpha_in = (0.0 - dist_start) / (dist - dist_start);
     double alpha_out = (0.0 - dist) / (dist_end - dist);
 
@@ -270,33 +270,47 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
   double dy_turn = cy1 - cy2;
   double dist_turn = sqrt(dx_turn*dx_turn + dy_turn*dy_turn) - rbuf1 - rbuf2;
 
-  double dist0 = sqrt(dx0*dx0 + dy0*dy0) - r0;
-  double dist1 = sqrt(dx1*dx1 + dy1*dy1) - r1;
-
   /* Single turning point */
-  if (dist_turn > 0.0) {
+  if (dist_turn > 0.0)
+  {
     TimestampTz t_turn = lower + (TimestampTz)(t_rel); 
     *t1 = *t2 = t_turn;
     return 1;
-  } else { /* Crossing: compute entrance and exit times */
-    double alpha_in = (dist_turn - dist0 == 0.0) ? (0.0 - dist0) : (0.0 - dist0) / (dist_turn - dist0);
-    double alpha_out = (dist1 - dist_turn == 0.0) ? (0.0 - dist_turn) : (0.0 - dist_turn) / (dist1 - dist_turn);
+  }
+  else
+  {
+    /* Crossing: compute entrance and exit times */
+    double dist0 = sqrt(dx0 * dx0 + dy0 * dy0) - r0;
+    double dist1 = sqrt(dx1 * dx1 + dy1 * dy1) - r1;
+    double alpha_in = (dist_turn - dist0 == 0.0) ? 
+      (0.0 - dist0) : (0.0 - dist0) / (dist_turn - dist0);
+    double alpha_out = (dist1 - dist_turn == 0.0) ?
+      (0.0 - dist_turn) : (0.0 - dist_turn) / (dist1 - dist_turn);
 
     TimestampTz t_in = lower + (TimestampTz)(t_rel * alpha_in);
-    TimestampTz t_out = lower + (TimestampTz)((t_rel + (duration - t_rel) * alpha_out));
+    TimestampTz t_out = lower + (TimestampTz)((t_rel +
+      (duration - t_rel) * alpha_out));
 
     /* Check if the turning points are truly internal */
-    if (t_in > lower && t_out < upper) {
+    if (t_in > lower && t_out < upper)
+    {
       *t1 = t_in;
       *t2 = t_out;
       return 2;
-    } else if (t_in > lower && t_out >= upper) {
+    }
+    else if (t_in > lower && t_out >= upper)
+    {
       *t1 = *t2 = t_in;
       return 1;
-    } else if (t_in <= lower && t_out < upper) {
+    }
+    else if (t_in <= lower && t_out < upper)
+    {
       *t1 = *t2 = t_out;
       return 1;
-    } else { /* No true internal turning point */
+    }
+    else
+    {
+      /* No true internal turning point */
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }

@@ -1593,13 +1593,15 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (! box1 && ! box2)
-    PG_RETURN_NULL();
-  /* One of the boxes is null, return the other one */
-  if (! box1)
-    PG_RETURN_STBOX_P(stbox_copy(box2));
-  if (! box2)
-    PG_RETURN_STBOX_P(stbox_copy(box1));
+  if (! box1 || ! box2)
+  {
+    if (! box1 && ! box2)
+      PG_RETURN_NULL();
+    if (! box1)
+      PG_RETURN_STBOX_P(stbox_copy(box2));
+    else
+      PG_RETURN_STBOX_P(stbox_copy(box1));
+  }
 
   /* Both boxes are not null */
   ensure_same_dimensionality(box1->flags, box2->flags);
