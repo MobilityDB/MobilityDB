@@ -656,17 +656,6 @@ node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
 }
 
 /**
- * @brief Returns `true` if a number greater than 0 is a power of two, `false`
- * otherwise
- * @param[in] n Number to check
- */
-static inline bool
-is_power_of_two(const int n)
-{
-  return (n & (n - 1)) == 0;
-}
-
-/**
  * @brief Adds an ID to the dynamically allocated array with the answer of a
  * query
  * @param[in] id The integer ID to be added to the array
@@ -678,10 +667,6 @@ is_power_of_two(const int n)
 static void
 add_answer(const int id, int **ids, int *count)
 {
-  // /* Every power of two that exceeds the size of the array must be resized to
-   // * double the current size */
-  // if (*count >= SEARCH_ARRAY_STARTING_SIZE && is_power_of_two(*count))
-    // *ids = repalloc(*ids, sizeof(int) * (*count) * 2);
   (*ids)[*count] = id;
   (*count)++;
   return;
@@ -911,6 +896,7 @@ rtree_create_stbox()
 void
 rtree_insert(RTree *rtree, void *box, int id)
 {
+  rtree->count++;
   while (1)
   {
     if (! rtree->root)
