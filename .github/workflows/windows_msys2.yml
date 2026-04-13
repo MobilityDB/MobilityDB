@@ -5,19 +5,19 @@ on:
   push:
     paths:
       - '.github/workflows/windows_msys2.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
   pull_request:
     paths:
       - '.github/workflows/windows_msys2.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
 
@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: 'Setup'
         uses: msys2/setup-msys2@v2

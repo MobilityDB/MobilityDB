@@ -1,0 +1,3 @@
+[submodule "meos"]
+	path = meos
+	url = git@github.com:MobilityDB/MEOS.git

@@ -5,19 +5,19 @@ on:
   push:
     paths:
       - '.github/workflows/clang.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
   pull_request:
     paths:
       - '.github/workflows/clang.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
 
@@ -31,6 +31,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Get postgres version
         run: |
