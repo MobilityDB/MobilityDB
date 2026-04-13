@@ -120,7 +120,8 @@ datespan_bins(const Span *s, const Interval *duration, DateADT origin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
-  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(origin), count);
+  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(origin),
+    count);
 }
 
 /**
