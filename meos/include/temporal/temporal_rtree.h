@@ -85,7 +85,7 @@ typedef struct RTreeNode
 struct RTree
 {
   size_t bboxsize;       /**< Size of the bouding box */
-  int count;             /**< Number of dimensions of the tree */
+  int count;             /**< Number of boxes in the tree */
   int dims;              /**< Number of dimensions of the tree */
   meosType bboxtype;     /**< Type of the bouding box */
   RTreeNode *root;
