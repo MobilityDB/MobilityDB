@@ -4087,46 +4087,58 @@ mec_circle3(POINT2D a, POINT2D b, POINT2D c)
 }
 
 /**
- * @brief Trivial boundary solver for <= 3 support points
+ * @brief Return the minimum enclosing circle for 3 points, handling the
+ * collinear case by falling back to the best 2-point circle
  */
 static Circle
-mec_trivial(POINT2D *R, int r)
+mec_circle3_safe(POINT2D a, POINT2D b, POINT2D c)
 {
-  if (r == 0)
-    return (Circle){{0,0},0};
-  if (r == 1)
-    return (Circle){R[0],0};
-  if (r == 2)
-    return mec_circle2(R[0],R[1]);
-
-  Circle c = mec_circle3(R[0],R[1],R[2]);
-  if (c.radius >= 0)
-    return c;
-  Circle c1 = mec_circle2(R[0],R[1]);
-  Circle c2 = mec_circle2(R[0],R[2]);
-  Circle c3 = mec_circle2(R[1],R[2]);
-  Circle best = c1;
-  if (c2.radius > best.radius) best = c2;
-  if (c3.radius > best.radius) best = c3;
-  return best;
+  Circle circ = mec_circle3(a, b, c);
+  if (circ.radius >= 0)
+    return circ;
+  /* Collinear: pick the largest 2-point circle */
+  Circle c1 = mec_circle2(a, b);
+  Circle c2 = mec_circle2(a, c);
+  Circle c3 = mec_circle2(b, c);
+  if (c2.radius > c1.radius) c1 = c2;
+  if (c3.radius > c1.radius) c1 = c3;
+  return c1;
 }
 
 /**
- * @brief Welzl recursion
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @details Equivalent to the recursive Welzl algorithm but uses constant
+ * stack space. The three nested loops correspond to the three levels of
+ * recursion (boundary set size 0, 1, 2). Despite appearing O(n^3), the
+ * expected runtime is O(n) with random shuffling.
+ * @param[in] P Array of points (must be shuffled beforehand)
+ * @param[in] n Number of points
+ * @pre n >= 1
  */
 static Circle
-mec_welzl(POINT2D *P, POINT2D *R, int n, int r)
+mec_welzl(POINT2D *P, int n)
 {
-  if (n == 0 || r == 3)
-    return mec_trivial(R,r);
-
-  POINT2D p = P[n - 1];
-  Circle D = mec_welzl(P, R, n - 1, r);
-  if (mec_inside(p, D))
-    return D;
-
-  R[r] = p;
-  return mec_welzl(P, R, n-1, r + 1);
+  Circle C = (Circle){P[0], 0};
+  for (int i = 1; i < n; i++)
+  {
+    if (! mec_inside(P[i], C))
+    {
+      C = (Circle){P[i], 0};
+      for (int j = 0; j < i; j++)
+      {
+        if (! mec_inside(P[j], C))
+        {
+          C = mec_circle2(P[i], P[j]);
+          for (int k = 0; k < j; k++)
+          {
+            if (! mec_inside(P[k], C))
+              C = mec_circle3_safe(P[i], P[j], P[k]);
+          }
+        }
+      }
+    }
+  }
+  return C;
 }
 
 /**
@@ -4196,11 +4208,10 @@ static Circle
 lwgeom_mec(const LWGEOM *geom)
 {
   MeosArray *array = meos_array_init(sizeof(POINT2D));
-  POINT2D R[3];
   lwgeom_collect_points(geom, array);
-  /* Ensure that there is at least one point give the precondition */
+  /* Ensure that there is at least one point given the precondition */
   assert(array->count > 0);
-  /* Reuse the array->elems array that contain the points */
+  /* Reuse the array->elems array that contains the points */
   POINT2D *pts = (POINT2D *) array->elems;
 
   /* Fisher-Yates shuffle */
@@ -4211,7 +4222,7 @@ lwgeom_mec(const LWGEOM *geom)
     pts[i] = pts[j];
     pts[j] = tmp;
   }
-  Circle result = mec_welzl(pts, R, array->count, 0);
+  Circle result = mec_welzl(pts, array->count);
   meos_array_destroy(array, false);
   return result;
 }
