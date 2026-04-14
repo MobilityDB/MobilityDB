@@ -218,7 +218,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
       return NULL;
   }
 
-  size_t value_offset = sizeof(TInstant) - sizeof(Datum);
+  size_t value_offset = offsetof(TInstant, value);
   size_t size = value_offset;
   /* Create the temporal instant */
   size_t value_size;
