@@ -5,19 +5,19 @@ on:
   push:
     paths:
       - '.github/workflows/macos.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
   pull_request:
     paths:
       - '.github/workflows/macos.yml'
+      - '.gitmodules'
+      - 'meos'
       - 'cmake/**'
-      - 'meos/**'
       - 'mobilitydb/**'
-      - 'postgis/**'
       - 'CMakeLists.txt'
     branch_ignore: gh-pages
 
@@ -34,6 +34,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Get dependencies from homebrew (cache)
         uses: tecolicom/actions-use-homebrew-tools@v1
@@ -45,13 +47,13 @@ jobs:
           mkdir build
           cd build
           cmake -DPOSTGRESQL_BIN="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin" -DCMAKE_BUILD_TYPE=Release ..
-    
+
       - name: Build
         run: |
           cd build
           make -j
           sudo make install
-    
+
       - name: test installation
         run: |
           export PATH="/opt/homebrew/opt/postgresql@${{ matrix.psql }}/bin:$PATH"
@@ -60,7 +62,7 @@ jobs:
           pg_ctl -D $HOME/pgdata -l logfile start
           createdb ___mobdb___test___
           psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
-    
+
       - name: Test
         run: |
           cd build

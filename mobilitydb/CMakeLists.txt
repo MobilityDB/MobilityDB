@@ -90,17 +90,17 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
 
-# Embed PostGIS
-configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
-configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
+# Embed PostGIS (from MEOS submodule)
+configure_file(${CMAKE_SOURCE_DIR}/meos/postgis/liblwgeom/liblwgeom.h.in ${CMAKE_BINARY_DIR}/postgis/liblwgeom/liblwgeom.h)
+configure_file(${CMAKE_SOURCE_DIR}/meos/postgis/postgis_config.h.in ${CMAKE_BINARY_DIR}/postgis/postgis_config.h)
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/meos/postgis/liblwgeom")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/meos/postgis/libpgcommon")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/meos/postgis")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis/liblwgeom")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis")
-add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
+add_subdirectory("${CMAKE_SOURCE_DIR}/meos/postgis" "postgis")
 
-# MEOS
+# MEOS (from MEOS submodule)
 include_directories("${CMAKE_SOURCE_DIR}/meos/include")
 add_subdirectory("${CMAKE_SOURCE_DIR}/meos/src" "meos_src")
 
@@ -222,8 +222,6 @@ add_subdirectory(test)
 add_custom_target(mobilitydb_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(mobilitydb_datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
 add_custom_target(mobilitydb_control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
-# add_custom_target(datagen_sql ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE})
-# add_custom_target(datagen_control ALL DEPENDS ${CMAKE_BINARY_DIR}/datagen/mobilitydb_datagen.control)
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb.control" "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")

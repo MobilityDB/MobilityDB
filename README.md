@@ -38,6 +38,32 @@ The pregenerated user and developer documentation can be found [here](https://mo
 
 To generate the documentation locally, refer to our [documentation generation section](#generating-the-documentation)
 
+Project Structure
+-----------------
+
+MobilityDB depends on the [MEOS](https://github.com/MobilityDB/MEOS) (Mobility Engine Open Source) library, which is included as a **git submodule** in the `meos/` directory. MEOS provides the core temporal and spatio-temporal type system and operations, while MobilityDB wraps these as a PostgreSQL extension.
+
+```
+MobilityDB/
+├── meos/              # MEOS submodule (core library)
+│   ├── include/       #   Public headers (meos.h, meos_geo.h, ...)
+│   ├── src/           #   Source files (temporal, geo, cbuffer, npoint, ...)
+│   ├── postgres/      #   Embedded PostgreSQL compatibility layer
+│   ├── postgis/       #   Embedded PostGIS (liblwgeom, ryu)
+│   ├── examples/      #   Example programs
+│   └── test/          #   MEOS standalone tests
+├── mobilitydb/        # PostgreSQL extension
+│   ├── pg_include/    #   PostgreSQL-specific headers
+│   ├── src/           #   PostgreSQL-specific source files
+│   ├── sql/           #   SQL extension definitions
+│   └── test/          #   SQL regression tests
+├── cmake/             # CMake find modules
+├── doc/               # User documentation
+└── doxygen/           # Developer documentation
+```
+
+When building MobilityDB, the MEOS source files are recompiled as part of the extension (not linked as a separate library). The build system compiles MEOS sources with `-DMEOS=0` to enable PostgreSQL-specific code paths, while the standalone MEOS library uses `-DMEOS=1`.
+
 Benefits
 --------
 
@@ -112,7 +138,7 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   CMake >= 3.7
+*   CMake >= 3.12
 *   PostgreSQL >= 14
 *   PostGIS >= 3.0
 *   GEOS >= 3.8
@@ -123,7 +149,7 @@ Requirements
 
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 16 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-16 libgeos-dev libproj-dev libjson-c-dev libgsl-dev
+apt install build-essential cmake postgresql-server-dev-16 postgresql-16-postgis-3 libgeos-dev libproj-dev libjson-c-dev libgsl-dev
 ```
 
 Building & Installation
@@ -131,12 +157,17 @@ Building & Installation
 
 Here is the gist:
 ```bash
-git clone https://github.com/MobilityDB/MobilityDB
+git clone --recurse-submodules https://github.com/MobilityDB/MobilityDB
 mkdir MobilityDB/build
 cd MobilityDB/build
 cmake ..
 make
 sudo make install
+```
+
+The `--recurse-submodules` flag is required to fetch the MEOS submodule. If you cloned without it, initialize the submodule manually:
+```bash
+git submodule update --init --recursive
 ```
 
 You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below we use PostGIS 3):
@@ -243,4 +274,3 @@ Ackowledgements
 <p>
 The MobilityDB project has received funding from the European Union's <a href="https://open-research-europe.ec.europa.eu/gateways/horizon-europe">Horizon Europe</a> research and innovation programme under grant agreements No 101070279 <a href="https://mobispaces.eu/" target="blank">MobiSpaces</a> and No 101093051 <a href="https://emeralds-horizon.eu/" target="blank">EMERALDS</a>.
 </p>
-

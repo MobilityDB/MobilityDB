@@ -1,5 +1,5 @@
 #-------------------------------------
-# MobilityDB/MEOS Main CMake file
+# MobilityDB Main CMake file
 #-------------------------------------
 
 # Minimum Cmake version supporting fixtures
@@ -25,7 +25,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Specify search path for CMake modules to be loaded
+# Include both local cmake/ and the MEOS submodule's cmake/ for FindGEOS, FindPROJ, FindJSON-C
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/meos/cmake")
 include(CheckSymbolExists)
 include(CheckCXXSymbolExists)
 include(CheckCSourceRuns)
@@ -69,14 +71,6 @@ if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Disable warning C4996: 'strcpy': This function or variable may be unsafe.
   add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
 endif()
-
-# Option for including network points
-option(MEOS
-  "Set MEOS (default=OFF) to build the MEOS library instead of the MobilityDB
-  PostgreSQL extension
-  "
-  OFF
-)
 
 # Option for including circular buffers
 option(CBUFFER
@@ -190,13 +184,6 @@ if(NOT HAS_FFSL)
   message(STATUS "No ffsl functions provided")
   add_definitions(-DNO_FFSL)
 endif()
-
-# TODO
-# Reentrant (_r) functions for POSIX hash table management (e.g. hsearch)
-# check_symbol_exists("hsearch_r" "search.h" HAS_HSEARCH_R)
-# if(NOT HAS_HSEARCH_R)
-  # add_definitions(-DNO_HSEARCH_R)
-# endif()
 
 # Added to build on Windows to avoid the error 'M_PI': undeclared identifier
 add_compile_definitions(_USE_MATH_DEFINES)
@@ -330,14 +317,10 @@ else()
 endif()
 
 #-------------------------------------
-# Build either MobilityDB or MEOS
+# Build MobilityDB
 #-------------------------------------
 
-if(MEOS)
-  add_subdirectory(meos)
-else()
-  add_subdirectory(mobilitydb)
-endif()
+add_subdirectory(mobilitydb)
 
 #-----------------------------------------------------------------------------
 # Documentation
