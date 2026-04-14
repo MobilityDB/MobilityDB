@@ -4012,53 +4012,6 @@ line_substring(const GSERIALIZED *gs, double from, double to)
   return result;
 }
 
-/**
- * @ingroup meos_geo_base_spatial
- * @brief Return the center point and radius of the smallest circle that
- * contains a geometry
- * @param[in] geom Geometry
- * @param[out] radius Radius
- */
-// GSERIALIZED *
-// geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
-// {
-  // if (! geom)
-    // return NULL;
-
-  // LWGEOM *lwcenter = NULL;
-  // /* Empty geometry?  Return POINT EMPTY with zero radius */
-  // if (gserialized_is_empty(geom))
-  // {
-    // lwcenter = (LWGEOM*) lwpoint_construct_empty(
-      // gserialized_get_srid(geom), LW_FALSE, LW_FALSE);
-  // }
-  // else
-  // {
-    // LWGEOM *input = lwgeom_from_gserialized(geom);
-    // LWBOUNDINGCIRCLE *mbc = lwgeom_calculate_mbc(input);
-
-    // if (!(mbc && mbc->center))
-    // {
-      // meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        // "Error calculating minimum bounding circle");
-      // lwgeom_free(input);
-      // return NULL;
-    // }
-
-    // lwcenter = (LWGEOM*) lwpoint_make2d(input->srid, mbc->center->x,
-      // mbc->center->y);
-    // *radius = mbc->radius;
-
-    // lwboundingcircle_destroy(mbc);
-    // lwgeom_free(input);
-  // }
-
-  // GSERIALIZED *result = geo_serialize(lwcenter);
-  // lwgeom_free(lwcenter);
-
-  // return result;
-// }
-
 /*****************************************************************************
  * Minimum Enclosing Circle implementation improving the performance of the
  * PostGIS function ST_MinimumBoundingCircle
@@ -4276,11 +4229,9 @@ lwgeom_mec_supported_type(const LWGEOM *geom)
   else if (lwgeom_is_collection(geom))
   {
     const LWCOLLECTION *col = (LWCOLLECTION *) geom;
-    bool result = true;
     for (int i = 0; i < (int) col->ngeoms; i++)
     {
-      result |= lwgeom_mec_supported_type(col->geoms[i]);
-      if (! result)
+      if (! lwgeom_mec_supported_type(col->geoms[i]))
         return false;
     }
     return true;
@@ -4326,7 +4277,7 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
     center = (LWGEOM *) lwpoint_construct_empty(input->srid, LW_FALSE, LW_FALSE);
     *radius = 0;
   }
-  if (lwgeom_mec_supported_type(input))
+  else if (lwgeom_mec_supported_type(input))
   {
     Circle c = lwgeom_mec(input);
     center = (LWGEOM *) lwpoint_make2d(input->srid, c.center.x, c.center.y);
