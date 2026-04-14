@@ -80,9 +80,15 @@ SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
 
 -- SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::cbuffer;
 
--- NULL
-
--- /* Errors */
+-- Minimum Enclosing Circle (via geometry::cbuffer cast for non-point geometries)
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Triangle((0 0, 10 0, 5 8.66, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 10 0, 5 5)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multipoint(0 0, 5 0, 10 0)'), 6));
+SELECT asText(round(cbuffer(geometry 'Multilinestring((0 0, 5 0),(5 5, 10 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5 0, 10 0))'), 6));
 
 -------------------------------------------------------------------------------
 -- Comparisons
