@@ -4264,15 +4264,6 @@ lwgeom_mec_supported_type(const LWGEOM *geom)
  *   New Results and Trends in Computer Science (H. Maurer, Ed.), Lecture Notes
  *   in Computer Science, 555 (1991) 359-370.
  *
- * The following query used on natural areas around Denmark shows the
- * difference between the MEOS and the PostGIS functions
- * @code
- *  SELECT Id, cbuffer(Geom) AS cb FROM NaturalAreas ORDER BY Id;
- *  -- Time: 321.113 ms
- *
- * SELECT Id, ST_MinimumBoundingCircle(Geom) AS cb FROM NaturalAreas ORDER BY Id;
- *  -- Time: 89308.406 ms (01:29.308)
- * @endcode
  */
 GSERIALIZED *
 geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
