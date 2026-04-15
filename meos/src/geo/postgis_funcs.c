@@ -2787,7 +2787,7 @@ geog_area(const GSERIALIZED *gs, bool use_spheroid)
 #endif /* ifndef PROJ_GEODESIC */
 
   /* User requests spherical calculation, turn our spheroid into a sphere */
-  if ( ! use_spheroid )
+  if (! use_spheroid )
     s.a = s.b = s.radius;
 
   /* Calculate the area */
@@ -2845,7 +2845,7 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
   spheroid_init_from_srid(gserialized_get_srid(gs), &s);
 
   /* User requests spherical calculation, turn our spheroid into a sphere */
-  if ( ! use_spheroid )
+  if (! use_spheroid )
     s.a = s.b = s.radius;
 
   /* Calculate the length */
@@ -4012,12 +4012,258 @@ line_substring(const GSERIALIZED *gs, double from, double to)
   return result;
 }
 
+/*****************************************************************************
+ * Minimum Enclosing Circle implementation improving the performance of the
+ * PostGIS function ST_MinimumBoundingCircle
+ *****************************************************************************/
+
+/**
+ * @brief Definition of the 2D circle structure
+ * @note Equivalent of PostGIS structure LWBOUNDINGCIRCLE 
+ */
+typedef struct
+{
+  POINT2D center;
+  double radius;
+} Circle;
+
+/**
+ * @brief Return the distance between two points
+ */
+static inline double
+distance_point2d(POINT2D a, POINT2D b)
+{
+  double dx = a.x - b.x;
+  double dy = a.y - b.y;
+  return sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * @brief Return true if a point is inside a circle
+ */
+static inline bool
+mec_inside(POINT2D p, Circle c)
+{
+  return distance_point2d(p, c.center) <= c.radius + 1e-12;
+}
+
+/**
+ * @brief Circle constructor for 2 points
+ */
+static inline Circle
+mec_circle2(POINT2D a, POINT2D b)
+{
+  Circle c;
+  c.center.x = (a.x + b.x) * 0.5;
+  c.center.y = (a.y + b.y) * 0.5;
+  c.radius = distance_point2d(a,b) * 0.5;
+  return c;
+}
+
+/**
+ * @brief Circle constructor for 3 points
+ */
+static Circle
+mec_circle3(POINT2D a, POINT2D b, POINT2D c)
+{
+  double A = b.x - a.x;
+  double B = b.y - a.y;
+  double C = c.x - a.x;
+  double D = c.y - a.y;
+  double E = A * (a.x + b.x) + B * (a.y + b.y);
+  double F = C * (a.x + c.x) + D * (a.y + c.y);
+  double G = 2.0 * (A * (c.y - b.y) - B * (c.x - b.x));
+
+  Circle circ;
+  if (fabs(G) < 1e-12)
+  {
+    circ.radius = -1;
+    return circ;
+  }
+  circ.center.x = (D * E - B * F) / G;
+  circ.center.y = (A * F - C * E) / G;
+  circ.radius = distance_point2d(circ.center,a);
+  return circ;
+}
+
+/**
+ * @brief Return the minimum enclosing circle for 3 points, handling the
+ * collinear case by falling back to the best 2-point circle
+ */
+static Circle
+mec_circle3_safe(POINT2D a, POINT2D b, POINT2D c)
+{
+  Circle circ = mec_circle3(a, b, c);
+  if (circ.radius >= 0)
+    return circ;
+  /* Collinear: pick the largest 2-point circle */
+  Circle c1 = mec_circle2(a, b);
+  Circle c2 = mec_circle2(a, c);
+  Circle c3 = mec_circle2(b, c);
+  if (c2.radius > c1.radius) c1 = c2;
+  if (c3.radius > c1.radius) c1 = c3;
+  return c1;
+}
+
+/**
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @details Equivalent to the recursive Welzl algorithm but uses constant
+ * stack space. The three nested loops correspond to the three levels of
+ * recursion (boundary set size 0, 1, 2). Despite appearing O(n^3), the
+ * expected runtime is O(n) with random shuffling.
+ * @param[in] P Array of points (must be shuffled beforehand)
+ * @param[in] n Number of points
+ * @pre n >= 1
+ */
+static Circle
+mec_welzl(POINT2D *P, int n)
+{
+  Circle C = (Circle){P[0], 0};
+  for (int i = 1; i < n; i++)
+  {
+    if (! mec_inside(P[i], C))
+    {
+      C = (Circle){P[i], 0};
+      for (int j = 0; j < i; j++)
+      {
+        if (! mec_inside(P[j], C))
+        {
+          C = mec_circle2(P[i], P[j]);
+          for (int k = 0; k < j; k++)
+          {
+            if (! mec_inside(P[k], C))
+              C = mec_circle3_safe(P[i], P[j], P[k]);
+          }
+        }
+      }
+    }
+  }
+  return C;
+}
+
+/**
+ * @brief Extract coordinates from LWGEOM
+ * @pre The geometry type is one of the supported types as given by function
+ * #lwgeom_mec_supported_type
+ */
+static void
+lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
+{
+  POINT2D point;
+  if (geom->type == POINTTYPE)
+  {
+    const LWPOINT *p = (LWPOINT *) geom;
+    const POINT2D *pt = getPoint2d_cp(p->point, 0);
+    point = (POINT2D){pt->x, pt->y};
+    meos_array_add(array, &point);
+  }
+  else if (geom->type == LINETYPE)
+  {
+    const LWLINE *l = (LWLINE *) geom;
+    for (int i = 0; i < (int) l->points->npoints; i++)
+    {
+      const POINT2D *pt = getPoint2d_cp(l->points, i);
+      point = (POINT2D){pt->x, pt->y};
+      meos_array_add(array, &point);
+    }
+  }
+  else if (geom->type == TRIANGLETYPE)
+  {
+    const LWTRIANGLE *tr = (LWTRIANGLE *) geom;
+    for (int i = 0; i < (int) tr->points->npoints; i++)
+    {
+      const POINT2D *pt = getPoint2d_cp(tr->points, i);
+      point = (POINT2D){pt->x, pt->y};
+      meos_array_add(array, &point);
+    }
+  }
+  else if (geom->type == POLYGONTYPE)
+  {
+    const LWPOLY *poly = (LWPOLY *) geom;
+    for (int r = 0; r < (int) poly->nrings; r++)
+    {
+      POINTARRAY *pa = poly->rings[r];
+      for (int i = 0; i < (int) pa->npoints; i++)
+      {
+        const POINT2D *pt = getPoint2d_cp(pa, i);
+        point = (POINT2D){pt->x, pt->y};
+        meos_array_add(array, &point);
+      }
+    }
+  }
+  else if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *col = (LWCOLLECTION *) geom;
+    for (int i = 0; i < (int) col->ngeoms; i++)
+      lwgeom_collect_points(col->geoms[i], array);
+  }
+  return;
+}
+
+/**
+ * @brief Computation of the Minimum Enclosing Circle
+ * @pre The geometry is not empty and is one of the supported gemetry types
+ */
+static Circle
+lwgeom_mec(const LWGEOM *geom)
+{
+  MeosArray *array = meos_array_init(sizeof(POINT2D));
+  lwgeom_collect_points(geom, array);
+  /* Ensure that there is at least one point given the precondition */
+  assert(array->count > 0);
+  /* Reuse the array->elems array that contains the points */
+  POINT2D *pts = (POINT2D *) array->elems;
+
+  /* Fisher-Yates shuffle */
+  for (int i = array->count - 1; i > 0; i--)
+  {
+    int j = rand() % (i + 1);
+    POINT2D tmp = pts[i];
+    pts[i] = pts[j];
+    pts[j] = tmp;
+  }
+  Circle result = mec_welzl(pts, array->count);
+  meos_array_destroy(array, false);
+  return result;
+}
+
+/**
+ * @brief Return true if the geometry type is one of the supported types
+ * for the MEOS fast Minimum Bounding Circle 
+ */
+static bool
+lwgeom_mec_supported_type(const LWGEOM *geom)
+{
+  if (geom->type == POINTTYPE || geom->type == LINETYPE || 
+      geom->type == TRIANGLETYPE || geom->type == POLYGONTYPE)
+    return true;
+  else if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *col = (LWCOLLECTION *) geom;
+    for (int i = 0; i < (int) col->ngeoms; i++)
+    {
+      if (! lwgeom_mec_supported_type(col->geoms[i]))
+        return false;
+    }
+    return true;
+  }
+  else
+    return false;
+}
+
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the center point and radius of the smallest circle that
  * contains a geometry
  * @param[in] geom Geometry
  * @param[out] radius Radius
+ * @note The corresponding PostGIS function ST_MinimumBoundingCircle is much
+ * slower despite it uses the same algorithm
+ *
+ *   Welzl, Emo (1991), "Smallest enclosing disks (balls and elipsoids)."
+ *   New Results and Trends in Computer Science (H. Maurer, Ed.), Lecture Notes
+ *   in Computer Science, 555 (1991) 359-370.
+ *
  */
 GSERIALIZED *
 geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
@@ -4025,18 +4271,23 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
   if (! geom)
     return NULL;
 
-  LWGEOM *lwcenter = NULL;
-  /* Empty geometry?  Return POINT EMPTY with zero radius */
-  if (gserialized_is_empty(geom))
+  LWGEOM *input = lwgeom_from_gserialized(geom);
+  LWGEOM *center;
+  
+  if (lwgeom_is_empty(input))
   {
-    lwcenter = (LWGEOM*) lwpoint_construct_empty(
-      gserialized_get_srid(geom), LW_FALSE, LW_FALSE);
+    center = (LWGEOM *) lwpoint_construct_empty(input->srid, LW_FALSE, LW_FALSE);
+    *radius = 0;
+  }
+  else if (lwgeom_mec_supported_type(input))
+  {
+    Circle c = lwgeom_mec(input);
+    center = (LWGEOM *) lwpoint_make2d(input->srid, c.center.x, c.center.y);
+    *radius = c.radius;
   }
   else
   {
-    LWGEOM *input = lwgeom_from_gserialized(geom);
     LWBOUNDINGCIRCLE *mbc = lwgeom_calculate_mbc(input);
-
     if (!(mbc && mbc->center))
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -4044,18 +4295,15 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
       lwgeom_free(input);
       return NULL;
     }
-
-    lwcenter = (LWGEOM*) lwpoint_make2d(input->srid, mbc->center->x,
+    center = (LWGEOM *) lwpoint_make2d(input->srid, mbc->center->x,
       mbc->center->y);
     *radius = mbc->radius;
-
     lwboundingcircle_destroy(mbc);
-    lwgeom_free(input);
   }
 
-  GSERIALIZED *result = geo_serialize(lwcenter);
-  lwgeom_free(lwcenter);
-
+  GSERIALIZED *result = geo_serialize(center);
+  lwgeom_free(center);    
+  lwgeom_free(input);
   return result;
 }
 
