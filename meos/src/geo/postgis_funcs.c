@@ -4207,7 +4207,7 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 static Circle
 lwgeom_mec(const LWGEOM *geom)
 {
-  MeosArray *array = meos_array_init(sizeof(POINT2D));
+  MeosArray *array = meos_array_create(sizeof(POINT2D));
   lwgeom_collect_points(geom, array);
   /* Ensure that there is at least one point given the precondition */
   assert(array->count > 0);
@@ -4223,7 +4223,7 @@ lwgeom_mec(const LWGEOM *geom)
     pts[j] = tmp;
   }
   Circle result = mec_welzl(pts, array->count);
-  meos_array_destroy(array, false);
+  meos_array_destroy(array);
   return result;
 }
 

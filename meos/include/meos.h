@@ -260,6 +260,24 @@ typedef struct SkipList SkipList;
 /*****************************************************************************/
 
 /**
+ * Structure for expandable arrays
+ */
+typedef struct MeosArray MeosArray;
+
+/* MeosArray functions */
+
+extern MeosArray *meos_array_create(int elem_size);
+extern void meos_array_add(MeosArray *array, void *value);
+extern void *meos_array_get(const MeosArray *array, int n);
+extern int meos_array_count(const MeosArray *array);
+extern void meos_array_reset(MeosArray *array);
+extern void meos_array_reset_free(MeosArray *array);
+extern void meos_array_destroy(MeosArray *array);
+extern void meos_array_destroy_free(MeosArray *array);
+
+/*****************************************************************************/
+
+/**
  * @brief Enumeration that defines the search operations for an RTree.
  */
 typedef enum

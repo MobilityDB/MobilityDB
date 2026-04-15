@@ -403,7 +403,7 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
 TSequence *
 tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -430,14 +430,14 @@ tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    instants[i] = (TInstant *) meos_array_get_n(array, i);
+    instants[i] = (TInstant *) meos_array_get(array, i);
   p_cbrace(str);
   result = tsequence_make(instants, array->count, true, true, DISCRETE,
     NORMALIZE_NO);
   pfree(instants);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 
@@ -455,7 +455,7 @@ TSequence *
 tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp, 
   bool end, int *temp_srid)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -498,7 +498,7 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    instants[i] = (TInstant *) meos_array_get_n(array, i);
+    instants[i] = (TInstant *) meos_array_get(array, i);
   p_cbracket(str);
   p_cparen(str);
   result = tsequence_make(instants, array->count, lower_inc, upper_inc,
@@ -506,7 +506,7 @@ tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp,
   pfree(instants);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 
@@ -521,7 +521,7 @@ TSequenceSet *
 tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
   int *temp_srid)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequenceSet *result = NULL;
 
@@ -549,13 +549,13 @@ tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    sequences[i] = (TSequence *) meos_array_get_n(array, i);
+    sequences[i] = (TSequence *) meos_array_get(array, i);
   p_cbrace(str);
   result = tsequenceset_make(sequences, array->count, NORMALIZE);
   pfree(sequences);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 
