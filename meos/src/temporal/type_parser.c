@@ -493,7 +493,7 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   meosType basetype = settype_basetype(settype);
-  MeosArray *array = meos_array_init(sizeof(Datum));
+  MeosArray *array = meos_array_create(sizeof(Datum));
   const char *type_str = meostype_name(settype);
   Set *result = NULL;
 
@@ -526,7 +526,7 @@ set_parse(const char **str, meosType settype)
   p_obrace(str);
   Datum *values = palloc(sizeof(Datum) * array->count);
   for (int i = 0; i < (int) array->count; i++)
-    values[i] = *(Datum *) meos_array_get_n(array, i);
+    values[i] = *(Datum *) meos_array_get(array, i);
   p_cbrace(str);
   if (set_srid != SRID_UNKNOWN)
   {
@@ -537,7 +537,7 @@ set_parse(const char **str, meosType settype)
   pfree(values);
 
 error:
-  meos_array_destroy(array, false);
+  meos_array_destroy(array);
   return result;
 }
 
@@ -623,7 +623,7 @@ spanset_parse(const char **str, meosType spansettype)
   meosType spantype = spansettype_spantype(spansettype);
 
   /* Parsing */
-  MeosArray *array = meos_array_init(meostype_length(spantype));
+  MeosArray *array = meos_array_create(meostype_length(spantype));
   Span s;
   bool found = span_parse(str, spantype, false, &s);
   if (! found)
@@ -641,11 +641,11 @@ spanset_parse(const char **str, meosType spansettype)
 
   SpanSet *result = spanset_make_exp((Span *) array->elems, array->count,
     array->count, true, true);
-  meos_array_destroy(array, false);
+  meos_array_destroy(array);
   return result;
 
 error:
-  meos_array_destroy(array, false);
+  meos_array_destroy(array);
   return NULL;
 }
 
@@ -692,7 +692,7 @@ tinstant_parse(const char **str, meosType temptype, bool end)
 TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequence *result = NULL;
 
@@ -720,13 +720,13 @@ tdiscseq_parse(const char **str, meosType temptype)
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (size_t i = 0; i < array->count; i++)
-    instants[i] = (TInstant *) meos_array_get_n(array, i);
+    instants[i] = (TInstant *) meos_array_get(array, i);
   result = tsequence_make(instants, array->count, true, true, DISCRETE,
     NORMALIZE_NO);
   pfree(instants);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 
@@ -744,7 +744,7 @@ TSequence *
 tcontseq_parse(const char **str, meosType temptype, interpType interp,
   bool end)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   TSequence *result = NULL;
 
   /* Parsing */
@@ -787,13 +787,13 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
   /* Create the array of instants now with the actual size */
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (size_t i = 0; i < array->count; i++)
-    instants[i] = (TInstant *) meos_array_get_n(array, i);
+    instants[i] = (TInstant *) meos_array_get(array, i);
   result = tsequence_make(instants, array->count, lower_inc, upper_inc, interp,
     NORMALIZE);
   pfree(instants);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 
@@ -807,7 +807,7 @@ error:
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 {
-  MeosArray *array = meos_array_init(meostype_length(temptype));
+  MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
   TSequenceSet *result = NULL;
 
@@ -834,12 +834,12 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
   /* Create the array of sequences now with the actual size */
   TSequence **sequences = palloc(sizeof(TSequence *) * array->count);
   for (size_t i = 0; i < array->count; i++)
-    sequences[i] = (TSequence *) meos_array_get_n(array, i);
+    sequences[i] = (TSequence *) meos_array_get(array, i);
   result = tsequenceset_make(sequences, array->count, NORMALIZE);
   pfree(sequences);
 
 error:
-  meos_array_destroy(array, true);
+  meos_array_destroy_free(array);
   return result;
 }
 

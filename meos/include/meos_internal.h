@@ -694,11 +694,6 @@ typedef struct MeosArray
   void *elems;      /**< Pointer to the array elements */
 } MeosArray;
 
-extern MeosArray *meos_array_init(int elem_size);
-extern void meos_array_add(MeosArray *array, void *value);
-extern void *meos_array_get_n(const MeosArray *array, int n);
-extern void meos_array_reset(MeosArray *array, bool free_elems);
-extern void meos_array_destroy(MeosArray *array, bool free_elems);
 
 /*****************************************************************************/
 
