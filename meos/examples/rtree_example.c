@@ -79,8 +79,8 @@ verify_search(const char *name, const RTree *rtree, const void *query,
 {
   /* Index search */
   clock_t t = clock();
-  int index_count;
-  int *ids = rtree_search(rtree, RTREE_OVERLAPS, query, &index_count);
+  MeosArray *ids = meos_array_create(sizeof(int));
+  int index_count = rtree_search(rtree, RTREE_OVERLAPS, query, ids);
   double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
 
   /* Brute-force search */
@@ -100,7 +100,10 @@ verify_search(const char *name, const RTree *rtree, const void *query,
   /* Compare results */
   bool *indexed = calloc(NO_BBOX, sizeof(bool));
   for (int i = 0; i < index_count; i++)
-    indexed[ids[i]] = true;
+  {
+    int id = *(int *) meos_array_get(ids, i);
+    indexed[id] = true;
+  }
 
   int errors = 0;
   for (int i = 0; i < NO_BBOX; i++)
@@ -109,13 +112,13 @@ verify_search(const char *name, const RTree *rtree, const void *query,
       errors++;
   }
 
-  printf("  %-10s  index: %.6fs (%d hits)  brute: %.6fs (%d hits)  %s\n",
-    name, index_time, index_count, brute_time, brute_count,
+  printf("  %-10s  index: %.6fs (%d hits)  brute: %.6fs (%d hits) ratio: %.6f %s\n",
+    name, index_time, index_count, brute_time, brute_count, index_time / brute_time,
     errors == 0 ? "OK" : "MISMATCH");
 
   free(actual);
   free(indexed);
-  free(ids);
+  meos_array_destroy(ids);
 }
 
 /*****************************************************************************/

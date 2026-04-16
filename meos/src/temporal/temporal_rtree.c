@@ -655,37 +655,6 @@ node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
   return;
 }
 
-/**
- * @brief Returns `true` if a number greater than 0 is a power of two, `false`
- * otherwise
- * @param[in] n Number to check
- */
-static inline bool
-is_power_of_two(const int n)
-{
-  return (n & (n - 1)) == 0;
-}
-
-/**
- * @brief Adds an ID to the dynamically allocated array with the answer of a
- * query
- * @param[in] id The integer ID to be added to the array
- * @param[in] ids Pointer to a pointer to the dynamically allocated array of
- * integers
- * @param[in] count Pointer to an integer representing the current number of
- * elements in the array.
- */
-static void
-add_answer(const int id, int **ids, int *count)
-{
-  /* Every power of two that exceeds the size of the array must be resized to
-   * double the current size */
-  if (*count >= SEARCH_ARRAY_STARTING_SIZE && is_power_of_two(*count))
-    *ids = repalloc(*ids, sizeof(int) * (*count) * 2);
-  (*ids)[*count] = id;
-  (*count)++;
-  return;
-}
 
 /**
  * @brief Return true if a leaf entry is consistent with the search query
@@ -738,26 +707,25 @@ inner_consistent(const RTree *rtree, const void *key, const void *query,
  * @brief Searches recursively a node looking for hits with a query
  * @param[in] rtree Pointer to the RTree structure
  * @param[in] node The node to be searched
- * @param[in] query The bounding box that serves as query
  * @param[in] op The search operation (overlaps, contains, or contained by)
- * @param[in] ids The array with the list of answers
- * @param[in] count Total of elements found
+ * @param[in] query The bounding box that serves as query
+ * @param[out] result MeosArray to collect matching IDs
  */
 static void
 node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
-  const void *query, int **ids, int *count)
+  const void *query, MeosArray *result)
 {
   for (int i = 0; i < node->count; ++i)
   {
     if (node->node_type == RTREE_LEAF)
     {
       if (leaf_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
-        add_answer(node->ids[i], ids, count);
+        meos_array_add(result, &node->ids[i]);
     }
     else
     {
       if (inner_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
-        node_search(rtree, node->nodes[i], op, query, ids, count);
+        node_search(rtree, node->nodes[i], op, query, result);
     }
   }
   return;
@@ -921,26 +889,28 @@ rtree_insert(RTree *rtree, void *box, int id)
 
 /**
  * @ingroup meos_geo_box_index
- * @brief Queries an RTree with a bounding box. Returns an array of ids of
- * bounding boxes.
+ * @brief Search an RTree with a bounding box, collecting matching IDs into
+ * a MeosArray
+ * @details The result array is reset before the search. After the call,
+ * use the returned count and #meos_array_get to read the matching IDs.
+ * The same array can be reused across multiple searches without reallocating.
  * @param[in] rtree The RTree to query
  * @param[in] op The search operation: @p RTREE_OVERLAPS finds boxes that
  * overlap the query, @p RTREE_CONTAINS finds boxes that contain the query,
  * @p RTREE_CONTAINED_BY finds boxes contained by the query
  * @param[in] query The bounding box that serves as query
- * @param[out] count The number of hits the RTree found
- * @return Array of ids that have a hit.
- * @note The `count` will be the output size of the array given.
+ * @param[out] result MeosArray of int to collect matching IDs (created by the
+ * caller with `meos_array_create(sizeof(int))`)
+ * @return Number of matching IDs
  */
-int *
+int
 rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
-  int *count)
+  MeosArray *result)
 {
-  int *ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
-  *count = 0;
+  meos_array_reset(result);
   if (rtree->root)
-    node_search(rtree, rtree->root, op, query, &ids, count);
-  return ids;
+    node_search(rtree, rtree->root, op, query, result);
+  return meos_array_count(result);
 }
 
 /**
@@ -994,29 +964,30 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
 
 /**
  * @ingroup meos_temporal_box_index
- * @brief Search an RTree using a temporal value's bounding box
+ * @brief Search an RTree using a temporal value's bounding box, collecting
+ * matching IDs into a MeosArray
  * @details The bounding box is automatically extracted from the temporal value
- * and used as the search query.
+ * and used as the search query. The result array is reset before the search.
  * @param[in] rtree The RTree to query
  * @param[in] op The search operation
  * @param[in] temp The temporal value whose bounding box serves as query
- * @param[out] count The number of hits the RTree found
- * @return Array of ids that have a hit.
+ * @param[out] result MeosArray of int to collect matching IDs
+ * @return Number of matching IDs
  */
-int *
+int
 rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
-  const Temporal *temp, int *count)
+  const Temporal *temp, MeosArray *result)
 {
   if (! ensure_rtree_temporal_compatible(rtree, temp))
   {
-    *count = 0;
-    return NULL;
+    meos_array_reset(result);
+    return 0;
   }
   /* Use a stack buffer large enough for any MEOS bounding box type */
   char buf[sizeof(STBox)];
   memset(buf, 0, sizeof(buf));
   temporal_set_bbox(temp, buf);
-  return rtree_search(rtree, op, buf, count);
+  return rtree_search(rtree, op, buf, result);
 }
 
 /**
