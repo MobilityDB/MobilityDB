@@ -64,22 +64,24 @@ random_int(int min, int max)
 
 /**
  * @brief Generic test harness: compare R-tree search results against a
- * brute-force overlap scan
- * @param[in] name Label for the test (e.g., "FLOATSPAN")
+ * brute-force scan using the given predicate
+ * @param[in] name Label for the test (e.g., "FLOATSPAN overlaps")
  * @param[in] rtree The R-tree to search
+ * @param[in] op The search operation (overlaps, contains, contained by)
  * @param[in] query The query bounding box
  * @param[in] boxes Array of stored bounding boxes
  * @param[in] bboxsize Size of each bounding box in bytes
- * @param[in] overlaps_fn Function that checks if two boxes overlap
+ * @param[in] ids Reusable MeosArray for collecting results
+ * @param[in] predicate Brute-force predicate matching the search operation
  */
 static void
-verify_search(const char *name, const RTree *rtree, const void *query,
-  const char *boxes, size_t bboxsize, MeosArray *ids,
-  bool (*overlaps_fn)(const void *, const void *))
+verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
+  const void *query, const char *boxes, size_t bboxsize, MeosArray *ids,
+  bool (*predicate)(const void *, const void *))
 {
   /* Index search — reuses the caller's MeosArray (reset internally) */
   clock_t t = clock();
-  int index_count = rtree_search(rtree, RTREE_OVERLAPS, query, ids);
+  int index_count = rtree_search(rtree, op, query, ids);
   double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
 
   /* Brute-force search */
@@ -88,7 +90,7 @@ verify_search(const char *name, const RTree *rtree, const void *query,
   bool *actual = calloc(NO_BBOX, sizeof(bool));
   for (int i = 0; i < NO_BBOX; i++)
   {
-    if (overlaps_fn(boxes + i * bboxsize, query))
+    if (predicate(boxes + i * bboxsize, query))
     {
       brute_count++;
       actual[i] = true;
@@ -111,7 +113,7 @@ verify_search(const char *name, const RTree *rtree, const void *query,
       errors++;
   }
 
-  printf("  %-10s  index: %.6fs (%d hits)  brute: %.6fs (%d hits) ratio: %.6f %s\n",
+  printf("  %-20s  index: %.6fs (%d hits)  brute: %.6fs (%d hits) ratio: %.6f %s\n",
     name, index_time, index_count, brute_time, brute_count, index_time / brute_time,
     errors == 0 ? "OK" : "MISMATCH");
 
@@ -121,23 +123,38 @@ verify_search(const char *name, const RTree *rtree, const void *query,
 
 /*****************************************************************************/
 
+/* Span predicates */
 static bool
 overlaps_span_wrapper(const void *a, const void *b)
-{
-  return overlaps_span_span((Span *) a, (Span *) b);
-}
+{ return overlaps_span_span((Span *) a, (Span *) b); }
+static bool
+contains_span_wrapper(const void *a, const void *b)
+{ return contains_span_span((Span *) a, (Span *) b); }
+static bool
+contained_span_wrapper(const void *a, const void *b)
+{ return contained_span_span((Span *) a, (Span *) b); }
 
+/* TBox predicates */
 static bool
 overlaps_tbox_wrapper(const void *a, const void *b)
-{
-  return overlaps_tbox_tbox((TBox *) a, (TBox *) b);
-}
+{ return overlaps_tbox_tbox((TBox *) a, (TBox *) b); }
+static bool
+contains_tbox_wrapper(const void *a, const void *b)
+{ return contains_tbox_tbox((TBox *) a, (TBox *) b); }
+static bool
+contained_tbox_wrapper(const void *a, const void *b)
+{ return contained_tbox_tbox((TBox *) a, (TBox *) b); }
 
+/* STBox predicates */
 static bool
 overlaps_stbox_wrapper(const void *a, const void *b)
-{
-  return overlaps_stbox_stbox((STBox *) a, (STBox *) b);
-}
+{ return overlaps_stbox_stbox((STBox *) a, (STBox *) b); }
+static bool
+contains_stbox_wrapper(const void *a, const void *b)
+{ return contains_stbox_stbox((STBox *) a, (STBox *) b); }
+static bool
+contained_stbox_wrapper(const void *a, const void *b)
+{ return contained_stbox_stbox((STBox *) a, (STBox *) b); }
 
 /*****************************************************************************/
 
@@ -159,9 +176,14 @@ test_floatspan(MeosArray *ids)
     free(s);
   }
 
+  printf("FLOATSPAN:\n");
   Span *query = floatspan_in("[0, 100]");
-  verify_search("FLOATSPAN", rtree, query, (char *) boxes, sizeof(Span), ids,
-    overlaps_span_wrapper);
+  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+    (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
+  verify_search("contains", rtree, RTREE_CONTAINS, query,
+    (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
+  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+    (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
 
   free(query);
   rtree_free(rtree);
@@ -190,11 +212,16 @@ test_tstzspan(MeosArray *ids)
     free(s);
   }
 
+  printf("TSTZSPAN:\n");
   /* Query covers ~100/1000 = 10% of the time range */
   Span *query = tstzspan_in(
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00]");
-  verify_search("TSTZSPAN", rtree, query, (char *) boxes, sizeof(Span), ids,
-    overlaps_span_wrapper);
+  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+    (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
+  verify_search("contains", rtree, RTREE_CONTAINS, query,
+    (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
+  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+    (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
 
   free(query);
   rtree_free(rtree);
@@ -226,10 +253,15 @@ test_tbox(MeosArray *ids)
     free(b);
   }
 
+  printf("TBOX:\n");
   TBox *query = tbox_in(
     "TBOX XT([0,100],[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
-  verify_search("TBOX", rtree, query, (char *) boxes, sizeof(TBox), ids,
-    overlaps_tbox_wrapper);
+  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+    (char *) boxes, sizeof(TBox), ids, overlaps_tbox_wrapper);
+  verify_search("contains", rtree, RTREE_CONTAINS, query,
+    (char *) boxes, sizeof(TBox), ids, contains_tbox_wrapper);
+  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+    (char *) boxes, sizeof(TBox), ids, contained_tbox_wrapper);
 
   free(query);
   rtree_free(rtree);
@@ -263,11 +295,16 @@ test_stbox(MeosArray *ids)
     free(b);
   }
 
+  printf("STBOX:\n");
   STBox *query = stbox_in(
     "SRID=25832;STBOX XT(((0 0),(100 100)),"
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
-  verify_search("STBOX", rtree, query, (char *) boxes, sizeof(STBox), ids,
-    overlaps_stbox_wrapper);
+  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+    (char *) boxes, sizeof(STBox), ids, overlaps_stbox_wrapper);
+  verify_search("contains", rtree, RTREE_CONTAINS, query,
+    (char *) boxes, sizeof(STBox), ids, contains_stbox_wrapper);
+  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+    (char *) boxes, sizeof(STBox), ids, contained_stbox_wrapper);
 
   free(query);
   rtree_free(rtree);
