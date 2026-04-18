@@ -177,18 +177,22 @@ test_tstzspan(MeosArray *ids)
 
   for (int i = 0; i < NO_BBOX; i++)
   {
-    int tmin = random_int(1, 29);
-    int tmax = tmin + random_int(1, 29);
+    int tmin = random_int(0, 999);
+    int tmax = tmin + random_int(1, 10);
+    int tmin_h = tmin / 60, tmin_m = tmin % 60;
+    int tmax_h = tmax / 60, tmax_m = tmax % 60;
     snprintf(str, sizeof(str),
-      "[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00]", tmin, tmax);
+      "[2020-01-01 %02d:%02d:00+00, 2020-01-01 %02d:%02d:00+00]",
+      tmin_h, tmin_m, tmax_h, tmax_m);
     Span *s = tstzspan_in(str);
     boxes[i] = *s;
     rtree_insert(rtree, &boxes[i], i);
     free(s);
   }
 
+  /* Query covers ~100/1000 = 10% of the time range */
   Span *query = tstzspan_in(
-    "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00]");
+    "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00]");
   verify_search("TSTZSPAN", rtree, query, (char *) boxes, sizeof(Span), ids,
     overlaps_span_wrapper);
 
@@ -208,11 +212,14 @@ test_tbox(MeosArray *ids)
   {
     int xmin = random_int(1, 1000);
     int xmax = xmin + random_int(1, 10);
-    int tmin = random_int(1, 29);
-    int tmax = tmin + random_int(1, 29);
+    int tmin = random_int(0, 999);
+    int tmax = tmin + random_int(1, 10);
+    int tmin_h = tmin / 60, tmin_m = tmin % 60;
+    int tmax_h = tmax / 60, tmax_m = tmax % 60;
     snprintf(str, sizeof(str),
-      "TBOX XT([%d, %d],[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
-      xmin, xmax, tmin, tmax);
+      "TBOX XT([%d, %d],"
+      "[2020-01-01 %02d:%02d:00+00, 2020-01-01 %02d:%02d:00+00])",
+      xmin, xmax, tmin_h, tmin_m, tmax_h, tmax_m);
     TBox *b = tbox_in(str);
     boxes[i] = *b;
     rtree_insert(rtree, &boxes[i], i);
@@ -220,7 +227,7 @@ test_tbox(MeosArray *ids)
   }
 
   TBox *query = tbox_in(
-    "TBOX XT([0,100],[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
+    "TBOX XT([0,100],[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
   verify_search("TBOX", rtree, query, (char *) boxes, sizeof(TBox), ids,
     overlaps_tbox_wrapper);
 
@@ -242,12 +249,14 @@ test_stbox(MeosArray *ids)
     int xmax = xmin + random_int(1, 10);
     int ymin = random_int(1, 1000);
     int ymax = ymin + random_int(1, 10);
-    int tmin = random_int(1, 29);
-    int tmax = tmin + random_int(1, 29);
+    int tmin = random_int(0, 999);
+    int tmax = tmin + random_int(1, 10);
+    int tmin_h = tmin / 60, tmin_m = tmin % 60;
+    int tmax_h = tmax / 60, tmax_m = tmax % 60;
     snprintf(str, sizeof(str),
       "SRID=25832;STBOX XT(((%d %d),(%d %d)),"
-      "[2023-01-01 01:00:%02d+00, 2023-01-01 01:00:%02d+00])",
-      xmin, xmax, ymin, ymax, tmin, tmax);
+      "[2020-01-01 %02d:%02d:00+00, 2020-01-01 %02d:%02d:00+00])",
+      xmin, xmax, ymin, ymax, tmin_h, tmin_m, tmax_h, tmax_m);
     STBox *b = stbox_in(str);
     boxes[i] = *b;
     rtree_insert(rtree, &boxes[i], i);
@@ -256,7 +265,7 @@ test_stbox(MeosArray *ids)
 
   STBox *query = stbox_in(
     "SRID=25832;STBOX XT(((0 0),(100 100)),"
-    "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
+    "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
   verify_search("STBOX", rtree, query, (char *) boxes, sizeof(STBox), ids,
     overlaps_stbox_wrapper);
 
