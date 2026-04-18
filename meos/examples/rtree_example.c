@@ -30,10 +30,13 @@
 /**
  * @file
  * @brief A simple program that demonstrates the RTree index for searching
- * MEOS bounding boxes: floatspan, tstzspan, tbox, and stbox.
+ * MEOS bounding boxes: floatspan, tstzspan, tbox, stbox, and temporal types.
  *
- * The program runs all four bounding box types, inserting random boxes into
- * the index and verifying search results against a brute-force scan.
+ * The program tests all bounding box types with OVERLAPS, CONTAINS, and
+ * CONTAINED_BY operations, inserting random boxes into the index and
+ * verifying search results against a brute-force scan. It also demonstrates
+ * the temporal convenience functions (rtree_insert_temporal,
+ * rtree_search_temporal) using tfloat sequences.
  *
  * The program can be built as follows
  * @code
@@ -313,6 +316,72 @@ test_stbox(MeosArray *ids)
 
 /*****************************************************************************/
 
+/**
+ * @brief Demonstrate rtree_insert_temporal / rtree_search_temporal with tfloat
+ */
+static void
+test_temporal(MeosArray *ids)
+{
+  char str[MAX_LEN_BBOX];
+  /* Store the bounding boxes for brute-force verification */
+  TBox *boxes = malloc(sizeof(TBox) * NO_BBOX);
+  RTree *rtree = rtree_create_tbox();
+
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    int xmin = random_int(1, 1000);
+    int xmax = xmin + random_int(1, 10);
+    int tmin = random_int(0, 999);
+    int tmax = tmin + random_int(1, 10);
+    int tmin_h = tmin / 60, tmin_m = tmin % 60;
+    int tmax_h = tmax / 60, tmax_m = tmax % 60;
+    snprintf(str, sizeof(str),
+      "[%d@2020-01-01 %02d:%02d:00+00, %d@2020-01-01 %02d:%02d:00+00]",
+      xmin, tmin_h, tmin_m, xmax, tmax_h, tmax_m);
+    Temporal *temp = (Temporal *) tfloat_in(str);
+    /* Use the temporal insert convenience function */
+    rtree_insert_temporal(rtree, temp, i);
+    /* Extract bounding box for brute-force comparison */
+    TBox *b = tnumber_to_tbox(temp);
+    boxes[i] = *b;
+    free(b);
+    free(temp);
+  }
+
+  printf("TEMPORAL (tfloat):\n");
+  /* Build a tfloat query and use rtree_search_temporal */
+  Temporal *query = (Temporal *) tfloat_in(
+    "[0@2020-01-01 00:00:00+00, 100@2020-01-01 01:40:00+00]");
+  TBox *query_box = tnumber_to_tbox(query);
+
+  /* Index search via temporal API */
+  clock_t t = clock();
+  int index_count = rtree_search_temporal(rtree, RTREE_OVERLAPS, query, ids);
+  double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
+
+  /* Brute-force search */
+  t = clock();
+  int brute_count = 0;
+  for (int i = 0; i < NO_BBOX; i++)
+  {
+    if (overlaps_tbox_tbox(&boxes[i], query_box))
+      brute_count++;
+  }
+  double brute_time = (double)(clock() - t) / CLOCKS_PER_SEC;
+
+  printf("  %-20s  index: %.6fs (%d hits)  brute: %.6fs (%d hits) ratio: %.6f %s\n",
+    "overlaps", index_time, index_count, brute_time, brute_count,
+    index_time / brute_time,
+    index_count == brute_count ? "OK" : "MISMATCH");
+
+  free(query_box);
+  free(query);
+  rtree_free(rtree);
+  free(boxes);
+}
+
+/*****************************************************************************/
+
 int main(void)
 {
   meos_initialize();
@@ -327,6 +396,7 @@ int main(void)
   test_tstzspan(ids);
   test_tbox(ids);
   test_stbox(ids);
+  test_temporal(ids);
   meos_array_destroy(ids);
 
   meos_finalize();
