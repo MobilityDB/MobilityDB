@@ -74,12 +74,11 @@ random_int(int min, int max)
  */
 static void
 verify_search(const char *name, const RTree *rtree, const void *query,
-  const char *boxes, size_t bboxsize,
+  const char *boxes, size_t bboxsize, MeosArray *ids,
   bool (*overlaps_fn)(const void *, const void *))
 {
-  /* Index search */
+  /* Index search — reuses the caller's MeosArray (reset internally) */
   clock_t t = clock();
-  MeosArray *ids = meos_array_create(sizeof(int));
   int index_count = rtree_search(rtree, RTREE_OVERLAPS, query, ids);
   double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
 
@@ -118,7 +117,6 @@ verify_search(const char *name, const RTree *rtree, const void *query,
 
   free(actual);
   free(indexed);
-  meos_array_destroy(ids);
 }
 
 /*****************************************************************************/
@@ -144,7 +142,7 @@ overlaps_stbox_wrapper(const void *a, const void *b)
 /*****************************************************************************/
 
 static void
-test_floatspan(void)
+test_floatspan(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
   Span *boxes = malloc(sizeof(Span) * NO_BBOX);
@@ -162,7 +160,7 @@ test_floatspan(void)
   }
 
   Span *query = floatspan_in("[0, 100]");
-  verify_search("FLOATSPAN", rtree, query, (char *) boxes, sizeof(Span),
+  verify_search("FLOATSPAN", rtree, query, (char *) boxes, sizeof(Span), ids,
     overlaps_span_wrapper);
 
   free(query);
@@ -171,7 +169,7 @@ test_floatspan(void)
 }
 
 static void
-test_tstzspan(void)
+test_tstzspan(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
   Span *boxes = malloc(sizeof(Span) * NO_BBOX);
@@ -191,7 +189,7 @@ test_tstzspan(void)
 
   Span *query = tstzspan_in(
     "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00]");
-  verify_search("TSTZSPAN", rtree, query, (char *) boxes, sizeof(Span),
+  verify_search("TSTZSPAN", rtree, query, (char *) boxes, sizeof(Span), ids,
     overlaps_span_wrapper);
 
   free(query);
@@ -200,7 +198,7 @@ test_tstzspan(void)
 }
 
 static void
-test_tbox(void)
+test_tbox(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
   TBox *boxes = malloc(sizeof(TBox) * NO_BBOX);
@@ -223,7 +221,7 @@ test_tbox(void)
 
   TBox *query = tbox_in(
     "TBOX XT([0,100],[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
-  verify_search("TBOX", rtree, query, (char *) boxes, sizeof(TBox),
+  verify_search("TBOX", rtree, query, (char *) boxes, sizeof(TBox), ids,
     overlaps_tbox_wrapper);
 
   free(query);
@@ -232,7 +230,7 @@ test_tbox(void)
 }
 
 static void
-test_stbox(void)
+test_stbox(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
   STBox *boxes = malloc(sizeof(STBox) * NO_BBOX);
@@ -259,7 +257,7 @@ test_stbox(void)
   STBox *query = stbox_in(
     "SRID=25832;STBOX XT(((0 0),(100 100)),"
     "[2023-01-01 01:00:00+00, 2023-01-01 01:00:60+00])");
-  verify_search("STBOX", rtree, query, (char *) boxes, sizeof(STBox),
+  verify_search("STBOX", rtree, query, (char *) boxes, sizeof(STBox), ids,
     overlaps_stbox_wrapper);
 
   free(query);
@@ -276,10 +274,14 @@ int main(void)
   srand(1);
 
   printf("RTree index test (%d boxes per type)\n", NO_BBOX);
-  test_floatspan();
-  test_tstzspan();
-  test_tbox();
-  test_stbox();
+
+  /* Create a single MeosArray and reuse it across all searches */
+  MeosArray *ids = meos_array_create(sizeof(int));
+  test_floatspan(ids);
+  test_tstzspan(ids);
+  test_tbox(ids);
+  test_stbox(ids);
+  meos_array_destroy(ids);
 
   meos_finalize();
   return EXIT_SUCCESS;
