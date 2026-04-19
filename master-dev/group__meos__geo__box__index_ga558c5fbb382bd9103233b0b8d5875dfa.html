@@ -80,19 +80,19 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gab1e349cb5ea00e3a0cf0a96b5e6e25c1.html#gab1e349cb5ea00e3a0cf0a96b5e6e25c1">rtree_insert</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_ga6a215f248890dc557e4b6cfab06b55b3.html#ga6a215f248890dc557e4b6cfab06b55b3">rtree_search</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_ga558c5fbb382bd9103233b0b8d5875dfa.html#ga558c5fbb382bd9103233b0b8d5875dfa">rtree_search</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6a215f248890dc557e4b6cfab06b55b3" name="ga6a215f248890dc557e4b6cfab06b55b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6a215f248890dc557e4b6cfab06b55b3">&#9670;&#160;</a></span>rtree_search()</h2>
+<a id="ga558c5fbb382bd9103233b0b8d5875dfa" name="ga558c5fbb382bd9103233b0b8d5875dfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga558c5fbb382bd9103233b0b8d5875dfa">&#9670;&#160;</a></span>rtree_search()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int * rtree_search </td>
+          <td class="memname">int rtree_search </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
           <td class="paramname"><em>rtree</em>, </td>
@@ -112,8 +112,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -123,18 +123,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Queries an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> with a bounding box. </p>
-<p >Returns an array of ids of bounding boxes. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Search an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> with a bounding box, collecting matching IDs into a <a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a>. </p>
+<p >The result array is reset before the search. After the call, use the returned count and <a class="el" href="group__meos__misc_gae9ed0534c80332de5f1dd4b45f9e46b6.html#gae9ed0534c80332de5f1dd4b45f9e46b6" title="Get the n-th element of the array (0-based)">meos_array_get</a> to read the matching IDs. The same array can be reused across multiple searches without reallocating. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>The <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> to query </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>The search operation: <code>RTREE_OVERLAPS</code> finds boxes that overlap the query, <code>RTREE_CONTAINS</code> finds boxes that contain the query, <code>RTREE_CONTAINED_BY</code> finds boxes contained by the query </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">query</td><td>The bounding box that serves as query </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>The number of hits the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> found </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td><a class="el" href="structMeosArray.html" title="Structure of an expandable arrays used in particular to avoid parsing twice a MEOS value input in tex...">MeosArray</a> of int to collect matching IDs (created by the caller with <code>meos_array_create(sizeof(int))</code>) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Array of ids that have a hit. </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The <code>count</code> will be the output size of the array given. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of matching IDs </dd></dl>
 
 </div>
 </div>
