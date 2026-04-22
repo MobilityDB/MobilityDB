@@ -285,7 +285,7 @@ datumsegm_interpolate(Datum start, Datum end, meosType temptype,
       DatumGetNpointP(end), ratio));
 #endif
 #if POSE || RGEO
-  else if (temptype == T_TPOSE)
+  else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
     return PointerGetDatum(posesegm_interpolate(DatumGetPoseP(start),
       DatumGetPoseP(end), (double) ratio));
 #endif
