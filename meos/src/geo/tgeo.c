@@ -60,7 +60,7 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
   if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
       ! ensure_has_not_M_geo(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tinstant_make(PointerGetDatum(gs), temptype, t);
 }
@@ -79,7 +79,7 @@ tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tinstant_make(PointerGetDatum(gs), temptype, t);
 }

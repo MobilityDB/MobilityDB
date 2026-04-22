@@ -90,7 +90,7 @@ extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
 extern void tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
-  int64 tunits, meosType basetype, meosType spantype, TBox *box);
+  int64 tunits, MeosType basetype, MeosType spantype, TBox *box);
 
 /*****************************************************************************/
 
@@ -98,7 +98,7 @@ extern int64 interval_units(const Interval *interval);
 extern TimestampTz timestamptz_bin_start(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bin(Datum value, Datum size, Datum offset,
-  meosType basetype);
+  MeosType basetype);
 
 extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
   Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin,

@@ -694,7 +694,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 static bool
 tspatial_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
-  meosType type = oid_meostype(scankey->sk_subtype);
+  MeosType type = oid_meostype(scankey->sk_subtype);
   if (type == T_TSTZSPAN)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);

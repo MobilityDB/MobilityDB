@@ -156,7 +156,7 @@ Spatialarr_as_text_common(FunctionCallInfo fcinfo, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   Datum *datumarr = datumarr_extract(array, &count);
-  meosType basetype = oid_meostype(array->elemtype);
+  MeosType basetype = oid_meostype(array->elemtype);
   char **strarr = spatialarr_wkt_out(datumarr, basetype, count, 
     dbl_dig_for_wkt, extended);
   /* We cannot use pfree_array */

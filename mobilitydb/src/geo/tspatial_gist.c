@@ -62,7 +62,7 @@
  * that must not be taken into account by the operators to infinity
  */
 static bool
-tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
+tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, MeosType type)
 {
   if (type == T_TSTZSPAN)
   {

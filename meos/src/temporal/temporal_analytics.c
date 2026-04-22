@@ -219,7 +219,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   lower = lower_bin;
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  meosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
+  MeosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(seq->temptype);
   /* New instants computing the value at the beginning/end of the bin */
@@ -366,8 +366,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   lower = lower_bin;
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  meosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
-  meosType basetype_out = temptype_basetype(temptype_out);
+  MeosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
+  MeosType basetype_out = temptype_basetype(temptype_out);
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(ss->temptype);
   int ninsts = 0;
@@ -486,7 +486,7 @@ int
 tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
   TimestampTz upper_bin, int64 tunits, TInstant **result)
 {
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   TimestampTz lower = lower_bin;

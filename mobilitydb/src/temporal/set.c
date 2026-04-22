@@ -201,7 +201,7 @@ Set_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
-  meosType settype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType settype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype, true);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
@@ -220,7 +220,7 @@ Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
-  meosType settype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType settype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEXT_P(result);
@@ -242,8 +242,8 @@ Set_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_not_empty_array(array);
-  meosType settype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
-  meosType basetype = settype_basetype(settype);
+  MeosType settype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType basetype = settype_basetype(settype);
   int count;
   Datum *values = datumarr_extract(array, &count);
   Set *result = set_make_free(values, count, basetype, ORDER);
@@ -266,7 +266,7 @@ Datum
 Value_to_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   /* Detoast the value if necessary */
   if (basetype_varlength(basetype))
     d = PointerGetDatum(PG_DETOAST_DATUM(d));

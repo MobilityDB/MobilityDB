@@ -44,7 +44,7 @@
 
 /* Send/receive functions */
 
-extern TInstant *tinstant_recv(StringInfo buf, meosType temptype);
+extern TInstant *tinstant_recv(StringInfo buf, MeosType temptype);
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 
 /*****************************************************************************/

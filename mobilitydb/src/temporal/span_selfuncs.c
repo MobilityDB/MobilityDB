@@ -82,8 +82,8 @@ span_joinsel_default(meosOper oper UNUSED)
  * @brief Determine whether we can estimate selectivity for the operator
  */
 static bool
-value_oper_sel(Oid operid UNUSED, meosType ltype,
-  meosType rtype)
+value_oper_sel(Oid operid UNUSED, MeosType ltype,
+  MeosType rtype)
 {
   if ((numset_type(ltype) || numspan_basetype(ltype) || numspan_type(ltype) ||
         spanset_type(ltype)) &&
@@ -97,8 +97,8 @@ value_oper_sel(Oid operid UNUSED, meosType ltype,
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_oper_sel(meosOper oper UNUSED, meosType ltype,
-  meosType rtype)
+time_oper_sel(meosOper oper UNUSED, MeosType ltype,
+  MeosType rtype)
 {
   if ((timeset_type(ltype) || timespan_basetype(ltype) || timespan_type(ltype) ||
         timespanset_type(ltype)) &&
@@ -766,7 +766,7 @@ void
 span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
-  meosType type = oid_meostype(consttype);
+  MeosType type = oid_meostype(consttype);
   assert(span_basetype(type) || set_spantype(type) || span_type(type) ||
     spanset_type(type) || talpha_type(type));
   if (span_basetype(type))
@@ -774,7 +774,7 @@ span_const_to_span(Node *other, Span *span)
     /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
-    meosType spantype = basetype_spantype(type);
+    MeosType spantype = basetype_spantype(type);
     span_set(value, value, true, true, type, spantype, span);
   }
   else if (set_spantype(type))
@@ -863,7 +863,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    */
   span_const_to_span(other, &span);
   /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
+  MeosType ltype, rtype;
   meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
@@ -979,7 +979,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   /* Determine whether we target the value or the time dimension */
   bool value = (s->basetype != T_TIMESTAMPTZ);
   /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
+  MeosType ltype, rtype;
   meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool found = value ?
     value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
@@ -1465,7 +1465,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
   /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
+  MeosType ltype, rtype;
   meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
@@ -1512,7 +1512,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! att1_num)
     elog(ERROR, "attribute \"%s\" does not exist", att1_name);
   // /* Get the attribute type */
-  // meosType atttype1 = oid_meostype(get_atttype(table1_oid, att1_num));
+  // MeosType atttype1 = oid_meostype(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (! table2_name)
@@ -1525,10 +1525,10 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! att2_num)
     elog(ERROR, "attribute \"%s\" does not exist", att2_name);
   // /* Get the attribute type */
-  // meosType atttype2 = oid_meostype(get_atttype(table1_oid, att1_num));
+  // MeosType atttype2 = oid_meostype(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
+  MeosType ltype, rtype;
   meosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)

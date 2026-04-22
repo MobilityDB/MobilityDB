@@ -100,9 +100,9 @@ Set_union_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "Set_union_transfn called in non-aggregate context");
 
   Oid setoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  meosType settype = oid_meostype(setoid);
+  MeosType settype = oid_meostype(setoid);
   assert(set_type(settype));
-  meosType basetype = settype_basetype(settype);
+  MeosType basetype = settype_basetype(settype);
   Oid baseoid = meostype_oid(basetype);
 
   ArrayBuildState *state;
@@ -149,8 +149,8 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Oid setoid = get_fn_expr_rettype(fcinfo->flinfo);
-  meosType settype = oid_meostype(setoid);
-  meosType basetype = settype_basetype(settype);
+  MeosType settype = oid_meostype(setoid);
+  MeosType basetype = settype_basetype(settype);
   bool typbyval = basetype_byvalue(basetype);
   int16 typlen = meostype_length(basetype);
 

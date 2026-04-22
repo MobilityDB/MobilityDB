@@ -805,7 +805,7 @@ tcbufferseq_members(const TSequence *seq, bool point)
     values[i] = point ?
       PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   }
-  meosType basetype = point ? T_GEOMETRY : T_FLOAT8;
+  MeosType basetype = point ? T_GEOMETRY : T_FLOAT8;
   datumarr_sort(values, seq->count, basetype);
   int count = datumarr_remove_duplicates(values, seq->count, basetype);
   if (point)
@@ -834,7 +834,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
         PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
     }
   }
-  meosType basetype = point ? T_GEOMETRY : T_TFLOAT;
+  MeosType basetype = point ? T_GEOMETRY : T_TFLOAT;
   datumarr_sort(values, ss->count, basetype);
   int count = datumarr_remove_duplicates(values, ss->count, basetype);
   /* Free the duplicate values that have been found */
