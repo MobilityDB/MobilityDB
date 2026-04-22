@@ -72,6 +72,7 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
+  #include "pose/tpose.h"
   #include "pose/tpose_spatialfuncs.h"
 #endif
 #if RGEO
@@ -2695,7 +2696,12 @@ tsegment_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
     result = tnpointsegm_intersection(start1, end1, start2, end2, lower,
       upper, t1, t2);
 #endif
-  else 
+#if POSE || RGEO
+  else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+    result = tposesegm_intersection(start1, end1, start2, end2, lower,
+      upper, t1, t2);
+#endif
+  else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown intersection function for type: %s",
