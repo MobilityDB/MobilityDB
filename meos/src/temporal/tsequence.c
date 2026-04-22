@@ -284,10 +284,11 @@ datumsegm_interpolate(Datum start, Datum end, meosType temptype,
     return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
       DatumGetNpointP(end), ratio));
 #endif
-// #if POSE || RGEO
-  // else if (temptype == T_TPOSE)
-    // return PointerGetDatum(posesegm_interpolate(start, end, ratio));
-// #endif
+#if POSE || RGEO
+  else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+    return PointerGetDatum(posesegm_interpolate(DatumGetPoseP(start),
+      DatumGetPoseP(end), (double) ratio));
+#endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
