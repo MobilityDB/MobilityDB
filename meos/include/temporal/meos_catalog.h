@@ -263,6 +263,10 @@ extern bool geoset_type(meosType type);
 extern bool ensure_geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
 extern bool ensure_spatialset_type(meosType type);
+#if POINTCLOUD
+extern bool pointcloud_basetype(meosType type);
+extern bool pointcloudset_type(meosType type);
+#endif
 
 extern bool span_basetype(meosType type);
 extern bool span_canon_basetype(meosType type);

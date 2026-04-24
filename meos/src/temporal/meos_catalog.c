@@ -608,6 +608,9 @@ meos_basetype(meosType type)
 #if POSE || RGEO
     || type == T_POSE
 #endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
+#endif
     );
 }
 #endif
@@ -631,6 +634,9 @@ basetype_varlength(meosType type)
   return (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
 #endif
     );
 }
@@ -668,6 +674,10 @@ meostype_length(meosType type)
 #endif
 #if POSE || RGEO
   if (type == T_POSE)
+    return -1;
+#endif
+#if POINTCLOUD
+  if (type == T_PCPOINT || type == T_PCPATCH)
     return -1;
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -763,6 +773,9 @@ set_basetype(meosType type)
 #if POSE || RGEO
       || type == T_POSE
 #endif
+#if POINTCLOUD
+      || type == T_PCPOINT || type == T_PCPATCH
+#endif
       );
 }
 #endif
@@ -784,6 +797,9 @@ set_type(meosType type)
 #endif
 #if POSE || RGEO
       || type == T_POSESET
+#endif
+#if POINTCLOUD
+      || type == T_PCPOINTSET || type == T_PCPATCHSET
 #endif
       );
 }
@@ -913,6 +929,31 @@ ensure_spatialset_type(meosType type)
   return false;
 }
 #endif /* MEOS */
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a pgpointcloud base type (pcpoint, pcpatch)
+ */
+inline bool
+pointcloud_basetype(meosType type)
+{
+  return (type == T_PCPOINT || type == T_PCPATCH);
+}
+
+/**
+ * @brief Return true if the type is a pgpointcloud set type
+ * (pcpointset, pcpatchset)
+ * @note Unlike @p spatialset_type, pointcloud sets carry no bounding box —
+ * dimension-level access requires loading the schema XML keyed by pcid
+ * from the pgpointcloud @p pointcloud_formats PG catalog table, which
+ * MEOS cannot do. Bbox support arrives in Phase 8F with TPCBox.
+ */
+inline bool
+pointcloudset_type(meosType type)
+{
+  return (type == T_PCPOINTSET || type == T_PCPATCHSET);
+}
+#endif /* POINTCLOUD */
 
 /*****************************************************************************/
 

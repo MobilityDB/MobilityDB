@@ -14,13 +14,20 @@ if(POINTCLOUD)
     pcpoint.c
     pcpatch.c
 
-    # Set types — Phase 8E.
-    # pcset_meos.c
-
     # Temporal types — Phase 8G / 8H.
     # tpcpoint.c
     # tpcpatch.c
   )
+
+  # Set types — Phase 8E. `_meos.c` suffix → MEOS-only build. The PG
+  # extension build reaches pcpointset / pcpatchset through the generic
+  # Set_* wrappers in mobilitydb/src/temporal/set.c; same-pcid on the
+  # constructor path is enforced inside set_make_exp (set.c), not via
+  # these MEOS helpers.
+  if(MEOS)
+    list(APPEND POINTCLOUD_SRCS pcset_meos.c)
+  endif()
+
   add_library(pointcloud OBJECT ${POINTCLOUD_SRCS})
 
   # Fill in pgpointcloud's `pc_config.h.in` template. Upstream expects

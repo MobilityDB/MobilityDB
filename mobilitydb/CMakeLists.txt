@@ -189,6 +189,9 @@ endif()
 if(RGEO)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_rgeo>")
 endif()
+if(POINTCLOUD)
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_pointcloud>")
+endif()
 
 # Build the library
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})

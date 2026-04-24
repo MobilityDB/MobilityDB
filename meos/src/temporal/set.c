@@ -57,6 +57,9 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_boxops.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 
 /*****************************************************************************
  * Parameter tests
@@ -230,9 +233,20 @@ set_out(const Set *s, int maxdd)
 static size_t
 set_bbox_size(meosType settype)
 {
-  assert(alphanumset_type(settype) || spatialset_type(settype));
+  assert(alphanumset_type(settype) || spatialset_type(settype)
+#if POINTCLOUD
+    || pointcloudset_type(settype)
+#endif
+    );
   if (alphanumset_type(settype))
     return 0;
+#if POINTCLOUD
+  /* pcpointset/pcpatchset carry no bbox — schema-dependent dimensions
+   * cannot be extracted at the MEOS layer. Bbox support (TPCBox) is
+   * the subject of Phase 8F. */
+  if (pointcloudset_type(settype))
+    return 0;
+#endif
   return sizeof(STBox);
 }
 
@@ -324,6 +338,47 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   assert(values); assert(count > 0); assert(count <= maxcount);
   bool hasz = false;
   bool geodetic = false;
+#if POINTCLOUD
+  /* Enforce schema (pcid) uniformity across the elements of a pcpoint /
+   * pcpatch set. This is the pgpointcloud analogue of the same-SRID check
+   * performed by the spatial branch below — two values with different
+   * schemas cannot live in the same set because their byte layouts are
+   * incomparable. */
+  if (basetype == T_PCPOINT)
+  {
+    uint32_t pcid0 =
+      pcpoint_pcid((const Pcpoint *) DatumGetPointer(values[0]));
+    for (int i = 1; i < count; i++)
+    {
+      uint32_t pcid_i =
+        pcpoint_pcid((const Pcpoint *) DatumGetPointer(values[i]));
+      if (pcid_i != pcid0)
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Set elements have different pcpoint schemas: %u vs %u",
+          pcid0, pcid_i);
+        return NULL;
+      }
+    }
+  }
+  else if (basetype == T_PCPATCH)
+  {
+    uint32_t pcid0 =
+      pcpatch_pcid((const Pcpatch *) DatumGetPointer(values[0]));
+    for (int i = 1; i < count; i++)
+    {
+      uint32_t pcid_i =
+        pcpatch_pcid((const Pcpatch *) DatumGetPointer(values[i]));
+      if (pcid_i != pcid0)
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Set elements have different pcpatch schemas: %u vs %u",
+          pcid0, pcid_i);
+        return NULL;
+      }
+    }
+  }
+#endif /* POINTCLOUD */
   // TODO Should we bypass the tests on tnpoint ?
   if (spatial_basetype(basetype) && basetype != T_NPOINT)
   {

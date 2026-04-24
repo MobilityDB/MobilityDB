@@ -13,12 +13,18 @@
 #     PG_GETARG_* / PG_RETURN_* calls around a MEOS call.
 
 set(POINTCLOUD_PG_SRCS
-  # pcpoint.c       # Phase 8B
-  # pcpatch.c       # Phase 8C
-  # tpcpoint.c      # Phase 8F
-  # tpcpatch.c      # Phase 8G
+  # Phase 8E — type-specific PG wrappers for pcpoint / pcpatch
+  # accessors (pcid, …). Set-level SQL bindings for pcpointset /
+  # pcpatchset delegate to the generic Set_* wrappers in
+  # mobilitydb/src/temporal/set.c.
+  pcset.c
+  # tpcpoint.c      # Phase 8G
+  # tpcpatch.c      # Phase 8H
 )
 
 if(POINTCLOUD_PG_SRCS)
   add_library(pg_pointcloud OBJECT ${POINTCLOUD_PG_SRCS})
+  target_include_directories(pg_pointcloud PRIVATE
+    ${CMAKE_SOURCE_DIR}/meos/include
+    ${CMAKE_SOURCE_DIR}/mobilitydb/include)
 endif()

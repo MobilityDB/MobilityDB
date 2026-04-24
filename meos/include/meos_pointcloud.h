@@ -43,6 +43,36 @@
 typedef struct Pcpoint Pcpoint;
 typedef struct Pcpatch Pcpatch;
 
+/*****************************************************************************
+ * Validity macros
+ *****************************************************************************/
+
+#if MEOS
+  #define VALIDATE_PCPOINTSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_PCPOINTSET) ) \
+           return (ret); \
+    } while (0)
+  #define VALIDATE_PCPATCHSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_PCPATCHSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_PCPOINTSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_PCPOINTSET); \
+    } while (0)
+  #define VALIDATE_PCPATCHSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_PCPATCHSET); \
+    } while (0)
+#endif /* MEOS */
+
 /******************************************************************************
  * Functions for pcpoint
  ******************************************************************************/
@@ -105,6 +135,84 @@ extern bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2);
 extern bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2);
 extern bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2);
 extern bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2);
+
+/******************************************************************************
+ * Functions for pcpoint sets
+ ******************************************************************************/
+
+/* Input and output */
+
+extern Set *pcpointset_in(const char *str);
+extern char *pcpointset_out(const Set *s, int maxdd);
+
+/* Constructor */
+
+extern Set *pcpointset_make(Pcpoint **values, int count);
+
+/* Conversion */
+
+extern Set *pcpoint_to_set(const Pcpoint *pt);
+
+/* Accessor */
+
+extern Pcpoint *pcpointset_start_value(const Set *s);
+extern Pcpoint *pcpointset_end_value(const Set *s);
+extern bool pcpointset_value_n(const Set *s, int n, Pcpoint **result);
+extern Pcpoint **pcpointset_values(const Set *s);
+
+/* Set operations */
+
+extern bool contains_set_pcpoint(const Set *s, Pcpoint *pt);
+extern bool contained_pcpoint_set(const Pcpoint *pt, const Set *s);
+extern Set *intersection_pcpoint_set(const Pcpoint *pt, const Set *s);
+extern Set *intersection_set_pcpoint(const Set *s, const Pcpoint *pt);
+extern Set *minus_pcpoint_set(const Pcpoint *pt, const Set *s);
+extern Set *minus_set_pcpoint(const Set *s, const Pcpoint *pt);
+extern Set *union_pcpoint_set(const Pcpoint *pt, const Set *s);
+extern Set *union_set_pcpoint(const Set *s, const Pcpoint *pt);
+
+/* Aggregate transition */
+
+extern Set *pcpoint_union_transfn(Set *state, const Pcpoint *pt);
+
+/******************************************************************************
+ * Functions for pcpatch sets
+ ******************************************************************************/
+
+/* Input and output */
+
+extern Set *pcpatchset_in(const char *str);
+extern char *pcpatchset_out(const Set *s, int maxdd);
+
+/* Constructor */
+
+extern Set *pcpatchset_make(Pcpatch **values, int count);
+
+/* Conversion */
+
+extern Set *pcpatch_to_set(const Pcpatch *pa);
+
+/* Accessor */
+
+extern Pcpatch *pcpatchset_start_value(const Set *s);
+extern Pcpatch *pcpatchset_end_value(const Set *s);
+extern bool pcpatchset_value_n(const Set *s, int n, Pcpatch **result);
+extern Pcpatch **pcpatchset_values(const Set *s);
+
+/* Set operations */
+
+extern bool contains_set_pcpatch(const Set *s, Pcpatch *pa);
+extern bool contained_pcpatch_set(const Pcpatch *pa, const Set *s);
+extern Set *intersection_pcpatch_set(const Pcpatch *pa, const Set *s);
+extern Set *intersection_set_pcpatch(const Set *s, const Pcpatch *pa);
+extern Set *minus_pcpatch_set(const Pcpatch *pa, const Set *s);
+extern Set *minus_set_pcpatch(const Set *s, const Pcpatch *pa);
+extern Set *union_pcpatch_set(const Pcpatch *pa, const Set *s);
+extern Set *union_set_pcpatch(const Set *s, const Pcpatch *pa);
+
+/* Aggregate transition */
+
+extern Set *pcpatch_union_transfn(Set *state, const Pcpatch *pa);
 
 /*****************************************************************************/
 
