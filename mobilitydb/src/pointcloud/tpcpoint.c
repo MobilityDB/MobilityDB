@@ -44,12 +44,37 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-/* MEOS */
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
+/* pgpointcloud */
+#include "pc_api.h"
+/* MEOS — we cannot include utils/builtins.h here: meos_internal.h pulls
+ * in <json-c/json.h>, whose `struct json_object` collides with PG's
+ * `Datum json_object(PG_FUNCTION_ARGS)` in utils/fmgrprotos.h. The
+ * two headers are mutually exclusive. For `text_to_cstring` we inline
+ * an equivalent below. */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
+#include "temporal/tinstant.h"
+#include "temporal/tsequence.h"
+#include "temporal/tsequenceset.h"
 #include "pointcloud/pcpoint.h"
+/* MobilityDB */
+#include "pg_pointcloud/schema_cache.h"
+
+/* Local minimal text→cstring — see rationale above. */
+static char *
+tpcpoint_text_to_cstring(const text *t)
+{
+  int len = (int) VARSIZE_ANY_EXHDR(t);
+  char *result = palloc(len + 1);
+  memcpy(result, VARDATA_ANY(t), (size_t) len);
+  result[len] = '\0';
+  return result;
+}
 
 /*****************************************************************************
  * Per-type pcid accessor
@@ -74,6 +99,142 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
   uint32_t pcid = pcpoint_pcid(pt);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32((int32) pcid);
+}
+
+/*****************************************************************************
+ * Per-dimension projection — tpcpoint → tfloat (Phase 8J)
+ *
+ * Walks the Temporal structure and replaces each pcpoint instant with a
+ * @c float8 derived from the pcpoint's value for the requested
+ * dimension. Because the dimension-read path is schema-aware (lives in
+ * libpc.a and needs a PCSCHEMA), the projection is expressed as a
+ * function pointer (pcpoint → double) that the caller binds against
+ * @c pc_point_get_x / _y / _z / _get_double_by_name.
+ *
+ * The schema cache is warmed on the first instant (all subsequent
+ * instants share the same pcid by construction — enforced at build
+ * time by Phase 8E's set_make_exp).
+ *****************************************************************************/
+
+typedef bool (*pcpoint_dim_fn)(const PCPOINT *pt, void *extra, double *out);
+
+static bool
+dim_get_x(const PCPOINT *pt, void *extra, double *out)
+{ (void) extra; return pc_point_get_x((PCPOINT *) pt, out); }
+
+static bool
+dim_get_y(const PCPOINT *pt, void *extra, double *out)
+{ (void) extra; return pc_point_get_y((PCPOINT *) pt, out); }
+
+static bool
+dim_get_z(const PCPOINT *pt, void *extra, double *out)
+{ (void) extra; return pc_point_get_z((PCPOINT *) pt, out); }
+
+static bool
+dim_get_by_name(const PCPOINT *pt, void *extra, double *out)
+{
+  const char *name = (const char *) extra;
+  return pc_point_get_double_by_name((PCPOINT *) pt, name, out) != 0;
+}
+
+static TInstant *
+tpcpointinst_project(const TInstant *inst, pcpoint_dim_fn fn, void *extra)
+{
+  const Pcpoint *pt =
+    (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
+  PCSCHEMA *schema = mobilitydb_pc_schema(pt->pcid);
+  PCPOINT pcpt;
+  pcpt.readonly = 1;
+  pcpt.schema = schema;
+  pcpt.data = (uint8_t *) pt->data;
+  double v;
+  if (! fn(&pcpt, extra, &v))
+    return NULL;
+  return tinstant_make(Float8GetDatum(v), T_TFLOAT, inst->t);
+}
+
+static TSequence *
+tpcpointseq_project(const TSequence *seq, pcpoint_dim_fn fn, void *extra)
+{
+  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+  int n = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *out = tpcpointinst_project(TSEQUENCE_INST_N(seq, i), fn, extra);
+    if (! out) continue;
+    insts[n++] = out;
+  }
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  return tsequence_make_free(insts, n, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE);
+}
+
+static TSequenceSet *
+tpcpointseqset_project(const TSequenceSet *ss, pcpoint_dim_fn fn, void *extra)
+{
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  int n = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    TSequence *out = tpcpointseq_project(TSEQUENCESET_SEQ_N(ss, i), fn, extra);
+    if (! out) continue;
+    seqs[n++] = out;
+  }
+  return tsequenceset_make_free(seqs, n, NORMALIZE);
+}
+
+static Temporal *
+tpcpoint_project(const Temporal *temp, pcpoint_dim_fn fn, void *extra)
+{
+  assert(temp->temptype == T_TPCPOINT);
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tpcpointinst_project((TInstant *) temp, fn, extra);
+    case TSEQUENCE:
+      return (Temporal *) tpcpointseq_project((TSequence *) temp, fn, extra);
+    default: /* TSEQUENCESET */
+      return (Temporal *)
+        tpcpointseqset_project((TSequenceSet *) temp, fn, extra);
+  }
+}
+
+#define TPCPOINT_PROJ(fn_name, dim_fn) \
+  PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
+  PG_FUNCTION_INFO_V1(fn_name); \
+  Datum fn_name(PG_FUNCTION_ARGS) \
+  { \
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0); \
+    Temporal *result = tpcpoint_project(temp, dim_fn, NULL); \
+    PG_FREE_IF_COPY(temp, 0); \
+    if (! result) PG_RETURN_NULL(); \
+    PG_RETURN_POINTER(result); \
+  }
+
+TPCPOINT_PROJ(Tpcpoint_get_x, dim_get_x)
+TPCPOINT_PROJ(Tpcpoint_get_y, dim_get_y)
+TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
+
+PGDLLEXPORT Datum Tpcpoint_get_dim(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_get_dim);
+/**
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the per-instant projection of a tpcpoint onto a named
+ *   dimension (Intensity, GpsTime, etc.) as a tfloat.
+ * @sqlfn getDim()
+ */
+Datum
+Tpcpoint_get_dim(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  text *name_txt = PG_GETARG_TEXT_P(1);
+  char *name = tpcpoint_text_to_cstring(name_txt);
+  Temporal *result = tpcpoint_project(temp, dim_get_by_name, name);
+  pfree(name);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(name_txt, 1);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
