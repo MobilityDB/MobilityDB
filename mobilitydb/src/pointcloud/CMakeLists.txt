@@ -30,7 +30,8 @@ set(POINTCLOUD_PG_SRCS
   # mobilitydb/src/temporal/temporal.c; this file holds only the
   # pcid accessor (and will grow projections to tfloat in 8H+).
   tpcpoint.c
-  # tpcpatch.c      # Phase 8I
+  # Phase 8I — tpcpatch lifted temporal type wrapper.
+  tpcpatch.c
 )
 
 if(POINTCLOUD_PG_SRCS)
