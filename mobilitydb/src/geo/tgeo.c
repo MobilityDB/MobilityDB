@@ -50,6 +50,9 @@
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
+#if POINTCLOUD
+  #include "pc_api.h"
+#endif
 
 /*****************************************************************************
  * General functions
@@ -81,13 +84,45 @@ pg_notice(const char *fmt, va_list ap)
   return;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Informational handler — libpc.a takes one more callback slot
+ *   than liblwgeom (notice vs warning vs info).
+ */
+static void
+pg_info(const char *fmt, va_list ap)
+{
+  char errmsg[PGC_ERRMSG_MAXLEN];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+  ereport(INFO, (errmsg_internal("%s", errmsg)));
+  return;
+}
+#endif
+
 /**
  * @brief Set the handlers for initializing the liblwgeom library
+ *   (and libpc.a when POINTCLOUD=ON).
+ * @note When both libMobilityDB-1.4.so and pointcloud-1.2.so are
+ *   loaded in the same backend, both bundle their own copy of
+ *   libpc.a; ELF's global symbol interposition chooses one copy for
+ *   the whole process. If our copy wins and we never called
+ *   @c pc_set_handlers, the first time any libpc entry point
+ *   (pc_schema_from_xml, pc_point_get_x, …) hits an error or warning
+ *   it dereferences a NULL handler pointer and the backend crashes.
+ *   Calling @c pc_set_handlers here makes us symmetric with
+ *   pgpointcloud's own @c _PG_init so either copy is safe.
  */
 void
 mobilitydb_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
+#if POINTCLOUD
+  pc_set_handlers((pc_allocator) palloc, (pc_reallocator) repalloc,
+    (pc_deallocator) pfree,
+    (pc_message_handler) pg_error,
+    (pc_message_handler) pg_info,
+    (pc_message_handler) pg_notice);
+#endif
   return;
 }
 
