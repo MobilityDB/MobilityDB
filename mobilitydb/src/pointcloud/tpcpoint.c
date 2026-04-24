@@ -61,6 +61,7 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
+#include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */
 #include "pointcloud/pcpoint.h"
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
@@ -214,6 +215,108 @@ tpcpoint_project(const Temporal *temp, pcpoint_dim_fn fn, void *extra)
 TPCPOINT_PROJ(Tpcpoint_get_x, dim_get_x)
 TPCPOINT_PROJ(Tpcpoint_get_y, dim_get_y)
 TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
+
+/*****************************************************************************
+ * Projection to tgeompoint (Phase 8K)
+ *
+ * Per-instant mapper: pcpoint → POINT gserialized with the schema's
+ * SRID and Z-presence. Reuses the schema cache on the first instant;
+ * the same-pcid invariant (enforced at construction by Phase 8E) lets
+ * us cache schema + z-flag once per sequence.
+ *****************************************************************************/
+
+static TInstant *
+tpcpointinst_tgeompointinst(const TInstant *inst, const PCSCHEMA *schema)
+{
+  const Pcpoint *pt =
+    (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
+  PCPOINT pcpt;
+  pcpt.readonly = 1;
+  pcpt.schema = schema;
+  pcpt.data = (uint8_t *) pt->data;
+  double x, y, z = 0.0;
+  if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y))
+    return NULL;
+  bool hasz = (schema->zdim != NULL);
+  if (hasz && ! pc_point_get_z(&pcpt, &z))
+    return NULL;
+  GSERIALIZED *gs = geopoint_make(x, y, z, hasz, /* geodetic */ false,
+    (int32_t) schema->srid);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+  pfree(gs);
+  return result;
+}
+
+static TSequence *
+tpcpointseq_tgeompointseq(const TSequence *seq, const PCSCHEMA *schema)
+{
+  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+  int n = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *out = tpcpointinst_tgeompointinst(TSEQUENCE_INST_N(seq, i),
+      schema);
+    if (! out) continue;
+    insts[n++] = out;
+  }
+  /* Step-interpolated in; linear is semantically meaningful for the
+   * projected XY path (the sensor physically moved), so we promote. */
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == STEP) interp = LINEAR;
+  return tsequence_make_free(insts, n, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE);
+}
+
+static TSequenceSet *
+tpcpointseqset_tgeompointseqset(const TSequenceSet *ss, const PCSCHEMA *schema)
+{
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  int n = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    TSequence *out = tpcpointseq_tgeompointseq(TSEQUENCESET_SEQ_N(ss, i),
+      schema);
+    if (! out) continue;
+    seqs[n++] = out;
+  }
+  return tsequenceset_make_free(seqs, n, NORMALIZE);
+}
+
+PGDLLEXPORT Datum Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_to_tgeompoint);
+/**
+ * @ingroup mobilitydb_pointcloud_conversion
+ * @brief Project a tpcpoint onto a tgeompoint by extracting X/Y/[Z]
+ *   from each instant's pcpoint via the schema cache.
+ * @sqlfn tgeompoint()
+ */
+Datum
+Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* All instants share the same pcid; read it from the first. */
+  const Pcpoint *first =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
+  PCSCHEMA *schema = mobilitydb_pc_schema(first->pcid);
+  Temporal *result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      result = (Temporal *)
+        tpcpointinst_tgeompointinst((TInstant *) temp, schema);
+      break;
+    case TSEQUENCE:
+      result = (Temporal *)
+        tpcpointseq_tgeompointseq((TSequence *) temp, schema);
+      break;
+    default: /* TSEQUENCESET */
+      result = (Temporal *)
+        tpcpointseqset_tgeompointseqset((TSequenceSet *) temp, schema);
+  }
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
 
 PGDLLEXPORT Datum Tpcpoint_get_dim(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_get_dim);

@@ -246,6 +246,17 @@ CREATE FUNCTION getDim(tpcpoint, text)
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_dim'
   LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
+-- XY projection to tgeompoint (Phase 8K). Step interpolation on the
+-- source tpcpoint is promoted to linear in the output: the projected
+-- XY trajectory is physically a sensor path, where linear interp
+-- between consecutive fixes is the natural default.
+CREATE FUNCTION tgeompoint(tpcpoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpcpoint_to_tgeompoint'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
+
 /******************************************************************************
  * Value-at-timestamp / restriction
  ******************************************************************************/
