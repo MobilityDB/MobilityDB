@@ -77,10 +77,7 @@ mobilitydb_pc_schema(uint32_t pcid)
   entry->pcid = pcid;
   entry->schema = NULL;
 
-  /* Load the XML text via SPI and parse in CacheMemoryContext so the
-   * PCSCHEMA (plus the palloc'd substructures pc_schema_from_xml
-   * allocates) outlive the SPI transaction. */
-  if (SPI_connect() != SPI_OK_CONNECT)
+  if (SPI_connect_ext(SPI_OPT_NONATOMIC) != SPI_OK_CONNECT)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("SPI_connect failed while loading pgpointcloud schema")));
 

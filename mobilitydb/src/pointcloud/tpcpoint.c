@@ -139,11 +139,11 @@ dim_get_by_name(const PCPOINT *pt, void *extra, double *out)
 }
 
 static TInstant *
-tpcpointinst_project(const TInstant *inst, pcpoint_dim_fn fn, void *extra)
+tpcpointinst_project_with_schema(const TInstant *inst,
+  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
 {
   const Pcpoint *pt =
     (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
-  PCSCHEMA *schema = mobilitydb_pc_schema(pt->pcid);
   PCPOINT pcpt;
   pcpt.readonly = 1;
   pcpt.schema = schema;
@@ -155,13 +155,15 @@ tpcpointinst_project(const TInstant *inst, pcpoint_dim_fn fn, void *extra)
 }
 
 static TSequence *
-tpcpointseq_project(const TSequence *seq, pcpoint_dim_fn fn, void *extra)
+tpcpointseq_project_with_schema(const TSequence *seq,
+  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
 {
   TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
   int n = 0;
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *out = tpcpointinst_project(TSEQUENCE_INST_N(seq, i), fn, extra);
+    TInstant *out = tpcpointinst_project_with_schema(
+      TSEQUENCE_INST_N(seq, i), schema, fn, extra);
     if (! out) continue;
     insts[n++] = out;
   }
@@ -171,33 +173,64 @@ tpcpointseq_project(const TSequence *seq, pcpoint_dim_fn fn, void *extra)
 }
 
 static TSequenceSet *
-tpcpointseqset_project(const TSequenceSet *ss, pcpoint_dim_fn fn, void *extra)
+tpcpointseqset_project_with_schema(const TSequenceSet *ss,
+  PCSCHEMA *schema, pcpoint_dim_fn fn, void *extra)
 {
   TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
   int n = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *out = tpcpointseq_project(TSEQUENCESET_SEQ_N(ss, i), fn, extra);
+    TSequence *out = tpcpointseq_project_with_schema(
+      TSEQUENCESET_SEQ_N(ss, i), schema, fn, extra);
     if (! out) continue;
     seqs[n++] = out;
   }
   return tsequenceset_make_free(seqs, n, NORMALIZE);
 }
 
+/**
+ * @brief Dispatch to the right per-subtype walker.
+ * @pre Schema must be pre-resolved by the caller. See the per-wrapper
+ *   comment on why the schema lookup is hoisted all the way up.
+ */
 static Temporal *
-tpcpoint_project(const Temporal *temp, pcpoint_dim_fn fn, void *extra)
+tpcpoint_project(const Temporal *temp, PCSCHEMA *schema,
+  pcpoint_dim_fn fn, void *extra)
 {
   assert(temp->temptype == T_TPCPOINT);
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tpcpointinst_project((TInstant *) temp, fn, extra);
+      return (Temporal *) tpcpointinst_project_with_schema(
+        (TInstant *) temp, schema, fn, extra);
     case TSEQUENCE:
-      return (Temporal *) tpcpointseq_project((TSequence *) temp, fn, extra);
+      return (Temporal *) tpcpointseq_project_with_schema(
+        (TSequence *) temp, schema, fn, extra);
     default: /* TSEQUENCESET */
-      return (Temporal *)
-        tpcpointseqset_project((TSequenceSet *) temp, fn, extra);
+      return (Temporal *) tpcpointseqset_project_with_schema(
+        (TSequenceSet *) temp, schema, fn, extra);
   }
+}
+
+/**
+ * @brief Resolve the PCSCHEMA for a tpcpoint's common pcid before doing
+ *   any other work.
+ * @note This must be called AT THE TOP of the PG V1 wrapper — not
+ *   deeper in the call stack. On PG 17, calling
+ *   @c mobilitydb_pc_schema from a deeper static function during a
+ *   SELECT over a table with a tpcpoint column triggers a
+ *   @c SPI_connect crash; calling it directly from the PG V1 wrapper
+ *   (before any Temporal walking) works. Same code, different
+ *   executor-stack-depth sensitivity. Pcpoint_get_x (single-arg V1)
+ *   demonstrates the working pattern; Tpcpoint_get_x (Temporal-arg V1
+ *   that walks) must therefore hoist its schema lookup to match.
+ */
+static PCSCHEMA *
+tpcpoint_schema(const Temporal *temp)
+{
+  const Pcpoint *first =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
+  return mobilitydb_pc_schema(first->pcid);
 }
 
 #define TPCPOINT_PROJ(fn_name, dim_fn) \
@@ -206,7 +239,8 @@ tpcpoint_project(const Temporal *temp, pcpoint_dim_fn fn, void *extra)
   Datum fn_name(PG_FUNCTION_ARGS) \
   { \
     Temporal *temp = PG_GETARG_TEMPORAL_P(0); \
-    Temporal *result = tpcpoint_project(temp, dim_fn, NULL); \
+    PCSCHEMA *schema = tpcpoint_schema(temp); \
+    Temporal *result = tpcpoint_project(temp, schema, dim_fn, NULL); \
     PG_FREE_IF_COPY(temp, 0); \
     if (! result) PG_RETURN_NULL(); \
     PG_RETURN_POINTER(result); \
@@ -294,10 +328,8 @@ Datum
 Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* All instants share the same pcid; read it from the first. */
-  const Pcpoint *first =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
-  PCSCHEMA *schema = mobilitydb_pc_schema(first->pcid);
+  /* Hoist schema lookup to the top — see tpcpoint_schema rationale. */
+  PCSCHEMA *schema = tpcpoint_schema(temp);
   Temporal *result;
   switch (temp->subtype)
   {
@@ -331,8 +363,9 @@ Tpcpoint_get_dim(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *name_txt = PG_GETARG_TEXT_P(1);
+  PCSCHEMA *schema = tpcpoint_schema(temp);
   char *name = tpcpoint_text_to_cstring(name_txt);
-  Temporal *result = tpcpoint_project(temp, dim_get_by_name, name);
+  Temporal *result = tpcpoint_project(temp, schema, dim_get_by_name, name);
   pfree(name);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(name_txt, 1);
