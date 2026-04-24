@@ -78,6 +78,12 @@ if (PROJECT_VERBOSE)
   message(STATUS "PROJECT_SQL_FILES=${PROJECT_SQL_FILES}")
 endif()
 
+# Truncate the aggregate SQL file before re-appending — otherwise every
+# `cmake -S . -B build` reconfigure keeps appending to the existing
+# file, silently producing an extension script with N duplicate copies
+# of every type definition. `CREATE EXTENSION` then trips on
+# "type 'intset' already exists" on the second copy.
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in "")
 foreach (f ${PROJECT_SQL_FILES})
   file(READ ${f} CURR_CONTENTS)
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in "${CURR_CONTENTS}")
