@@ -107,6 +107,17 @@ CMAKE_DEPENDENT_OPTION(RGEO
   OFF
   )
 
+# Option for including pgpointcloud temporal types (tpcpoint, tpcpatch).
+# Requires pgpointcloud (libpointcloud-dev on Debian/Ubuntu) installed
+# alongside PostGIS on the user's machine. The embedded
+# `pointcloud-pg/` subtree provides the source MEOS imports a minimal
+# subset of, but the runtime still links against the system library.
+option(POINTCLOUD
+  "Set ON|OFF (default=OFF) to include pgpointcloud temporal types
+  "
+  OFF
+  )
+
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   add_definitions(-DCBUFFER=1)

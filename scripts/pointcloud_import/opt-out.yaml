@@ -1,0 +1,36 @@
+# Functions from pgpointcloud the extractor should NOT transform
+# automatically. Each entry names a source file and a function; that
+# function is skipped during generation and is expected to be
+# implemented by hand in meos/src/pointcloud/pc_adapter.c (declared
+# in meos/include/pointcloud/pc_adapter.h).
+#
+# Reasons to opt out:
+#   * varlena-heavy body (ArrayType iteration, TOAST-touching, GSERIALIZED
+#     conversions) that needs liblwgeom or pgpointcloud's internal
+#     allocator dance
+#   * set-returning function machinery (SRF_FIRSTCALL_INIT, …)
+#   * PostGIS-bridging patches that need our own lwgeom peek helpers
+#     rather than pgpointcloud's PG-side PG_GETARG_GSERIALIZED_P
+#
+# One entry per function, file-scoped so name collisions stay local.
+
+skip:
+  # ---- Phase 8A parking lot ---------------------------------------
+  # The generator correctly picks up every `Datum fn(PG_FUNCTION_ARGS)`
+  # body in the PG-side sources under `pointcloud-pg/pgsql/` and
+  # `pointcloud-pg/pgsql_postgis/`. The starter ruleset in
+  # `ruleset.yaml` only covers scalar macros (PG_GETARG_INT32 /
+  # PG_GETARG_FLOAT8 / …) — pgpointcloud's domain macros
+  # (PG_GETARG_PCPOINT_P, PG_GETARG_PCPATCH_P,
+  # PG_GETHEADER_SERPATCH_P, PG_GETARG_ARRAYTYPE_P, …) aren't
+  # recognised yet.
+  #
+  # Rather than listing each of the ~50 PG wrappers individually,
+  # we opt out the whole pgsql/ and pgsql_postgis/ trees for Phase
+  # 8A. Phase 8B narrows this to per-function skips as the ruleset
+  # grows: add the arg_reader / rewrite rule, remove the matching
+  # file_glob or per-file entry, run the extractor, repeat.
+  - file_glob: pointcloud-pg/pgsql/*.c
+    why:  Phase 8A parking lot — ruleset not yet authored (see Phase 8B+)
+  - file_glob: pointcloud-pg/pgsql_postgis/*.c
+    why:  Phase 8A parking lot — ruleset not yet authored (see Phase 8B+)
