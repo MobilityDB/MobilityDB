@@ -46,6 +46,10 @@
 #include <stringbuffer.h>
 /* MEOS */
 #include <meos.h>
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_geo.h>
@@ -147,6 +151,12 @@ basetype_out(Datum value, meosType type, int maxdd)
     case T_GEOGRAPHY:
       /* Hex-encoded ASCII Well-Known Binary (HexWKB) representation */
       return geo_out(DatumGetGserializedP(value));
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+    case T_PCPATCH:
+      return pcpatch_out((const Pcpatch *) DatumGetPointer(value), maxdd);
+#endif
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_out(DatumGetCbufferP(value), maxdd);

@@ -7,16 +7,17 @@ if(POINTCLOUD)
     # Auto-generated PG bindings (from pgpointcloud-pg subtree).
     # Emitted by scripts/pointcloud_import/extract.py.
     pc_generated.c
-    # Hand-written adapters for upstream routines the extractor can't
-    # mechanically transform (varlena-heavy, SRF, array-building, …).
-    # Will be populated during Phase 8B / 8C — currently empty.
-    # pc_adapter.c
 
-    # Static base types — Phase 8B / 8C.
-    # pcpoint.c
-    # pcpatch.c
+    # Static base types (Phase 8D) — opaque byte-level helpers that
+    # treat pcpoint/pcpatch as varlena blobs. Schema-aware dimension
+    # access arrives later (Phase 8G, tpcpoint).
+    pcpoint.c
+    pcpatch.c
 
-    # Temporal types — Phase 8F / 8G.
+    # Set types — Phase 8E.
+    # pcset_meos.c
+
+    # Temporal types — Phase 8G / 8H.
     # tpcpoint.c
     # tpcpatch.c
   )

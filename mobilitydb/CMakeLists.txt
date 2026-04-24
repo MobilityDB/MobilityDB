@@ -165,6 +165,9 @@ if(RGEO)
   message(STATUS "Including rigid geometries")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
+if(POINTCLOUD)
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 
 # Build the library: PostGIS
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
@@ -209,6 +212,14 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 if(WIN32)
   message(STATUS "Adding PostGIS as a target link library")
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${POSTGIS_LIBRARY})
+endif()
+if(POINTCLOUD)
+  # The pointcloud OBJECT library can't propagate its link requirements
+  # directly through $<TARGET_OBJECTS:…>, so we duplicate the libpc.a
+  # static link (plus its xml2/z deps) here. See
+  # meos/src/pointcloud/CMakeLists.txt for where libpc.a is located.
+  target_link_libraries(${MOBILITYDB_LIB_NAME}
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a xml2 z)
 endif()
 
 #--------------------------------

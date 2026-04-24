@@ -150,6 +150,14 @@ else()
   add_definitions(-DRGEO=0)
 endif()
 
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=1)
+else()
+  message(STATUS "Excluding pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=0)
+endif()
+
 # Get the MobilityDB major/minor/micro versions from the text file
 file(READ mobdb_version.txt ver)
 string(REGEX MATCH "MOBILITYDB_MAJOR_VERSION=([0-9]+)" _ ${ver})

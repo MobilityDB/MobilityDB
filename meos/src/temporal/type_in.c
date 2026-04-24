@@ -53,6 +53,10 @@
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_parser.h"
@@ -184,6 +188,24 @@ basetype_in(const char *str, meosType type,
       *result = PointerGetDatum(gs);
       return true;
     }
+#if POINTCLOUD
+    case T_PCPOINT:
+    {
+      Pcpoint *pt = pcpoint_parse(&str, end);
+      if (! pt)
+        return false;
+      *result = PointerGetDatum(pt);
+      return true;
+    }
+    case T_PCPATCH:
+    {
+      Pcpatch *pa = pcpatch_parse(&str, end);
+      if (! pa)
+        return false;
+      *result = PointerGetDatum(pa);
+      return true;
+    }
+#endif
 #if CBUFFER
     case T_CBUFFER:
     {
