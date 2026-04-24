@@ -1,8 +1,8 @@
 SET(LOCAL_FILES
   400_pcset
   410_tpcbox
-  # 420_tpcpoint    # Phase 8G
-  # 430_tpcpatch    # Phase 8H
+  420_tpcpoint
+  # 430_tpcpatch    # Phase 8I
   )
 
 foreach (f ${LOCAL_FILES})

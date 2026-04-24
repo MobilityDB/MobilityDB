@@ -25,7 +25,11 @@ set(POINTCLOUD_PG_SRCS
   # lookup against pointcloud_formats, parsed via pc_schema_from_xml
   # from libpc.a and held in CacheMemoryContext).
   schema_cache.c
-  # tpcpoint.c      # Phase 8H
+  # Phase 8H — tpcpoint lifted temporal type wrapper. Most SQL
+  # bindings go through the generic Temporal_* wrappers in
+  # mobilitydb/src/temporal/temporal.c; this file holds only the
+  # pcid accessor (and will grow projections to tfloat in 8H+).
+  tpcpoint.c
   # tpcpatch.c      # Phase 8I
 )
 

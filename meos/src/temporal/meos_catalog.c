@@ -1209,7 +1209,17 @@ inline bool
 talpha_type(meosType type)
 {
   return (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
-    type == T_TDOUBLE3 || type == T_TDOUBLE4);
+    type == T_TDOUBLE3 || type == T_TDOUBLE4
+#if POINTCLOUD
+    /* Phase 8H: tpcpoint / tpcpatch get a time-only Span bbox because
+     * computing their spatial bbox requires the pgpointcloud schema
+     * (loaded by pcid from the pointcloud_formats table) and MEOS has
+     * no catalog access. Phase 8I upgrades to a full TPCBox via a
+     * function-pointer schema hook set up by the PG extension's
+     * _PG_init. */
+    || type == T_TPCPOINT || type == T_TPCPATCH
+#endif
+    );
 }
 
 /**
