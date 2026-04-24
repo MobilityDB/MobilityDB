@@ -314,6 +314,27 @@ extern bool tpcbox_le(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2);
 
+/* Position predicates — strict and overlap variants across X / Y / Z
+ * / time. A predicate evaluates only on dimensions both operands
+ * carry; returns false otherwise. */
+
+extern bool left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+
 /* Validity helpers */
 
 extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);

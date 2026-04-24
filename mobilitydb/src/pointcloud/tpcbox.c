@@ -462,6 +462,24 @@ TPCBOX_PRED_2(Overlaps_tpcbox_tpcbox,  overlaps_tpcbox_tpcbox)
 TPCBOX_PRED_2(Same_tpcbox_tpcbox,      same_tpcbox_tpcbox)
 TPCBOX_PRED_2(Adjacent_tpcbox_tpcbox,  adjacent_tpcbox_tpcbox)
 
+/* Position predicates */
+TPCBOX_PRED_2(Left_tpcbox_tpcbox,       left_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overleft_tpcbox_tpcbox,   overleft_tpcbox_tpcbox)
+TPCBOX_PRED_2(Right_tpcbox_tpcbox,      right_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overright_tpcbox_tpcbox,  overright_tpcbox_tpcbox)
+TPCBOX_PRED_2(Below_tpcbox_tpcbox,      below_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overbelow_tpcbox_tpcbox,  overbelow_tpcbox_tpcbox)
+TPCBOX_PRED_2(Above_tpcbox_tpcbox,      above_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overabove_tpcbox_tpcbox,  overabove_tpcbox_tpcbox)
+TPCBOX_PRED_2(Front_tpcbox_tpcbox,      front_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overfront_tpcbox_tpcbox,  overfront_tpcbox_tpcbox)
+TPCBOX_PRED_2(Back_tpcbox_tpcbox,       back_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overback_tpcbox_tpcbox,   overback_tpcbox_tpcbox)
+TPCBOX_PRED_2(Before_tpcbox_tpcbox,     before_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overbefore_tpcbox_tpcbox, overbefore_tpcbox_tpcbox)
+TPCBOX_PRED_2(After_tpcbox_tpcbox,      after_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overafter_tpcbox_tpcbox,  overafter_tpcbox_tpcbox)
+
 /*****************************************************************************
  * Comparison
  *****************************************************************************/

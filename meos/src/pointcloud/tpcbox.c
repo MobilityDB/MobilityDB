@@ -807,4 +807,186 @@ bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
 bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) >= 0; }
 
+/*****************************************************************************
+ * Position predicates
+ *
+ * Strict / overlap variants across X / Y / Z / time. A predicate only
+ * evaluates on dimensions both operands carry — if either box lacks X,
+ * left/right/overleft/overright are all false, etc. This mirrors how
+ * stbox's position operators behave, and is what the GiST operator
+ * class expects.
+ *****************************************************************************/
+
+/* X axis */
+
+bool
+left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->xmax < box2->xmin);
+}
+
+bool
+overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->xmax <= box2->xmax);
+}
+
+bool
+right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->xmin > box2->xmax);
+}
+
+bool
+overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->xmin >= box2->xmin);
+}
+
+/* Y axis */
+
+bool
+below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->ymax < box2->ymin);
+}
+
+bool
+overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->ymax <= box2->ymax);
+}
+
+bool
+above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->ymin > box2->ymax);
+}
+
+bool
+overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+    return false;
+  return (box1->ymin >= box2->ymin);
+}
+
+/* Z axis — front/back only meaningful when both boxes have Z */
+
+bool
+front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+    return false;
+  return (box1->zmax < box2->zmin);
+}
+
+bool
+overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+    return false;
+  return (box1->zmax <= box2->zmax);
+}
+
+bool
+back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+    return false;
+  return (box1->zmin > box2->zmax);
+}
+
+bool
+overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+    return false;
+  return (box1->zmin >= box2->zmin);
+}
+
+/* Time axis — before/after only meaningful when both boxes have T */
+
+bool
+before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+    return false;
+  return (DatumGetTimestampTz(box1->period.upper) <
+          DatumGetTimestampTz(box2->period.lower));
+}
+
+bool
+overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+    return false;
+  return (DatumGetTimestampTz(box1->period.upper) <=
+          DatumGetTimestampTz(box2->period.upper));
+}
+
+bool
+after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+    return false;
+  return (DatumGetTimestampTz(box1->period.lower) >
+          DatumGetTimestampTz(box2->period.upper));
+}
+
+bool
+overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+    return false;
+  return (DatumGetTimestampTz(box1->period.lower) >=
+          DatumGetTimestampTz(box2->period.lower));
+}
+
 /*****************************************************************************/
