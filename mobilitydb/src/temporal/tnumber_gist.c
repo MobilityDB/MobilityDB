@@ -58,6 +58,9 @@
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 
 /*****************************************************************************
  * GiST consistent methods
@@ -351,7 +354,11 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 {
   int leftCount, rightCount;
   float4 ratio, overlap;
-  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+    || bboxtype == T_TPCBOX
+#endif
+    );
 
   /*
    * Calculate entries distribution ratio assuming most uniform distribution
@@ -399,7 +406,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
         range = (double) (DatumGetTimestampTz(bbox->period.upper) -
           DatumGetTimestampTz(bbox->period.lower));
     }
-    else /* bboxtype == T_STBOX */
+    else /* bboxtype == T_STBOX or T_TPCBOX (binary-compatible prefix) */
     {
       STBox *bbox = (STBox *) &context->boundingBox;
       if (dimNum == 0)
@@ -560,7 +567,17 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *common_entries;
   int nentries, common_entries_count, dim;
-  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+    || bboxtype == T_TPCBOX
+#endif
+    );
+  /* T_TPCBOX shares the STBox prefix layout (Span period, then xyz min/max),
+   * so projection casts can use STBox * uniformly */
+  bool stbox_compat = (bboxtype == T_STBOX);
+#if POINTCLOUD
+  stbox_compat = stbox_compat || (bboxtype == T_TPCBOX);
+#endif
 
   int maxdims = bbox_max_dims(bboxtype);
   size_t bbox_size = bbox_get_size(bboxtype);
@@ -587,7 +604,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   }
 
   /* Determine whether there is a Z dimension for spatiotemporal boxes */
-  if (bboxtype == T_STBOX)
+  if (stbox_compat)
   {
     box = DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
     hasz = MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
@@ -627,7 +644,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
             (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
         }
       }
-      else /* bboxtype == T_STBOX */
+      else /* T_STBOX or T_TPCBOX (binary-compatible prefix) */
       {
         if (dim == 0)
         {
@@ -777,7 +794,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    */
   if (context.first)
   {
-    bbox_gist_fallback_split(entryvec, v, bboxtype, &tbox_adjust);
+    bbox_gist_fallback_split(entryvec, v, bboxtype, bbox_adjust);
     PG_RETURN_POINTER(v);
   }
 
@@ -817,7 +834,11 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * Get upper and lower bounds along selected axis.
      */
     box = DatumGetPointer(entryvec->vector[i].key);
-    assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
+    assert(bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+      || bboxtype == T_TPCBOX
+#endif
+      );
     if (bboxtype == T_TBOX)
     {
       if (context.dim == 0)
@@ -831,7 +852,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
         upper = (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
       }
     }
-    else /* bboxtype == T_STBOX */
+    else /* T_STBOX or T_TPCBOX (binary-compatible prefix) */
     {
       if (context.dim == 0)
       {
@@ -932,7 +953,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
       else
       {
         /* Otherwise select the group by minimal penalty */
-        if (tbox_penalty(leftBox, box) < tbox_penalty(rightBox, box))
+        if (bbox_penalty(leftBox, box) < bbox_penalty(rightBox, box))
           PLACE_LEFT(box, idx);
         else
           PLACE_RIGHT(box, idx);

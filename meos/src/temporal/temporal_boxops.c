@@ -75,6 +75,10 @@ bbox_type(meosType bboxtype)
 {
   if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return true;
+#endif
   return false;
 }
 
@@ -89,8 +93,12 @@ bbox_get_size(meosType bboxtype)
     return sizeof(Span);
   if (bboxtype == T_TBOX)
     return sizeof(TBox);
-  else /* bboxtype == T_STBOX */
-    return sizeof(STBox);
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return sizeof(TPCBox);
+#endif
+  /* bboxtype == T_STBOX */
+  return sizeof(STBox);
 }
 
 /**
@@ -104,8 +112,8 @@ bbox_max_dims(meosType bboxtype)
     return 1;
   if (bboxtype == T_TBOX)
     return 2;
-  else /* bboxtype == T_STBOX */
-    return 4;
+  /* T_STBOX or T_TPCBOX: 3 spatial dims + 1 time dim */
+  return 4;
 }
 
 /**

@@ -29,6 +29,9 @@ set(POINTCLOUD_PG_SRCS
   tpcpoint.c
   # tpcpatch lifted temporal type wrapper.
   tpcpatch.c
+  # GiST opclass support (consistent / union / penalty / picksplit /
+  # same) for TPCBox.
+  tpcbox_gist.c
 )
 
 if(POINTCLOUD_PG_SRCS)

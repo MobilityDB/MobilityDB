@@ -279,6 +279,10 @@ typedef union bboxunion
   Span p;      /**< Span */
   TBox b;      /**< Temporal box */
   STBox g;     /**< Spatiotemporal box */
+#if POINTCLOUD
+  /* TPCBox is 88 bytes (vs STBox 80) — shares Span+xyz prefix layout */
+  char tpc[88];
+#endif
 } bboxunion;
 
 /*****************************************************************************

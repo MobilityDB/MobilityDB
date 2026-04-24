@@ -26,6 +26,11 @@ if(POINTCLOUD)
     # catalogs. The PG extension installs the implementation in
     # mobilitydb_init.
     schema_hook.c
+
+    # GiST / SP-GiST strategy dispatch tables for TPCBox, mirroring
+    # meos/src/geo/stbox_index.c.  Pure leaf/inner consistency
+    # logic — the GiST support functions live in the PG layer.
+    tpcbox_index.c
   )
 
   # Set types — `_meos.c` suffix → MEOS-only build. The PG extension

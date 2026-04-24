@@ -1,6 +1,7 @@
 SET(LOCAL_FILES
   400_pcset
   410_tpcbox
+  411_tpcbox_gist
   420_tpcpoint
   430_tpcpatch
   )
