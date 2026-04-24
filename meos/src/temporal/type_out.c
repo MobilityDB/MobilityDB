@@ -153,9 +153,9 @@ basetype_out(Datum value, meosType type, int maxdd)
       return geo_out(DatumGetGserializedP(value));
 #if POINTCLOUD
     case T_PCPOINT:
-      return pcpoint_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd);
     case T_PCPATCH:
-      return pcpatch_out((const Pcpatch *) DatumGetPointer(value), maxdd);
+      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
 #endif
 #if CBUFFER
     case T_CBUFFER:

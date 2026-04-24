@@ -97,7 +97,7 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum first = temporal_start_value(temp);
   const Pcpoint *pt = (const Pcpoint *) DatumGetPointer(first);
-  uint32_t pcid = pcpoint_pcid(pt);
+  uint32_t pcid = pcpoint_get_pcid(pt);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32((int32) pcid);
 }

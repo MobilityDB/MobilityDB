@@ -201,7 +201,7 @@ pcpoint_parse(const char **str, bool end)
  * @brief Return a pcpoint from its hex-encoded representation
  */
 Pcpoint *
-pcpoint_in(const char *str)
+pcpoint_hex_in(const char *str)
 {
   if (! str)
   {
@@ -217,7 +217,7 @@ pcpoint_in(const char *str)
  *   the MEOS layer.
  */
 char *
-pcpoint_out(const Pcpoint *pt, int maxdd)
+pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 {
   (void) maxdd;
   assert(pt);
@@ -235,7 +235,7 @@ pcpoint_out(const Pcpoint *pt, int maxdd)
 Pcpoint *
 pcpoint_from_hexwkb(const char *hexwkb)
 {
-  return pcpoint_in(hexwkb);
+  return pcpoint_hex_in(hexwkb);
 }
 
 /**
@@ -244,7 +244,7 @@ pcpoint_from_hexwkb(const char *hexwkb)
 char *
 pcpoint_as_hexwkb(const Pcpoint *pt)
 {
-  return pcpoint_out(pt, 0);
+  return pcpoint_hex_out(pt, 0);
 }
 
 /*****************************************************************************
@@ -272,7 +272,7 @@ pcpoint_copy(const Pcpoint *pt)
  * @brief Return the pcid (schema id) of a pcpoint
  */
 uint32_t
-pcpoint_pcid(const Pcpoint *pt)
+pcpoint_get_pcid(const Pcpoint *pt)
 {
   assert(pt);
   return pt->pcid;

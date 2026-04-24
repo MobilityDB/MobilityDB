@@ -114,8 +114,8 @@ typedef struct
 
 /* Input and output */
 
-extern Pcpoint *pcpoint_in(const char *str);
-extern char *pcpoint_out(const Pcpoint *pt, int maxdd);
+extern Pcpoint *pcpoint_hex_in(const char *str);
+extern char *pcpoint_hex_out(const Pcpoint *pt, int maxdd);
 extern Pcpoint *pcpoint_from_hexwkb(const char *hexwkb);
 extern char *pcpoint_as_hexwkb(const Pcpoint *pt);
 
@@ -125,7 +125,7 @@ extern Pcpoint *pcpoint_copy(const Pcpoint *pt);
 
 /* Accessor */
 
-extern uint32_t pcpoint_pcid(const Pcpoint *pt);
+extern uint32_t pcpoint_get_pcid(const Pcpoint *pt);
 extern uint32 pcpoint_hash(const Pcpoint *pt);
 extern uint64 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed);
 
@@ -145,8 +145,8 @@ extern bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2);
 
 /* Input and output */
 
-extern Pcpatch *pcpatch_in(const char *str);
-extern char *pcpatch_out(const Pcpatch *pa, int maxdd);
+extern Pcpatch *pcpatch_hex_in(const char *str);
+extern char *pcpatch_hex_out(const Pcpatch *pa, int maxdd);
 extern Pcpatch *pcpatch_from_hexwkb(const char *hexwkb);
 extern char *pcpatch_as_hexwkb(const Pcpatch *pa);
 
@@ -156,7 +156,7 @@ extern Pcpatch *pcpatch_copy(const Pcpatch *pa);
 
 /* Accessor */
 
-extern uint32_t pcpatch_pcid(const Pcpatch *pa);
+extern uint32_t pcpatch_get_pcid(const Pcpatch *pa);
 extern uint32_t pcpatch_npoints(const Pcpatch *pa);
 extern uint32 pcpatch_hash(const Pcpatch *pa);
 extern uint64 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed);

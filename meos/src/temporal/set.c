@@ -347,11 +347,11 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   if (basetype == T_PCPOINT)
   {
     uint32_t pcid0 =
-      pcpoint_pcid((const Pcpoint *) DatumGetPointer(values[0]));
+      pcpoint_get_pcid((const Pcpoint *) DatumGetPointer(values[0]));
     for (int i = 1; i < count; i++)
     {
       uint32_t pcid_i =
-        pcpoint_pcid((const Pcpoint *) DatumGetPointer(values[i]));
+        pcpoint_get_pcid((const Pcpoint *) DatumGetPointer(values[i]));
       if (pcid_i != pcid0)
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -364,11 +364,11 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   else if (basetype == T_PCPATCH)
   {
     uint32_t pcid0 =
-      pcpatch_pcid((const Pcpatch *) DatumGetPointer(values[0]));
+      pcpatch_get_pcid((const Pcpatch *) DatumGetPointer(values[0]));
     for (int i = 1; i < count; i++)
     {
       uint32_t pcid_i =
-        pcpatch_pcid((const Pcpatch *) DatumGetPointer(values[i]));
+        pcpatch_get_pcid((const Pcpatch *) DatumGetPointer(values[i]));
       if (pcid_i != pcid0)
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

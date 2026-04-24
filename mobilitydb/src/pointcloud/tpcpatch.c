@@ -67,7 +67,7 @@ Tpcpatch_pcid(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum first = temporal_start_value(temp);
   const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(first);
-  uint32_t pcid = pcpatch_pcid(pa);
+  uint32_t pcid = pcpatch_get_pcid(pa);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32((int32) pcid);
 }

@@ -68,7 +68,7 @@ Datum
 Pcpoint_pcid(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  uint32_t pcid = pcpoint_pcid(pt);
+  uint32_t pcid = pcpoint_get_pcid(pt);
   PG_FREE_IF_COPY(pt, 0);
   PG_RETURN_INT32((int32) pcid);
 }
@@ -84,7 +84,7 @@ Datum
 Pcpatch_pcid(PG_FUNCTION_ARGS)
 {
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  uint32_t pcid = pcpatch_pcid(pa);
+  uint32_t pcid = pcpatch_get_pcid(pa);
   PG_FREE_IF_COPY(pa, 0);
   PG_RETURN_INT32((int32) pcid);
 }

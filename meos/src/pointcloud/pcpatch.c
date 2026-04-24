@@ -148,7 +148,7 @@ pcpatch_parse(const char **str, bool end)
 }
 
 Pcpatch *
-pcpatch_in(const char *str)
+pcpatch_hex_in(const char *str)
 {
   if (! str)
   {
@@ -159,7 +159,7 @@ pcpatch_in(const char *str)
 }
 
 char *
-pcpatch_out(const Pcpatch *pa, int maxdd)
+pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 {
   (void) maxdd;
   assert(pa);
@@ -174,13 +174,13 @@ pcpatch_out(const Pcpatch *pa, int maxdd)
 Pcpatch *
 pcpatch_from_hexwkb(const char *hexwkb)
 {
-  return pcpatch_in(hexwkb);
+  return pcpatch_hex_in(hexwkb);
 }
 
 char *
 pcpatch_as_hexwkb(const Pcpatch *pa)
 {
-  return pcpatch_out(pa, 0);
+  return pcpatch_hex_out(pa, 0);
 }
 
 /*****************************************************************************
@@ -197,7 +197,7 @@ pcpatch_copy(const Pcpatch *pa)
   return result;
 }
 
-uint32_t pcpatch_pcid(const Pcpatch *pa)    { assert(pa); return pa->pcid; }
+uint32_t pcpatch_get_pcid(const Pcpatch *pa)    { assert(pa); return pa->pcid; }
 uint32_t pcpatch_npoints(const Pcpatch *pa) { assert(pa); return pa->npoints; }
 
 uint32
