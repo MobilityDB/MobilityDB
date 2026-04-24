@@ -1210,17 +1210,20 @@ inline bool
 talpha_type(meosType type)
 {
   return (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
-    type == T_TDOUBLE3 || type == T_TDOUBLE4
-#if POINTCLOUD
-    /* tpcpoint / tpcpatch get a time-only Span bbox because computing
-     * their spatial bbox requires the pgpointcloud schema (loaded by
-     * pcid from the pointcloud_formats table) and MEOS has no catalog
-     * access. A full TPCBox bbox via a function-pointer schema hook
-     * set up by the PG extension's _PG_init is a follow-up. */
-    || type == T_TPCPOINT || type == T_TPCPATCH
-#endif
-    );
+    type == T_TDOUBLE3 || type == T_TDOUBLE4);
 }
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a temporal pgpointcloud type
+ *   (tpcpoint, tpcpatch) — its bounding box is a TPCBox.
+ */
+inline bool
+tpointcloud_temptype(meosType type)
+{
+  return (type == T_TPCPOINT || type == T_TPCPATCH);
+}
+#endif
 
 /**
  * @brief Return true if the type is a temporal number type

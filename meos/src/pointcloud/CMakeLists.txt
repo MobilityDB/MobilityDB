@@ -13,9 +13,19 @@ if(POINTCLOUD)
 
     # Bounding-box type — fixed-size struct mirroring STBox with an
     # extra pcid field. Pcpatch → TPCBox is free (embedded
-    # PCBOUNDS); pcpoint → TPCBox lives in the PG wrapper layer
-    # (needs schema access).
+    # PCBOUNDS); pcpoint → TPCBox goes via the schema hook.
     tpcbox.c
+
+    # TPCBox bbox helpers for temporal pointcloud types (set-from-
+    # instant, expand, array aggregation). These are called by the
+    # generic temporal_bbox machinery in meos/src/temporal.
+    tpc_boxops.c
+
+    # Function-pointer hook that lets the MEOS-layer bbox helpers
+    # resolve a pgpointcloud PCSCHEMA by pcid without touching PG
+    # catalogs. The PG extension installs the implementation in
+    # mobilitydb_init.
+    schema_hook.c
   )
 
   # Set types — `_meos.c` suffix → MEOS-only build. The PG extension

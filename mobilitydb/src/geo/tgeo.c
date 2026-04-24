@@ -52,6 +52,8 @@
 #include "pg_geo/postgis.h"
 #if POINTCLOUD
   #include "pc_api.h"
+  #include "pointcloud/meos_schema_hook.h"
+  #include "pg_pointcloud/schema_cache.h"
 #endif
 
 /*****************************************************************************
@@ -122,6 +124,10 @@ mobilitydb_init()
     (pc_message_handler) pg_error,
     (pc_message_handler) pg_info,
     (pc_message_handler) pg_notice);
+  /* Install the PCSCHEMA lookup hook so MEOS-layer bbox computation
+   * (tpointcloudinst_set_tpcbox and friends) can resolve a pcid to
+   * its parsed schema without touching PG catalogs directly. */
+  meos_pc_schema_fn = mobilitydb_pc_schema;
 #endif
   return;
 }
