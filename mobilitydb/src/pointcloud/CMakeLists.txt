@@ -18,6 +18,8 @@ set(POINTCLOUD_PG_SRCS
   # pcpatchset delegate to the generic Set_* wrappers in
   # mobilitydb/src/temporal/set.c.
   pcset.c
+  # Phase 8F — PG wrappers for the TPCBox bounding-box type.
+  tpcbox.c
   # tpcpoint.c      # Phase 8G
   # tpcpatch.c      # Phase 8H
 )

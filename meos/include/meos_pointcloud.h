@@ -43,6 +43,34 @@
 typedef struct Pcpoint Pcpoint;
 typedef struct Pcpatch Pcpatch;
 
+/**
+ * @brief Bounding box for pgpointcloud temporal types.
+ *
+ * Mirrors STBox (spatiotemporal box) but carries an additional @p pcid
+ * field — pgpointcloud schema id — because TPCBoxes from different
+ * schemas cannot meaningfully be compared / unioned (the underlying
+ * dimensions are schema-specific). Fixed-size struct; no varlena.
+ *
+ * Flag bits live in @p MEOS_FLAGS_* (see @p meos_internal.h): @p X
+ * (bounds present), @p Z (z-dimension present), @p T (time span
+ * present), @p GEODETIC (geographic coords). A TPCBox must have at
+ * least one of X or T.
+ */
+typedef struct
+{
+  Span period;        /**< time span */
+  double xmin;        /**< minimum x value */
+  double ymin;        /**< minimum y value */
+  double zmin;        /**< minimum z value */
+  double xmax;        /**< maximum x value */
+  double ymax;        /**< maximum y value */
+  double zmax;        /**< maximum z value */
+  int32_t srid;       /**< SRID */
+  uint32_t pcid;      /**< pgpointcloud schema id */
+  int16 flags;        /**< flags */
+  char padding[6];    /**< explicit pad to 8-byte alignment */
+} TPCBox;
+
 /*****************************************************************************
  * Validity macros
  *****************************************************************************/
@@ -60,6 +88,11 @@ typedef struct Pcpatch Pcpatch;
               ! ensure_set_isof_type((set), T_PCPATCHSET) ) \
            return (ret); \
     } while (0)
+  #define VALIDATE_TPCBOX(box, ret) \
+    do { \
+          if (! ensure_not_null((void *) (box)) ) \
+           return (ret); \
+    } while (0)
 #else
   #define VALIDATE_PCPOINTSET(set, ret) \
     do { \
@@ -71,6 +104,8 @@ typedef struct Pcpatch Pcpatch;
       assert(set); \
       assert((set)->settype == T_PCPATCHSET); \
     } while (0)
+  #define VALIDATE_TPCBOX(box, ret) \
+    do { assert(box); } while (0)
 #endif /* MEOS */
 
 /******************************************************************************
@@ -213,6 +248,78 @@ extern Set *union_set_pcpatch(const Set *s, const Pcpatch *pa);
 /* Aggregate transition */
 
 extern Set *pcpatch_union_transfn(Set *state, const Pcpatch *pa);
+
+/******************************************************************************
+ * Functions for the TPCBox bounding box
+ ******************************************************************************/
+
+/* Input and output */
+
+extern TPCBox *tpcbox_in(const char *str);
+extern char *tpcbox_out(const TPCBox *box, int maxdd);
+
+/* Constructor */
+
+extern TPCBox *tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
+  int32_t srid, uint32_t pcid, double xmin, double xmax, double ymin,
+  double ymax, double zmin, double zmax, const Span *period);
+extern TPCBox *tpcbox_copy(const TPCBox *box);
+
+/* Conversion */
+
+extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid);
+
+/* Accessors */
+
+extern bool tpcbox_hasx(const TPCBox *box);
+extern bool tpcbox_hasz(const TPCBox *box);
+extern bool tpcbox_hast(const TPCBox *box);
+extern bool tpcbox_geodetic(const TPCBox *box);
+extern bool tpcbox_xmin(const TPCBox *box, double *result);
+extern bool tpcbox_xmax(const TPCBox *box, double *result);
+extern bool tpcbox_ymin(const TPCBox *box, double *result);
+extern bool tpcbox_ymax(const TPCBox *box, double *result);
+extern bool tpcbox_zmin(const TPCBox *box, double *result);
+extern bool tpcbox_zmax(const TPCBox *box, double *result);
+extern bool tpcbox_tmin(const TPCBox *box, TimestampTz *result);
+extern bool tpcbox_tmax(const TPCBox *box, TimestampTz *result);
+extern int32_t tpcbox_srid(const TPCBox *box);
+extern uint32_t tpcbox_pcid(const TPCBox *box);
+
+/* Transformation */
+
+extern void tpcbox_expand(const TPCBox *box1, TPCBox *box2);
+
+/* Set operations (same-pcid / same-srid required) */
+
+extern TPCBox *union_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2,
+  bool strict);
+extern bool inter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2,
+  TPCBox *result);
+extern TPCBox *intersection_tpcbox_tpcbox(const TPCBox *box1,
+  const TPCBox *box2);
+
+/* Topological predicates */
+
+extern bool contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern bool adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+
+/* Comparison */
+
+extern int tpcbox_cmp(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_le(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2);
+extern bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2);
+
+/* Validity helpers */
+
+extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 /*****************************************************************************/
 

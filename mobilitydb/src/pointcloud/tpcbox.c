@@ -1,0 +1,346 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2025, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
+ *****************************************************************************/
+
+/**
+ * @file
+ * @brief PG wrappers for the TPCBox bounding-box type (Phase 8F).
+ *
+ * Fixed-size struct (no varlena), so @c recv / @c send simply shuttle the
+ * bytes through. @c in / @c out delegate to MEOS-layer @c tpcbox_in /
+ * @c tpcbox_out (hex round-trip for now; richer WKT parsing is deferred).
+ */
+
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
+#include <libpq/pqformat.h>
+#include <utils/timestamp.h>
+/* MEOS */
+#include <meos.h>
+#include <meos_pointcloud.h>
+#include "temporal/span.h"  /* PG_GETARG_SPAN_P */
+#include "pointcloud/tpcbox.h"
+#include "pointcloud/pcpatch.h"
+
+/*****************************************************************************
+ * Input / output
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_in(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_in);
+Datum
+Tpcbox_in(PG_FUNCTION_ARGS)
+{
+  const char *str = PG_GETARG_CSTRING(0);
+  PG_RETURN_TPCBOX_P(tpcbox_in(str));
+}
+
+PGDLLEXPORT Datum Tpcbox_out(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_out);
+Datum
+Tpcbox_out(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  PG_RETURN_CSTRING(tpcbox_out(box, 15));
+}
+
+PGDLLEXPORT Datum Tpcbox_recv(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_recv);
+Datum
+Tpcbox_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  TPCBox *result = palloc(sizeof(TPCBox));
+  pq_copymsgbytes(buf, (char *) result, sizeof(TPCBox));
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_send(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_send);
+Datum
+Tpcbox_send(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (const char *) box, sizeof(TPCBox));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************
+ * Constructors
+ *****************************************************************************/
+
+/**
+ * @brief SQL: tpcbox(xmin, ymin, xmax, ymax, pcid, srid) — 2D spatial
+ */
+PGDLLEXPORT Datum Tpcbox_constructor_2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_constructor_2d);
+Datum
+Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
+{
+  double xmin = PG_GETARG_FLOAT8(0);
+  double ymin = PG_GETARG_FLOAT8(1);
+  double xmax = PG_GETARG_FLOAT8(2);
+  double ymax = PG_GETARG_FLOAT8(3);
+  int32 pcid = PG_GETARG_INT32(4);
+  int32 srid = PG_GETARG_INT32(5);
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false, false,
+    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
+}
+
+/**
+ * @brief SQL: tpcbox_z(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid) — 3D
+ */
+PGDLLEXPORT Datum Tpcbox_constructor_3d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_constructor_3d);
+Datum
+Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
+{
+  double xmin = PG_GETARG_FLOAT8(0);
+  double ymin = PG_GETARG_FLOAT8(1);
+  double zmin = PG_GETARG_FLOAT8(2);
+  double xmax = PG_GETARG_FLOAT8(3);
+  double ymax = PG_GETARG_FLOAT8(4);
+  double zmax = PG_GETARG_FLOAT8(5);
+  int32 pcid = PG_GETARG_INT32(6);
+  int32 srid = PG_GETARG_INT32(7);
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false, false,
+    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
+}
+
+/**
+ * @brief SQL: tpcbox_t(period, pcid) — time-only
+ */
+PGDLLEXPORT Datum Tpcbox_constructor_t(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_constructor_t);
+Datum
+Tpcbox_constructor_t(PG_FUNCTION_ARGS)
+{
+  Span *period = PG_GETARG_SPAN_P(0);
+  int32 pcid = PG_GETARG_INT32(1);
+  PG_RETURN_TPCBOX_P(tpcbox_make(false, false, true, false,
+    0, (uint32_t) pcid, 0, 0, 0, 0, 0, 0, period));
+}
+
+/**
+ * @brief SQL: tpcbox_xt(xmin, ymin, xmax, ymax, period, pcid, srid)
+ */
+PGDLLEXPORT Datum Tpcbox_constructor_xt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_constructor_xt);
+Datum
+Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
+{
+  double xmin = PG_GETARG_FLOAT8(0);
+  double ymin = PG_GETARG_FLOAT8(1);
+  double xmax = PG_GETARG_FLOAT8(2);
+  double ymax = PG_GETARG_FLOAT8(3);
+  Span *period = PG_GETARG_SPAN_P(4);
+  int32 pcid = PG_GETARG_INT32(5);
+  int32 srid = PG_GETARG_INT32(6);
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, true, false,
+    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
+}
+
+/**
+ * @brief SQL: tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
+ */
+PGDLLEXPORT Datum Tpcbox_constructor_zt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_constructor_zt);
+Datum
+Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
+{
+  double xmin = PG_GETARG_FLOAT8(0);
+  double ymin = PG_GETARG_FLOAT8(1);
+  double zmin = PG_GETARG_FLOAT8(2);
+  double xmax = PG_GETARG_FLOAT8(3);
+  double ymax = PG_GETARG_FLOAT8(4);
+  double zmax = PG_GETARG_FLOAT8(5);
+  Span *period = PG_GETARG_SPAN_P(6);
+  int32 pcid = PG_GETARG_INT32(7);
+  int32 srid = PG_GETARG_INT32(8);
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, true, false,
+    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, period));
+}
+
+/*****************************************************************************
+ * Conversion — pcpatch → tpcbox
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpatch_to_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_to_tpcbox);
+Datum
+Pcpatch_to_tpcbox(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  int32 srid = PG_NARGS() > 1 ? PG_GETARG_INT32(1) : 0;
+  TPCBox *result = pcpatch_to_tpcbox(pa, srid);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+/*****************************************************************************
+ * Accessors
+ *****************************************************************************/
+
+#define TPCBOX_ACCESSOR_DOUBLE(fn_name, meos_fn) \
+  PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
+  PG_FUNCTION_INFO_V1(fn_name); \
+  Datum fn_name(PG_FUNCTION_ARGS) \
+  { \
+    TPCBox *box = PG_GETARG_TPCBOX_P(0); \
+    double v; \
+    if (! meos_fn(box, &v)) PG_RETURN_NULL(); \
+    PG_RETURN_FLOAT8(v); \
+  }
+
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_xmin, tpcbox_xmin)
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_xmax, tpcbox_xmax)
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_ymin, tpcbox_ymin)
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_ymax, tpcbox_ymax)
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_zmin, tpcbox_zmin)
+TPCBOX_ACCESSOR_DOUBLE(Tpcbox_zmax, tpcbox_zmax)
+
+PGDLLEXPORT Datum Tpcbox_tmin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_tmin);
+Datum
+Tpcbox_tmin(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  TimestampTz v;
+  if (! tpcbox_tmin(box, &v)) PG_RETURN_NULL();
+  PG_RETURN_TIMESTAMPTZ(v);
+}
+
+PGDLLEXPORT Datum Tpcbox_tmax(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_tmax);
+Datum
+Tpcbox_tmax(PG_FUNCTION_ARGS)
+{
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  TimestampTz v;
+  if (! tpcbox_tmax(box, &v)) PG_RETURN_NULL();
+  PG_RETURN_TIMESTAMPTZ(v);
+}
+
+PGDLLEXPORT Datum Tpcbox_hasx(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_hasx);
+Datum Tpcbox_hasx(PG_FUNCTION_ARGS)
+{ PG_RETURN_BOOL(tpcbox_hasx(PG_GETARG_TPCBOX_P(0))); }
+
+PGDLLEXPORT Datum Tpcbox_hasz(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_hasz);
+Datum Tpcbox_hasz(PG_FUNCTION_ARGS)
+{ PG_RETURN_BOOL(tpcbox_hasz(PG_GETARG_TPCBOX_P(0))); }
+
+PGDLLEXPORT Datum Tpcbox_hast(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_hast);
+Datum Tpcbox_hast(PG_FUNCTION_ARGS)
+{ PG_RETURN_BOOL(tpcbox_hast(PG_GETARG_TPCBOX_P(0))); }
+
+PGDLLEXPORT Datum Tpcbox_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_srid);
+Datum Tpcbox_srid(PG_FUNCTION_ARGS)
+{ PG_RETURN_INT32(tpcbox_srid(PG_GETARG_TPCBOX_P(0))); }
+
+PGDLLEXPORT Datum Tpcbox_pcid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_pcid);
+Datum Tpcbox_pcid(PG_FUNCTION_ARGS)
+{ PG_RETURN_INT32((int32) tpcbox_pcid(PG_GETARG_TPCBOX_P(0))); }
+
+/*****************************************************************************
+ * Set operations
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Union_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Union_tpcbox_tpcbox);
+Datum
+Union_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{
+  TPCBox *a = PG_GETARG_TPCBOX_P(0);
+  TPCBox *b = PG_GETARG_TPCBOX_P(1);
+  TPCBox *result = union_tpcbox_tpcbox(a, b, /* strict */ false);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Intersection_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Intersection_tpcbox_tpcbox);
+Datum
+Intersection_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{
+  TPCBox *a = PG_GETARG_TPCBOX_P(0);
+  TPCBox *b = PG_GETARG_TPCBOX_P(1);
+  TPCBox *result = intersection_tpcbox_tpcbox(a, b);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TPCBOX_P(result);
+}
+
+/*****************************************************************************
+ * Topological predicates
+ *****************************************************************************/
+
+#define TPCBOX_PRED_2(fn_name, meos_fn) \
+  PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
+  PG_FUNCTION_INFO_V1(fn_name); \
+  Datum fn_name(PG_FUNCTION_ARGS) \
+  { \
+    TPCBox *a = PG_GETARG_TPCBOX_P(0); \
+    TPCBox *b = PG_GETARG_TPCBOX_P(1); \
+    PG_RETURN_BOOL(meos_fn(a, b)); \
+  }
+
+TPCBOX_PRED_2(Contains_tpcbox_tpcbox,  contains_tpcbox_tpcbox)
+TPCBOX_PRED_2(Contained_tpcbox_tpcbox, contained_tpcbox_tpcbox)
+TPCBOX_PRED_2(Overlaps_tpcbox_tpcbox,  overlaps_tpcbox_tpcbox)
+TPCBOX_PRED_2(Same_tpcbox_tpcbox,      same_tpcbox_tpcbox)
+TPCBOX_PRED_2(Adjacent_tpcbox_tpcbox,  adjacent_tpcbox_tpcbox)
+
+/*****************************************************************************
+ * Comparison
+ *****************************************************************************/
+
+TPCBOX_PRED_2(Tpcbox_eq, tpcbox_eq)
+TPCBOX_PRED_2(Tpcbox_ne, tpcbox_ne)
+TPCBOX_PRED_2(Tpcbox_lt, tpcbox_lt)
+TPCBOX_PRED_2(Tpcbox_le, tpcbox_le)
+TPCBOX_PRED_2(Tpcbox_gt, tpcbox_gt)
+TPCBOX_PRED_2(Tpcbox_ge, tpcbox_ge)
+
+PGDLLEXPORT Datum Tpcbox_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_cmp);
+Datum
+Tpcbox_cmp(PG_FUNCTION_ARGS)
+{
+  TPCBox *a = PG_GETARG_TPCBOX_P(0);
+  TPCBox *b = PG_GETARG_TPCBOX_P(1);
+  PG_RETURN_INT32(tpcbox_cmp(a, b));
+}
+
+/*****************************************************************************/

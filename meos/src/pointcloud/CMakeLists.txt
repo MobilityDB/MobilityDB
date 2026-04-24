@@ -14,6 +14,12 @@ if(POINTCLOUD)
     pcpoint.c
     pcpatch.c
 
+    # Bounding-box type — Phase 8F. Fixed-size struct mirroring STBox
+    # with an extra pcid field. Pcpatch → TPCBox is free (embedded
+    # PCBOUNDS); pcpoint → TPCBox is deferred to Phase 8G (needs
+    # schema access).
+    tpcbox.c
+
     # Temporal types — Phase 8G / 8H.
     # tpcpoint.c
     # tpcpatch.c

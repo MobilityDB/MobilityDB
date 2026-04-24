@@ -122,6 +122,7 @@ typedef enum
   T_PCPATCH        = 66,  /**< pgpointcloud patch type */
   T_PCPATCHSET     = 67,  /**< pgpointcloud patch set type */
   T_TPCPATCH       = 68,  /**< temporal pgpointcloud patch type */
+  T_TPCBOX         = 69,  /**< temporal pgpointcloud bounding box type */
   NO_MEOS_TYPES           /* Dummy value that determines the size of the
                            * lookup array meosType -> Oid */
 } meosType;
