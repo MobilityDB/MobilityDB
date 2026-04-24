@@ -1,0 +1,7 @@
+regression.out
+regression.diffs
+results/
+tmp_check/ 
+log/
+Makefile
+sqldefines.h

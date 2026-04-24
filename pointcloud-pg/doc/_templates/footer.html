@@ -1,0 +1,16 @@
+{% extends "!footer.html" %}
+
+{% block extrafooter %}
+    <div class="footer">
+        <div class="container">
+            &copy;  {{ copyright }}
+            <a href="https://github.com/pramsey">Paul Ramsey</a>,
+            <a href="http://github.com/pblottiere">Paul Blottiere</a>,
+            <a href="http://github.com/mbredif">Mathieu Brédif</a>,
+            <a href="http://github.com/elemoine">Eric Lemoine</a>,
+            and
+            <a href="https://github.com/pgpointcloud/pointcloud/graphs/contributors">others</a>,
+        </div>
+    </div>
+    {{ super() }}
+{% endblock %}

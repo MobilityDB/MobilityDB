@@ -1,0 +1,30 @@
+freebsd_instance:
+  image: freebsd-13-0-release-amd64
+  cpu: 8
+  memory: 16G
+
+task:
+  only_if: $BRANCH != 'main'
+  install_script:
+    - sed -i.bak -e 's,pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly,pkg+http://pkg.FreeBSD.org/\${ABI}/latest,' /etc/pkg/FreeBSD.conf
+    - ASSUME_ALWAYS_YES=yes pkg bootstrap -f
+    - pkg install -y postgresql13-server postgresql13-client gmake autoconf automake pkgconf iconv postgis31 cunit
+
+  configure_script:
+    - ./autogen.sh
+    - ./configure --without-lazperf
+    - service postgresql oneinitdb
+    - service postgresql onestart
+    - psql -U postgres -c "CREATE ROLE runner SUPERUSER LOGIN CREATEDB;"
+  build_script:
+    - gmake -j8
+  check_script:
+    - gmake -j8 check
+    - gmake -j8 install
+  matrix:
+    - name: freebsd12-amd64
+      freebsd_instance:
+          image: freebsd-12-2-release-amd64
+    - name: freebsd13-amd64
+      freebsd_instance:
+          image: freebsd-13-0-release-amd64

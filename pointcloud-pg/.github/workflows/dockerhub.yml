@@ -1,0 +1,22 @@
+name: "Docker image latest"
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    name: Docker image latest
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Push image to dockerhub
+        uses: docker/build-push-action@v1
+        with:
+          path: ./docker
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: pgpointcloud/pointcloud
+          tags: latest

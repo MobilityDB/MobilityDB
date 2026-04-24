@@ -1,0 +1,43 @@
+{
+	"name": "pointcloud_postgis",
+	"abstract": "PostGIS integration functions for Pointcloud",
+	"description": "Provides GIS overlay and vector/raster hooks for point clou data.",
+	"version": "1.0.0",
+	"release_status": "unstable",
+	"maintainer": "Paul Ramsey",
+	"license": "bsd",
+	"provides": {
+		"pointcloud_postgis": {
+			"abstract": "PostGIS integration for Pointcloud",
+			"version": "1.0.0",
+			"file": "",
+			"docfile": ""
+		}
+	}
+	"prereqs": {
+      "runtime": {
+         "requires": {
+            "postgis": "2.0.0",
+            "pointcloud": "1.0.0"
+         }
+      }
+    },
+    "generated_by": "Paul Ramsey",
+	"resources": {
+		"bugtracker": {
+			"web": "https://github.com/pgpointcloud/pointcloud"
+		},
+		"repository": {
+			"url": "",
+			"web": "https://github.com/pgpointcloud/pointcloud",
+			"type": "git"
+		}
+	},
+	"meta-spec": {
+		"version": "1.0.0",
+		"url": "http://pgxn.org/meta/spec.txt"
+	},
+	"tags": [
+		"gis", "lidar", "spatial", "geometry"
+	]
+}
