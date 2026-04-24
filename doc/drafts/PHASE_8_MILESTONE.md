@@ -23,10 +23,14 @@ branch at the Phase 8 MVP milestone. Successor and precursor files:
 | `d5e61bdc5` | 8E.5 | Strip `SERIALIZED_POINT/_PATCH` tail-padding from cmp+hash |
 | `ec66df496` | 8F | `TPCBox` bounding-box type |
 | `9fb08f4f2` | 8G | PCSCHEMA cache + schema-aware `getX/Y/Z/Dim` |
-| `...`       | 8H | `tpcpoint` lifted temporal type |
-| `...`       | 8I | `tpcpatch` lifted temporal type |
+| `885601b09` | 8H | `tpcpoint` lifted temporal type |
+| `c1870851e` | 8I | `tpcpatch` lifted temporal type |
 | `87ed8e857` | 8J | `tpcpoint` per-dimension projections to `tfloat` |
 | `ff853bd4d` | 8K | `tpcpoint → tgeompoint` XY projection cast |
+| `7a410f5b7` | — | Rename 6 MEOS helpers to avoid pgpointcloud symbol interposition |
+| `61044bac0` | — | CMake SQL-aggregate `file(WRITE)` fix (duplicate-type on reconfigure) |
+| `8efef4643` | — | Hoist PCSCHEMA lookup to top of each projection PG wrapper |
+| `aa0d3653d` | — | `pc_set_handlers` in `mobilitydb_init`; schema cache → heap scan |
 
 ## What works after Phase 8K
 
@@ -82,8 +86,39 @@ branch at the Phase 8 MVP milestone. Successor and precursor files:
   origin, semantically equivalent, first copy wins).
 
 **Smoke test:** `mobilitydb/test/pointcloud/smoketest.sql` — runnable
-end-to-end via `psql -f …` once the extension is installed. Not yet
-wired into the CMake test target (see deferred list below).
+end-to-end via `psql -f …` once the extension is installed. All checks
+pass on a cold session (no warmup needed). Not yet wired into the CMake
+test target (see deferred list below).
+
+**Post-milestone diagnostic path — resolved.** During the installation
+smoke test an early session crashed on `SELECT getX(traj) FROM
+<table>` where `traj` was a stored `tpcpoint` column. Three rounds of
+fixes landed on the branch after the K-commit to address load-time
+issues that only surface when both libMobilityDB and pointcloud-1.2
+are live in the same backend:
+
+  1. **Symbol rename** (7a410f5b7) — six MEOS helpers (`pcpoint_pcid`,
+     `pcpoint_in`, `pcpoint_out`, and the pcpatch triple) had the same
+     C names as pgpointcloud's PG V1 wrappers, and ELF's default
+     global-symbol interposition let pgpointcloud's PG V1 functions
+     hijack our MEOS helpers → backend segfault dispatching a
+     `FunctionCallInfo *` where we passed a `const Pcpoint *`.
+  2. **SQL-aggregate dedup** (61044bac0) — unrelated pre-existing
+     build-system bug: `file(APPEND)` without a leading `file(WRITE)`
+     multiplied every CREATE TYPE on each reconfigure.
+  3. **Schema-cache restructure** (8efef4643 + aa0d3653d) — two parts:
+     hoisting the PCSCHEMA lookup to the top of each PG V1 wrapper
+     (so it's called from a known-good executor context) and, more
+     importantly, calling `pc_set_handlers` in `mobilitydb_init`.
+     Both our lib and pgpointcloud's lib statically link libpc.a,
+     which carries process-global function-pointer slots for its
+     allocator / error / info / warning callbacks; only pgpointcloud
+     was initializing them, so when ELF picked our copy of
+     `pc_schema_from_xml` the first handler dispatch dereferenced
+     NULL. The same commit swapped our `pointcloud_formats` lookup
+     from SPI to a direct heap scan — not because SPI was broken,
+     but because the heap-scan form is simpler and matches the
+     pattern MobilityDB already uses for its own opcache.
 
 ## What is still deferred
 
