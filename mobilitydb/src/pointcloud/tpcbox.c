@@ -41,12 +41,17 @@
 #include <fmgr.h>
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
+/* pgpointcloud */
+#include "pc_api.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_pointcloud.h>
 #include "temporal/span.h"  /* PG_GETARG_SPAN_P */
 #include "pointcloud/tpcbox.h"
+#include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
+/* MobilityDB */
+#include "pg_pointcloud/schema_cache.h"
 
 /*****************************************************************************
  * Input / output
@@ -195,13 +200,80 @@ Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Pcpatch_to_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_to_tpcbox);
+/**
+ * @brief SQL: tpcbox(pcpatch) — auto-fills SRID from the pgpointcloud
+ *   schema via the per-backend schema cache (Phase 8G wiring).
+ */
 Datum
 Pcpatch_to_tpcbox(PG_FUNCTION_ARGS)
 {
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  int32 srid = PG_NARGS() > 1 ? PG_GETARG_INT32(1) : 0;
+  PCSCHEMA *schema = mobilitydb_pc_schema(pa->pcid);
+  TPCBox *result = pcpatch_to_tpcbox(pa, (int32_t) schema->srid);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_to_tpcbox_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_to_tpcbox_srid);
+/**
+ * @brief SQL: tpcbox(pcpatch, srid) — explicit SRID override, skips the
+ *   schema lookup. Useful when pointcloud_formats.srid = 0 and the
+ *   caller knows the real SRID from a PostGIS context.
+ */
+Datum
+Pcpatch_to_tpcbox_srid(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  int32 srid = PG_GETARG_INT32(1);
   TPCBox *result = pcpatch_to_tpcbox(pa, srid);
   PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_to_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_to_tpcbox);
+/**
+ * @brief SQL: tpcbox(pcpoint) — degenerate (single-point) bbox with
+ *   spatial bounds equal to the point's X/Y/[Z]. SRID comes from the
+ *   schema; pcid from the pcpoint itself. Phase 8G deliverable — the
+ *   schema cache makes this possible without dragging pgpointcloud's
+ *   PG-layer API into MEOS.
+ */
+Datum
+Pcpoint_to_tpcbox(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  PCSCHEMA *schema = mobilitydb_pc_schema(pt->pcid);
+  PCPOINT pcpt;
+  pcpt.readonly = 1;
+  pcpt.schema = schema;
+  pcpt.data = (uint8_t *) pt->data;
+
+  if (! schema->xdim || ! schema->ydim)
+  {
+    PG_FREE_IF_COPY(pt, 0);
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("pcpoint schema %u lacks X or Y dimensions", pt->pcid)));
+  }
+
+  double x, y, z = 0.0;
+  bool has_z = (schema->zdim != NULL);
+  if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y) ||
+      (has_z && ! pc_point_get_z(&pcpt, &z)))
+  {
+    PG_FREE_IF_COPY(pt, 0);
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Failed to extract coords from pcpoint (pcid=%u)", pt->pcid)));
+  }
+
+  TPCBox *result = tpcbox_make(
+    /* hasx */ true, /* hasz */ has_z, /* hast */ false,
+    /* geodetic */ false,
+    (int32_t) schema->srid, pt->pcid,
+    x, x, y, y, z, z, NULL);
+
+  PG_FREE_IF_COPY(pt, 0);
   PG_RETURN_TPCBOX_P(result);
 }
 

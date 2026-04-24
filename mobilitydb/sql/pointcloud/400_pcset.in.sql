@@ -61,6 +61,36 @@ CREATE FUNCTION pcid(pcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Schema-aware dimension getters for pcpoint (Phase 8G)
+ *
+ * Not STRICT: getZ returns NULL when the schema has no Z dimension;
+ * getDim returns NULL on unknown dimension names. STABLE (not IMMUTABLE)
+ * because the underlying schema lives in a PG catalog table that an
+ * admin could theoretically ALTER mid-session; in practice it never
+ * changes, but STABLE is the correct volatility label.
+ ******************************************************************************/
+
+CREATE FUNCTION getX(pcpoint)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Pcpoint_get_x'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getY(pcpoint)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Pcpoint_get_y'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getZ(pcpoint)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Pcpoint_get_z'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getDim(pcpoint, text)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Pcpoint_get_dim'
+  LANGUAGE C STABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * pcpointset — Input / output
  ******************************************************************************/
 

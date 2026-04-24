@@ -221,8 +221,20 @@ if(POINTCLOUD)
   # directly through $<TARGET_OBJECTS:…>, so we duplicate the libpc.a
   # static link (plus its xml2/z deps) here. See
   # meos/src/pointcloud/CMakeLists.txt for where libpc.a is located.
+  #
+  # libpc.a bundles its own stringbuffer.c (same upstream origin as
+  # PostGIS's liblwgeom/stringbuffer.c, both descend from the same tree
+  # of utility code). That duplication is benign — the two definitions
+  # are near-identical and either one serves correctly — but the linker
+  # rejects it by default. --allow-multiple-definition picks whichever
+  # comes first in link order (here: liblwgeom wins, which is fine
+  # because MobilityDB only calls the wrapper through that path).
   target_link_libraries(${MOBILITYDB_LIB_NAME}
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a xml2 z)
+  if(UNIX AND NOT APPLE)
+    target_link_options(${MOBILITYDB_LIB_NAME} PRIVATE
+      "LINKER:--allow-multiple-definition")
+  endif()
 endif()
 
 #--------------------------------
