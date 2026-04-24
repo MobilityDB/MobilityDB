@@ -947,7 +947,8 @@ pointcloud_basetype(meosType type)
  * @note Unlike @p spatialset_type, pointcloud sets carry no bounding box —
  * dimension-level access requires loading the schema XML keyed by pcid
  * from the pgpointcloud @p pointcloud_formats PG catalog table, which
- * MEOS cannot do. Bbox support arrives in Phase 8F with TPCBox.
+ * MEOS cannot do — the TPCBox bbox type is the separate structure that
+ * carries pointcloud spatial bounds.
  */
 inline bool
 pointcloudset_type(meosType type)
@@ -1211,12 +1212,11 @@ talpha_type(meosType type)
   return (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
     type == T_TDOUBLE3 || type == T_TDOUBLE4
 #if POINTCLOUD
-    /* Phase 8H: tpcpoint / tpcpatch get a time-only Span bbox because
-     * computing their spatial bbox requires the pgpointcloud schema
-     * (loaded by pcid from the pointcloud_formats table) and MEOS has
-     * no catalog access. Phase 8I upgrades to a full TPCBox via a
-     * function-pointer schema hook set up by the PG extension's
-     * _PG_init. */
+    /* tpcpoint / tpcpatch get a time-only Span bbox because computing
+     * their spatial bbox requires the pgpointcloud schema (loaded by
+     * pcid from the pointcloud_formats table) and MEOS has no catalog
+     * access. A full TPCBox bbox via a function-pointer schema hook
+     * set up by the PG extension's _PG_init is a follow-up. */
     || type == T_TPCPOINT || type == T_TPCPATCH
 #endif
     );

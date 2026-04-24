@@ -33,20 +33,20 @@
  *
  * Mirrors STBox but carries an additional @c pcid (pgpointcloud schema id)
  * because values from different schemas have incompatible dimensions and
- * cannot share a bbox. Phase 8F lands the type plus the base set of
- * operators used by downstream temporal types (Phase 8G tpcpoint,
- * Phase 8H tpcpatch).
+ * cannot share a bbox. Provides the base set of operators used by
+ * downstream temporal types (tpcpoint, tpcpatch).
  *
  * Scope notes:
  *   * @c pcpatch → @c TPCBox is implemented here and is a free conversion
  *     (pgpointcloud's @c SERIALIZED_PATCH already carries a 2D @c PCBOUNDS
  *     header — no schema lookup required; no Z).
- *   * @c pcpoint → @c TPCBox is deliberately out of scope: extracting X/Y/Z
- *     from a pcpoint byte blob requires the schema XML (loaded from
- *     @c pointcloud_formats by pcid). That plumbing lands with Phase 8G.
+ *   * @c pcpoint → @c TPCBox lives in the PG wrapper layer: extracting
+ *     X/Y/Z from a pcpoint byte blob requires the schema XML (loaded
+ *     from @c pointcloud_formats by pcid), which only the PG layer can
+ *     do.
  *   * Position operators (left/right/above/below/before/after) and the
- *     GiST / SP-GiST operator classes are also deferred — Phase 8H wires
- *     them up together with the indexed temporal types.
+ *     GiST / SP-GiST operator classes are deferred to a follow-up —
+ *     they will wire up together with the indexed temporal types.
  */
 
 #include "pointcloud/tpcbox.h"
@@ -194,8 +194,8 @@ tpcbox_out(const TPCBox *box, int maxdd)
  *   form produced by send(): the raw byte-image of a TPCBox struct
  *   encoded as ASCII hex. Adequate for round-tripping through PG
  *   @c recv / @c send, which is what SQL @c CREATE TYPE exercises.
- *   Rich WKT input like @c tpcbox_in() lands in Phase 8F.1 once the
- *   indexing paths need it.
+ *   Rich WKT input can be added in a follow-up once the indexing paths
+ *   need it.
  */
 TPCBox *
 tpcbox_in(const char *str)
@@ -311,7 +311,8 @@ tpcbox_copy(const TPCBox *box)
  *   2D @c PCBOUNDS in its header; the per-point Z values are packed
  *   inside the compressed data block and cannot be summarised without
  *   schema access. Time dimension is likewise absent (pcpatch is static).
- *   Callers that need Z get it once Phase 8G's schema layer lands.
+ *   Callers that need Z should go through the PG wrapper layer, which
+ *   has schema access via the per-backend PCSCHEMA cache.
  */
 TPCBox *
 pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)

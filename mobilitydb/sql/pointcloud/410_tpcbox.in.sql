@@ -8,16 +8,17 @@
 
 /**
  * @file
- * @brief TPCBox bounding-box type (Phase 8F).
+ * @brief TPCBox bounding-box type.
  *
  * Fixed-size struct; no varlena. Mirrors STBox but carries an extra
  * `pcid` field so bboxes from different pgpointcloud schemas cannot
  * silently merge. Most work goes through per-type wrappers in
  * `mobilitydb/src/pointcloud/tpcbox.c`.
  *
- * Deferred (flagged in the Phase 8F commit):
- *   * Position operators (<<, >>, <<|, |>>, <<#, #>>) — Phase 8H.
- *   * GiST / SP-GiST operator classes — Phase 8H.
+ * Deferred for a follow-up:
+ *   * Position operators (<<, >>, <<|, |>>, <<#, #>>) and the
+ *     corresponding GiST / SP-GiST operator classes — will land
+ *     together with the index support for tpcpoint / tpcpatch.
  *   * `stbox(tpcbox)` projection cast — trivial, but needs no caller yet.
  *   * Rich WKT input — @c Tpcbox_in currently expects the byte-image hex
  *     form emitted by @c Tpcbox_out / @c Tpcbox_send.
@@ -94,7 +95,7 @@ CREATE FUNCTION tpcbox_zt(xmin float8, ymin float8, zmin float8,
  * Conversion
  ******************************************************************************/
 
--- SRID auto-filled from the pgpointcloud schema (Phase 8G schema cache).
+-- SRID auto-filled from the pgpointcloud schema via the schema cache.
 -- STABLE, not IMMUTABLE, because the schema lives in a PG catalog table.
 CREATE FUNCTION tpcbox(pcpatch)
   RETURNS tpcbox

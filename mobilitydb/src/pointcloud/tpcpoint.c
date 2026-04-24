@@ -29,12 +29,12 @@
 
 /**
  * @file
- * @brief PG wrappers for the tpcpoint lifted temporal type (Phase 8H).
+ * @brief PG wrappers for the tpcpoint lifted temporal type.
  *
  * Most SQL bindings delegate to the generic @c Temporal_* PG wrappers in
  * @c mobilitydb/src/temporal/temporal.c — the generic parser / output /
  * constructor / accessor path dispatches through @c meosType and works
- * correctly for @c T_TPCPOINT because Phase 8D wired the base type into
+ * correctly for @c T_TPCPOINT because the base type is wired into
  * @c basetype_in_state / @c basetype_out / @c datum_cmp / @c datum_eq /
  * @c datum_hash. This file holds only the per-type accessors that need
  * to know they are looking at pcpoint data — namely @c pcid and the
@@ -87,7 +87,7 @@ PG_FUNCTION_INFO_V1(Tpcpoint_pcid);
  * @ingroup mobilitydb_pointcloud_accessor
  * @brief Return the pgpointcloud schema id (pcid) of a tpcpoint.
  * @details All instants of a tpcpoint must share the same pcid — the
- *   Phase 8E set_make_exp enforcement guarantees this at construction
+ *   set_make_exp same-pcid check guarantees this at construction
  *   time. This function just reads the first instant's pcid.
  * @sqlfn pcid()
  */
@@ -103,7 +103,7 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Per-dimension projection — tpcpoint → tfloat (Phase 8J)
+ * Per-dimension projection — tpcpoint → tfloat
  *
  * Walks the Temporal structure and replaces each pcpoint instant with a
  * @c float8 derived from the pcpoint's value for the requested
@@ -113,8 +113,8 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
  * @c pc_point_get_x / _y / _z / _get_double_by_name.
  *
  * The schema cache is warmed on the first instant (all subsequent
- * instants share the same pcid by construction — enforced at build
- * time by Phase 8E's set_make_exp).
+ * instants share the same pcid by construction — enforced at
+ * construction time by set_make_exp's same-pcid check).
  *****************************************************************************/
 
 typedef bool (*pcpoint_dim_fn)(const PCPOINT *pt, void *extra, double *out);
@@ -251,12 +251,12 @@ TPCPOINT_PROJ(Tpcpoint_get_y, dim_get_y)
 TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
 
 /*****************************************************************************
- * Projection to tgeompoint (Phase 8K)
+ * Projection to tgeompoint
  *
  * Per-instant mapper: pcpoint → POINT gserialized with the schema's
  * SRID and Z-presence. Reuses the schema cache on the first instant;
- * the same-pcid invariant (enforced at construction by Phase 8E) lets
- * us cache schema + z-flag once per sequence.
+ * the same-pcid invariant (enforced at construction by set_make_exp)
+ * lets us cache schema + z-flag once per sequence.
  *****************************************************************************/
 
 static TInstant *

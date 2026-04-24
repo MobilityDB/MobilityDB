@@ -8,28 +8,25 @@ if(POINTCLOUD)
     # Emitted by scripts/pointcloud_import/extract.py.
     pc_generated.c
 
-    # Static base types (Phase 8D) — opaque byte-level helpers that
-    # treat pcpoint/pcpatch as varlena blobs. Schema-aware dimension
-    # access arrives later (Phase 8G, tpcpoint).
+    # Static base types — opaque byte-level helpers that treat
+    # pcpoint / pcpatch as varlena blobs. Schema-aware dimension
+    # access lives in the PG wrapper layer (needs pointcloud_formats
+    # lookup).
     pcpoint.c
     pcpatch.c
 
-    # Bounding-box type — Phase 8F. Fixed-size struct mirroring STBox
-    # with an extra pcid field. Pcpatch → TPCBox is free (embedded
-    # PCBOUNDS); pcpoint → TPCBox is deferred to Phase 8G (needs
-    # schema access).
+    # Bounding-box type — fixed-size struct mirroring STBox with an
+    # extra pcid field. Pcpatch → TPCBox is free (embedded
+    # PCBOUNDS); pcpoint → TPCBox lives in the PG wrapper layer
+    # (needs schema access).
     tpcbox.c
-
-    # Temporal types — Phase 8G / 8H.
-    # tpcpoint.c
-    # tpcpatch.c
   )
 
-  # Set types — Phase 8E. `_meos.c` suffix → MEOS-only build. The PG
-  # extension build reaches pcpointset / pcpatchset through the generic
-  # Set_* wrappers in mobilitydb/src/temporal/set.c; same-pcid on the
-  # constructor path is enforced inside set_make_exp (set.c), not via
-  # these MEOS helpers.
+  # Set types — `_meos.c` suffix → MEOS-only build. The PG extension
+  # build reaches pcpointset / pcpatchset through the generic Set_*
+  # wrappers in mobilitydb/src/temporal/set.c; same-pcid on the
+  # constructor path is enforced inside set_make_exp (set.c), not
+  # via these MEOS helpers.
   if(MEOS)
     list(APPEND POINTCLOUD_SRCS pcset_meos.c)
   endif()
@@ -68,8 +65,7 @@ if(POINTCLOUD)
   # libpointcloud.so. Instead we link against the static `libpc.a`
   # built as a by-product of the upstream autotools build. The user
   # must have run `./configure && make` inside `pointcloud-pg/` at
-  # least once for this file to exist (the per-PG-version install
-  # procedure documented in PHASE_8A_INSTALL.md takes care of that).
+  # least once for this file to exist.
   set(POINTCLOUD_LIBPC
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a)
   if(NOT EXISTS ${POINTCLOUD_LIBPC})

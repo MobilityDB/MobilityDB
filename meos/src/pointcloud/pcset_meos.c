@@ -41,8 +41,9 @@
  * @p ensure_valid_pcpointset_pcpoint / @p ensure_valid_pcpatchset_pcpatch
  * implemented in @p pcpoint.c / @p pcpatch.c.
  *
- * Phase 8E has no bounding box — @p pointcloudset_type(settype) makes
- * @p set_bbox_size return 0. TPCBox lands in Phase 8F.
+ * These sets carry no bounding box — @p pointcloudset_type(settype)
+ * makes @p set_bbox_size return 0. TPCBox is the separate type that
+ * carries pointcloud spatial bounds.
  */
 
 /* C */

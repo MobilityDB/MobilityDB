@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud point type (Phase 8H).
+ * @brief Temporal pgpointcloud point type.
  *
  * `tpcpoint` is a temporal lifting of `pcpoint` — a single moving
  * pgpointcloud point (LiDAR sensor, GPS fix with per-reading metadata,
@@ -21,12 +21,11 @@
  * that do not interpolate linearly; explicit per-dimension linear
  * interpolation can be layered on top via `getDim(pcpoint, name)`.
  *
- * Phase 8H scope: type registration + constructors + generic accessors
- * + the schema-aware `pcid(tpcpoint)` getter. Deferred to Phase 8I:
- *   * projection `getX(tpcpoint)` / `getY` / `getZ` → `tfloat`
- *   * cast `tpcpoint → tgeompoint`
- *   * bbox operators (@>, <@, &&, etc.) via TPCBox
- *   * GiST / SP-GiST operator classes
+ * Type registration, constructors, generic accessors, the schema-aware
+ * `pcid(tpcpoint)` getter, per-dimension projections to `tfloat`, and
+ * the `tgeompoint(tpcpoint)` XY projection cast are all included.
+ * Deferred for a follow-up: bbox operators (@>, <@, &&, …) via TPCBox
+ * and the GiST / SP-GiST operator classes.
  */
 
 CREATE TYPE tpcpoint;
@@ -224,8 +223,8 @@ CREATE FUNCTION pcid(tpcpoint)
   AS 'MODULE_PATHNAME', 'Tpcpoint_pcid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Per-dimension projection to tfloat (Phase 8J). STABLE because the
--- projection reads the schema cache, which depends on pg_catalog state.
+-- Per-dimension projection to tfloat. STABLE because the projection
+-- reads the schema cache, which depends on pg_catalog state.
 CREATE FUNCTION getX(tpcpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_x'
@@ -246,9 +245,9 @@ CREATE FUNCTION getDim(tpcpoint, text)
   AS 'MODULE_PATHNAME', 'Tpcpoint_get_dim'
   LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
--- XY projection to tgeompoint (Phase 8K). Step interpolation on the
--- source tpcpoint is promoted to linear in the output: the projected
--- XY trajectory is physically a sensor path, where linear interp
+-- XY projection to tgeompoint. Step interpolation on the source
+-- tpcpoint is promoted to linear in the output: the projected XY
+-- trajectory is physically a sensor path, where linear interp
 -- between consecutive fixes is the natural default.
 CREATE FUNCTION tgeompoint(tpcpoint)
   RETURNS tgeompoint

@@ -20,7 +20,7 @@
  * interpreted here is `pcid` (schema id) at its fixed offset — enough for
  * same-schema equality checks. Dimension-level extraction (X, Y, intensity,
  * …) requires loading the XML schema keyed by `pcid` from the PG
- * `pointcloud_formats` table and is deferred to Phase 8G (tpcpoint).
+ * `pointcloud_formats` table and is handled by the PG wrapper layer.
  */
 
 #include "pointcloud/pcpoint.h"
@@ -127,7 +127,7 @@ ensure_same_pcid_pcpoint(const Pcpoint *pt1, const Pcpoint *pt2)
  * Text format at the MEOS layer is the ASCII hex encoding of the raw
  * SERIALIZED_POINT varlena bytes. This mirrors how PostGIS geometry is
  * text-represented in MEOS (HexWKB). Structured WKT parsing requires
- * schema resolution and is out of scope for Phase 8D.
+ * schema resolution and lives in the PG wrapper layer, not here.
  *****************************************************************************/
 
 /**

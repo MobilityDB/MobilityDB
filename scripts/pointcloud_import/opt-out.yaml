@@ -15,7 +15,7 @@
 # One entry per function, file-scoped so name collisions stay local.
 
 skip:
-  # ---- Phase 8A parking lot ---------------------------------------
+  # ---- Parking lot for the PG-wrapper trees -----------------------
   # The generator correctly picks up every `Datum fn(PG_FUNCTION_ARGS)`
   # body in the PG-side sources under `pointcloud-pg/pgsql/` and
   # `pointcloud-pg/pgsql_postgis/`. The starter ruleset in
@@ -26,11 +26,11 @@ skip:
   # recognised yet.
   #
   # Rather than listing each of the ~50 PG wrappers individually,
-  # we opt out the whole pgsql/ and pgsql_postgis/ trees for Phase
-  # 8A. Phase 8B narrows this to per-function skips as the ruleset
-  # grows: add the arg_reader / rewrite rule, remove the matching
-  # file_glob or per-file entry, run the extractor, repeat.
+  # we opt out the whole pgsql/ and pgsql_postgis/ trees. Narrow to
+  # per-function skips as the ruleset grows: add the arg_reader /
+  # rewrite rule, remove the matching file_glob or per-file entry,
+  # run the extractor, repeat.
   - file_glob: pointcloud-pg/pgsql/*.c
-    why:  Phase 8A parking lot — ruleset not yet authored (see Phase 8B+)
+    why:  parking lot — ruleset not yet authored for PG-layer wrappers
   - file_glob: pointcloud-pg/pgsql_postgis/*.c
-    why:  Phase 8A parking lot — ruleset not yet authored (see Phase 8B+)
+    why:  parking lot — ruleset not yet authored for PG-layer wrappers

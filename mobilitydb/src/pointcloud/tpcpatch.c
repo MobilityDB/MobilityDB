@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief PG wrappers for the tpcpatch lifted temporal type (Phase 8I).
+ * @brief PG wrappers for the tpcpatch lifted temporal type.
  *
  * Structural mirror of mobilitydb/src/pointcloud/tpcpoint.c. The generic
- * Temporal_* dispatch tables already handle @c T_TPCPATCH via Phase 8D's
+ * Temporal_* dispatch tables already handle @c T_TPCPATCH via the
  * base-type wiring; this file holds only the per-type pcid accessor
  * (and will grow a per-instant points-count accessor later).
  */
@@ -57,7 +57,7 @@ PG_FUNCTION_INFO_V1(Tpcpatch_pcid);
  * @ingroup mobilitydb_pointcloud_accessor
  * @brief Return the pgpointcloud schema id (pcid) of a tpcpatch.
  * @details All instants share the same pcid — enforced at construction
- *   time by the Phase 8E set_make_exp machinery. This is just a first-
+ *   time by set_make_exp's same-pcid check. This is just a first-
  *   instant read.
  * @sqlfn pcid()
  */

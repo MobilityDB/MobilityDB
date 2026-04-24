@@ -34,9 +34,9 @@
  * Set-level SQL bindings for @p pcpointset / @p pcpatchset delegate to
  * the generic @p Set_* wrappers in @p mobilitydb/src/temporal/set.c
  * (dispatch happens via the Oid-meosType cache). This file hosts the
- * type-specific accessors: the trivial @p pcid reads from Phase 8E and
- * the schema-aware dimension getters (@c getX, @c getY, @c getZ,
- * @c getDim) that Phase 8G introduces on top of the schema cache.
+ * type-specific accessors: the trivial @p pcid reads and the
+ * schema-aware dimension getters (@c getX, @c getY, @c getZ,
+ * @c getDim) that build on top of the PCSCHEMA cache.
  */
 
 /* PostgreSQL */
@@ -90,7 +90,7 @@ Pcpatch_pcid(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Schema-aware pcpoint dimension getters (Phase 8G)
+ * Schema-aware pcpoint dimension getters
  *
  * Wrap a varlena-shape Pcpoint as a transient in-memory PCPOINT (libpc.a's
  * uncompressed struct) so we can reuse pgpointcloud's own dimension

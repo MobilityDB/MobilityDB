@@ -8,7 +8,7 @@
 
 /**
  * @file
- * @brief Temporal pgpointcloud patch type (Phase 8I).
+ * @brief Temporal pgpointcloud patch type.
  *
  * `tpcpatch` is a temporal lifting of `pcpatch` — a time series of
  * compressed point clusters (static-position sensors dumping many
@@ -21,10 +21,10 @@
  * snapshots). The only per-type wrappers live in
  * `mobilitydb/src/pointcloud/tpcpatch.c`.
  *
- * Phase 8I scope: type registration + constructors + generic accessors
- * + per-type `pcid(tpcpatch)` and `startNumPoints(tpcpatch)`. Same
- * follow-up deferrals as tpcpoint: per-dimension projections, tpcpatch
- * → tgeometry cast, bbox operators, GiST / SP-GiST — Phase 8J.
+ * Covers type registration, constructors, generic accessors, plus
+ * per-type `pcid(tpcpatch)` and `startNumPoints(tpcpatch)`. Deferred
+ * for a follow-up: per-dimension projections, `tpcpatch → tgeometry`
+ * cast, bbox operators, and the GiST / SP-GiST operator classes.
  */
 
 CREATE TYPE tpcpatch;

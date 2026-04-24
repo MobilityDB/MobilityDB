@@ -13,11 +13,8 @@
 
 /**
  * @brief API of the Mobility Engine Open Source (MEOS) library — pgpointcloud
- * base types (pcpoint, pcpatch).
- *
- * Phase 8D scope: opaque byte-level helpers. Set types (pcpointset,
- * pcpatchset) arrive in Phase 8E; temporal types (tpcpoint, tpcpatch) in
- * Phase 8G.
+ * base types (pcpoint, pcpatch), set types (pcpointset, pcpatchset), the
+ * TPCBox bounding box, and the lifted temporal types tpcpoint / tpcpatch.
  */
 
 #ifndef __MEOS_POINTCLOUD_H__

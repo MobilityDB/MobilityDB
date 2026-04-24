@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief PG wrappers for the TPCBox bounding-box type (Phase 8F).
+ * @brief PG wrappers for the TPCBox bounding-box type.
  *
  * Fixed-size struct (no varlena), so @c recv / @c send simply shuttle the
  * bytes through. @c in / @c out delegate to MEOS-layer @c tpcbox_in /
@@ -202,7 +202,7 @@ PGDLLEXPORT Datum Pcpatch_to_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_to_tpcbox);
 /**
  * @brief SQL: tpcbox(pcpatch) — auto-fills SRID from the pgpointcloud
- *   schema via the per-backend schema cache (Phase 8G wiring).
+ *   schema via the per-backend schema cache.
  */
 Datum
 Pcpatch_to_tpcbox(PG_FUNCTION_ARGS)
@@ -236,8 +236,8 @@ PG_FUNCTION_INFO_V1(Pcpoint_to_tpcbox);
 /**
  * @brief SQL: tpcbox(pcpoint) — degenerate (single-point) bbox with
  *   spatial bounds equal to the point's X/Y/[Z]. SRID comes from the
- *   schema; pcid from the pcpoint itself. Phase 8G deliverable — the
- *   schema cache makes this possible without dragging pgpointcloud's
+ *   schema; pcid from the pcpoint itself. The per-backend schema
+ *   cache makes this possible without dragging pgpointcloud's
  *   PG-layer API into MEOS.
  */
 Datum

@@ -10,7 +10,7 @@ reads, regex the return, drop PG-only plumbing, leave everything
 between alone.
 
 Modeled directly on `scripts/h3pg_import/extract.py` (the h3-pg
-counterpart that shipped as Phase 7R on the `th3index` branch).
+counterpart).
 
 Usage:
     python scripts/pointcloud_import/extract.py           # emit into tree

@@ -1,10 +1,9 @@
 # Token / macro substitutions applied by extract.py when transforming
 # pgpointcloud's `Fname(PG_FUNCTION_ARGS)` bodies into MEOS-compatible C.
 #
-# Modeled on scripts/h3pg_import/ruleset.yaml (shipped as Phase 7A-7R
-# on the `th3index` branch). See scripts/pointcloud_import/README.md
-# for the four-phase rule-authoring loop (run extractor, check
-# failures, add rule OR opt-out, repeat).
+# Modeled on scripts/h3pg_import/ruleset.yaml. See
+# scripts/pointcloud_import/README.md for the four-phase rule-authoring
+# loop (run extractor, check failures, add rule OR opt-out, repeat).
 #
 # Sections:
 #   arg_readers : match a line like "TYPE name = PG_GETARG_...(idx);"
@@ -19,10 +18,10 @@
 # opt-out.yaml is the standard resolution.
 
 arg_readers:
-  # Minimal starter set. Grow this list as Phase 8B / 8C / 8F encounter
-  # new macros in the pgsql/*.c upstream bodies. The h3pg_import
-  # ruleset.yaml on the `th3index` branch has the fully-evolved
-  # version for h3 — consult it as a shape reference.
+  # Minimal starter set. Grow this list as new macros in the
+  # pgsql/*.c upstream bodies need handling. The h3pg_import
+  # ruleset.yaml has the fully-evolved version for h3 — consult it
+  # as a shape reference.
 
   # PG_GETARG_INT32
   - pattern: '^\s*(?:int|int32|int32_t)\s+(\w+)\s*=\s*PG_GETARG_INT32\(\d+\)\s*;\s*$'

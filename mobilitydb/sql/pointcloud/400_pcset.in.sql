@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Sets over pgpointcloud pcpoint / pcpatch base types (Phase 8E).
+ * @brief Sets over pgpointcloud pcpoint / pcpatch base types.
  *
  * The pcpoint and pcpatch SQL types are owned by the upstream
  * pgpointcloud extension — MobilityDB reuses them the way it reuses
@@ -61,7 +61,7 @@ CREATE FUNCTION pcid(pcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Schema-aware dimension getters for pcpoint (Phase 8G)
+ * Schema-aware dimension getters for pcpoint
  *
  * Not STRICT: getZ returns NULL when the schema has no Z dimension;
  * getDim returns NULL on unknown dimension names. STABLE (not IMMUTABLE)

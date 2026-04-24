@@ -242,8 +242,8 @@ set_bbox_size(meosType settype)
     return 0;
 #if POINTCLOUD
   /* pcpointset/pcpatchset carry no bbox — schema-dependent dimensions
-   * cannot be extracted at the MEOS layer. Bbox support (TPCBox) is
-   * the subject of Phase 8F. */
+   * cannot be extracted at the MEOS layer. TPCBox is the separate
+   * type that carries pointcloud spatial bounds. */
   if (pointcloudset_type(settype))
     return 0;
 #endif
