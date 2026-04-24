@@ -29,8 +29,46 @@
 #endif
 #include "common/hashfn.h"
 #include "utils/builtins.h"
+#include <stddef.h>          /* offsetof */
 /* MEOS */
 #include <meos.h>
+
+/*****************************************************************************
+ * Struct-tail padding
+ *
+ * Same phenomenon as pcpoint.c — pgpointcloud's @c pc_patch_serialize*
+ * allocates @c sizeof(SERIALIZED_PATCH) - 1 + <packed-points size> and
+ * leaves the struct-tail padding uninitialized. For SERIALIZED_PATCH:
+ *
+ *   { uint32_t size; uint32_t pcid; uint32_t compression;
+ *     uint32_t npoints; PCBOUNDS bounds; uint8_t data[1]; }
+ *
+ * PCBOUNDS is 4 doubles (alignment 8), so @c data[1] sits at offset 48
+ * and the struct rounds to 56 — 7 bytes of tail padding on x86_64.
+ * Truncate @c VARSIZE by that amount for cmp/hash.
+ *****************************************************************************/
+
+typedef struct
+{
+  int32 vl_len_;
+  uint32_t pcid;
+  uint32_t compression;
+  uint32_t npoints;
+  double bounds[4];  /* matches upstream PCBOUNDS */
+  uint8_t data[1];
+} PcpatchLayoutShadow;
+
+#define PCPATCH_TAIL_PADDING \
+  (sizeof(PcpatchLayoutShadow) - offsetof(PcpatchLayoutShadow, data) - 1)
+
+static inline size_t
+pcpatch_meaningful_size(const Pcpatch *pa)
+{
+  size_t sz = VARSIZE(pa);
+  /* header + pcid + compression + npoints + 4 bounds doubles */
+  size_t hdr = VARHDRSZ + 3 * sizeof(uint32_t) + 4 * sizeof(double);
+  return (sz > hdr + PCPATCH_TAIL_PADDING) ? (sz - PCPATCH_TAIL_PADDING) : sz;
+}
 
 /*****************************************************************************
  * Validity helpers
@@ -166,15 +204,16 @@ uint32
 pcpatch_hash(const Pcpatch *pa)
 {
   assert(pa);
-  return hash_any((const unsigned char *) pa, (int) VARSIZE(pa));
+  return hash_any((const unsigned char *) pa,
+    (int) pcpatch_meaningful_size(pa));
 }
 
 uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
 {
   assert(pa);
-  return hash_any_extended((const unsigned char *) pa, (int) VARSIZE(pa),
-    seed);
+  return hash_any_extended((const unsigned char *) pa,
+    (int) pcpatch_meaningful_size(pa), seed);
 }
 
 /*****************************************************************************
@@ -185,8 +224,8 @@ int
 pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   assert(pa1); assert(pa2);
-  size_t sz1 = VARSIZE(pa1);
-  size_t sz2 = VARSIZE(pa2);
+  size_t sz1 = pcpatch_meaningful_size(pa1);
+  size_t sz2 = pcpatch_meaningful_size(pa2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;
   int c = memcmp(pa1, pa2, minsz);
   if (c != 0) return (c < 0) ? -1 : 1;

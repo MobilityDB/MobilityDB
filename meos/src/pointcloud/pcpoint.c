@@ -35,8 +35,70 @@
 #endif
 #include "common/hashfn.h"
 #include "utils/builtins.h"  /* hex_encode, hex_decode */
+#include <stddef.h>          /* offsetof */
 /* MEOS */
 #include <meos.h>
+
+/*****************************************************************************
+ * Struct-tail padding
+ *
+ * pgpointcloud's `pc_point_serialize` in pointcloud-pg/pgsql/pc_pgsql.c
+ * allocates the on-disk SERIALIZED_POINT using the formula
+ *
+ *   palloc(sizeof(SERIALIZED_POINT) - 1 + schema->size)
+ *
+ * and sets VARSIZE to the same value. Because the C struct
+ *
+ *   typedef struct { uint32_t size; uint32_t pcid; uint8_t data[1]; }
+ *     SERIALIZED_POINT;
+ *
+ * rounds up to @c sizeof = 12 on typical 64-bit targets (data[1] at
+ * offset 8, struct padded to 4-byte alignment), the formula over-
+ * allocates by @c sizeof(SERIALIZED_POINT) - offsetof(..., data) - 1
+ * bytes past the last meaningful byte. Those bytes come from @c palloc
+ * (not @c palloc0) and are therefore uninitialized heap memory — two
+ * otherwise-identical @c PC_MakePoint calls yield pcpoints that
+ * disagree on the trailing padding.
+ *
+ * That non-determinism is only a problem for code that interprets
+ * pcpoints at the byte level: @c pcpoint_cmp, @c pcpoint_hash, the
+ * derived Set dedup / B-tree / hash operator-class paths. We fix it
+ * here by truncating @c VARSIZE down to the meaningful prefix via a
+ * compile-time-constant padding measurement. The shadow-struct idiom
+ * below mirrors pgpointcloud's struct layout exactly so that our
+ * compiler's padding calculation agrees with pgpointcloud's (both
+ * builds target the same ABI — libpc.a is linked in, so any ABI skew
+ * would already fail at link time).
+ *****************************************************************************/
+
+typedef struct
+{
+  int32 vl_len_;
+  uint32_t pcid;
+  uint8_t data[1];  /* matches upstream SERIALIZED_POINT; flex-array
+                     * sugar `data[FLEXIBLE_ARRAY_MEMBER]` would give
+                     * a different sizeof and defeat the measurement. */
+} PcpointLayoutShadow;
+
+#define PCPOINT_TAIL_PADDING \
+  (sizeof(PcpointLayoutShadow) - offsetof(PcpointLayoutShadow, data) - 1)
+
+/**
+ * @brief Return the meaningful byte length of a pcpoint — i.e. VARSIZE
+ *   minus pgpointcloud's struct-tail padding.
+ * @note Guards against degenerate tiny values: if the computed length
+ *   would dip below the header + pcid (8 bytes), fall back to VARSIZE.
+ *   In practice any well-formed pcpoint has VARSIZE >= 12 (header +
+ *   pcid + at least 1 data byte from the data[1] placeholder) so the
+ *   guard only protects against malformed input, not valid values.
+ */
+static inline size_t
+pcpoint_meaningful_size(const Pcpoint *pt)
+{
+  size_t sz = VARSIZE(pt);
+  size_t hdr = VARHDRSZ + sizeof(uint32_t); /* varlena + pcid */
+  return (sz > hdr + PCPOINT_TAIL_PADDING) ? (sz - PCPOINT_TAIL_PADDING) : sz;
+}
 
 /*****************************************************************************
  * Validity helpers
@@ -218,12 +280,16 @@ pcpoint_pcid(const Pcpoint *pt)
 
 /**
  * @brief Return the 32-bit hash of a pcpoint
+ * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
+ *   struct-tail padding is skipped because it holds uninitialized heap
+ *   bytes that differ between otherwise-identical values.
  */
 uint32
 pcpoint_hash(const Pcpoint *pt)
 {
   assert(pt);
-  return hash_any((const unsigned char *) pt, (int) VARSIZE(pt));
+  return hash_any((const unsigned char *) pt,
+    (int) pcpoint_meaningful_size(pt));
 }
 
 /**
@@ -233,8 +299,8 @@ uint64
 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 {
   assert(pt);
-  return hash_any_extended((const unsigned char *) pt, (int) VARSIZE(pt),
-    seed);
+  return hash_any_extended((const unsigned char *) pt,
+    (int) pcpoint_meaningful_size(pt), seed);
 }
 
 /*****************************************************************************
@@ -248,13 +314,17 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 /**
  * @brief Compare two pcpoints byte-wise
  * @return -1 / 0 / 1
+ * @note Compares only the meaningful-prefix bytes — pgpointcloud's
+ *   struct-tail padding is skipped (see the padding comment above).
+ *   Two pcpoints that disagree only on those padding bytes now compare
+ *   equal, making Set dedup and B-tree equality deterministic.
  */
 int
 pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   assert(pt1); assert(pt2);
-  size_t sz1 = VARSIZE(pt1);
-  size_t sz2 = VARSIZE(pt2);
+  size_t sz1 = pcpoint_meaningful_size(pt1);
+  size_t sz2 = pcpoint_meaningful_size(pt2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;
   int c = memcmp(pt1, pt2, minsz);
   if (c != 0) return (c < 0) ? -1 : 1;
