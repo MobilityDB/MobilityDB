@@ -116,7 +116,13 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
-  NO_MEOS_TYPES           /* Dummy value that determines the size of the 
+  T_PCPOINT        = 63,  /**< pgpointcloud point type */
+  T_PCPOINTSET     = 64,  /**< pgpointcloud point set type */
+  T_TPCPOINT       = 65,  /**< temporal pgpointcloud point type */
+  T_PCPATCH        = 66,  /**< pgpointcloud patch type */
+  T_PCPATCHSET     = 67,  /**< pgpointcloud patch set type */
+  T_TPCPATCH       = 68,  /**< temporal pgpointcloud patch type */
+  NO_MEOS_TYPES           /* Dummy value that determines the size of the
                            * lookup array meosType -> Oid */
 } meosType;
 

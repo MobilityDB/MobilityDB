@@ -43,15 +43,31 @@ if(POINTCLOUD)
 
   # Include paths for pgpointcloud headers. The embedded
   # `pointcloud-pg/lib/` provides the declarations the generated C
-  # calls into; at runtime the system-installed `libpointcloud`
-  # satisfies the symbols (the user is required to have pgpointcloud
-  # installed alongside PostGIS — same dependency model as PostGIS
-  # itself has on libproj / liblwgeom). The build directory carries
-  # the generated `pc_config.h`.
+  # calls into.
   target_include_directories(pointcloud PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib
     ${CMAKE_CURRENT_BINARY_DIR}
   )
+
+  # pgpointcloud does not ship a standalone shared library —
+  # `pointcloud-1.2.so` is the PostgreSQL extension, not a linkable
+  # libpointcloud.so. Instead we link against the static `libpc.a`
+  # built as a by-product of the upstream autotools build. The user
+  # must have run `./configure && make` inside `pointcloud-pg/` at
+  # least once for this file to exist (the per-PG-version install
+  # procedure documented in PHASE_8A_INSTALL.md takes care of that).
+  set(POINTCLOUD_LIBPC
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a)
+  if(NOT EXISTS ${POINTCLOUD_LIBPC})
+    message(FATAL_ERROR
+      "POINTCLOUD=ON but ${POINTCLOUD_LIBPC} not found. "
+      "Run `cd pointcloud-pg && ./autogen.sh && ./configure "
+      "--with-pgconfig=\$(pg_config-path) --with-lazperf=no && "
+      "make` first — libpc.a is built as a side-effect and is "
+      "needed at MobilityDB link time.")
+  endif()
+  target_link_libraries(pointcloud PRIVATE ${POINTCLOUD_LIBPC}
+    xml2 z)
 else()
   # Produce an empty interface-less target so parent-level linking
   # stays consistent. Users who need pointcloud temporal types

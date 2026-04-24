@@ -124,6 +124,12 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TGEOMETRY] = "tgeometry",
   [T_TGEOGRAPHY] = "tgeography",
   [T_TRGEOMETRY] = "trgeometry",
+  [T_PCPOINT] = "pcpoint",
+  [T_PCPOINTSET] = "pcpointset",
+  [T_TPCPOINT] = "tpcpoint",
+  [T_PCPATCH] = "pcpatch",
+  [T_PCPATCHSET] = "pcpatchset",
+  [T_TPCPATCH] = "tpcpatch",
 };
 
 /**
@@ -226,6 +232,8 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_POSESET,       T_POSE},
   {T_NPOINTSET,     T_NPOINT},
   {T_CBUFFERSET,    T_CBUFFER},
+  {T_PCPOINTSET,    T_PCPOINT},
+  {T_PCPATCHSET,    T_PCPATCH},
 };
 
 /**
@@ -278,6 +286,8 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TRGEOMETRY, T_POSE},
   {T_TNPOINT,    T_NPOINT},
   {T_TCBUFFER,   T_CBUFFER},
+  {T_TPCPOINT,   T_PCPOINT},
+  {T_TPCPATCH,   T_PCPATCH},
 };
 
 /*****************************************************************************/
