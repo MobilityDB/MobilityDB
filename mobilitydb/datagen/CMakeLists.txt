@@ -27,6 +27,9 @@ endif()
 if(RGEO)
   list(APPEND DATAGEN_FILES rgeo/random_trgeo.sql)
 endif()
+if(POINTCLOUD)
+  list(APPEND DATAGEN_FILES pointcloud/random_tpcpoint.sql)
+endif()
 
 # Append each source file with license removed
 foreach(f ${DATAGEN_FILES})
