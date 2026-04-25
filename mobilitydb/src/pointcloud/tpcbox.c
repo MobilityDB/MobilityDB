@@ -33,7 +33,7 @@
  *
  * Fixed-size struct (no varlena), so @c recv / @c send simply shuttle the
  * bytes through. @c in / @c out delegate to MEOS-layer @c tpcbox_in /
- * @c tpcbox_out (hex round-trip for now; richer WKT parsing is deferred).
+ * @c tpcbox_out, which accept the hex byte-image form.
  */
 
 /* PostgreSQL */
@@ -59,6 +59,11 @@
 
 PGDLLEXPORT Datum Tpcbox_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_in);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return a TPCBox from its hex-encoded text representation
+ * @sqlfn tpcbox_in()
+ */
 Datum
 Tpcbox_in(PG_FUNCTION_ARGS)
 {
@@ -68,6 +73,11 @@ Tpcbox_in(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Tpcbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_out);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the hex-encoded text representation of a TPCBox
+ * @sqlfn tpcbox_out()
+ */
 Datum
 Tpcbox_out(PG_FUNCTION_ARGS)
 {
@@ -77,6 +87,11 @@ Tpcbox_out(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Tpcbox_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_recv);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Binary recv: read the raw TPCBox struct image
+ * @sqlfn tpcbox_recv()
+ */
 Datum
 Tpcbox_recv(PG_FUNCTION_ARGS)
 {
@@ -88,6 +103,11 @@ Tpcbox_recv(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Tpcbox_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_send);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Binary send: emit the raw TPCBox struct image
+ * @sqlfn tpcbox_send()
+ */
 Datum
 Tpcbox_send(PG_FUNCTION_ARGS)
 {
@@ -301,6 +321,11 @@ TPCBOX_ACCESSOR_DOUBLE(Tpcbox_zmax, tpcbox_zmax)
 
 PGDLLEXPORT Datum Tpcbox_tmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_tmin);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the minimum timestamp of a TPCBox; NULL if no T dimension
+ * @sqlfn tmin()
+ */
 Datum
 Tpcbox_tmin(PG_FUNCTION_ARGS)
 {
@@ -312,6 +337,11 @@ Tpcbox_tmin(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Tpcbox_tmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_tmax);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the maximum timestamp of a TPCBox; NULL if no T dimension
+ * @sqlfn tmax()
+ */
 Datum
 Tpcbox_tmax(PG_FUNCTION_ARGS)
 {
@@ -323,26 +353,51 @@ Tpcbox_tmax(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Tpcbox_hasx(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_hasx);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return true if a TPCBox has the XY dimensions set
+ * @sqlfn hasX()
+ */
 Datum Tpcbox_hasx(PG_FUNCTION_ARGS)
 { PG_RETURN_BOOL(tpcbox_hasx(PG_GETARG_TPCBOX_P(0))); }
 
 PGDLLEXPORT Datum Tpcbox_hasz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_hasz);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return true if a TPCBox has the Z dimension set
+ * @sqlfn hasZ()
+ */
 Datum Tpcbox_hasz(PG_FUNCTION_ARGS)
 { PG_RETURN_BOOL(tpcbox_hasz(PG_GETARG_TPCBOX_P(0))); }
 
 PGDLLEXPORT Datum Tpcbox_hast(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_hast);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return true if a TPCBox has the T (time) dimension set
+ * @sqlfn hasT()
+ */
 Datum Tpcbox_hast(PG_FUNCTION_ARGS)
 { PG_RETURN_BOOL(tpcbox_hast(PG_GETARG_TPCBOX_P(0))); }
 
 PGDLLEXPORT Datum Tpcbox_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_srid);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the SRID of a TPCBox
+ * @sqlfn SRID()
+ */
 Datum Tpcbox_srid(PG_FUNCTION_ARGS)
 { PG_RETURN_INT32(tpcbox_srid(PG_GETARG_TPCBOX_P(0))); }
 
 PGDLLEXPORT Datum Tpcbox_pcid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_pcid);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the pgPointCloud schema id of a TPCBox
+ * @sqlfn pcid()
+ */
 Datum Tpcbox_pcid(PG_FUNCTION_ARGS)
 { PG_RETURN_INT32((int32) tpcbox_pcid(PG_GETARG_TPCBOX_P(0))); }
 
@@ -352,6 +407,12 @@ Datum Tpcbox_pcid(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Union_tpcbox_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_setops
+ * @brief Return the union of two TPCBox values (must share pcid)
+ * @sqlfn tpcbox_union()
+ * @sqlop @p +
+ */
 Datum
 Union_tpcbox_tpcbox(PG_FUNCTION_ARGS)
 {
@@ -364,6 +425,13 @@ Union_tpcbox_tpcbox(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Intersection_tpcbox_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_setops
+ * @brief Return the intersection of two TPCBox values; NULL if disjoint
+ *   or pcid mismatch
+ * @sqlfn tpcbox_intersection()
+ * @sqlop @p *
+ */
 Datum
 Intersection_tpcbox_tpcbox(PG_FUNCTION_ARGS)
 {
@@ -407,6 +475,9 @@ TPCBOX_PRED_2(Tpcbox_ge, tpcbox_ge)
 
 PGDLLEXPORT Datum Tpcbox_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_cmp);
+/**
+ * @brief SQL: btree comparator for tpcbox
+ */
 Datum
 Tpcbox_cmp(PG_FUNCTION_ARGS)
 {

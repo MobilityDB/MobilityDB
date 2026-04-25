@@ -44,9 +44,6 @@
  *     X/Y/Z from a pcpoint byte blob requires the schema XML (loaded
  *     from @c pointcloud_formats by pcid), which only the PG layer can
  *     do.
- *   * Position operators (left/right/above/below/before/after) and the
- *     GiST / SP-GiST operator classes are deferred to a follow-up —
- *     they will wire up together with the indexed temporal types.
  */
 
 #include "pointcloud/tpcbox.h"
@@ -190,12 +187,10 @@ tpcbox_out(const TPCBox *box, int maxdd)
 /**
  * @ingroup meos_pointcloud_box_inout
  * @brief Return a TPCBox from its text representation.
- * @note Full WKT-style parsing is deferred — this accepts only the hex
- *   form produced by send(): the raw byte-image of a TPCBox struct
- *   encoded as ASCII hex. Adequate for round-tripping through PG
- *   @c recv / @c send, which is what SQL @c CREATE TYPE exercises.
- *   Rich WKT input can be added in a follow-up once the indexing paths
- *   need it.
+ * @note Accepts the hex form produced by @c send(): the raw byte-image
+ *   of a TPCBox struct encoded as ASCII hex.  Adequate for
+ *   round-tripping through PG @c recv / @c send, which is what
+ *   SQL @c CREATE TYPE exercises.
  */
 TPCBox *
 tpcbox_in(const char *str)
@@ -213,8 +208,7 @@ tpcbox_in(const char *str)
   if (len != 2 * sizeof(TPCBox))
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "TPCBox hex input must be %zu chars (got %zu); rich text form "
-      "arrives in a follow-up phase",
+      "TPCBox hex input must be %zu chars (got %zu)",
       2 * sizeof(TPCBox), len);
     return NULL;
   }
@@ -337,15 +331,43 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
  * set, mirroring how @c stbox_xmin and friends behave.
  *****************************************************************************/
 
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return @p true if a TPCBox has its X dimension set
+ * @csqlfn #Tpcbox_hasx()
+ */
 bool tpcbox_hasx(const TPCBox *box)
 { VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_X(box->flags); }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return @p true if a TPCBox has its Z dimension set
+ * @csqlfn #Tpcbox_hasz()
+ */
 bool tpcbox_hasz(const TPCBox *box)
 { VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_Z(box->flags); }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return @p true if a TPCBox has its T (time) dimension set
+ * @csqlfn #Tpcbox_hast()
+ */
 bool tpcbox_hast(const TPCBox *box)
 { VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_T(box->flags); }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return @p true if a TPCBox is in a geographic SRID
+ */
 bool tpcbox_geodetic(const TPCBox *box)
 { VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_GEODETIC(box->flags); }
 
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the minimum X value of a TPCBox
+ * @return @p true on success, @p false if the box has no X dimension
+ * @csqlfn #Tpcbox_xmin()
+ */
 bool
 tpcbox_xmin(const TPCBox *box, double *result)
 {
@@ -353,6 +375,13 @@ tpcbox_xmin(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_X(box->flags)) return false;
   *result = box->xmin; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the maximum X value of a TPCBox
+ * @return @p true on success, @p false if the box has no X dimension
+ * @csqlfn #Tpcbox_xmax()
+ */
 bool
 tpcbox_xmax(const TPCBox *box, double *result)
 {
@@ -360,6 +389,13 @@ tpcbox_xmax(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_X(box->flags)) return false;
   *result = box->xmax; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the minimum Y value of a TPCBox
+ * @return @p true on success, @p false if the box has no XY dimensions
+ * @csqlfn #Tpcbox_ymin()
+ */
 bool
 tpcbox_ymin(const TPCBox *box, double *result)
 {
@@ -367,6 +403,13 @@ tpcbox_ymin(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_X(box->flags)) return false;
   *result = box->ymin; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the maximum Y value of a TPCBox
+ * @return @p true on success, @p false if the box has no XY dimensions
+ * @csqlfn #Tpcbox_ymax()
+ */
 bool
 tpcbox_ymax(const TPCBox *box, double *result)
 {
@@ -374,6 +417,13 @@ tpcbox_ymax(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_X(box->flags)) return false;
   *result = box->ymax; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the minimum Z value of a TPCBox
+ * @return @p true on success, @p false if the box has no Z dimension
+ * @csqlfn #Tpcbox_zmin()
+ */
 bool
 tpcbox_zmin(const TPCBox *box, double *result)
 {
@@ -381,6 +431,13 @@ tpcbox_zmin(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_Z(box->flags)) return false;
   *result = box->zmin; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the maximum Z value of a TPCBox
+ * @return @p true on success, @p false if the box has no Z dimension
+ * @csqlfn #Tpcbox_zmax()
+ */
 bool
 tpcbox_zmax(const TPCBox *box, double *result)
 {
@@ -388,6 +445,13 @@ tpcbox_zmax(const TPCBox *box, double *result)
   if (! MEOS_FLAGS_GET_Z(box->flags)) return false;
   *result = box->zmax; return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the minimum T value of a TPCBox
+ * @return @p true on success, @p false if the box has no T dimension
+ * @csqlfn #Tpcbox_tmin()
+ */
 bool
 tpcbox_tmin(const TPCBox *box, TimestampTz *result)
 {
@@ -395,6 +459,13 @@ tpcbox_tmin(const TPCBox *box, TimestampTz *result)
   if (! MEOS_FLAGS_GET_T(box->flags)) return false;
   *result = DatumGetTimestampTz(box->period.lower); return true;
 }
+
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return in the last argument the maximum T value of a TPCBox
+ * @return @p true on success, @p false if the box has no T dimension
+ * @csqlfn #Tpcbox_tmax()
+ */
 bool
 tpcbox_tmax(const TPCBox *box, TimestampTz *result)
 {
@@ -403,10 +474,20 @@ tpcbox_tmax(const TPCBox *box, TimestampTz *result)
   *result = DatumGetTimestampTz(box->period.upper); return true;
 }
 
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return the SRID of a TPCBox
+ * @csqlfn #Tpcbox_srid()
+ */
 int32_t
 tpcbox_srid(const TPCBox *box)
 { VALIDATE_TPCBOX(box, 0); return box->srid; }
 
+/**
+ * @ingroup meos_pointcloud_box_accessor
+ * @brief Return the pgPointCloud schema id (pcid) of a TPCBox
+ * @csqlfn #Tpcbox_pcid()
+ */
 uint32_t
 tpcbox_pcid(const TPCBox *box)
 { VALIDATE_TPCBOX(box, 0); return box->pcid; }
@@ -564,6 +645,12 @@ tpcbox_shared_dims(const TPCBox *box1, const TPCBox *box2,
   *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_topo
+ * @brief Return @p true if the first TPCBox contains the second
+ * @details Mismatched pcid yields @p false.
+ * @csqlfn #Contains_tpcbox_tpcbox()
+ */
 bool
 contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -588,12 +675,23 @@ contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return true;
 }
 
+/**
+ * @ingroup meos_pointcloud_box_topo
+ * @brief Return @p true if the first TPCBox is contained in the second
+ * @csqlfn #Contained_tpcbox_tpcbox()
+ */
 bool
 contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   return contains_tpcbox_tpcbox(box2, box1);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values overlap
+ * @details Mismatched pcid yields @p false.
+ * @csqlfn #Overlaps_tpcbox_tpcbox()
+ */
 bool
 overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -613,12 +711,24 @@ overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return true;
 }
 
+/**
+ * @ingroup meos_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values are exactly equal
+ * @details Equivalent to @c tpcbox_eq.  Mismatched pcid yields @p false.
+ * @csqlfn #Same_tpcbox_tpcbox()
+ */
 bool
 same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_eq(box1, box2);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_topo
+ * @brief Return @p true if two TPCBox values touch but do not overlap
+ * @details Mismatched pcid yields @p false.
+ * @csqlfn #Adjacent_tpcbox_tpcbox()
+ */
 bool
 adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {

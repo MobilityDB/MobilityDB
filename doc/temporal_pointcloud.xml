@@ -226,7 +226,7 @@ SELECT startNumPoints(tpcpatch(
 	<sect1 xml:id="tpointcloud_indexes">
 		<title>Indexes</title>
 
-		<para>The MVP release ships B-tree (<varname>tpcpoint_btree_ops</varname>, <varname>tpcpatch_btree_ops</varname>, <varname>tpcbox_btree_ops</varname>) and hash (<varname>tpcpoint_hash_ops</varname>, <varname>tpcpatch_hash_ops</varname>) operator classes for equality and ordering predicates. GiST and SP-GiST operator classes for the bounding-box and position predicates are landed in a follow-up release; until then, queries that filter by <varname>&amp;&amp;</varname> / <varname>@&gt;</varname> / <varname>&lt;@</varname> / position operators run as sequential scans.</para>
+		<para>B-tree (<varname>tpcpoint_btree_ops</varname>, <varname>tpcpatch_btree_ops</varname>, <varname>tpcbox_btree_ops</varname>) and hash (<varname>tpcpoint_hash_ops</varname>, <varname>tpcpatch_hash_ops</varname>) operator classes support equality and ordering predicates.</para>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_caveats">

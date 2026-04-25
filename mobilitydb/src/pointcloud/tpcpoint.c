@@ -117,20 +117,31 @@ Tpcpoint_pcid(PG_FUNCTION_ARGS)
  * construction time by set_make_exp's same-pcid check).
  *****************************************************************************/
 
+/**
+ * @brief Per-dimension extractor signature used by the projection helper.
+ * @param[in] pt PCPOINT to read from
+ * @param[in] extra Optional context (e.g. dimension name as @c const char *)
+ * @param[out] out Extracted scalar value
+ * @return @p true on success
+ */
 typedef bool (*pcpoint_dim_fn)(const PCPOINT *pt, void *extra, double *out);
 
+/** @brief Dimension extractor: X coordinate. */
 static bool
 dim_get_x(const PCPOINT *pt, void *extra, double *out)
 { (void) extra; return pc_point_get_x((PCPOINT *) pt, out); }
 
+/** @brief Dimension extractor: Y coordinate. */
 static bool
 dim_get_y(const PCPOINT *pt, void *extra, double *out)
 { (void) extra; return pc_point_get_y((PCPOINT *) pt, out); }
 
+/** @brief Dimension extractor: Z coordinate (NULL if schema lacks Z). */
 static bool
 dim_get_z(const PCPOINT *pt, void *extra, double *out)
 { (void) extra; return pc_point_get_z((PCPOINT *) pt, out); }
 
+/** @brief Dimension extractor: any named schema dimension. */
 static bool
 dim_get_by_name(const PCPOINT *pt, void *extra, double *out)
 {

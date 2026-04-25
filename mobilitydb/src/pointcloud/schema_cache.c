@@ -70,6 +70,11 @@ typedef struct
 
 static HTAB *schema_cache = NULL;
 
+/**
+ * @brief Lazily allocate the per-backend schema cache hash table.
+ * @details Lives in @c CacheMemoryContext so the cache survives across
+ * statements but gets reclaimed when the backend shuts down.
+ */
 static void
 init_schema_cache(void)
 {
@@ -151,6 +156,16 @@ fetch_schema_xml(uint32_t pcid)
   return xml;
 }
 
+/**
+ * @brief Resolve a pgPointCloud schema by pcid.
+ * @details Implementation of the @c meos_pc_schema_fn hook.  On miss,
+ * fetches the schema XML from @c pointcloud_formats, parses it via
+ * libpc.a's @c pc_schema_from_xml, and caches the parsed PCSCHEMA in
+ * @c CacheMemoryContext for subsequent lookups in the same backend.
+ * @param[in] pcid pgPointCloud schema identifier
+ * @return Parsed PCSCHEMA pointer (cache-owned), or @p NULL if the
+ *   pcid is unknown.
+ */
 PCSCHEMA *
 mobilitydb_pc_schema(uint32_t pcid)
 {

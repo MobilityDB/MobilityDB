@@ -441,6 +441,13 @@ pcpatch_to_set(const Pcpatch *pa)
  * Accessors — pcpatch sets
  *****************************************************************************/
 
+/**
+ * @ingroup meos_pointcloud_set_accessor
+ * @brief Return a copy of the start (smallest) value of a pcpatch set
+ * @param[in] s Set
+ * @return On error return @p NULL
+ * @csqlfn #Set_start_value()
+ */
 Pcpatch *
 pcpatchset_start_value(const Set *s)
 {
@@ -449,6 +456,13 @@ pcpatchset_start_value(const Set *s)
     s->basetype));
 }
 
+/**
+ * @ingroup meos_pointcloud_set_accessor
+ * @brief Return a copy of the end (largest) value of a pcpatch set
+ * @param[in] s Set
+ * @return On error return @p NULL
+ * @csqlfn #Set_end_value()
+ */
 Pcpatch *
 pcpatchset_end_value(const Set *s)
 {
@@ -457,6 +471,15 @@ pcpatchset_end_value(const Set *s)
     s->basetype));
 }
 
+/**
+ * @ingroup meos_pointcloud_set_accessor
+ * @brief Return in the last argument a copy of the n-th value of a pcpatch set
+ * @param[in] s Set
+ * @param[in] n Number (1-based)
+ * @param[out] result Value
+ * @return @p true if the value is found
+ * @csqlfn #Set_value_n()
+ */
 bool
 pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
 {
@@ -468,6 +491,13 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
   return true;
 }
 
+/**
+ * @ingroup meos_pointcloud_set_accessor
+ * @brief Return an array of copies of the values of a pcpatch set
+ * @param[in] s Set
+ * @return On error return @p NULL
+ * @csqlfn #Set_values()
+ */
 Pcpatch **
 pcpatchset_values(const Set *s)
 {
@@ -483,6 +513,11 @@ pcpatchset_values(const Set *s)
  * Set operations — pcpatch / pcpatch-set
  *****************************************************************************/
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return @p true if a set contains a pcpatch
+ * @csqlfn #Contains_set_value()
+ */
 bool
 contains_set_pcpatch(const Set *s, Pcpatch *pa)
 {
@@ -491,6 +526,11 @@ contains_set_pcpatch(const Set *s, Pcpatch *pa)
   return contains_set_value(s, PointerGetDatum(pa));
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return @p true if a pcpatch is contained in a set
+ * @csqlfn #Contained_value_set()
+ */
 bool
 contained_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
@@ -499,6 +539,11 @@ contained_pcpatch_set(const Pcpatch *pa, const Set *s)
   return contained_value_set(PointerGetDatum(pa), s);
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the union of a set and a pcpatch
+ * @csqlfn #Union_set_value()
+ */
 Set *
 union_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
@@ -507,12 +552,22 @@ union_set_pcpatch(const Set *s, const Pcpatch *pa)
   return union_set_value(s, PointerGetDatum(pa));
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the union of a pcpatch and a set
+ * @csqlfn #Union_set_value()
+ */
 Set *
 union_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
   return union_set_pcpatch(s, pa);
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the intersection of a set and a pcpatch
+ * @csqlfn #Intersection_set_value()
+ */
 Set *
 intersection_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
@@ -521,12 +576,22 @@ intersection_set_pcpatch(const Set *s, const Pcpatch *pa)
   return intersection_set_value(s, PointerGetDatum(pa));
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the intersection of a pcpatch and a set
+ * @csqlfn #Intersection_set_value()
+ */
 Set *
 intersection_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
   return intersection_set_pcpatch(s, pa);
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the difference of a pcpatch and a set
+ * @csqlfn #Minus_value_set()
+ */
 Set *
 minus_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
@@ -535,6 +600,11 @@ minus_pcpatch_set(const Pcpatch *pa, const Set *s)
   return minus_value_set(PointerGetDatum(pa), s);
 }
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Return the difference of a set and a pcpatch
+ * @csqlfn #Minus_set_value()
+ */
 Set *
 minus_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
@@ -547,6 +617,12 @@ minus_set_pcpatch(const Set *s, const Pcpatch *pa)
  * Aggregate — pcpatch union
  *****************************************************************************/
 
+/**
+ * @ingroup meos_pointcloud_set_setops
+ * @brief Transition function for set union aggregate of pcpatch values
+ * @param[in,out] state Current aggregate state
+ * @param[in] pa Value
+ */
 Set *
 pcpatch_union_transfn(Set *state, const Pcpatch *pa)
 {
