@@ -287,12 +287,16 @@ BEGIN
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
     mincard, maxcard, fixstart) INTO tsarr;
   card := array_length(tsarr, 1);
+  -- Step interp + exclusive upper bound requires the last value to
+  -- equal the previous one.  pcpoint values don't expose a "copy
+  -- previous" sub-API at the SQL level the way tcbuffer does, so we
+  -- pin upper_inc=true unconditionally for tpcpoint sequences.
   IF card = 1 THEN
-    lower_inc := true; upper_inc := true;
+    lower_inc := true;
   ELSE
     lower_inc := random() > 0.5;
-    upper_inc := random() > 0.5;
   END IF;
+  upper_inc := true;
   FOR i IN 1 .. card LOOP
     result := array_append(result, tpcpoint(
       random_pcpoint(lowx, highx, lowy, highy, lowz, highz), tsarr[i]));
@@ -391,12 +395,13 @@ BEGIN
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
     mincard, maxcard, fixstart) INTO tsarr;
   card := array_length(tsarr, 1);
+  -- Same step+exclusive constraint as random_tpcpoint_contseq.
   IF card = 1 THEN
-    lower_inc := true; upper_inc := true;
+    lower_inc := true;
   ELSE
     lower_inc := random() > 0.5;
-    upper_inc := random() > 0.5;
   END IF;
+  upper_inc := true;
   FOR i IN 1 .. card LOOP
     result := array_append(result, tpcpatch(
       random_pcpatch(lowx, highx, lowy, highy, lowz, highz, minpts, maxpts),
