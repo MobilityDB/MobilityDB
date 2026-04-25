@@ -420,7 +420,7 @@ SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]), '2024-0
 
 		<sect2 xml:id="tpcpoint_accessors">
 			<title>Accessors</title>
-			<para>All generic temporal accessors apply (see <xref linkend="temporal_types_p1" />): <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. In addition:</para>
+			<para>All generic temporal accessors apply (see <xref linkend="ttype_p1" />): <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. In addition:</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_pcid">
 					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
