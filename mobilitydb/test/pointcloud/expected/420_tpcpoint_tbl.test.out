@@ -1,0 +1,104 @@
+SELECT bool_and(pcid(inst) = 1) FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpoint_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpoint_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpoint_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(inst) = 1) FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpoint_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpoint_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpoint_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(getX(inst)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(getY(inst)) BETWEEN -100 AND 100) FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(getZ(inst)) BETWEEN    0 AND 100) FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint_inst WHERE inst::tgeompoint IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT bool_and(numInstants(inst::tgeompoint) = numInstants(inst))
+FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp =  t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint t2 WHERE t1.temp <  t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint
+WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

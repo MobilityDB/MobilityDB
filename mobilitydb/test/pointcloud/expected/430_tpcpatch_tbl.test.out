@@ -1,0 +1,79 @@
+SELECT bool_and(pcid(inst) = 1) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpatch_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(inst) = 1) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpatch_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startNumPoints(inst) BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp =  t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp <  t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch
+WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

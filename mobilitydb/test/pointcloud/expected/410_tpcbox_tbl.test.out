@@ -1,0 +1,122 @@
+COPY tbl_tpcbox TO '/tmp/tbl_tpcbox' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tpcbox_tmp;
+NOTICE:  table "tbl_tpcbox_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tpcbox_tmp AS TABLE tbl_tpcbox WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tpcbox_tmp FROM '/tmp/tbl_tpcbox' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tpcbox_tmp;
+DROP TABLE
+SELECT bool_and(pcid(b) = 1) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(hasX(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(hasZ(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(hasT(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(xmin(b) <= xmax(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(ymin(b) <= ymax(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(zmin(b) <= zmax(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(tmin(b) <= tmax(b)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(t1.b + t2.b) = 1)
+FROM tbl_tpcbox t1, tbl_tpcbox t2;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*)
+FROM tbl_tpcbox t1, tbl_tpcbox t2
+WHERE (t1.b * t2.b) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT bool_and(b ~= b) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(b && b) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(b @> b) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b =  t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <> t2.b;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <  t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <= t2.b;
+ count 
+-------
+  5050
+(1 row)
+

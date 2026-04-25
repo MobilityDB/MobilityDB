@@ -31,23 +31,10 @@
 -- pcpointset / pcpatchset set types.  Every query collapses to a single
 -- scalar (COUNT, MIN, MAX, bool_and, etc.) so the diff is human-readable.
 
--------------------------------------------------------------------------------
--- Send / receive round-trip: dump as binary, reload, compare row-by-row.
--------------------------------------------------------------------------------
-
-COPY tbl_pcpoint TO '/tmp/tbl_pcpoint' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_pcpoint_tmp;
-CREATE TABLE tbl_pcpoint_tmp AS TABLE tbl_pcpoint WITH NO DATA;
-COPY tbl_pcpoint_tmp FROM '/tmp/tbl_pcpoint' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint_tmp t2 WHERE t1.k = t2.k AND t1.pt <> t2.pt;
-DROP TABLE tbl_pcpoint_tmp;
-
-COPY tbl_pcpatch TO '/tmp/tbl_pcpatch' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_pcpatch_tmp;
-CREATE TABLE tbl_pcpatch_tmp AS TABLE tbl_pcpatch WITH NO DATA;
-COPY tbl_pcpatch_tmp FROM '/tmp/tbl_pcpatch' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_pcpatch t1, tbl_pcpatch_tmp t2 WHERE t1.k = t2.k AND t1.pa <> t2.pa;
-DROP TABLE tbl_pcpatch_tmp;
+-- Note: pgpointcloud's static pcpoint / pcpatch do not expose binary
+-- send/receive functions or B-tree comparison operators, so the
+-- COPY BINARY round-trip and `=`/`<>`/`<` patterns used by the
+-- temporal types are not exercised here.
 
 -------------------------------------------------------------------------------
 -- pcid uniformity — every row in the datagen tables must use pcid = 1.
@@ -63,17 +50,6 @@ SELECT bool_and(pcid(pa) = 1) FROM tbl_pcpatch;
 SELECT bool_and(getX(pt) BETWEEN -100 AND 100) FROM tbl_pcpoint;
 SELECT bool_and(getY(pt) BETWEEN -100 AND 100) FROM tbl_pcpoint;
 SELECT bool_and(getZ(pt) BETWEEN    0 AND 100) FROM tbl_pcpoint;
-
--------------------------------------------------------------------------------
--- Comparison operators.
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt =  t2.pt;
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt <> t2.pt;
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt <  t2.pt;
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt <= t2.pt;
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt >  t2.pt;
-SELECT COUNT(*) FROM tbl_pcpoint t1, tbl_pcpoint t2 WHERE t1.pt >= t2.pt;
 
 -------------------------------------------------------------------------------
 -- Set types — basic invariants.
