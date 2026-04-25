@@ -264,36 +264,10 @@ Datum
 Pcpoint_to_tpcbox(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  PCSCHEMA *schema = mobilitydb_pc_schema(pt->pcid);
-  PCPOINT pcpt;
-  pcpt.readonly = 1;
-  pcpt.schema = schema;
-  pcpt.data = (uint8_t *) pt->data;
-
-  if (! schema->xdim || ! schema->ydim)
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("pcpoint schema %u lacks X or Y dimensions", pt->pcid)));
-  }
-
-  double x, y, z = 0.0;
-  bool has_z = (schema->zdim != NULL);
-  if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y) ||
-      (has_z && ! pc_point_get_z(&pcpt, &z)))
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Failed to extract coords from pcpoint (pcid=%u)", pt->pcid)));
-  }
-
-  TPCBox *result = tpcbox_make(
-    /* hasx */ true, /* hasz */ has_z, /* hast */ false,
-    /* geodetic */ false,
-    (int32_t) schema->srid, pt->pcid,
-    x, x, y, y, z, z, NULL);
-
+  TPCBox *result = pcpoint_to_tpcbox(pt, meos_pc_schema(pt->pcid));
   PG_FREE_IF_COPY(pt, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);
 }
 

@@ -39,6 +39,10 @@
 
 typedef struct Pcpoint Pcpoint;
 typedef struct Pcpatch Pcpatch;
+/* Forward decl for the parsed pgpointcloud schema; full layout is in
+ * libpc.a's @c pc_api.h.  Schema-aware MEOS helpers take this opaque
+ * pointer; obtain one via @ref meos_pc_schema. */
+typedef struct PCSCHEMA PCSCHEMA;
 
 /**
  * @brief Bounding box for pgpointcloud temporal types.
@@ -125,6 +129,28 @@ extern Pcpoint *pcpoint_copy(const Pcpoint *pt);
 extern uint32_t pcpoint_get_pcid(const Pcpoint *pt);
 extern uint32 pcpoint_hash(const Pcpoint *pt);
 extern uint64 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed);
+
+/* Schema-aware coordinate accessors.  All write the result through @p out
+ * and return @p true on success; @p false (without erroring) when the
+ * requested dimension is absent from the schema or could not be read. */
+
+extern bool pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out);
+extern bool pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out);
+extern bool pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out);
+extern bool pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
+  const char *name, double *out);
+
+/* Schema-aware conversion to TPCBox (degenerate single-point bbox).
+ * Returns @p NULL if the schema lacks the required X/Y dimensions. */
+
+extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
+
+/* Schema lookup — see @c meos_schema_hook.h for the cache + register API
+ * used by embedders.  Most callers want this fast path: returns a parsed
+ * @c PCSCHEMA from the MEOS-owned cache, falling back to the installed
+ * resolution hook (catalog scan in a PG backend) on miss. */
+
+extern PCSCHEMA *meos_pc_schema(uint32_t pcid);
 
 /* Comparison */
 

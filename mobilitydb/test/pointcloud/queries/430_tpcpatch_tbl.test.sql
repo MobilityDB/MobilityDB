@@ -56,6 +56,7 @@ SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpatch_seqset;
 -------------------------------------------------------------------------------
 
 SELECT bool_and(startNumPoints(inst) BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+SELECT bool_and(endNumPoints(inst)   BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
 
 -------------------------------------------------------------------------------
 -- Comparison operators

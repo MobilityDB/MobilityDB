@@ -74,7 +74,7 @@ typedef struct
   uint8_t active;
 } PCDIMENSION;
 
-typedef struct
+typedef struct PCSCHEMA
 {
   uint32_t pcid;        /* Unique ID for schema */
   uint32_t ndims;       /* How many dimensions does this schema have? */

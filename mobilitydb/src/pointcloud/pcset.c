@@ -92,27 +92,11 @@ Pcpatch_pcid(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Schema-aware pcpoint dimension getters
  *
- * Wrap a varlena-shape Pcpoint as a transient in-memory PCPOINT (libpc.a's
- * uncompressed struct) so we can reuse pgpointcloud's own dimension
- * readers — pc_point_get_x/y/z, pc_point_get_double_by_name. That keeps
- * scale/offset/interpretation handling in one place (pgpointcloud).
+ * Schema-aware dimension accessors are now in MEOS
+ * (`meos/src/pointcloud/pcpoint.c::pcpoint_get_x/y/z/dim`).  The PG
+ * wrappers below just unpack PG arguments, resolve the schema via the
+ * MEOS cache, dispatch, and convert the boolean result to NULL/float8.
  *****************************************************************************/
-
-/**
- * @brief Shim a varlena Pcpoint into a read-only libpc.a PCPOINT.
- * @note Shares the underlying dimension-byte pointer; the caller's
- *   Pcpoint is NOT copied. The PCSCHEMA is loaded from the per-backend
- *   cache on first touch per pcid.
- */
-static inline void
-pcpoint_as_pcpt(const Pcpoint *pt, PCPOINT *out)
-{
-  out->readonly = 1;
-  out->schema = mobilitydb_pc_schema(pt->pcid);
-  /* Cast away const — libpc.a uses a non-const pointer but never writes
-   * to the buffer when readonly=1. */
-  out->data = (uint8_t *) ((const Pcpoint *) pt)->data;
-}
 
 PGDLLEXPORT Datum Pcpoint_get_x(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpoint_get_x);
@@ -125,22 +109,11 @@ Datum
 Pcpoint_get_x(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  PCPOINT pcpt;
-  pcpoint_as_pcpt(pt, &pcpt);
-  if (! pcpt.schema->xdim)
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("pcpoint schema %u has no X dimension", pt->pcid)));
-  }
   double x;
-  if (! pc_point_get_x(&pcpt, &x))
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Failed to read X from pcpoint (pcid=%u)", pt->pcid)));
-  }
+  bool ok = pcpoint_get_x(pt, meos_pc_schema(pt->pcid), &x);
   PG_FREE_IF_COPY(pt, 0);
+  if (! ok)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(x);
 }
 
@@ -155,22 +128,11 @@ Datum
 Pcpoint_get_y(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  PCPOINT pcpt;
-  pcpoint_as_pcpt(pt, &pcpt);
-  if (! pcpt.schema->ydim)
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("pcpoint schema %u has no Y dimension", pt->pcid)));
-  }
   double y;
-  if (! pc_point_get_y(&pcpt, &y))
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Failed to read Y from pcpoint (pcid=%u)", pt->pcid)));
-  }
+  bool ok = pcpoint_get_y(pt, meos_pc_schema(pt->pcid), &y);
   PG_FREE_IF_COPY(pt, 0);
+  if (! ok)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(y);
 }
 
@@ -185,21 +147,11 @@ Datum
 Pcpoint_get_z(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  PCPOINT pcpt;
-  pcpoint_as_pcpt(pt, &pcpt);
-  if (! pcpt.schema->zdim)
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    PG_RETURN_NULL();  /* idiomatic: no Z → NULL, not an error */
-  }
   double z;
-  if (! pc_point_get_z(&pcpt, &z))
-  {
-    PG_FREE_IF_COPY(pt, 0);
-    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-      errmsg("Failed to read Z from pcpoint (pcid=%u)", pt->pcid)));
-  }
+  bool ok = pcpoint_get_z(pt, meos_pc_schema(pt->pcid), &z);
   PG_FREE_IF_COPY(pt, 0);
+  if (! ok)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(z);
 }
 
@@ -208,11 +160,6 @@ PG_FUNCTION_INFO_V1(Pcpoint_get_dim);
 /**
  * @ingroup mobilitydb_pointcloud_base_accessor
  * @brief Return an arbitrary dimension of a pcpoint by name.
- * @details Accepts any name defined in the schema XML (Intensity,
- *   ReturnNumber, Classification, GpsTime, …); NULL if the name is
- *   unknown for this schema. Uses pgpointcloud's own lookup so
- *   scale/offset/interpretation are applied identically to
- *   @c PC_Get(pcpoint, name).
  * @sqlfn getDim()
  */
 Datum
@@ -221,10 +168,8 @@ Pcpoint_get_dim(PG_FUNCTION_ARGS)
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
   text *name_txt = PG_GETARG_TEXT_P(1);
   char *name = text_to_cstring(name_txt);
-  PCPOINT pcpt;
-  pcpoint_as_pcpt(pt, &pcpt);
   double v;
-  int ok = pc_point_get_double_by_name(&pcpt, name, &v);
+  bool ok = pcpoint_get_dim(pt, meos_pc_schema(pt->pcid), name, &v);
   pfree(name);
   PG_FREE_IF_COPY(pt, 0);
   PG_FREE_IF_COPY(name_txt, 1);

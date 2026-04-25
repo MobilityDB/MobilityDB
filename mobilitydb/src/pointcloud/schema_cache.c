@@ -29,18 +29,25 @@
 
 /**
  * @file
- * @brief Implementation of the per-backend pgpointcloud schema cache.
+ * @brief PG-side resolver for pgPointCloud schemas — installed as the
+ *   @c meos_pc_schema_fn hook by @c mobilitydb_init.
  *
- * Reads @c pointcloud_formats rows via a direct heap scan (table_open +
- * systable_beginscan), parses the XML via libpc.a's pc_schema_from_xml,
- * and caches the resulting @c PCSCHEMA in a per-backend hashtable living
- * in CacheMemoryContext. The direct heap scan approach matches what
+ * The cache itself lives at the MEOS layer
+ * (@c meos/src/pointcloud/schema_hook.c), so this file is now a thin
+ * "fetch from @c pointcloud_formats and parse" implementation.  MEOS
+ * registers the parsed schema into its cache automatically on hook
+ * miss — we don't keep our own duplicate cache on the PG side.
+ *
+ * Reads @c pointcloud_formats rows via a direct heap scan
+ * (@c table_open + @c systable_beginscan), parses the XML via libpc.a's
+ * @c pc_schema_from_xml.  The direct heap scan approach matches what
  * pgpointcloud does internally for its own lookups and — crucially —
- * avoids SPI_connect entirely. SPI_connect was observed to crash when
- * called from inside the executor during a SELECT over a tpcpoint
- * column, even though the identical SPI pattern worked from simpler
- * pcpoint-arg call sites. Direct catalog access sidesteps the whole
- * SPI machinery and works in every executor context we've tested.
+ * avoids @c SPI_connect entirely.  @c SPI_connect was observed to
+ * crash when called from inside the executor during a SELECT over a
+ * tpcpoint column, even though the identical SPI pattern worked from
+ * simpler pcpoint-arg call sites.  Direct catalog access sidesteps
+ * the whole SPI machinery and works in every executor context we've
+ * tested.
  */
 
 /* PostgreSQL */
@@ -52,7 +59,6 @@
 #include <commands/extension.h>
 #include <utils/builtins.h>
 #include <utils/fmgroids.h>
-#include <utils/hsearch.h>
 #include <utils/lsyscache.h>
 #include <utils/memutils.h>
 #include <utils/rel.h>
@@ -61,30 +67,6 @@
 #include "pc_api.h"
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
-
-typedef struct
-{
-  uint32_t pcid;      /* key — must be first for HASH_BLOBS */
-  PCSCHEMA *schema;   /* cached parsed schema; owned by CacheMemoryContext */
-} schema_cache_entry;
-
-static HTAB *schema_cache = NULL;
-
-/**
- * @brief Lazily allocate the per-backend schema cache hash table.
- * @details Lives in @c CacheMemoryContext so the cache survives across
- * statements but gets reclaimed when the backend shuts down.
- */
-static void
-init_schema_cache(void)
-{
-  HASHCTL info;
-  info.keysize = sizeof(uint32_t);
-  info.entrysize = sizeof(schema_cache_entry);
-  info.hcxt = CacheMemoryContext;
-  schema_cache = hash_create("MobilityDB pgpointcloud schema cache",
-    64, &info, HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
-}
 
 /**
  * @brief Return the install namespace of the pgpointcloud extension, or
@@ -96,20 +78,13 @@ pointcloud_namespace_oid(void)
   Oid ext_oid = get_extension_oid("pointcloud", /* missing_ok */ true);
   if (ext_oid == InvalidOid)
     return InvalidOid;
-
-  /* get_extension_schema was added to PG's commands/extension.h in 16+.
-   * For earlier versions we'd need the manual pg_extension scan; all
-   * currently-supported PG versions for MobilityDB are >= 13 though,
-   * and this code path is reached only on POINTCLOUD=ON builds which
-   * implicitly require the pgpointcloud extension anyway, so the
-   * helper is always available on the platforms we target. */
   return get_extension_schema(ext_oid);
 }
 
 /**
  * @brief Fetch the XML schema text for a given pcid from
  *   @c pointcloud_formats via a direct heap scan.
- * @return palloc'd cstring on hit, NULL on miss. The memory context
+ * @return palloc'd cstring on hit, NULL on miss.  The memory context
  *   is whatever was current at call time.
  */
 static char *
@@ -129,7 +104,7 @@ fetch_schema_xml(uint32_t pcid)
   Relation rel = table_open(rel_oid, AccessShareLock);
   TupleDesc tupDesc = RelationGetDescr(rel);
 
-  /* Column layout: (pcid int4, srid int4, schema text). Scan by pcid. */
+  /* Column layout: (pcid int4, srid int4, schema text).  Scan by pcid. */
   ScanKeyData key[1];
   ScanKeyInit(&key[0],
     /* attnum */ 1,
@@ -157,54 +132,39 @@ fetch_schema_xml(uint32_t pcid)
 }
 
 /**
- * @brief Resolve a pgPointCloud schema by pcid.
- * @details Implementation of the @c meos_pc_schema_fn hook.  On miss,
- * fetches the schema XML from @c pointcloud_formats, parses it via
- * libpc.a's @c pc_schema_from_xml, and caches the parsed PCSCHEMA in
- * @c CacheMemoryContext for subsequent lookups in the same backend.
+ * @brief Resolve a pgPointCloud schema by pcid (PG-layer hook impl).
+ *
+ * Installed at @c mobilitydb_init time as the @c meos_pc_schema_fn
+ * function pointer, this is invoked on a MEOS-cache miss.  Fetches the
+ * XML from @c pointcloud_formats, parses it via libpc.a's
+ * @c pc_schema_from_xml in @c TopMemoryContext (so the parsed schema
+ * outlives the current query), and returns the result.  The MEOS
+ * caller registers the return value into its cache automatically.
+ *
  * @param[in] pcid pgPointCloud schema identifier
- * @return Parsed PCSCHEMA pointer (cache-owned), or @p NULL if the
- *   pcid is unknown.
+ * @return Parsed @c PCSCHEMA pointer, or @p NULL if the pcid is
+ *   unknown (caller decides whether that's an error).
  */
 PCSCHEMA *
 mobilitydb_pc_schema(uint32_t pcid)
 {
-  if (schema_cache == NULL)
-    init_schema_cache();
-
-  bool found;
-  schema_cache_entry *entry = (schema_cache_entry *)
-    hash_search(schema_cache, &pcid, HASH_ENTER, &found);
-  if (found && entry->schema != NULL)
-    return entry->schema;
-
-  entry->pcid = pcid;
-  entry->schema = NULL;
-
-  /* Fetch in the caller's context, parse into CacheMemoryContext so
-   * the resulting PCSCHEMA outlives the current query. */
   char *xml = fetch_schema_xml(pcid);
   if (xml == NULL)
-  {
-    hash_search(schema_cache, &pcid, HASH_REMOVE, NULL);
-    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_OBJECT),
-      errmsg("No pgpointcloud schema with pcid=%u", pcid)));
-  }
+    return NULL;
 
-  MemoryContext old_ctx = MemoryContextSwitchTo(CacheMemoryContext);
+  /* Parse into TopMemoryContext so the PCSCHEMA outlives the current
+   * query — the MEOS-level cache holds the pointer for the rest of
+   * the backend's lifetime. */
+  MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
   PCSCHEMA *schema = pc_schema_from_xml(xml);
   MemoryContextSwitchTo(old_ctx);
   pfree(xml);
 
   if (schema == NULL)
-  {
-    hash_search(schema_cache, &pcid, HASH_REMOVE, NULL);
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Failed to parse pgpointcloud schema XML for pcid=%u", pcid)));
-  }
 
   /* pc_schema_from_xml doesn't populate schema->pcid — wire it up. */
   schema->pcid = pcid;
-  entry->schema = schema;
   return schema;
 }

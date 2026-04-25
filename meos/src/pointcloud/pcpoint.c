@@ -36,8 +36,12 @@
 #include "common/hashfn.h"
 #include "utils/builtins.h"  /* hex_encode, hex_decode */
 #include <stddef.h>          /* offsetof */
+/* pgpointcloud */
+#include "pc_api.h"
 /* MEOS */
 #include <meos.h>
+#include <meos_pointcloud.h>
+#include "pointcloud/meos_schema_hook.h"
 
 /*****************************************************************************
  * Struct-tail padding
@@ -344,5 +348,120 @@ bool pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) >  0; }
 bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) >= 0; }
+
+/*****************************************************************************
+ * Schema-aware accessors
+ *
+ * Wrap a varlena Pcpoint as a transient PCPOINT (libpc.a's
+ * uncompressed struct) so we can reuse pgpointcloud's own dimension
+ * readers — pc_point_get_x/y/z, pc_point_get_double_by_name. That keeps
+ * scale/offset/interpretation handling in one place (pgpointcloud).
+ *****************************************************************************/
+
+/**
+ * @brief Shim a varlena Pcpoint into a read-only libpc.a PCPOINT.
+ * @note Shares the underlying dimension-byte pointer; the caller's
+ *   Pcpoint is NOT copied.
+ */
+static inline void
+pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
+{
+  out->readonly = 1;
+  out->schema = schema;
+  /* Cast away const — libpc.a uses a non-const pointer but never writes
+   * to the buffer when readonly=1. */
+  out->data = (uint8_t *) ((const Pcpoint *) pt)->data;
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the X coordinate of a pcpoint via the given schema
+ * @return @p true on success; @p false if the schema lacks an X dimension
+ *   or the byte read fails
+ * @csqlfn #Pcpoint_get_x()
+ */
+bool
+pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+{
+  assert(pt); assert(schema); assert(out);
+  if (! schema->xdim)
+    return false;
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  return pc_point_get_x(&pcpt, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the Y coordinate of a pcpoint via the given schema
+ * @csqlfn #Pcpoint_get_y()
+ */
+bool
+pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+{
+  assert(pt); assert(schema); assert(out);
+  if (! schema->ydim)
+    return false;
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  return pc_point_get_y(&pcpt, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the Z coordinate of a pcpoint via the given schema
+ * @csqlfn #Pcpoint_get_z()
+ */
+bool
+pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+{
+  assert(pt); assert(schema); assert(out);
+  if (! schema->zdim)
+    return false;
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  return pc_point_get_z(&pcpt, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return any named dimension of a pcpoint via the given schema
+ * @csqlfn #Pcpoint_get_dim()
+ */
+bool
+pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
+  const char *name, double *out)
+{
+  assert(pt); assert(schema); assert(name); assert(out);
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  return pc_point_get_double_by_name(&pcpt, name, out) != 0;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_constructor
+ * @brief Convert a pcpoint to a degenerate single-point TPCBox.
+ * @return Newly-palloc'd TPCBox, or @p NULL if the schema lacks the
+ *   required X/Y dimensions.
+ * @csqlfn #Pcpoint_to_tpcbox()
+ */
+TPCBox *
+pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
+{
+  assert(pt); assert(schema);
+  if (! schema->xdim || ! schema->ydim)
+    return NULL;
+  PCPOINT pcpt;
+  pcpoint_as_pcpt(pt, schema, &pcpt);
+  double x, y, z = 0.0;
+  bool has_z = (schema->zdim != NULL);
+  if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y) ||
+      (has_z && ! pc_point_get_z(&pcpt, &z)))
+    return NULL;
+  return tpcbox_make(/* hasx */ true, /* hasz */ has_z,
+    /* hast */ false, /* geodetic */ false,
+    (int32_t) schema->srid, pt->pcid,
+    x, x, y, y, z, z, NULL);
+}
 
 /*****************************************************************************/
