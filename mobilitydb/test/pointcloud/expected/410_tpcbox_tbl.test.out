@@ -120,3 +120,16 @@ SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox t2 WHERE t1.b <= t2.b;
   5050
 (1 row)
 
+SELECT bool_and(round(round(b, 0), 0) ~= round(b, 0)) FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(SRID(setSRID(b, 4326)) = 4326 AND pcid(setSRID(b, 4326)) = pcid(b))
+FROM tbl_tpcbox;
+ bool_and 
+----------
+ t
+(1 row)
+
