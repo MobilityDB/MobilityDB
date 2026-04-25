@@ -40,7 +40,7 @@
  *     cache by hand (a PG backend would do this lazily via the
  *     @c mobilitydb_init hook; standalone code does it explicitly).
  *
- *   * @ref rtree_create_tpcbox + @ref rtree_insert + @ref rtree_search
+ *   * @c rtree_create_tpcbox + @c rtree_insert + @c rtree_search
  *     — the bbox-only API.  No temporal value involved; we insert
  *     synthetic @c tpcbox values and query the index directly.
  *
