@@ -765,6 +765,14 @@ adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * bounds in XYZ-min / XYZ-max order. Deterministic; usable by B-tree.
  *****************************************************************************/
 
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Total-order comparator for TPCBox.
+ * @details Order: pcid, srid, flags, period, then spatial bounds.
+ *   Deterministic; suitable for B-tree.
+ * @return -1, 0, or 1
+ * @csqlfn #Tpcbox_cmp()
+ */
 int
 tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
 {
@@ -794,16 +802,51 @@ tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
   return 0;
 }
 
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if two TPCBox values are strictly equal.
+ * @csqlfn #Tpcbox_eq()
+ */
 bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) == 0; }
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if two TPCBox values differ.
+ * @csqlfn #Tpcbox_ne()
+ */
 bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) != 0; }
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if box1 strictly precedes box2 in total order.
+ * @csqlfn #Tpcbox_lt()
+ */
 bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) <  0; }
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if box1 precedes or equals box2 in total order.
+ * @csqlfn #Tpcbox_le()
+ */
 bool tpcbox_le(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) <= 0; }
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if box1 strictly follows box2 in total order.
+ * @csqlfn #Tpcbox_gt()
+ */
 bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) >  0; }
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return @p true if box1 follows or equals box2 in total order.
+ * @csqlfn #Tpcbox_ge()
+ */
 bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 { return tpcbox_cmp(box1, box2) >= 0; }
 
@@ -819,6 +862,12 @@ bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 
 /* X axis */
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly left of box2 (X-axis).
+ * @details Returns @p false on pcid mismatch or if either box lacks XY.
+ * @csqlfn #Left_tpcbox_tpcbox()
+ */
 bool
 left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -829,6 +878,11 @@ left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->xmax < box2->xmin);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend to the right of box2.
+ * @csqlfn #Overleft_tpcbox_tpcbox()
+ */
 bool
 overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -839,6 +893,11 @@ overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->xmax <= box2->xmax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly right of box2 (X-axis).
+ * @csqlfn #Right_tpcbox_tpcbox()
+ */
 bool
 right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -849,6 +908,11 @@ right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->xmin > box2->xmax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend to the left of box2.
+ * @csqlfn #Overright_tpcbox_tpcbox()
+ */
 bool
 overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -861,6 +925,11 @@ overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 
 /* Y axis */
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly below box2 (Y-axis).
+ * @csqlfn #Below_tpcbox_tpcbox()
+ */
 bool
 below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -871,6 +940,11 @@ below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->ymax < box2->ymin);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend above box2.
+ * @csqlfn #Overbelow_tpcbox_tpcbox()
+ */
 bool
 overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -881,6 +955,11 @@ overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->ymax <= box2->ymax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly above box2 (Y-axis).
+ * @csqlfn #Above_tpcbox_tpcbox()
+ */
 bool
 above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -891,6 +970,11 @@ above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->ymin > box2->ymax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend below box2.
+ * @csqlfn #Overabove_tpcbox_tpcbox()
+ */
 bool
 overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -903,6 +987,12 @@ overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 
 /* Z axis — front/back only meaningful when both boxes have Z */
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly in front of box2 (Z-axis).
+ * @details Returns @p false if either box lacks a Z dimension.
+ * @csqlfn #Front_tpcbox_tpcbox()
+ */
 bool
 front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -913,6 +1003,11 @@ front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->zmax < box2->zmin);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend behind box2.
+ * @csqlfn #Overfront_tpcbox_tpcbox()
+ */
 bool
 overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -923,6 +1018,11 @@ overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->zmax <= box2->zmax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly behind box2 (Z-axis).
+ * @csqlfn #Back_tpcbox_tpcbox()
+ */
 bool
 back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -933,6 +1033,11 @@ back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return (box1->zmin > box2->zmax);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend in front of box2.
+ * @csqlfn #Overback_tpcbox_tpcbox()
+ */
 bool
 overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -945,6 +1050,12 @@ overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 
 /* Time axis — before/after only meaningful when both boxes have T */
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly before box2 in time.
+ * @details Returns @p false if either box lacks a T dimension.
+ * @csqlfn #Before_tpcbox_tpcbox()
+ */
 bool
 before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -956,6 +1067,11 @@ before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
           DatumGetTimestampTz(box2->period.lower));
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend after box2 in time.
+ * @csqlfn #Overbefore_tpcbox_tpcbox()
+ */
 bool
 overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -967,6 +1083,11 @@ overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
           DatumGetTimestampTz(box2->period.upper));
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 is strictly after box2 in time.
+ * @csqlfn #After_tpcbox_tpcbox()
+ */
 bool
 after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
@@ -978,6 +1099,11 @@ after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
           DatumGetTimestampTz(box2->period.upper));
 }
 
+/**
+ * @ingroup meos_pointcloud_box_pos
+ * @brief Return @p true if box1 does not extend before box2 in time.
+ * @csqlfn #Overafter_tpcbox_tpcbox()
+ */
 bool
 overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
