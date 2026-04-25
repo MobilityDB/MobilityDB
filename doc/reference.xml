@@ -2543,6 +2543,19 @@
 			</sect3>
 
 			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Round coordinates to a number of decimal digits</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Overwrite the SRID</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Set Operations</title>
 				<itemizedlist>
 					<listitem>

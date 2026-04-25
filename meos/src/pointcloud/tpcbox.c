@@ -524,6 +524,54 @@ tpcbox_expand(const TPCBox *box1, TPCBox *box2)
   if (box2->srid == 0) box2->srid = box1->srid;
 }
 
+/**
+ * @ingroup meos_pointcloud_box_transf
+ * @brief Return a tpcbox with coordinate bounds rounded to a given
+ *   number of decimal digits.
+ * @param[in] box Bounding box
+ * @param[in] maxdd Maximum number of decimal digits (must be >= 0)
+ * @return Newly-palloc'd TPCBox, or @p NULL on invalid argument.
+ * @csqlfn #Tpcbox_round()
+ */
+TPCBox *
+tpcbox_round(const TPCBox *box, int maxdd)
+{
+  VALIDATE_TPCBOX(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+  TPCBox *result = tpcbox_copy(box);
+  if (MEOS_FLAGS_GET_X(box->flags))
+  {
+    result->xmin = float_round(box->xmin, maxdd);
+    result->xmax = float_round(box->xmax, maxdd);
+    result->ymin = float_round(box->ymin, maxdd);
+    result->ymax = float_round(box->ymax, maxdd);
+    if (MEOS_FLAGS_GET_Z(box->flags))
+    {
+      result->zmin = float_round(box->zmin, maxdd);
+      result->zmax = float_round(box->zmax, maxdd);
+    }
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_transf
+ * @brief Return a tpcbox with the SRID overwritten.
+ * @details Does not transform coordinates; just stamps the new SRID on
+ *   the result.  For coordinate reprojection, project the underlying
+ *   tpcpoint first, then take its bbox.
+ * @csqlfn #Tpcbox_set_srid()
+ */
+TPCBox *
+tpcbox_set_srid(const TPCBox *box, int32_t srid)
+{
+  VALIDATE_TPCBOX(box, NULL);
+  TPCBox *result = tpcbox_copy(box);
+  result->srid = srid;
+  return result;
+}
+
 /*****************************************************************************
  * Set operations
  *****************************************************************************/

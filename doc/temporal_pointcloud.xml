@@ -228,6 +228,31 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tpcbox_transformations">
+			<title>Transformations</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_round">
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<para>Return a tpcbox with coordinates rounded to a given number of decimal digits</para>
+					<para><varname>round(tpcbox,integer=0) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
+-- TPCBOX X(0.12, 1.23), (2.35, 3.46) PCID=1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_setSRID">
+					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+					<para>Return a tpcbox with the SRID overwritten. Does not reproject coordinates — for that, project the underlying tpcpoint first and take the bbox of the result</para>
+					<para><varname>setSRID(tpcbox,integer) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
+-- 4326
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcbox_setops">
 			<title>Set Operations</title>
 			<itemizedlist>

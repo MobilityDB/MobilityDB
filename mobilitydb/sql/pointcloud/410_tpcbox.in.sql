@@ -180,6 +180,20 @@ CREATE FUNCTION pcid(tpcbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Transformations
+ ******************************************************************************/
+
+CREATE FUNCTION round(tpcbox, integer DEFAULT 0)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION setSRID(tpcbox, integer)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Set operations
  ******************************************************************************/
 
