@@ -4,10 +4,6 @@
 
 if(POINTCLOUD)
   set(POINTCLOUD_SRCS
-    # Auto-generated PG bindings (from pgpointcloud-pg subtree).
-    # Emitted by scripts/pointcloud_import/extract.py.
-    pc_generated.c
-
     # Static base types — opaque byte-level helpers that treat
     # pcpoint / pcpatch as varlena blobs. Schema-aware dimension
     # access lives in the PG wrapper layer (needs pointcloud_formats
