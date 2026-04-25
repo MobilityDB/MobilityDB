@@ -275,23 +275,80 @@ Pcpoint_to_tpcbox(PG_FUNCTION_ARGS)
  * Accessors
  *****************************************************************************/
 
-#define TPCBOX_ACCESSOR_DOUBLE(fn_name, meos_fn) \
-  PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
-  PG_FUNCTION_INFO_V1(fn_name); \
-  Datum fn_name(PG_FUNCTION_ARGS) \
-  { \
-    TPCBox *box = PG_GETARG_TPCBOX_P(0); \
-    double v; \
-    if (! meos_fn(box, &v)) PG_RETURN_NULL(); \
-    PG_RETURN_FLOAT8(v); \
-  }
+/* Helper: each Tpcbox_<dim>min/max wrapper just unpacks the TPCBox arg,
+ * calls the corresponding MEOS getter (out-param style, returns false
+ * when the dimension is absent), and translates false → NULL. */
+#define TPCBOX_ACCESSOR_DOUBLE_BODY(meos_fn) \
+  TPCBox *box = PG_GETARG_TPCBOX_P(0); \
+  double v; \
+  if (! meos_fn(box, &v)) PG_RETURN_NULL(); \
+  PG_RETURN_FLOAT8(v);
 
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_xmin, tpcbox_xmin)
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_xmax, tpcbox_xmax)
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_ymin, tpcbox_ymin)
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_ymax, tpcbox_ymax)
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_zmin, tpcbox_zmin)
-TPCBOX_ACCESSOR_DOUBLE(Tpcbox_zmax, tpcbox_zmax)
+PGDLLEXPORT Datum Tpcbox_xmin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_xmin);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the minimum X of a TPCBox; NULL if no XY dimensions
+ * @sqlfn xmin()
+ */
+Datum
+Tpcbox_xmin(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_xmin) }
+
+PGDLLEXPORT Datum Tpcbox_xmax(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_xmax);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the maximum X of a TPCBox; NULL if no XY dimensions
+ * @sqlfn xmax()
+ */
+Datum
+Tpcbox_xmax(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_xmax) }
+
+PGDLLEXPORT Datum Tpcbox_ymin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_ymin);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the minimum Y of a TPCBox; NULL if no XY dimensions
+ * @sqlfn ymin()
+ */
+Datum
+Tpcbox_ymin(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_ymin) }
+
+PGDLLEXPORT Datum Tpcbox_ymax(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_ymax);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the maximum Y of a TPCBox; NULL if no XY dimensions
+ * @sqlfn ymax()
+ */
+Datum
+Tpcbox_ymax(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_ymax) }
+
+PGDLLEXPORT Datum Tpcbox_zmin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_zmin);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the minimum Z of a TPCBox; NULL if no Z dimension
+ * @sqlfn zmin()
+ */
+Datum
+Tpcbox_zmin(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_zmin) }
+
+PGDLLEXPORT Datum Tpcbox_zmax(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_zmax);
+/**
+ * @ingroup mobilitydb_pointcloud_box_accessor
+ * @brief Return the maximum Z of a TPCBox; NULL if no Z dimension
+ * @sqlfn zmax()
+ */
+Datum
+Tpcbox_zmax(PG_FUNCTION_ARGS)
+{ TPCBOX_ACCESSOR_DOUBLE_BODY(tpcbox_zmax) }
 
 PGDLLEXPORT Datum Tpcbox_tmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_tmin);

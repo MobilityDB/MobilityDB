@@ -157,7 +157,8 @@ pcpatch_parse(const char **str, bool end)
  * @ingroup meos_pointcloud_inout
  * @brief Return a pcpatch from its textual (hex-WKB) representation
  * @param[in] str String
- * @csqlfn #Pcpatch_in()
+ * @note PG-side input is provided by pgpointcloud's own
+ *   @c PC_AsBinary / @c pcpatch_in, which we do not redefine.
  */
 Pcpatch *
 pcpatch_hex_in(const char *str)
@@ -175,7 +176,6 @@ pcpatch_hex_in(const char *str)
  * @brief Return the textual (hex-WKB) representation of a pcpatch
  * @param[in] pa Patch
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
- * @csqlfn #Pcpatch_out()
  */
 char *
 pcpatch_hex_out(const Pcpatch *pa, int maxdd)
@@ -193,7 +193,6 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 /**
  * @ingroup meos_pointcloud_inout
  * @brief Return a pcpatch from its hex-WKB representation
- * @csqlfn #Pcpatch_from_hexwkb()
  */
 Pcpatch *
 pcpatch_from_hexwkb(const char *hexwkb)
@@ -204,7 +203,6 @@ pcpatch_from_hexwkb(const char *hexwkb)
 /**
  * @ingroup meos_pointcloud_inout
  * @brief Return the hex-WKB representation of a pcpatch
- * @csqlfn #Pcpatch_as_hexwkb()
  */
 char *
 pcpatch_as_hexwkb(const Pcpatch *pa)
@@ -232,7 +230,6 @@ uint32_t pcpatch_npoints(const Pcpatch *pa) { assert(pa); return pa->npoints; }
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the 32-bit hash of a pcpatch
- * @csqlfn #Pcpatch_hash()
  */
 uint32
 pcpatch_hash(const Pcpatch *pa)
@@ -245,7 +242,6 @@ pcpatch_hash(const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the 64-bit hash of a pcpatch with a seed
- * @csqlfn #Pcpatch_hash_extended()
  */
 uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)

@@ -202,7 +202,11 @@ pcpoint_parse(const char **str, bool end)
 }
 
 /**
- * @brief Return a pcpoint from its hex-encoded representation
+ * @ingroup meos_pointcloud_inout
+ * @brief Return a pcpoint from its textual (hex-WKB) representation
+ * @param[in] str String
+ * @note PG-side input is provided by pgpointcloud's own @c pcpoint_in,
+ *   which we do not redefine.
  */
 Pcpoint *
 pcpoint_hex_in(const char *str)
@@ -216,9 +220,10 @@ pcpoint_hex_in(const char *str)
 }
 
 /**
- * @brief Return the hex-encoded representation of a pcpoint
- * @note `maxdd` is ignored — pcpoint has no floating-point text form at
- *   the MEOS layer.
+ * @ingroup meos_pointcloud_inout
+ * @brief Return the textual (hex-WKB) representation of a pcpoint
+ * @param[in] pt Point
+ * @param[in] maxdd Unused (kept for API uniformity with set_out)
  */
 char *
 pcpoint_hex_out(const Pcpoint *pt, int maxdd)
@@ -234,7 +239,8 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 }
 
 /**
- * @brief Return a pcpoint from its hex-encoded representation
+ * @ingroup meos_pointcloud_inout
+ * @brief Return a pcpoint from its hex-WKB representation
  */
 Pcpoint *
 pcpoint_from_hexwkb(const char *hexwkb)
@@ -243,7 +249,8 @@ pcpoint_from_hexwkb(const char *hexwkb)
 }
 
 /**
- * @brief Return the hex-encoded representation of a pcpoint
+ * @ingroup meos_pointcloud_inout
+ * @brief Return the hex-WKB representation of a pcpoint
  */
 char *
 pcpoint_as_hexwkb(const Pcpoint *pt)
