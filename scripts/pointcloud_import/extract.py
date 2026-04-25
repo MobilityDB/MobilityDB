@@ -376,14 +376,15 @@ def _wrap_extern_decl(sig: str, max_width: int = 80) -> str:
 
 def iter_binding_files() -> Iterable[pathlib.Path]:
     """pgpointcloud's PG-binding code lives in `pgsql/` (core PG
-    wrappers — pc_inout, pc_access, pc_pgsql, …) and `pgsql_postgis/`
-    (PostGIS-bridging wrappers — pc_pgsql_postgis). The lib/ directory
+    wrappers — pc_inout, pc_access, pc_pgsql, …). The lib/ directory
     is the pure-libpc implementation and gets linked against, not
     extracted from — those bodies don't have `PG_FUNCTION_ARGS`
-    signatures."""
-    for root in (PCPG_ROOT / "pgsql", PCPG_ROOT / "pgsql_postgis"):
-        if root.exists():
-            yield from sorted(root.glob("*.c"))
+    signatures.  The optional `pgsql_postgis/` extension was dropped
+    from our subtree (PostGIS↔pgpointcloud convenience SQL we don't
+    consume); install it from upstream pgpointcloud if needed."""
+    root = PCPG_ROOT / "pgsql"
+    if root.exists():
+        yield from sorted(root.glob("*.c"))
 
 
 def main() -> int:

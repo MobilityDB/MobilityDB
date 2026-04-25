@@ -2,8 +2,8 @@
 -- pgpointcloud end-to-end smoke test (self-contained, runnable via psql).
 --
 -- Requirements:
---   * PostgreSQL with postgis, pointcloud, pointcloud_postgis, and
---     MobilityDB (POINTCLOUD=ON build) installed.
+--   * PostgreSQL with postgis, pointcloud, and MobilityDB
+--     (POINTCLOUD=ON build) installed.
 --   * At least one row in pointcloud_formats (pgpointcloud's default
 --     pcid=1 is enough — the smoke test uses PC_MakePoint with it).
 --
