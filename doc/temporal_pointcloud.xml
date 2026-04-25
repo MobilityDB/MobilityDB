@@ -50,9 +50,8 @@ SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 					<para><varname>getY(pcpoint) → float</varname></para>
 					<para><varname>getZ(pcpoint) → float</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT getX(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
-       getY(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
-       getZ(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+WITH pt AS (SELECT PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]) p)
+  SELECT getX(p), getY(p), getZ(p) FROM pt;
 -- 10 | 20 | 30
 </programlisting>
 				</listitem>
@@ -97,11 +96,9 @@ SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 					<para><varname>set(pcpoint[]) → pcpointset</varname></para>
 					<para><varname>set(pcpatch[]) → pcpatchset</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numValues(set(ARRAY[
-  PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
+SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),  -- duplicate, deduped
-  PC_MakePoint(1, ARRAY[11.0, 21.0, 31.0])
-]));
+  PC_MakePoint(1, ARRAY[11.0, 21.0, 31.0])]));
 -- 2
 </programlisting>
 				</listitem>
@@ -134,8 +131,7 @@ SELECT numValues(set(ARRAY[
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 10, 10, 1, 0);
 -- TPCBOX X(0, 0), (10, 10) PCID=1
-SELECT tpcbox_zt(0, 0, 0, 10, 10, 10,
-  tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+SELECT tpcbox_zt(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -178,8 +174,8 @@ SELECT tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])));
 					<para><varname>hasZ(tpcbox) → boolean</varname></para>
 					<para><varname>hasT(tpcbox) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT hasX(tpcbox(0, 0, 10, 10, 1, 0)),
-       hasZ(tpcbox(0, 0, 10, 10, 1, 0));
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+  SELECT hasX(b), hasZ(b) FROM b;
 -- t | f
 </programlisting>
 				</listitem>
@@ -199,8 +195,8 @@ SELECT hasX(tpcbox(0, 0, 10, 10, 1, 0)),
 					<para><varname>zmin(tpcbox) → float</varname></para>
 					<para><varname>zmax(tpcbox) → float</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT xmin(tpcbox(0, 0, 10, 10, 1, 0)),
-       xmax(tpcbox(0, 0, 10, 10, 1, 0));
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+  SELECT xmin(b), xmax(b) FROM b;
 -- 0 | 10
 </programlisting>
 				</listitem>
@@ -224,8 +220,8 @@ SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
 					<para><varname>pcid(tpcbox) → integer</varname></para>
 					<para><varname>SRID(tpcbox) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pcid(tpcbox(0, 0, 10, 10, 7, 4326)),
-       SRID(tpcbox(0, 0, 10, 10, 7, 4326));
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
+  SELECT pcid(b), SRID(b) FROM b;
 -- 7 | 4326
 </programlisting>
 				</listitem>
@@ -289,10 +285,8 @@ SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
 					<para>Return true if two tpcboxes overlap</para>
 					<para><varname>tpcbox &amp;&amp; tpcbox → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);
--- t
-SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
--- f  -- pcid mismatch
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);  -- t
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);  -- f (pcid mismatch)
 </programlisting>
 				</listitem>
 
@@ -401,8 +395,7 @@ SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
 					<para>Construct a temporal pcpoint of instant subtype</para>
 					<para><varname>tpcpoint(pcpoint,timestamptz) → tpcpoint</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
-                '2024-01-01 12:00:00+00');
+SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), '2024-01-01 12:00+00');
 </programlisting>
 				</listitem>
 
@@ -412,10 +405,8 @@ SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<para><varname>tpcpointSeq(tpcpoint[]) → tpcpoint</varname></para>
 					<para><varname>tpcpointSeq(tpcpoint[],text) → tpcpoint</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcpointSeq(ARRAY[
-  tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]), '2024-01-01'::timestamptz),
-  tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz)
-], 'step');
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]), '2024-01-01'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz)], 'step');
 </programlisting>
 				</listitem>
 
@@ -458,7 +449,7 @@ SELECT tpcpointSeq(ARRAY[
 					<para><varname>getZ(tpcpoint) → tfloat</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
-                                 '2024-01-01'::timestamptz)));
+  '2024-01-01'::timestamptz)));
 -- 10
 </programlisting>
 				</listitem>
@@ -480,9 +471,8 @@ SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<para><varname>tgeompoint::tpcpoint</varname> is not defined</para>
 					<para><varname>tpcpoint::tgeompoint</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(startValue(
-  tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
-           '2024-01-01'::timestamptz)::tgeompoint));
+SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
+  '2024-01-01'::timestamptz)::tgeompoint));
 -- POINT Z (10 20 30)
 </programlisting>
 				</listitem>
@@ -578,8 +568,7 @@ SELECT ST_AsText(startValue(
 					<para><varname>startNumPoints(tpcpatch) → integer</varname></para>
 					<para><varname>endNumPoints(tpcpatch) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT startNumPoints(tpcpatch(
-  PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
+SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
   '2024-02-01'::timestamptz));
 -- 1
 </programlisting>

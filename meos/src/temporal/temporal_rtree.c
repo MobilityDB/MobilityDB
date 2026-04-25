@@ -41,6 +41,9 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 #include "temporal/temporal.h"
 #include "temporal/temporal_rtree.h"
 
@@ -111,6 +114,23 @@ get_axis_stbox(const void *box, int axis, bool upper)
     return upper ? stbox->zmax : stbox->zmin;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return the lower or upper bound of a given axis from a TPCBox
+ *   as a double.
+ * @details Same axis convention as @ref get_axis_stbox (TPCBox shares
+ *   the STBox prefix layout) — the cast is binary-compatible.
+ */
+static double
+get_axis_tpcbox(const void *box, int axis, bool upper)
+{
+  /* TPCBox struct is binary-compatible with STBox in the prefix
+   * (Span period + xyz min/max + srid + flags); axis dispatch is
+   * identical. */
+  return get_axis_stbox(box, axis, upper);
+}
+#endif
+
 /*****************************************************************************/
 
 /**
@@ -142,6 +162,17 @@ bbox_expand_stbox(const void *box1, void *box2)
 {
   return stbox_expand((STBox *) box1, (STBox *) box2);
 }
+
+#if POINTCLOUD
+/**
+ * @brief Expand the second TPCBox with the first one.
+ */
+static inline void
+bbox_expand_tpcbox(const void *box1, void *box2)
+{
+  return tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
+}
+#endif
 
 /*****************************************************************************/
 
@@ -178,6 +209,17 @@ bbox_contains_stbox(const void *box1, const void *box2)
   return contains_stbox_stbox((STBox *) box1, (STBox *) box2);
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return `true` if the first TPCBox contains the second.
+ */
+static inline bool
+bbox_contains_tpcbox(const void *box1, const void *box2)
+{
+  return contains_tpcbox_tpcbox((TPCBox *) box1, (TPCBox *) box2);
+}
+#endif
+
 /*****************************************************************************/
 
 /**
@@ -210,6 +252,17 @@ bbox_overlaps_stbox(const void *box1, const void *box2)
 {
   return overlaps_stbox_stbox((STBox *) box1, (STBox *) box2);
 }
+
+#if POINTCLOUD
+/**
+ * @brief Return `true` if two TPCBox values overlap.
+ */
+static inline bool
+bbox_overlaps_tpcbox(const void *box1, const void *box2)
+{
+  return overlaps_tpcbox_tpcbox((TPCBox *) box1, (TPCBox *) box2);
+}
+#endif
 
 /*****************************************************************************
  * Rtree functions
@@ -277,11 +330,14 @@ box_area(const RTree *rtree, const void *box)
 static double
 unioned_area(const RTree *rtree, const void *box1, const void *box2)
 {
-  /* Use a stack buffer large enough for any MEOS bounding box type */
-  char union_buf[sizeof(STBox)];
-  memcpy(union_buf, box1, rtree->bboxsize);
-  rtree->bbox_expand(box2, union_buf);
-  return box_area(rtree, union_buf);
+  /* Use a stack buffer large enough for the largest MEOS bounding box.
+   * TPCBox (88 B with @c POINTCLOUD=ON) is currently the largest;
+   * STBox (80 B) is next.  Sizing to bboxunion future-proofs against
+   * adding a new bigger box type. */
+  bboxunion union_buf;
+  memcpy(&union_buf, box1, rtree->bboxsize);
+  rtree->bbox_expand(box2, &union_buf);
+  return box_area(rtree, &union_buf);
 }
 
 /**
@@ -739,7 +795,11 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
 RTree *
 rtree_create(meosType bboxtype)
 {
-  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
+  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+    || bboxtype == T_TPCBOX
+#endif
+    );
   size_t bboxsize = bbox_get_size(bboxtype);
   RTree *rtree = palloc0(sizeof(RTree) + bboxsize);
   if (span_type(bboxtype))
@@ -758,6 +818,18 @@ rtree_create(meosType bboxtype)
     rtree->bbox_contains = &bbox_contains_tbox;
     rtree->bbox_overlaps = &bbox_overlaps_tbox;
   }
+#if POINTCLOUD
+  else if (bboxtype == T_TPCBOX)
+  {
+    /* dims set at first-insert time, like STBox (Z presence
+     * determined dynamically) */
+    rtree->dims = -1;
+    rtree->get_axis = &get_axis_tpcbox;
+    rtree->bbox_expand = &bbox_expand_tpcbox;
+    rtree->bbox_contains = &bbox_contains_tpcbox;
+    rtree->bbox_overlaps = &bbox_overlaps_tpcbox;
+  }
+#endif
   else /* bboxtype == T_STBOX */
   {
     /* To be set when the first node is created since it is not known yet
@@ -843,6 +915,18 @@ rtree_create_stbox()
   return rtree_create(T_STBOX);
 }
 
+#if POINTCLOUD
+/**
+ * @brief Creates an RTree index for the TPCBox bounding-box type.
+ * @return RTree initialized.
+ */
+RTree *
+rtree_create_tpcbox()
+{
+  return rtree_create(T_TPCBOX);
+}
+#endif
+
 /**
  * @ingroup meos_geo_box_index
  * @brief Insert a bounding box into the RTree index.
@@ -926,7 +1010,11 @@ ensure_rtree_temporal_compatible(const RTree *rtree, const Temporal *temp)
   bool compatible =
     (talpha_type(temptype) && rtree->bboxtype == T_TSTZSPAN) ||
     (tnumber_type(temptype) && rtree->bboxtype == T_TBOX) ||
-    (tspatial_type(temptype) && rtree->bboxtype == T_STBOX);
+    (tspatial_type(temptype) && rtree->bboxtype == T_STBOX)
+#if POINTCLOUD
+    || (tpointcloud_temptype(temptype) && rtree->bboxtype == T_TPCBOX)
+#endif
+    ;
   if (! compatible)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -954,11 +1042,13 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
 {
   if (! ensure_rtree_temporal_compatible(rtree, temp))
     return;
-  /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  rtree_insert(rtree, buf, id);
+  /* bboxunion is the union of all MEOS bbox layouts (Span / TBox /
+   * STBox / TPCBox), sized for the largest member.  Future bbox types
+   * just need to extend bboxunion to keep this safe. */
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  rtree_insert(rtree, &buf, id);
   return;
 }
 
@@ -983,11 +1073,10 @@ rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
     meos_array_reset(result);
     return 0;
   }
-  /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  return rtree_search(rtree, op, buf, result);
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  return rtree_search(rtree, op, &buf, result);
 }
 
 /**
