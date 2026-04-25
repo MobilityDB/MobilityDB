@@ -2705,6 +2705,10 @@
 					<listitem>
 						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpoint to a tpcbox or remove it</para>
 					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to a tpcbox by patch-level PCBOUNDS overlap, or remove it</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 

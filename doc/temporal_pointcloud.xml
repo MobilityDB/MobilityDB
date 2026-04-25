@@ -608,6 +608,19 @@ SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2 xml:id="tpcpatch_restrictions">
+			<title>Restrictions</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_atTpcbox">
+					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
+					<para>Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them. Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim, with no per-point decompression. Because pgPointCloud's <varname>PCBOUNDS</varname> is 2D, the Z dimension of the box is ignored at this granularity. Returns NULL when the tpcbox's pcid does not match.</para>
+					<para><varname>atTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>minusTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_indexes">

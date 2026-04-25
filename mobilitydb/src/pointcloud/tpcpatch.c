@@ -45,7 +45,10 @@
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
+#include "temporal/tsequence.h"
+#include "temporal/tsequenceset.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpcbox.h"
 
 /*****************************************************************************
  * Per-type accessors
@@ -106,6 +109,169 @@ Tpcpatch_end_npoints(PG_FUNCTION_ARGS)
   uint32_t n = pcpatch_npoints(pa);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32((int32) n);
+}
+
+/*****************************************************************************
+ * TPCBox-based restriction (patch-level / coarse)
+ *
+ * Each pcpatch instant is kept-or-dropped based on whether its 2D
+ * PCBOUNDS overlaps the box's xy extent and its timestamp falls in
+ * the box's period. No per-point decompression is performed, and the
+ * patch payload is preserved verbatim. The Z dimension is ignored at
+ * this granularity because pgpointcloud's PCBOUNDS is 2D-only.
+ *
+ * The @p border_inc flag toggles inclusive (touching counts) vs.
+ * strict overlap; the default is inclusive.
+ *****************************************************************************/
+
+static bool
+pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
+  bool border_inc)
+{
+  if (pa->pcid != box->pcid)
+    return false;
+  if (! contains_span_timestamptz(&box->period, t))
+    return false;
+  /* PCBOUNDS layout: bounds[0..3] = xmin, ymin, xmax, ymax. */
+  double pxmin = pa->bounds[0], pymin = pa->bounds[1];
+  double pxmax = pa->bounds[2], pymax = pa->bounds[3];
+  if (border_inc)
+    return ! (pxmin > box->xmax || pxmax < box->xmin ||
+              pymin > box->ymax || pymax < box->ymin);
+  return ! (pxmin >= box->xmax || pxmax <= box->xmin ||
+            pymin >= box->ymax || pymax <= box->ymin);
+}
+
+/*
+ * Walk every instant of @p temp, collect the timestamps where the
+ * patch passes the predicate, then defer to temporal_restrict_tstzset
+ * for the actual at/minus restriction.
+ */
+static Temporal *
+tpcpatch_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* PCID mismatch on the first instant: short-circuit to the identity
+   * branch without scanning the rest (all instants share pcid). */
+  const Pcpatch *first =
+    (const Pcpatch *) DatumGetPointer(temporal_start_value(temp));
+  if (first->pcid != box->pcid)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* Upper bound on the number of surviving timestamps. */
+  int ninst = 0;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      ninst = 1;
+      break;
+    case TSEQUENCE:
+      ninst = ((const TSequence *) temp)->count;
+      break;
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        ninst += TSEQUENCESET_SEQ_N(ss, i)->count;
+    }
+  }
+
+  Datum *kept = palloc(sizeof(Datum) * ninst);
+  int nkept = 0;
+
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
+    if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
+      kept[nkept++] = TimestampTzGetDatum(inst->t);
+  }
+  else if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
+      if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
+        kept[nkept++] = TimestampTzGetDatum(inst->t);
+    }
+  }
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    for (int i = 0; i < ss->count; i++)
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      for (int j = 0; j < seq->count; j++)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, j);
+        const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
+        if (pcpatch_passes_tpcbox(pa, inst->t, box, border_inc))
+          kept[nkept++] = TimestampTzGetDatum(inst->t);
+      }
+    }
+  }
+
+  /* Edge cases: no survivors / all survivors. */
+  if (nkept == 0)
+  {
+    pfree(kept);
+    return atfunc ? NULL : temporal_copy(temp);
+  }
+  if (nkept == ninst)
+  {
+    pfree(kept);
+    return atfunc ? temporal_copy(temp) : NULL;
+  }
+
+  Set *tset = set_make(kept, nkept, T_TIMESTAMPTZ, ORDER);
+  pfree(kept);
+  Temporal *result = temporal_restrict_tstzset(temp, tset, atfunc);
+  pfree(tset);
+  return result;
+}
+
+PGDLLEXPORT Datum Tpcpatch_at_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_at_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Restrict a tpcpatch to the patches whose 2D PCBOUNDS overlap
+ *   the box and whose timestamp falls in its period.
+ * @details Patch-level granularity: each surviving instant keeps its
+ *   pcpatch payload verbatim. No per-point decompression.
+ * @sqlfn atTpcbox()
+ */
+Datum
+Tpcpatch_at_tpcbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *box = PG_GETARG_TPCBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpcpatch_restrict_tpcbox(temp, box, border_inc, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tpcpatch_minus_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_minus_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Remove from a tpcpatch the instants whose patch passes the
+ *   PCBOUNDS-overlap + timestamp-in-period predicate.
+ * @sqlfn minusTpcbox()
+ */
+Datum
+Tpcpatch_minus_tpcbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *box = PG_GETARG_TPCBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpcpatch_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

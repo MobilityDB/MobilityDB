@@ -74,3 +74,24 @@ SELECT COUNT(*) FROM tbl_tpcpatch
 WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- atTpcbox / minusTpcbox — patch-level PCBOUNDS overlap
+-------------------------------------------------------------------------------
+
+-- atTpcbox over the full datagen extent leaves every row populated.
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE atTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 1, 0)) IS NOT NULL;
+
+-- atTpcbox with a pcid mismatch yields NULL (empty) for every row.
+SELECT bool_and(atTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NULL)
+FROM tbl_tpcpatch;
+
+-- minusTpcbox is the complement.
+SELECT bool_and(minusTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NOT NULL)
+FROM tbl_tpcpatch;
+
+-------------------------------------------------------------------------------
