@@ -8,17 +8,17 @@
 %% Just use the original package and pass the options
 \RequirePackageWithOptions{docbook}
 
-%% Use T1 encoding + Latin Modern fonts so apostrophes inside \texttt
-%% (which is what DocBook <varname> renders to) stay upright instead of
-%% ligaturing into U+201D ("right double quotation mark").  The default
-%% Computer Modern fonts have an `'' → "` ligature in monospace; Latin
-%% Modern Typewriter at T1 has proper straight-quote glyphs.
-%% This fixes patterns like `endian text=''` inside <varname> rendering
-%% as `endian text="` in the PDF.
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-
 %% Make regular quotes within programlisting tags (#3726)
 \usepackage{listings}
 \lstset{upquote=true}
 \usepackage{upquote}
+
+%% Make ASCII apostrophes inside \texttt{} (the DocBook <varname>
+%% target) stay upright too — upquote above only fixes verbatim /
+%% lstinline contexts.  Without this, signatures like
+%% `endian text=''` ligature into a single curly U+201D in the PDF.
+%% Scoped narrowly to \texttt to preserve the historical Computer
+%% Modern look-and-feel everywhere else.
+\usepackage{textcomp}
+\let\MDB@OrigTtfamily\ttfamily
+\renewcommand{\ttfamily}{\MDB@OrigTtfamily \def'{\textquotesingle}}
