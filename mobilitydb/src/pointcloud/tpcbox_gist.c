@@ -63,6 +63,7 @@
 PGDLLEXPORT Datum Tpcbox_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_consistent);
 /**
+ * @ingroup mobilitydb_pointcloud_index
  * @brief GiST consistent method for TPCBox
  */
 Datum
@@ -120,6 +121,7 @@ tpcbox_adjust(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Tpcbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_union);
 /**
+ * @ingroup mobilitydb_pointcloud_index
  * @brief GiST union method — minimum bounding TPCBox over an entry vector.
  */
 Datum
@@ -188,6 +190,7 @@ tpcbox_penalty(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Tpcbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_penalty);
 /**
+ * @ingroup mobilitydb_pointcloud_index
  * @brief GiST penalty method
  */
 Datum
@@ -209,6 +212,7 @@ Tpcbox_gist_penalty(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpcbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_picksplit);
 /**
+ * @ingroup mobilitydb_pointcloud_index
  * @brief GiST picksplit method — defers to the generic
  * double-sorting helper, which knows the TPCBox layout via T_TPCBOX.
  */
@@ -226,6 +230,7 @@ Tpcbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpcbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_same);
 /**
+ * @ingroup mobilitydb_pointcloud_index
  * @brief GiST same method — exact equality, not the user-facing
  * @c same_tpcbox_tpcbox (which is fuzzy on the same-pcid front).
  */

@@ -122,11 +122,13 @@ Tpcbox_send(PG_FUNCTION_ARGS)
  * Constructors
  *****************************************************************************/
 
-/**
- * @brief SQL: tpcbox(xmin, ymin, xmax, ymax, pcid, srid) — 2D spatial
- */
 PGDLLEXPORT Datum Tpcbox_constructor_2d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_2d);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief 2D constructor — tpcbox(xmin, ymin, xmax, ymax, pcid, srid)
+ * @sqlfn tpcbox()
+ */
 Datum
 Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
 {
@@ -140,11 +142,13 @@ Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
 }
 
-/**
- * @brief SQL: tpcbox_z(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid) — 3D
- */
 PGDLLEXPORT Datum Tpcbox_constructor_3d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_3d);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief 3D constructor — tpcbox_z(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid)
+ * @sqlfn tpcbox_z()
+ */
 Datum
 Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
 {
@@ -160,11 +164,13 @@ Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
 }
 
-/**
- * @brief SQL: tpcbox_t(period, pcid) — time-only
- */
 PGDLLEXPORT Datum Tpcbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_t);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief Time-only constructor — tpcbox_t(period, pcid)
+ * @sqlfn tpcbox_t()
+ */
 Datum
 Tpcbox_constructor_t(PG_FUNCTION_ARGS)
 {
@@ -174,11 +180,13 @@ Tpcbox_constructor_t(PG_FUNCTION_ARGS)
     0, (uint32_t) pcid, 0, 0, 0, 0, 0, 0, period));
 }
 
-/**
- * @brief SQL: tpcbox_xt(xmin, ymin, xmax, ymax, period, pcid, srid)
- */
 PGDLLEXPORT Datum Tpcbox_constructor_xt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_xt);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief XY+T constructor — tpcbox_xt(xmin, ymin, xmax, ymax, period, pcid, srid)
+ * @sqlfn tpcbox_xt()
+ */
 Datum
 Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
 {
@@ -193,11 +201,13 @@ Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
 }
 
-/**
- * @brief SQL: tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
- */
 PGDLLEXPORT Datum Tpcbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_zt);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief XYZ+T constructor — tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
+ * @sqlfn tpcbox_zt()
+ */
 Datum
 Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
 {
@@ -477,50 +487,306 @@ Intersection_tpcbox_tpcbox(PG_FUNCTION_ARGS)
  * Topological predicates
  *****************************************************************************/
 
-#define TPCBOX_PRED_2(fn_name, meos_fn) \
+/* Each TPCBOX_PRED_2 wrapper unpacks two TPCBox args, calls the MEOS
+ * predicate, returns the boolean.  Explicit per-function definitions
+ * (rather than a single TPCBOX_PRED_2(name, meos_fn) macro invocation)
+ * so each gets its own Doxygen @ingroup tag. */
+#define TPCBOX_PRED_2_BODY(meos_fn) \
+  TPCBox *a = PG_GETARG_TPCBOX_P(0); \
+  TPCBox *b = PG_GETARG_TPCBOX_P(1); \
+  PG_RETURN_BOOL(meos_fn(a, b));
+
+#define TPCBOX_PRED_2_DEFN(fn_name, meos_fn, group, sql_name, sql_op) \
   PGDLLEXPORT Datum fn_name(PG_FUNCTION_ARGS); \
   PG_FUNCTION_INFO_V1(fn_name); \
-  Datum fn_name(PG_FUNCTION_ARGS) \
-  { \
-    TPCBox *a = PG_GETARG_TPCBOX_P(0); \
-    TPCBox *b = PG_GETARG_TPCBOX_P(1); \
-    PG_RETURN_BOOL(meos_fn(a, b)); \
-  }
+  /** \
+   * @ingroup group \
+   * @brief PG wrapper for meos_fn \
+   * @sqlfn sql_name \
+   * @sqlop @p sql_op \
+   */ \
+  Datum fn_name(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(meos_fn) }
 
-TPCBOX_PRED_2(Contains_tpcbox_tpcbox,  contains_tpcbox_tpcbox)
-TPCBOX_PRED_2(Contained_tpcbox_tpcbox, contained_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overlaps_tpcbox_tpcbox,  overlaps_tpcbox_tpcbox)
-TPCBOX_PRED_2(Same_tpcbox_tpcbox,      same_tpcbox_tpcbox)
-TPCBOX_PRED_2(Adjacent_tpcbox_tpcbox,  adjacent_tpcbox_tpcbox)
+PGDLLEXPORT Datum Contains_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_topo
+ * @brief PG wrapper: tpcbox @> tpcbox
+ * @sqlfn tpcbox_contains()
+ * @sqlop @p \@>
+ */
+Datum Contains_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(contains_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Contained_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_topo
+ * @brief PG wrapper: tpcbox <@ tpcbox
+ * @sqlfn tpcbox_contained()
+ * @sqlop @p <@
+ */
+Datum Contained_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(contained_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overlaps_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_topo
+ * @brief PG wrapper: tpcbox && tpcbox
+ * @sqlfn tpcbox_overlaps()
+ * @sqlop @p &&
+ */
+Datum Overlaps_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overlaps_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Same_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_topo
+ * @brief PG wrapper: tpcbox ~= tpcbox
+ * @sqlfn tpcbox_same()
+ * @sqlop @p ~=
+ */
+Datum Same_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(same_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Adjacent_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_topo
+ * @brief PG wrapper: tpcbox -|- tpcbox
+ * @sqlfn tpcbox_adjacent()
+ * @sqlop @p -|-
+ */
+Datum Adjacent_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(adjacent_tpcbox_tpcbox) }
 
 /* Position predicates */
-TPCBOX_PRED_2(Left_tpcbox_tpcbox,       left_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overleft_tpcbox_tpcbox,   overleft_tpcbox_tpcbox)
-TPCBOX_PRED_2(Right_tpcbox_tpcbox,      right_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overright_tpcbox_tpcbox,  overright_tpcbox_tpcbox)
-TPCBOX_PRED_2(Below_tpcbox_tpcbox,      below_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overbelow_tpcbox_tpcbox,  overbelow_tpcbox_tpcbox)
-TPCBOX_PRED_2(Above_tpcbox_tpcbox,      above_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overabove_tpcbox_tpcbox,  overabove_tpcbox_tpcbox)
-TPCBOX_PRED_2(Front_tpcbox_tpcbox,      front_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overfront_tpcbox_tpcbox,  overfront_tpcbox_tpcbox)
-TPCBOX_PRED_2(Back_tpcbox_tpcbox,       back_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overback_tpcbox_tpcbox,   overback_tpcbox_tpcbox)
-TPCBOX_PRED_2(Before_tpcbox_tpcbox,     before_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overbefore_tpcbox_tpcbox, overbefore_tpcbox_tpcbox)
-TPCBOX_PRED_2(After_tpcbox_tpcbox,      after_tpcbox_tpcbox)
-TPCBOX_PRED_2(Overafter_tpcbox_tpcbox,  overafter_tpcbox_tpcbox)
+
+PGDLLEXPORT Datum Left_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox << tpcbox (strictly left, X-axis)
+ * @sqlop @p <<
+ */
+Datum Left_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(left_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overleft_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox &< tpcbox (does not extend right, X-axis)
+ * @sqlop @p &<
+ */
+Datum Overleft_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overleft_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Right_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox >> tpcbox (strictly right, X-axis)
+ * @sqlop @p >>
+ */
+Datum Right_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(right_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overright_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox &> tpcbox (does not extend left, X-axis)
+ * @sqlop @p &>
+ */
+Datum Overright_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overright_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Below_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Below_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox <<| tpcbox (strictly below, Y-axis)
+ * @sqlop @p <<|
+ */
+Datum Below_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(below_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overbelow_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbelow_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox &<| tpcbox (does not extend above, Y-axis)
+ * @sqlop @p &<|
+ */
+Datum Overbelow_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overbelow_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Above_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Above_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox |>> tpcbox (strictly above, Y-axis)
+ * @sqlop @p |>>
+ */
+Datum Above_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(above_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overabove_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overabove_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox |&> tpcbox (does not extend below, Y-axis)
+ * @sqlop @p |&>
+ */
+Datum Overabove_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overabove_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Front_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Front_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox <</ tpcbox (strictly in front, Z-axis)
+ * @sqlop @p <</
+ */
+Datum Front_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(front_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overfront_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overfront_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox &</ tpcbox (does not extend behind, Z-axis)
+ * @sqlop @p &</
+ */
+Datum Overfront_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overfront_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Back_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Back_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox />> tpcbox (strictly behind, Z-axis)
+ * @sqlop @p />>
+ */
+Datum Back_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(back_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overback_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overback_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox /&> tpcbox (does not extend in front, Z-axis)
+ * @sqlop @p /&>
+ */
+Datum Overback_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overback_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Before_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox <<# tpcbox (strictly before, time)
+ * @sqlop @p <<#
+ */
+Datum Before_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(before_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overbefore_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox &<# tpcbox (does not extend after, time)
+ * @sqlop @p &<#
+ */
+Datum Overbefore_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overbefore_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum After_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox #>> tpcbox (strictly after, time)
+ * @sqlop @p #>>
+ */
+Datum After_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(after_tpcbox_tpcbox) }
+
+PGDLLEXPORT Datum Overafter_tpcbox_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tpcbox_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_pos
+ * @brief PG wrapper: tpcbox #&> tpcbox (does not extend before, time)
+ * @sqlop @p #&>
+ */
+Datum Overafter_tpcbox_tpcbox(PG_FUNCTION_ARGS)
+{ TPCBOX_PRED_2_BODY(overafter_tpcbox_tpcbox) }
 
 /*****************************************************************************
  * Comparison
  *****************************************************************************/
 
-TPCBOX_PRED_2(Tpcbox_eq, tpcbox_eq)
-TPCBOX_PRED_2(Tpcbox_ne, tpcbox_ne)
-TPCBOX_PRED_2(Tpcbox_lt, tpcbox_lt)
-TPCBOX_PRED_2(Tpcbox_le, tpcbox_le)
-TPCBOX_PRED_2(Tpcbox_gt, tpcbox_gt)
-TPCBOX_PRED_2(Tpcbox_ge, tpcbox_ge)
+PGDLLEXPORT Datum Tpcbox_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_eq);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox = tpcbox
+ * @sqlfn tpcbox_eq()
+ * @sqlop @p =
+ */
+Datum Tpcbox_eq(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_eq) }
+
+PGDLLEXPORT Datum Tpcbox_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_ne);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox <> tpcbox
+ * @sqlfn tpcbox_ne()
+ * @sqlop @p <>
+ */
+Datum Tpcbox_ne(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ne) }
+
+PGDLLEXPORT Datum Tpcbox_lt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_lt);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox < tpcbox
+ * @sqlfn tpcbox_lt()
+ * @sqlop @p <
+ */
+Datum Tpcbox_lt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_lt) }
+
+PGDLLEXPORT Datum Tpcbox_le(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_le);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox <= tpcbox
+ * @sqlfn tpcbox_le()
+ * @sqlop @p <=
+ */
+Datum Tpcbox_le(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_le) }
+
+PGDLLEXPORT Datum Tpcbox_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gt);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox > tpcbox
+ * @sqlfn tpcbox_gt()
+ * @sqlop @p >
+ */
+Datum Tpcbox_gt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_gt) }
+
+PGDLLEXPORT Datum Tpcbox_ge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_ge);
+/**
+ * @ingroup mobilitydb_pointcloud_box_comp
+ * @brief PG wrapper: tpcbox >= tpcbox
+ * @sqlfn tpcbox_ge()
+ * @sqlop @p >=
+ */
+Datum Tpcbox_ge(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ge) }
 
 PGDLLEXPORT Datum Tpcbox_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_cmp);

@@ -36,10 +36,6 @@
  * @ingroup mobilitydb_pointcloud
  * @brief PG wrappers for the static pgpointcloud base types
  *
- * @defgroup mobilitydb_pointcloud_set PG wrappers for pcpointset / pcpatchset
- * @ingroup mobilitydb_pointcloud
- * @brief PG wrappers for the pgpointcloud set types
- *
  * @defgroup mobilitydb_pointcloud_box PG wrappers for the TPCBox type
  * @ingroup mobilitydb_pointcloud
  * @brief PG wrappers for the TPCBox spatiotemporal bounding-box type
@@ -51,6 +47,12 @@
  * @defgroup mobilitydb_pointcloud_index GiST / SP-GiST opclass support
  * @ingroup mobilitydb_pointcloud
  * @brief GiST opclass support functions for the TPCBox type
+ *
+ * @note pcpointset / pcpatchset have no type-specific PG wrappers: SQL
+ *   bindings dispatch directly to the generic @c Set_* PG wrappers in
+ *   @c mobilitydb/src/temporal/set.c.  Same-pcid uniformity is enforced
+ *   inside @c set_make_exp via @ref ensure_valid_pcpointset_pcpoint /
+ *   @ref ensure_valid_pcpatchset_pcpatch from the MEOS layer.
  */
 
 /*****************************************************************************

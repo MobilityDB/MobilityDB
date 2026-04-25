@@ -74,7 +74,7 @@ SELECT numValues(set(ARRAY[
 	<sect1 xml:id="tpcbox">
 		<title>Bounding Box <varname>tpcbox</varname></title>
 
-		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="stbox" />) — the same X/Y/Z/T axes, the same flag bits for which dimensions are present — and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
+		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />) — the same X/Y/Z/T axes, the same flag bits for which dimensions are present — and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
 
 		<para>Carrying the <varname>pcid</varname> through bounding-box arithmetic guarantees that bounding-box pruning never drops a row whose schema differs from the query's schema, and never returns a hit across mismatched schemas.</para>
 
