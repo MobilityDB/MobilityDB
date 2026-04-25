@@ -117,6 +117,11 @@
  * @ingroup meos_api
  * @brief Functions for temporal rigid geometries
  *
+ * @defgroup meos_pointcloud Functions for temporal pgpointcloud types
+ * @ingroup meos_api
+ * @brief Functions for static, set, box, and temporal pgpointcloud types
+ *   (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch)
+ *
  * @defgroup meos_misc Miscellaneous functions
  * @ingroup meos_api
  * @brief Miscellaneous functions
