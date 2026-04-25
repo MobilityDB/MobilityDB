@@ -29,13 +29,17 @@
 
 -- Load fixture for the pgpointcloud temporal-types tests.
 --
--- Builds the standard set of tbl_* tables defined in
--- mobilitydb/datagen/pointcloud/create_test_tables_tpcpoint.sql.  setseed
--- is fixed so the generated values are deterministic across runs and the
--- _tbl.test.out files can be checked in.
+-- The mobilitydb_datagen extension supplies the random_* helpers; the
+-- `create_test_tables_tpcpoint` builder function lives outside the
+-- extension (per-domain test scaffolding) so we \i it from the source
+-- tree at fixture-load time.  setseed is fixed so the generated values
+-- are deterministic across runs and the _tbl.test.out files can be
+-- checked in.
 
 CREATE EXTENSION IF NOT EXISTS pointcloud;
 CREATE EXTENSION IF NOT EXISTS mobilitydb_datagen CASCADE;
+
+\i @CMAKE_SOURCE_DIR@/mobilitydb/datagen/pointcloud/create_test_tables_tpcpoint.sql
 
 SELECT setseed(0.5);
 SELECT create_test_tables_tpcpoint(100);

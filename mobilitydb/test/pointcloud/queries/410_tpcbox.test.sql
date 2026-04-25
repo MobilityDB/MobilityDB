@@ -37,7 +37,7 @@
 SELECT tpcbox(0, 0, 10, 10, 1, 0);
 SELECT tpcbox_z(0, 0, 0, 10, 10, 10, 1, 0);
 SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1);
-SELECT tpcbox(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+SELECT tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
 SELECT tpcbox_zt(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
 

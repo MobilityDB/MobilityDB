@@ -1,8 +1,17 @@
+# The loader uses \i with an absolute path to bring in the
+# create_test_tables_tpcpoint.sql function definition (which is not
+# part of the mobilitydb_datagen extension — only the random_* helpers
+# are).  configure_file expands @CMAKE_SOURCE_DIR@.
+configure_file(
+  data/load_pointcloud.sql.in
+  ${CMAKE_CURRENT_BINARY_DIR}/data/load_pointcloud.sql
+  @ONLY)
+
 add_test(
   NAME load_pointcloud_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_pointcloud_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_pointcloud.sql
+    -D TEST_NAME=load_pointcloud_tables -D TEST_FILE=${CMAKE_CURRENT_BINARY_DIR}/data/load_pointcloud.sql
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 

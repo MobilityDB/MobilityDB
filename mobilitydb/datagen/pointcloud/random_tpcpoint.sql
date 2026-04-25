@@ -217,7 +217,7 @@ DECLARE
   ymax float := random_float(ymin, highy);
   zmin float := random_float(lowz, highz);
   zmax float := random_float(zmin, highz);
-  period tstzspan := random_tstzspan(lowtime, hightime, 1, 30);
+  period tstzspan := random_tstzspan(lowtime, hightime, 30);
 BEGIN
   PERFORM ensure_random_pcid();
   RETURN tpcbox_zt(xmin, ymin, zmin, xmax, ymax, zmax, period, 1, 0);
