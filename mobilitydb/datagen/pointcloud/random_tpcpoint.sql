@@ -250,17 +250,18 @@ $$ LANGUAGE PLPGSQL STRICT;
 DROP FUNCTION IF EXISTS random_tpcpoint_discseq;
 CREATE FUNCTION random_tpcpoint_discseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxminutes int, mincard int, maxcard int)
+  hightime timestamptz, maxminutes int, mincard int, maxcard int,
+  fixstart bool DEFAULT false)
   RETURNS tpcpoint AS $$
 DECLARE
-  card int := random_int(mincard, maxcard);
-  t timestamptz := random_timestamptz(lowtime, hightime);
+  tsarr timestamptz[];
   result tpcpoint[];
 BEGIN
-  FOR i IN 1 .. card LOOP
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
+    mincard, maxcard, fixstart) INTO tsarr;
+  FOR i IN 1 .. array_length(tsarr, 1) LOOP
     result := array_append(result, tpcpoint(
-      random_pcpoint(lowx, highx, lowy, highy, lowz, highz), t));
-    t := t + random_minutes(1, maxminutes);
+      random_pcpoint(lowx, highx, lowy, highy, lowz, highz), tsarr[i]));
   END LOOP;
   RETURN tpcpointSeq(result, 'discrete');
 END;
@@ -273,19 +274,30 @@ $$ LANGUAGE PLPGSQL STRICT;
 DROP FUNCTION IF EXISTS random_tpcpoint_contseq;
 CREATE FUNCTION random_tpcpoint_contseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxminutes int, mincard int, maxcard int)
+  hightime timestamptz, maxminutes int, mincard int, maxcard int,
+  fixstart bool DEFAULT false)
   RETURNS tpcpoint AS $$
 DECLARE
-  card int := random_int(mincard, maxcard);
-  t timestamptz := random_timestamptz(lowtime, hightime);
+  tsarr timestamptz[];
   result tpcpoint[];
+  card int;
+  lower_inc boolean;
+  upper_inc boolean;
 BEGIN
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
+    mincard, maxcard, fixstart) INTO tsarr;
+  card := array_length(tsarr, 1);
+  IF card = 1 THEN
+    lower_inc := true; upper_inc := true;
+  ELSE
+    lower_inc := random() > 0.5;
+    upper_inc := random() > 0.5;
+  END IF;
   FOR i IN 1 .. card LOOP
     result := array_append(result, tpcpoint(
-      random_pcpoint(lowx, highx, lowy, highy, lowz, highz), t));
-    t := t + random_minutes(1, maxminutes);
+      random_pcpoint(lowx, highx, lowy, highy, lowz, highz), tsarr[i]));
   END LOOP;
-  RETURN tpcpointSeq(result, 'step');
+  RETURN tpcpointSeq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -305,10 +317,10 @@ DECLARE
   seqs tpcpoint[];
 BEGIN
   FOR i IN 1 .. card LOOP
-    t2 := t1 + random_minutes(maxminutes, maxminutes * 2);
+    t2 := t1 + random_minutes(maxminutes * maxcardseq, maxminutes * maxcardseq * 2);
     seqs := array_append(seqs,
       random_tpcpoint_contseq(lowx, highx, lowy, highy, lowz, highz,
-        t1, t2, maxminutes, mincardseq, maxcardseq));
+        t1, t2, maxminutes, mincardseq, maxcardseq, /* fixstart */ true));
     t1 := t2 + random_minutes(1, maxminutes);
   END LOOP;
   RETURN tpcpointSeqSet(seqs);
@@ -342,18 +354,18 @@ DROP FUNCTION IF EXISTS random_tpcpatch_discseq;
 CREATE FUNCTION random_tpcpatch_discseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxminutes int, minpts int, maxpts int,
-  mincard int, maxcard int)
+  mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tpcpatch AS $$
 DECLARE
-  card int := random_int(mincard, maxcard);
-  t timestamptz := random_timestamptz(lowtime, hightime);
+  tsarr timestamptz[];
   result tpcpatch[];
 BEGIN
-  FOR i IN 1 .. card LOOP
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
+    mincard, maxcard, fixstart) INTO tsarr;
+  FOR i IN 1 .. array_length(tsarr, 1) LOOP
     result := array_append(result, tpcpatch(
       random_pcpatch(lowx, highx, lowy, highy, lowz, highz, minpts, maxpts),
-      t));
-    t := t + random_minutes(1, maxminutes);
+      tsarr[i]));
   END LOOP;
   RETURN tpcpatchSeq(result, 'discrete');
 END;
@@ -367,20 +379,30 @@ DROP FUNCTION IF EXISTS random_tpcpatch_contseq;
 CREATE FUNCTION random_tpcpatch_contseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxminutes int, minpts int, maxpts int,
-  mincard int, maxcard int)
+  mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tpcpatch AS $$
 DECLARE
-  card int := random_int(mincard, maxcard);
-  t timestamptz := random_timestamptz(lowtime, hightime);
+  tsarr timestamptz[];
   result tpcpatch[];
+  card int;
+  lower_inc boolean;
+  upper_inc boolean;
 BEGIN
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes,
+    mincard, maxcard, fixstart) INTO tsarr;
+  card := array_length(tsarr, 1);
+  IF card = 1 THEN
+    lower_inc := true; upper_inc := true;
+  ELSE
+    lower_inc := random() > 0.5;
+    upper_inc := random() > 0.5;
+  END IF;
   FOR i IN 1 .. card LOOP
     result := array_append(result, tpcpatch(
       random_pcpatch(lowx, highx, lowy, highy, lowz, highz, minpts, maxpts),
-      t));
-    t := t + random_minutes(1, maxminutes);
+      tsarr[i]));
   END LOOP;
-  RETURN tpcpatchSeq(result, 'step');
+  RETURN tpcpatchSeq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -400,10 +422,11 @@ DECLARE
   seqs tpcpatch[];
 BEGIN
   FOR i IN 1 .. card LOOP
-    t2 := t1 + random_minutes(maxminutes, maxminutes * 2);
+    t2 := t1 + random_minutes(maxminutes * maxcardseq, maxminutes * maxcardseq * 2);
     seqs := array_append(seqs,
       random_tpcpatch_contseq(lowx, highx, lowy, highy, lowz, highz,
-        t1, t2, maxminutes, minpts, maxpts, mincardseq, maxcardseq));
+        t1, t2, maxminutes, minpts, maxpts, mincardseq, maxcardseq,
+        /* fixstart */ true));
     t1 := t2 + random_minutes(1, maxminutes);
   END LOOP;
   RETURN tpcpatchSeqSet(seqs);
