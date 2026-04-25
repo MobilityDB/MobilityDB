@@ -411,12 +411,19 @@ tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
   if (! tpoint)
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* TPCBox prefix is binary-compatible with STBox.  Copy and clear the
-   * pcid + tail padding by zeroing the box and re-copying the first
-   * sizeof(STBox) bytes. */
+  /* TPCBox shares the period + xyz + srid prefix of STBox, but inserts
+   * pcid before flags, so the flags byte offsets differ.  Build the
+   * STBox explicitly with X/Y/Z/T set and GEODETIC cleared. */
   STBox sbox;
   memset(&sbox, 0, sizeof(STBox));
-  memcpy(&sbox, box, sizeof(STBox));
+  sbox.period = box->period;
+  sbox.xmin = box->xmin; sbox.ymin = box->ymin; sbox.zmin = box->zmin;
+  sbox.xmax = box->xmax; sbox.ymax = box->ymax; sbox.zmax = box->zmax;
+  sbox.srid = box->srid;
+  MEOS_FLAGS_SET_X(sbox.flags, true);
+  MEOS_FLAGS_SET_Z(sbox.flags, true);
+  MEOS_FLAGS_SET_T(sbox.flags, true);
+  MEOS_FLAGS_SET_GEODETIC(sbox.flags, false);
 
   /* Restrict projection by the equivalent stbox. */
   Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, &sbox, border_inc, atfunc);
