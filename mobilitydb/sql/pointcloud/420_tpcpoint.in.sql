@@ -24,8 +24,6 @@
  * Type registration, constructors, generic accessors, the schema-aware
  * `pcid(tpcpoint)` getter, per-dimension projections to `tfloat`, and
  * the `tgeompoint(tpcpoint)` XY projection cast are all included.
- * Deferred for a follow-up: bbox operators (@>, <@, &&, …) via TPCBox
- * and the GiST / SP-GiST operator classes.
  */
 
 CREATE TYPE tpcpoint;

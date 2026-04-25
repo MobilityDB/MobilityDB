@@ -22,9 +22,7 @@
  * `mobilitydb/src/pointcloud/tpcpatch.c`.
  *
  * Covers type registration, constructors, generic accessors, plus
- * per-type `pcid(tpcpatch)` and `startNumPoints(tpcpatch)`. Deferred
- * for a follow-up: per-dimension projections, `tpcpatch → tgeometry`
- * cast, bbox operators, and the GiST / SP-GiST operator classes.
+ * per-type `pcid(tpcpatch)` and `startNumPoints(tpcpatch)`.
  */
 
 CREATE TYPE tpcpatch;

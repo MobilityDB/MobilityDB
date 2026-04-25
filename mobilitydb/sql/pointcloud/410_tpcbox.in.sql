@@ -15,13 +15,8 @@
  * silently merge. Most work goes through per-type wrappers in
  * `mobilitydb/src/pointcloud/tpcbox.c`.
  *
- * Deferred for a follow-up:
- *   * Position operators (<<, >>, <<|, |>>, <<#, #>>) and the
- *     corresponding GiST / SP-GiST operator classes — will land
- *     together with the index support for tpcpoint / tpcpatch.
- *   * `stbox(tpcbox)` projection cast — trivial, but needs no caller yet.
- *   * Rich WKT input — @c Tpcbox_in currently expects the byte-image hex
- *     form emitted by @c Tpcbox_out / @c Tpcbox_send.
+ * Input is the byte-image hex form emitted by @c Tpcbox_out /
+ * @c Tpcbox_send.
  */
 
 /******************************************************************************
