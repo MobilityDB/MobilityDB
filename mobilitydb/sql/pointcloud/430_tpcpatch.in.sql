@@ -227,6 +227,11 @@ CREATE FUNCTION startNumPoints(tpcpatch)
   AS 'MODULE_PATHNAME', 'Tpcpatch_start_npoints'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION endNumPoints(tpcpatch)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tpcpatch_end_npoints'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Value-at-timestamp / restriction
  ******************************************************************************/

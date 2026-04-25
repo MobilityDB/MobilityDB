@@ -90,4 +90,22 @@ Tpcpatch_start_npoints(PG_FUNCTION_ARGS)
   PG_RETURN_INT32((int32) n);
 }
 
+PGDLLEXPORT Datum Tpcpatch_end_npoints(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_end_npoints);
+/**
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the number of points in the last instant's pcpatch.
+ * @sqlfn endNumPoints()
+ */
+Datum
+Tpcpatch_end_npoints(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum last = temporal_end_value(temp);
+  const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(last);
+  uint32_t n = pcpatch_npoints(pa);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32((int32) n);
+}
+
 /*****************************************************************************/
