@@ -917,7 +917,10 @@ rtree_create_stbox()
 
 #if POINTCLOUD
 /**
- * @brief Creates an RTree index for the TPCBox bounding-box type.
+ * @ingroup meos_pointcloud_box
+ * @brief Create an in-memory RTree index for the @c tpcbox bounding-box
+ *   type.  Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ *   populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized.
  */
 RTree *

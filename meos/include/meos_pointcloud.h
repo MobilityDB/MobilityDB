@@ -145,12 +145,15 @@ extern bool pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
 
 extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
 
-/* Schema lookup — see @c meos_schema_hook.h for the cache + register API
- * used by embedders.  Most callers want this fast path: returns a parsed
- * @c PCSCHEMA from the MEOS-owned cache, falling back to the installed
- * resolution hook (catalog scan in a PG backend) on miss. */
+/* Schema cache — process-global lookup table of parsed PCSCHEMA values
+ * keyed by pcid.  In a PG backend the cache is populated lazily via the
+ * hook installed by @c mobilitydb_init (catalog scan of
+ * @c pointcloud_formats).  In standalone-MEOS programs, the application
+ * registers schemas explicitly before calling schema-aware helpers. */
 
 extern PCSCHEMA *meos_pc_schema(uint32_t pcid);
+extern void meos_pc_schema_register(uint32_t pcid, PCSCHEMA *schema);
+extern void meos_pc_schema_clear(void);
 
 /* Comparison */
 
