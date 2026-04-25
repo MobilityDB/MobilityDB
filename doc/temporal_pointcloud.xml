@@ -11,15 +11,9 @@
 <chapter xml:id="tpointcloud">
 	<title>Temporal Point Clouds</title>
 
-	<para>The <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud</ulink> extension stores LIDAR point cloud data in PostgreSQL using two static types:</para>
-	<itemizedlist>
-		<listitem><para><varname>pcpoint</varname> — a single multi-dimensional point whose dimensions are described by a <emphasis>schema</emphasis> stored in the <varname>pointcloud_formats</varname> catalog table. A schema is identified by a <varname>pcid</varname> integer. Each schema fixes the dimensions present (<varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, <varname>Intensity</varname>, …), their numeric type, scale, and offset.</para></listitem>
-		<listitem><para><varname>pcpatch</varname> — a compressed batch of <varname>pcpoint</varname> values that share the same <varname>pcid</varname>. Patches are the unit of storage and indexing.</para></listitem>
-	</itemizedlist>
+	<para>The <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud</ulink> extension stores LIDAR point cloud data in PostgreSQL using two static types: <varname>pcpoint</varname>, a single multi-dimensional point whose dimensions are described by a <emphasis>schema</emphasis> stored in the <varname>pointcloud_formats</varname> catalog table; and <varname>pcpatch</varname>, a compressed batch of <varname>pcpoint</varname> values that share the same <varname>pcid</varname> (schema id). Each schema fixes the dimensions present (<varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, <varname>Intensity</varname>, …), their numeric type, scale, and offset.</para>
 
-	<para>MobilityDB lifts these types into the temporal world, so that a moving LIDAR sensor (a vehicle, drone, or hand-held device) can be represented as a sequence of <varname>pcpoint</varname> readings over time, or a stream of <varname>pcpatch</varname> snapshots over time. The lifted types follow MobilityDB's usual conventions for instants, sequences, and sequence sets.</para>
-
-	<para>A complete reference for the static <varname>pcpoint</varname> and <varname>pcpatch</varname> types is given in the <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud documentation</ulink>. This chapter covers MobilityDB's additions on top of pgPointCloud: the set types, the bounding box, and the temporal types.</para>
+	<para>MobilityDB lifts these types into the temporal world via <varname>tpcpoint</varname> (a moving LIDAR/GPS sensor) and <varname>tpcpatch</varname> (a time series of compressed point clusters). It also adds set types <varname>pcpointset</varname> / <varname>pcpatchset</varname> and the spatiotemporal bounding-box type <varname>tpcbox</varname>. A complete reference for the static <varname>pcpoint</varname> and <varname>pcpatch</varname> types is given in the <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud documentation</ulink>; this chapter covers MobilityDB's additions on top of pgPointCloud.</para>
 
 	<para>To use the types described here, both the <varname>pointcloud</varname> and <varname>mobilitydb</varname> extensions must be installed in the database, and MobilityDB must be built with the <varname>POINTCLOUD=ON</varname> CMake option:</para>
 	<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -30,36 +24,79 @@ CREATE EXTENSION mobilitydb CASCADE;
 	<sect1 xml:id="pcpoint_pcpatch_static">
 		<title>Static Types <varname>pcpoint</varname> and <varname>pcpatch</varname></title>
 
-		<para>The static types come from pgPointCloud and are documented exhaustively in its manual. We list here the accessors that MobilityDB adds or re-exposes under MobilityDB's standard naming, since they are needed to work with the temporal types.</para>
+		<para>The static types come from pgPointCloud. MobilityDB exposes the schema-aware coordinate accessors needed to project pgPointCloud values into the rest of the temporal-types ecosystem.</para>
 
 		<sect2 xml:id="pcpoint_accessors">
 			<title>Accessors</title>
-			<itemizedlist>
-				<listitem><para><varname>pcid(pcpoint) → integer</varname>, <varname>pcid(pcpatch) → integer</varname> — the schema identifier.</para></listitem>
-				<listitem><para><varname>getX(pcpoint) → float</varname>, <varname>getY(pcpoint) → float</varname>, <varname>getZ(pcpoint) → float</varname> — extract a coordinate. The dimension must be present in the schema; otherwise the call returns NULL.</para></listitem>
-				<listitem><para><varname>getDim(pcpoint, name) → float</varname> — extract any named dimension (e.g. <varname>'Intensity'</varname>).</para></listitem>
-				<listitem><para><varname>SRID(pcpoint) → integer</varname>, <varname>SRID(pcpatch) → integer</varname> — the SRID declared by the schema.</para></listitem>
-			</itemizedlist>
 
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+			<itemizedlist>
+				<listitem xml:id="pcpoint_pcid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<para>Return the schema id of a pcpoint or pcpatch</para>
+					<para><varname>pcid(pcpoint) → integer</varname></para>
+					<para><varname>pcid(pcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_getXYZ">
+					<indexterm significance="normal"><primary><varname>getX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
+					<para>Return a coordinate of a pcpoint, NULL if the dimension is absent from the schema</para>
+					<para><varname>getX(pcpoint) → float</varname></para>
+					<para><varname>getY(pcpoint) → float</varname></para>
+					<para><varname>getZ(pcpoint) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getX(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
        getY(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
        getZ(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 10 | 20 | 30
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_getDim">
+					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
+					<para>Return any named dimension of a pcpoint, NULL if the name is unknown for the schema</para>
+					<para><varname>getDim(pcpoint,text) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
+-- 10
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Return the spatial reference identifier (inherited from the schema)</para>
+					<para><varname>SRID(pcpoint) → integer</varname></para>
+					<para><varname>SRID(pcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+-- 0
+</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
 	<sect1 xml:id="pcpointset_pcpatchset">
 		<title>Set Types <varname>pcpointset</varname> and <varname>pcpatchset</varname></title>
 
-		<para>A <varname>pcpointset</varname> is an ordered set of distinct <varname>pcpoint</varname> values; a <varname>pcpatchset</varname> is the analogous set type for <varname>pcpatch</varname>. Both follow MobilityDB's general set semantics (see <xref linkend="set_span_types" />): values are deduplicated on construction, the binary representation is canonical, and the usual set-level functions (<varname>numValues</varname>, <varname>memSize</varname>, <varname>asText</varname>, <varname>asBinary</varname>, <varname>asHexWKB</varname>, …) are available.</para>
+		<para>A <varname>pcpointset</varname> is an ordered set of distinct <varname>pcpoint</varname> values; a <varname>pcpatchset</varname> is the analogous set type for <varname>pcpatch</varname>. Both follow MobilityDB's general set semantics (see <xref linkend="set_span_types" />): values are deduplicated on construction, the binary representation is canonical, and all generic set-level operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>&amp;&amp;</varname>, <varname>+</varname>, <varname>-</varname>, <varname>*</varname>) and accessors (<varname>numValues</varname>, <varname>memSize</varname>, <varname>asText</varname>, <varname>asBinary</varname>, <varname>asHexWKB</varname>, …) are available.</para>
 
 		<para>All values in a set must share the same <varname>pcid</varname>. Mixing schemas in a single set raises an error at construction time.</para>
 
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
+		<sect2 xml:id="pcpointset_constructor">
+			<title>Constructors</title>
+			<itemizedlist>
+				<listitem xml:id="pcpointset_set">
+					<indexterm significance="normal"><primary><varname>set</varname></primary></indexterm>
+					<para>Construct a set from an array of values, all of which must share the same pcid</para>
+					<para><varname>set(pcpoint[]) → pcpointset</varname></para>
+					<para><varname>set(pcpatch[]) → pcpatchset</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numValues(set(ARRAY[
   PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
   PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),  -- duplicate, deduped
@@ -67,166 +104,498 @@ SELECT numValues(set(ARRAY[
 ]));
 -- 2
 </programlisting>
-
-		<para>Set-level operators <varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>&amp;&amp;</varname>, <varname>+</varname>, <varname>-</varname>, <varname>*</varname> are inherited from the generic set machinery and behave the same way as for the other set types.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpcbox">
 		<title>Bounding Box <varname>tpcbox</varname></title>
 
-		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />) — the same X/Y/Z/T axes, the same flag bits for which dimensions are present — and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
+		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />) — same X/Y/Z/T axes, same flag bits for which dimensions are present — and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
 
 		<para>Carrying the <varname>pcid</varname> through bounding-box arithmetic guarantees that bounding-box pruning never drops a row whose schema differs from the query's schema, and never returns a hit across mismatched schemas.</para>
 
 		<sect2 xml:id="tpcbox_constructors">
 			<title>Constructors</title>
 			<itemizedlist>
-				<listitem><para><varname>tpcbox(xmin, ymin, xmax, ymax, pcid, srid) → tpcbox</varname> — 2D box.</para></listitem>
-				<listitem><para><varname>tpcbox_z(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid) → tpcbox</varname> — 3D box.</para></listitem>
-				<listitem><para><varname>tpcbox_t(period, pcid) → tpcbox</varname> — time-only box.</para></listitem>
-				<listitem><para><varname>tpcbox(xmin, ymin, xmax, ymax, period, pcid, srid) → tpcbox</varname>, <varname>tpcbox_zt(...)</varname> — XYT and XYZT variants.</para></listitem>
-				<listitem><para><varname>tpcbox(pcpoint) → tpcbox</varname>, <varname>tpcbox(pcpoint, period) → tpcbox</varname> — derive from a static point.</para></listitem>
-				<listitem><para><varname>tpcbox(pcpatch) → tpcbox</varname>, <varname>tpcbox(pcpatch, period) → tpcbox</varname> — derive from a patch (uses the patch's embedded <varname>PCBOUNDS</varname>).</para></listitem>
+				<listitem xml:id="tpcbox_const">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_z</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_t</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_xt</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
+					<para>Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
+					<para><varname>tpcbox(xmin,ymin,xmax,ymax,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_z(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_t(period,pcid) → tpcbox</varname></para>
+					<para><varname>tpcbox_xt(xmin,ymin,xmax,ymax,period,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_zt(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid=0) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 10, 10, 1, 0);
+-- TPCBOX X(0, 0), (10, 10) PCID=1
+SELECT tpcbox_zt(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_conversions">
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_pcpoint_to_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<para>Convert a pcpoint to a degenerate (zero-extent) tpcbox; SRID and pcid come from the schema</para>
+					<para><varname>tpcbox(pcpoint) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+-- TPCBOX Z(10, 20, 30), (10, 20, 30) PCID=1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_pcpatch_to_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<para>Convert a pcpatch to a tpcbox using the patch's embedded 2D PCBOUNDS; the second form takes an explicit SRID instead of looking it up from the schema</para>
+					<para><varname>tpcbox(pcpatch) → tpcbox</varname></para>
+					<para><varname>tpcbox(pcpatch,integer) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])));
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcbox_accessors">
 			<title>Accessors</title>
-			<para><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname>, <varname>xmin</varname>, <varname>xmax</varname>, <varname>ymin</varname>, <varname>ymax</varname>, <varname>zmin</varname>, <varname>zmax</varname>, <varname>tmin</varname>, <varname>tmax</varname>, <varname>SRID</varname>, <varname>pcid</varname>. The <varname>min</varname> / <varname>max</varname> accessors return NULL when the corresponding dimension is absent.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT xmin(tpcbox(10, 20, 30, 40, 1, 0)),    -- 10
-       xmax(tpcbox(10, 20, 30, 40, 1, 0)),    -- 30
-       pcid(tpcbox(10, 20, 30, 40, 7, 0)),    -- 7
-       hasZ(tpcbox_z(1, 2, 3, 4, 5, 6, 1, 0)); -- true
+			<itemizedlist>
+				<listitem xml:id="tpcbox_hasXZT">
+					<indexterm significance="normal"><primary><varname>hasX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
+					<para>Return whether a tpcbox has the X/Y, Z, or T dimensions set</para>
+					<para><varname>hasX(tpcbox) → boolean</varname></para>
+					<para><varname>hasZ(tpcbox) → boolean</varname></para>
+					<para><varname>hasT(tpcbox) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT hasX(tpcbox(0, 0, 10, 10, 1, 0)),
+       hasZ(tpcbox(0, 0, 10, 10, 1, 0));
+-- t | f
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_xyzminmax">
+					<indexterm significance="normal"><primary><varname>xmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>xmax</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>ymin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>ymax</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>zmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>zmax</varname></primary></indexterm>
+					<para>Return a coordinate bound, NULL if the corresponding dimension is absent</para>
+					<para><varname>xmin(tpcbox) → float</varname></para>
+					<para><varname>xmax(tpcbox) → float</varname></para>
+					<para><varname>ymin(tpcbox) → float</varname></para>
+					<para><varname>ymax(tpcbox) → float</varname></para>
+					<para><varname>zmin(tpcbox) → float</varname></para>
+					<para><varname>zmax(tpcbox) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT xmin(tpcbox(0, 0, 10, 10, 1, 0)),
+       xmax(tpcbox(0, 0, 10, 10, 1, 0));
+-- 0 | 10
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_tminmax">
+					<indexterm significance="normal"><primary><varname>tmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tmax</varname></primary></indexterm>
+					<para>Return a temporal bound, NULL if the box has no T dimension</para>
+					<para><varname>tmin(tpcbox) → timestamptz</varname></para>
+					<para><varname>tmax(tpcbox) → timestamptz</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
+-- 2024-01-01 00:00:00+00
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_pcid_srid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Return the schema id and SRID</para>
+					<para><varname>pcid(tpcbox) → integer</varname></para>
+					<para><varname>SRID(tpcbox) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcid(tpcbox(0, 0, 10, 10, 7, 4326)),
+       SRID(tpcbox(0, 0, 10, 10, 7, 4326));
+-- 7 | 4326
+</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="tpcbox_set_ops">
+		<sect2 xml:id="tpcbox_setops">
 			<title>Set Operations</title>
-			<para>The operators <varname>+</varname> (union) and <varname>*</varname> (intersection) combine two boxes that share the same <varname>pcid</varname>; mixing pcids raises an error.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT xmin(tpcbox(0, 0, 5, 5, 1) + tpcbox(3, 3, 10, 10, 1));   -- 0
-SELECT xmin(tpcbox(0, 0, 5, 5, 1) * tpcbox(3, 3, 10, 10, 1));   -- 3
+			<itemizedlist>
+				<listitem xml:id="tpcbox_union">
+					<indexterm significance="normal"><primary><varname>tpcbox_union</varname></primary></indexterm>
+					<para>Return the union of two tpcboxes; both must share the same pcid</para>
+					<para><varname>tpcbox_union(tpcbox,tpcbox) → tpcbox</varname></para>
+					<para><varname>tpcbox + tpcbox → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+-- TPCBOX X(0, 0), (10, 10) PCID=1
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_intersection">
+					<indexterm significance="normal"><primary><varname>tpcbox_intersection</varname></primary></indexterm>
+					<para>Return the intersection of two tpcboxes, NULL if disjoint or pcid mismatch</para>
+					<para><varname>tpcbox_intersection(tpcbox,tpcbox) → tpcbox</varname></para>
+					<para><varname>tpcbox * tpcbox → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+-- TPCBOX X(3, 3), (5, 5) PCID=1
+</programlisting>
+				</listitem>
+			</itemizedlist>
+			<para>Note: a generic box-vs-box <varname>minus</varname> is not provided, mirroring the convention for <varname>stbox</varname> and <varname>tbox</varname>: the difference of two boxes is not generally a box.</para>
 		</sect2>
 
-		<sect2 xml:id="tpcbox_topo_ops">
+		<sect2 xml:id="tpcbox_topo">
 			<title>Topological Operators</title>
-			<para>The operators <varname>@&gt;</varname> (contains), <varname>&lt;@</varname> (contained), <varname>&amp;&amp;</varname> (overlaps), <varname>~=</varname> (same), and <varname>-|-</varname> (adjacent) take two <varname>tpcbox</varname> values with matching <varname>pcid</varname>. The pcid mismatch always yields false (not an error) so that index scans behave intuitively.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tpcbox(0, 0, 10, 10, 1) @&gt; tpcbox(2, 2, 8, 8, 1);   -- true
-SELECT tpcbox(0, 0, 5, 5, 1)   &amp;&amp; tpcbox(3, 3, 10, 10, 1); -- true
-SELECT tpcbox(0, 0, 5, 5, 1)   &amp;&amp; tpcbox(0, 0, 5, 5, 2);   -- false (pcid mismatch)
+			<para>All topological operators take two <varname>tpcbox</varname> values with matching <varname>pcid</varname>. A pcid mismatch always yields false (not an error) so that index scans behave intuitively.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_contains">
+					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+					<para>Return true if the first tpcbox contains the second</para>
+					<para><varname>tpcbox @&gt; tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
+-- t
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_contained">
+					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+					<para>Return true if the first tpcbox is contained in the second</para>
+					<para><varname>tpcbox &lt;@ tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
+-- t
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_overlaps">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+					<para>Return true if two tpcboxes overlap</para>
+					<para><varname>tpcbox &amp;&amp; tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);
+-- t
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
+-- f  -- pcid mismatch
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_same">
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>Return true if two tpcboxes are exactly equal</para>
+					<para><varname>tpcbox ~= tpcbox → boolean</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_adjacent">
+					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+					<para>Return true if two tpcboxes are adjacent (share a boundary)</para>
+					<para><varname>tpcbox -|- tpcbox → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_pos">
+			<title>Position Operators</title>
+			<para>Sixteen axis-aligned position predicates, parallel to those on <varname>stbox</varname>. Each tests strict-or-overlap relationship along one axis. All require matching <varname>pcid</varname>; mismatch returns false. Z-axis predicates require both boxes to have a Z dimension; T-axis predicates require both to have a T dimension.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_left_right">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+					<para>Test the X-axis ordering of two tpcboxes</para>
+					<para><varname>tpcbox &lt;&lt; tpcbox → boolean</varname>  (strictly left)</para>
+					<para><varname>tpcbox &amp;&lt; tpcbox → boolean</varname>  (does not extend right)</para>
+					<para><varname>tpcbox &gt;&gt; tpcbox → boolean</varname>  (strictly right)</para>
+					<para><varname>tpcbox &amp;&gt; tpcbox → boolean</varname>  (does not extend left)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_below_above">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+					<para>Test the Y-axis ordering of two tpcboxes</para>
+					<para><varname>tpcbox &lt;&lt;| tpcbox → boolean</varname>  (strictly below)</para>
+					<para><varname>tpcbox &amp;&lt;| tpcbox → boolean</varname>  (does not extend above)</para>
+					<para><varname>tpcbox |&gt;&gt; tpcbox → boolean</varname>  (strictly above)</para>
+					<para><varname>tpcbox |&amp;&gt; tpcbox → boolean</varname>  (does not extend below)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_front_back">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&amp;&gt;</varname></primary></indexterm>
+					<para>Test the Z-axis ordering of two tpcboxes (returns false if either lacks Z)</para>
+					<para><varname>tpcbox &lt;&lt;/ tpcbox → boolean</varname>  (strictly in front)</para>
+					<para><varname>tpcbox &amp;&lt;/ tpcbox → boolean</varname>  (does not extend behind)</para>
+					<para><varname>tpcbox /&gt;&gt; tpcbox → boolean</varname>  (strictly behind)</para>
+					<para><varname>tpcbox /&amp;&gt; tpcbox → boolean</varname>  (does not extend in front)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_before_after">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+					<para>Test the time-axis ordering of two tpcboxes (returns false if either lacks T)</para>
+					<para><varname>tpcbox &lt;&lt;# tpcbox → boolean</varname>  (strictly before)</para>
+					<para><varname>tpcbox &amp;&lt;# tpcbox → boolean</varname>  (does not extend after)</para>
+					<para><varname>tpcbox #&gt;&gt; tpcbox → boolean</varname>  (strictly after)</para>
+					<para><varname>tpcbox #&amp;&gt; tpcbox → boolean</varname>  (does not extend before)</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_comparisons">
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_btree">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<para>Compare two tpcboxes; total order over the canonical encoding (pcid, srid, flags, period, then spatial bounds in XYZ-min/max order)</para>
+					<para><varname>tpcbox = tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt;&gt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt;= tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &gt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &gt;= tpcbox → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpcpoint">
 		<title>Temporal Type <varname>tpcpoint</varname></title>
 
-		<para>A <varname>tpcpoint</varname> is the lifting of <varname>pcpoint</varname> through MobilityDB's temporal machinery. It supports the same three subtypes as the other temporal types (instant, sequence, sequence set) and the standard interpolations (step / linear / discrete). All instants in a single <varname>tpcpoint</varname> value must share the same <varname>pcid</varname>; the constructor enforces this.</para>
+		<para>A <varname>tpcpoint</varname> is the lifting of <varname>pcpoint</varname> through MobilityDB's temporal machinery. It supports the same three subtypes as the other temporal types — instant, sequence (with discrete or step interpolation), and sequence set. All instants in a single <varname>tpcpoint</varname> value must share the same <varname>pcid</varname>; the constructor enforces this.</para>
 
 		<para>The bounding box of a <varname>tpcpoint</varname> is a <varname>tpcbox</varname>, computed at construction time from the X/Y/Z dimensions of the underlying <varname>pcpoint</varname> values together with the timestamps of the instants.</para>
 
 		<sect2 xml:id="tpcpoint_constructors">
 			<title>Constructors</title>
 			<itemizedlist>
-				<listitem><para><varname>tpcpoint(pcpoint, timestamptz) → tpcpoint</varname> — instant.</para></listitem>
-				<listitem><para><varname>tpcpointSeq(tpcpoint[]) → tpcpoint</varname>, <varname>tpcpointSeq(tpcpoint[], interp) → tpcpoint</varname> — sequence from an array of instants. Interpolation is one of <varname>'discrete'</varname>, <varname>'step'</varname>, <varname>'linear'</varname>.</para></listitem>
-				<listitem><para><varname>tpcpointSeqSet(tpcpoint[]) → tpcpoint</varname> — sequence set from an array of sequences.</para></listitem>
-			</itemizedlist>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
--- An instant
+				<listitem xml:id="tpcpoint_inst">
+					<indexterm significance="normal"><primary><varname>tpcpoint</varname></primary></indexterm>
+					<para>Construct a temporal pcpoint of instant subtype</para>
+					<para><varname>tpcpoint(pcpoint,timestamptz) → tpcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
                 '2024-01-01 12:00:00+00');
--- A discrete sequence of three instants
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_seq">
+					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
+					<para>Construct a temporal pcpoint of sequence subtype from an array of instants. The interpolation is one of <varname>'discrete'</varname>, <varname>'step'</varname>; <varname>'step'</varname> is the default for tpcpoint since pcpoints carry heterogeneous dimensions that do not interpolate linearly</para>
+					<para><varname>tpcpointSeq(tpcpoint[]) → tpcpoint</varname></para>
+					<para><varname>tpcpointSeq(tpcpoint[],text) → tpcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcpointSeq(ARRAY[
   tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]), '2024-01-01'::timestamptz),
-  tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz),
-  tpcpoint(PC_MakePoint(1, ARRAY[7.0, 8.0, 9.0]), '2024-01-03'::timestamptz)
+  tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz)
 ], 'step');
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_seqset">
+					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
+					<para>Construct a temporal pcpoint of sequence-set subtype from an array of sequences</para>
+					<para><varname>tpcpointSeqSet(tpcpoint[]) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_accessors">
 			<title>Accessors</title>
-			<para>All generic temporal accessors apply: <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. In addition:</para>
+			<para>All generic temporal accessors apply (see <xref linkend="temporal_types_p1" />): <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. In addition:</para>
 			<itemizedlist>
-				<listitem><para><varname>pcid(tpcpoint) → integer</varname> — schema identifier shared by all instants.</para></listitem>
-				<listitem><para><varname>SRID(tpcpoint) → integer</varname> — SRID inherited from the schema.</para></listitem>
+				<listitem xml:id="tpcpoint_pcid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<para>Return the pgPointCloud schema id shared by all instants</para>
+					<para><varname>pcid(tpcpoint) → integer</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Return the SRID inherited from the schema</para>
+					<para><varname>SRID(tpcpoint) → integer</varname></para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_projections">
 			<title>Per-Dimension Projections</title>
-			<para>A <varname>tpcpoint</varname> can be projected onto a single dimension to yield a <varname>tfloat</varname>. Three convenience helpers cover the spatial dimensions; the generic <varname>getDim</varname> accepts any dimension name from the schema.</para>
 			<itemizedlist>
-				<listitem><para><varname>getX(tpcpoint) → tfloat</varname></para></listitem>
-				<listitem><para><varname>getY(tpcpoint) → tfloat</varname></para></listitem>
-				<listitem><para><varname>getZ(tpcpoint) → tfloat</varname></para></listitem>
-				<listitem><para><varname>getDim(tpcpoint, name) → tfloat</varname></para></listitem>
-			</itemizedlist>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+				<listitem xml:id="tpcpoint_getXYZ">
+					<indexterm significance="normal"><primary><varname>getX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
+					<para>Project a tpcpoint onto a spatial dimension, yielding a tfloat</para>
+					<para><varname>getX(tpcpoint) → tfloat</varname></para>
+					<para><varname>getY(tpcpoint) → tfloat</varname></para>
+					<para><varname>getZ(tpcpoint) → tfloat</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
                                  '2024-01-01'::timestamptz)));
 -- 10
 </programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_getDim">
+					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
+					<para>Project a tpcpoint onto any named schema dimension, yielding a tfloat</para>
+					<para><varname>getDim(tpcpoint,text) → tfloat</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="tpcpoint_casts">
-			<title>Casts</title>
-			<para>A <varname>tpcpoint</varname> can be cast to <varname>tgeompoint</varname>, projecting away every non-spatial dimension while preserving the timestamps. The result has the same SRID as the schema; its dimensionality (2D vs. 3D) follows the presence of <varname>Z</varname> in the schema.</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+		<sect2 xml:id="tpcpoint_conversions">
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_tgeompoint">
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Cast a tpcpoint to a temporal geometry point, projecting away every non-spatial dimension while preserving timestamps. The result has the same SRID as the schema; its dimensionality (2D vs. 3D) follows the presence of Z in the schema. A reverse cast is not provided: reconstructing a pcpoint requires a target schema that the temporal value alone cannot supply</para>
+					<para><varname>tgeompoint::tpcpoint</varname> is not defined</para>
+					<para><varname>tpcpoint::tgeompoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(
   tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
            '2024-01-01'::timestamptz)::tgeompoint));
 -- POINT Z (10 20 30)
 </programlisting>
-			<para>A reverse cast <varname>tgeompoint → tpcpoint</varname> is not provided, since reconstructing a <varname>pcpoint</varname> requires a target schema that the temporal value alone cannot supply.</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_compops">
-			<title>Comparison and Ever / Always Operators</title>
-			<para>Standard B-tree comparison operators <varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> compare two <varname>tpcpoint</varname> values lexicographically over their canonical encodings. The ever-equal <varname>?=</varname> and always-equal <varname>%=</varname> operators (and their <varname>ever_eq</varname> / <varname>always_eq</varname> functional forms) test value-vs-pcpoint membership.</para>
-		</sect2>
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_btree">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<para>Compare two tpcpoints lexicographically over their canonical encodings</para>
+					<para><varname>tpcpoint = tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt;&gt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt;= tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &gt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &gt;= tpcpoint → boolean</varname></para>
+				</listitem>
 
-		<sect2 xml:id="tpcpoint_topo_ops">
-			<title>Bounding-Box Operators</title>
-			<para>The <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>&amp;&amp;</varname>, <varname>~=</varname>, <varname>-|-</varname> operators between two <varname>tpcpoint</varname> values, or between a <varname>tpcpoint</varname> and a <varname>tpcbox</varname>, dispatch to the corresponding <varname>tpcbox</varname> predicates after extracting the bounding box. As with <varname>tpcbox</varname>, mismatched <varname>pcid</varname> always yields false.</para>
+				<listitem xml:id="tpcpoint_ever_eq">
+					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+					<para>Test whether the value at any (ever) or every (always) instant equals a given pcpoint</para>
+					<para><varname>tpcpoint ?= pcpoint → boolean</varname></para>
+					<para><varname>tpcpoint %= pcpoint → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_restrictions">
 			<title>Time Restrictions</title>
-			<para>The standard time restriction functions are available: <varname>atTime(tpcpoint, period)</varname>, <varname>minusTime(tpcpoint, period)</varname>, and the timestamp / timestampset / spanset variants.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_atTime">
+					<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
+					<para>Restrict a tpcpoint to a time selector (timestamp, period, set, or spanset), or remove it</para>
+					<para><varname>atTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzset) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzset) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpcpatch">
 		<title>Temporal Type <varname>tpcpatch</varname></title>
 
-		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard — same subtypes, same accessors, same casts and operators — except that each instant carries an entire compressed batch of points instead of a single point.</para>
+		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard — same subtypes, same accessors, same casts and operators — except that each instant carries an entire compressed batch of points instead of a single point. The bounding box is again a <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
 
-		<para>The bounding box of a <varname>tpcpatch</varname> is again a <varname>tpcbox</varname>; for each instant the box is grown to include the patch's embedded <varname>PCBOUNDS</varname>, so the box is computed in O(1) per instant rather than by walking each point.</para>
-
-		<sect2 xml:id="tpcpatch_specific">
-			<title>Patch-Specific Accessors</title>
-			<para>In addition to all the generic temporal accessors, <varname>tpcpatch</varname> exposes per-instant patch metadata:</para>
+		<sect2 xml:id="tpcpatch_constructors">
+			<title>Constructors</title>
 			<itemizedlist>
-				<listitem><para><varname>startNumPoints(tpcpatch) → integer</varname>, <varname>endNumPoints(tpcpatch) → integer</varname> — number of points in the first / last patch.</para></listitem>
+				<listitem xml:id="tpcpatch_inst">
+					<indexterm significance="normal"><primary><varname>tpcpatch</varname></primary></indexterm>
+					<para>Construct a temporal pcpatch of instant subtype</para>
+					<para><varname>tpcpatch(pcpatch,timestamptz) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_seq">
+					<indexterm significance="normal"><primary><varname>tpcpatchSeq</varname></primary></indexterm>
+					<para>Construct a temporal pcpatch of sequence subtype</para>
+					<para><varname>tpcpatchSeq(tpcpatch[]) → tpcpatch</varname></para>
+					<para><varname>tpcpatchSeq(tpcpatch[],text) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_seqset">
+					<indexterm significance="normal"><primary><varname>tpcpatchSeqSet</varname></primary></indexterm>
+					<para>Construct a temporal pcpatch of sequence-set subtype</para>
+					<para><varname>tpcpatchSeqSet(tpcpatch[]) → tpcpatch</varname></para>
+				</listitem>
 			</itemizedlist>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_accessors">
+			<title>Accessors</title>
+			<para>All the generic temporal accessors apply, plus the <varname>tpcpoint</varname>-style <varname>pcid</varname> and <varname>SRID</varname>. In addition:</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_numpoints">
+					<indexterm significance="normal"><primary><varname>startNumPoints</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>endNumPoints</varname></primary></indexterm>
+					<para>Return the number of points in the patch carried by the first or last instant</para>
+					<para><varname>startNumPoints(tpcpatch) → integer</varname></para>
+					<para><varname>endNumPoints(tpcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT startNumPoints(tpcpatch(
   PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
   '2024-02-01'::timestamptz));
 -- 1
 </programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_indexes">
 		<title>Indexes</title>
 
-		<para>B-tree (<varname>tpcpoint_btree_ops</varname>, <varname>tpcpatch_btree_ops</varname>, <varname>tpcbox_btree_ops</varname>) and hash (<varname>tpcpoint_hash_ops</varname>, <varname>tpcpatch_hash_ops</varname>) operator classes support equality and ordering predicates.</para>
+		<para>B-tree (<varname>tpcpoint_btree_ops</varname>, <varname>tpcpatch_btree_ops</varname>, <varname>tpcbox_btree_ops</varname>) and hash (<varname>tpcpoint_hash_ops</varname>, <varname>tpcpatch_hash_ops</varname>) operator classes support equality and ordering predicates. A GiST operator class on the <varname>tpcbox</varname> type wires the topological and position operators to GiST indexes:</para>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON my_table USING gist(my_tpcbox_column);
+</programlisting>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_caveats">
@@ -234,13 +603,13 @@ SELECT startNumPoints(tpcpatch(
 
 		<itemizedlist>
 			<listitem>
-				<para><emphasis>The <varname>pointcloud</varname> extension must exist in the database before <varname>mobilitydb</varname> is created.</emphasis> The temporal types reference <varname>pcpoint</varname> / <varname>pcpatch</varname> in their type definitions, so installing in the wrong order raises a missing-type error.</para>
+				<para>The <varname>pointcloud</varname> extension must exist in the database before <varname>mobilitydb</varname> is created. The temporal types reference <varname>pcpoint</varname> / <varname>pcpatch</varname> in their type definitions, so installing in the wrong order raises a missing-type error.</para>
 			</listitem>
 			<listitem>
-				<para><emphasis>Schema mixing is rejected at construction time.</emphasis> A <varname>tpcpoint</varname> sequence whose instants have different <varname>pcid</varname> values cannot be built; the same constraint applies to <varname>pcpointset</varname> and <varname>pcpatchset</varname>. This restriction is intentional — the schema is what gives the dimensions their meaning, and silently mixing schemas would produce values whose coordinates are uninterpretable.</para>
+				<para>Schema mixing is rejected at construction time: a <varname>tpcpoint</varname> sequence whose instants have different <varname>pcid</varname> values cannot be built, and the same constraint applies to <varname>pcpointset</varname> and <varname>pcpatchset</varname>. The schema is what gives the dimensions their meaning, and silently mixing schemas would produce values whose coordinates are uninterpretable.</para>
 			</listitem>
 			<listitem>
-				<para><emphasis>The <varname>POINTCLOUD=ON</varname> CMake flag is required.</emphasis> Builds without it produce a <varname>libMobilityDB</varname> that does not declare any of the types in this chapter; the SQL files for them are not generated.</para>
+				<para>The <varname>POINTCLOUD=ON</varname> CMake flag is required. Builds without it produce a <varname>libMobilityDB</varname> that does not declare any of the types in this chapter; the SQL files for them are not generated.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
