@@ -319,6 +319,20 @@ CREATE FUNCTION minusTime(tpcpoint, tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * TPCBox-based restrictions
+ ******************************************************************************/
+
+CREATE FUNCTION atTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Tpcpoint_at_tpcbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Tpcpoint_minus_tpcbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Ever / always predicates
  ******************************************************************************/
 

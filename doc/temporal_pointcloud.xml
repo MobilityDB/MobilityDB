@@ -509,7 +509,7 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_restrictions">
-			<title>Time Restrictions</title>
+			<title>Restrictions</title>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_atTime">
 					<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
@@ -523,6 +523,14 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<para><varname>minusTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
 					<para><varname>minusTime(tpcpoint,tstzset) → tpcpoint</varname></para>
 					<para><varname>minusTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_atTpcbox">
+					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
+					<para>Restrict a tpcpoint to the spatial / temporal extent of a tpcbox, or remove it. Returns NULL when the tpcbox's pcid does not match the tpcpoint's. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
+					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

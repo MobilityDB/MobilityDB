@@ -55,7 +55,9 @@
  * two headers are mutually exclusive. For `text_to_cstring` we inline
  * an equivalent below. */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>  /* tgeo_restrict_stbox */
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
@@ -63,6 +65,7 @@
 #include "temporal/tsequenceset.h"
 #include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */
 #include "pointcloud/pcpoint.h"
+#include "pointcloud/tpcbox.h"     /* PG_GETARG_TPCBOX_P */
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
 
@@ -356,6 +359,113 @@ Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
       result = (Temporal *)
         tpcpointseqset_tgeompointseqset((TSequenceSet *) temp, schema);
   }
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Bbox-based restrictions — at_tpcbox / minus_tpcbox
+ *
+ * Strategy: project the tpcpoint onto a tgeompoint via the schema
+ * cache, restrict the projection by the equivalent stbox (TPCBox shares
+ * the STBox prefix layout — copy the first 80 bytes), extract the time
+ * span of the result, and restrict the ORIGINAL tpcpoint by that time
+ * span.  Restricting the original (not the projected tgeompoint and
+ * casting back) preserves the full pcpoint values, including
+ * non-spatial dimensions like Intensity / Classification.
+ *****************************************************************************/
+
+/**
+ * @brief Restrict (or remove) a tpcpoint by a TPCBox.
+ * @details PCID mismatch yields the @p atfunc empty / minus identity.
+ * @return Newly-palloc'd Temporal, or @p NULL when the result is empty.
+ */
+static Temporal *
+tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
+  bool border_inc, bool atfunc)
+{
+  /* PCID mismatch: at -> empty (NULL); minus -> full copy */
+  const Pcpoint *first =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
+  if (first->pcid != box->pcid)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* Project tpcpoint -> tgeompoint via the existing static helper. */
+  PCSCHEMA *schema = tpcpoint_schema(temp);
+  Temporal *tpoint;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      tpoint = (Temporal *)
+        tpcpointinst_tgeompointinst((TInstant *) temp, schema);
+      break;
+    case TSEQUENCE:
+      tpoint = (Temporal *)
+        tpcpointseq_tgeompointseq((TSequence *) temp, schema);
+      break;
+    default: /* TSEQUENCESET */
+      tpoint = (Temporal *)
+        tpcpointseqset_tgeompointseqset((TSequenceSet *) temp, schema);
+  }
+  if (! tpoint)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* TPCBox prefix is binary-compatible with STBox.  Copy and clear the
+   * pcid + tail padding by zeroing the box and re-copying the first
+   * sizeof(STBox) bytes. */
+  STBox sbox;
+  memset(&sbox, 0, sizeof(STBox));
+  memcpy(&sbox, box, sizeof(STBox));
+
+  /* Restrict projection by the equivalent stbox. */
+  Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, &sbox, border_inc, atfunc);
+  pfree(tpoint);
+  if (! tpoint_rest)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* Lift the result's time span back onto the ORIGINAL tpcpoint to
+   * recover the full pcpoint values at each surviving instant. */
+  SpanSet *ss = temporal_time(tpoint_rest);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  pfree(ss);
+  pfree(tpoint_rest);
+  return result;
+}
+
+PGDLLEXPORT Datum Tpcpoint_at_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_at_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Restrict a tpcpoint to the spatial / temporal extent of a tpcbox.
+ * @sqlfn atTpcbox()
+ */
+Datum
+Tpcpoint_at_tpcbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *box = PG_GETARG_TPCBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Tpcpoint_minus_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpoint_minus_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Remove from a tpcpoint the part covered by a tpcbox.
+ * @sqlfn minusTpcbox()
+ */
+Datum
+Tpcpoint_minus_tpcbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TPCBox *box = PG_GETARG_TPCBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpcpoint_restrict_tpcbox(temp, box, border_inc, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
