@@ -44,13 +44,16 @@
  * @ingroup meos_pointcloud
  * @brief Functions for the TPCBox spatiotemporal bounding-box type
  *
- * @defgroup meos_pointcloud_temp Functions for tpcpoint / tpcpatch
- * @ingroup meos_pointcloud
- * @brief Functions for the lifted temporal pgpointcloud types
- *
  * @defgroup meos_pointcloud_schema_cache Schema cache helpers
  * @ingroup meos_pointcloud
  * @brief Process-global cache of parsed pgpointcloud PCSCHEMA values
+ *
+ * @note tpcpoint and tpcpatch have no type-specific public MEOS API:
+ *   the lifted types delegate everything to the generic @ref meos_temporal
+ *   surface (numInstants, atTime, valueAtTimestamp, …).  Their per-instant
+ *   bbox is a @ref meos_pointcloud_box value; type-specific helpers
+ *   (`pcid`, per-dimension projections, `tgeompoint` cast) live in the
+ *   PG wrapper layer because they need PG datum unpacking.
  */
 
 /*****************************************************************************
