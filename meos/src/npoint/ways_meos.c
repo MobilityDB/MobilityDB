@@ -295,7 +295,6 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
     if (! get_ways_record(gid, rec))
       return false;
     ways_entry = ways_cache_add(cache, rec);
-    return true;
   }
   /* The route was found in the cache */
   rec->gid = gid; rec->the_geom = ways_entry->the_geom;
