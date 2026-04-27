@@ -37,7 +37,6 @@
 /* C */
 #include <errno.h>
 #include <stdarg.h>
-#include <stdatomic.h>
 /* Postgres */
 #include <postgres.h>
 /* MEOS */
@@ -136,17 +135,23 @@ int meos_errno_reset(void)
 /*****************************************************************************/
 
 /**
- * @brief Process-global error handler function. Stored as a C11 atomic
- * pointer so that multiple threads calling meos_initialize() (which
- * transitively calls meos_initialize_error_handler) do not race on the
- * same word. Reads in meos_error() use a relaxed-acquire load; writes
- * in meos_initialize_error_handler() use a release store. The
- * value installed is identical across threads in normal usage
+ * @brief Process-global error handler function. Reads and writes use
+ * the GCC/Clang __atomic_* builtins so that multiple threads calling
+ * meos_initialize() (which transitively calls
+ * meos_initialize_error_handler) do not race on the same word. Reads
+ * in meos_error() use __ATOMIC_ACQUIRE; writes in
+ * meos_initialize_error_handler() use __ATOMIC_RELEASE. The value
+ * installed is identical across threads in normal usage
  * (default_error_handler), so this is a benign-race fix that lets
  * existing call patterns continue working unchanged.
+ *
+ * Builtins are used in preference to <stdatomic.h> _Atomic + atomic_*
+ * functions because the latter triggers spurious
+ * cppcheck-missingIncludeSystem alerts on Codacy's wrapper, which
+ * doesn't see the project's compile_commands.json.
  */
 typedef void (*meos_error_handler_t)(int, int, const char *);
-static _Atomic(meos_error_handler_t) MEOS_ERROR_HANDLER = NULL;
+static meos_error_handler_t MEOS_ERROR_HANDLER = NULL;
 
 #if MEOS
 /**
@@ -182,7 +187,7 @@ void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
   meos_error_handler_t h = err_handler ? err_handler : &default_error_handler;
-  atomic_store_explicit(&MEOS_ERROR_HANDLER, h, memory_order_release);
+  __atomic_store_n(&MEOS_ERROR_HANDLER, h, __ATOMIC_RELEASE);
   return;
 }
 #endif /* MEOS */
@@ -203,7 +208,7 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   va_end(args);
   /* Execute the error handler function */
   meos_error_handler_t handler =
-    atomic_load_explicit(&MEOS_ERROR_HANDLER, memory_order_acquire);
+    __atomic_load_n(&MEOS_ERROR_HANDLER, __ATOMIC_ACQUIRE);
   if (handler)
     handler(errlevel, errcode, buffer);
   else
