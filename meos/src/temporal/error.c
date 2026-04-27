@@ -37,6 +37,7 @@
 /* C */
 #include <errno.h>
 #include <stdarg.h>
+#include <stdatomic.h>
 /* Postgres */
 #include <postgres.h>
 /* MEOS */
@@ -135,9 +136,17 @@ int meos_errno_reset(void)
 /*****************************************************************************/
 
 /**
- * @brief Global variable that keeps the error handler function
+ * @brief Process-global error handler function. Stored as a C11 atomic
+ * pointer so that multiple threads calling meos_initialize() (which
+ * transitively calls meos_initialize_error_handler) do not race on the
+ * same word. Reads in meos_error() use a relaxed-acquire load; writes
+ * in meos_initialize_error_handler() use a release store. The
+ * value installed is identical across threads in normal usage
+ * (default_error_handler), so this is a benign-race fix that lets
+ * existing call patterns continue working unchanged.
  */
-void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
+typedef void (*meos_error_handler_t)(int, int, const char *);
+static _Atomic(meos_error_handler_t) MEOS_ERROR_HANDLER = NULL;
 
 #if MEOS
 /**
@@ -172,10 +181,8 @@ error_handler_errno(int errlevel __attribute__((__unused__)), int errcode,
 void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
-  if (err_handler)
-    MEOS_ERROR_HANDLER = err_handler;
-  else
-    MEOS_ERROR_HANDLER = &default_error_handler;
+  meos_error_handler_t h = err_handler ? err_handler : &default_error_handler;
+  atomic_store_explicit(&MEOS_ERROR_HANDLER, h, memory_order_release);
   return;
 }
 #endif /* MEOS */
@@ -195,8 +202,10 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
   /* Execute the error handler function */
-  if (MEOS_ERROR_HANDLER)
-    MEOS_ERROR_HANDLER(errlevel, errcode, buffer);
+  meos_error_handler_t handler =
+    atomic_load_explicit(&MEOS_ERROR_HANDLER, memory_order_acquire);
+  if (handler)
+    handler(errlevel, errcode, buffer);
   else
 #if ! MEOS
     elog(errlevel, "%s", buffer);

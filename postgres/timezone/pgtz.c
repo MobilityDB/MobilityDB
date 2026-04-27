@@ -17,6 +17,7 @@
 #include <time.h>
 #include <dirent.h> /* MEOS */
 #include <common/hashfn.h> /* MEOS */
+#include <stdatomic.h> /* MEOS — one-shot atomic init for default-zone cache */
 #include <sys/stat.h> /* MEOS */
 // #include "datatype/timestamp.h" /* MEOS */
 #include "utils/timestamp_def.h"
@@ -445,14 +446,62 @@ pg_tzset_offset(long gmtoffset)
 }
 
 /*
+ * MEOS — one-shot cache for the auto-detected default timezone name.
+ *
+ * select_default_timezone() ultimately calls libc localtime() and tzset(),
+ * both of which read/write process-global libc state (`_tmbuf`, `tzname[]`,
+ * the loaded zone in tzset_internal). When N threads concurrently call
+ * meos_initialize() (which transitively requests the default zone), those
+ * libc calls race even though the *result* is identical for every thread.
+ *
+ * Fix: do the heavy auto-detect exactly once on the first thread, cache the
+ * resolved zone name in a process-global buffer, and let every other thread
+ * read from the cache. The system timezone is process-stable, so caching
+ * once is correct.
+ *
+ * State machine: 0 = pending, 1 = running, 2 = done.
+ */
+static _Atomic int default_tz_state = 0;
+static char default_tz_cache[TZ_STRLEN_MAX + 1] = "";
+
+static const char *
+get_cached_default_tz(void)
+{
+  int st = atomic_load_explicit(&default_tz_state, memory_order_acquire);
+  if (st == 2)
+    return default_tz_cache[0] ? default_tz_cache : NULL;
+
+  int expected = 0;
+  if (atomic_compare_exchange_strong_explicit(&default_tz_state, &expected,
+        1, memory_order_acq_rel, memory_order_acquire))
+  {
+    /* This thread won the race; do the detection. */
+    const char *tz = select_default_timezone(NULL);
+    if (tz)
+    {
+      strncpy(default_tz_cache, tz, TZ_STRLEN_MAX);
+      default_tz_cache[TZ_STRLEN_MAX] = '\0';
+    }
+    atomic_store_explicit(&default_tz_state, 2, memory_order_release);
+    return default_tz_cache[0] ? default_tz_cache : NULL;
+  }
+
+  /* Another thread is detecting; spin-wait for it to finish. The detection
+   * is bounded by the size of /usr/share/zoneinfo (a few hundred ms). */
+  while (atomic_load_explicit(&default_tz_state, memory_order_acquire) != 2)
+    /* spin */ ;
+  return default_tz_cache[0] ? default_tz_cache : NULL;
+}
+
+/*
  * Initialize timezone cache
  */
 void
 meos_initialize_timezone(const char *tz_str)
 {
   if (tz_str == NULL || strlen(tz_str) == 0)
-    /* fetch local timezone */
-    tz_str = select_default_timezone(NULL);
+    /* fetch local timezone (cached after the first call across all threads) */
+    tz_str = get_cached_default_tz();
   if (tz_str == NULL)
     /* default timezone */
     tz_str = "GMT";
