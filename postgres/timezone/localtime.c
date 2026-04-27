@@ -1365,6 +1365,10 @@ gmtsub(pg_time_t const *timep, int32 offset,
 	 * its own state on its first GMT call (issue #404). */
 	static MEOS_TLS struct state *gmtptr = NULL;
 
+	/* cppcheck-suppress knownConditionTrueFalse — `gmtptr` is a
+	 * thread-local static that retains its value across calls; the
+	 * NULL check is meaningful on subsequent calls when the cached
+	 * pointer is reused. */
 	if (gmtptr == NULL)
 	{
 		/* Allocate on first use */
