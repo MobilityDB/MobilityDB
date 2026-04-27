@@ -295,7 +295,9 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-  int mod = hasz ? level % 8 : level % 6 ;
+  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int mod = level % dims;
   if (mod == 0)
   {
     /* Split the bounding box by lower bound  */
@@ -393,7 +395,9 @@ static bool
 overlapKD(const STboxNode *nodebox, const STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
+  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MEOS_FLAGS_GET_X(query->flags))
@@ -456,7 +460,9 @@ static bool
 containKD(const STboxNode *nodebox, const STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
+  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MEOS_FLAGS_GET_X(query->flags))
@@ -904,7 +910,8 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   bool hast = MEOS_FLAGS_GET_T(centroid->flags);
-  int mod = hasz ? level % 8 : level % 6;
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int mod = level % dims;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
   else if (mod == 1)
