@@ -89,8 +89,16 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 # MobilityDB directories
 #--------------------------------
 
-# PostgreSQL
-configure_file(../postgres/pg_config.h.in ../postgres/pg_config.h)
+# PostgreSQL - detect host-specific values and render pg_config.h.
+# See cmake/ConfigurePgConfig.cmake for the rationale: the previous
+# postgres/pg_config.h.in was a Linux snapshot checked in as a static
+# file; this module does what PG's own ./configure would do, narrowed to
+# the macros MEOS/MobilityDB actually references.
+include(${CMAKE_SOURCE_DIR}/cmake/ConfigurePgConfig.cmake)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/postgres/pg_config.h.in
+  ${CMAKE_BINARY_DIR}/postgres/pg_config.h
+  @ONLY)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgres/timezone")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgres")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgres")
