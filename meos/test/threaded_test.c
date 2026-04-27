@@ -119,11 +119,7 @@ worker(void *arg)
     meos_errno_reset();
   }
 
-  /* Note: meos_finalize() is intentionally NOT called per worker.
-   * Concurrent meos_finalize() in N threads triggers heap corruption
-   * inside the GSL/PROJ teardown chain — those library cleanups touch
-   * shared state that's outside the scope of issue #404 / this PR.
-   * Per-thread state will be cleaned up at process exit. */
+  meos_finalize();
   return NULL;
 }
 

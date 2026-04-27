@@ -30,7 +30,9 @@ extern const char *select_default_timezone(const char *share_path);
 
 
 #ifndef SYSTEMTZDIR
-static char tzdirpath[MAXPGPATH];
+/* MEOS: per-thread so concurrent system-tz lookup doesn't race
+ * (issue #404). */
+static MEOS_TLS char tzdirpath[MAXPGPATH];
 #endif
 
 
@@ -61,7 +63,10 @@ pg_TZDIR(void)
 static pg_tz *
 pg_load_tz(const char *name)
 {
-  static pg_tz tz;
+  /* MEOS: per-thread scratch buffer — see issue #404. The returned
+   * pointer aliases this storage; with TLS, each thread sees its own
+   * tz, so the alias remains safe within a single call chain. */
+  static MEOS_TLS pg_tz tz;
 
   if (strlen(name) > TZ_STRLEN_MAX)
     return NULL;      /* not going to fit */
@@ -301,7 +306,9 @@ perfect_timezone_match(const char *tzname, struct tztry *tt)
 static const char *
 identify_system_timezone(void)
 {
-  static char resultbuf[(TZ_STRLEN_MAX + 1) * 2];
+  /* MEOS: per-thread — see issue #404. Returned pointer aliases this
+   * buffer; with TLS each thread keeps its own copy. */
+  static MEOS_TLS char resultbuf[(TZ_STRLEN_MAX + 1) * 2];
   time_t    tnow;
   time_t    t;
   struct tztry tt;
