@@ -1471,6 +1471,61 @@ tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
+ * @brief Return true if an LWGEOM tree contains any curve component
+ * (CircularString, CompoundCurve, CurvePolygon, MultiCurve, MultiSurface)
+ */
+static bool
+lwgeom_has_curve(const LWGEOM *geom)
+{
+  if (! geom)
+    return false;
+  switch (geom->type)
+  {
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+      return true;
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+        if (lwgeom_has_curve(col->geoms[i]))
+          return true;
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Return a flat geometry (no arcs) from a possibly curved one
+ * @details If the input has any curve component, return a stroked
+ * (linearized) copy that the edge-clipper can consume. Returns NULL if no
+ * stroking was needed; caller should keep using the original input.
+ */
+static GSERIALIZED *
+geo_stroke_if_curved(const GSERIALIZED *gs)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (! lwgeom_has_curve(lwgeom))
+  {
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
+  /* Stroke with 32 segments per quadrant, the PostGIS default. */
+  LWGEOM *stroked = lwgeom_stroke(lwgeom, 32);
+  lwgeom_free(lwgeom);
+  if (! stroked)
+    return NULL;
+  GSERIALIZED *result = geo_serialize(stroked);
+  lwgeom_free(stroked);
+  return result;
+}
+
+/**
  * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo restricted to (the complement of) a geometry
  * @param[in] temp Temporal geo
@@ -1502,10 +1557,23 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* Call the specific function for temporal points with linear interpolation */
+  /* Call the specific (edge-clipper) function for temporal points with
+   * linear interpolation. The edge-clipper does not support curve types
+   * (CircularString, CompoundCurve, CurvePolygon, MultiCurve,
+   * MultiSurface), so stroke-flatten any such input before passing it
+   * to the clipper. */
   if (temp->temptype == T_TGEOMPOINT &&
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
+  {
+    GSERIALIZED *flat = geo_stroke_if_curved(gs);
+    if (flat)
+    {
+      Temporal *res = tpoint_linear_restrict_geom(temp, flat, atfunc);
+      pfree(flat);
+      return res;
+    }
     return tpoint_linear_restrict_geom(temp, gs, atfunc);
+  }
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
