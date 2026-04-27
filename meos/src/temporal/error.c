@@ -47,9 +47,12 @@
  *****************************************************************************/
 
 /**
- * @brief Global variable that keeps the last error number
+ * @brief Per-thread variable that keeps the last error number.
+ * Mirrors the libc errno convention: each thread sees its own value, so
+ * concurrent MEOS calls from multiple threads do not race on the error
+ * status.
  */
-static int MEOS_ERR_NO = 0;
+static MEOS_TLS int MEOS_ERR_NO = 0;
 
 /**
  * @brief Read an error number

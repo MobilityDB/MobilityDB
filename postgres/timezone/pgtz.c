@@ -56,8 +56,10 @@ static void tzcache_my_destroy(tzcache_hash *tb);
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
 
-/* Current session timezone (controlled by TimeZone GUC) */
-pg_tz *session_timezone = NULL;
+/* Current session timezone (per-thread; the libc/PG timezone parser is not
+ * reentrant and meos_initialize_timezone() must be called from each thread
+ * that needs to parse timestamps). */
+MEOS_TLS pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */
 // pg_tz *log_timezone = NULL; /* MEOS */
@@ -87,7 +89,10 @@ hash_string_pointer(const char *s)
 /* MEOS */
 // typedef struct {...} pg_tz_cache;
 
-static tzcache_hash *timezone_cache = NULL;
+/* Per-thread because session_timezone is per-thread: each thread may
+ * pg_tzset() a different zone and the cache must reflect what its
+ * caller has loaded. */
+static MEOS_TLS tzcache_hash *timezone_cache = NULL;
 
 static bool
 init_timezone_hashtable(void)
