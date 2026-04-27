@@ -1,17 +1,23 @@
 ---
+# Codacy's cppcheck wrapper runs the tool without the build's -I include
+# paths, so every project/system header fires a 'missingInclude[System]'
+# warning - on this codebase ~200 of them drown the real findings.
+# MobilityDB runs its own cppcheck in .github/workflows/cppcheck.yml
+# instead: it feeds cppcheck the real compile_commands.json (so include
+# resolution works) and publishes SARIF to GitHub Code Scanning (inline
+# PR annotations, Security tab). Turn Codacy's copy off.
 engines:
   cppcheck:
-    language: c
-    exclude_paths:
-      - "postgis/**"
-      - "postgres/**"
+    enabled: false
   duplication:
     exclude_paths:
       - "postgis/**"
       - "postgres/**"
+      - "pgtypes/**"
     config:
       languages:
         - "c"
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
+  - "pgtypes/**"
