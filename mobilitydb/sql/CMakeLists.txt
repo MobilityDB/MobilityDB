@@ -75,6 +75,11 @@ if (PROJECT_VERBOSE)
   message(STATUS "PROJECT_SQL_FILES=${PROJECT_SQL_FILES}")
 endif()
 
+# Truncate first: without this, re-running cmake on an existing build
+# directory keeps appending to the previous pass's file, duplicating every
+# CREATE FUNCTION / TYPE / OPERATOR and making `CREATE EXTENSION mobilitydb`
+# fail with 'already exists' errors on subsequent reconfigures.
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in "")
 foreach (f ${PROJECT_SQL_FILES})
   file(READ ${f} CURR_CONTENTS)
   file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in "${CURR_CONTENTS}")

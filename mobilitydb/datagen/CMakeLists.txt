@@ -28,6 +28,10 @@ if(RGEO)
   list(APPEND DATAGEN_FILES rgeo/random_trgeo.sql)
 endif()
 
+# Truncate first so that a re-configure in an existing build directory
+# rebuilds this .sql from scratch instead of appending a second copy of
+# every rule on top of the previous one.
+file(WRITE ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE} "")
 # Append each source file with license removed
 foreach(f ${DATAGEN_FILES})
   # Read file as a list (one item per line)
