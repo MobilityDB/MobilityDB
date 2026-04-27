@@ -21,3 +21,5 @@ exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "meos/test/**"
+  - "meos/examples/**"
