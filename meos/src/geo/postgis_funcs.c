@@ -3183,7 +3183,7 @@ geom_in(const char *str, int32 typmod)
     {
       meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "Could not parse geometry value: %s", str);
-      return false;
+      return NULL;
     }
 
     /* Check next character to see if we have WKB */

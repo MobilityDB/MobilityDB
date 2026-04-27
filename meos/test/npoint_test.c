@@ -288,7 +288,7 @@ int main(void)
 
   /* int64 npoint_route(const Npoint *np); */
   int64_result = npoint_route(npoint1);
-  printf("npoint_route(%s): %lu\n", npoint1_out, int64_result);
+  printf("npoint_route(%s): %ld\n", npoint1_out, int64_result);
 
   /* double nsegment_end_position(const Nsegment *ns); */
   float8_result = nsegment_end_position(nsegment1);
@@ -296,7 +296,7 @@ int main(void)
 
   /* int64 nsegment_route(const Nsegment *ns); */
   int64_result = nsegment_route(nsegment1);
-  printf("nsegment_route(%s): %lu\n", nsegment1_out, int64_result);
+  printf("nsegment_route(%s): %ld\n", nsegment1_out, int64_result);
 
   /* double nsegment_start_position(const Nsegment *ns); */
   float8_result = nsegment_start_position(nsegment1);
