@@ -1,0 +1,185 @@
+name: Cppcheck
+
+# Runs cppcheck with the build's real -I include paths (via
+# compile_commands.json) and publishes the findings to GitHub's Code
+# Scanning UI as inline PR annotations. This replaces Codacy's cppcheck,
+# which can't be given the build's include paths and therefore drowns
+# the finding list with `missingInclude` / `missingIncludeSystem`
+# warnings on every #include of a project header.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/cppcheck.yml'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'meos/src/**'
+      - 'meos/include/**'
+      - 'mobilitydb/src/**'
+      - 'mobilitydb/pg_include/**'
+  pull_request:
+    paths:
+      - '.github/workflows/cppcheck.yml'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'meos/src/**'
+      - 'meos/include/**'
+      - 'mobilitydb/src/**'
+      - 'mobilitydb/pg_include/**'
+
+# SARIF upload needs write access to Code Scanning alerts.
+permissions:
+  security-events: write
+  contents: read
+  actions: read
+
+jobs:
+  cppcheck:
+    name: Cppcheck (with project include paths)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies and cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cppcheck \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+          cppcheck --version
+
+      - name: Configure (generate compile_commands.json)
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DMEOS=on ..
+
+      - name: Run cppcheck (XML output - universally supported)
+        # --project uses the same -I paths CMake records for the real
+        # build, which is what makes the missingInclude noise vanish.
+        # XML is preferred over --output-format=sarif because SARIF
+        # support in cppcheck only landed in 2.13+; we convert XML to
+        # SARIF ourselves in the next step so the job works regardless
+        # of the runner's cppcheck version.
+        run: |
+          set -x
+          cppcheck --version
+          cppcheck \
+            --project=build/compile_commands.json \
+            --enable=warning,style,performance,portability \
+            --inline-suppr \
+            --suppress='*:*/postgres/*' \
+            --suppress='*:*/postgis/*' \
+            --suppress='*:*/pgtypes/*' \
+            --suppress='missingIncludeSystem' \
+            --suppress='unmatchedSuppression' \
+            --xml --xml-version=2 \
+            -j "$(nproc)" \
+            2> cppcheck.xml || true
+          echo "--- cppcheck.xml (first 40 lines) ---"
+          head -40 cppcheck.xml || true
+          test -s cppcheck.xml
+
+      - name: Convert cppcheck XML to SARIF
+        run: |
+          python3 <<'PYEOF' > cppcheck.sarif
+          import sys, json, xml.etree.ElementTree as ET
+
+          # Map cppcheck severities to SARIF level (note: cppcheck
+          # uses "error"/"warning"/"style"/"performance"/"portability"
+          # /"information"; SARIF has "error"/"warning"/"note"/"none").
+          SEV = {
+              "error":       "error",
+              "warning":     "warning",
+              "portability": "warning",
+              "performance": "warning",
+              "style":       "note",
+              "information": "note",
+          }
+
+          root = ET.parse("cppcheck.xml").getroot()
+          results = []
+          rules   = {}
+
+          # <errors><error id=... severity=... msg=...><location .../></error>
+          for err in root.iter("error"):
+              rid   = err.get("id") or "cppcheck"
+              sev   = SEV.get(err.get("severity") or "", "warning")
+              msg   = err.get("msg") or err.get("verbose") or rid
+              rules[rid] = {
+                  "id":   rid,
+                  "name": rid,
+                  "shortDescription": {"text": err.get("msg") or rid},
+                  "defaultConfiguration": {"level": sev},
+              }
+              for loc in err.findall("location"):
+                  # SARIF requires startLine/startColumn >= 1. cppcheck
+                  # sometimes emits 0 (no-column-info sentinel); clamp.
+                  start_line = max(1, int(loc.get("line") or 1))
+                  start_col  = max(1, int(loc.get("column") or 1))
+                  results.append({
+                      "ruleId":  rid,
+                      "level":   sev,
+                      "message": {"text": msg},
+                      "locations": [{
+                          "physicalLocation": {
+                              "artifactLocation": {
+                                  "uri": loc.get("file") or "unknown",
+                              },
+                              "region": {
+                                  "startLine":   start_line,
+                                  "startColumn": start_col,
+                              },
+                          },
+                      }],
+                  })
+
+          sarif = {
+              "version": "2.1.0",
+              "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+              "runs": [{
+                  "tool": {
+                      "driver": {
+                          "name":    "Cppcheck",
+                          "version": "reported by cppcheck --version",
+                          "informationUri": "https://cppcheck.sourceforge.io/",
+                          "rules":   list(rules.values()),
+                      },
+                  },
+                  "results": results,
+              }],
+          }
+          json.dump(sarif, sys.stdout, indent=2)
+          PYEOF
+          echo "--- cppcheck.sarif (summary) ---"
+          python3 -c "
+          import json
+          d = json.load(open('cppcheck.sarif'))
+          res = d['runs'][0]['results']
+          print(f'SARIF runs: {len(d[\"runs\"])}, results: {len(res)}')
+          counts = {}
+          for r in res:
+              counts[r['level']] = counts.get(r['level'], 0) + 1
+          for k, v in sorted(counts.items()):
+              print(f'  {k}: {v}')
+          "
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cppcheck.sarif
+          category: cppcheck
+
+      - name: Attach SARIF as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cppcheck-sarif
+          path: cppcheck.sarif
+          retention-days: 30
