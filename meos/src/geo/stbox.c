@@ -2147,9 +2147,9 @@ bool
 before_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags))
+  if (! ensure_has_T(T_STBOX, box1->flags) ||
+      ! ensure_has_T(T_STBOX, box2->flags) ||
+      ! ensure_valid_pos_stbox_stbox(box1, box2))
     return false;
   return left_span_span(&box1->period, &box2->period);
 }
@@ -2165,9 +2165,9 @@ bool
 overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags))
+  if (! ensure_has_T(T_STBOX, box1->flags) ||
+      ! ensure_has_T(T_STBOX, box2->flags) ||
+      ! ensure_valid_pos_stbox_stbox(box1, box2))
     return false;
   return overleft_span_span(&box1->period, &box2->period);
 }
@@ -2182,9 +2182,9 @@ bool
 after_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags))
+  if (! ensure_has_T(T_STBOX, box1->flags) ||
+      ! ensure_has_T(T_STBOX, box2->flags) ||
+      ! ensure_valid_pos_stbox_stbox(box1, box2))
     return false;
   return right_span_span(&box1->period, &box2->period);
 }
@@ -2200,9 +2200,9 @@ bool
 overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags))
+  if (! ensure_has_T(T_STBOX, box1->flags) ||
+      ! ensure_has_T(T_STBOX, box2->flags) ||
+      ! ensure_valid_pos_stbox_stbox(box1, box2))
     return false;
   return overright_span_span(&box1->period, &box2->period);
 }
