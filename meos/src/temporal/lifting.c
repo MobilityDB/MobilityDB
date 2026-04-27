@@ -369,6 +369,7 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   meosType basetype = temptype_basetype(seq->temptype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   int ninsts = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -389,23 +390,22 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
       TimestampTz tpt1, tpt2;
       int found = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
         &tpt1, &tpt2);
-      /* Avoid adding a turning point at the same timestamp added next */
       if (found)
       {
         tpvalue = tsegment_value_at_timestamptz(value1, value2, 
           inst1->temptype, inst1->t, inst2->t, tpt1);
-        instants[ninsts++] = tinstant_make_free(tpvalue, lfinfo->restype,
-          tpt1);
-        DATUM_FREE(tpvalue, basetype);
-      }
-      /* Account for the second turning point if any */
-      if (found > 1)
-      {
-        tpvalue = tsegment_value_at_timestamptz(value1, value2, 
-          inst1->temptype, inst1->t, inst2->t, tpt2);
-        instants[ninsts++] = tinstant_make_free(tpvalue, lfinfo->restype,
-          tpt2);
-        DATUM_FREE(tpvalue, basetype);
+        Datum res = tfunc_base_base(tpvalue, value, lfinfo);
+        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
+        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
+        /* Account for the second turning point if any */
+        if (found > 1)
+        {
+          tpvalue = tsegment_value_at_timestamptz(value1, value2, 
+            inst1->temptype, inst1->t, inst2->t, tpt2);
+          res = tfunc_base_base(tpvalue, value, lfinfo);
+          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt2);
+          DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
+        }
       }
     }
     inst1 = inst2;
@@ -1180,10 +1180,13 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     TimestampTz tpt1 = 0, tpt2 = 0; /* make compiler quiet */
     bool lower_eq;
 
-    /* If both segments are constant compute the function at the start and
-     * end instants and continue the current sequence */
-    if (datum_eq(startvalue1, endvalue1, basetype) &&
-        datum_eq(startvalue2, endvalue2, basetype))
+    /* If the segments are both constants OR are both equal, compute the 
+     * function at the start and end instants and continue the current
+     * sequence */
+    if ((datum_eq(startvalue1, endvalue1, basetype) &&
+         datum_eq(startvalue2, endvalue2, basetype)) ||
+        (datum_eq(startvalue1, startvalue2, basetype) &&
+         datum_eq(endvalue1, endvalue2, basetype)))
     {
       instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
     }
@@ -1292,9 +1295,21 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     start1 = end1; start2 = end2;
   }
   /* Add the last instant */
-  startresult = tfunc_base_base(tinstant_value_p(start1), tinstant_value_p(start2),
-    lfinfo);
+  startresult = tfunc_base_base(tinstant_value_p(start1),
+    tinstant_value_p(start2), lfinfo);
   instants[ninsts++] = tinstant_make_free(startresult, restype, start1->t);
+
+  /* The last two values of sequences with step interpolation and exclusive
+     upper bound must be equal */
+  if (! inter->upper_inc && interp == STEP)
+  {
+    TInstant *inst = instants[ninsts - 1];
+    Datum value = tinstant_value_p(instants[ninsts - 2]);
+    instants[ninsts - 1] = tinstant_make(value, lfinfo->restype,
+      instants[ninsts - 1]->t);
+    pfree(inst);
+  }
+  
   result[nseqs++] = tsequence_make_free(instants, ninsts,
     (ninsts == 1) ? true : lower_inc,
     (ninsts == 1) ? true : inter->upper_inc, interp, NORMALIZE);
