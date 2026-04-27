@@ -1359,8 +1359,11 @@ gmtsub(pg_time_t const *timep, int32 offset,
 {
 	struct pg_tm *result;
 
-	/* GMT timezone state data is kept here */
-	static struct state *gmtptr = NULL;
+	/* GMT timezone state data is kept here.
+	 * MEOS: per-thread so concurrent first-use doesn't race on the
+	 * lazy malloc + gmtload(). Each thread allocates and gmtloads
+	 * its own state on its first GMT call (issue #404). */
+	static MEOS_TLS struct state *gmtptr = NULL;
 
 	if (gmtptr == NULL)
 	{
