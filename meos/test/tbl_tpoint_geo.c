@@ -90,7 +90,7 @@ int main(void)
   if (! file2)
   {
     printf("Error opening second input file\n");
-    fclose(file2);
+    fclose(file1);
     return 1;
   }
 
