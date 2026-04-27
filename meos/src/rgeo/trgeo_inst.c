@@ -130,7 +130,7 @@ trgeoinst_make_valid(const GSERIALIZED *gs, const Pose *pose)
       "Dimension of geometry and pose must correspond");
     return false;
   }
-  if (srid_pose != SRID_UNKNOWN && srid_pose != SRID_UNKNOWN &&
+  if (srid_geom != SRID_UNKNOWN && srid_pose != SRID_UNKNOWN &&
     srid_geom != srid_pose)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

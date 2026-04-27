@@ -1479,9 +1479,9 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
   /* The first count spans of the two span sets are equal */
   if (! result)
   {
-    if (count < count1) /* ss1 has more spans than ss2 */
+    if (count1 > count2) /* ss1 has more spans than ss2 */
       result = 1;
-    else if (count < count2) /* ss2 has more spans than ss1 */
+    else if (count2 > count1) /* ss2 has more spans than ss1 */
       result = -1;
     else
       result = 0;
