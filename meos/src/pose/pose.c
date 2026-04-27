@@ -257,13 +257,13 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
     double Y2 = end->data[5],   Z2 = end->data[6];
     double W  = value->data[3], X  = value->data[4];
     double Y  = value->data[5], Z  = value->data[6];
-    /* Align q2 and q_value to the same hemisphere as q1 */
+    /* Align q2 and q_value to the same hemisphere as q1. We only need
+     * the absolute value of the dot product downstream, so negating
+     * dot12 is sufficient — the individual W2/X2/Y2/Z2 components are
+     * not read again (the same trick is applied to dot1v below). */
     double dot12 = W1 * W2 + X1 * X2 + Y1 * Y2 + Z1 * Z2;
     if (dot12 < 0.0)
-    {
-      W2 = -W2; X2 = -X2; Y2 = -Y2; Z2 = -Z2;
       dot12 = -dot12;
-    }
     double dot1v = W1 * W + X1 * X + Y1 * Y + Z1 * Z;
     if (dot1v < 0.0)
     {
