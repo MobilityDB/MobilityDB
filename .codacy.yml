@@ -8,7 +8,12 @@
 # PR annotations, Security tab). Turn Codacy's copy off.
 engines:
   cppcheck:
+    # Belt-and-braces: `enabled: false` is the documented kill switch
+    # but Codacy has been observed to still surface cppcheck issues on
+    # PR analyses, so we additionally tell cppcheck to scan no paths.
     enabled: false
+    exclude_paths:
+      - "**"
   duplication:
     exclude_paths:
       - "postgis/**"
@@ -21,3 +26,5 @@ exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "meos/test/**"
+  - "meos/examples/**"
