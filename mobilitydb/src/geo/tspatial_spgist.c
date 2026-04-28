@@ -297,10 +297,12 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 node, int level, STboxNode *next_nodebox)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
-  memcpy(next_nodebox, nodebox, sizeof(STboxNode));
   bool hast = MEOS_FLAGS_GET_T(centroid->flags);
   int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
   int mod = level % dims;
+  memcpy(next_nodebox, nodebox, sizeof(STboxNode));
   if (mod == 0)
   {
     /* Split the bounding box by lower bound  */
@@ -333,7 +335,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.ymax = centroid->ymax;
   }
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
   {
     /* Split the bounding box by lower bound  */
     if (node == 0)
@@ -341,7 +343,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.zmin = centroid->zmin;
   }
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
   {
     /* Split the bounding box by upper bound */
     if (node == 0)
@@ -349,7 +351,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.zmax = centroid->zmax;
   }
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
+  else if (hast && mod == tdim)
   {
     /* Split the bounding box by lower bound  */
     if (node == 0)
@@ -357,7 +359,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.period.lower = centroid->period.lower;
   }
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else /* hast && mod == tdim + 1 */
   {
     /* Split the bounding box by upper bound */
     if (node == 0)
@@ -400,6 +402,8 @@ overlapKD(const STboxNode *nodebox, const STBox *query, int level)
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
   bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
   int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
   int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
@@ -416,17 +420,17 @@ overlapKD(const STboxNode *nodebox, const STBox *query, int level)
   }
   if (MEOS_FLAGS_GET_Z(query->flags))
   {
-    if (hasz && mod == 4)
+    if (hasz && mod == zdim)
       result &= nodebox->left.zmin <= query->zmax;
-    else if (hasz && mod == 5)
+    else if (hasz && mod == zdim + 1)
       result &= nodebox->right.zmax >= query->zmin;
   }
   if (MEOS_FLAGS_GET_T(query->flags))
   {
-    if ((hasz && mod == 6) || (! hasz && mod == 4))
+    if (hast && mod == tdim)
       result &= datum_le(nodebox->left.period.lower, query->period.upper,
         T_TIMESTAMPTZ);
-    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+    else if (hast && mod == tdim + 1)
       result &= datum_ge(nodebox->right.period.upper, query->period.lower,
         T_TIMESTAMPTZ);
   }
@@ -465,6 +469,8 @@ containKD(const STboxNode *nodebox, const STBox *query, int level)
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
   bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
   int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
   int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
@@ -481,17 +487,17 @@ containKD(const STboxNode *nodebox, const STBox *query, int level)
   }
   if (MEOS_FLAGS_GET_Z(query->flags))
   {
-    if (hasz && mod == 4)
+    if (hasz && mod == zdim)
       result &= nodebox->left.zmin <= query->zmin;
-    else if (hasz && mod == 5)
+    else if (hasz && mod == zdim + 1)
       result &= nodebox->right.zmax >= query->zmax;
   }
   if (MEOS_FLAGS_GET_T(query->flags))
   {
-    if ((hasz && mod == 6) || (! hasz && mod == 4))
+    if (hast && mod == tdim)
       result &= datum_le(nodebox->left.period.lower, query->period.lower,
         T_TIMESTAMPTZ);
-    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+    else if (hast && mod == tdim + 1)
       result &= datum_ge(nodebox->right.period.upper, query->period.upper,
         T_TIMESTAMPTZ);
   }
@@ -914,6 +920,8 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   bool hast = MEOS_FLAGS_GET_T(centroid->flags);
   int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
   int mod = level % dims;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
@@ -923,13 +931,13 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
     return stbox_ymin_cmp(query, centroid);
   else if (mod == 3)
     return stbox_ymax_cmp(query, centroid);
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
     return stbox_zmin_cmp(query, centroid);
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
     return stbox_zmax_cmp(query, centroid);
-  else if (hast && ((hasz && mod == 6) || (! hasz && mod == 4)))
+  else if (hast && mod == tdim)
     return stbox_tmin_cmp(query, centroid);
-  else if (hast && ((hasz && mod == 7) || (! hasz && mod == 5)))
+  else if (hast && mod == tdim + 1)
     return stbox_tmax_cmp(query, centroid);
   /* We should never arrive here */
   elog(ERROR, "stbox_level_cmp: unexpected error");
@@ -1112,6 +1120,8 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   bool hasz = MEOS_FLAGS_GET_Z(sorted[0].box.flags);
   bool hast = MEOS_FLAGS_GET_T(sorted[0].box.flags);
   int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
   int mod = in->level % dims;
   qsort_comparator qsortfn;
   if (mod == 0)
@@ -1122,13 +1132,13 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_ymin_cmp;
   else if (mod == 3)
     qsortfn = (qsort_comparator) &stbox_ymax_cmp;
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
     qsortfn = (qsort_comparator) &stbox_zmin_cmp;
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
     qsortfn = (qsort_comparator) &stbox_zmax_cmp;
-  else if (hast && ((hasz && mod == 6) || (! hasz && mod == 4)))
+  else if (hast && mod == tdim)
     qsortfn = (qsort_comparator) &stbox_tmin_cmp;
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else /* hast && mod == tdim + 1 */
     qsortfn = (qsort_comparator) &stbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
