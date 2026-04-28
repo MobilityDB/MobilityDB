@@ -98,7 +98,7 @@ int64_cmp(int64 l, int64 r)
  * equal to, or greater than the second one
  */
 int
-datum_cmp(Datum l, Datum r, meosType type)
+datum_cmp(Datum l, Datum r, MeosType type)
 {
   assert(meos_basetype(type));
   switch (type)
@@ -148,7 +148,7 @@ datum_cmp(Datum l, Datum r, meosType type)
  * @brief Return true if the first value is less than the second one
  */
 bool
-datum_lt(Datum l, Datum r, meosType type)
+datum_lt(Datum l, Datum r, MeosType type)
 {
   return datum_cmp(l, r, type) < 0;
 }
@@ -158,7 +158,7 @@ datum_lt(Datum l, Datum r, meosType type)
  * one
  */
 bool
-datum_le(Datum l, Datum r, meosType type)
+datum_le(Datum l, Datum r, MeosType type)
 {
   return datum_cmp(l, r, type) <= 0;
 }
@@ -167,7 +167,7 @@ datum_le(Datum l, Datum r, meosType type)
  * @brief Return true if the first value is greater than the second one
  */
 bool
-datum_gt(Datum l, Datum r, meosType type)
+datum_gt(Datum l, Datum r, MeosType type)
 {
   return datum_cmp(l, r, type) > 0;
 }
@@ -177,7 +177,7 @@ datum_gt(Datum l, Datum r, meosType type)
  * one
  */
 bool
-datum_ge(Datum l, Datum r, meosType type)
+datum_ge(Datum l, Datum r, MeosType type)
 {
   return datum_cmp(l, r, type) >= 0;
 }
@@ -187,7 +187,7 @@ datum_ge(Datum l, Datum r, meosType type)
  * @note This function should be faster than the function #datum_cmp()
  */
 bool
-datum_eq(Datum l, Datum r, meosType type)
+datum_eq(Datum l, Datum r, MeosType type)
 {
   assert(meos_basetype(type));
   switch (type)
@@ -244,7 +244,7 @@ datum_eq(Datum l, Datum r, meosType type)
  * @brief Return true if the values are different
  */
 bool
-datum_ne(Datum l, Datum r, meosType type)
+datum_ne(Datum l, Datum r, MeosType type)
 {
   return ! datum_eq(l, r, type);
 }
@@ -256,7 +256,7 @@ datum_ne(Datum l, Datum r, meosType type)
  * @brief Return a Datum true if the values are equal
  */
 Datum
-datum2_eq(Datum l, Datum r, meosType type)
+datum2_eq(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_eq(l, r, type));
 }
@@ -265,7 +265,7 @@ datum2_eq(Datum l, Datum r, meosType type)
  * @brief Return a Datum true if the values are different
  */
 Datum
-datum2_ne(Datum l, Datum r, meosType type)
+datum2_ne(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_ne(l, r, type));
 }
@@ -274,7 +274,7 @@ datum2_ne(Datum l, Datum r, meosType type)
  * @brief Return a Datum true if the first value is less than the second one
  */
 Datum
-datum2_lt(Datum l, Datum r, meosType type)
+datum2_lt(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_lt(l, r, type));
 }
@@ -284,7 +284,7 @@ datum2_lt(Datum l, Datum r, meosType type)
  * second one
  */
 Datum
-datum2_le(Datum l, Datum r, meosType type)
+datum2_le(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_le(l, r, type));
 }
@@ -293,7 +293,7 @@ datum2_le(Datum l, Datum r, meosType type)
  * @brief Return a Datum true if the first value is greater than the second one
  */
 Datum
-datum2_gt(Datum l, Datum r, meosType type)
+datum2_gt(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_gt(l, r, type));
 }
@@ -303,7 +303,7 @@ datum2_gt(Datum l, Datum r, meosType type)
  * the second one
  */
 Datum
-datum2_ge(Datum l, Datum r, meosType type)
+datum2_ge(Datum l, Datum r, MeosType type)
 {
   return BoolGetDatum(datum_ge(l, r, type));
 }
@@ -317,7 +317,7 @@ datum2_ge(Datum l, Datum r, meosType type)
  * @brief Return the addition of the two numbers
  */
 Datum
-datum_add(Datum l, Datum r, meosType type)
+datum_add(Datum l, Datum r, MeosType type)
 {
   switch (type)
   {
@@ -344,7 +344,7 @@ datum_add(Datum l, Datum r, meosType type)
  * @brief Return the subtraction of the two numbers
  */
 Datum
-datum_sub(Datum l, Datum r, meosType type)
+datum_sub(Datum l, Datum r, MeosType type)
 {
   switch (type)
   {
@@ -368,7 +368,7 @@ datum_sub(Datum l, Datum r, meosType type)
  * @brief Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, meosType type)
+datum_mult(Datum l, Datum r, MeosType type)
 {
   switch (type)
   {
@@ -389,7 +389,7 @@ datum_mult(Datum l, Datum r, meosType type)
  * @brief Return the division of the two numbers
  */
 Datum
-datum_div(Datum l, Datum r, meosType type)
+datum_div(Datum l, Datum r, MeosType type)
 {
   switch (type)
   {
@@ -417,7 +417,7 @@ datum_div(Datum l, Datum r, meosType type)
  * @return On error return @p INT_MAX
  */
 uint32
-datum_hash(Datum d, meosType type)
+datum_hash(Datum d, MeosType type)
 {
   assert(meos_basetype(type));
   switch (type)
@@ -466,7 +466,7 @@ datum_hash(Datum d, meosType type)
  * @return On error return @p INT_MAX
  */
 uint64
-datum_hash_extended(Datum d, meosType type, uint64 seed)
+datum_hash_extended(Datum d, MeosType type, uint64 seed)
 {
   assert(meos_basetype(type));
   switch (type)
@@ -512,7 +512,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
  * @brief Copy a Datum if it is passed by reference
  */
 Datum
-datum_copy(Datum value, meosType basetype)
+datum_copy(Datum value, MeosType basetype)
 {
   /* For types passed by value */
   if (basetype_byvalue(basetype))
@@ -531,7 +531,7 @@ datum_copy(Datum value, meosType basetype)
  * @return On error return @p DBL_MAX
  */
 double
-datum_double(Datum d, meosType type)
+datum_double(Datum d, MeosType type)
 {
   assert(numspan_basetype(type));
   switch (type)
@@ -556,7 +556,7 @@ datum_double(Datum d, meosType type)
  * @brief Return a Datum of a given type from a double value
  */
 Datum
-double_datum(double d, meosType type)
+double_datum(double d, MeosType type)
 {
   assert(numspan_basetype(type));
   switch (type)
@@ -585,11 +585,11 @@ double_datum(double d, meosType type)
  * @brief Comparator function for datums
  */
 static int
-datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const MeosType *type)
 {
   Datum x = *l;
   Datum y = *r;
-  meosType t = *type;
+  MeosType t = *type;
   return datum_cmp(x, y, t);
 }
 
@@ -630,7 +630,7 @@ tsequence_sort_cmp(TSequence **l, TSequence **r)
  * @brief Sort function for datums
  */
 void
-datumarr_sort(Datum *values, int count, meosType type)
+datumarr_sort(Datum *values, int count, MeosType type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
@@ -692,7 +692,7 @@ tseqarr_sort(TSequence **sequences, int count)
  * @pre The array has been sorted before
  */
 int
-datumarr_remove_duplicates(Datum *values, int count, meosType type)
+datumarr_remove_duplicates(Datum *values, int count, MeosType type)
 {
   assert(values); assert(count > 0);
   int newcount = 0;

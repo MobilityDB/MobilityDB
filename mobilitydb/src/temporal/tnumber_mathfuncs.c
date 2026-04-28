@@ -59,7 +59,7 @@
  */
 static Datum
 Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -76,7 +76,7 @@ Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
@@ -93,11 +93,11 @@ Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  meosType basetype = temptype_basetype(temp1->temptype);
+  MeosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   Temporal *result;
   if (basetype == T_FLOAT8 && (oper == MULT || oper == DIV))

@@ -65,7 +65,7 @@ EAcomp_base_temporal(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   int result = func(value, temp);
   DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -83,7 +83,7 @@ EAcomp_temporal_base(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   int result = func(temp, value);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
@@ -648,11 +648,11 @@ Always_ge_temporal_temporal(PG_FUNCTION_ARGS)
  */
 static Datum
 Tcomp_base_temporal(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = tcomp_base_temporal(value, temp, func);
   assert(result);
   DATUM_FREE_IF_COPY(value, basetype, 0);
@@ -665,11 +665,11 @@ Tcomp_base_temporal(FunctionCallInfo fcinfo,
  */
 Datum
 Tcomp_temporal_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = tcomp_temporal_base(temp, value, func);
   assert(result);
   PG_FREE_IF_COPY(temp, 0);
@@ -682,7 +682,7 @@ Tcomp_temporal_base(FunctionCallInfo fcinfo,
  */
 Datum
 Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

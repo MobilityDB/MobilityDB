@@ -1022,7 +1022,7 @@ tstzspanset_to_stbox(const SpanSet *ss)
  * @param[out] box Spatiotemporal box
  */
 bool
-spatial_set_stbox(Datum d, meosType basetype, STBox *box)
+spatial_set_stbox(Datum d, MeosType basetype, STBox *box)
 {
   assert(spatial_basetype(basetype));
   switch (basetype)

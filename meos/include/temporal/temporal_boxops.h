@@ -55,7 +55,7 @@
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern size_t temporal_bbox_size(meosType tempype);
+extern size_t temporal_bbox_size(MeosType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
 extern void tinstarr_set_bbox(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, void *bbox);

@@ -149,7 +149,7 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
 };
 
 static int16
-temporal_get_strategy_by_type(meosType temptype, uint16_t index)
+temporal_get_strategy_by_type(MeosType temptype, uint16_t index)
 {
   if (tnumber_type(temptype))
     return TNumberStrategies[index];
@@ -229,7 +229,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
-  meosType argtype = oid_meostype(argoid);
+  MeosType argtype = oid_meostype(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
 #if CBUFFER
@@ -268,7 +268,7 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
-  meosType argtype = oid_meostype(argoid);
+  MeosType argtype = oid_meostype(argoid);
   if (argtype == T_TBOOL || argtype == T_TTEXT)
     funcname = "span";
   else if (argtype == T_INT4 || argtype == T_FLOAT8 ||
@@ -300,8 +300,8 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
 /**
  * @brief Transform the constant into a bounding box
  */
-static meosType
-type_to_bbox(meosType type)
+static MeosType
+type_to_bbox(MeosType type)
 {
   if (span_basetype(type))
     return basetype_spantype(type);
@@ -342,11 +342,11 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
-    meosType ltype = oid_meostype(leftoid);
-    meosType rtype = oid_meostype(rightoid);
+    MeosType ltype = oid_meostype(leftoid);
+    MeosType rtype = oid_meostype(rightoid);
     /* Convert base type to bbox type */
-    meosType ltype1 = type_to_bbox(ltype);
-    meosType rtype1 = type_to_bbox(rtype);
+    MeosType ltype1 = type_to_bbox(ltype);
+    MeosType rtype1 = type_to_bbox(rtype);
     operid = meosoper_oid(OVERLAPS_OP, ltype1, rtype1);
     if (req->is_join)
       req->selectivity = temporal_joinsel(req->root, operid, req->args,
@@ -463,8 +463,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
-      meosType lefttype = oid_meostype(leftoid);
-      meosType righttype = oid_meostype(rightoid);
+      MeosType lefttype = oid_meostype(leftoid);
+      MeosType righttype = oid_meostype(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired

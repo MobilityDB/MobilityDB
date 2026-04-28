@@ -643,7 +643,7 @@ static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 {
   Span *s;
-  meosType type = oid_meostype(scankey->sk_subtype);
+  MeosType type = oid_meostype(scankey->sk_subtype);
   if (tnumber_spantype(type))
   {
     s = DatumGetSpanP(scankey->sk_argument);
@@ -907,7 +907,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   /* Get basetype of span in the datums */
   TBox *box = DatumGetTboxP(in->datums[0]);
-  meosType basetype = box->span.basetype;
+  MeosType basetype = box->span.basetype;
   /* Calculate median of all 4D coordinates */
   for (i = 0; i < in->nTuples; i++)
   {
@@ -929,7 +929,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
   centroid = palloc0(sizeof(TBox));
   Span s, p;
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   span_set(lowXs[median], highXs[median], true, true, basetype, spantype, &s);
   span_set(lowTs[median], highTs[median], true, true, T_TIMESTAMPTZ,
     T_TSTZSPAN, &p);

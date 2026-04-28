@@ -247,7 +247,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 {
   int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
-  meosType type = oid_meostype(stats->attrtypid);
+  MeosType type = oid_meostype(stats->attrtypid);
 
   /* Allocate memory to hold span bounds and lengths of the sample spans */
   SpanBound *lowers = palloc(sizeof(SpanBound) * samplerows);

@@ -417,7 +417,7 @@ tinterrel_tspatial_base(const Temporal *temp, Datum base, bool tinter,
 {
   assert(temp); assert(DatumGetPointer(base));
   /* Bounding box test */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
@@ -1245,7 +1245,7 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
   Datum sv2 = tinstant_value_p(start2);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
-  meosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
@@ -1381,7 +1381,7 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */

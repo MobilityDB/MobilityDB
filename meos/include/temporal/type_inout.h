@@ -62,13 +62,13 @@
 
 /*****************************************************************************/
 
-extern uint8_t *datum_as_wkb(Datum value, meosType type, uint8_t variant,
+extern uint8_t *datum_as_wkb(Datum value, MeosType type, uint8_t variant,
   size_t *size_out);
-extern char *datum_as_hexwkb(Datum value, meosType type, uint8_t variant,
+extern char *datum_as_hexwkb(Datum value, MeosType type, uint8_t variant,
   size_t *size);
 
-extern Datum type_from_wkb(const uint8_t *wkb, size_t size, meosType type);
-extern Datum type_from_hexwkb(const char *hexwkb, size_t size, meosType type);
+extern Datum type_from_wkb(const uint8_t *wkb, size_t size, MeosType type);
+extern Datum type_from_hexwkb(const char *hexwkb, size_t size, MeosType type);
 
 /*****************************************************************************/
 
