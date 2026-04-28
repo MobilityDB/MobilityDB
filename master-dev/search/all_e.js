@@ -109,7 +109,7 @@ var searchData=
   ['lt_106',['LT',['../meos_2include_2temporal_2temporal_8h_ae8ccf22e7a234d746205612bfa9a235a.html#ae8ccf22e7a234d746205612bfa9a235aa486aa221ceeeac475326e85d3d37f571',1,'temporal.h']]],
   ['lt_5fop_107',['LT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a52e3e8da9b09fb1822f05c559735c0f3',1,'meos_catalog.h']]],
   ['lt_5fopr_108',['lt_opr',['../structTemporalAnalyzeExtraData_a046ad9f4f8186e56a705be44d9e519b8.html#a046ad9f4f8186e56a705be44d9e519b8',1,'TemporalAnalyzeExtraData']]],
-  ['ltype_109',['ltype',['../structoid__meosoper__entry_af921bd4a026e54de8d1d2dc6ab1d42f0.html#af921bd4a026e54de8d1d2dc6ab1d42f0',1,'oid_meosoper_entry']]],
+  ['ltype_109',['ltype',['../structoid__meosoper__entry_af2cec1c573a595bb4c54871137deb09b.html#af2cec1c573a595bb4c54871137deb09b',1,'oid_meosoper_entry']]],
   ['lw_5fdistance_5ffraction_110',['lw_distance_fraction',['../meos_2src_2geo_2tgeo__distance_8c_a3115788961619aafb71b23caf37fb585.html#a3115788961619aafb71b23caf37fb585',1,'tgeo_distance.c']]],
   ['lw_5fseg_5finteract_111',['lw_seg_interact',['../tpoint__spatialfuncs_8c_a70622495f8397a499e5dddc41d43ac3e.html#a70622495f8397a499e5dddc41d43ac3e',1,'tpoint_spatialfuncs.c']]],
   ['lwcircle_5fmake_112',['lwcircle_make',['../tcbuffer__spatialfuncs_8c_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e',1,'lwcircle_make(double x, double y, double radius, int32_t srid):&#160;tcbuffer_spatialfuncs.c'],['../tgeo__spatialfuncs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e',1,'lwcircle_make(double x, double y, double radius, int32_t srid):&#160;tcbuffer_spatialfuncs.c']]],
