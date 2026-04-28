@@ -170,7 +170,85 @@ jobs:
               print(f'  {k}: {v}')
           "
 
+      - name: Fail on critical-pattern findings
+        # Cppcheck's per-pattern severity is fixed in its built-in
+        # classification; we can't promote individual rules to "error"
+        # via CLI flags. Instead, post-process cppcheck.xml: if any of
+        # the patterns listed below appears in MEOS/MobilityDB code
+        # (non-vendored), fail the job. This catches the bug classes
+        # that PR #816 fixed (CastIntegerToAddressAtReturn, null
+        # dereferences, uninit reads, mistaken `||` vs `&&`, etc.) at
+        # the moment they're introduced rather than after they've
+        # accumulated on master.
+        run: |
+          python3 <<'PYEOF'
+          import sys, xml.etree.ElementTree as ET
+
+          # Patterns we want to block on. Restricted to the high-precision
+          # bug classes — cppcheck's flow-analysis-derived patterns
+          # (knownConditionTrueFalse, redundantAssignment) have a high
+          # false-positive rate on MEOS code and would block on legacy
+          # patterns rather than introduced bugs.
+          CRITICAL = {
+              "CastIntegerToAddressAtReturn",
+              "incorrectLogicOperator",
+              "nullPointer",
+              "nullPointerRedundantCheck",
+              "uninitvar",
+              "duplicateExpression",
+              "resourceLeak",
+              "returnDanglingLifetime",
+          }
+
+          # Vendored upstream — already excluded from cppcheck via the
+          # --suppress flags, but defence-in-depth here in case a path
+          # slips the suppress glob. Cppcheck sometimes reports paths
+          # by basename (especially flex/bison-generated files), so we
+          # also match a list of vendored basenames.
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/")
+          VENDORED_BASENAMES = (
+              # liblwgeom flex/bison-generated parsers
+              "lwin_wkt_lex.c", "lwin_wkt_lex.l",
+              "lwin_wkt_parse.c", "lwin_wkt_parse.y",
+          )
+
+          root = ET.parse("cppcheck.xml").getroot()
+          violations = []
+          for err in root.iter("error"):
+              rid = err.get("id", "")
+              if rid not in CRITICAL:
+                  continue
+              for loc in err.iter("location"):
+                  path = loc.get("file", "")
+                  # Strip leading absolute-path stem if any
+                  norm = path.lstrip("/").replace("\\", "/")
+                  for prefix in ("home/runner/work/MobilityDB/MobilityDB/",
+                                 "github/workspace/"):
+                      if norm.startswith(prefix):
+                          norm = norm[len(prefix):]
+                          break
+                  if norm.startswith(VENDORED):
+                      continue
+                  # Also check basename in case cppcheck stripped path
+                  # (happens for flex/bison-generated postgis files).
+                  if norm.split("/")[-1] in VENDORED_BASENAMES:
+                      continue
+                  violations.append((
+                      rid, norm, loc.get("line", "?"),
+                      err.get("msg", "")[:140]))
+
+          if violations:
+              print(f"::error::cppcheck found {len(violations)} critical-pattern violations:")
+              for rid, path, line, msg in violations:
+                  print(f"::error file={path},line={line}::{rid}: {msg}")
+              sys.exit(1)
+          print(f"cppcheck: no critical-pattern violations in MEOS/MobilityDB code.")
+          PYEOF
+
       - name: Upload SARIF to GitHub Code Scanning
+        # Runs even if the previous step failed, so reviewers can see
+        # the inline annotations on the PR alongside the build failure.
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: cppcheck.sarif

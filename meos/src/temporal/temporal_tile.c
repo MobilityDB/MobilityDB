@@ -743,7 +743,8 @@ tbox_tile_state_next(TboxGridState *state)
   assert(MEOS_FLAGS_GET_X(state->box.flags) ||
     MEOS_FLAGS_GET_T(state->box.flags));
 
-  if (! state || state->done)
+  /* state is non-NULL by the assert above; only the done check matters. */
+  if (state->done)
     return;
   /* Move to the next tile */
   state->i++;

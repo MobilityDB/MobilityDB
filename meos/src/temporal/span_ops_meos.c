@@ -907,7 +907,7 @@ SpanSet *
 union_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, false);
+  VALIDATE_INTSPAN(s, NULL);
   return union_span_value(s, Int32GetDatum(i));
 }
 
@@ -935,7 +935,7 @@ SpanSet *
 union_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, false);
+  VALIDATE_BIGINTSPAN(s, NULL);
   return union_span_value(s, Int64GetDatum(i));
 }
 
@@ -963,7 +963,7 @@ SpanSet *
 union_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, false);
+  VALIDATE_FLOATSPAN(s, NULL);
   return union_span_value(s, Float8GetDatum(d));
 }
 
@@ -991,7 +991,7 @@ SpanSet *
 union_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s, false);
+  VALIDATE_DATESPAN(s, NULL);
   return union_span_value(s, DateADTGetDatum(d));
 }
 
@@ -1019,7 +1019,7 @@ SpanSet *
 union_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, false);
+  VALIDATE_TSTZSPAN(s, NULL);
   return union_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1051,7 +1051,7 @@ Span *
 intersection_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, false);
+  VALIDATE_INTSPAN(s, NULL);
   return intersection_span_value(s, Int32GetDatum(i));
 }
 
@@ -1066,7 +1066,7 @@ Span *
 intersection_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, false);
+  VALIDATE_BIGINTSPAN(s, NULL);
   return intersection_span_value(s, Int64GetDatum(i));
 }
 
@@ -1081,7 +1081,7 @@ Span *
 intersection_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, false);
+  VALIDATE_FLOATSPAN(s, NULL);
   return intersection_span_value(s, Float8GetDatum(d));
 }
 
@@ -1096,7 +1096,7 @@ Span *
 intersection_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s, false);
+  VALIDATE_DATESPAN(s, NULL);
   return intersection_span_value(s, DateADTGetDatum(d));
 }
 /**
@@ -1110,7 +1110,7 @@ Span *
 intersection_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, false);
+  VALIDATE_TSTZSPAN(s, NULL);
   return intersection_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1129,7 +1129,7 @@ SpanSet *
 minus_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, false);
+  VALIDATE_INTSPAN(s, NULL);
   return minus_value_span(Int32GetDatum(i), s);
 }
 
@@ -1144,7 +1144,7 @@ SpanSet *
 minus_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, false);
+  VALIDATE_BIGINTSPAN(s, NULL);
   return minus_value_span(Int64GetDatum(i), s);
 }
 
@@ -1189,7 +1189,7 @@ SpanSet *
 minus_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, false);
+  VALIDATE_TSTZSPAN(s, NULL);
   return minus_value_span(TimestampTzGetDatum(t), s);
 }
 
@@ -1206,7 +1206,7 @@ SpanSet *
 minus_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, false);
+  VALIDATE_INTSPAN(s, NULL);
   return minus_span_value(s, Int32GetDatum(i));
 }
 
@@ -1221,7 +1221,7 @@ SpanSet *
 minus_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, false);
+  VALIDATE_BIGINTSPAN(s, NULL);
   return minus_span_value(s, Int64GetDatum(i));
 }
 
@@ -1236,7 +1236,7 @@ SpanSet *
 minus_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, false);
+  VALIDATE_FLOATSPAN(s, NULL);
   return minus_span_value(s, Float8GetDatum(d));
 }
 
@@ -1251,7 +1251,7 @@ SpanSet *
 minus_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s, false);
+  VALIDATE_DATESPAN(s, NULL);
   return minus_span_value(s, DateADTGetDatum(d));
 }
 
@@ -1266,7 +1266,7 @@ SpanSet *
 minus_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, false);
+  VALIDATE_TSTZSPAN(s, NULL);
   return minus_span_value(s, TimestampTzGetDatum(t));
 }
 

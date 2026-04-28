@@ -98,7 +98,7 @@ get_axis_tbox(const void *box, int axis, bool upper)
 static double
 get_axis_stbox(const void *box, int axis, bool upper)
 {
-  assert(box); assert(axis >= 0 || axis <= 3);
+  assert(box); assert(axis >= 0 && axis <= 3);
   STBox *stbox = (STBox *) box;
   if (axis == 0)
     return upper ? stbox->xmax : stbox->xmin;

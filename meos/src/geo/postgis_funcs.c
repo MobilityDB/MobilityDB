@@ -3185,7 +3185,7 @@ geom_in(const char *str, int32 typmod)
     {
       meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "Could not parse geometry value: %s", str);
-      return false;
+      return NULL;
     }
 
     /* Check next character to see if we have WKB */
@@ -3271,7 +3271,7 @@ char *
 geo_out(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, false);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_hexwkb_buffer(geom, WKB_EXTENDED);
@@ -3420,7 +3420,7 @@ char *
 geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, false);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
@@ -3486,7 +3486,7 @@ uint8_t *
 geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, false);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   uint8_t variant = 0;
 
@@ -3563,7 +3563,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
   const char *srs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, false);
+  VALIDATE_NOT_NULL(gs, NULL);
 
   // int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int output_bbox = LW_FALSE;
@@ -4074,7 +4074,10 @@ mec_circle3(POINT2D a, POINT2D b, POINT2D c)
   double F = C * (a.x + c.x) + D * (a.y + c.y);
   double G = 2.0 * (A * (c.y - b.y) - B * (c.x - b.x));
 
-  Circle circ;
+  /* Zero-init so the early-exit return doesn't leave circ.center
+   * uninitialised — same fix pattern as the sibling at the top of
+   * this file (mec_circle3 around line 4040). */
+  Circle circ = { .center = {0.0, 0.0}, .radius = 0.0 };
   if (fabs(G) < 1e-12)
   {
     circ.radius = -1;

@@ -238,7 +238,7 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, meosType basetype)
 double
 floatsegm_interpolate(double start, double end, long double ratio)
 {
-  assert(ratio >= 0.0 || ratio <= 1.0);
+  assert(ratio >= 0.0 && ratio <= 1.0);
   return start + (double) ((long double) (end - start) * ratio);
 }
 
