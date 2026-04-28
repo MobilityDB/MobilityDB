@@ -1981,3 +1981,50 @@ SELECT stbox_hash_extended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01
  4942726506971401033
 (1 row)
 
+DROP TABLE IF EXISTS tbl_stbox_notime;
+NOTICE:  table "tbl_stbox_notime" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_stbox_notime AS
+SELECT k, stbox(ST_MakeEnvelope(k::float, k::float,
+                                (k+1)::float, (k+1)::float)) AS b
+FROM generate_series(1, 200) k;
+SELECT 200
+CREATE INDEX tbl_stbox_notime_quadtree_idx ON tbl_stbox_notime USING SPGIST(b);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b && stbox 'STBOX X((50,50),(60,60))';
+ count 
+-------
+    12
+(1 row)
+
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b @> stbox 'STBOX X((100.5,100.5),(100.5,100.5))';
+ count 
+-------
+     1
+(1 row)
+
+DROP INDEX tbl_stbox_notime_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_stbox_notime_kdtree_idx ON tbl_stbox_notime
+  USING SPGIST(b stbox_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b && stbox 'STBOX X((50,50),(60,60))';
+ count 
+-------
+    12
+(1 row)
+
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b @> stbox 'STBOX X((100.5,100.5),(100.5,100.5))';
+ count 
+-------
+     1
+(1 row)
+
+DROP INDEX tbl_stbox_notime_kdtree_idx;
+DROP INDEX
+DROP TABLE tbl_stbox_notime;
+DROP TABLE
