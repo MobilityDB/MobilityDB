@@ -962,178 +962,178 @@ int main(void)
   /* Spatiotemporal relationship functions */
   printf("****************************************************************\n");
 
-  /* Temporal *tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = tcontains_cbuffer_tcbuffer(cbuffer1, tcbuffer1, true, true);
+  /* Temporal *tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp); */
+  tbool_result = tcontains_cbuffer_tcbuffer(cbuffer1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcontains_cbuffer_tcbuffer(%s, %s, true, true): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
+  printf("tcontains_cbuffer_tcbuffer(%s, %s): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = tcontains_geo_tcbuffer(geom1, tcbuffer1, true, true);
+  /* Temporal *tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp); */
+  tbool_result = tcontains_geo_tcbuffer(geom1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcontains_geo_tcbuffer(%s, %s, true, true): %s\n", geom1_out, tcbuffer1_out, char_result);
+  printf("tcontains_geo_tcbuffer(%s, %s): %s\n", geom1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue); */
-  tbool_result = tcontains_tcbuffer_geo(tcbuffer1, geom1, true, true);
+  /* Temporal *tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tbool_result = tcontains_tcbuffer_geo(tcbuffer1, geom1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcontains_tcbuffer_geo(%s, %s, true, true): %s\n", tcbuffer1_out, geom1_out, char_result);
+  printf("tcontains_tcbuffer_geo(%s, %s): %s\n", tcbuffer1_out, geom1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue); */
-  tbool_result = tcontains_tcbuffer_cbuffer(tcbuffer1, cbuffer1, true, true);
+  /* Temporal *tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb); */
+  tbool_result = tcontains_tcbuffer_cbuffer(tcbuffer1, cbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcontains_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("tcontains_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue); */
-  tbool_result = tcontains_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, true, true);
+  /* Temporal *tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2); */
+  tbool_result = tcontains_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcontains_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("tcontains_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = tcovers_cbuffer_tcbuffer(cbuffer1, tcbuffer1, true, true);
+  /* Temporal *tcovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp); */
+  tbool_result = tcovers_cbuffer_tcbuffer(cbuffer1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcovers_cbuffer_tcbuffer(%s, %s, true, true): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
+  printf("tcovers_cbuffer_tcbuffer(%s, %s): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = tcovers_geo_tcbuffer(geom1, tcbuffer1, true, true);
+  /* Temporal *tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp); */
+  tbool_result = tcovers_geo_tcbuffer(geom1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcovers_geo_tcbuffer(%s, %s, true, true): %s\n", geom1_out, tcbuffer1_out, char_result);
+  printf("tcovers_geo_tcbuffer(%s, %s): %s\n", geom1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue); */
-  tbool_result = tcovers_tcbuffer_geo(tcbuffer1, geom1, true, true);
+  /* Temporal *tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tbool_result = tcovers_tcbuffer_geo(tcbuffer1, geom1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcovers_tcbuffer_geo(%s, %s, true, true): %s\n", tcbuffer1_out, geom1_out, char_result);
+  printf("tcovers_tcbuffer_geo(%s, %s): %s\n", tcbuffer1_out, geom1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue); */
-  tbool_result = tcovers_tcbuffer_cbuffer(tcbuffer1, cbuffer1, true, true);
+  /* Temporal *tcovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb); */
+  tbool_result = tcovers_tcbuffer_cbuffer(tcbuffer1, cbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcovers_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("tcovers_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue); */
-  tbool_result = tcovers_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, true, true);
+  /* Temporal *tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2); */
+  tbool_result = tcovers_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tcovers_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("tcovers_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist, bool restr, bool atvalue); */
-  tbool_result = tdwithin_geo_tcbuffer(geom1, tcbuffer1, float8_in1, true, true);
+  /* Temporal *tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist); */
+  tbool_result = tdwithin_geo_tcbuffer(geom1, tcbuffer1, float8_in1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdwithin_geo_tcbuffer(%s, %s, %lf, true, true): %s\n", geom1_out, tcbuffer1_out, float8_in1, char_result);
+  printf("tdwithin_geo_tcbuffer(%s, %s, %lf): %s\n", geom1_out, tcbuffer1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue); */
-  tbool_result = tdwithin_tcbuffer_geo(tcbuffer1, geom1, float8_in1, true, true);
+  /* Temporal *tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist); */
+  tbool_result = tdwithin_tcbuffer_geo(tcbuffer1, geom1, float8_in1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdwithin_tcbuffer_geo(%s, %s, %lf, true, true): %s\n", tcbuffer1_out, geom1_out, float8_in1, char_result);
+  printf("tdwithin_tcbuffer_geo(%s, %s, %lf): %s\n", tcbuffer1_out, geom1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist, bool restr, bool atvalue); */
-  tbool_result = tdwithin_tcbuffer_cbuffer(tcbuffer1, cbuffer1, float8_in1, true, true);
+  /* Temporal *tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist); */
+  tbool_result = tdwithin_tcbuffer_cbuffer(tcbuffer1, cbuffer1, float8_in1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdwithin_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("tdwithin_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue); */
-  tbool_result = tdwithin_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, float8_in1, true, true);
+  /* Temporal *tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist); */
+  tbool_result = tdwithin_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, float8_in1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdwithin_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("tdwithin_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
-  // /* Temporal *tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,bool restr, bool atvalue); */
-  // tbool_result = tdisjoint_cbuffer_tcbuffer(cbuffer1, tcbuffer1, true, true);
+  // /* Temporal *tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp); */
+  // tbool_result = tdisjoint_cbuffer_tcbuffer(cbuffer1, tcbuffer1);
   // char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  // printf("tdisjoint_cbuffer_tcbuffer(%s, %s, true, true): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
+  // printf("tdisjoint_cbuffer_tcbuffer(%s, %s): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
   // free(tbool_result); free(char_result);
 
-  /* Temporal *tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,bool restr, bool atvalue); */
-  tbool_result = tdisjoint_geo_tcbuffer(geom1, tcbuffer1, true, true);
+  /* Temporal *tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp); */
+  tbool_result = tdisjoint_geo_tcbuffer(geom1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdisjoint_geo_tcbuffer(%s, %s, true, true): %s\n", geom1_out, tcbuffer1_out, char_result);
+  printf("tdisjoint_geo_tcbuffer(%s, %s): %s\n", geom1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue); */
-  tbool_result = tdisjoint_tcbuffer_geo(tcbuffer1, geom1, true, true);
+  /* Temporal *tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tbool_result = tdisjoint_tcbuffer_geo(tcbuffer1, geom1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdisjoint_tcbuffer_geo(%s, %s, true, true): %s\n", tcbuffer1_out, geom1_out, char_result);
+  printf("tdisjoint_tcbuffer_geo(%s, %s): %s\n", tcbuffer1_out, geom1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue); */
-  tbool_result = tdisjoint_tcbuffer_cbuffer(tcbuffer1, cbuffer1, true, true);
+  /* Temporal *tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb); */
+  tbool_result = tdisjoint_tcbuffer_cbuffer(tcbuffer1, cbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdisjoint_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("tdisjoint_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue); */
-  tbool_result = tdisjoint_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, true, true);
+  /* Temporal *tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2); */
+  tbool_result = tdisjoint_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tdisjoint_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("tdisjoint_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,bool restr, bool atvalue); */
-  tbool_result = tintersects_cbuffer_tcbuffer(cbuffer1, tcbuffer1, true, true);
+  /* Temporal *tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp); */
+  tbool_result = tintersects_cbuffer_tcbuffer(cbuffer1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tintersects_cbuffer_tcbuffer(%s, %s, true, true): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
+  printf("tintersects_cbuffer_tcbuffer(%s, %s): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,bool restr, bool atvalue); */
-  tbool_result = tintersects_geo_tcbuffer(geom1, tcbuffer1, true, true);
+  /* Temporal *tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp); */
+  tbool_result = tintersects_geo_tcbuffer(geom1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tintersects_geo_tcbuffer(%s, %s, true, true): %s\n", geom1_out, tcbuffer1_out, char_result);
+  printf("tintersects_geo_tcbuffer(%s, %s): %s\n", geom1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue); */
-  tbool_result = tintersects_tcbuffer_geo(tcbuffer1, geom1, true, true);
+  /* Temporal *tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tbool_result = tintersects_tcbuffer_geo(tcbuffer1, geom1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tintersects_tcbuffer_geo(%s, %s, true, true): %s\n", tcbuffer1_out, geom1_out, char_result);
+  printf("tintersects_tcbuffer_geo(%s, %s): %s\n", tcbuffer1_out, geom1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue); */
-  tbool_result = tintersects_tcbuffer_cbuffer(tcbuffer1, cbuffer1, true, true);
+  /* Temporal *tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb); */
+  tbool_result = tintersects_tcbuffer_cbuffer(tcbuffer1, cbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tintersects_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("tintersects_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue); */
-  tbool_result = tintersects_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, true, true);
+  /* Temporal *tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2); */
+  tbool_result = tintersects_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("tintersects_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("tintersects_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *ttouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = ttouches_geo_tcbuffer(geom1, tcbuffer1, true, true);
+  /* Temporal *ttouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp); */
+  tbool_result = ttouches_geo_tcbuffer(geom1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("ttouches_geo_tcbuffer(%s, %s, true, true): %s\n", geom1_out, tcbuffer1_out, char_result);
+  printf("ttouches_geo_tcbuffer(%s, %s): %s\n", geom1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue); */
-  tbool_result = ttouches_tcbuffer_geo(tcbuffer1, geom1, true, true);
+  /* Temporal *ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tbool_result = ttouches_tcbuffer_geo(tcbuffer1, geom1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("ttouches_tcbuffer_geo(%s, %s, true, true): %s\n", tcbuffer1_out, geom1_out, char_result);
+  printf("ttouches_tcbuffer_geo(%s, %s): %s\n", tcbuffer1_out, geom1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *ttouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool restr, bool atvalue); */
-  tbool_result = ttouches_cbuffer_tcbuffer(cbuffer1, tcbuffer1, true, true);
+  /* Temporal *ttouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp); */
+  tbool_result = ttouches_cbuffer_tcbuffer(cbuffer1, tcbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("ttouches_cbuffer_tcbuffer(%s, %s, true, true): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
+  printf("ttouches_cbuffer_tcbuffer(%s, %s): %s\n", cbuffer1_out, tcbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue); */
-  tbool_result = ttouches_tcbuffer_cbuffer(tcbuffer1, cbuffer1, true, true);
+  /* Temporal *ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb); */
+  tbool_result = ttouches_tcbuffer_cbuffer(tcbuffer1, cbuffer1);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("ttouches_tcbuffer_cbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
+  printf("ttouches_tcbuffer_cbuffer(%s, %s): %s\n", tcbuffer1_out, cbuffer1_out, char_result);
   free(tbool_result); free(char_result);
 
-  /* Temporal *ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue); */
-  tbool_result = ttouches_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2, true, true);
+  /* Temporal *ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2); */
+  tbool_result = ttouches_tcbuffer_tcbuffer(tcbuffer1, tcbuffer2);
   char_result = tbool_result ? tbool_out(tbool_result) : text_out(text_null);
-  printf("ttouches_tcbuffer_tcbuffer(%s, %s, true, true): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
+  printf("ttouches_tcbuffer_tcbuffer(%s, %s): %s\n", tcbuffer1_out, tcbuffer2_out, char_result);
   free(tbool_result); free(char_result);
 
   printf("****************************************************************\n");
