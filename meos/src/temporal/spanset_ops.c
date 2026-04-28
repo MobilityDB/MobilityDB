@@ -777,7 +777,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_span(ss, s))
-    return false;
+    return NULL;
 
   /* Singleton span set */
   if (ss->count == 1)
@@ -983,7 +983,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_span(ss, s))
-    return false;
+    return NULL;
 
   /* Singleton span set */
   if (ss->count == 1)
@@ -1043,7 +1043,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_spanset(ss1, ss2))
-    return false;
+    return NULL;
 
   /* Singleton span set */
   if (ss1->count == 1)
@@ -1154,7 +1154,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_span(ss, s))
-    return false;
+    return NULL;
   /* Singleton span set */
   if (ss->count == 1)
     return minus_span_span(s, SPANSET_SP_N(ss, 0));
@@ -1202,7 +1202,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_span(ss, s))
-    return false;
+    return NULL;
 
   /* Singleton span set */
   if (ss->count == 1)
@@ -1234,7 +1234,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_spanset_spanset(ss1, ss2))
-    return false;
+    return NULL;
 
   /* Singleton span set */
   if (ss1->count == 1)

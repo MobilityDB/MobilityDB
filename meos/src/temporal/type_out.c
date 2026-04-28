@@ -2287,8 +2287,10 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT, "Unable to allocate "
-      UINT64_FORMAT " bytes for WKB output buffer.", buf_size);
+    /* %zu (size_t) instead of UINT64_FORMAT — the latter is a
+     * postgres-internal macro cppcheck can't resolve. */
+    meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
+      "Unable to allocate %zu bytes for WKB output buffer.", buf_size);
     return NULL;
   }
 
