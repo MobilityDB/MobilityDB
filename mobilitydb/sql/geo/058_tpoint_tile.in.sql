@@ -82,9 +82,56 @@ CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceTimeTiles($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Convenience overloads taking a tgeompoint directly: derive the bounding
+ * stbox via the existing stbox(tgeompoint) cast and delegate to the
+ * stbox-typed overloads above.
+ ******************************************************************************/
+
+CREATE FUNCTION spaceTiles(tgeompoint, xsize float, ysize float, zsize float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTiles(@extschema@.stbox($1), $2, $3, $4, $5, $6)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTiles(tgeompoint, xsize float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTiles(@extschema@.stbox($1), $2, $2, $2, $3, $4)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTiles(tgeompoint, xsize float, ysize float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTiles(@extschema@.stbox($1), $2, $3, $2, $4, $5)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timeTiles(tgeompoint, duration interval,
+  torigin timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.timeTiles(@extschema@.stbox($1), $2, $3, $4)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION spaceTimeTiles(tgeompoint, xsize float, ysize float,
+  zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+  torigin timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTimeTiles(@extschema@.stbox($1), $2, $3, $4, $5, $6, $7, $8)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTimeTiles(tgeompoint, xsize float,
+  duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+  torigin timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTimeTiles(@extschema@.stbox($1), $2, $2, $2, $3, $4, $5, $6)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spaceTimeTiles(tgeompoint, xsize float, ysize float,
+  duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+  torigin timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.spaceTimeTiles(@extschema@.stbox($1), $2, $3, $2, $4, $5, $6, $7)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/
 
-CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float, 
+CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float,
     zsize float, sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_get_space_tile'

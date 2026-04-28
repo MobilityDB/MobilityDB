@@ -1343,7 +1343,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
+						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box or a temporal point with tiles of the same size and/or duration</para>
 					</listitem>
 
 					<listitem>
