@@ -221,7 +221,7 @@ get_endian_variant(const text *txt)
  * representation
  */
 bytea *
-Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
+Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, MeosType type,
   bool extended)
 {
   uint8_t variant = 0;
@@ -247,7 +247,7 @@ Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
  * Binary (EWKB) representation in ASCII hex-encoded
  */
 text *
-Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, meosType type)
+Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, MeosType type)
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */

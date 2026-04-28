@@ -64,7 +64,7 @@
  * @brief Ensure that a span is of a given span type
  */
 bool
-ensure_span_isof_type(const Span *s, meosType spantype)
+ensure_span_isof_type(const Span *s, MeosType spantype)
 {
   if (s->spantype == spantype)
     return true;
@@ -77,7 +77,7 @@ ensure_span_isof_type(const Span *s, meosType spantype)
  * @brief Ensure that a span is of a given base type
  */
 bool
-ensure_span_isof_basetype(const Span *s, meosType basetype)
+ensure_span_isof_basetype(const Span *s, MeosType basetype)
 {
   if (s->basetype == basetype)
     return true;
@@ -260,7 +260,7 @@ span_upper_cmp(const Span *s1, const Span *s2)
  * @brief Return the bound increased by 1 for accounting for canonicalized spans
  */
 Datum
-span_incr_bound(Datum lower, meosType basetype)
+span_incr_bound(Datum lower, MeosType basetype)
 {
   Datum result;
   switch (basetype)
@@ -284,7 +284,7 @@ span_incr_bound(Datum lower, meosType basetype)
  * @brief Return the bound decreased by 1 for accounting for canonicalized spans
  */
 Datum
-span_decr_bound(Datum lower, meosType basetype)
+span_decr_bound(Datum lower, MeosType basetype)
 {
   Datum result;
   switch (basetype)
@@ -353,7 +353,7 @@ spanarr_normalize(Span *spans, int count, bool order, int *newcount)
  * @param[in] spantype Span type
  */
 Span *
-span_in(const char *str, meosType spantype)
+span_in(const char *str, MeosType spantype)
 {
   assert(str);
   Span result;
@@ -420,10 +420,10 @@ span_out(const Span *s, int maxdd)
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  meosType basetype)
+  MeosType basetype)
 {
   Span *s = palloc(sizeof(Span));
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, s);
   return s;
 }
@@ -441,7 +441,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  meosType basetype, meosType spantype, Span *s)
+  MeosType basetype, MeosType spantype, Span *s)
 {
   assert(s); assert(basetype_spantype(basetype) == spantype);
   /* Canonicalize */
@@ -514,10 +514,10 @@ span_copy(const Span *s)
  * @param[out] s Result span
 */
 void
-value_set_span(Datum value, meosType basetype, Span *s)
+value_set_span(Datum value, MeosType basetype, Span *s)
 {
   assert(s); assert(span_basetype(basetype));
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   span_set(value, value, true, true, basetype, spantype, s);
   return;
 }
@@ -529,7 +529,7 @@ value_set_span(Datum value, meosType basetype, Span *s)
  * @param[in] basetype Type of the value
  */
 Span *
-value_span(Datum value, meosType basetype)
+value_span(Datum value, MeosType basetype)
 {
   Span *result = palloc(sizeof(Span));
   value_set_span(value, basetype, result);
@@ -548,7 +548,7 @@ void
 set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
 {
   assert(s); assert(result);
-  meosType spantype = basetype_spantype(s->basetype);
+  MeosType spantype = basetype_spantype(s->basetype);
   span_set(SET_VAL_N(s, fromidx), SET_VAL_N(s, toidx), true, true,
     s->basetype, spantype, result);
   return;
@@ -1091,7 +1091,7 @@ tstzspan_expand(const Span *s, const Interval *interv)
  * @param[in,out] lower,upper Bounds of the period
  */
 void
-span_bounds_shift_scale_value(Datum shift, Datum width, meosType basetype,
+span_bounds_shift_scale_value(Datum shift, Datum width, MeosType basetype,
   bool hasshift, bool haswidth, Datum *lower, Datum *upper)
 {
   assert(hasshift || haswidth); assert(lower); assert(upper);
@@ -1152,7 +1152,7 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
 {
   assert(s);
 
-  meosType type = s->basetype;
+  MeosType type = s->basetype;
   /* The default value when shift is not given is 0 */
   if (hasdelta)
   {
@@ -1238,7 +1238,7 @@ numspan_shift_scale_iter(Span *s, Datum shift, Datum width, bool hasshift,
   assert(s); assert(delta); assert(scale);
   Datum lower = s->lower;
   Datum upper = s->upper;
-  meosType type = s->basetype;
+  MeosType type = s->basetype;
   span_bounds_shift_scale_value(shift, width, type, hasshift, haswidth,
     &lower, &upper);
   /* Compute delta and scale before overwriting s->lower and s->upper */

@@ -121,7 +121,7 @@ extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xm
 extern void gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
-extern bool spatial_set_stbox(Datum d, meosType basetype, STBox *box);
+extern bool spatial_set_stbox(Datum d, MeosType basetype, STBox *box);
 extern void spatialset_set_stbox(const Set *set, STBox *box);
 extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
 extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
@@ -206,13 +206,14 @@ extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);
 
 /* Restriction functions */
 
-extern Temporal *tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc);
+extern Temporal *tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
-extern TInstant *tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern TInstant *tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs, bool atfunc);
 extern TInstant *tgeoinst_restrict_stbox(const TInstant *inst, const STBox *box, bool border_inc, bool atfunc);
-extern Temporal *tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc, bool atfunc);
-extern TSequenceSet *tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern TSequenceSet *tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box, bool border_inc, bool atfunc);
 
 /*****************************************************************************/
@@ -237,8 +238,8 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 /* Spatial accessor functions for temporal points */
 
-extern int32_t spatial_srid(Datum d, meosType basetype);
-extern bool spatial_set_srid(Datum d, meosType basetype, int32_t srid);
+extern int32_t spatial_srid(Datum d, MeosType basetype);
+extern bool spatial_set_srid(Datum d, MeosType basetype, int32_t srid);
 extern int tspatialinst_srid(const TInstant *inst);
 extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
 extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength);

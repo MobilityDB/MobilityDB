@@ -223,9 +223,8 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
 long double
 posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
 {
-   /* Return if the value to locate has a different road identifier */
-  if (ensure_valid_pose_pose(start, end) || 
-      ensure_valid_pose_pose(start, value))
+  if (! ensure_valid_pose_pose(start, end) ||
+      ! ensure_valid_pose_pose(start, value))
     return -1.0;
 
   GSERIALIZED *gs1 = pose_to_point(start);
@@ -248,13 +247,46 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
   }
   if (MEOS_FLAGS_GET_Z(start->flags))
   {
-    // TODO
+    /* Invert the SLERP applied in posesegm_interpolate. For
+     * q(t) = SLERP(q1, q2, t) with theta_0 = acos(dot(q1, q2)),
+     *   dot(q1, q(t)) = cos(t * theta_0)
+     * hence t = acos(dot(q1, q_value)) / theta_0. */
+    double W1 = start->data[3], X1 = start->data[4];
+    double Y1 = start->data[5], Z1 = start->data[6];
+    double W2 = end->data[3],   X2 = end->data[4];
+    double Y2 = end->data[5],   Z2 = end->data[6];
+    double W  = value->data[3], X  = value->data[4];
+    double Y  = value->data[5], Z  = value->data[6];
+    /* Align q2 and q_value to the same hemisphere as q1. We only need
+     * the absolute value of the dot product downstream, so negating
+     * dot12 is sufficient — the individual W2/X2/Y2/Z2 components are
+     * not read again (the same trick is applied to dot1v below). */
+    double dot12 = W1 * W2 + X1 * X2 + Y1 * Y2 + Z1 * Z2;
+    if (dot12 < 0.0)
+      dot12 = -dot12;
+    double dot1v = W1 * W + X1 * X + Y1 * Y + Z1 * Z;
+    if (dot1v < 0.0)
+    {
+      dot1v = -dot1v;
+    }
+    if (dot12 >  1.0) dot12 =  1.0;
+    if (dot1v >  1.0) dot1v =  1.0;
+    /* Constant rotation segment */
+    if (dot12 > 1.0 - MEOS_EPSILON)
+    {
+      if (dot1v < 1.0 - MEOS_EPSILON)
+        return -1.0;
+      return result1;
+    }
+    double theta_0 = acos(dot12);
+    result2 = (long double) (acos(dot1v) / theta_0);
+    if (result2 < 0.0 || result2 > 1.0)
       return -1.0;
   }
   else
   {
     double rotation1 = pose_rotation(start);
-    double rotation2 = pose_rotation(value);
+    double rotation2 = pose_rotation(end);
     double rotation = pose_rotation(value);
     if (rotation1 != rotation2)
     {
@@ -264,17 +296,19 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
     }
     else
     {
-      /* If the rotiation are equal return result1 where
-       * - result1 = -1.0 if gs1 == gs2 == gs, or
-       * - result1 in [0,1] if gs1 != gs2 */
+      /* Constant rotation segment: only valid if the value has the same
+       * rotation; returns result1, which is -1.0 if gs1 == gs2 == gs, or
+       * in [0,1] if gs1 != gs2 */
+      if (rotation1 != rotation)
+        return -1.0;
       return result1;
     }
   }
   if (result1 >= 0.0 && result2 >= 0.0)
     return (fabsl(result1 - result2) <= MEOS_EPSILON) ? result1 : -1.0;
-  if (result1 < 0.0 && result2 >= 0)
+  if (result1 < 0.0 && result2 >= 0.0)
     return result2;
-  else if(result1 >= 0 && result2 <= 0)
+  else if (result1 >= 0.0 && result2 < 0.0)
     return result1;
   else /* The three values are equal */
     return -1.0;

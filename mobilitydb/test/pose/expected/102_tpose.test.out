@@ -1586,6 +1586,102 @@ SELECT asText(minusTime(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 
  {(Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(beforeTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01', false));
+                      astext                       
+---------------------------------------------------
+ Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01', false));
+                       astext                        
+-----------------------------------------------------
+ {Pose(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01', false));
+                       astext                        
+-----------------------------------------------------
+ [Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(beforeTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01', false));
+                        astext                         
+-------------------------------------------------------
+ {[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ (Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+                                                                                                                               astext                                                                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(afterTimestamp(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01', false));
+                      astext                       
+---------------------------------------------------
+ Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01', false));
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Pose(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01', false));
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01', false));
+                                                                                                                               astext                                                                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
 SELECT asText(deleteTime(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
  astext 
 --------

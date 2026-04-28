@@ -78,7 +78,7 @@
  * @brief Return the SRID of a spatial value
  */
 int32_t
-spatial_srid(Datum d, meosType basetype)
+spatial_srid(Datum d, MeosType basetype)
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
@@ -110,7 +110,7 @@ spatial_srid(Datum d, meosType basetype)
  * to another SRID
  */
 bool
-spatial_set_srid(Datum d, meosType basetype, int32_t srid)
+spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
@@ -200,7 +200,7 @@ int32_t
 tspatialinst_srid(const TInstant *inst)
 {
   assert(inst); assert(tspatial_type(inst->temptype));
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   return spatial_srid(tinstant_value_p(inst), basetype);
 }
 
@@ -243,7 +243,7 @@ void
 tspatialinst_set_srid(TInstant *inst, int32_t srid)
 {
   assert(inst); assert(tspatial_type(inst->temptype));
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   spatial_set_srid(tinstant_value_p(inst), basetype, srid);
   return;
 }
@@ -439,10 +439,10 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
  */
 Datum
 #if CBUFFER
-  datum_transf_pj(Datum d, meosType basetype, int32_t srid_to,
+  datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to,
     const LWPROJ *pj)
 #else
-  datum_transf_pj(Datum d, meosType basetype, int32_t srid_to UNUSED,
+  datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to UNUSED,
     const LWPROJ *pj)
 #endif /* CBUFFER */
 {
@@ -582,7 +582,7 @@ TInstant *
 tspatialinst_transf_pj(const TInstant *inst, int32_t srid_to, const LWPROJ *pj)
 {
   assert(inst); assert(pj); assert(tspatial_type(inst->temptype));
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   /* The SRID of the geometry is set in the following function */
   Datum d = datum_transf_pj(tinstant_value_p(inst), basetype, srid_to, pj);
   if (! DatumGetPointer(d))

@@ -58,7 +58,7 @@ extern void tspatialseqarr_set_stbox(TSequence **sequences, int count,
   STBox *box);
 extern void tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst);
 
-extern void spatialarr_set_bbox(const Datum *values, meosType basetype,
+extern void spatialarr_set_bbox(const Datum *values, MeosType basetype,
   int count, void *box);
 
 /* Generic box functions */

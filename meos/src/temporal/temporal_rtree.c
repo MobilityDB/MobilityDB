@@ -733,11 +733,11 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
 
 /**
  * @brief Creates an RTree index.
- * @param[in] bboxtype The meosType of the elements to index.
+ * @param[in] bboxtype The MeosType of the elements to index.
  * @return RTree initialized.
  */
 RTree *
-rtree_create(meosType bboxtype)
+rtree_create(MeosType bboxtype)
 {
   assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
   size_t bboxsize = bbox_get_size(bboxtype);
@@ -922,7 +922,7 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
 static bool
 ensure_rtree_temporal_compatible(const RTree *rtree, const Temporal *temp)
 {
-  meosType temptype = temp->temptype;
+  MeosType temptype = temp->temptype;
   bool compatible =
     (talpha_type(temptype) && rtree->bboxtype == T_TSTZSPAN) ||
     (tnumber_type(temptype) && rtree->bboxtype == T_TBOX) ||

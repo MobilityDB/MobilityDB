@@ -44,7 +44,7 @@
 
 /* Send/receive functions */
 
-extern TSequence *tsequence_recv(StringInfo buf, meosType temptype);
+extern TSequence *tsequence_recv(StringInfo buf, MeosType temptype);
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
 
 /*****************************************************************************/

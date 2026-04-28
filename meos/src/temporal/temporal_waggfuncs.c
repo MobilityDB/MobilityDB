@@ -108,7 +108,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
   Datum value1 = tinstant_value_p(inst1);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i + 1);

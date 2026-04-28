@@ -53,15 +53,15 @@
 
 /* Miscellaneous functions */
 
-extern Datum datum_copy(Datum value, meosType typid);
-extern double datum_double(Datum d, meosType type);
-extern Datum double_datum(double d, meosType type);
+extern Datum datum_copy(Datum value, MeosType typid);
+extern double datum_double(Datum d, MeosType type);
+extern Datum double_datum(double d, MeosType type);
 extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 
 /* Input/output functions */
 
-extern bool basetype_in(const char *str, meosType type, bool end, Datum *result);
-extern char *basetype_out(Datum value, meosType type, int maxdd);
+extern bool basetype_in(const char *str, MeosType type, bool end, Datum *result);
+extern char *basetype_out(Datum value, MeosType type, int maxdd);
 
 /* Array functions */
 
@@ -71,7 +71,7 @@ extern char *stringarr_to_string(char **strings, int count, size_t outlen,
 
 /* Sort functions */
 
-extern void datumarr_sort(Datum *values, int count, meosType basetype);
+extern void datumarr_sort(Datum *values, int count, MeosType basetype);
 extern void tstzarr_sort(TimestampTz *times, int count);
 extern void spanarr_sort(Span *spans, int count);
 extern void tinstarr_sort(TInstant **instants, int count);
@@ -80,7 +80,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
-  meosType basetype);
+  MeosType basetype);
 extern int tstzarr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstarr_remove_duplicates(TInstant **instants, int count);
 
@@ -89,27 +89,27 @@ extern int tinstarr_remove_duplicates(TInstant **instants, int count);
 
 /* Arithmetic functions */
 
-extern Datum datum_add(Datum l, Datum r, meosType type);
-extern Datum datum_sub(Datum l, Datum r, meosType type);
-extern Datum datum_mult(Datum l, Datum r, meosType type);
-extern Datum datum_div(Datum l, Datum r, meosType type);
+extern Datum datum_add(Datum l, Datum r, MeosType type);
+extern Datum datum_sub(Datum l, Datum r, MeosType type);
+extern Datum datum_mult(Datum l, Datum r, MeosType type);
+extern Datum datum_div(Datum l, Datum r, MeosType type);
 
 /* Comparison functions on datums */
 
-extern int datum_cmp(Datum l, Datum r, meosType type);
-extern bool datum_eq(Datum l, Datum r, meosType type);
-extern bool datum_ne(Datum l, Datum r, meosType type);
-extern bool datum_lt(Datum l, Datum r, meosType type);
-extern bool datum_le(Datum l, Datum r, meosType type);
-extern bool datum_gt(Datum l, Datum r, meosType type);
-extern bool datum_ge(Datum l, Datum r, meosType type);
+extern int datum_cmp(Datum l, Datum r, MeosType type);
+extern bool datum_eq(Datum l, Datum r, MeosType type);
+extern bool datum_ne(Datum l, Datum r, MeosType type);
+extern bool datum_lt(Datum l, Datum r, MeosType type);
+extern bool datum_le(Datum l, Datum r, MeosType type);
+extern bool datum_gt(Datum l, Datum r, MeosType type);
+extern bool datum_ge(Datum l, Datum r, MeosType type);
 
-extern Datum datum2_eq(Datum l, Datum r, meosType type);
-extern Datum datum2_ne(Datum l, Datum r, meosType type);
-extern Datum datum2_lt(Datum l, Datum r, meosType type);
-extern Datum datum2_le(Datum l, Datum r, meosType type);
-extern Datum datum2_gt(Datum l, Datum r, meosType type);
-extern Datum datum2_ge(Datum l, Datum r, meosType type);
+extern Datum datum2_eq(Datum l, Datum r, MeosType type);
+extern Datum datum2_ne(Datum l, Datum r, MeosType type);
+extern Datum datum2_lt(Datum l, Datum r, MeosType type);
+extern Datum datum2_le(Datum l, Datum r, MeosType type);
+extern Datum datum2_gt(Datum l, Datum r, MeosType type);
+extern Datum datum2_ge(Datum l, Datum r, MeosType type);
 
 /* Hypothenuse functions */
 

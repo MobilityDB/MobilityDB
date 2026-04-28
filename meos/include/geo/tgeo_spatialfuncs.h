@@ -82,7 +82,7 @@ extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
-extern int16 spatial_flags(Datum d, meosType basetype);
+extern int16 spatial_flags(Datum d, MeosType basetype);
 
 /* Validity functions */
 
@@ -150,7 +150,7 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 /* Ever/always comparisons */
 
 extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType), bool ever);
+  Datum (*func)(Datum, Datum, MeosType), bool ever);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
