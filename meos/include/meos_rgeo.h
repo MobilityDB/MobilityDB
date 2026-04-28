@@ -140,12 +140,14 @@ extern Temporal *trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool
 extern Temporal *trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc);
 extern Temporal *trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss, bool atfunc);
 
-// extern Temporal *trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
-// extern Temporal *trgeo_at_geo(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+// extern Temporal *trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs);
+// extern Temporal *trgeo_at_geo(const Temporal *temp, const GSERIALIZED *gs);
 // extern Temporal *trgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
-// extern Temporal *trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
-// extern Temporal *trgeo_minus_geo(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+// extern Temporal *trgeo_at_elevation(const Temporal *temp, const Span *s);
+// extern Temporal *trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
+// extern Temporal *trgeo_minus_geo(const Temporal *temp, const GSERIALIZED *gs);
 // extern Temporal *trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+// extern Temporal *trgeo_minus_elevation(const Temporal *temp, const Span *s);
 
 /*****************************************************************************
  * Distance functions

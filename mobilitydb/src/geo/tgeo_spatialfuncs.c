@@ -713,16 +713,9 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 static Datum
 Tgeo_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
-  /*
-  CREATE FUNCTION at/minusGeometry(tgeometry, geometry)
-  CREATE FUNCTION at/minusGeometry(tgeometry, geometry, floatspan)
-  */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Span *zspan = NULL;
-  if (PG_NARGS() == 3)
-    zspan = PG_GETARG_SPAN_P(2);
-  Temporal *result = tgeo_restrict_geom(temp, gs, zspan, atfunc);
+  Temporal *result = tgeo_restrict_geom(temp, gs, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -802,6 +795,52 @@ inline Datum
 Tgeo_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Tgeo_restrict_stbox(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal geo restricted to (the complement of) an elevation
+ * span
+ */
+static Datum
+Tgeo_restrict_elevation(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Temporal *result = tgeo_restrict_elevation(temp, s, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_at_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_at_elevation);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal geo restricted to an elevation span
+ * @sqlfn atGeometry()
+ */
+inline Datum
+Tgeo_at_elevation(PG_FUNCTION_ARGS)
+{
+  return Tgeo_restrict_elevation(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tgeo_minus_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_minus_elevation);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal geo restricted to the complement an elevation span
+ * @sqlfn minusGeometry()
+ */
+inline Datum
+Tgeo_minus_elevation(PG_FUNCTION_ARGS)
+{
+  return Tgeo_restrict_elevation(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
