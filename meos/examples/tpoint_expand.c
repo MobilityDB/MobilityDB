@@ -65,9 +65,9 @@
  */
 #define GEODETIC false
 /* Maximum number of instants */
-#define MAX_NO_INSTS 1000000
+#define MAX_NUM_INSTS 1000000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 10000
+#define NUM_INSTS_BATCH 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LEN_INST 64
 
@@ -91,12 +91,12 @@ int main(void)
   int i;
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_NO_INSTS; i++)
+  for (i = 0; i < MAX_NUM_INSTS; i++)
   {
-    if (i % NO_INSTS_BATCH == 0)
+    if (i % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);

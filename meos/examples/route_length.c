@@ -53,7 +53,7 @@
 #include <meos_geo.h>
 
 /* Number of ways in a batch for printing a marker */
-#define NO_WAYS_BATCH 10
+#define NUM_WAYS_BATCH 10
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
@@ -95,8 +95,8 @@ int main(void)
   }
 
   ways_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char geo_buffer[MAX_LEN_GEOM];
 
@@ -104,7 +104,7 @@ int main(void)
   fscanf(file, "%1023s\n", header_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_WAYS_BATCH);
+    NUM_WAYS_BATCH);
 
   /* Continue reading the file */
   do
@@ -120,12 +120,12 @@ int main(void)
     if (read != 2)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
-    if (no_records % NO_WAYS_BATCH == 0)
+    num_records++;
+    if (num_records % NUM_WAYS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -149,7 +149,7 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
 
   /* Construct the trips */
   if (found)

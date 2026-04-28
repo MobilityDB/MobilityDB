@@ -69,7 +69,7 @@
 /* Maximum length in characters of a date in the input data */
 #define MAX_LEN_DATE 12
 /* Maximum number of bins in each dimension */
-#define MAX_NO_BINS 10
+#define MAX_NUM_BINS 10
 
 typedef struct
 {
@@ -92,8 +92,8 @@ int main(void)
   char header_buffer[MAX_LEN_HEADER];
   char date_buffer[MAX_LEN_DATE];
   /* Number of records */
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   /* Iterator variables */
   int i, k;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -107,23 +107,23 @@ int main(void)
   meos_initialize();
 
   /* Compute the spatial tiles for trips */
-  int no_speed_tiles, no_trip_tiles;
+  int num_speed_tiles, num_trip_tiles;
   STBox *trip_extent =
     stbox_in("SRID=3857;STBOX X((473212.810151,6578740.528027),(499152.544688,6607165.513683))");
   GSERIALIZED *sorigin = geom_in("SRID=3857;Point(0 0)", -1);
   STBox *trip_tiles = stbox_space_tiles(trip_extent, 5e3, 5e3, 0, sorigin,
-    true, &no_trip_tiles);
+    true, &num_trip_tiles);
   /* Compute the (value and time) tiles for speed of trips */
   TBox *speed_extent = tbox_in("TBox XT([0, 35),[2020-06-01, 2020-06-05))");
   Interval *duration = interval_in("1 day", -1);
   TimestampTz torigin = timestamptz_in("2020-06-01", -1);
   TBox *speed_tiles = tfloatbox_value_time_tiles(speed_extent, 10.0, duration,
-    0.0, torigin, &no_speed_tiles);
+    0.0, torigin, &num_speed_tiles);
   /* Variables for tiling the trips and their speeds */
-  trip_record *trip_splits = malloc(sizeof(trip_record) * no_trip_tiles);
-  memset(trip_splits, 0, sizeof(trip_record) * no_trip_tiles);
-  speed_record *speed_splits = malloc(sizeof(speed_record) * no_speed_tiles);
-  memset(speed_splits, 0, sizeof(speed_record) * no_speed_tiles);
+  trip_record *trip_splits = malloc(sizeof(trip_record) * num_trip_tiles);
+  memset(trip_splits, 0, sizeof(trip_record) * num_trip_tiles);
+  speed_record *speed_splits = malloc(sizeof(speed_record) * num_speed_tiles);
+  memset(speed_splits, 0, sizeof(speed_record) * num_speed_tiles);
 
   free(trip_extent); free(sorigin); free(speed_extent); free(duration);
 
@@ -154,11 +154,11 @@ int main(void)
     if (read != 5)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
     printf("*");
     fflush(stdout);
 
@@ -170,7 +170,7 @@ int main(void)
 
     /* Split the trip by the tiles and accumulate aggregate values */
     k = 0;
-    for (i = 0; i < no_trip_tiles; i++)
+    for (i = 0; i < num_trip_tiles; i++)
     {
       split = tgeo_at_stbox(trip, &trip_tiles[k], false);
       if (split)
@@ -187,7 +187,7 @@ int main(void)
 
     /* Split the temporal speed by the tiles and accumulate aggregate values */
     k = 0;
-    for (i = 0; i < no_speed_tiles; i++)
+    for (i = 0; i < num_speed_tiles; i++)
     {
       split = tnumber_at_tbox(speed, &speed_tiles[k]);
       if (split)
@@ -210,7 +210,7 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
 
   /* Print results */
   printf("-------------\n");
@@ -219,7 +219,7 @@ int main(void)
   k = 0;
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
-  for (i = 0; i < no_trip_tiles; i++)
+  for (i = 0; i < num_trip_tiles; i++)
   {
     if (interval_cmp(&trip_splits[k].duration, &intervalzero) != 0)
     {
@@ -240,7 +240,7 @@ int main(void)
   printf(" Speed tiles\n");
   printf("-------------\n");
   k = 0;
-  for (i = 0; i < no_speed_tiles; i++)
+  for (i = 0; i < num_speed_tiles; i++)
   {
     char *span_str = floatspan_out(&speed_tiles[k].span, 0);
     char *tstzspan_str = tstzspan_out(&speed_tiles[k].period);

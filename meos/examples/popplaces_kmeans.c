@@ -71,7 +71,7 @@
 /* Maximum number of input rows */
 #define MAX_ROWS 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 1000
+#define NUM_INSTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_LINE 1024
 
@@ -103,15 +103,15 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   int count = 0;
   char line_buffer[MAX_LEN_LINE];
 
   /* Read the first line of the file with the headers */
   fscanf(input_file, "%1023s\n", line_buffer);
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -146,13 +146,13 @@ int main(void)
     if (column != 3 && ! feof(input_file))
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
     }
 
     if (column == 3)
     {
-      no_records++;
-      if (no_records % NO_INSTS_BATCH == 0)
+      num_records++;
+      if (num_records % NUM_INSTS_BATCH == 0)
       {
         printf("*");
         fflush(stdout);
@@ -195,7 +195,7 @@ int main(void)
   fclose(output_file);
 
   printf("\n%d records read from file 'popplaces.csv'.\n"
-    "%d incomplete records ignored.\n", no_records, no_nulls);
+    "%d incomplete records ignored.\n", num_records, num_nulls);
   printf("%d points read.\n", count);
 
   /* Calculate the elapsed time */

@@ -484,15 +484,15 @@ static void
 node_qsort(const RTree *rtree, RTreeNode *node, int index, bool upper, int s,
   int e)
 {
-  int no_box = e - s;
-  if (no_box < 2)
+  int num_boxes = e - s;
+  if (num_boxes < 2)
     return;
 
   int left = 0;
-  int right = no_box - 1;
-  int pivot = no_box / 2;
+  int right = num_boxes - 1;
+  int pivot = num_boxes / 2;
   node_swap(rtree, node, s + pivot, s + right);
-  for (int i = 0; i < no_box; ++i)
+  for (int i = 0; i < num_boxes; ++i)
   {
     if (rtree->get_axis(RTREE_NODE_BBOX_N(node, right + s), index, upper) >
         rtree->get_axis(RTREE_NODE_BBOX_N(node, s + i), index, upper))

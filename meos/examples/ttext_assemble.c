@@ -48,9 +48,9 @@
 #include <string.h>
 #include <meos.h>
 
-#define MAX_NO_INSTS 1000000
+#define MAX_NUM_INSTS 1000000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 10000
+#define NUM_INSTS_BATCH 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LEN_INST 64
 /* Maximum length in characters of the text values in the instants */
@@ -67,7 +67,7 @@ int main(void)
   tm = clock();
 
   /* Input instants that are accumulated */
-  TInstant *instants[MAX_NO_INSTS] = {0};
+  TInstant *instants[MAX_NUM_INSTS] = {0};
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
@@ -78,13 +78,13 @@ int main(void)
   srandom (time (0));
 
   printf("Generating the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   TimestampTz t = timestamptz_in("1999-12-31", -1);
-  for (i = 0; i < MAX_NO_INSTS; i++)
+  for (i = 0; i < MAX_NUM_INSTS; i++)
   {
     /* Generate the instant */
-    if (i % NO_INSTS_BATCH == 0)
+    if (i % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -101,7 +101,7 @@ int main(void)
   }
   free(oneday);
 
-  seq = (Temporal *) tsequence_make(instants, MAX_NO_INSTS, true, true, STEP,
+  seq = (Temporal *) tsequence_make(instants, MAX_NUM_INSTS, true, true, STEP,
     true);
 
   /* Print information about the sequence */
@@ -114,7 +114,7 @@ int main(void)
 
   /* Free memory */
   free(seq); free(txt); free(str);
-  for (i = 0; i < MAX_NO_INSTS; i++)
+  for (i = 0; i < MAX_NUM_INSTS; i++)
     free(instants[i]);
 
   /* Calculate the elapsed time */

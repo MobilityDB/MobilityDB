@@ -79,13 +79,13 @@
 /* Maximum number of rows per windinw on which the clustering is performed */
 #define MAX_ROWS_WIN 15000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 10000
+#define NUM_INSTS_BATCH 10000
 /* Maximum length in characters of a record in the input CSV file */
 #define MAX_LEN_LINE 2048
 /* Maximum number of fields in the input CSV file */
-#define MAX_NO_FIELDS 24
+#define MAX_NUM_FIELDS 24
 /* Maximum number of admin1 distinct values defining the windows */
-#define MAX_NO_ADMIN1 64
+#define MAX_NUM_ADMIN1 64
 
 /* Function to trim leading and trailing whitespace */
 char *trim(char *str)
@@ -130,7 +130,7 @@ int
 get_admin1_no(char *admin1, char *admin1_list[])
 {
   int i;
-  for (i = 0; i < MAX_NO_ADMIN1; i++)
+  for (i = 0; i < MAX_NUM_ADMIN1; i++)
   {
     if (admin1_list[i] == NULL || strcmp(admin1_list[i], admin1) == 0)
       break;
@@ -139,7 +139,7 @@ get_admin1_no(char *admin1, char *admin1_list[])
   if (admin1_list[i])
     return i;
   /* The value is new and there is still space in the list */
-  if (i < MAX_NO_ADMIN1)
+  if (i < MAX_NUM_ADMIN1)
   {
     admin1_list[i] = strdup(admin1);
     return i;
@@ -165,8 +165,8 @@ int main(void)
   char *admin1[MAX_ROWS] = {0};
   GSERIALIZED *geom[MAX_ROWS] = {0};
   int cluster[MAX_ROWS] = {0};
-  char *admin1_list[MAX_NO_ADMIN1] = {0};
-  int admin1_count[MAX_NO_ADMIN1] = {0};
+  char *admin1_list[MAX_NUM_ADMIN1] = {0};
+  int admin1_count[MAX_NUM_ADMIN1] = {0};
   int noadmin1 = 0;
   /* Iterator variables */
   int i, j;
@@ -182,15 +182,15 @@ int main(void)
     return EXIT_FAILURE;
   }
 
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   int count = 0;
   char line_buffer[MAX_LEN_LINE];
-  char *fields[MAX_NO_FIELDS];
+  char *fields[MAX_NUM_FIELDS];
 
   /* Read the file */
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   do
   {
@@ -207,8 +207,8 @@ int main(void)
     /* Split the line ignoring the result of the function below */
     parse_csv_line(line_buffer, fields);
 
-    no_records++;
-    if (no_records % NO_INSTS_BATCH == 0)
+    num_records++;
+    if (num_records % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -289,7 +289,7 @@ int main(void)
     "\n%d records read from file 'popplaces.csv'.\n"
     "%d incomplete records ignored.\n"
     "%d records clustered.\n", 
-    no_records, no_nulls, count);
+    num_records, num_nulls, count);
   printf("%d distinct admin1 values read\n", noadmin1);
 
   /* Calculate the elapsed time */

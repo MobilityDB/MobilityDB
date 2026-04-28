@@ -75,7 +75,7 @@
 /* Maximum length in characters of a date in the input data */
 #define MAX_LEN_DATE 12
 /* Maximum number of trips */
-#define MAX_NO_TRIPS 256
+#define MAX_NUM_TRIPS 256
 
 typedef struct
 {
@@ -95,8 +95,8 @@ int main(void)
   char date_buffer[MAX_LEN_DATE];
   char trip_buffer[MAX_LEN_TRIP];
   /* Arrays to compute the results */
-  trip_record trips[MAX_NO_TRIPS] = {0};
-  int curr_inst[MAX_NO_TRIPS];
+  trip_record trips[MAX_NUM_TRIPS] = {0};
+  int curr_inst[MAX_NUM_TRIPS];
 
   /* Get start time */
   clock_t t;
@@ -171,7 +171,7 @@ int main(void)
   fprintf(file,"tripid,vehid,day,seqno,geom,t\n");
 
   /* Initialize the current instant for each trip to the first one */
-  for (i = 0; i < MAX_NO_TRIPS; i++)
+  for (i = 0; i < MAX_NUM_TRIPS; i++)
     curr_inst[i] = 1;
 
   /* Loop until all trips have been processed */

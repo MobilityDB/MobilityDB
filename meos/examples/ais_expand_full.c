@@ -68,15 +68,15 @@
 
 /*
  * IMPORTANT !!!
- * Please fix the values MAX_NO_RECS and MAX_NO_SHIPS according to the
+ * Please fix the values MAX_NUM_RECS and MAX_NUM_SHIPS according to the
  * available memory in your computer
  */
 /* Maximum number of records read in the CSV file */
-#define MAX_NO_RECS 20000000
+#define MAX_NUM_RECS 20000000
 /* Maximum number of trips */
-#define MAX_NO_SHIPS 6500
+#define MAX_NUM_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECS_BATCH 100000
+#define NUM_RECS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -100,9 +100,9 @@ typedef struct
 typedef struct
 {
   long int MMSI;          /* Identifier of the trip */
-  int no_records;         /* Number of input records for the trip */
-  int no_trip_instants;   /* Number of input instants for the trip */
-  int no_SOG_instants;    /* Number of input instants for the SOG */
+  int num_records;         /* Number of input records for the trip */
+  int num_trip_instants;  /* Number of input instants for the trip */
+  int num_SOG_instants;   /* Number of input instants for the SOG */
   TSequence *trip;        /* Sequence accumulating the trip observations */
   TSequence *SOG;         /* Sequence accumulating the SOG observations */
 } trip_record;
@@ -113,15 +113,15 @@ int main(void)
   /* Input buffer to read the CSV file */
   char line_buffer[MAX_LEN_LINE];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_NO_SHIPS] = {0};
+  trip_record trips[MAX_NUM_SHIPS] = {0};
   /* Record storing one line read from of the CSV file*/
   AIS_record rec;
   /* Number of records read */
-  int no_records = 0;
+  int num_records = 0;
   /* Number of erroneous records */
-  int no_err_records = 0;
+  int num_err_records = 0;
   /* Number of ships */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -148,7 +148,7 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023[^\n]\n", line_buffer);
   printf("Processing records\n");
-  printf("  one '*' marker every %d records\n", NO_RECS_BATCH);
+  printf("  one '*' marker every %d records\n", NUM_RECS_BATCH);
   /* Uncomment the next lines to display a marker each time and incomplete
    * record or an erroneous field has been read */
   // printf("  one '-' marker every incomplete or erroneous records\n");
@@ -166,15 +166,15 @@ int main(void)
       goto cleanup;
     }
 
-    no_records++;
+    num_records++;
     /* Print a marker every X records read */
-    if (no_records % NO_RECS_BATCH == 0)
+    if (num_records % NUM_RECS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
     }
     /* Break if maximum number of records read */
-    if (no_records == MAX_NO_RECS)
+    if (num_records == MAX_NUM_RECS)
       break;
 
     /* Initialize record to 0 */
@@ -242,13 +242,13 @@ int main(void)
        * an incomplete record or an erroneous field has been read */
       // printf("-");
       // fflush(stdout);
-      no_err_records++;
+      num_err_records++;
       continue;
     }
 
     /* Find the place to store the new instant */
     j = -1;
-    for (i = 0; i < no_ships; i++)
+    for (i = 0; i < num_ships; i++)
     {
       if (trips[i].MMSI == rec.MMSI)
       {
@@ -259,12 +259,12 @@ int main(void)
     if (j < 0)
     {
       /* If we have reached the maximum number of ships */
-      if (no_ships == MAX_NO_SHIPS)
+      if (num_ships == MAX_NUM_SHIPS)
         continue;
-      j = no_ships++;
+      j = num_ships++;
       trips[j].MMSI = rec.MMSI;
     }
-    trips[j].no_records++;
+    trips[j].num_records++;
 
     /*
      * Create the instants and store them in the arrays of the ship.
@@ -294,8 +294,8 @@ int main(void)
           fclose(file);
           goto cleanup;
         }
-        trips[j].no_records++;
-        trips[j].no_trip_instants++;
+        trips[j].num_records++;
+        trips[j].num_trip_instants++;
       }
       /* Ignore the instant if has the same timestamp as the last one */
       last = TSEQUENCE_INST_N(trips[j].trip, trips[j].trip->count - 1);
@@ -321,7 +321,7 @@ int main(void)
         // }
         free(inst);
         trips[j].trip = new_seq;
-        trips[j].no_trip_instants++;
+        trips[j].num_trip_instants++;
       }
     }
     /* Create an SOG instant from the record */
@@ -334,8 +334,8 @@ int main(void)
         /* Uncomment the next lines to display debug messages showing how
          * the data structures are expanded */
         // printf("MMSI: %ld ", trips[j].MMSI);
-        // printf("Speed %d -> %d ", trips[j].no_SOG_instants,
-          // trips[j].no_SOG_instants * 2);
+        // printf("Speed %d -> %d ", trips[j].num_SOG_instants,
+          // trips[j].num_SOG_instants * 2);
         // fflush(stdout);
         trips[j].SOG = tsequence_make_exp(&inst, 1, INITIAL_INSTS, true,
           true, LINEAR, false);
@@ -371,7 +371,7 @@ int main(void)
         // }
         free(inst);
         trips[j].SOG = new_seq;
-        trips[j].no_SOG_instants++;
+        trips[j].num_SOG_instants++;
       }
     }
   } while (! feof(file));
@@ -383,10 +383,10 @@ int main(void)
   printf("\n-----------------------------------------------------------------------------\n");
   printf("|   MMSI    |   #Rec  | #TrInst |  #SInst |     Distance    |     Speed     |\n");
   printf("-----------------------------------------------------------------------------\n");
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     printf("| %.9ld |   %5d |   %5d |   %5d |", trips[i].MMSI,
-      trips[i].no_records, trips[i].no_trip_instants, trips[i].no_SOG_instants);
+      trips[i].num_records, trips[i].num_trip_instants, trips[i].num_SOG_instants);
     if (trips[i].trip)
     {
       printf(" %15.6lf |", tpointseq_length(trips[i].trip));
@@ -402,9 +402,9 @@ int main(void)
       printf("       ---     |\n");
   }
   printf("-----------------------------------------------------------------------------\n");
-  printf("\n%d records read.\n%d erroneous records ignored.\n", no_records,
-    no_err_records);
-  printf("%d trips read.\n", no_ships);
+  printf("\n%d records read.\n%d erroneous records ignored.\n", num_records,
+    num_err_records);
+  printf("%d trips read.\n", num_ships);
 
   /* Calculate the elapsed time */
   t = clock() - t;
@@ -418,7 +418,7 @@ int main(void)
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
   {
     free(trips[i].trip);
     free(trips[i].SOG);

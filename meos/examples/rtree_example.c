@@ -54,7 +54,7 @@
 #include <meos_geo.h>
 
 /* Maximum number of bounding boxes */
-#define NO_BBOX 10000
+#define NUM_BBOX 10000
 /* Maximum length in characters of a bounding box string */
 #define MAX_LEN_BBOX 128
 
@@ -90,8 +90,8 @@ verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
   /* Brute-force search */
   t = clock();
   int brute_count = 0;
-  bool *actual = calloc(NO_BBOX, sizeof(bool));
-  for (int i = 0; i < NO_BBOX; i++)
+  bool *actual = calloc(NUM_BBOX, sizeof(bool));
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     if (predicate(boxes + i * bboxsize, query))
     {
@@ -102,7 +102,7 @@ verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
   double brute_time = (double)(clock() - t) / CLOCKS_PER_SEC;
 
   /* Compare results */
-  bool *indexed = calloc(NO_BBOX, sizeof(bool));
+  bool *indexed = calloc(NUM_BBOX, sizeof(bool));
   for (int i = 0; i < index_count; i++)
   {
     int id = *(int *) meos_array_get(ids, i);
@@ -110,7 +110,7 @@ verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
   }
 
   int errors = 0;
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     if (indexed[i] != actual[i])
       errors++;
@@ -165,10 +165,10 @@ static void
 test_floatspan(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
-  Span *boxes = malloc(sizeof(Span) * NO_BBOX);
+  Span *boxes = malloc(sizeof(Span) * NUM_BBOX);
   RTree *rtree = rtree_create_floatspan();
 
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     int lo = random_int(1, 1000);
     int hi = lo + random_int(1, 10);
@@ -197,10 +197,10 @@ static void
 test_tstzspan(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
-  Span *boxes = malloc(sizeof(Span) * NO_BBOX);
+  Span *boxes = malloc(sizeof(Span) * NUM_BBOX);
   RTree *rtree = rtree_create_tstzspan();
 
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     int tmin = random_int(0, 999);
     int tmax = tmin + random_int(1, 10);
@@ -235,10 +235,10 @@ static void
 test_tbox(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
-  TBox *boxes = malloc(sizeof(TBox) * NO_BBOX);
+  TBox *boxes = malloc(sizeof(TBox) * NUM_BBOX);
   RTree *rtree = rtree_create_tbox();
 
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     int xmin = random_int(1, 1000);
     int xmax = xmin + random_int(1, 10);
@@ -275,10 +275,10 @@ static void
 test_stbox(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
-  STBox *boxes = malloc(sizeof(STBox) * NO_BBOX);
+  STBox *boxes = malloc(sizeof(STBox) * NUM_BBOX);
   RTree *rtree = rtree_create_stbox();
 
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     int xmin = random_int(1, 1000);
     int xmax = xmin + random_int(1, 10);
@@ -324,10 +324,10 @@ test_temporal(MeosArray *ids)
 {
   char str[MAX_LEN_BBOX];
   /* Store the bounding boxes for brute-force verification */
-  TBox *boxes = malloc(sizeof(TBox) * NO_BBOX);
+  TBox *boxes = malloc(sizeof(TBox) * NUM_BBOX);
   RTree *rtree = rtree_create_tbox();
 
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     int xmin = random_int(1, 1000);
     int xmax = xmin + random_int(1, 10);
@@ -362,7 +362,7 @@ test_temporal(MeosArray *ids)
   /* Brute-force search */
   t = clock();
   int brute_count = 0;
-  for (int i = 0; i < NO_BBOX; i++)
+  for (int i = 0; i < NUM_BBOX; i++)
   {
     if (overlaps_tbox_tbox(&boxes[i], query_box))
       brute_count++;
@@ -388,7 +388,7 @@ int main(void)
   /* Use fixed seed for reproducibility */
   srand(1);
 
-  printf("RTree index test (%d boxes per type)\n", NO_BBOX);
+  printf("RTree index test (%d boxes per type)\n", NUM_BBOX);
 
   /* Create a single MeosArray and reuse it across all searches */
   MeosArray *ids = meos_array_create(sizeof(int));

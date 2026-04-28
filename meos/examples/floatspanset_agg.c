@@ -50,7 +50,7 @@
 /* Maximum length in characters of a span set in the input data */
 #define MAX_LEN_SPANSET 1024
 /* Number of groups for accumulating the input span sets */
-#define NO_GROUPS 10
+#define NUM_GROUPS 10
 
 typedef struct
 {
@@ -69,7 +69,7 @@ int main(void)
   t = clock();
 
   /* Array of state values for aggregating the spans */
-  SpanSet *state[NO_GROUPS] = {0};
+  SpanSet *state[NUM_GROUPS] = {0};
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/floatspanset.csv", "r");
@@ -81,8 +81,8 @@ int main(void)
   }
 
   floatspanset_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char spanset_buffer[MAX_LEN_SPANSET];
 
@@ -101,17 +101,17 @@ int main(void)
     if (read != 2)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
 
     /* Transform the string representing the span set into a span set value */
     rec.ss = floatspanset_in(spanset_buffer);
 
-    state[rec.k%NO_GROUPS] = 
-      spanset_union_transfn(state[rec.k%NO_GROUPS], rec.ss);
+    state[rec.k%NUM_GROUPS] = 
+      spanset_union_transfn(state[rec.k%NUM_GROUPS], rec.ss);
 
     /* Output the float spanset value read */
     char *spanset_out = floatspanset_out(rec.ss, 3);
@@ -124,10 +124,10 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
 
   /* Compute the final result */
-  for (int i = 0; i < NO_GROUPS; i++)
+  for (int i = 0; i < NUM_GROUPS; i++)
   {
     SpanSet *final = spanset_union_finalfn(state[i]);
     /* Print the accumulated span set */

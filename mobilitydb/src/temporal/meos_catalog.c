@@ -146,10 +146,10 @@ typedef struct
 
 typedef struct
 {
-  Oid meostype_oid[NO_MEOS_TYPES];         /* MeosType -> Oid */
+  Oid meostype_oid[NUM_MEOS_TYPES];         /* MeosType -> Oid */
   struct oid_meostype_hash *oid_meostype;
   struct opertable_hash *meosoper_oid;
-  Oid oper_oid_args[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
+  Oid oper_oid_args[NUM_MEOS_TYPES][NUM_MEOS_TYPES][NUM_MEOS_TYPES];
 } mobilitydb_constants;
 
 /* Global to hold all the run-time constants */
@@ -226,7 +226,7 @@ get_mobilitydb_constants()
 
   /* Populate the MeosType -> Oid array */
   Oid nsp_oid = mobilitydb_namespace_oid();
-  for (int i = 0; i < NO_MEOS_TYPES; i++)
+  for (int i = 0; i < NUM_MEOS_TYPES; i++)
   {
     /* Depending on compilation constraints (e.g., -DCBUFFER=1) some types are
        not defined and in this case MEOS_TYPE_NAMES[i] will be equal to 0 */
@@ -244,7 +244,7 @@ get_mobilitydb_constants()
   /* Create the Oid -> MeosType hash table and populate it */
   constants->oid_meostype = oid_meostype_create(CacheMemoryContext, 64, NULL);
   /* Initialize the oid -> MeosType array */
-  for (int i = 0; i < NO_MEOS_TYPES; i++)
+  for (int i = 0; i < NUM_MEOS_TYPES; i++)
   {
     Oid oid = constants->meostype_oid[i];
     if (! OidIsValid(oid))

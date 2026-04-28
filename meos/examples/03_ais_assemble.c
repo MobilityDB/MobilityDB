@@ -54,9 +54,9 @@
 #include <meos_geo.h>
 
 /* Maximum number of instants in an input trip */
-#define MAX_NO_INSTS 50000
+#define MAX_NUM_INSTS 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 10000
+#define NUM_INSTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -79,8 +79,8 @@ typedef struct
 {
   long int MMSI;   /* Identifier of the trip */
   int numinstants; /* Number of input instants */
-  TInstant *trip_instants[MAX_NO_INSTS]; /* Array of instants for the trip */
-  TInstant *SOG_instants[MAX_NO_INSTS];  /* Array of instants for the SOG */
+  TInstant *trip_instants[MAX_NUM_INSTS]; /* Array of instants for the trip */
+  TInstant *SOG_instants[MAX_NUM_INSTS];  /* Array of instants for the SOG */
   Temporal *trip;  /* Trip constructed from the input instants */
   Temporal *SOG;   /* SOG constructed from the input instants */
 } trip_record;
@@ -114,8 +114,8 @@ int main(void)
   }
 
   AIS_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char timestamp_buffer[MAX_LEN_TIMESTAMP];
 
@@ -123,7 +123,7 @@ int main(void)
   fscanf(file, "%1023s\n", header_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -139,12 +139,12 @@ int main(void)
     if (read != 5)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
-    if (no_records % NO_INSTS_BATCH == 0)
+    num_records++;
+    if (num_records % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -194,7 +194,7 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
   printf("%d trips read.\n", numships);
 
   /* Construct the trips */
