@@ -1154,11 +1154,15 @@
 			<title>Restricciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tgeo_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) una geometría, un lapso Z y/o un período</para>
+					<para><link linkend="tgeo_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) una geometría</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minuStbox</varname></link>: Restringir a (al complemento de) un <varname>stbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeo_atElevation"><varname>atElevation</varname>, <varname>minuElevation</varname></link>: Restringir a (al complemento de) un rango de altitud</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

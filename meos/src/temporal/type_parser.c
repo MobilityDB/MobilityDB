@@ -534,7 +534,10 @@ set_parse(const char **str, MeosType settype)
       spatial_set_srid(values[i], basetype, set_srid);
   }
   result = set_make(values, array->count, basetype, ORDER);
-  pfree(values);
+  if (meostype_length(basetype) < 0)
+    pfree_array((void **) values, array->count);
+  else
+    pfree(values);
 
 error:
   meos_array_destroy(array);

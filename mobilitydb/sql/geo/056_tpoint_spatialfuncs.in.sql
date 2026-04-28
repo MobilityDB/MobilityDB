@@ -318,16 +318,7 @@ CREATE FUNCTION atGeometry(tgeompoint, geometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_at_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atGeometry(tgeompoint, geometry, floatspan)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeo_at_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION minusGeometry(tgeompoint, geometry)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusGeometry(tgeompoint, geometry, floatspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -349,5 +340,15 @@ CREATE FUNCTION minusStbox(tgeogpoint, stbox, borderInc bool DEFAULT TRUE)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atElevation(tgeompoint, floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_at_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusElevation(tgeompoint, floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_minus_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 /*****************************************************************************/
