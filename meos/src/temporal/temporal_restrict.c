@@ -3579,7 +3579,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
       /* The last two values of sequences with step interpolation and
          exclusive upper bound must be equal */
       meosType basetype = temptype_basetype(seq->temptype);
-      if (ninsts > 1 && interp != LINEAR &&
+      if (interp != LINEAR &&
           datum_ne(tinstant_value_p(instants[ninsts - 2]),
             tinstant_value_p(instants[ninsts - 1]), basetype))
       {

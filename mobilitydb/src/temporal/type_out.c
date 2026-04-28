@@ -185,9 +185,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 
   char *mfjson = temporal_as_mfjson(temp, with_bbox, flags, precision, srs);
   text *result = cstring2text(mfjson);
-  // CURRENTLY we cannot pfree since we get the error message
-  // pfree called with invalid pointer
-  // pfree(mfjson);
+  pfree(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }

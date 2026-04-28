@@ -1,7 +1,8 @@
 name: Main Build
 
-# Test for supported PosgreSQL/PostGIS versions
-# 5 (PosgreSQL) * 1 (PostGIS) * 1 (Linux) + 1 (coverage) = 6 jobs are triggered
+# Test for supported PostgreSQL/PostGIS versions.
+# Minimum supported PG is 16 (see mobilitydb/CMakeLists.txt PG_MIN_MAJOR_VERSION).
+# 3 (PostgreSQL) * 1 (PostGIS) * 1 (Linux) + 1 (coverage) = 4 jobs are triggered.
 # Allow manual trigger
 
 on:
@@ -33,7 +34,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [14,15,16,17,18]
+          psql: [16, 17, 18]
           postgis: [3]
           os: ["ubuntu-24.04"]
           coverage: [0]

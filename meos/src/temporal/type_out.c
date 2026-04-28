@@ -819,11 +819,15 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   if (flags == 0)
     return result;
 
-  /* Convert to JSON and back to a C string to apply flags using json-c */
+  /* Convert to JSON and back to a C string to apply flags using json-c.
+   * Use pstrdup so the result is palloc-managed; mixing libc strdup with
+   * palloc/pfree corrupts PostgreSQL's memory bookkeeping (the workaround
+   * in the PG-extension caller had to comment out a pfree because of
+   * this). */
   json_tokener *jstok = json_tokener_new();
   struct json_object *jobj = json_tokener_parse_ex(jstok, result, -1);
   pfree(result);
-  result = strdup(json_object_to_json_string_ext(jobj, flags));
+  result = pstrdup(json_object_to_json_string_ext(jobj, flags));
   json_tokener_free(jstok);
   json_object_put(jobj);
   return result;
