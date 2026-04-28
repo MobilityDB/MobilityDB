@@ -62,10 +62,10 @@ extern int tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2,
   TimestampTz *t1, TimestampTz *t2);
 
 extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
-  TArithmetic oper, Datum (*func)(Datum, Datum, meosType), bool invert);
+  TArithmetic oper, Datum (*func)(Datum, Datum, MeosType), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc);
+  Datum (*func)(Datum, Datum, MeosType), tpfunc_temp tpfunc);
 
 /*****************************************************************************/
 

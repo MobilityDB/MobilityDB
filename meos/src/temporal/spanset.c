@@ -62,7 +62,7 @@
  * @brief Ensure that a span set is of a given span set type
  */
 bool
-ensure_spanset_isof_type(const SpanSet *ss, meosType spansettype)
+ensure_spanset_isof_type(const SpanSet *ss, MeosType spansettype)
 {
   if (ss->spansettype == spansettype)
     return true;
@@ -210,7 +210,7 @@ SPANSET_SP_N(const SpanSet *ss, int index)
  * @param[in] spansettype Span set type
  */
 SpanSet *
-spanset_in(const char *str, meosType spansettype)
+spanset_in(const char *str, MeosType spansettype)
 {
   assert(str);
   return spanset_parse(&str, spansettype);
@@ -388,10 +388,10 @@ spanset_copy(const SpanSet *ss)
  * @param[in] basetype Type of the value
  */
 SpanSet *
-value_spanset(Datum value, meosType basetype)
+value_spanset(Datum value, MeosType basetype)
 {
   assert(span_basetype(basetype));
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);
   return spanset_make_exp(&s, 1, 1, NORMALIZE_NO, ORDER_NO);
@@ -408,7 +408,7 @@ set_spanset(const Set *s)
 {
   assert(s); assert(set_spantype(s->settype));
   Span *spans = palloc(sizeof(Span) * s->count);
-  meosType spantype = basetype_spantype(s->basetype);
+  MeosType spantype = basetype_spantype(s->basetype);
   for (int i = 0; i < s->count; i++)
   {
     Datum value = SET_VAL_N(s, i);

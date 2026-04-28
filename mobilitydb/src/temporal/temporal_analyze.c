@@ -119,7 +119,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *value_lowers = NULL, *value_uppers = NULL; /* make compiler quiet */
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  meosType type = oid_meostype(stats->attrtypid);
+  MeosType type = oid_meostype(stats->attrtypid);
   assert(temporal_type(type));
   bool tnumber = tnumber_type(type);
 
@@ -264,7 +264,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Gather information about the value type */
-  meosType basetype = temptype_basetype(oid_meostype(stats->attrtypid));
+  MeosType basetype = temptype_basetype(oid_meostype(stats->attrtypid));
   typentry = lookup_type_cache(meostype_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);

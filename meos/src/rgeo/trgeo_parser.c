@@ -57,7 +57,7 @@
  * @param[in] geom Reference geometry
  */
 TInstant * 
-trgeoinst_parse(const char **str, meosType temptype, bool end,
+trgeoinst_parse(const char **str, MeosType temptype, bool end,
   int *temp_srid, const GSERIALIZED *geom)
 {
   Datum base;
@@ -89,7 +89,7 @@ trgeoinst_parse(const char **str, meosType temptype, bool end,
  * @param[in] geom Reference geometry
  */
 TSequence *
-trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
+trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
   GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -141,7 +141,7 @@ error:
  * @param[out] result New sequence, may be NULL
  */
 TSequence *
-trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
+trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,
   bool end, int *temp_srid, const GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -208,7 +208,7 @@ error:
  * @param[in] geom Reference geometry
  */
 TSequenceSet *
-trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
+trgeoseqset_parse(const char **str, MeosType temptype, interpType interp,
   int *temp_srid, const GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -308,7 +308,7 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
  * @param[in] temptype Temporal type
  */
 Temporal *
-trgeo_parse(const char **str, meosType temptype)
+trgeo_parse(const char **str, MeosType temptype)
 {
   p_whitespace(str);
 

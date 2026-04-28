@@ -44,15 +44,15 @@
 
 /* MobilityDB functions */
 
-extern Oid meostype_oid(meosType type);
-extern Oid meosoper_oid(meosOper op, meosType l, meosType r);
-extern meosType oid_meostype(Oid typid);
-extern meosOper oid_meosoper(Oid operOid, meosType *l, meosType *r);
+extern Oid meostype_oid(MeosType type);
+extern Oid meosoper_oid(meosOper op, MeosType l, MeosType r);
+extern MeosType oid_meostype(Oid typid);
+extern meosOper oid_meosoper(Oid operOid, MeosType *l, MeosType *r);
 
-extern bool range_basetype(meosType type);
-extern bool ensure_range_basetype(meosType type);
-extern meosType basetype_rangetype(meosType type);
-extern meosType basetype_multirangetype(meosType type);
+extern bool range_basetype(MeosType type);
+extern bool ensure_range_basetype(MeosType type);
+extern MeosType basetype_rangetype(MeosType type);
+extern MeosType basetype_multirangetype(MeosType type);
 
 /*****************************************************************************/
 

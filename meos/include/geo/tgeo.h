@@ -56,9 +56,9 @@ extern GSERIALIZED *stbox_geo(const STBox *box);
 /* Temporal comparisons */
 
 extern Temporal *tcomp_geo_tgeo(const GSERIALIZED *gs,
-  const Temporal *temp, Datum (*func)(Datum, Datum, meosType));
+  const Temporal *temp, Datum (*func)(Datum, Datum, MeosType));
 extern Temporal *tcomp_tgeo_geo(const Temporal *temp,
-  const GSERIALIZED *gs, Datum (*func)(Datum, Datum, meosType));
+  const GSERIALIZED *gs, Datum (*func)(Datum, Datum, MeosType));
 
 /*****************************************************************************/
 

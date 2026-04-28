@@ -64,11 +64,11 @@
  */
 int
 eacomp_base_temporal(Datum value, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   assert(temp); assert(func);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -94,11 +94,11 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
  */
 int
 eacomp_temporal_base(const Temporal *temp, Datum value,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   assert(temp); assert(func);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -122,12 +122,12 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
  */
 int
 eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   assert(temp1); assert(temp2); assert(func);
   assert(temp1->temptype == temp2->temptype);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp1->temptype);
+  MeosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -676,11 +676,11 @@ always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  */
 Temporal *
 tcomp_base_temporal(Datum value, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   assert(temp); assert(func);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -704,11 +704,11 @@ tcomp_base_temporal(Datum value, const Temporal *temp,
  */
 Temporal *
 tcomp_temporal_base(const Temporal *temp, Datum value,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   assert(temp); assert(func);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -731,12 +731,12 @@ tcomp_temporal_base(const Temporal *temp, Datum value,
  */
 Temporal *
 tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   assert(temp1); assert(temp2); assert(func);
   assert(temp1->temptype == temp2->temptype);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp1->temptype);
+  MeosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;

@@ -574,3 +574,35 @@ SELECT stbox_hash(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])');
 SELECT stbox_hash_extended(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])', 1);
 
 -------------------------------------------------------------------------------
+-- Regression: stbox_level_cmp must not call the time comparators when the
+-- centroid has no time dimension. Before the hast guard, an SP-GiST
+-- traversal at level mod 4 (for hasz=false) or mod 6/7 (for hasz=true)
+-- would call stbox_tmin_cmp / stbox_tmax_cmp on uninitialized period
+-- fields. The 200-row table makes the SP-GiST tree deep enough (>= 4
+-- levels) to exercise the bug-prone dispatch branches.
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_stbox_notime;
+CREATE TABLE tbl_stbox_notime AS
+SELECT k, stbox(ST_MakeEnvelope(k::float, k::float,
+                                (k+1)::float, (k+1)::float)) AS b
+FROM generate_series(1, 200) k;
+
+CREATE INDEX tbl_stbox_notime_quadtree_idx ON tbl_stbox_notime USING SPGIST(b);
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b && stbox 'STBOX X((50,50),(60,60))';
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b @> stbox 'STBOX X((100.5,100.5),(100.5,100.5))';
+DROP INDEX tbl_stbox_notime_quadtree_idx;
+
+CREATE INDEX tbl_stbox_notime_kdtree_idx ON tbl_stbox_notime
+  USING SPGIST(b stbox_kdtree_ops);
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b && stbox 'STBOX X((50,50),(60,60))';
+SELECT COUNT(*) FROM tbl_stbox_notime
+  WHERE b @> stbox 'STBOX X((100.5,100.5),(100.5,100.5))';
+DROP INDEX tbl_stbox_notime_kdtree_idx;
+
+DROP TABLE tbl_stbox_notime;
+
+-------------------------------------------------------------------------------

@@ -81,7 +81,7 @@ extern int namestrcmp(Name name, const char *str);
 typedef struct
 {
   Oid typid;         /**< Oid of the type (hashtable key) */
-  meosType type;     /**< MEOS type */
+  MeosType type;     /**< MEOS type */
   char status;       /* hash status */
 } oid_meostype_entry;
 
@@ -105,8 +105,8 @@ typedef struct
 {
   Oid oproid;        /**< Oid of the operator (hashtable key) */
   meosOper oper;     /**< Operator type number */
-  meosType ltype;    /**< Type number of the left argument */
-  meosType rtype;    /**< Type number of the right argument */
+  MeosType ltype;    /**< Type number of the left argument */
+  MeosType rtype;    /**< Type number of the right argument */
   char status;       /* hash status */
 } oid_meosoper_entry;
 
@@ -133,8 +133,8 @@ typedef struct
  * @brief Global variable that states whether the type and operator Oid caches
  * have been initialized
  * @details
- * - Global array that enables the mapping meosType -> Oid
- * - Global hash table that enables the mapping Oid -> meosType
+ * - Global array that enables the mapping MeosType -> Oid
+ * - Global hash table that enables the mapping Oid -> MeosType
  * - Global hash table that enables the mapping meosOper -> Oid
  * - Global 3-dimensional array that enables the mapping meosOper -> Oid
  *   in MobilityDB.
@@ -146,7 +146,7 @@ typedef struct
 
 typedef struct
 {
-  Oid meostype_oid[NO_MEOS_TYPES];         /* meosType -> Oid */
+  Oid meostype_oid[NO_MEOS_TYPES];         /* MeosType -> Oid */
   struct oid_meostype_hash *oid_meostype;
   struct opertable_hash *meosoper_oid;
   Oid oper_oid_args[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
@@ -224,7 +224,7 @@ get_mobilitydb_constants()
   mobilitydb_constants* constants =
     MemoryContextAllocZero(context, sizeof(mobilitydb_constants));
 
-  /* Populate the meosType -> Oid array */
+  /* Populate the MeosType -> Oid array */
   Oid nsp_oid = mobilitydb_namespace_oid();
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
@@ -241,9 +241,9 @@ get_mobilitydb_constants()
     }
   }
 
-  /* Create the Oid -> meosType hash table and populate it */
+  /* Create the Oid -> MeosType hash table and populate it */
   constants->oid_meostype = oid_meostype_create(CacheMemoryContext, 64, NULL);
-  /* Initialize the oid -> meosType array */
+  /* Initialize the oid -> MeosType array */
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
     Oid oid = constants->meostype_oid[i];
@@ -255,7 +255,7 @@ get_mobilitydb_constants()
     if (found)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Duplicate Oid %u in MobilityDB type catalog", oid)));
-    entry->type = (meosType) i;
+    entry->type = (MeosType) i;
   }
 
   /* Create the operator hash table and populate the operator array and the
@@ -317,7 +317,7 @@ mobilitydb_initialize_cache()
  * @arg[in] type Type number
  */
 Oid
-meostype_oid(meosType type)
+meostype_oid(MeosType type)
 {
   mobilitydb_initialize_cache();
   Oid result = MOBILITYDB_CONSTANTS->meostype_oid[type];
@@ -334,7 +334,7 @@ meostype_oid(meosType type)
  * it is used for all types that appear in the `pg_operator` table when the
  * extension is created
  */
-meosType
+MeosType
 oid_meostype(Oid typid)
 {
   mobilitydb_initialize_cache();
@@ -342,7 +342,7 @@ oid_meostype(Oid typid)
     MOBILITYDB_CONSTANTS->oid_meostype, typid);
   /* Do not throw an error as in function #meostype_oid since when looking up
      an operator id we get PostgreSQL types that do not have a corresponding
-     meosType, for example, the char type with Oid 18 */
+     MeosType, for example, the char type with Oid 18 */
   if (! entry)
     return T_UNKNOWN;
   else
@@ -358,7 +358,7 @@ oid_meostype(Oid typid)
  * @arg[in] rt Type number for the right argument
  */
 Oid
-meosoper_oid(meosOper oper, meosType lt, meosType rt)
+meosoper_oid(meosOper oper, MeosType lt, MeosType rt)
 {
   mobilitydb_initialize_cache();
 
@@ -378,7 +378,7 @@ meosoper_oid(meosOper oper, meosType lt, meosType rt)
  * @arg[out] ltype,rtype Type number of the left/right argument
  */
 meosOper
-oid_meosoper(Oid oproid, meosType *ltype, meosType *rtype)
+oid_meosoper(Oid oproid, MeosType *ltype, MeosType *rtype)
 {
   mobilitydb_initialize_cache();
 
@@ -472,8 +472,8 @@ fill_oid_cache(PG_FUNCTION_ARGS)
       &isnull));
     /* Get the type and operator numbers */
     meosOper oper = meosoper_from_string(oprname);
-    meosType ltype = oid_meostype(oprleft);
-    meosType rtype = oid_meostype(oprright);
+    MeosType ltype = oid_meostype(oprleft);
+    MeosType rtype = oid_meostype(oprright);
     /* Fill the cache if the operator and all its types are recognized */
     if (oper != UNKNOWN_OP && ltype != T_UNKNOWN && rtype != T_UNKNOWN)
     {
@@ -503,7 +503,7 @@ fill_oid_cache(PG_FUNCTION_ARGS)
  * type
  */
 inline bool
-range_basetype(meosType type)
+range_basetype(MeosType type)
 {
   return (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
     type == T_INT8);
@@ -513,7 +513,7 @@ range_basetype(meosType type)
  * @brief Ensure that a type is a built-in PostgreSQL range type
  */
 bool
-ensure_range_basetype(meosType type)
+ensure_range_basetype(MeosType type)
 {
   if (range_basetype(type))
     return true;
@@ -525,8 +525,8 @@ ensure_range_basetype(meosType type)
 /**
  * @brief Return the range type of a base type
  */
-meosType
-basetype_rangetype(meosType type)
+MeosType
+basetype_rangetype(MeosType type)
 {
   ensure_range_basetype(type);
   if (type == T_INT4)
@@ -547,8 +547,8 @@ basetype_rangetype(meosType type)
 /**
  * @brief Return the range type of a base type
  */
-meosType
-basetype_multirangetype(meosType type)
+MeosType
+basetype_multirangetype(MeosType type)
 {
   ensure_range_basetype(type);
   if (type == T_INT4)

@@ -696,9 +696,11 @@ extern Temporal *tgeo_at_value(const Temporal *temp, GSERIALIZED *gs);
 extern Temporal *tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_at_elevation(const Temporal *temp, const Span *s);
+extern Temporal *tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_at_value(const Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_minus_elevation(const Temporal *temp, const Span *s);
+extern Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs);
 
 /* Ever and always comparisons */
@@ -832,24 +834,24 @@ extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /* Spatiotemporal relationships */
 
-extern Temporal *tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
-extern Temporal *tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
-extern Temporal *tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
-extern Temporal *tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
-extern Temporal *tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
-extern Temporal *tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
-extern Temporal *tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
-extern Temporal *tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
-extern Temporal *tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
-extern Temporal *ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
-extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
+extern Temporal *tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist);
+extern Temporal *tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
+extern Temporal *tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist);
+extern Temporal *tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 
 /* Distance */
 

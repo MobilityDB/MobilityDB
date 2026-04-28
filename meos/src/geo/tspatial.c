@@ -78,7 +78,7 @@
  * @return On error return @p NULL
  */
 char *
-spatialbase_as_text(Datum value, meosType type, int maxdd)
+spatialbase_as_text(Datum value, MeosType type, int maxdd)
 {
   assert(spatial_basetype(type)); assert(maxdd >= 0);
 
@@ -112,7 +112,7 @@ spatialbase_as_text(Datum value, meosType type, int maxdd)
  * @return On error return @p NULL
  */
 char *
-spatialbase_as_ewkt(Datum value, meosType type, int maxdd)
+spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
 {
   assert(spatial_basetype(type)); assert(maxdd >= 0);
 
@@ -320,7 +320,7 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] extended True if the output is in EWKT
  */
 char **
-spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
+spatialarr_wkt_out(const Datum *spatialarr, MeosType elemtype, int count,
   int maxdd, bool extended)
 {
   /* Ensure the validity of the arguments */
@@ -354,7 +354,7 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
  * @param[in] maxdd Maximum number of decimal digits to output
  */
 inline char **
-spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count, 
+spatialarr_as_text(const Datum *spatialarr, MeosType elemtype, int count, 
   int maxdd)
 {
   return spatialarr_wkt_out(spatialarr, elemtype, count, maxdd, false);
@@ -370,7 +370,7 @@ spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count,
  * @param[in] maxdd Maximum number of decimal digits to output
  */
 inline char **
-spatialarr_as_ewkt(const Datum *spatialarr, meosType elemtype, int count, 
+spatialarr_as_ewkt(const Datum *spatialarr, MeosType elemtype, int count, 
   int maxdd)
 {
   return spatialarr_wkt_out(spatialarr, elemtype, count, maxdd, true);

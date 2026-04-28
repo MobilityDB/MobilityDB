@@ -46,7 +46,7 @@
 /* PostgreSQL */
 /* MEOS */
 #include <meos.h>
-#include "temporal/meos_catalog.h" /* For meosType */
+#include "temporal/meos_catalog.h" /* For MeosType */
 
 /*****************************************************************************
  * Validity macros
@@ -771,8 +771,8 @@ extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);
 extern Datum datum_float_round(Datum value, Datum size);
 extern Datum datum_floor(Datum d);
-extern uint32 datum_hash(Datum d, meosType basetype);
-extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
+extern uint32 datum_hash(Datum d, MeosType basetype);
+extern uint64 datum_hash_extended(Datum d, MeosType basetype, uint64 seed);
 extern Datum datum_radians(Datum d);
 extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 
@@ -782,22 +782,22 @@ extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 
 /* Input and output functions for set and span types */
 
-extern Set *set_in(const char *str, meosType basetype);
+extern Set *set_in(const char *str, MeosType basetype);
 extern char *set_out(const Set *s, int maxdd);
-extern Span *span_in(const char *str, meosType spantype);
+extern Span *span_in(const char *str, MeosType spantype);
 extern char *span_out(const Span *s, int maxdd);
-extern SpanSet *spanset_in(const char *str, meosType spantype);
+extern SpanSet *spanset_in(const char *str, MeosType spantype);
 extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
 
 /* Constructor functions for set and span types */
 
-extern Set *set_make(const Datum *values, int count, meosType basetype, bool order);
-extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool order);
-extern Set *set_make_free(Datum *values, int count, meosType basetype, bool order);
-extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, meosType spantype, Span *s);
+extern Set *set_make(const Datum *values, int count, MeosType basetype, bool order);
+extern Set *set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype, bool order);
+extern Set *set_make_free(Datum *values, int count, MeosType basetype, bool order);
+extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, MeosType basetype);
+extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, MeosType basetype, MeosType spantype, Span *s);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool order);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool order);
 
@@ -807,10 +807,10 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 extern Span *set_span(const Set *s);
 extern SpanSet *set_spanset(const Set *s);
-extern void value_set_span(Datum value, meosType basetype, Span *s);
-extern Set *value_set(Datum d, meosType basetype);
-extern Span *value_span(Datum d, meosType basetype);
-extern SpanSet *value_spanset(Datum d, meosType basetype);
+extern void value_set_span(Datum value, MeosType basetype, Span *s);
+extern Set *value_set(Datum d, MeosType basetype);
+extern Span *value_span(Datum d, MeosType basetype);
+extern SpanSet *value_spanset(Datum d, MeosType basetype);
 
 /*****************************************************************************/
 
@@ -845,7 +845,7 @@ extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum wid
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
 extern SpanSet *spanset_compact(const SpanSet *ss);
-extern TBox *tbox_expand_value(const TBox *box, Datum value, meosType basetyp);
+extern TBox *tbox_expand_value(const TBox *box, Datum value, MeosType basetyp);
 extern Set *textcat_textset_text_common(const Set *s, const text *txt, bool invert);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 
@@ -905,13 +905,13 @@ extern bool right_spanset_value(const SpanSet *ss, Datum value);
 
 /* Functions on generic bounding boxes of temporal types */
 
-extern bool bbox_type(meosType bboxtype);
-extern size_t bbox_get_size(meosType bboxtype);
-extern int bbox_max_dims(meosType bboxtype);
+extern bool bbox_type(MeosType bboxtype);
+extern size_t bbox_get_size(MeosType bboxtype);
+extern int bbox_max_dims(MeosType bboxtype);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,
-  meosType temptype);
+  MeosType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,
-  meosType temptype);
+  MeosType temptype);
 
 /* Set functions for set and span types */
 
@@ -949,14 +949,14 @@ extern Datum distance_span_value(const Span *s, Datum value);
 extern Datum distance_spanset_span(const SpanSet *ss, const Span *s);
 extern Datum distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern Datum distance_spanset_value(const SpanSet *ss, Datum value);
-extern Datum distance_value_value(Datum l, Datum r, meosType basetype);
+extern Datum distance_value_value(Datum l, Datum r, MeosType basetype);
 
 /*****************************************************************************/
 
 /* Aggregate functions for set and span types */
 
-extern Span *spanbase_extent_transfn(Span *state, Datum value, meosType basetype);
-extern Set *value_union_transfn(Set *state, Datum value, meosType basetype);
+extern Span *spanbase_extent_transfn(Span *state, Datum value, MeosType basetype);
+extern Set *value_union_transfn(Set *state, Datum value, MeosType basetype);
 
 /******************************************************************************
  * Functions for box types
@@ -964,8 +964,8 @@ extern Set *value_union_transfn(Set *state, Datum value, meosType basetype);
 
 /* Constructor functions for box types */
 
-extern TBox *number_tstzspan_to_tbox(Datum d, meosType basetype, const Span *s);
-extern TBox *number_timestamptz_to_tbox(Datum d, meosType basetype, TimestampTz t);
+extern TBox *number_tstzspan_to_tbox(Datum d, MeosType basetype, const Span *s);
+extern TBox *number_timestamptz_to_tbox(Datum d, MeosType basetype, TimestampTz t);
 extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
@@ -974,8 +974,8 @@ extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 extern void float_set_tbox(double d, TBox *box);
 extern void int_set_tbox(int i, TBox *box);
-extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
-extern TBox *number_tbox(Datum value, meosType basetype);
+extern void number_set_tbox(Datum d, MeosType basetype, TBox *box);
+extern TBox *number_tbox(Datum value, MeosType basetype);
 extern void numset_set_tbox(const Set *s, TBox *box);
 extern void numspan_set_tbox(const Span *span, TBox *box);
 extern void timestamptz_set_tbox(TimestampTz t, TBox *box);
@@ -1012,7 +1012,7 @@ extern TSequence *tboolseq_from_mfjson(json_object *mfjson);
 extern TSequence *tboolseq_in(const char *str, interpType interp);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(const char *str);
-extern Temporal *temporal_in(const char *str, meosType temptype);
+extern Temporal *temporal_in(const char *str, MeosType temptype);
 extern char *temporal_out(const Temporal *temp, int maxdd);
 extern char **temparr_out(Temporal **temparr, int count, int maxdd);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
@@ -1021,8 +1021,8 @@ extern TSequence *tfloatseq_from_mfjson(json_object *mfjson, interpType interp);
 extern TSequence *tfloatseq_in(const char *str, interpType interp);
 extern TSequenceSet *tfloatseqset_from_mfjson(json_object *mfjson, interpType interp);
 extern TSequenceSet *tfloatseqset_in(const char *str);
-extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, meosType temptype);
-extern TInstant *tinstant_in(const char *str, meosType temptype);
+extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype);
+extern TInstant *tinstant_in(const char *str, MeosType temptype);
 extern char *tinstant_out(const TInstant *inst, int maxdd);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tintinst_in(const char *str);
@@ -1030,11 +1030,11 @@ extern TSequence *tintseq_from_mfjson(json_object *mfjson);
 extern TSequence *tintseq_in(const char *str, interpType interp);
 extern TSequenceSet *tintseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tintseqset_in(const char *str);
-extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, meosType temptype, interpType interp);
-extern TSequence *tsequence_in(const char *str, meosType temptype, interpType interp);
+extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype, interpType interp);
+extern TSequence *tsequence_in(const char *str, MeosType temptype, interpType interp);
 extern char *tsequence_out(const TSequence *seq, int maxdd);
-extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, meosType temptype, interpType interp);
-extern TSequenceSet *tsequenceset_in(const char *str, meosType temptype, interpType interp);
+extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype, interpType interp);
+extern TSequenceSet *tsequenceset_in(const char *str, MeosType temptype, interpType interp);
 extern char *tsequenceset_out(const TSequenceSet *ss, int maxdd);
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(const char *str);
@@ -1042,26 +1042,26 @@ extern TSequence *ttextseq_from_mfjson(json_object *mfjson);
 extern TSequence *ttextseq_in(const char *str, interpType interp);
 extern TSequenceSet *ttextseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *ttextseqset_in(const char *str);
-extern Temporal *temporal_from_mfjson(const char *mfjson, meosType temptype);
+extern Temporal *temporal_from_mfjson(const char *mfjson, MeosType temptype);
 
 /*****************************************************************************/
 
 /* Constructor functions for temporal types */
 
-extern Temporal *temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp);
+extern Temporal *temporal_from_base_temp(Datum value, MeosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
-extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
-extern TInstant *tinstant_make_free(Datum value, meosType temptype, TimestampTz t);
+extern TInstant *tinstant_make(Datum value, MeosType temptype, TimestampTz t);
+extern TInstant *tinstant_make_free(Datum value, MeosType temptype, TimestampTz t);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq);
-extern TSequence *tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *s);
-extern TSequence *tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *s, interpType interp);
+extern TSequence *tsequence_from_base_temp(Datum value, MeosType temptype, const TSequence *seq);
+extern TSequence *tsequence_from_base_tstzset(Datum value, MeosType temptype, const Set *s);
+extern TSequence *tsequence_from_base_tstzspan(Datum value, MeosType temptype, const Span *s, interpType interp);
 extern TSequence *tsequence_make_exp(TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
 extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
-extern TSequenceSet *tsequenceset_from_base_temp(Datum value, meosType temptype, const TSequenceSet *ss);
-extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, meosType temptype, const SpanSet *ss, interpType interp);
+extern TSequenceSet *tsequenceset_from_base_temp(Datum value, MeosType temptype, const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, MeosType temptype, const SpanSet *ss, interpType interp);
 extern TSequenceSet *tsequenceset_make_exp(TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
 
@@ -1366,7 +1366,7 @@ extern Span *spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *coun
 extern Span *tnumber_value_bins(const Temporal *temp, Datum size, Datum origin, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, int *count);
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, Datum **bins, int *count);
-extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype, meosType spantype);
+extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, MeosType basetype, MeosType spantype);
 extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *duration, Datum vorigin, TimestampTz torigin, Datum **value_bins, TimestampTz **time_bins, int *count);
 
 /*****************************************************************************/

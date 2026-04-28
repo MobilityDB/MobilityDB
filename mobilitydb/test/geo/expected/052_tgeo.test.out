@@ -1584,11 +1584,7 @@ SELECT asText(merge(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
 (1 row)
 
 SELECT asText(merge(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeometry '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]'));
-                                                                                      astext                                                                                       
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, MULTIPOINT((1 1),(2 2))@Mon Jan 03 00:00:00 2000 PST, POINT(1 1)@Wed Jan 05 00:00:00 2000 PST]
-(1 row)
-
+ERROR:  The temporal values have different value at their common timestamp Mon Jan 03 00:00:00 2000 PST
 SELECT asText(merge(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeometry '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
                                                                                                            astext                                                                                                           
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1596,11 +1592,7 @@ SELECT asText(merge(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
 (1 row)
 
 SELECT asText(merge(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeometry '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}'));
-                                                                                                                                                                           astext                                                                                                                                                                            
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(1 1)@Tue Jan 04 00:00:00 2000 PST, MULTIPOINT((1 1),(2 2))@Wed Jan 05 00:00:00 2000 PST, POINT(1 1)@Fri Jan 07 00:00:00 2000 PST], [POINT(1 1)@Sat Jan 08 00:00:00 2000 PST, POINT(1 1)@Sun Jan 09 00:00:00 2000 PST]}
-(1 row)
-
+ERROR:  The temporal values have different value at their common timestamp Wed Jan 05 00:00:00 2000 PST
 /* Errors */
 SELECT merge(tgeometry 'SRID=5676;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-02');
 ERROR:  Operation on mixed SRID
@@ -1684,11 +1676,7 @@ SELECT asText(merge(ARRAY [tgeometry 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-0
 (1 row)
 
 SELECT asText(merge(ARRAY [tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']));
-                                                                                                                                                                           astext                                                                                                                                                                            
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(1 1)@Tue Jan 04 00:00:00 2000 PST, MULTIPOINT((1 1),(2 2))@Wed Jan 05 00:00:00 2000 PST, POINT(1 1)@Fri Jan 07 00:00:00 2000 PST], [POINT(1 1)@Sat Jan 08 00:00:00 2000 PST, POINT(1 1)@Sun Jan 09 00:00:00 2000 PST]}
-(1 row)
-
+ERROR:  The temporal values have different value at their common timestamp Wed Jan 05 00:00:00 2000 PST
 SELECT asText(merge(ARRAY [tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']));
                                                                                       astext                                                                                       
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1702,11 +1690,7 @@ SELECT asText(merge(ARRAY [tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01
 (1 row)
 
 SELECT asText(merge(ARRAY [tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']));
-                                                                                      astext                                                                                       
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, MULTIPOINT((1 1),(2 2))@Mon Jan 03 00:00:00 2000 PST, POINT(1 1)@Wed Jan 05 00:00:00 2000 PST]
-(1 row)
-
+ERROR:  The temporal values have different value at their common timestamp Mon Jan 03 00:00:00 2000 PST
 /* Errors */
 SELECT merge(ARRAY [tgeometry 'SRID=5676;Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']);
 ERROR:  Operation on mixed SRID

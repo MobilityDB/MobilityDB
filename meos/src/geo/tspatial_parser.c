@@ -271,7 +271,7 @@ stbox_parse(const char **str)
  * @param[out] result New geometry, may be NULL
  */
 bool 
-geo_parse(const char **str, meosType basetype, char delim, int *srid,
+geo_parse(const char **str, MeosType basetype, char delim, int *srid,
   GSERIALIZED **result)
 {
   p_whitespace(str);
@@ -323,13 +323,13 @@ geo_parse(const char **str, meosType basetype, char delim, int *srid,
  * @param[out] result New spatial base value, may be NULL
  */
 bool 
-spatial_parse_elem(const char **str, meosType temptype, char delim, 
+spatial_parse_elem(const char **str, MeosType temptype, char delim, 
   int *temp_srid, Datum *result)
 {
   p_whitespace(str);
   /* The next instruction will throw an exception if it fails */
   Datum d;
-  meosType basetype = temptype_basetype(temptype);
+  MeosType basetype = temptype_basetype(temptype);
   if (! basetype_parse(str, basetype, delim, &d))
     return false;
 
@@ -371,7 +371,7 @@ spatial_parse_elem(const char **str, meosType temptype, char delim,
  * @param[out] result New instant, may be NULL
  */
 TInstant *
-tspatialinst_parse(const char **str, meosType temptype, bool end,
+tspatialinst_parse(const char **str, MeosType temptype, bool end,
   int *temp_srid)
 {
   Datum base;
@@ -401,7 +401,7 @@ tspatialinst_parse(const char **str, meosType temptype, bool end,
  * @param[in,out] temp_srid SRID of the spatiotemporal value
  */
 TSequence *
-tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
+tspatialseq_disc_parse(const char **str, MeosType temptype, int *temp_srid)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -452,7 +452,7 @@ error:
  * @param[out] result New sequence, may be NULL
  */
 TSequence *
-tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp, 
+tspatialseq_cont_parse(const char **str, MeosType temptype, interpType interp, 
   bool end, int *temp_srid)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -518,7 +518,7 @@ error:
  * @param[in,out] temp_srid SRID of the spatiotemporal value
  */
 TSequenceSet *
-tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
+tspatialseqset_parse(const char **str, MeosType temptype, interpType interp,
   int *temp_srid)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -565,7 +565,7 @@ error:
   * @param[in] temptype Temporal type
 */
 Temporal *
-tspatial_parse(const char **str, meosType temptype)
+tspatial_parse(const char **str, MeosType temptype)
 {
   /* Ensure the validity of the arguments */
    VALIDATE_NOT_NULL(str, NULL);
@@ -636,7 +636,7 @@ tspatial_parse(const char **str, meosType temptype)
  * @param[in] temptype Temporal type
  */
 Temporal *
-tpoint_parse(const char **str, meosType temptype)
+tpoint_parse(const char **str, MeosType temptype)
 {
   Temporal *result = tspatial_parse(str, temptype);
   if (! result)

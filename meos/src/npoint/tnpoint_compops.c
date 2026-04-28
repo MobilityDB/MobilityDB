@@ -55,7 +55,7 @@
  */
 int
 eacomp_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, -1); VALIDATE_NOT_NULL(np, -1);
@@ -72,7 +72,7 @@ eacomp_tnpoint_npoint(const Temporal *temp, const Npoint *np,
  */
 int
 eacomp_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp1, -1); VALIDATE_TNPOINT(temp2, -1);
@@ -266,7 +266,7 @@ always_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal *
 tcomp_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(np, NULL);

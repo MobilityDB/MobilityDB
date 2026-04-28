@@ -238,8 +238,8 @@ Span_constructor(PG_FUNCTION_ARGS)
   Datum upper = PG_GETARG_DATUM(1);
   bool lower_inc = PG_GETARG_BOOL(2);
   bool upper_inc = PG_GETARG_BOOL(3);
-  meosType spantype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
-  meosType basetype = spantype_basetype(spantype);
+  MeosType spantype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType basetype = spantype_basetype(spantype);
   PG_RETURN_SPAN_P(span_make(lower, upper, lower_inc, upper_inc, basetype));
 }
 
@@ -259,7 +259,7 @@ Datum
 Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_SPAN_P(value_span(value, basetype));
 }
 
@@ -439,7 +439,7 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
   Oid type_id = typcache->rngelemtype->type_id;
   assert(type_id == INT4OID || type_id == INT8OID || type_id == DATEOID || 
     type_id == TIMESTAMPTZOID);
-  meosType basetype;
+  MeosType basetype;
   if (type_id == INT4OID)
     basetype = T_INT4;
   else if (type_id == INT8OID)
@@ -448,7 +448,7 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
     basetype = T_DATE;
   else /* type_id == TIMESTAMPTZOID */
     basetype = T_TIMESTAMPTZ;
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   span_set(lower.val, upper.val, lower.inclusive, upper.inclusive, basetype,
     spantype, result);
   return;

@@ -36,91 +36,83 @@
  * tContains
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tContains(geometry, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tContains(geometry, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tcontains_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tDisjoint
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tDisjoint(geometry, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDisjoint(geometry, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDisjoint(tgeompoint, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Alias for temporal not equals, that is, tgeo_tne or #<>
-CREATE FUNCTION tDisjoint(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDisjoint(tgeompoint, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tIntersects
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tIntersects(geometry, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tIntersects(geometry, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tIntersects(tgeompoint, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Alias for temporal equals, that is, tgeo_teq or #=
-CREATE FUNCTION tIntersects(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tIntersects(tgeompoint, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tTouches
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tTouches(geometry, tgeompoint, atvalue bool DEFAULT NULL)
+CREATE FUNCTION tTouches(geometry, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tTouches(tgeompoint, geometry, atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tTouches(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_tgeo_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tDwithin
  *****************************************************************************/
 
--- ALL the following functions are not STRICT
-CREATE FUNCTION tDwithin(geometry, tgeompoint, dist float,
-   atvalue bool DEFAULT NULL)
+CREATE FUNCTION tDwithin(geometry, tgeompoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_geo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tDwithin(tgeompoint, geometry, dist float,
-    atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeompoint, geometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
-CREATE FUNCTION tDwithin(tgeompoint, tgeompoint, dist float,
-    atvalue bool DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tgeompoint, tgeompoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

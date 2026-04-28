@@ -892,10 +892,6 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Poin
 
 SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02]', geometry 'Linestring(0 0,0 2,2 2)'));
 
---3D Zspan
-SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0, 2 2)', floatspan '[0, 2]'));
-select asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02]', geometry 'Point(1 1)', floatspan '[1, 2]'));
-
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02]','Point(2 2)'));
 SELECT asText(atGeometry(tgeompoint '[Point(0 1)@2000-01-01,Point(5 1)@2000-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
@@ -950,10 +946,10 @@ SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 
 --------------------------------------------------------
 
 -- Equivalences
-WITH temp(trip, geo, zspan) AS (
+WITH temp(trip, geo) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
-    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,2]' )
-SELECT trip = merge(atGeometry(trip, geo, zspan), minusGeometry(trip, geo, zspan))
+    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))' )
+SELECT trip = merge(atGeometry(trip, geo), minusGeometry(trip, geo))
 FROM temp;
 
 --------------------------------------------------------

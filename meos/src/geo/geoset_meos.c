@@ -112,7 +112,7 @@ geoset_make(GSERIALIZED **values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
-  meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
+  MeosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
     T_GEOGRAPHY : T_GEOMETRY;
   return set_make_free(datums, count, geotype, ORDER);
 }
@@ -135,7 +135,7 @@ geo_set(const GSERIALIZED *gs)
     return NULL;
 
   Datum v = PointerGetDatum(gs);
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  MeosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
 }
 
@@ -385,7 +385,7 @@ geo_union_transfn(Set *state, const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
   if (state && ! ensure_geoset_type(state->settype))
     return NULL;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  MeosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   return value_union_transfn(state, PointerGetDatum(gs), geotype);
 }
 

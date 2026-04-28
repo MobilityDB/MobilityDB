@@ -488,7 +488,7 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
-  Temporal *res = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
+  Temporal *res = tgeo_restrict_geom(tpoint, gs, atfunc);
   Temporal *result = NULL;
   if (res)
   {
