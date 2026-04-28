@@ -165,35 +165,39 @@ static uint8
 getQuadrant8D(const STBox *centroid, const STBox *inBox)
 {
   uint8 quadrant = 0;
+  int bit = 0;
 
+  /* Pack bits contiguously starting at bit 0: X, Y, Z if hasz, T if
+   * hast. The result is in [0, 1 << dims), matching the nNodes set
+   * by Stbox_quadtree_picksplit. */
+  if (inBox->xmin > centroid->xmin)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->xmax > centroid->xmax)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->ymin > centroid->ymin)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->ymax > centroid->ymax)
+    quadrant |= (1 << bit);
+  bit++;
   if (MEOS_FLAGS_GET_Z(centroid->flags))
   {
     if (inBox->zmin > centroid->zmin)
-      quadrant |= 0x80;
-
+      quadrant |= (1 << bit);
+    bit++;
     if (inBox->zmax > centroid->zmax)
-      quadrant |= 0x40;
+      quadrant |= (1 << bit);
+    bit++;
   }
-
-  if (inBox->ymin > centroid->ymin)
-    quadrant |= 0x20;
-
-  if (inBox->ymax > centroid->ymax)
-    quadrant |= 0x10;
-
-  if (inBox->xmin > centroid->xmin)
-    quadrant |= 0x08;
-
-  if (inBox->xmax > centroid->xmax)
-    quadrant |= 0x04;
-
   if (MEOS_FLAGS_GET_T(centroid->flags))
   {
     if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
-      quadrant |= 0x02;
-
+      quadrant |= (1 << bit);
+    bit++;
     if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
-      quadrant |= 0x01;
+      quadrant |= (1 << bit);
   }
 
   return quadrant;
@@ -240,50 +244,55 @@ static void
 stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 quadrant, STboxNode *next_nodebox)
 {
+  int bit = 0;
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
 
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
-  {
-    if (quadrant & 0x80)
-      next_nodebox->left.zmin = centroid->zmin;
-    else
-      next_nodebox->left.zmax = centroid->zmin;
-
-    if (quadrant & 0x40)
-      next_nodebox->right.zmin = centroid->zmax;
-    else
-      next_nodebox->right.zmax = centroid->zmax;
-  }
-
-  if (quadrant & 0x20)
-    next_nodebox->left.ymin = centroid->ymin;
-  else
-    next_nodebox->left.ymax = centroid->ymin;
-
-  if (quadrant & 0x10)
-    next_nodebox->right.ymin = centroid->ymax;
-  else
-    next_nodebox->right.ymax = centroid->ymax;
-
-  if (quadrant & 0x08)
+  /* Bit layout matches getQuadrant8D. */
+  if (quadrant & (1 << bit))
     next_nodebox->left.xmin = centroid->xmin;
   else
     next_nodebox->left.xmax = centroid->xmin;
-
-  if (quadrant & 0x04)
+  bit++;
+  if (quadrant & (1 << bit))
     next_nodebox->right.xmin = centroid->xmax;
   else
     next_nodebox->right.xmax = centroid->xmax;
-
-  if (quadrant & 0x02)
-    next_nodebox->left.period.lower = centroid->period.lower;
+  bit++;
+  if (quadrant & (1 << bit))
+    next_nodebox->left.ymin = centroid->ymin;
   else
-    next_nodebox->left.period.upper = centroid->period.lower;
-
-  if (quadrant & 0x01)
-    next_nodebox->right.period.lower = centroid->period.upper;
+    next_nodebox->left.ymax = centroid->ymin;
+  bit++;
+  if (quadrant & (1 << bit))
+    next_nodebox->right.ymin = centroid->ymax;
   else
-    next_nodebox->right.period.upper = centroid->period.upper;
+    next_nodebox->right.ymax = centroid->ymax;
+  bit++;
+  if (MEOS_FLAGS_GET_Z(centroid->flags))
+  {
+    if (quadrant & (1 << bit))
+      next_nodebox->left.zmin = centroid->zmin;
+    else
+      next_nodebox->left.zmax = centroid->zmin;
+    bit++;
+    if (quadrant & (1 << bit))
+      next_nodebox->right.zmin = centroid->zmax;
+    else
+      next_nodebox->right.zmax = centroid->zmax;
+    bit++;
+  }
+  if (MEOS_FLAGS_GET_T(centroid->flags))
+  {
+    if (quadrant & (1 << bit))
+      next_nodebox->left.period.lower = centroid->period.lower;
+    else
+      next_nodebox->left.period.upper = centroid->period.lower;
+    bit++;
+    if (quadrant & (1 << bit))
+      next_nodebox->right.period.lower = centroid->period.upper;
+    else
+      next_nodebox->right.period.upper = centroid->period.upper;
+  }
 
   return;
 }
@@ -985,6 +994,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   STBox *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
   STBox *centroid = palloc0(sizeof(STBox));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
@@ -1060,12 +1070,10 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->period.upper = TimestampTzGetDatum(highTs[median]);
   }
 
-  /* getQuadrant8D uses fixed bit positions (Z at 7-6, T at 1-0, X+Y at 5-2),
-   * so the quadrant range is sparse. nNodes only depends on whether Z is
-   * present; T occupies the always-allocated low bits. */
+  /* getQuadrant8D packs bits contiguously into [0, 1 << dims). */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
-  out->nNodes = hasz ? 256 : 64;
+  out->nNodes = 1 << dims;
   out->nodeLabels = NULL;    /* We don't need node labels. */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
