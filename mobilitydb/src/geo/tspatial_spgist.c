@@ -165,33 +165,40 @@ static uint8
 getQuadrant8D(const STBox *centroid, const STBox *inBox)
 {
   uint8 quadrant = 0;
+  int bit = 0;
 
+  /* Pack bits contiguously starting at bit 0: X, Y, Z if hasz, T if
+   * hast. The result is in [0, 1 << dims), matching the nNodes set
+   * by Stbox_quadtree_picksplit. */
+  if (inBox->xmin > centroid->xmin)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->xmax > centroid->xmax)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->ymin > centroid->ymin)
+    quadrant |= (1 << bit);
+  bit++;
+  if (inBox->ymax > centroid->ymax)
+    quadrant |= (1 << bit);
+  bit++;
   if (MEOS_FLAGS_GET_Z(centroid->flags))
   {
     if (inBox->zmin > centroid->zmin)
-      quadrant |= 0x80;
-
+      quadrant |= (1 << bit);
+    bit++;
     if (inBox->zmax > centroid->zmax)
-      quadrant |= 0x40;
+      quadrant |= (1 << bit);
+    bit++;
   }
-
-  if (inBox->ymin > centroid->ymin)
-    quadrant |= 0x20;
-
-  if (inBox->ymax > centroid->ymax)
-    quadrant |= 0x10;
-
-  if (inBox->xmin > centroid->xmin)
-    quadrant |= 0x08;
-
-  if (inBox->xmax > centroid->xmax)
-    quadrant |= 0x04;
-
-  if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
-    quadrant |= 0x02;
-
-  if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
-    quadrant |= 0x01;
+  if (MEOS_FLAGS_GET_T(centroid->flags))
+  {
+    if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
+      quadrant |= (1 << bit);
+    bit++;
+    if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
+      quadrant |= (1 << bit);
+  }
 
   return quadrant;
 }
@@ -237,50 +244,55 @@ static void
 stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 quadrant, STboxNode *next_nodebox)
 {
+  int bit = 0;
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
 
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
-  {
-    if (quadrant & 0x80)
-      next_nodebox->left.zmin = centroid->zmin;
-    else
-      next_nodebox->left.zmax = centroid->zmin;
-
-    if (quadrant & 0x40)
-      next_nodebox->right.zmin = centroid->zmax;
-    else
-      next_nodebox->right.zmax = centroid->zmax;
-  }
-
-  if (quadrant & 0x20)
-    next_nodebox->left.ymin = centroid->ymin;
-  else
-    next_nodebox->left.ymax = centroid->ymin;
-
-  if (quadrant & 0x10)
-    next_nodebox->right.ymin = centroid->ymax;
-  else
-    next_nodebox->right.ymax = centroid->ymax;
-
-  if (quadrant & 0x08)
+  /* Bit layout matches getQuadrant8D. */
+  if (quadrant & (1 << bit))
     next_nodebox->left.xmin = centroid->xmin;
   else
     next_nodebox->left.xmax = centroid->xmin;
-
-  if (quadrant & 0x04)
+  bit++;
+  if (quadrant & (1 << bit))
     next_nodebox->right.xmin = centroid->xmax;
   else
     next_nodebox->right.xmax = centroid->xmax;
-
-  if (quadrant & 0x02)
-    next_nodebox->left.period.lower = centroid->period.lower;
+  bit++;
+  if (quadrant & (1 << bit))
+    next_nodebox->left.ymin = centroid->ymin;
   else
-    next_nodebox->left.period.upper = centroid->period.lower;
-
-  if (quadrant & 0x01)
-    next_nodebox->right.period.lower = centroid->period.upper;
+    next_nodebox->left.ymax = centroid->ymin;
+  bit++;
+  if (quadrant & (1 << bit))
+    next_nodebox->right.ymin = centroid->ymax;
   else
-    next_nodebox->right.period.upper = centroid->period.upper;
+    next_nodebox->right.ymax = centroid->ymax;
+  bit++;
+  if (MEOS_FLAGS_GET_Z(centroid->flags))
+  {
+    if (quadrant & (1 << bit))
+      next_nodebox->left.zmin = centroid->zmin;
+    else
+      next_nodebox->left.zmax = centroid->zmin;
+    bit++;
+    if (quadrant & (1 << bit))
+      next_nodebox->right.zmin = centroid->zmax;
+    else
+      next_nodebox->right.zmax = centroid->zmax;
+    bit++;
+  }
+  if (MEOS_FLAGS_GET_T(centroid->flags))
+  {
+    if (quadrant & (1 << bit))
+      next_nodebox->left.period.lower = centroid->period.lower;
+    else
+      next_nodebox->left.period.upper = centroid->period.lower;
+    bit++;
+    if (quadrant & (1 << bit))
+      next_nodebox->right.period.lower = centroid->period.upper;
+    else
+      next_nodebox->right.period.upper = centroid->period.upper;
+  }
 
   return;
 }
@@ -294,8 +306,12 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 node, int level, STboxNode *next_nodebox)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
+  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
+  int mod = level % dims;
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-  int mod = hasz ? level % 8 : level % 6 ;
   if (mod == 0)
   {
     /* Split the bounding box by lower bound  */
@@ -328,7 +344,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.ymax = centroid->ymax;
   }
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
   {
     /* Split the bounding box by lower bound  */
     if (node == 0)
@@ -336,7 +352,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.zmin = centroid->zmin;
   }
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
   {
     /* Split the bounding box by upper bound */
     if (node == 0)
@@ -344,7 +360,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.zmax = centroid->zmax;
   }
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
+  else if (hast && mod == tdim)
   {
     /* Split the bounding box by lower bound  */
     if (node == 0)
@@ -352,7 +368,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.period.lower = centroid->period.lower;
   }
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else /* hast && mod == tdim + 1 */
   {
     /* Split the bounding box by upper bound */
     if (node == 0)
@@ -393,7 +409,11 @@ static bool
 overlapKD(const STboxNode *nodebox, const STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
+  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
+  int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MEOS_FLAGS_GET_X(query->flags))
@@ -409,17 +429,17 @@ overlapKD(const STboxNode *nodebox, const STBox *query, int level)
   }
   if (MEOS_FLAGS_GET_Z(query->flags))
   {
-    if (hasz && mod == 4)
+    if (hasz && mod == zdim)
       result &= nodebox->left.zmin <= query->zmax;
-    else if (hasz && mod == 5)
+    else if (hasz && mod == zdim + 1)
       result &= nodebox->right.zmax >= query->zmin;
   }
   if (MEOS_FLAGS_GET_T(query->flags))
   {
-    if ((hasz && mod == 6) || (! hasz && mod == 4))
+    if (hast && mod == tdim)
       result &= datum_le(nodebox->left.period.lower, query->period.upper,
         T_TIMESTAMPTZ);
-    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+    else if (hast && mod == tdim + 1)
       result &= datum_ge(nodebox->right.period.upper, query->period.lower,
         T_TIMESTAMPTZ);
   }
@@ -456,7 +476,11 @@ static bool
 containKD(const STboxNode *nodebox, const STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  int mod = hasz ? level % 8 : level % 6;
+  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
+  int mod = level % dims;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MEOS_FLAGS_GET_X(query->flags))
@@ -472,17 +496,17 @@ containKD(const STboxNode *nodebox, const STBox *query, int level)
   }
   if (MEOS_FLAGS_GET_Z(query->flags))
   {
-    if (hasz && mod == 4)
+    if (hasz && mod == zdim)
       result &= nodebox->left.zmin <= query->zmin;
-    else if (hasz && mod == 5)
+    else if (hasz && mod == zdim + 1)
       result &= nodebox->right.zmax >= query->zmax;
   }
   if (MEOS_FLAGS_GET_T(query->flags))
   {
-    if ((hasz && mod == 6) || (! hasz && mod == 4))
+    if (hast && mod == tdim)
       result &= datum_le(nodebox->left.period.lower, query->period.lower,
         T_TIMESTAMPTZ);
-    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+    else if (hast && mod == tdim + 1)
       result &= datum_ge(nodebox->right.period.upper, query->period.upper,
         T_TIMESTAMPTZ);
   }
@@ -903,7 +927,11 @@ static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
-  int mod = hasz ? level % 8 : level % 6;
+  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
+  int mod = level % dims;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
   else if (mod == 1)
@@ -912,14 +940,16 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
     return stbox_ymin_cmp(query, centroid);
   else if (mod == 3)
     return stbox_ymax_cmp(query, centroid);
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
     return stbox_zmin_cmp(query, centroid);
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
     return stbox_zmax_cmp(query, centroid);
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
+  else if (hast && mod == tdim)
     return stbox_tmin_cmp(query, centroid);
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else if (hast && mod == tdim + 1)
     return stbox_tmax_cmp(query, centroid);
+  /* We should never arrive here */
+  elog(ERROR, "stbox_level_cmp: unexpected error");
 }
 
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
@@ -963,6 +993,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBox *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
   STBox *centroid = palloc0(sizeof(STBox));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
@@ -977,10 +1009,14 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     lowZs = palloc(sizeof(double) * in->nTuples);
     highZs = palloc(sizeof(double) * in->nTuples);
   }
-  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
-  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  TimestampTz *lowTs = NULL, *highTs = NULL; /* make compiler quiet */
+  if (hast)
+  {
+    lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
+    highTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  }
 
-  /* Calculate median of all 8D coordinates */
+  /* Calculate median of all coordinates */
   for (i = 0; i < in->nTuples; i++)
   {
     box = DatumGetSTboxP(in->datums[i]);
@@ -993,8 +1029,11 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
       lowZs[i] = box->zmin;
       highZs[i] = box->zmax;
     }
-    lowTs[i] = DatumGetTimestampTz(box->period.lower);
-    highTs[i] = DatumGetTimestampTz(box->period.upper);
+    if (hast)
+    {
+      lowTs[i] = DatumGetTimestampTz(box->period.lower);
+      highTs[i] = DatumGetTimestampTz(box->period.upper);
+    }
   }
 
   qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
@@ -1006,8 +1045,13 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
     qsort(highZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
   }
-  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
-  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+  if (hast)
+  {
+    qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz),
+      compareTimestampTz);
+    qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz),
+      compareTimestampTz);
+  }
 
   median = in->nTuples / 2;
 
@@ -1020,13 +1064,16 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->zmin = lowZs[median];
     centroid->zmax = highZs[median];
   }
-  centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
-  centroid->period.upper = TimestampTzGetDatum(highTs[median]);
+  if (hast)
+  {
+    centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
+    centroid->period.upper = TimestampTzGetDatum(highTs[median]);
+  }
 
-  /* Fill the output */
+  /* getQuadrant8D packs bits contiguously into [0, 1 << dims). */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
-  out->nNodes = hasz ? 256 : 128;
+  out->nNodes = 1 << dims;
   out->nodeLabels = NULL;    /* We don't need node labels. */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
@@ -1049,7 +1096,10 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   {
     pfree(lowZs); pfree(highZs);
   }
-  pfree(lowTs); pfree(highTs);
+  if (hast)
+  {
+    pfree(lowTs); pfree(highTs);
+  }
 
   PG_RETURN_VOID();
 }
@@ -1076,7 +1126,11 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     sorted[i].i = i;
   }
   bool hasz = MEOS_FLAGS_GET_Z(sorted[0].box.flags);
-  int mod = hasz ? in->level % 8 : in->level % 6;
+  bool hast = MEOS_FLAGS_GET_T(sorted[0].box.flags);
+  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
+  int zdim = 4;
+  int tdim = 4 + (hasz ? 2 : 0);
+  int mod = in->level % dims;
   qsort_comparator qsortfn;
   if (mod == 0)
     qsortfn = (qsort_comparator) &stbox_xmin_cmp;
@@ -1086,13 +1140,13 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_ymin_cmp;
   else if (mod == 3)
     qsortfn = (qsort_comparator) &stbox_ymax_cmp;
-  else if (hasz && mod == 4)
+  else if (hasz && mod == zdim)
     qsortfn = (qsort_comparator) &stbox_zmin_cmp;
-  else if (hasz && mod == 5)
+  else if (hasz && mod == zdim + 1)
     qsortfn = (qsort_comparator) &stbox_zmax_cmp;
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
+  else if (hast && mod == tdim)
     qsortfn = (qsort_comparator) &stbox_tmin_cmp;
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else /* hast && mod == tdim + 1 */
     qsortfn = (qsort_comparator) &stbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
