@@ -88,10 +88,10 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 #if RGEO
     /* Temporal rigid geometries have poses as base values but are restricted
      * to geometries */
-    meosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+    MeosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
       temptype_basetype(temp->temptype);
 #else
-    meosType basetype = temptype_basetype(temp->temptype);
+    MeosType basetype = temptype_basetype(temp->temptype);
 #endif /* RGEO */
     assert(tspatial_srid(temp) == spatial_srid(value, basetype));
     if (tgeo_type_all(temp->temptype)
@@ -158,10 +158,10 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 #if RGEO
     /* Temporal rigid geometries have poses as base values but are restricted
      * to geometries */
-    meosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+    MeosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
       temptype_basetype(temp->temptype);
 #else
-    meosType basetype = temptype_basetype(temp->temptype);
+    MeosType basetype = temptype_basetype(temp->temptype);
 #endif /* RGEO */
     if (! ensure_same_srid(tspatial_srid(temp),
             spatial_srid(value, basetype)) ||
@@ -683,10 +683,10 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 #if RGEO
   /* Temporal rigid geometries have poses as base values but are restricted
    * to geometries */
-  meosType basetype = (inst->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+  MeosType basetype = (inst->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
     temptype_basetype(inst->temptype);
 #else
-    meosType basetype = temptype_basetype(inst->temptype);
+    MeosType basetype = temptype_basetype(inst->temptype);
 #endif /* RGEO */
   for (int i = 0; i < s->count; i++)
   {
@@ -910,10 +910,10 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 #if RGEO
   /* Temporal rigid geometries have poses as base values but are restricted
    * to geometries */
-  meosType basetype = (seq->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+  MeosType basetype = (seq->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
     temptype_basetype(seq->temptype);
 #else
-    meosType basetype = temptype_basetype(seq->temptype);
+    MeosType basetype = temptype_basetype(seq->temptype);
 #endif /* RGEO */
 
   /* Instantaneous sequence */
@@ -1001,10 +1001,10 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   assert(inst1->temptype == inst2->temptype); assert(interp != DISCRETE);
   Datum start = tinstant_value_p(inst1);
   Datum end = tinstant_value_p(inst2);
-  meosType basetype = temptype_basetype(inst1->temptype);
+  MeosType basetype = temptype_basetype(inst1->temptype);
   // /* Temporal rigid geometries have poses as base values but are restricted
    // * to geometries */
-  // meosType basetype1 = (inst1->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+  // MeosType basetype1 = (inst1->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
     // basetype;
   TInstant *instants[2];
   /* Is the segment constant? */
@@ -1403,8 +1403,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 {
   Datum start = tinstant_value_p(inst1);
   Datum end = tinstant_value_p(inst2);
-  meosType basetype = temptype_basetype(inst1->temptype);
-  meosType spantype = basetype_spantype(basetype);
+  MeosType basetype = temptype_basetype(inst1->temptype);
+  MeosType spantype = basetype_spantype(basetype);
   TInstant *instants[2];
   bool found;
 
@@ -3423,7 +3423,7 @@ tcontseq_before_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     {
       /* The last two values of sequences with step interpolation and
          exclusive upper bound must be equal */
-      meosType basetype = temptype_basetype(seq->temptype);
+      MeosType basetype = temptype_basetype(seq->temptype);
       if (interp != LINEAR && datum_ne(tinstant_value_p(instants[ninsts - 2]),
           tinstant_value_p(instants[ninsts - 1]), basetype))
       {
@@ -3578,7 +3578,7 @@ tcontseq_after_timestamptz(const TSequence *seq, TimestampTz t, bool strict)
     {
       /* The last two values of sequences with step interpolation and
          exclusive upper bound must be equal */
-      meosType basetype = temptype_basetype(seq->temptype);
+      MeosType basetype = temptype_basetype(seq->temptype);
       if (interp != LINEAR &&
           datum_ne(tinstant_value_p(instants[ninsts - 2]),
             tinstant_value_p(instants[ninsts - 1]), basetype))

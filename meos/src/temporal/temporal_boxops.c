@@ -67,7 +67,7 @@
  * @brief Return true if the type is a bounding box type
  */
 bool
-bbox_type(meosType bboxtype)
+bbox_type(MeosType bboxtype)
 {
   if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
@@ -78,7 +78,7 @@ bbox_type(meosType bboxtype)
  * @brief Return the size of a bounding box type
  */
 size_t
-bbox_get_size(meosType bboxtype)
+bbox_get_size(MeosType bboxtype)
 {
   assert(bbox_type(bboxtype));
   if (bboxtype == T_TSTZSPAN)
@@ -93,7 +93,7 @@ bbox_get_size(meosType bboxtype)
  * @brief Return the maximum number of dimensions of a bounding box type
  */
 int
-bbox_max_dims(meosType bboxtype)
+bbox_max_dims(MeosType bboxtype)
 {
   assert(bbox_type(bboxtype));
   if (bboxtype == T_TSTZSPAN)
@@ -110,7 +110,7 @@ bbox_max_dims(meosType bboxtype)
  * @param[in] temptype Temporal type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
+temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
     tspatial_type(temptype));
@@ -135,7 +135,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
  * @param[in] temptype Temporal type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
+temporal_bbox_cmp(const void *box1, const void *box2, MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
     tspatial_type(temptype));
@@ -155,7 +155,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
  * @brief Return the size of a bounding box of a temporal type
  */
 size_t
-temporal_bbox_size(meosType temptype)
+temporal_bbox_size(MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
     tspatial_type(temptype));
@@ -179,8 +179,8 @@ tnumberinst_set_tbox(const TInstant *inst, TBox *box)
 {
   assert(inst); assert(temporal_type(inst->temptype)); assert(box);
   assert(tnumber_type(inst->temptype));
-  meosType basetype = temptype_basetype(inst->temptype);
-  meosType spantype = basetype_spantype(basetype);
+  MeosType basetype = temptype_basetype(inst->temptype);
+  MeosType spantype = basetype_spantype(basetype);
   Datum value = tinstant_value_p(inst);
   Datum time = TimestampTzGetDatum(inst->t);
   TBox *tbox = (TBox *) box;
@@ -316,8 +316,8 @@ tnumberinstarr_set_tbox(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, TBox *box)
 {
   assert(tnumber_type(instants[0]->temptype));
-  meosType basetype = temptype_basetype(instants[0]->temptype);
-  meosType spantype = basetype_spantype(basetype);
+  MeosType basetype = temptype_basetype(instants[0]->temptype);
+  MeosType spantype = basetype_spantype(basetype);
   /* For discrete or step interpolation the bounds are always inclusive */
   bool lower_inc1 = lower_inc;
   bool upper_inc1 = upper_inc;

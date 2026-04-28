@@ -317,7 +317,7 @@ Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_recv(StringInfo buf, meosType temptype)
+tinstant_recv(StringInfo buf, MeosType temptype)
 {
   TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
   int size = pq_getmsgint(buf, 4);
@@ -328,7 +328,7 @@ tinstant_recv(StringInfo buf, meosType temptype)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  meosType basetype = temptype_basetype(temptype);
+  MeosType basetype = temptype_basetype(temptype);
   Datum value = call_recv(basetype, &buf2);
   buf->cursor += size;
   return tinstant_make(value, temptype, t);
@@ -342,7 +342,7 @@ tinstant_recv(StringInfo buf, meosType temptype)
 void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(basetype, tinstant_value_p(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
@@ -360,7 +360,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
  * @param[in] temptype Temporal type
  */
 TSequence *
-tsequence_recv(StringInfo buf, meosType temptype)
+tsequence_recv(StringInfo buf, MeosType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
@@ -540,7 +540,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   PG_RETURN_TINSTANT_P(tinstant_make(value, temptype, t));
 }
 
@@ -556,7 +556,7 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_not_empty_array(array);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     interp = input_interp_string(fcinfo, 1);
@@ -613,7 +613,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);
@@ -650,7 +650,7 @@ Tsequence_from_base_tstzset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Set *s = PG_GETARG_SET_P(1);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tsequence_from_base_tstzset(value, temptype, s);
   PG_FREE_IF_COPY(s, 1);
   PG_RETURN_TSEQUENCE_P(result);
@@ -668,7 +668,7 @@ Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     interp = input_interp_string(fcinfo, 2);
@@ -689,7 +689,7 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     interp = input_interp_string(fcinfo, 2);
@@ -892,7 +892,7 @@ Temporal_valueset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Datum *values = temporal_values_p(temp, &count);
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   /* Currently, there is no boolset type */
   if (temp->temptype == T_TBOOL)
   {
@@ -1876,7 +1876,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
   if (PG_NARGS() == 2 || PG_ARGISNULL(2))
   {
     /* Set default interpolation according to the base type */
-    meosType temptype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
+    MeosType temptype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
     interp = temptype_continuous(temptype) ? LINEAR : STEP;
   }
   else
@@ -1974,7 +1974,7 @@ Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
 #if RGEO
   Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
     trgeo_restrict_value(temp, value, atfunc) :

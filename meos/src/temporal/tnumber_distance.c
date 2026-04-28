@@ -118,7 +118,7 @@ tdistance_tnumber_number(const Temporal *temp, Datum value)
 {
   assert(temp);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &distance_value_value;
@@ -149,7 +149,7 @@ tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
     return NULL;
 
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp1->temptype);
+  MeosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &distance_value_value;
@@ -182,7 +182,7 @@ double
 nad_tnumber_number(const Temporal *temp, Datum value)
 {
   assert(temp); assert(tnumber_type(temp->temptype));
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   TBox box1, box2;
   tnumber_set_tbox(temp, &box1);
   number_set_tbox(value, basetype, &box2);

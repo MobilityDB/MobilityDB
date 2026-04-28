@@ -265,7 +265,7 @@ Datum
 Value_to_spanset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_SPANSET_P(value_spanset(value, basetype));
 }
 

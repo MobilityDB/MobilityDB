@@ -84,7 +84,7 @@ typedef struct RTreeNode
 struct RTree
 {
   size_t bboxsize;       /**< Size of the bouding box */
-  meosType bboxtype;     /**< Type of the bouding box */
+  MeosType bboxtype;     /**< Type of the bouding box */
   int dims;
   RTreeNode *root;
   double (*get_axis)(const void *, int, bool);

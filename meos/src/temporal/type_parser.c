@@ -287,7 +287,7 @@ double_parse(const char **str, double *result)
  * @return On error return false
  */
 bool
-basetype_parse(const char **str, meosType basetype, char delim, Datum *result)
+basetype_parse(const char **str, MeosType basetype, char delim, Datum *result)
 {
   p_whitespace(str);
   int pos = 0;
@@ -342,7 +342,7 @@ tbox_parse(const char **str)
 
   p_whitespace(str);
   /* By default the span type is float span */
-  meosType spantype = T_FLOATSPAN;
+  MeosType spantype = T_FLOATSPAN;
   if (pg_strncasecmp(*str, "TBOXINT", 7) == 0)
   {
     spantype = T_INTSPAN;
@@ -454,7 +454,7 @@ timestamp_parse(const char **str)
  * @return On error return false
  */
 bool
-elem_parse(const char **str, meosType basetype, Datum *result)
+elem_parse(const char **str, MeosType basetype, Datum *result)
 {
   p_whitespace(str);
   int pos = 0, dquote = 0;
@@ -490,9 +490,9 @@ elem_parse(const char **str, meosType basetype, Datum *result)
  * @return On error return @p NULL
  */
 Set *
-set_parse(const char **str, meosType settype)
+set_parse(const char **str, MeosType settype)
 {
-  meosType basetype = settype_basetype(settype);
+  MeosType basetype = settype_basetype(settype);
   MeosArray *array = meos_array_create(sizeof(Datum));
   const char *type_str = meostype_name(settype);
   Set *result = NULL;
@@ -546,7 +546,7 @@ error:
  * @return On error return false
  */
 bool
-bound_parse(const char **str, meosType basetype, Datum *result)
+bound_parse(const char **str, MeosType basetype, Datum *result)
 {
   p_whitespace(str);
   int pos = 0;
@@ -569,7 +569,7 @@ bound_parse(const char **str, meosType basetype, Datum *result)
  * @return On error return false
  */
 bool
-span_parse(const char **str, meosType spantype, bool end, Span *span)
+span_parse(const char **str, MeosType spantype, bool end, Span *span)
 {
   const char *type_str = meostype_name(spantype);
   bool lower_inc = false, upper_inc = false;
@@ -583,7 +583,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
       "Could not parse %s value: Missing opening bracket/parenthesis", type_str);
     return false;
   }
-  meosType basetype = spantype_basetype(spantype);
+  MeosType basetype = spantype_basetype(spantype);
   Datum lower, upper;
   if (! bound_parse(str, basetype, &lower))
     return false;
@@ -615,12 +615,12 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
  * @return On error return @p NULL
  */
 SpanSet *
-spanset_parse(const char **str, meosType spansettype)
+spanset_parse(const char **str, MeosType spansettype)
 {
   const char *type_str = meostype_name(spansettype);
   if (! ensure_obrace(str, type_str))
     return NULL;
-  meosType spantype = spansettype_spantype(spansettype);
+  MeosType spantype = spansettype_spantype(spansettype);
 
   /* Parsing */
   MeosArray *array = meos_array_create(meostype_length(spantype));
@@ -661,10 +661,10 @@ error:
  * @return On error return NULL
  */
 TInstant *
-tinstant_parse(const char **str, meosType temptype, bool end)
+tinstant_parse(const char **str, MeosType temptype, bool end)
 {
   p_whitespace(str);
-  meosType basetype = temptype_basetype(temptype);
+  MeosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem;
   if (! basetype_parse(str, basetype, '@', &elem))
@@ -690,7 +690,7 @@ tinstant_parse(const char **str, meosType temptype, bool end)
  * @return On error return @p NULL
  */
 TSequence *
-tdiscseq_parse(const char **str, meosType temptype)
+tdiscseq_parse(const char **str, MeosType temptype)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -741,7 +741,7 @@ error:
  * @return On error return false
  */
 TSequence *
-tcontseq_parse(const char **str, meosType temptype, interpType interp,
+tcontseq_parse(const char **str, MeosType temptype, interpType interp,
   bool end)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
@@ -805,7 +805,7 @@ error:
  * @return On error return @p NULL
  */
 TSequenceSet *
-tsequenceset_parse(const char **str, meosType temptype, interpType interp)
+tsequenceset_parse(const char **str, MeosType temptype, interpType interp)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -850,7 +850,7 @@ error:
  * @return On error return @p NULL
  */
 Temporal *
-temporal_parse(const char **str, meosType temptype)
+temporal_parse(const char **str, MeosType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */

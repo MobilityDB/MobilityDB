@@ -55,13 +55,13 @@ extern long double floatsegm_locate(double value1, double value2,
   double value);
 
 extern int tnumbersegm_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, meosType basetype, TimestampTz lower, TimestampTz upper,
+  Datum end2, MeosType basetype, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
 
 /* Normalization functions */
 
 extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,
-  meosType basetype, interpType interp, TimestampTz t1, TimestampTz t2,
+  MeosType basetype, interpType interp, TimestampTz t1, TimestampTz t2,
   TimestampTz t3);
 extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
@@ -94,13 +94,13 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 extern int tfloatsegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t);
 extern int tsegment_intersection_value(Datum start, Datum end, Datum value,
-  meosType temptype, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  MeosType temptype, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
   TimestampTz *t2);
 extern int tsegment_intersection(Datum start1, Datum end1, Datum start2,
-  Datum end2, meosType temptype, TimestampTz lower, TimestampTz upper,
+  Datum end2, MeosType temptype, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
 extern Datum tsegment_value_at_timestamptz(Datum start, Datum end,
-  meosType temptype, TimestampTz lower, TimestampTz upper, TimestampTz t);
+  MeosType temptype, TimestampTz lower, TimestampTz upper, TimestampTz t);
   
 extern bool intersection_tdiscseq_tdiscseq(const TSequence *seq1,
   const TSequence *seq2, TSequence **inter1, TSequence **inter2);
@@ -123,7 +123,7 @@ extern char *tsequence_to_string(const TSequence *seq, int maxdd,
 
 extern bool ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
-extern void bbox_expand(const void *box1, void *box2, meosType temptype);
+extern void bbox_expand(const void *box1, void *box2, MeosType temptype);
 extern bool ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
   interpType interp);
 extern bool tsequence_make_valid(TInstant **instants, int count,

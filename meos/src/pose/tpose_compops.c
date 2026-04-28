@@ -60,7 +60,7 @@
  */
 static int
 eacomp_tpose_pose(const Temporal *temp, const Pose *pose,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_pose(temp, pose))
@@ -78,7 +78,7 @@ eacomp_tpose_pose(const Temporal *temp, const Pose *pose,
  */
 static int
 eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_tpose(temp1, temp2))
@@ -260,7 +260,7 @@ always_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal *
 tcomp_pose_tpose(const Pose *pose, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
@@ -279,7 +279,7 @@ tcomp_pose_tpose(const Pose *pose, const Temporal *temp,
  */
 static Temporal *
 tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);

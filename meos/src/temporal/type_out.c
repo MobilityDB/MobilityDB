@@ -115,7 +115,7 @@ text_out(const text *txt)
  * @return On error return @p NULL
  */
 char *
-basetype_out(Datum value, meosType type, int maxdd)
+basetype_out(Datum value, MeosType type, int maxdd)
 {
   assert(meos_basetype(type)); assert(maxdd >= 0);
 
@@ -291,7 +291,7 @@ stringbuffer_append_char(sb, '}');
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
 static bool
-temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, meosType temptype,
+temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
   int precision)
 {
   assert(alphanum_temptype(temptype));
@@ -428,7 +428,7 @@ stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *box, int precision)
  * type in the MF-JSON representation
  */
 static bool
-bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *box,
+bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
   int precision)
 {
   assert(temporal_type(temptype));
@@ -463,7 +463,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *box,
  * @brief Write into the buffer a temporal type in the MF-JSON representation
  */
 static bool
-temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
+temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 {
   assert(temporal_type(temptype));
   switch (temptype)
@@ -948,7 +948,7 @@ pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
  * @return On error return SIZE_MAX
  */
 static size_t
-base_to_wkb_size(Datum value, meosType basetype, uint8_t variant)
+base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
 {
   switch (basetype)
   {
@@ -1102,7 +1102,7 @@ static size_t
 tinstarr_to_wkb_size(TInstant **instants, int count, uint8_t variant)
 {
   size_t result = 0;
-  meosType basetype = temptype_basetype(instants[0]->temptype);
+  MeosType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_value_p(instants[i]);
@@ -1213,7 +1213,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
  * @return On error return SIZE_MAX
  */
 static size_t
-datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
+datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
 {
   if (set_type(type))
     return set_to_wkb_size(DatumGetSetP(value), variant);
@@ -1624,7 +1624,7 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
  * - timestamp
  */
 static uint8_t *
-base_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
+base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
   uint8_t variant)
 {
   switch (basetype)
@@ -2047,7 +2047,7 @@ static uint8_t *
 tinstant_base_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant)
 {
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   assert(temporal_basetype(basetype));
   buf = base_to_wkb_buf(tinstant_value_p(inst), basetype, buf, variant);
   buf = timestamptz_to_wkb_buf(inst->t, buf, variant);
@@ -2203,7 +2203,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * @return On error return @p NULL
  */
 static uint8_t *
-datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
+datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
 {
   if (set_type(type))
     buf = set_to_wkb_buf(DatumGetSetP(value), buf, variant);
@@ -2255,7 +2255,7 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
  * @note Caller is responsible for freeing the returned array.
  */
 uint8_t *
-datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
+datum_as_wkb(Datum value, MeosType type, uint8_t variant, size_t *size_out)
 {
   size_t buf_size;
   uint8_t *buf = NULL;
@@ -2331,7 +2331,7 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
  * @brief Return the HexWKB representation of a datum value
  */
 char *
-datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
+datum_as_hexwkb(Datum value, MeosType type, uint8_t variant, size_t *size)
 {
   /* Create WKB hex string */
   return (char *) datum_as_wkb(value, type,

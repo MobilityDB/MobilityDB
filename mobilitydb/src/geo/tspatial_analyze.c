@@ -603,7 +603,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
      * This changes wrt the original PostGIS function. We get a spatial set or
      * a temporal point while the original function gets a geometry.
      */
-    meosType type = oid_meostype(stats->attrtypid);
+    MeosType type = oid_meostype(stats->attrtypid);
     assert(spatialset_type(type) || tspatial_type(type));
     if (spatialset_type(type))
     {

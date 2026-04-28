@@ -282,7 +282,7 @@ Datum
 Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
   {
@@ -348,7 +348,7 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   double maxdist = -1.0;
   Interval *maxt = NULL;
-  meosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);

@@ -103,9 +103,9 @@ extern LWGEOM *parse_geojson(json_object *geojson, int *hasz);
  */
 bool
 #if CBUFFER || NPOINT || POSE || RGEO
-basetype_in(const char *str, meosType type, bool end, Datum *result)
+basetype_in(const char *str, MeosType type, bool end, Datum *result)
 #else
-basetype_in(const char *str, meosType type,
+basetype_in(const char *str, MeosType type,
   bool end UNUSED, Datum *result)
 #endif
 {
@@ -322,7 +322,7 @@ parse_mfjson_coord(json_object *poObj, int32_t srid, bool geodetic)
  * @brief Return an array of values from its MF-JSON representation
  */
 static Datum *
-parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
+parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *jvalues = NULL;
@@ -749,7 +749,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  */
 TInstant *
 tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
-  meosType temptype)
+  MeosType temptype)
 {
   assert(mfjson); assert(temporal_type(temptype));
   bool geodetic = tgeodetic_type(temptype);
@@ -796,7 +796,7 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
  */
 static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
-  meosType temptype, int *count)
+  MeosType temptype, int *count)
 {
   assert(mfjson); assert(count);
   bool geodetic = tgeodetic_type(temptype);
@@ -853,7 +853,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
  */
 TSequence *
 tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
-  meosType temptype, interpType interp)
+  MeosType temptype, interpType interp)
 {
   assert(mfjson);
   /* Get the array of temporal point instants */
@@ -901,7 +901,7 @@ tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
  */
 TSequenceSet *
 tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
-  meosType temptype, interpType interp)
+  MeosType temptype, interpType interp)
 {
   assert(mfjson);
   json_object *seqs = NULL;
@@ -972,7 +972,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @see #tsequenceset_from_mfjson()
  */
 Temporal *
-temporal_from_mfjson(const char *mfjson, meosType temptype)
+temporal_from_mfjson(const char *mfjson, MeosType temptype)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(mfjson, NULL);
@@ -1007,7 +1007,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
 
   /* Determine the type of temporal type */
   const char *typestr = json_object_get_string(poObjType);
-  meosType jtemptype = T_UNKNOWN;
+  MeosType jtemptype = T_UNKNOWN;
   if (! ensure_temptype_mfjson(typestr))
     return NULL;
   if (strcmp(typestr, "MovingBoolean") == 0)
@@ -1098,7 +1098,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
 #if RGEO
   /* We change the temptype to T_TPose to read a temporal pose and construct
    * the temporal rigid geometry from the geometry and the temporal pose */
-  meosType temptype_orig = temptype;
+  MeosType temptype_orig = temptype;
   GSERIALIZED *gs = NULL;
 #endif /* RGEO */
   if (pszInterp)
@@ -1973,7 +1973,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 
 #if RGEO
   GSERIALIZED *gs;
-  meosType temptype_orig = SRID_UNKNOWN;
+  MeosType temptype_orig = SRID_UNKNOWN;
   if (s->temptype == T_TRGEOMETRY)
   {
     gs = geo_from_wkb_state(s);
@@ -2016,7 +2016,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation
  */
 Datum
-type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
+type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
 {
   /* Initialize the state appropriately */
   meos_wkb_parse_state s;
@@ -2083,7 +2083,7 @@ type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
  * @brief Return a value from its HexEWKB representation
  */
 Datum
-type_from_hexwkb(const char *hexwkb, size_t size, meosType type)
+type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
   Datum result = type_from_wkb(wkb, size / 2, type);

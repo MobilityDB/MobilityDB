@@ -71,7 +71,7 @@
  */
 bool
 ensure_tinstant_same_value(const TInstant *inst1, const TInstant *inst2,
-  meosType basetype)
+  MeosType basetype)
 {
   assert(inst1->t == inst2->t);
   if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
@@ -416,7 +416,7 @@ tcontseq_merge_array_iter(TSequence **sequences, int count, int *totalcount)
 
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
-  meosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 1; i < count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
@@ -803,7 +803,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   }
   else /* overlap on the boundary */
   {
-    meosType basetype = temptype_basetype(seq1->temptype);
+    MeosType basetype = temptype_basetype(seq1->temptype);
     if (! ensure_tinstant_same_value(instants[0], instants[1], basetype))
       return NULL;
   }
@@ -1239,7 +1239,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   TSequence **tofree = palloc(sizeof(TSequence *) *
     Min(ss1->count, ss2->count) * 2);
-  meosType basetype = temptype_basetype(ss1->temptype);
+  MeosType basetype = temptype_basetype(ss1->temptype);
   /* Add the first sequence of ss1 to the result */
   sequences[0] = (TSequence *) TSEQUENCESET_SEQ_N(ss1, 0);
   int i = 1, /* counter for the first sequence */
@@ -1738,7 +1738,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
 {
   assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   TInstant *last = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE &&
@@ -1912,7 +1912,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
   {
-    meosType basetype = temptype_basetype(seq1->temptype);
+    MeosType basetype = temptype_basetype(seq1->temptype);
     if (! ensure_tinstant_same_value(inst1, inst2, basetype))
       return NULL;
   }
@@ -2079,7 +2079,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   else if (inst1->t == inst2->t && ss->period.upper_inc &&
     seq->period.lower_inc)
   {
-    meosType basetype = temptype_basetype(ss->temptype);
+    MeosType basetype = temptype_basetype(ss->temptype);
     if (! ensure_tinstant_same_value(inst1, inst2, basetype))
       return NULL;
   }

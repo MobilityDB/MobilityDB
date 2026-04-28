@@ -66,7 +66,7 @@
  * @brief Ensure that a set is of a given set type
  */
 bool
-ensure_set_isof_type(const Set *s, meosType settype)
+ensure_set_isof_type(const Set *s, MeosType settype)
 {
   if (s->settype == settype)
     return true;
@@ -160,7 +160,7 @@ set_find_value(const Set *s, Datum d, int *loc)
  * @csqlfn #Set_in()
  */
 Set *
-set_in(const char *str, meosType settype)
+set_in(const char *str, MeosType settype)
 {
   assert(str);
   return set_parse(&str, settype);
@@ -170,7 +170,7 @@ set_in(const char *str, meosType settype)
  * @brief Return true if the base type value is output enclosed into quotes
  */
 static bool
-set_basetype_quotes(meosType type)
+set_basetype_quotes(MeosType type)
 {
   /* Text values are already output with quotes in the #basetype_out function */
   if (type == T_TIMESTAMPTZ || spatial_basetype(type))
@@ -228,7 +228,7 @@ set_out(const Set *s, int maxdd)
  * @return On error return SIZE_MAX
  */
 static size_t
-set_bbox_size(meosType settype)
+set_bbox_size(MeosType settype)
 {
   assert(alphanumset_type(settype) || spatialset_type(settype));
   if (alphanumset_type(settype))
@@ -318,7 +318,7 @@ SET_VAL_N(const Set *s, int index)
  * should be removed
  */
 Set *
-set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
+set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
   bool order)
 {
   assert(values); assert(count > 0); assert(count <= maxcount);
@@ -363,7 +363,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   }
 
   /* Get the bounding box size */
-  meosType settype = basetype_settype(basetype);
+  MeosType settype = basetype_settype(basetype);
   size_t bboxsize = DOUBLE_PAD(set_bbox_size(settype));
 
   /* Determine whether the values are passed by value or by reference  */
@@ -464,7 +464,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @csqlfn #Set_constructor()
  */
 Set *
-set_make(const Datum *values, int count, meosType basetype, bool order)
+set_make(const Datum *values, int count, MeosType basetype, bool order)
 {
   assert(values); assert(count > 0);
   return set_make_exp(values, count, count, basetype, order);
@@ -481,7 +481,7 @@ set_make(const Datum *values, int count, meosType basetype, bool order)
  * should be removed
  */
 Set *
-set_make_free(Datum *values, int count, meosType basetype, bool order)
+set_make_free(Datum *values, int count, MeosType basetype, bool order)
 {
   assert(values); assert(count >= 0);
   if (! count)
@@ -521,7 +521,7 @@ set_copy(const Set *s)
  * @csqlfn #Value_to_set()
  */
 Set *
-value_set(Datum value, meosType basetype)
+value_set(Datum value, MeosType basetype)
 {
   return set_make_exp(&value, 1, 1, basetype, ORDER_NO);
 }
@@ -925,7 +925,7 @@ Set *
 numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
   bool haswidth)
 {
-  meosType type = s->basetype;
+  MeosType type = s->basetype;
   /* Ensure the validity of the arguments */
   VALIDATE_NUMSET(s, NULL);
   if (! ensure_one_true(hasshift, haswidth) ||

@@ -73,7 +73,7 @@ extern Datum multirange_out(PG_FUNCTION_ARGS);
  * @brief Call receive function of the base type
  */
 Datum
-call_recv(meosType type, StringInfo buf)
+call_recv(MeosType type, StringInfo buf)
 {
   if (type == T_DOUBLE2)
     return PointerGetDatum(double2_recv(buf));
@@ -98,7 +98,7 @@ call_recv(meosType type, StringInfo buf)
  * @brief Call send function of the base type
  */
 bytea *
-call_send(meosType type, Datum value)
+call_send(MeosType type, Datum value)
 {
   if (type == T_DOUBLE2)
     return double2_send(DatumGetDouble2P(value));
@@ -303,7 +303,7 @@ temparr_extract(ArrayType *array, int *count)
  * @note The values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
-datumarr_to_array(Datum *values, int count, meosType type)
+datumarr_to_array(Datum *values, int count, MeosType type)
 {
   int16 elmlen;
   bool elmbyval;
@@ -473,7 +473,7 @@ temparr_to_array(Temporal **temparr, int count, bool free_all)
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
-  meosType basetype)
+  MeosType basetype)
 {
   Oid rangetypid = 0;
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_DATE ||

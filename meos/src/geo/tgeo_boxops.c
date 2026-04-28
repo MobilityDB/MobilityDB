@@ -222,7 +222,7 @@ void
 tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
-  meosType temptype = instants[0]->temptype;
+  MeosType temptype = instants[0]->temptype;
   assert(tspatial_type(temptype));
   if (tgeo_type_all(temptype))
     tgeoinstarr_set_stbox(instants, count, (STBox *) box);
@@ -338,7 +338,7 @@ tspatialseqarr_set_stbox(TSequence **sequences, int count, STBox *box)
  * @note Currently, only spatial set types have bounding box
  */
 void
-spatialarr_set_bbox(const Datum *values, meosType basetype, int count,
+spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   void *box)
 {
   assert(spatial_basetype(basetype));
