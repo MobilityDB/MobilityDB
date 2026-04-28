@@ -1294,11 +1294,13 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   if (! xsize || temporal_num_instants(temp) == 1 || tgeo_type(temp->temptype))
       bitmatrix = false;
 
-  POINT3DZ pt;
+  /* Zero-init at declaration: when xsize == 0 the if-block below is
+   * skipped, but pt is still passed to stbox_tile_state_make() further
+   * down — would otherwise be read uninitialised. */
+  POINT3DZ pt = { 0.0, 0.0, 0.0 };
   bool hasz = false;
   if (xsize)
   {
-    memset(&pt, 0, sizeof(POINT3DZ));
     hasz = MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {

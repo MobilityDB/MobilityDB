@@ -184,16 +184,17 @@ jobs:
           python3 <<'PYEOF'
           import sys, xml.etree.ElementTree as ET
 
-          # Patterns we want to block on. These are real-bug classes
-          # cppcheck detects with high precision.
+          # Patterns we want to block on. Restricted to the high-precision
+          # bug classes — cppcheck's flow-analysis-derived patterns
+          # (knownConditionTrueFalse, redundantAssignment) have a high
+          # false-positive rate on MEOS code and would block on legacy
+          # patterns rather than introduced bugs.
           CRITICAL = {
               "CastIntegerToAddressAtReturn",
               "incorrectLogicOperator",
               "nullPointer",
               "nullPointerRedundantCheck",
               "uninitvar",
-              "knownConditionTrueFalse",
-              "redundantAssignment",
               "duplicateExpression",
               "resourceLeak",
               "returnDanglingLifetime",
@@ -201,8 +202,15 @@ jobs:
 
           # Vendored upstream — already excluded from cppcheck via the
           # --suppress flags, but defence-in-depth here in case a path
-          # slips the suppress glob.
+          # slips the suppress glob. Cppcheck sometimes reports paths
+          # by basename (especially flex/bison-generated files), so we
+          # also match a list of vendored basenames.
           VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/")
+          VENDORED_BASENAMES = (
+              # liblwgeom flex/bison-generated parsers
+              "lwin_wkt_lex.c", "lwin_wkt_lex.l",
+              "lwin_wkt_parse.c", "lwin_wkt_parse.y",
+          )
 
           root = ET.parse("cppcheck.xml").getroot()
           violations = []
@@ -220,6 +228,10 @@ jobs:
                           norm = norm[len(prefix):]
                           break
                   if norm.startswith(VENDORED):
+                      continue
+                  # Also check basename in case cppcheck stripped path
+                  # (happens for flex/bison-generated postgis files).
+                  if norm.split("/")[-1] in VENDORED_BASENAMES:
                       continue
                   violations.append((
                       rid, norm, loc.get("line", "?"),

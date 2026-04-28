@@ -1602,7 +1602,7 @@ TBox *
 union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (! ensure_same_dimensionality_tbox(box1, box2) ||
       (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
         ! ensure_same_span_type(&box1->span, &box2->span)))
@@ -1667,7 +1667,7 @@ TBox *
 intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
         ! ensure_same_span_type(&box1->span, &box2->span))
     return NULL;
