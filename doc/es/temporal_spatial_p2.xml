@@ -478,24 +478,11 @@ SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 		<sect2>
 			<title>Relaciones espaciotemporales</title>
 
-			<para>Presentamos a continuación las relaciones espaciotemporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT TripId, duration(atValues(tIntersects(T.trip, M.geom), True))
-FROM Trips T, Municipality M
-WHERE M.Name = "Brussels" AND atValues(tIntersects(T.trip, M.geom), True) IS NOT NULL;
-</programlisting>
-			<para>Para simplificar la escritura de consultas, las relaciones espaciotemporales tienen un último parámetro opcional, que si se proporciona aplica la función <varname>atValue</varname> (ver <xref linkend="ttype_restrictions" />) al resultado de la relación. De esta forma, la consulta anterior se puede escribir de la siguiente manera.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT TripId, duration(tIntersects(T.trip, M.geom, True))
-FROM Trips T, Municipality M
-WHERE M.Name = "Brussels" AND tIntersects(T.trip, M.geom, True) IS NOT NULL;
-</programlisting>
-
 			<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
 					<para>Contiene temporal</para>
-					<para><varname>tContains(geometry,tgeom,atValue boolean=NULL) → tbool</varname></para>
+					<para><varname>tContains(geometry,tgeom) → tbool</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
@@ -515,7 +502,7 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				<listitem xml:id="tgeo_tDisjoint">
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 					<para>Disjunto temporal &Z_support; &geography_support;</para>
-					<para><varname>tDisjoint({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</varname></para>
+					<para><varname>tDisjoint({geo,tgeo},{geo,tgeo}) → tbool</varname></para>
 					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
@@ -530,7 +517,7 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 				<listitem xml:id="tgeo_tDwithin">
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 					<para>Está a distancia de temporal &Z_support;</para>
-					<para><varname>tDwithin({geo,tgeo},{geo,tgeo},float,atValue boolean=NULL) → tbool</varname></para>
+					<para><varname>tDwithin({geo,tgeo},{geo,tgeo},float) → tbool</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
@@ -544,7 +531,7 @@ SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
 				<listitem xml:id="tgeo_tIntersects">
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<para>Intersección temporal &Z_support; &geography_support;</para>
-					<para><varname>tIntersects({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</varname></para>
+					<para><varname>tIntersects({geo,tgeo},{geo,tgeo}) → tbool</varname></para>
 					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
@@ -560,7 +547,7 @@ SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
 				<listitem xml:id="tgeo_tTouches">
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 					<para>Toca temporal</para>
-					<para><varname>tTouches({geometry,tgeom},{geometry,tgeom},atValue boolean=NULL) → tbool</varname></para>
+					<para><varname>tTouches({geometry,tgeom},{geometry,tgeom}) → tbool</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
