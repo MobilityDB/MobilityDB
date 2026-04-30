@@ -286,7 +286,7 @@ typedef union bboxunion
  *****************************************************************************/
 
 /* Definition of output function */
-typedef char *(*outfunc)(Datum value, meosType type, int maxdd);
+typedef char *(*outfunc)(Datum value, MeosType type, int maxdd);
 
 /* Definition of qsort comparator for integers */
 typedef int (*qsort_comparator) (const void *a, const void *b);
@@ -376,23 +376,23 @@ typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
 
 /* Parameter tests */
 
-extern bool ensure_has_X(meosType type, int16 flags);
-extern bool ensure_has_Z(meosType type, int16 flags);
-extern bool ensure_has_T(meosType type, int16 flags);
-extern bool ensure_has_not_Z(meosType type, int16 flags);
+extern bool ensure_has_X(MeosType type, int16 flags);
+extern bool ensure_has_Z(MeosType type, int16 flags);
+extern bool ensure_has_T(MeosType type, int16 flags);
+extern bool ensure_has_not_Z(MeosType type, int16 flags);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
 extern bool ensure_one_true(bool hasshift, bool haswidth);
-extern bool ensure_valid_interp(meosType temptype, interpType interp);
+extern bool ensure_valid_interp(MeosType temptype, interpType interp);
 extern bool ensure_continuous(const Temporal *temp);
 extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
 extern bool ensure_linear_interp(int16 flags);
 extern bool ensure_nonlinear_interp(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
-extern bool ensure_temporal_isof_type(const Temporal *temp, meosType type);
+extern bool ensure_temporal_isof_type(const Temporal *temp, MeosType type);
 extern bool ensure_temporal_isof_basetype(const Temporal *temp,
-  meosType basetype);
+  MeosType basetype);
 extern bool ensure_temporal_isof_subtype(const Temporal *temp,
   tempSubtype type);
 extern bool ensure_same_temporal_type(const Temporal *temp1,
@@ -407,10 +407,10 @@ extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal
 extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
-extern bool not_negative_datum(Datum size, meosType basetype);
-extern bool ensure_not_negative_datum(Datum size, meosType basetype);
-extern bool positive_datum(Datum size, meosType basetype);
-extern bool ensure_positive_datum(Datum size, meosType basetype);
+extern bool not_negative_datum(Datum size, MeosType basetype);
+extern bool ensure_not_negative_datum(Datum size, MeosType basetype);
+extern bool positive_datum(Datum size, MeosType basetype);
+extern bool ensure_positive_datum(Datum size, MeosType basetype);
 extern bool ensure_valid_day_duration(const Interval *duration);
 extern bool positive_duration(const Interval *duration);
 extern bool ensure_positive_duration(const Interval *duration);
@@ -429,7 +429,7 @@ extern char *mobilitydb_full_version(void);
 
 /* Transformations */
 
-extern datum_func2 round_fn(meosType basetype);
+extern datum_func2 round_fn(MeosType basetype);
 
 /* Restriction functions */
 

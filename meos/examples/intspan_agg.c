@@ -80,8 +80,8 @@ int main(void)
   }
 
   intspan_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char span_buffer[MAX_LEN_SPAN];
 
@@ -100,11 +100,11 @@ int main(void)
     if (read != 2)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
 
     /* Transform the string representing the span into a span value */
     rec.span = intspan_in(span_buffer);
@@ -122,7 +122,7 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
 
   /* Compute the final result */
   SpanSet *final = spanset_union_finalfn(state);

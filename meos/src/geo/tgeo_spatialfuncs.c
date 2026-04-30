@@ -435,7 +435,7 @@ pose_flags(Pose *pose)
  * @brief Get the MEOS flags from a spatial value
  */
 int16
-spatial_flags(Datum d, meosType basetype)
+spatial_flags(Datum d, MeosType basetype)
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
@@ -548,7 +548,7 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_same_geodetic_tspatial_base(const Temporal *temp, Datum base)
 {
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   assert(spatial_basetype(basetype));
   int16 flags = spatial_flags(base, basetype);
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags) != MEOS_FLAGS_GET_GEODETIC(flags))
@@ -895,7 +895,7 @@ ensure_valid_tspatial_base(const Temporal *temp, Datum base)
 {
   VALIDATE_TSPATIAL(temp, false);
   VALIDATE_NOT_NULL(DatumGetPointer(base), false);;
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   if (! ensure_same_srid(tspatial_srid(temp), spatial_srid(base, basetype)) ||
       ! ensure_same_geodetic_tspatial_base(temp, base))
     return false;
@@ -972,7 +972,7 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
     res = geom_to_geog(gs);
   else
     res = geog_to_geom(gs);
-  meosType temptype;
+  MeosType temptype;
   if (oper == TGEOMP_TO_TGEOGP)
     temptype = (inst->temptype == T_TGEOMPOINT) ? T_TGEOGPOINT : T_TGEOGRAPHY;
   else
@@ -1168,7 +1168,7 @@ tgeoinst_tpointinst(const TInstant *inst, bool oper)
   if (oper == TGEO_TO_TPOINT && ! ensure_point_type(gs))
     return NULL;
 
-  meosType temptype;
+  MeosType temptype;
   if (oper == TGEO_TO_TPOINT)
     temptype = (inst->temptype == T_TGEOMETRY) ? T_TGEOMPOINT : T_TGEOGPOINT;
   else
@@ -1616,7 +1616,7 @@ tgeo_traversed_area(const Temporal *temp, bool unary_union)
   /* Get the array of pointers to the component values */
   int count;
   Datum *values = temporal_values_p(temp, &count);
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   datumarr_sort(values, count, basetype);
   int newcount = datumarr_remove_duplicates(values, count, basetype);
   GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * newcount);

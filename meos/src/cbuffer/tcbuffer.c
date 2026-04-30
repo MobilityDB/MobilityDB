@@ -804,7 +804,7 @@ tcbufferseq_members(const TSequence *seq, bool point)
     values[i] = point ?
       PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   }
-  meosType basetype = point ? T_GEOMETRY : T_FLOAT8;
+  MeosType basetype = point ? T_GEOMETRY : T_FLOAT8;
   datumarr_sort(values, seq->count, basetype);
   int count = datumarr_remove_duplicates(values, seq->count, basetype);
   if (point)
@@ -833,7 +833,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
         PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
     }
   }
-  meosType basetype = point ? T_GEOMETRY : T_TFLOAT;
+  MeosType basetype = point ? T_GEOMETRY : T_TFLOAT;
   datumarr_sort(values, ss->count, basetype);
   int count = datumarr_remove_duplicates(values, ss->count, basetype);
   /* Free the duplicate values that have been found */
@@ -1084,7 +1084,7 @@ tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
 
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
   Temporal *tfloat = tcbuffer_to_tfloat(temp);
-  Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
+  Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, atfunc);
   Temporal *result = NULL;
   if (tpoint_rest)
   {

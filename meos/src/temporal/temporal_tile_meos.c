@@ -690,7 +690,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
  * @param[in] type Type of the arguments
  */
 static int
-bin_position(Datum value, Datum size, Datum origin, meosType type)
+bin_position(Datum value, Datum size, Datum origin, MeosType type)
 {
   assert(tnumber_basetype(type));
   if (type == T_INT4)
@@ -719,7 +719,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bin, Datum size,
   assert(inst); assert(bins); assert(newcount);
 
   Datum value = tinstant_value_p(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  MeosType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
@@ -747,7 +747,7 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bin,
 {
   assert(seq); assert(bins); assert(newcount);
 
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   TSequence **result;
   Datum *values, value, bin_value;
 
@@ -820,7 +820,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
   assert(seq); assert(result); assert(nseqs);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
 
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   Datum value, bin_value;
   int bin_no, seq_no;
 
@@ -897,8 +897,8 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
   assert(seq); assert(result); assert(nseqs);
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
 
-  meosType basetype = temptype_basetype(seq->temptype);
-  meosType spantype = basetype_spantype(basetype);
+  MeosType basetype = temptype_basetype(seq->temptype);
+  MeosType spantype = basetype_spantype(basetype);
   Datum value1, bin_value1;
   int bin_no1, seq_no;
   Span segspan;
@@ -1065,7 +1065,7 @@ tnumberseq_cont_value_split(const TSequence *seq, Datum start_bin, Datum size,
 
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   assert(interp != DISCRETE);
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1137,7 +1137,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bin, Datum size,
       size, count, bins, newcount);
 
   /* General case */
-  meosType basetype = temptype_basetype(ss->temptype);
+  MeosType basetype = temptype_basetype(ss->temptype);
   TSequence **binseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *nseqs = palloc0(sizeof(int) * count);
@@ -1232,7 +1232,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   Datum **value_bins, TimestampTz **time_bins, int *count)
 {
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   ensure_positive_datum(size, basetype);
   ensure_positive_duration(duration);
 
@@ -1261,7 +1261,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   fragments = palloc(sizeof(Temporal *) * ntiles);
   int nfrags = 0;
   Datum lower_value = start_bin;
-  meosType spantype = basetype_spantype(basetype);
+  MeosType spantype = basetype_spantype(basetype);
   while (datum_lt(lower_value, end_bin, basetype))
   {
     Datum upper_value = datum_add(lower_value, size, basetype);

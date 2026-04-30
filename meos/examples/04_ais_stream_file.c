@@ -54,16 +54,16 @@
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 
-/* Number of instants to send in batch to the file  */
-#define NO_INSTS_BATCH 1000
+/* Number of instants to send in batch to the file */
+#define NUM_INSTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence */
-#define NO_INSTS_KEEP 2
+#define NUM_INSTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
 #define MAX_LEN_POINT 64
 /* Maximum number of trips */
-#define MAX_NO_TRIPS 5
+#define MAX_NUM_TRIPS 5
 
 typedef struct
 {
@@ -84,15 +84,15 @@ int
 main(int argc, char **argv)
 {
   AIS_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char text_buffer[MAX_LEN_HEADER];
   /* Allocate space to build the trips */
-  trip_record trips[MAX_NO_TRIPS] = {0};
+  trip_record trips[MAX_NUM_TRIPS] = {0};
   /* Number of ships */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Number of writes */
-  int no_writes = 0;
+  int num_writes = 0;
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -132,7 +132,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   printf("Accumulating %d instants before sending them to the output file\n"
-    "(one '*' marker every output file update)\n", NO_INSTS_BATCH);
+    "(one '*' marker every output file update)\n", NUM_INSTS_BATCH);
 
   /* Read the first line of the file with the headers */
   fscanf(file_in, "%1023s\n", text_buffer);
@@ -151,15 +151,15 @@ main(int argc, char **argv)
     if (read != 5)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
 
     /* Find the place to store the new instant */
     j = -1;
-    for (i = 0; i < no_ships; i++)
+    for (i = 0; i < num_ships; i++)
     {
       if (trips[i].MMSI == rec.MMSI)
       {
@@ -169,11 +169,11 @@ main(int argc, char **argv)
     }
     if (j < 0)
     {
-      j = no_ships++;
-      if (j == MAX_NO_TRIPS)
+      j = num_ships++;
+      if (j == MAX_NUM_TRIPS)
       {
         printf("The maximum number of ships in the input file is bigger than %d",
-          MAX_NO_TRIPS);
+          MAX_NUM_TRIPS);
         fclose(file_in);
         goto cleanup;
       }
@@ -181,17 +181,17 @@ main(int argc, char **argv)
     }
 
     /* Send to the output file the trip if reached the maximum number of instants */
-    if (trips[j].trip && trips[j].trip->count == NO_INSTS_BATCH)
+    if (trips[j].trip && trips[j].trip->count == NUM_INSTS_BATCH)
     {
       char *temp_out = tsequence_out(trips[j].trip, 15);
       fprintf(file_out, "%ld, %s\n",trips[j].MMSI, temp_out);
       /* Free memory */
       free(temp_out);
-      no_writes++;
+      num_writes++;
       printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last instants */
-      tsequence_restart(trips[j].trip, NO_INSTS_KEEP);
+      tsequence_restart(trips[j].trip, NUM_INSTS_KEEP);
     }
 
     /* Transform the string representing the timestamp into a timestamp value */
@@ -207,7 +207,7 @@ main(int argc, char **argv)
     TInstant *inst = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[j].trip)
-      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTS_BATCH, true,
+      trips[j].trip = tsequence_make_exp(&inst, 1, NUM_INSTS_BATCH, true,
       true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
@@ -215,7 +215,7 @@ main(int argc, char **argv)
   } while (! feof(file_in));
 
   printf("\n%d records read\n%d incomplete records ignored\n"
-    "%d writes to the output file\n", no_records, no_nulls, no_writes);
+    "%d writes to the output file\n", num_records, num_nulls, num_writes);
 
   /* Close the file */
   fclose(file_in);
@@ -230,7 +230,7 @@ cleanup:
   fclose(file_out);
 
  /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
     free(trips[i].trip);
 
   /* Finalize MEOS */

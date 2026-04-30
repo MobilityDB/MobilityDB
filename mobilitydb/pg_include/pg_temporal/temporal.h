@@ -198,10 +198,10 @@ extern interpType input_interp_string(FunctionCallInfo fcinfo, int argno);
 extern Temporal *temporal_recv(StringInfo buf);
 extern void temporal_write(const Temporal *temp, StringInfo buf);
 
-extern bytea *Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
+extern bytea *Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, MeosType type,
   bool extended);
 extern text *Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value,
-  meosType type);
+  MeosType type);
 
 /* Parameter tests */
 
@@ -212,10 +212,10 @@ extern bool ensure_not_empty_array(ArrayType *array);
 extern Datum EAcomp_temporal_temporal(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const Temporal *));
 extern Datum Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType));
+  Datum (*func)(Datum, Datum, MeosType));
 
 extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, meosType));
+  Datum (*func)(Datum, Datum, MeosType));
 
 /* Indexing functions */
 

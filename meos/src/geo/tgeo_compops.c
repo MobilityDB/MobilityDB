@@ -58,7 +58,7 @@
  */
 int
 eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
@@ -76,7 +76,7 @@ eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  */
 int
 eacomp_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
@@ -254,7 +254,7 @@ always_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal *
 tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -272,7 +272,7 @@ tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
  */
 static Temporal *
 tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);

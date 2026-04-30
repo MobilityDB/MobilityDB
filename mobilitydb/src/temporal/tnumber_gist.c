@@ -68,7 +68,7 @@
  * that must not be taken into account by the operators to infinity
  */
 static bool
-tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, meosType type)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, MeosType type)
 {
   Span *s;
   if (tnumber_spantype(type))
@@ -346,7 +346,7 @@ non_negative(float val)
  */
 inline void
 bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
-  meosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
+  MeosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
   int maxLeftCount)
 {
   int leftCount, rightCount;
@@ -492,7 +492,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  */
 void
 bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
-  meosType bboxtype, void (*bbox_adjust)(void *, void *))
+  MeosType bboxtype, void (*bbox_adjust)(void *, void *))
 {
   OffsetNumber i;
   OffsetNumber maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -549,7 +549,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
-bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
+bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);

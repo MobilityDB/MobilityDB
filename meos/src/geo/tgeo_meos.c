@@ -530,7 +530,7 @@ tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSET(s, NULL);
   if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tsequence_from_base_tstzset(PointerGetDatum(gs), temptype, s);
 }
@@ -549,7 +549,7 @@ tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSET(s, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tsequence_from_base_tstzset(PointerGetDatum(gs), temptype, s);
 }
@@ -571,7 +571,7 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
   if (gserialized_is_empty(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tsequence_from_base_tstzspan(PointerGetDatum(gs), temptype, s,
     interp);
@@ -593,7 +593,7 @@ tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
   if (gserialized_is_empty(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tsequence_from_base_tstzspan(PointerGetDatum(gs), temptype, s,
     interp);
@@ -617,7 +617,7 @@ tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(gs), temptype, ss,
     interp);
@@ -639,7 +639,7 @@ tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+  MeosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(gs), temptype, ss,
     interp);
@@ -664,7 +664,7 @@ tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp,
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
-  meosType tgeotype;
+  MeosType tgeotype;
   if (ispoint)
     tgeotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT : T_TGEOMPOINT;
   else
@@ -766,7 +766,7 @@ tgeo_values(const Temporal *temp, int *count)
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   int count1;
   Datum *datumarr = temporal_values_p(temp, &count1);
-  meosType basetype = temptype_basetype(temp->temptype);
+  MeosType basetype = temptype_basetype(temp->temptype);
   datumarr_sort(datumarr, count1, basetype);
   *count = datumarr_remove_duplicates(datumarr, count1, basetype);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);

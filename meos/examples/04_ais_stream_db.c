@@ -83,9 +83,9 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the database */
-#define NO_INSTS_BATCH 1000
+#define NUM_INSTS_KEEP 1000
 /* Number of instants to keep when restarting a sequence, should keep at least one */
-#define NO_INSTS_KEEP 2
+#define NUM_INSTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -134,15 +134,15 @@ main(int argc, char **argv)
   PGconn *conn;
   int res_sql;
   AIS_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char text_buffer[MAX_LEN_HEADER];
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
   /* Number of ships */
-  int no_ships = 0;
+  int num_ships = 0;
   /* Number of writes */
-  int no_writes = 0;
+  int num_writes = 0;
   /* Iterator variables */
   int i, j;
   /* Exit value initialized to 1 (i.e., error) to quickly exit upon error */
@@ -223,7 +223,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   printf("Accumulating %d instants before sending them to the database\n"
-    "(one '*' marker every database update)\n", NO_INSTS_BATCH);
+    "(one '*' marker every database update)\n", NUM_INSTS_KEEP);
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
@@ -242,11 +242,11 @@ main(int argc, char **argv)
     if (read != 5)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
     
     /* Transform the string representing the timestamp into a timestamp value */
     rec.T = timestamp_in(text_buffer, -1);
@@ -263,7 +263,7 @@ main(int argc, char **argv)
     }
     if (j < 0)
     {
-      j = no_ships++;
+      j = num_ships++;
       if (j == MAX_TRIPS)
       {
         printf("The maximum number of ships in the input file is bigger than %d",
@@ -275,7 +275,7 @@ main(int argc, char **argv)
     }
 
     /* Send the trip to the database when its size reaches the maximum size */
-    if (trips[j].trip && trips[j].trip->count == NO_INSTS_BATCH)
+    if (trips[j].trip && trips[j].trip->count == NUM_INSTS_KEEP)
     {
       /* Construct the query to be sent to the database */
       char *temp_out = tsequence_out(trips[j].trip, 15);
@@ -296,11 +296,11 @@ main(int argc, char **argv)
       /* Free memory */
       free(temp_out);
       free(query_buffer);
-      no_writes++;
+      num_writes++;
       printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last instants */
-      tsequence_restart(trips[j].trip, NO_INSTS_KEEP);
+      tsequence_restart(trips[j].trip, NUM_INSTS_KEEP);
     }
 
     /* Append the last observation to the corresponding ship.
@@ -311,7 +311,7 @@ main(int argc, char **argv)
     TInstant *inst = tpointinst_make(gs, rec.T);
     free(gs);
     if (! trips[j].trip)
-      trips[j].trip = tsequence_make_exp(&inst, 1, NO_INSTS_BATCH, true,
+      trips[j].trip = tsequence_make_exp(&inst, 1, NUM_INSTS_KEEP, true,
         true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
@@ -322,7 +322,7 @@ main(int argc, char **argv)
   fclose(file);
 
   printf("\n%d records read\n%d incomplete records ignored\n"
-    "%d writes to the database\n", no_records, no_nulls, no_writes);
+    "%d writes to the database\n", num_records, num_nulls, num_writes);
 
   snprintf(text_buffer, MAX_LEN_HEADER - 1,
     "SELECT MMSI, public.numInstants(trip) FROM public.AISTrips;");
@@ -355,7 +355,7 @@ main(int argc, char **argv)
 cleanup:
 
  /* Free memory */
-  for (i = 0; i < no_ships; i++)
+  for (i = 0; i < num_ships; i++)
     free(trips[i].trip);
 
   /* Close the connection to the database and cleanup */

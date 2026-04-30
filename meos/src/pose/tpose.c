@@ -121,78 +121,49 @@ tposesegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  /* We are sure that the trajectory is a line */
-  Datum geom_start = datum_pose_point(start);
-  Datum geom_end = datum_pose_point(end);
-  Datum geom = datum_pose_point(value);
-  double dist;
-  /* Compute the value taking into account position only */
-  double fraction = (double) pointsegm_locate(geom_start, geom_end, geom,
-    &dist);
-  pfree(DatumGetPointer(geom_start)); pfree(DatumGetPointer(geom_end));
-  pfree(DatumGetPointer(geom));
-  if (fraction < 0.0)
-    return 0;
-  /* Compare value with interpolated pose to take into account orientation as
-   * well */
   const Pose *pose1 = DatumGetPoseP(start);
   const Pose *pose2 = DatumGetPoseP(end);
-  Pose *pose_interp = posesegm_interpolate(pose1, pose2, fraction);
-  Pose *pose = DatumGetPoseP(value);
-  bool same = pose_same(pose, pose_interp);
-  /* Temporal rigid geometries have poses as base values but are restricted
-   * to geometries */
-  // bool same;
-  // if (inst1->temptype == T_TRGEOMETRY)
-  // {
-    // const GSERIALIZED *gs1 = DatumGetGserializedP(start);
-    // const GSERIALIZED *gs2 = DatumGetGserializedP(value);
-    // LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-    // LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-    // LWGEOM *geom_interp = lwgeom_clone_deep(geom2);
-    // lwgeom_apply_pose(pose_interp, geom_interp);
-    // if (geom_interp->bbox)
-      // lwgeom_refresh_bbox(geom_interp);
-    // same = lwgeom_same(geom1, geom_interp);
-    // lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(geom_interp);
-  // }
-  // else
-  // {
-    // Pose *pose = DatumGetPoseP(value);
-    // same = pose_same(pose, pose_interp);
-  // }
-  pfree(pose_interp);
-  if (! same)
+  const Pose *pose = DatumGetPoseP(value);
+  /* Locate the value in the segment accounting for both position and
+   * rotation; this handles the case where pose1 and pose2 share the same
+   * point but differ in rotation. */
+  long double fraction = posesegm_locate(pose1, pose2, pose);
+  if (fraction < 0.0)
     return 0;
-  if (t1)
-  {
-    double duration = (double) (upper - lower);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t1 = lower + (TimestampTz) (duration * fraction);
-    if (t2)
-      *t2 = *t1;
-  }
+  double duration = (double) (upper - lower);
+  *t1 = lower + (TimestampTz) (duration * (double) fraction);
+  if (t2)
+    *t2 = *t1;
   return 1;
 }
 
-// /**
- // * @brief Return 1 if two temporal pose segments intersect during the period
- // * defined by the output timestamps, return 0 otherwise
- // * @param[in] start1,end1 Temporal instants defining the first segment
- // * @param[in] start2,end2 Temporal instants defining the second segment
- // * @param[in] lower,upper Timestamps defining the segments
- // * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
- // */
-// int
-// tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
-  // TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-// {
-  // assert(lower < upper); assert(t1); assert(t2);
-  // /* While waiting for this function we cheat and call the function below */
-  // return posesegm_distance_turnpt(DatumGetPoseP(start1), DatumGetPoseP(end1),
-    // DatumGetPoseP(start2), DatumGetPoseP(end2), lower, upper, t1, t2);
-// }
+/**
+ * @brief Return 1 if two temporal pose segments intersect during the period
+ * defined by the output timestamps, return 0 otherwise
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @note The candidate instant is derived from the position component by
+ * delegating to #tgeompointsegm_intersection; the lifting infrastructure
+ * verifies full pose equality (position + rotation) at the returned
+ * timestamp.
+ */
+int
+tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  GSERIALIZED *gs1 = pose_to_point(DatumGetPoseP(start1));
+  GSERIALIZED *gs2 = pose_to_point(DatumGetPoseP(end1));
+  GSERIALIZED *gs3 = pose_to_point(DatumGetPoseP(start2));
+  GSERIALIZED *gs4 = pose_to_point(DatumGetPoseP(end2));
+  int result = tgeompointsegm_intersection(PointerGetDatum(gs1),
+    PointerGetDatum(gs2), PointerGetDatum(gs3), PointerGetDatum(gs4),
+    lower, upper, t1, t2);
+  pfree(gs1); pfree(gs2); pfree(gs3); pfree(gs4);
+  return result;
+}
 
 /*****************************************************************************
  * Input/output functions

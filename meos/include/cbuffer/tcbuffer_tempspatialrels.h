@@ -43,11 +43,11 @@
 /*****************************************************************************/
 
 extern Temporal *tinterrel_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cb, bool tinter, bool restr, bool atvalue);
+  const Cbuffer *cb, bool tinter);
 extern Temporal *tinterrel_tcbuffer_geo(const Temporal *temp,
-  const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
+  const GSERIALIZED *gs, bool tinter);
 // extern Temporal *tinterrel_tcbuffer_tcbuffer(const Temporal *temp1,
-//   const Temporal *temp2, bool tinter, bool restr, bool atvalue);
+//   const Temporal *temp2, bool tinter);
 
 /*****************************************************************************/
 

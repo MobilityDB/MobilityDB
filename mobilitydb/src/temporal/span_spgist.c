@@ -111,7 +111,7 @@ span_upper_qsort_cmp(const void *a, const void *b)
  * initialize the struct to cover the whole 2D space.
  */
 void
-spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
+spannode_init(SpanNode *nodebox, MeosType spantype, MeosType basetype)
 {
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
@@ -363,11 +363,11 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
-  meosType type = oid_meostype(scankey->sk_subtype);
+  MeosType type = oid_meostype(scankey->sk_subtype);
   if (span_basetype(type))
   {
     Datum value = scankey->sk_argument;
-    meosType spantype = basetype_spantype(type);
+    MeosType spantype = basetype_spantype(type);
     span_set(value, value, true, true, type, spantype, result);
   }
   else if (set_type(type))

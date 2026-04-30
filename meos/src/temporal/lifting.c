@@ -368,8 +368,8 @@ static int
 tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
-  meosType basetype = temptype_basetype(seq->temptype);
-  meosType resbasetype = temptype_basetype(lfinfo->restype);
+  MeosType basetype = temptype_basetype(seq->temptype);
+  MeosType resbasetype = temptype_basetype(lfinfo->restype);
   int ninsts = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -441,7 +441,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   Datum startvalue = tinstant_value_p(start);
   Datum startresult = tfunc_base_base(startvalue, value, lfinfo);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  meosType resbasetype = temptype_basetype(lfinfo->restype);
+  MeosType resbasetype = temptype_basetype(lfinfo->restype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -452,8 +452,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   }
 
   /* General case */
-  meosType basetype = temptype_basetype(seq->temptype);
-  meosType restype = lfinfo->restype;
+  MeosType basetype = temptype_basetype(seq->temptype);
+  MeosType restype = lfinfo->restype;
   bool lower_inc = seq->period.lower_inc;
   int ninsts = 0, nseqs = 0;
   for (int i = 1; i < seq->count; i++)
@@ -702,7 +702,7 @@ static void
 lfinfo_invert_args(LiftedFunctionInfo *lfinfo)
 {
   lfinfo->invert = ! lfinfo->invert;
-  meosType temp = lfinfo->argtype[0];
+  MeosType temp = lfinfo->argtype[0];
   lfinfo->argtype[0] = lfinfo->argtype[1];
   lfinfo->argtype[1] = temp;
   return;
@@ -916,7 +916,7 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int i = 0, j = 0, ninsts = 0;
-  meosType basetype = temptype_basetype(ss->temptype);
+  MeosType basetype = temptype_basetype(ss->temptype);
   while (i < ss->count && j < seq->count)
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
@@ -984,8 +984,8 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
    * where S, T, and * are values computed, respectively, at the
    * synchronization points, optional turning points, and common points
    */
-  meosType basetype = temptype_basetype(seq1->temptype);
-  meosType basetype_res = temptype_basetype(lfinfo->restype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype_res = temptype_basetype(lfinfo->restype);
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
@@ -1121,9 +1121,9 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
-  meosType basetype = temptype_basetype(seq1->temptype);
-  meosType restype = lfinfo->restype;
-  meosType resbasetype = temptype_basetype(lfinfo->restype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
+  MeosType restype = lfinfo->restype;
+  MeosType resbasetype = temptype_basetype(lfinfo->restype);
   interpType interp = lfinfo->reslinear ? LINEAR : STEP;
 
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -1351,8 +1351,8 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
   }
   bool lower_inc = inter->lower_inc;
-  meosType restype = lfinfo->restype;
-  meosType resbasetype = temptype_basetype(restype);
+  MeosType restype = lfinfo->restype;
+  MeosType resbasetype = temptype_basetype(restype);
   /* Compute the function at the start instant */
   Datum startvalue1 = tinstant_value_p(start1);
   Datum startvalue2 = tinstant_value_p(start2);
@@ -1780,7 +1780,7 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
 
   /* General case */
   bool lower_inc = seq->period.lower_inc;
-  meosType basetype = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   TInstant *start = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   Datum startvalue;
   bool res;
@@ -2235,7 +2235,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   Datum startvalue1, startvalue2;
-  meosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   bool res;
   while (i < seq1->count && j < seq2->count)
   {

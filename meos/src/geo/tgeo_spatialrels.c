@@ -1263,7 +1263,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
   {
-    Temporal *temp1 = tgeo_restrict_geom(temp, gsbound, NULL, REST_MINUS);
+    Temporal *temp1 = tgeo_restrict_geom(temp, gsbound, REST_MINUS);
     result = (temp1 == NULL);
     if (temp1)
       pfree(temp1);

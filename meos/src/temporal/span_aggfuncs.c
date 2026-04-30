@@ -55,7 +55,7 @@
  * @param[in] basetype Type of the value
  */
 Span *
-spanbase_extent_transfn(Span *state, Datum value, meosType basetype)
+spanbase_extent_transfn(Span *state, Datum value, MeosType basetype)
 {
   /* Null span: return the span of the base value */
   if (! state)

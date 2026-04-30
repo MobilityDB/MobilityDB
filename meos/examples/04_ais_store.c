@@ -71,13 +71,13 @@
 #include <meos_geo.h>
 
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTS_BATCH 10000
+#define NUM_INSTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length for a SQL output query */
 #define MAX_LEN_SQL 16384
 /* Number of inserts that are sent in bulk */
-#define NO_BULK_INSERT 20
+#define NUM_BULK_INSERT 20
 
 typedef struct
 {
@@ -114,8 +114,8 @@ main(int argc, char **argv)
   PGconn *conn;
   int res_sql;
   AIS_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char text_buffer[MAX_LEN_HEADER];
   /* Maximum length in characters of the string for the bulk insert */
   char insert_buffer[MAX_LEN_SQL];
@@ -210,7 +210,7 @@ main(int argc, char **argv)
   fscanf(file, "%1023s\n", text_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_INSTS_BATCH);
+    NUM_INSTS_BATCH);
 
   /* Continue reading the file */
   int len;
@@ -227,12 +227,12 @@ main(int argc, char **argv)
     if (read != 5)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
-    if (no_records % NO_INSTS_BATCH == 0)
+    num_records++;
+    if (num_records % NUM_INSTS_BATCH == 0)
     {
       printf("*");
       fflush(stdout);
@@ -242,7 +242,7 @@ main(int argc, char **argv)
     rec.T = timestamp_in(text_buffer, -1);
 
     /* Create the INSERT command with the values read */
-    if ((no_records - 1) % NO_BULK_INSERT == 0)
+    if ((num_records - 1) % NUM_BULK_INSERT == 0)
       len = snprintf(insert_buffer, MAX_LEN_SQL - 1,
         "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
@@ -252,7 +252,7 @@ main(int argc, char **argv)
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);
     free(t_out);
 
-    if ((no_records - 1) % NO_BULK_INSERT == NO_BULK_INSERT - 1)
+    if ((num_records - 1) % NUM_BULK_INSERT == NUM_BULK_INSERT - 1)
     {
       /* Replace the last comma with a semicolon */
       insert_buffer[len - 1] = ';';
@@ -279,7 +279,7 @@ main(int argc, char **argv)
   }
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+    num_records, num_nulls);
 
   snprintf(text_buffer, MAX_LEN_SQL - 1, 
     "SELECT COUNT(*) FROM public.AISInstants;");

@@ -74,7 +74,7 @@
  * @param[out] box Bounding box
  */
 void
-set_expand_bbox(Datum value, meosType basetype, void *box)
+set_expand_bbox(Datum value, MeosType basetype, void *box)
 {
   /* Currently, only spatial set types have bounding box */
   assert(set_basetype(basetype));
@@ -203,7 +203,7 @@ set_append_value(Set *set, Datum value)
  * @endcode
  */
 Set *
-value_union_transfn(Set *state, Datum value, meosType basetype)
+value_union_transfn(Set *state, Datum value, MeosType basetype)
 {
   /* Null state: create a new state with the value */
   if (! state)

@@ -59,7 +59,7 @@
  */
 static int
 eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
@@ -77,7 +77,7 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  */
 static int
 eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
@@ -262,7 +262,7 @@ always_ne_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal *
 tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
@@ -280,7 +280,7 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
  */
 static Temporal *
 tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))

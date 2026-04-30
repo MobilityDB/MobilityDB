@@ -53,7 +53,7 @@
 #include <meos_geo.h>
 
 /* Number of ways in a batch for printing a marker */
-#define NO_WAYS_BATCH 10
+#define NUM_WAYS_BATCH 10
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LEN_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
@@ -98,7 +98,7 @@ int main(void)
   fscanf(file, "%1023s\n", header_buffer);
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
-    NO_WAYS_BATCH);
+    NUM_WAYS_BATCH);
 
   /* Continue reading the file */
   do

@@ -56,7 +56,7 @@
  */
 int
 eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
@@ -73,7 +73,7 @@ eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  */
 int
 eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum, meosType), bool ever)
+  Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
@@ -258,7 +258,7 @@ always_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  */
 static Temporal *
 tcomp_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
@@ -275,7 +275,7 @@ tcomp_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
  */
 static Temporal *
 tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
-  Datum (*func)(Datum, Datum, meosType))
+  Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))

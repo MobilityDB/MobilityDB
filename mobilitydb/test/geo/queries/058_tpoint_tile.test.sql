@@ -218,3 +218,55 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, P
 SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, interval '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 
 -------------------------------------------------------------------------------
+-- Convenience overloads taking a tgeompoint directly. Each invocation should
+-- yield the same set of (index, tile) rows as the explicit
+-- @c spaceTiles(stbox(temp), ...) form.
+-------------------------------------------------------------------------------
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0);
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0, 4.0);
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0 0)@2000-01-01, Point(10 10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTiles(temp, 2.0, 4.0, 5.0);
+
+-- Equivalence: convenience overload vs explicit stbox cast
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+), a AS (
+  SELECT * FROM t, spaceTiles(temp, 2.0)
+), b AS (
+  SELECT * FROM t, spaceTiles(stbox(temp), 2.0)
+)
+SELECT bool_and(a.index = b.index AND a.tile ~= b.tile)
+FROM a JOIN b ON a.index = b.index;
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, timeTiles(temp, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, interval '1 day');
+
+WITH t AS (
+  SELECT tgeompoint '[Point(0 0 0)@2000-01-01, Point(10 10 10)@2000-01-05]' AS temp
+)
+SELECT count(*) FROM t, spaceTimeTiles(temp, 2.0, 4.0, 5.0, interval '1 day');
+
+-------------------------------------------------------------------------------

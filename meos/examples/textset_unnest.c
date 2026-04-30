@@ -82,8 +82,8 @@ int main(void)
   }
 
   textset_record rec;
-  int no_records = 0;
-  int no_nulls = 0;
+  int num_records = 0;
+  int num_nulls = 0;
   char header_buffer[MAX_LEN_HEADER];
   char set_buffer[MAX_LEN_SET];
 
@@ -102,11 +102,11 @@ int main(void)
     if (read != 2)
     {
       printf("Record with missing values ignored\n");
-      no_nulls++;
+      num_nulls++;
       continue;
     }
 
-    no_records++;
+    num_records++;
 
     /* Transform the string representing the set into a set value */
     rec.set = textset_in(set_buffer);
@@ -122,7 +122,7 @@ int main(void)
   fclose(file);
 
   printf("\n%d records read.\n%d incomplete record%s ignored.\n\n",
-    no_records, no_nulls, (no_nulls > 1) ? "s" : "");
+    num_records, num_nulls, (num_nulls > 1) ? "s" : "");
 
   /* Compute the final result */
   for (int i = 0; i < 10; i++)
