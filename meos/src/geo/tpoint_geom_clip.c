@@ -943,7 +943,7 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
 static MeosArray *
 geom_extract_edges(const LWGEOM *geom)
 {
-  MeosArray *edges = meos_array_init(sizeof(Edge));
+  MeosArray *edges = meos_array_create(sizeof(Edge));
   geom_extract_edges_iter(geom, edges);
   return edges;
 }
@@ -1016,7 +1016,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
   /* Transform the edge array into an edge pointer array */
   for (int i = 0; i < (int) edges->count; i++)
-    edge_ptrs[i] = (Edge *) meos_array_get_n(edges, i);
+    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
 
   /* R-tree pointer: A NULL pointer passed to function #tpointseq_clip_edges
    * means that no index is used */
@@ -1057,9 +1057,9 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   }
 
   /* Initialize the static global arrays accumulating the clipping results */
-  events = meos_array_init(sizeof(double));
-  intervals = meos_array_init(sizeof(Span));
-  periods = meos_array_init(sizeof(Span));
+  events = meos_array_create(sizeof(double));
+  intervals = meos_array_create(sizeof(Span));
+  periods = meos_array_create(sizeof(Span));
   
   /* Collect the clipping periods */
   assert(temptype_subtype(temp->subtype));
