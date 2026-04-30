@@ -205,10 +205,10 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
   if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
     MeosType basetype = temptype_basetype(temptype);
-    int32_t tspatial_srid = spatial_srid(value, basetype);
+    int32_t value_srid = spatial_srid(value, basetype);
     /* Ensure that the SRID is geodetic for geography */
-    if (tgeodetic_type(temptype) && tspatial_srid != SRID_UNKNOWN && 
-        ! ensure_srid_is_latlong(tspatial_srid))
+    if (tgeodetic_type(temptype) && value_srid != SRID_UNKNOWN &&
+        ! ensure_srid_is_latlong(value_srid))
       return NULL;
     /* Ensure that a geometry/geography is not empty */
     if (tgeo_type_all(temptype) && 
