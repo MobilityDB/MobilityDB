@@ -1778,6 +1778,8 @@ extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
 extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
 extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
+extern SkipList *temporal_merge_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *temporal_merge_combinefn(SkipList *state1, SkipList *state2);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
