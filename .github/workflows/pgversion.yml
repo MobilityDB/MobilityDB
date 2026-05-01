@@ -92,20 +92,10 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage matrix entry enables every in-tree opt-in subsystem
-          # so their sources are compiled with gcov instrumentation and
-          # the cross-cutting #if XX dispatch arms in shared files
-          # (temporal.c / span.c / tbox.c / meos_catalog.c / ...) are
-          # not preprocessed away. RGEO is a CMAKE_DEPENDENT_OPTION on
-          # POSE so it auto-enables. NPOINT is already ON by default.
-          # H3 / POINTCLOUD live behind their own CMake flags but their
-          # types haven't merged to master yet — those PRs (#807, #818)
-          # add the matching coverage-CI enablement on their own branch.
-          # Non-coverage matrix entries keep the lean default to verify
-          # that the gating (#if XX guards, opt-in compile) still works.
+          # Coverage build enables all opt-in subsystems so their sources get instrumented.
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON' || '' }} \
+            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON' || '' }} \
             ..
 
       - name: Build
