@@ -80,10 +80,10 @@ These projects push the boundaries of MobilityDB and connect it with the Postgre
 
 ### Visualization
 
-*   [MobilityDB-Deck](https://github.com/MobilityDB/MobilityDB-Deck): Integration of MobilityDB with [deck.gl](https://deck.gl/)
+*   [MobilityDeck](https://github.com/MobilityDB/MobilityDeck): Integration of MobilityDB with [deck.gl](https://deck.gl/)
 *   [MobilityDB-Leaflet](https://github.com/MobilityDB/MobilityDB-Leaflet): Integration of MobilityDB with [Leaflet](https://leafletjs.com/)
-*   [MobilityDB-OpenLayers](https://github.com/MobilityDB/MobilityDB-OpenLayers): Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
-*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with [QGIS](https://qgis.org/)
+*   [MobilityOpenLayers](https://github.com/MobilityDB/MobilityOpenLayers): Integration of MobilityDB with [OpenLayers](https://openlayers.org/)
+*   [MobilityQGIS](https://github.com/MobilityDB/MobilityQGIS): Integration of MobilityDB with [QGIS](https://qgis.org/)
 
 ### Public Transport
 
