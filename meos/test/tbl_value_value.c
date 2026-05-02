@@ -109,7 +109,7 @@ int main(void)
   if (! file2)
   {
     printf("Error opening second input file\n");
-    fclose(file1);
+    fclose(file2);
     return 1;
   }
 

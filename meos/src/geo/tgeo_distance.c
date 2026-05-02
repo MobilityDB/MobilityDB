@@ -722,8 +722,8 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_distance
- * @brief Return the nearest approach distance between a temporal geo and a
- * geometry/geography
+ * @brief Return the nearest approach distance between a temporal geo
+ * and a geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
  * @csqlfn #NAD_tgeo_geo()

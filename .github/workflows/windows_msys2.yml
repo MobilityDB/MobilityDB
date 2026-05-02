@@ -74,9 +74,6 @@ jobs:
           # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
           psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
-          # Stop the cluster cleanly so the runner's post-job step doesn't
-          # see orphan postgres processes (those non-zero-exit on cleanup).
-          pg_ctl stop -m fast
 
       # - name: Run tests
         # run: |

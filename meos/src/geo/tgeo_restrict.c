@@ -1540,12 +1540,15 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
       {
         /* Continue the last instant of the sequence until the time of inst2 */
         Datum value = tinstant_value_p(instants[ninsts - 1]);
+        bool tofree = false;
         bool upper_inc = false;
         instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
+        tofree = true;
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
         sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
           upper_inc, STEP, NORMALIZE_NO);
-        pfree(instants[ninsts - 1]);
+        if (tofree)
+          pfree(instants[ninsts - 1]);
         ninsts = 0;
       }
     }

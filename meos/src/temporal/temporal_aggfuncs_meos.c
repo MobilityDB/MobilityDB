@@ -278,34 +278,6 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
 }
 
-/**
- * @ingroup meos_temporal_agg
- * @brief Transition function for the merge aggregate of temporal values
- * @param[in,out] state Current aggregate state
- * @param[in] temp Temporal value to aggregate
- * @csqlfn #Temporal_merge_transfn()
- */
-SkipList *
-temporal_merge_transfn(SkipList *state, const Temporal *temp)
-{
-  /* Null temporal: return state */
-  if (! temp)
-    return state;
-  return temporal_tagg_transfn(state, temp, NULL, CROSSINGS_NO);
-}
-
-/**
- * @ingroup meos_temporal_agg
- * @brief Combine function for the merge aggregate of temporal values
- * @param[in,out] state1, state2 Current aggregate states
- * @csqlfn #Temporal_merge_combinefn()
- */
-SkipList *
-temporal_merge_combinefn(SkipList *state1, SkipList *state2)
-{
-  return temporal_tagg_combinefn(state1, state2, NULL, CROSSINGS_NO);
-}
-
 #endif /* MEOS */
 
 /*****************************************************************************
