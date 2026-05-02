@@ -1,7 +1,21 @@
 var searchData=
 [
-  ['match_0',['Match',['../structMatch.html',1,'']]],
-  ['meos_5fwkb_5fparse_5fstate_1',['meos_wkb_parse_state',['../structmeos__wkb__parse__state.html',1,'']]],
-  ['meosarray_2',['MeosArray',['../structMeosArray.html',1,'']]],
-  ['mobilitydb_5fconstants_3',['mobilitydb_constants',['../structmobilitydb__constants.html',1,'']]]
+  ['liftedfunctioninfo_0',['LiftedFunctionInfo',['../structLiftedFunctionInfo.html',1,'']]],
+  ['lwcircstring_1',['LWCIRCSTRING',['../structLWCIRCSTRING.html',1,'']]],
+  ['lwcollection_2',['LWCOLLECTION',['../structLWCOLLECTION.html',1,'']]],
+  ['lwcompound_3',['LWCOMPOUND',['../structLWCOMPOUND.html',1,'']]],
+  ['lwcurvepoly_4',['LWCURVEPOLY',['../structLWCURVEPOLY.html',1,'']]],
+  ['lwgeom_5',['LWGEOM',['../structLWGEOM.html',1,'']]],
+  ['lwline_6',['LWLINE',['../structLWLINE.html',1,'']]],
+  ['lwmcurve_7',['LWMCURVE',['../structLWMCURVE.html',1,'']]],
+  ['lwmline_8',['LWMLINE',['../structLWMLINE.html',1,'']]],
+  ['lwmpoint_9',['LWMPOINT',['../structLWMPOINT.html',1,'']]],
+  ['lwmpoly_10',['LWMPOLY',['../structLWMPOLY.html',1,'']]],
+  ['lwmsurface_11',['LWMSURFACE',['../structLWMSURFACE.html',1,'']]],
+  ['lwpoint_12',['LWPOINT',['../structLWPOINT.html',1,'']]],
+  ['lwpoly_13',['LWPOLY',['../structLWPOLY.html',1,'']]],
+  ['lwproj_14',['LWPROJ',['../structLWPROJ.html',1,'']]],
+  ['lwpsurface_15',['LWPSURFACE',['../structLWPSURFACE.html',1,'']]],
+  ['lwtin_16',['LWTIN',['../structLWTIN.html',1,'']]],
+  ['lwtriangle_17',['LWTRIANGLE',['../structLWTRIANGLE.html',1,'']]]
 ];

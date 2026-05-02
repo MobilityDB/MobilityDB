@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['indexablefunction_0',['IndexableFunction',['../structIndexableFunction.html',1,'']]],
-  ['interval_1',['Interval',['../structInterval.html',1,'']]],
-  ['intspan_5frecord_2',['intspan_record',['../structintspan__record.html',1,'']]]
+  ['gbox_0',['GBOX',['../structGBOX.html',1,'']]],
+  ['geoaggregatestate_1',['GeoAggregateState',['../structGeoAggregateState.html',1,'']]],
+  ['gserialized_2',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
 ];
