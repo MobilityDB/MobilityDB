@@ -110,10 +110,9 @@ Stbox_space_time_tiles_common(FunctionCallInfo fcinfo, bool spacetiles,
         ensure_same_spatial_dimensionality_stbox_geo(bounds, sorigin);
       else
         zsize = 0;
-      int32_t srid = bounds->srid;
       int32_t gs_srid = gserialized_get_srid(sorigin);
       if (gs_srid != SRID_UNKNOWN)
-        ensure_same_srid(srid, gs_srid);
+        ensure_same_srid(bounds->srid, gs_srid);
       memset(&pt, 0, sizeof(POINT3DZ));
       if (FLAGS_GET_Z(sorigin->gflags))
       {

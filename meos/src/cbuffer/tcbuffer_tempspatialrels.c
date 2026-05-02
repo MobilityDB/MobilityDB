@@ -271,10 +271,9 @@ tinterrel_tcbufferseq_step_geom(const TSequence *seq, const GSERIALIZED *gs,
     bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
     GSERIALIZED *circle = tcbufferinst_trav_area(inst);
     /* Loop for each point in the intersection */
-    bool found = false;
     for (int j = 0; j < npoints; j++)
     {
-      found = geom_intersects2d(circle, points[j]);
+      bool found = geom_intersects2d(circle, points[j]);
       if (found)
       {
         if (timestamptz_cmp_internal(inst->t, mint) < 0)

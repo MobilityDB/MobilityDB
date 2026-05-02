@@ -91,7 +91,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,\"%[^\"]\"\n", &rec.k, span_buffer);
+    int read = fscanf(file, "%d,\"%63[^\"]\"\n", &rec.k, span_buffer);
     if (ferror(file))
     {
       printf("Error reading input file\n");

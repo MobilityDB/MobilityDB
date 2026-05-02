@@ -253,14 +253,14 @@ GetProjStringsSPI(int32_t srid)
   }
 
   /* Read the first line of the file with the headers */
-  int read = fscanf(file, "%1023s\n", header_buffer);
+  (void) fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   bool found = false;
   do
   {
     /* Read each line from the file */
-    read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
+    int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
       auth_name, &auth_srid, proj4text, srtext);
 
     if (ferror(file))
@@ -547,16 +547,13 @@ static LWPROJ *
 AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   int32_t srid_to)
 {
-  PjStrs from_strs, to_strs;
-  char *pj_from_str, *pj_to_str;
-
   /* Turn the SRID number into a proj4 string, by reading from spatial_ref_sys
    * or instantiating a magical value from a negative srid */
-  from_strs = GetProjStrings(srid_from);
+  PjStrs from_strs = GetProjStrings(srid_from);
   if (! pjstrs_has_entry(&from_strs))
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_from);
-  to_strs = GetProjStrings(srid_to);
+  PjStrs to_strs = GetProjStrings(srid_to);
   if (! pjstrs_has_entry(&to_strs))
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_to);
@@ -569,8 +566,8 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   uint32_t i;
   for (i = 0; i < 9; i++)
   {
-    pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
-    pj_to_str = pgstrs_get_entry(&to_strs, i % 3);
+    char *pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
+    char *pj_to_str = pgstrs_get_entry(&to_strs, i % 3);
     if (! (pj_from_str && pj_to_str))
       continue;
 

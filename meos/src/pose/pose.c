@@ -136,8 +136,10 @@ ensure_valid_poseset_pose(const Set *s, const Pose *pose)
 Pose *
 posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
 {
-  if (! ensure_valid_pose_pose(start, end))
-    return NULL; 
+  assert(start); assert(end); assert(ratio >= 0.0 && ratio <= 1.0);
+  assert(pose_srid(start) == pose_srid(end));
+  assert(MEOS_FLAGS_GET_Z(start->flags) == MEOS_FLAGS_GET_Z(end->flags));
+
   Pose *result;
   if (! MEOS_FLAGS_GET_Z(start->flags))
   {

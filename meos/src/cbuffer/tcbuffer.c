@@ -196,10 +196,9 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   int nroots = 0;
 
   /* Linear case */
-  double d1;
   if (delta >= -FP_TOLERANCE)
   {
-    double t_cand1, t_cand2;
+    double t_cand1, d1;
     if (a == 0 && fabs(b) >= FP_TOLERANCE)
     {
       t_cand1 = -c / b;
@@ -214,7 +213,7 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
     {
       double sqrt_delta = sqrt(fmax(0.0, delta));
       t_cand1 = (-b - sqrt_delta) / (2*a);
-      t_cand2 = (-b + sqrt_delta) / (2*a);
+      double t_cand2 = (-b + sqrt_delta) / (2*a);
       if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);

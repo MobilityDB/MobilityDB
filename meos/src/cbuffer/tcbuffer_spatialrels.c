@@ -194,15 +194,14 @@ ea_spatialrel_tcbufferseq_discstep_geo(const TSequence *seq,
   bool ever, bool invert)
 {
   assert(seq); assert(gs); assert(seq->temptype == T_TCBUFFER);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  assert(interp == DISCRETE || interp == STEP);
-  bool result;
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE ||
+    MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
     GSERIALIZED *trav = cbuffer_to_geom(cb);
-    result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
+    bool result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
     pfree(trav);
     if (result && ever)
       return 1;
@@ -238,12 +237,11 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
 
   /* General case */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  int result;
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     GSERIALIZED *trav = tcbuffersegm_trav_area(inst1, inst2);
-    result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
+    int result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
     pfree(trav);
     if (result == 1 && ever)
       return 1;
@@ -332,7 +330,7 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return -1;
 
   /* Bounding box test */ 
-  if (func != (varfunc) &datum_geom_disjoint2d)
+  if (func != (varfunc) (&datum_geom_disjoint2d))
   {
     STBox box1, box2;
     tspatial_set_stbox(temp, &box1);

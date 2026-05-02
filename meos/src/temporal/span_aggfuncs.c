@@ -77,14 +77,14 @@ Span *
 set_extent_transfn(Span *state, const Set *s)
 {
   /* Can't do anything with null inputs */
-  if (! state && ! s)
-    return NULL;
-  /* Null period and non-null set: return the bbox of the timestamp set */
-  if (! state)
-    return set_span(s);
-  /* Non-null period and null set: return the period */
-  if (! s)
+  if (! state || ! s)
+  {
+    if (! state && ! s)
+      return NULL;
+    if (! state)
+      return set_span(s);
     return state;
+  }
 
   /* Ensure the validity of the arguments */
   if (! ensure_set_spantype(s->settype) ||
