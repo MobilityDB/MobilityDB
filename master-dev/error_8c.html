@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">error.c File Reference</div></div>
@@ -88,6 +89,12 @@ $(function() {
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ab91b9e231d82632f3554c6d3ab273924"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_ab91b9e231d82632f3554c6d3ab273924.html#ab91b9e231d82632f3554c6d3ab273924">meos_error_handler_t</a>) (int, int, const char *)</td></tr>
+<tr class="memdesc:ab91b9e231d82632f3554c6d3ab273924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process-global error handler function.  <a href="error_8c_ab91b9e231d82632f3554c6d3ab273924.html#ab91b9e231d82632f3554c6d3ab273924">More...</a><br /></td></tr>
+<tr class="separator:ab91b9e231d82632f3554c6d3ab273924"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aa4d091644ddf50e1505c3a6b1ed43b79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_aa4d091644ddf50e1505c3a6b1ed43b79.html#aa4d091644ddf50e1505c3a6b1ed43b79">default_error_handler</a> (int errlevel, int errcode, const char *errmsg)</td></tr>
@@ -116,12 +123,11 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a865fe1694ec8c43b37e30dc63c34cd5f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_a865fe1694ec8c43b37e30dc63c34cd5f.html#a865fe1694ec8c43b37e30dc63c34cd5f">MEOS_ERR_NO</a> = 0</td></tr>
-<tr class="memdesc:a865fe1694ec8c43b37e30dc63c34cd5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global variable that keeps the last error number.  <a href="error_8c_a865fe1694ec8c43b37e30dc63c34cd5f.html#a865fe1694ec8c43b37e30dc63c34cd5f">More...</a><br /></td></tr>
-<tr class="separator:a865fe1694ec8c43b37e30dc63c34cd5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45ef7a7f5972720cb2b709fbf430678e"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_a45ef7a7f5972720cb2b709fbf430678e.html#a45ef7a7f5972720cb2b709fbf430678e">MEOS_ERROR_HANDLER</a> )(int, int, const char *) = NULL</td></tr>
-<tr class="memdesc:a45ef7a7f5972720cb2b709fbf430678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global variable that keeps the error handler function.  <a href="error_8c_a45ef7a7f5972720cb2b709fbf430678e.html#a45ef7a7f5972720cb2b709fbf430678e">More...</a><br /></td></tr>
-<tr class="separator:a45ef7a7f5972720cb2b709fbf430678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f2b9daee62d1d2556445c0bed4a3689"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_a8f2b9daee62d1d2556445c0bed4a3689.html#a8f2b9daee62d1d2556445c0bed4a3689">MEOS_ERR_NO</a> = 0</td></tr>
+<tr class="memdesc:a8f2b9daee62d1d2556445c0bed4a3689"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-thread variable that keeps the last error number.  <a href="error_8c_a8f2b9daee62d1d2556445c0bed4a3689.html#a8f2b9daee62d1d2556445c0bed4a3689">More...</a><br /></td></tr>
+<tr class="separator:a8f2b9daee62d1d2556445c0bed4a3689"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0e64680bba56c93085ff347054503d4"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="error_8c_ab91b9e231d82632f3554c6d3ab273924.html#ab91b9e231d82632f3554c6d3ab273924">meos_error_handler_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8c_af0e64680bba56c93085ff347054503d4.html#af0e64680bba56c93085ff347054503d4">MEOS_ERROR_HANDLER</a> = NULL</td></tr>
+<tr class="separator:af0e64680bba56c93085ff347054503d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >MEOS error handling inspired by GEOS and Proj <a href="https://github.com/libgeos/geos/blob/main/capi/geos_c.h.in">https://github.com/libgeos/geos/blob/main/capi/geos_c.h.in</a> <a href="https://github.com/OSGeo/PROJ/blob/master/src/4D_api.cpp">https://github.com/OSGeo/PROJ/blob/master/src/4D_api.cpp</a>. </p>
