@@ -93,10 +93,8 @@ typedef struct struct_WaysCache
   uint32_t count;
 } WaysCache;
 
-/* Per-thread ways cache. Each thread that uses npoint queries gets its
- * own copy of the recently-touched ways routes; the cost is one CSV
- * re-read per thread on first miss, in exchange for race-free access. */
-static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
+/* Global variable to hold the ways cache */
+WaysCache *MEOS_WAYS_CACHE = NULL;
 
 /*****************************************************************************
  * Cache management functions
@@ -299,7 +297,9 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
   {
     if (! get_ways_record(gid, rec))
       return false;
-    ways_entry = AddRouteToWaysCache(ways_cache, rec);
+    /* The cache entry is added for the side effect; we already have the
+     * relevant fields populated in 'rec'. */
+    (void) AddRouteToWaysCache(ways_cache, rec);
     return true;
   }
   /* The route was found in the cache */

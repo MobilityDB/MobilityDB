@@ -47,12 +47,9 @@
  *****************************************************************************/
 
 /**
- * @brief Per-thread variable that keeps the last error number.
- * Mirrors the libc errno convention: each thread sees its own value, so
- * concurrent MEOS calls from multiple threads do not race on the error
- * status.
+ * @brief Global variable that keeps the last error number
  */
-static MEOS_TLS int MEOS_ERR_NO = 0;
+static int MEOS_ERR_NO = 0;
 
 /**
  * @brief Read an error number
@@ -135,23 +132,9 @@ int meos_errno_reset(void)
 /*****************************************************************************/
 
 /**
- * @brief Process-global error handler function. Reads and writes use
- * the GCC/Clang __atomic_* builtins so that multiple threads calling
- * meos_initialize() (which transitively calls
- * meos_initialize_error_handler) do not race on the same word. Reads
- * in meos_error() use __ATOMIC_ACQUIRE; writes in
- * meos_initialize_error_handler() use __ATOMIC_RELEASE. The value
- * installed is identical across threads in normal usage
- * (default_error_handler), so this is a benign-race fix that lets
- * existing call patterns continue working unchanged.
- *
- * Builtins are used in preference to <stdatomic.h> _Atomic + atomic_*
- * functions because the latter triggers spurious
- * cppcheck-missingIncludeSystem alerts on Codacy's wrapper, which
- * doesn't see the project's compile_commands.json.
+ * @brief Global variable that keeps the error handler function
  */
-typedef void (*meos_error_handler_t)(int, int, const char *);
-static meos_error_handler_t MEOS_ERROR_HANDLER = NULL;
+void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
 
 #if MEOS
 /**
@@ -186,8 +169,10 @@ error_handler_errno(int errlevel __attribute__((__unused__)), int errcode,
 void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
-  meos_error_handler_t h = err_handler ? err_handler : &default_error_handler;
-  __atomic_store_n(&MEOS_ERROR_HANDLER, h, __ATOMIC_RELEASE);
+  if (err_handler)
+    MEOS_ERROR_HANDLER = err_handler;
+  else
+    MEOS_ERROR_HANDLER = &default_error_handler;
   return;
 }
 #endif /* MEOS */
@@ -207,10 +192,8 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
   /* Execute the error handler function */
-  meos_error_handler_t handler =
-    __atomic_load_n(&MEOS_ERROR_HANDLER, __ATOMIC_ACQUIRE);
-  if (handler)
-    handler(errlevel, errcode, buffer);
+  if (MEOS_ERROR_HANDLER)
+    MEOS_ERROR_HANDLER(errlevel, errcode, buffer);
   else
 #if ! MEOS
     elog(errlevel, "%s", buffer);

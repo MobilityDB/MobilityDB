@@ -37,7 +37,6 @@
 
 /* C */
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 /* PostgreSQL */
 #if MEOS
@@ -64,15 +63,6 @@
  */
 #define strdup _strdup
 #endif
-
-/*
- * Thread-local storage qualifier (MEOS_TLS) used internally by MEOS to
- * make per-thread state (last-error number, PROJ context, SRS cache,
- * ways cache, RNG, session timezone) safe under multithreading. Defined
- * in a stand-alone header so that vendored PostgreSQL files can pick it
- * up without pulling in the full meos.h.
- */
-#include "meos_tls.h"
 
 /*****************************************************************************
  * Type definitions
@@ -361,18 +351,6 @@ extern int meos_errno_reset(void);
 
 /*****************************************************************************
  * Initialization of the MEOS library
- *
- * Multithreading
- * --------------
- * The MEOS state managed by these functions is per-thread. Each thread
- * that calls into MEOS must call `meos_initialize()` before its first
- * MEOS call and `meos_finalize()` before exiting; the PROJ context, SRS
- * cache, ways cache, RNGs, last-error number (`meos_errno`), and
- * session timezone are all thread-local.
- *
- * The error handler set by `meos_initialize_error_handler()` is the
- * one exception: it is process-global and should be installed once
- * before workers are spawned.
  *****************************************************************************/
 
 /* Definition of error handler function */
@@ -1799,8 +1777,6 @@ extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
 extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
 extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
-extern SkipList *temporal_merge_transfn(SkipList *state, const Temporal *temp);
-extern SkipList *temporal_merge_combinefn(SkipList *state1, SkipList *state2);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);

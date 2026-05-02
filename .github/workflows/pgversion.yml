@@ -92,11 +92,7 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage build enables all opt-in subsystems so their sources get instrumented.
-          cmake -DCMAKE_BUILD_TYPE=Release \
-            -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON' || '' }} \
-            ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
 
       - name: Build
         run: |

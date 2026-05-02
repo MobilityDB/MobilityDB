@@ -1129,7 +1129,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
   /* Restrict to the time dimension */
   Temporal *temp1;
-  STBox *box2;
+  const STBox *box2;
   if (hast)
   {
     temp1 = temporal_restrict_tstzspan(temp, &box->period, atfunc);
@@ -1142,7 +1142,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   else
   {
     temp1 = (Temporal *) temp;
-    box2 = (STBox *) box;
+    box2 = box;
   }
 
   assert(temptype_subtype(temp1->subtype));
@@ -1540,12 +1540,15 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
       {
         /* Continue the last instant of the sequence until the time of inst2 */
         Datum value = tinstant_value_p(instants[ninsts - 1]);
+        bool tofree = false;
         bool upper_inc = false;
         instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
+        tofree = true;
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
         sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
           upper_inc, STEP, NORMALIZE_NO);
-        pfree(instants[ninsts - 1]);
+        if (tofree)
+          pfree(instants[ninsts - 1]);
         ninsts = 0;
       }
     }
