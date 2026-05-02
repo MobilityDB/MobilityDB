@@ -1,0 +1,411 @@
+ANALYZE tbl_tnpoint_big;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tnpoint_big_rtree_idx;
+NOTICE:  index "tbl_tnpoint_big_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tnpoint_big_quadtree_idx;
+NOTICE:  index "tbl_tnpoint_big_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tnpoint_big_kdtree_idx;
+NOTICE:  index "tbl_tnpoint_big_kdtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tnpoint_big_rtree_idx ON tbl_tnpoint_big USING GIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    87
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   909
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   994
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp < tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <= tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp > tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   994
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp >= tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   994
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp && tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   371
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp @> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <@ tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp << tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   198
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &< tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   429
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp >> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   109
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   261
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<| tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   559
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<| tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   613
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp |>> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+    40
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp |&> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+    51
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<# tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<# tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   996
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #>> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #&> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   994
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tnpoint_big_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tnpoint_big_quadtree_idx ON tbl_tnpoint_big USING SPGIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    87
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   909
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   994
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp && tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   371
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp @> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <@ tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp << tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   198
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &< tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   429
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp >> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   109
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   261
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<| tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   559
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<| tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   613
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp |>> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+    40
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp |&> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+    51
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tnpoint_big_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tnpoint_big_kdtree_idx ON tbl_tnpoint_big USING SPGIST(temp tnpoint_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    87
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   909
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   994
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp && tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+   371
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp @> tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp <@ tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
+ count 
+-------
+     3
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tnpoint_big_kdtree_idx;
+DROP INDEX
+ANALYZE tbl_tnpoint;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tnpoint_rtree_idx;
+NOTICE:  index "tbl_tnpoint_rtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING GIST(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 0.169994
+ 9.424488
+ 11.35039
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| npoint 'Npoint(1, 0.4)' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 0.158435
+ 2.003141
+ 3.539118
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'SRID=5676;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+ round 
+-------
+     0
+     0
+     0
+(3 rows)
+
+DROP INDEX tbl_tnpoint_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
+NOTICE:  index "tbl_tnpoint_quadtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING SPGIST(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tnpoint '[Npoint(1, 0.2)@2001-06-01, Npoint(1, 0.5)@2001-07-01]' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 0.169994
+ 9.424488
+ 11.35039
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| npoint 'Npoint(1, 0.4)' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 0.158435
+ 2.003141
+ 3.539118
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'SRID=5676;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tnpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+ round 
+-------
+     0
+     0
+     0
+(3 rows)
+
+DROP INDEX tbl_tnpoint_quadtree_idx;
+DROP INDEX
