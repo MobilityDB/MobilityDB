@@ -65,6 +65,8 @@ Datum
 Tspatialrel_geo_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const GSERIALIZED *, const Temporal *))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = func(gs, temp);
@@ -83,6 +85,8 @@ Datum
 Tspatialrel_tspatial_geo(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const GSERIALIZED *))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *result = func(temp, gs);
@@ -101,6 +105,8 @@ Datum
 Tspatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const Temporal *))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Result depends on whether we are computing tintersects or tdisjoint */
@@ -122,6 +128,8 @@ Datum
 Tdwithin_geo_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const GSERIALIZED *, const Temporal *, double))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
@@ -141,6 +149,8 @@ Datum
 Tdwithin_tspatial_geo(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const GSERIALIZED *, double))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
@@ -160,6 +170,8 @@ Datum
 Tdwithin_tspatial_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const Temporal *, double))
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
