@@ -2002,7 +2002,7 @@ nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = tdistance_trgeo_geo(temp, gs);
   double result = DatumGetFloat8(temporal_min_value(dist));
@@ -2021,7 +2021,7 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_stbox(temp, box))
-    return -1.0;
+    return DBL_MAX;
 
   /* Project the temporal point to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -2030,7 +2030,7 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
-      return -1.0;
+      return DBL_MAX;
   }
   /* Convert the stbox to a geometry */
   GSERIALIZED *geo = stbox_geo(box);
@@ -2057,11 +2057,11 @@ nad_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp2, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = tdistance_trgeo_tpoint(temp1, temp2);
   if (dist == NULL)
-    return -1.0;
+    return DBL_MAX;
 
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
@@ -2079,11 +2079,11 @@ nad_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp2, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = tdistance_trgeo_trgeo(temp1, temp2);
   if (dist == NULL)
-    return -1.0;
+    return DBL_MAX;
 
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
