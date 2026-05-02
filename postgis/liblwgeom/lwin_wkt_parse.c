@@ -85,6 +85,7 @@
 #include "lwin_wkt.h"
 #include "lwin_wkt_parse.h"
 #include "lwgeom_log.h"
+#include <meos_tls.h> /* MEOS: see issue #404 / lwin_wkt_lex.c for rationale */
 
 
 /* Prototypes to quiet the compiler */
@@ -93,11 +94,12 @@ void wkt_yyerror(const char *str);
 int wkt_yylex(void);
 
 
-/* Declare the global parser variable */
-LWGEOM_PARSER_RESULT global_parser_result;
+/* MEOS: per-thread parser result so concurrent lwgeom_parse_wkt()
+ * calls do not stomp on each other's error/parse state. */
+MEOS_TLS LWGEOM_PARSER_RESULT global_parser_result;
 
 /* Turn on/off verbose parsing (turn off for production) */
-int wkt_yydebug = 0;
+/* MEOS */ MEOS_TLS int wkt_yydebug = 0;
 
 /*
 * Error handler called by the bison parser. Mostly we will be
@@ -1746,18 +1748,18 @@ yydestruct (const char *yymsg,
 
 
 /* Lookahead token kind.  */
-int yychar;
+/* MEOS */ MEOS_TLS int yychar;
 
 /* The semantic value of the lookahead symbol.  */
-YYSTYPE yylval;
+/* MEOS */ MEOS_TLS YYSTYPE yylval;
 /* Location data for the lookahead symbol.  */
-YYLTYPE yylloc
+/* MEOS */ MEOS_TLS YYLTYPE yylloc
 # if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
   = { 1, 1, 1, 1 }
 # endif
 ;
 /* Number of syntax errors so far.  */
-int yynerrs;
+/* MEOS */ MEOS_TLS int yynerrs;
 
 
 

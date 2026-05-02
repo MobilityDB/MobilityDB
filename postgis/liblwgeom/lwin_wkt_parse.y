@@ -7,6 +7,7 @@
 #include "lwin_wkt.h"
 #include "lwin_wkt_parse.h"
 #include "lwgeom_log.h"
+#include <meos_tls.h> /* MEOS: see issue #404 */
 
 
 /* Prototypes to quiet the compiler */
@@ -15,11 +16,15 @@ void wkt_yyerror(const char *str);
 int wkt_yylex(void);
 
 
-/* Declare the global parser variable */
-LWGEOM_PARSER_RESULT global_parser_result;
+/* MEOS: per-thread parser result. If you regenerate from this .y,
+ * the canonical fix is `%define api.pure full` plus `%lex-param` /
+ * `%parse-param` for a yyscan_t handle, eliminating globals
+ * altogether. Until then, MEOS_TLS keeps each thread's parse state
+ * separate. See lwin_wkt_lex.l for the matching lexer notes. */
+MEOS_TLS LWGEOM_PARSER_RESULT global_parser_result;
 
 /* Turn on/off verbose parsing (turn off for production) */
-int wkt_yydebug = 0;
+/* MEOS */ MEOS_TLS int wkt_yydebug = 0;
 
 /*
 * Error handler called by the bison parser. Mostly we will be

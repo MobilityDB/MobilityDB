@@ -281,6 +281,15 @@
 #include <errno.h>
 #include <stdlib.h>
 
+/* MEOS: thread-safety qualifier for issue #404. The flex-generated
+ * lexer keeps its scanner state in process-global statics; by tagging
+ * each of them MEOS_TLS, every thread that calls into the WKT parser
+ * gets its own buffer stack, position pointer, accept-state cache,
+ * etc. The wrapper lwgeom_parse_wkt() already calls wkt_lexer_init()
+ * per invocation, which lazily sets up the per-thread state on first
+ * use. If you regenerate this file from lwin_wkt_lex.l, prefer
+ * `%option reentrant` and remove these markers. */
+#include <meos_tls.h>
 /* end standard C headers. */
 
 /* flex integer type definitions */
@@ -414,9 +423,9 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 typedef size_t yy_size_t;
 #endif
 
-extern int yyleng;
+/* MEOS */ extern MEOS_TLS int yyleng;
 
-extern FILE *yyin, *yyout;
+/* MEOS */ extern MEOS_TLS FILE *yyin, *yyout;
 
 #define EOB_ACT_CONTINUE_SCAN 0
 #define EOB_ACT_END_OF_FILE 1
@@ -506,9 +515,9 @@ struct yy_buffer_state
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
 /* Stack of input buffers. */
-static size_t yy_buffer_stack_top = 0; /**< index of top of stack. */
-static size_t yy_buffer_stack_max = 0; /**< capacity of stack. */
-static YY_BUFFER_STATE * yy_buffer_stack = NULL; /**< Stack as an array. */
+/* MEOS */ static MEOS_TLS size_t yy_buffer_stack_top = 0; /**< index of top of stack. */
+/* MEOS */ static MEOS_TLS size_t yy_buffer_stack_max = 0; /**< capacity of stack. */
+/* MEOS */ static MEOS_TLS YY_BUFFER_STATE * yy_buffer_stack = NULL; /**< Stack as an array. */
 
 /* We provide macros for accessing buffer states in case in the
  * future we want to put the buffer states in a more general
@@ -525,19 +534,19 @@ static YY_BUFFER_STATE * yy_buffer_stack = NULL; /**< Stack as an array. */
 #define YY_CURRENT_BUFFER_LVALUE (yy_buffer_stack)[(yy_buffer_stack_top)]
 
 /* yy_hold_char holds the character lost when yytext is formed. */
-static char yy_hold_char;
-static int yy_n_chars;		/* number of characters read into yy_ch_buf */
-int yyleng;
+/* MEOS */ static MEOS_TLS char yy_hold_char;
+/* MEOS */ static MEOS_TLS int yy_n_chars;		/* number of characters read into yy_ch_buf */
+/* MEOS */ MEOS_TLS int yyleng;
 
 /* Points to current character in buffer. */
-static char *yy_c_buf_p = NULL;
-static int yy_init = 0;		/* whether we need to initialize */
-static int yy_start = 0;	/* start state number */
+/* MEOS */ static MEOS_TLS char *yy_c_buf_p = NULL;
+/* MEOS */ static MEOS_TLS int yy_init = 0;		/* whether we need to initialize */
+/* MEOS */ static MEOS_TLS int yy_start = 0;	/* start state number */
 
 /* Flag which is used to allow yywrap()'s to do buffer switches
  * instead of setting up a fresh yyin.  A bit of a hack ...
  */
-static int yy_did_buffer_switch_on_eof;
+/* MEOS */ static MEOS_TLS int yy_did_buffer_switch_on_eof;
 
 void yyrestart ( FILE *input_file  );
 void yy_switch_to_buffer ( YY_BUFFER_STATE new_buffer  );
@@ -587,14 +596,14 @@ void yyfree ( void *  );
 #define YY_SKIP_YYWRAP
 typedef flex_uint8_t YY_CHAR;
 
-FILE *yyin = NULL, *yyout = NULL;
+/* MEOS */ MEOS_TLS FILE *yyin = NULL, *yyout = NULL;
 
 typedef int yy_state_type;
 
-extern int yylineno;
-int yylineno = 1;
+/* MEOS */ extern MEOS_TLS int yylineno;
+/* MEOS */ MEOS_TLS int yylineno = 1;
 
-extern char *yytext;
+/* MEOS */ extern MEOS_TLS char *yytext;
 #ifdef yytext_ptr
 #undef yytext_ptr
 #endif
@@ -840,11 +849,11 @@ static const flex_int16_t yy_chk[444] =
       176,  176,  176
     } ;
 
-static yy_state_type yy_last_accepting_state;
-static char *yy_last_accepting_cpos;
+/* MEOS */ static MEOS_TLS yy_state_type yy_last_accepting_state;
+/* MEOS */ static MEOS_TLS char *yy_last_accepting_cpos;
 
-extern int yy_flex_debug;
-int yy_flex_debug = 0;
+/* MEOS */ extern MEOS_TLS int yy_flex_debug;
+/* MEOS */ MEOS_TLS int yy_flex_debug = 0;
 
 /* The intent behind this definition is that it'll catch
  * any uses of REJECT which flex missed.
@@ -853,7 +862,7 @@ int yy_flex_debug = 0;
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-char *yytext;
+/* MEOS */ MEOS_TLS char *yytext;
 #line 1 "lwin_wkt_lex.l"
 #line 2 "lwin_wkt_lex.l"
 
@@ -865,7 +874,7 @@ char *yytext;
 #include "lwin_wkt_parse.h"
 #include "lwgeom_log.h"
 
-static YY_BUFFER_STATE wkt_yy_buf_state;
+/* MEOS */ static MEOS_TLS YY_BUFFER_STATE wkt_yy_buf_state;
 
 /*
 * Handle errors due to unexpected junk in WKT strings.

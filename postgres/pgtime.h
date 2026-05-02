@@ -13,6 +13,11 @@
 #ifndef _PGTIME_H
 #define _PGTIME_H
 
+/* MEOS: Pull in the MEOS_TLS macro so session_timezone / log_timezone
+ * are declared with the same thread-local-storage qualifier as their
+ * definitions in pgtz.c. Vendored PostgreSQL headers must remain
+ * standalone, so meos_tls.h is intentionally a tiny dedicated file. */
+#include <meos_tls.h>
 
 /*
  * The API of this library is generally similar to the corresponding
@@ -70,8 +75,8 @@ extern size_t pg_strftime(char *s, size_t max, const char *format,
 
 /* these functions and variables are in pgtz.c */
 
-extern pg_tz *session_timezone;
-extern pg_tz *log_timezone;
+extern MEOS_TLS pg_tz *session_timezone;
+extern MEOS_TLS pg_tz *log_timezone;
 
 extern void pg_timezone_initialize(void);
 extern pg_tz *pg_tzset(const char *tzname);
