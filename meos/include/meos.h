@@ -372,13 +372,6 @@ extern int meos_errno_reset(void);
  * The error handler set by `meos_initialize_error_handler()` is the
  * one exception: it is process-global and should be installed once
  * before workers are spawned.
- *
- * What is NOT thread-safe in this release: parsing of WKT/EWKT (and
- * therefore `geometry_in`, `tgeompoint_in`, etc. when the input is in
- * text form) — the underlying PostGIS lwgeom flex/bison lexer is not
- * reentrant and uses process-global state. Parse on a single thread
- * and pass the resulting values to workers, or use WKB instead of WKT
- * for thread-safe input.
  *****************************************************************************/
 
 /* Definition of error handler function */
