@@ -447,7 +447,7 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes,
     for (int i = 0; i < num_boxes; i++)
     {
       double minoffset, maxoffset;
-      int   bmin, bmax;   /* Bin min, bin max */
+      int bmin, bmax;   /* Bin min, bin max */
       const ND_BOX *ndb;
 
       /* Skip null entries */

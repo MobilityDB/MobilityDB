@@ -3119,11 +3119,8 @@ tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s,
       (ss->count + s->count + 1));
     int nseqs = 0;
     for (int i = 0; i < ss->count; i++)
-    {
-      seq = TSEQUENCESET_SEQ_N(ss, i);
-      nseqs += tcontseq_minus_tstzset_iter(seq, s, &sequences[nseqs]);
-
-    }
+      nseqs += tcontseq_minus_tstzset_iter(TSEQUENCESET_SEQ_N(ss, i), s,
+        &sequences[nseqs]);
     return (Temporal *) tsequenceset_make_free(sequences, nseqs, NORMALIZE);
   }
 }
