@@ -81,8 +81,18 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(MEOS_GENERATION_RNG);
-  gsl_rng_free(MEOS_AGGREGATION_RNG);
+  /* Idempotency: only free live generators, and null the slots so a
+   * second finalize call does not double-free. */
+  if (MEOS_GENERATION_RNG)
+  {
+    gsl_rng_free(MEOS_GENERATION_RNG);
+    MEOS_GENERATION_RNG = NULL;
+  }
+  if (MEOS_AGGREGATION_RNG)
+  {
+    gsl_rng_free(MEOS_AGGREGATION_RNG);
+    MEOS_AGGREGATION_RNG = NULL;
+  }
   MEOS_GSL_INITIALIZED = false;
   return;
 }
