@@ -363,7 +363,8 @@ void
 temporal_skiplist_splice(SkipList *list, void **values, int count,
   datum_func2 func, bool crossings)
 {
-  return skiplist_splice(list, NULL, values, count, func, crossings, TEMPORAL);
+  return skiplist_splice(list, NULL, values, count, func, crossings,
+    SKIPLIST_TEMPORAL);
 }
 
 /*****************************************************************************
