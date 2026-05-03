@@ -32,6 +32,18 @@
  * @brief Aggregate functions for temporal network points
  */
 
+CREATE FUNCTION tspatial_extent_transfn(stbox, tnpoint)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(tnpoint) (
+  SFUNC = tspatial_extent_transfn,
+  STYPE = stbox,
+  COMBINEFUNC = stbox_extent_combinefn,
+  PARALLEL = safe
+);
+
 CREATE FUNCTION tcount_transfn(internal, tnpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
