@@ -395,7 +395,10 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   int count2, datum_func2 func, int *newcount, void ***tofree, int *nfree)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
-  void **tofree1 = palloc(sizeof(TInstant *) * Max(count1, count2));
+  /* Every result entry is a freshly-allocated copy/make and is owned by this
+   * function (the skiplist insertion at the call site makes its own copy via
+   * temporal_copy). Size tofree1 to the worst case: count1 + count2. */
+  void **tofree1 = palloc(sizeof(TInstant *) * (count1 + count2));
   int i = 0, j = 0, count = 0, nfree1 = 0;
   while (i < count1 && j < count2)
   {
@@ -437,6 +440,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     else if (cmp < 0)
     {
       result[count++] = tinstant_copy(inst1);
+      if (tofree)
+        tofree1[nfree1++] = result[count - 1];
       i++;
     }
     else
