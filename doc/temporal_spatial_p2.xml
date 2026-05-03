@@ -577,5 +577,73 @@ SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
 			</itemizedlist>
 		</sect2>
 	</sect1>
+
+	<sect1 xml:id="geo_production_guidance">
+		<title>Production guidance</title>
+		<para>This section captures the operational knowledge production workloads need on top of the function reference: when each member of the geo family (<varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>) is the right type, the spatial-reference and dimensionality conventions the implementation assumes, and the numerical hazards real spatial pipelines hit. Most of these are surfaced separately throughout the chapter; the goal here is one place a new contributor can read end-to-end before instrumenting an application.</para>
+
+		<sect2 xml:id="geo_when_to_use">
+			<title>When to use which type within the geo family</title>
+			<para>The four temporal geo types form a 2x2 grid along two axes: the value's <emphasis>shape</emphasis> (a single moving point versus an arbitrary geometry whose shape may itself vary) and the <emphasis>spatial reference</emphasis> (projected coordinates with planar Euclidean math versus geographic coordinates with spherical / great-circle math).</para>
+			<itemizedlist>
+				<listitem><para><varname>tgeompoint</varname> &#x2014; temporal trajectory of a position in projected coordinates (planar Euclidean math). The most common case; lowest storage; fastest operations. Use for vehicle GPS tracks reduced to a planar CRS, animal movement in a local projection, indoor tracking in a building frame.</para></listitem>
+				<listitem><para><varname>tgeogpoint</varname> &#x2014; temporal trajectory of a position in geographic coordinates (lat / lon, spherical math). Use when the spatial extent crosses zones (continental / global tracks, AIS feeds), or when great-circle distances are required.</para></listitem>
+				<listitem><para><varname>tgeometry</varname> &#x2014; temporal <emphasis>arbitrary</emphasis> geometry (point, line, polygon, multi-*) in projected coordinates. Use when the value's <emphasis>shape</emphasis>, not just its position, varies over time &#x2014; storm wind swaths, expanding plumes, rotating exclusion zones, evolving polygons.</para></listitem>
+				<listitem><para><varname>tgeography</varname> &#x2014; temporal arbitrary geometry in geographic coordinates. Same role as <varname>tgeometry</varname> but on the sphere.</para></listitem>
+			</itemizedlist>
+			<para>The position component of a <varname>tgeometry</varname> whose value is point-typed is recoverable as a <varname>tgeompoint</varname> via the standard cast; analogously for <varname>tgeography</varname> / <varname>tgeogpoint</varname>. Consequently a single <varname>tgeometry</varname> column subsumes a <varname>tgeompoint</varname> column when both might be needed and the storage cost of the wider type is acceptable.</para>
+		</sect2>
+
+		<sect2 xml:id="geo_srid_conventions">
+			<title>CRS and SRID conventions</title>
+			<para>Every value in the geo family carries an SRID encoded in the underlying <varname>GSERIALIZED</varname> flag, propagated to the temporal value's bounding box and validated on every cross-type operation.</para>
+			<itemizedlist>
+				<listitem><para><emphasis>Mixed-SRID inputs are rejected</emphasis>, not implicitly transformed. Any binary operation between two geo values whose SRIDs differ raises an error via <varname>ensure_same_srid</varname>; the analogous projected-versus-geographic mismatch is caught by <varname>ensure_same_geodetic</varname>. The rationale is that an implicit <varname>ST_Transform</varname> would hide the cost (PROJ initialisation per call) and silently change semantics around the antimeridian, the poles, and at the boundary between projection zones. Workloads needing cross-CRS operations must call <varname>ST_Transform</varname> explicitly first.</para></listitem>
+				<listitem><para><emphasis>Geographic versus projected math</emphasis>. <varname>tgeompoint</varname> and <varname>tgeometry</varname> use planar Euclidean math; <varname>distance</varname> values are in CRS units (typically metres for a UTM zone, degrees for an unprojected geographic CRS). <varname>tgeogpoint</varname> and <varname>tgeography</varname> use spherical / great-circle math on the WGS-84 sphere; <varname>distance</varname> values are in metres. The two distance scales are <emphasis>not</emphasis> comparable; a query that joins on a distance threshold must check the underlying type before choosing the threshold.</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="geo_dimensions">
+			<title>2D, 3D, and 4D coordinate semantics</title>
+			<para>All four types accept 2D (XY), 3D (XYZ), and 4D (XYZM) inputs. The Z and M flags are encoded in the <varname>GSERIALIZED</varname> header and preserved through the entire pipeline.</para>
+			<itemizedlist>
+				<listitem><para><emphasis>Z is preserved through all operations</emphasis>. Linear interpolation between two 3D instants is linear in 3D &#x2014; <varname>(x, y, z)</varname> all interpolate independently. Distance is full 3D Euclidean for projected geometries; for <varname>tgeogpoint</varname> with altitude, the distance combines great-circle horizontal distance with the altitude difference. The bounding box is an <varname>STBox</varname> with both Z and time extents set.</para></listitem>
+				<listitem><para><emphasis>M is parsed but ignored by spatial predicates</emphasis>. The M coordinate (a fourth, application-defined value &#x2014; commonly speed, accumulated distance, or a measured reading) is preserved on the value through WKT / WKB / MFJSON round-trips, but does not participate in <varname>distance</varname>, <varname>intersects</varname>, <varname>contains</varname>, <varname>dwithin</varname>, or any other topological / metric predicate. Workloads that need M-aware semantics must extract M as a separate <varname>tfloat</varname> column and operate on it explicitly &#x2014; do not assume any geo-family predicate is 4D-aware.</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="geo_hazards">
+			<title>Numerical hazards</title>
+			<para>Five hazards reliably bite real spatial workloads. The implementation mitigates each as follows:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Mixed-SRID inputs</emphasis>. A query that joins two tables stored in different CRSes (e.g., one in WGS-84 geographic, one in a local UTM zone) would produce silently wrong distances if the SRIDs were not checked.</para>
+					<para><emphasis>Mitigation</emphasis>: every cross-type operation routes through <varname>ensure_same_srid</varname> / <varname>ensure_same_geodetic</varname>, which raise an error naming both SRIDs. The error path is loud and explicit; there is no implicit transform.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Empty geometry inputs</emphasis>. A <varname>POINT EMPTY</varname> or <varname>POLYGON EMPTY</varname> has no coordinates and would produce <varname>NaN</varname> bounding boxes if accepted into a temporal value.</para>
+					<para><emphasis>Mitigation</emphasis>: every <varname>tgeo*</varname> constructor (<varname>tgeoseq_from_base_tstzspan</varname>, <varname>tpointseq_from_base_tstzspan</varname>, <varname>tgeo_from_base_temp_int</varname>, and the analogous <varname>seqset</varname> / <varname>tstzset</varname> entries) calls <varname>gserialized_is_empty</varname> on the input geometry and rejects empty values before any further processing &#x2014; see <filename>meos/src/geo/tgeo_meos.c</filename> at lines 572, 594, and 665.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>NaN and infinity coordinates</emphasis>. A <varname>POINT(NaN NaN)</varname> or a coordinate that overflows to <varname>Inf</varname> during a transform would propagate through bounding-box union, distance, and predicate evaluation, poisoning every downstream query.</para>
+					<para><emphasis>Mitigation</emphasis>: input parsing routes through PostGIS <varname>liblwgeom</varname>, which rejects non-finite coordinates at WKT / WKB / GeoJSON parse time. MEOS does not add an additional validation layer because the upstream check is already authoritative; non-finite coordinates therefore cannot enter a temporal geo value in the first place.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Antimeridian and pole crossings for <varname>tgeogpoint</varname></emphasis>. A temporal sequence with two consecutive points on opposite sides of &#xb1;180&#xb0; longitude (e.g., a transpacific flight or a vessel rounding Cape Horn at high latitude) is interpolated along the shortest great-circle arc &#x2014; the PostGIS / PROJ default. For workloads where this is the wrong semantics (a vessel that <emphasis>did</emphasis> travel the long way round), the input must be pre-processed to insert a synthetic instant near the antimeridian or at a sub-polar way-point, splitting the leg into two arcs each shorter than a hemisphere.</para>
+					<para><emphasis>Mitigation</emphasis>: documented as a caveat. No warning is currently emitted at construction time because detecting the case reliably (versus an intentional shortest-arc crossing of the dateline) is non-trivial.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Topological-predicate kernels</emphasis>. The geo family computes <varname>atGeometry</varname> / <varname>minusGeometry</varname> for the point-typed sub-family (<varname>tgeompoint</varname>, <varname>tgeogpoint</varname>) via a MEOS-native 2D / 3D trajectory-clipping kernel implemented in <filename>tpoint_geom_clip.c</filename>. For areal-Boolean operations on <varname>tgeometry</varname>, the implementation routes through PostGIS / GEOS today; the project is migrating these paths to native MEOS kernels (Clipper2-based) for performance reasons, with GEOS retained as a fallback for paths not yet covered. Users writing performance-sensitive code should not assume GEOS is the long-term engine; the MEOS-native path is the supported direction.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="geo_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of a geo value is the standard PostGIS <varname>GSERIALIZED</varname> payload, with the SRID, Z flag, M flag, and geodetic flag encoded in the header. The byte layout is stable: <varname>geo_in</varname> / <varname>geo_as_text</varname> and <varname>geo_as_wkb</varname> / <varname>geo_from_wkb</varname> round-trip preserves the value (including Z, M, and SRID) bit-for-bit, and the WKB / EWKB / HexEWKB serialisations follow the standard PostGIS endian-flag-then-payload pattern.</para>
+			<para>The <varname>asMFJSON(tgeo*)</varname> / <varname>tspatialFromMFJSON(text)</varname> pair is bidirectional, so MovingFeatures-JSON is a viable interchange format for all four geo types on equal footing with WKB.</para>
+			<para>The <varname>pg_dump</varname> output of a table containing geo or temporal-geo columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable across PostgreSQL major-version upgrades.</para>
+		</sect2>
+	</sect1>
 </chapter>
 

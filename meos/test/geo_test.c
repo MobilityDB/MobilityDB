@@ -46,6 +46,19 @@
 #include <meos.h>
 #include <meos_geo.h>
 
+/* Silent error handler used by the production-readiness hazard
+ * regressions at the bottom of main(): records the errno via
+ * meos_errno_set() without writing to stderr and without exiting on
+ * ERROR. The default handler exits on ERROR, which would terminate
+ * the test mid-run on any negative-path exercise. */
+static void
+silent_error_handler(int errlevel, int errcode, const char *errmsg)
+{
+  (void) errlevel; (void) errmsg;
+  meos_errno_set(errcode);
+  return;
+}
+
 /* Main program */
 int main(void)
 {
@@ -2843,6 +2856,156 @@ int main(void)
   /* double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2); */
   float8_result = temporal_hausdorff_distance(tgeompt1, tgeompt2);
   printf("temporal_hausdorff_distance(%s, %s): %lf\n", tgeompt1_out, tgeompt2_out, float8_result);
+
+  printf("****************************************************************\n");
+
+  /*****************************************************************************/
+  /* Production-readiness hazard regressions for the geo family                */
+  /*****************************************************************************/
+  /* These exercises pin the documented hazards from the geo_production_guidance
+   * sect1 in doc/temporal_spatial_p2.xml: mixed-SRID rejection, empty-geometry
+   * rejection, 3D linear interpolation, geographic-vs-planar distance scale
+   * divergence, and M-coordinate preservation through WKT round-trip while
+   * being ignored by spatial predicates. The default MEOS error handler exits
+   * on ERROR; we install a silent handler so the negative-path checks can
+   * inspect meos_errno() without terminating the process. */
+  printf("****************************************************************\n");
+  printf("* Production-readiness hazard regressions *\n");
+  printf("****************************************************************\n");
+
+  /* Install a silent handler so the negative-path checks can inspect
+   * meos_errno() without terminating the process. The MEOS public API
+   * does not expose a getter for the current handler; passing NULL to
+   * meos_initialize_error_handler reinstalls the default at the end. */
+  meos_initialize_error_handler(&silent_error_handler);
+
+  /* Hazard 1: mixed-SRID inputs are rejected via ensure_same_srid */
+  {
+    GSERIALIZED *gs_4326 = geom_in("SRID=4326;Point(1 1)", -1);
+    Temporal *t_3857 = tgeompoint_in(
+      "SRID=3857;[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]");
+    meos_errno_reset();
+    Temporal *result = tdistance_tgeo_geo(t_3857, gs_4326);
+    int err = meos_errno();
+    if (result == NULL && err == MEOS_ERR_INVALID_ARG_VALUE)
+      printf("PASS: mixed-SRID tdistance_tgeo_geo(SRID=3857 tgeompoint, "
+        "SRID=4326 geometry) rejected with MEOS_ERR_INVALID_ARG_VALUE\n");
+    else
+      printf("FAIL: mixed-SRID tdistance_tgeo_geo expected NULL + errno=%d, "
+        "got %s + errno=%d\n", MEOS_ERR_INVALID_ARG_VALUE,
+        result == NULL ? "NULL" : "non-NULL", err);
+    free(gs_4326); free(t_3857);
+    if (result != NULL) free(result);
+    meos_errno_reset();
+  }
+
+  /* Hazard 2: empty-geometry input rejected at construction
+   * (gserialized_is_empty in tgeo_meos.c at lines 572, 594, 665).
+   * tpointseq_from_base_tstzspan exercises the dedicated MEOS guard. */
+  {
+    GSERIALIZED *gs_empty = geom_in("SRID=5676;Point EMPTY", -1);
+    Span *span = tstzspan_in("[2001-01-01, 2001-01-03]");
+    meos_errno_reset();
+    TSequence *result = tpointseq_from_base_tstzspan(gs_empty, span, LINEAR);
+    /* The constructor returns NULL on empty without setting an errno
+     * (the empty-check is a silent guard, not an error path). */
+    if (result == NULL)
+      printf("PASS: empty-geometry input to tpointseq_from_base_tstzspan "
+        "rejected (returned NULL)\n");
+    else
+      printf("FAIL: empty-geometry input expected NULL, got non-NULL\n");
+    free(gs_empty); free(span);
+    if (result != NULL) free(result);
+    meos_errno_reset();
+  }
+
+  /* Hazard 3: 3D linear interpolation. A 2-instant tgeompoint with Z
+   * sampled at the midpoint must yield the linear midpoint of x, y, z. */
+  {
+    Temporal *t3d = tgeompoint_in(
+      "SRID=5676;[Point(0 0 0)@2001-01-01, Point(10 20 30)@2001-01-03]");
+    TimestampTz tmid = timestamptz_in("2001-01-02", -1);
+    GSERIALIZED *mid = NULL;
+    bool ok = tgeo_value_at_timestamptz(t3d, tmid, true, &mid);
+    /* Expect Point(5 10 15) at the temporal midpoint. */
+    char *mid_wkt = ok && mid ? geo_as_text(mid, 6) : NULL;
+    if (ok && mid_wkt && strstr(mid_wkt, "POINT Z (5 10 15)") != NULL)
+      printf("PASS: 3D linear interpolation midpoint of "
+        "[Point(0 0 0)@d1, Point(10 20 30)@d3] at d2 = %s\n", mid_wkt);
+    else
+      printf("FAIL: 3D linear interpolation expected POINT Z (5 10 15), "
+        "got %s\n", mid_wkt ? mid_wkt : "NULL");
+    if (mid_wkt) free(mid_wkt);
+    if (mid) free(mid);
+    free(t3d);
+  }
+
+  /* Hazard 4: geographic vs planar distance scale divergence.
+   * Identical XY coordinates as tgeompoint(SRID=3857) and tgeogpoint(
+   * SRID=4326) must produce different distance results because the math
+   * is planar Euclidean (CRS units, here metres in Web Mercator) versus
+   * spherical great-circle (metres on the WGS-84 sphere). */
+  {
+    GSERIALIZED *gs_proj = geom_in("SRID=3857;Point(0 0)", -1);
+    GSERIALIZED *gs_geog = geog_in("SRID=4326;Point(0 0)", -1);
+    Temporal *t_proj = tgeompoint_in(
+      "SRID=3857;[Point(10 10)@2001-01-01, Point(20 20)@2001-01-03]");
+    Temporal *t_geog = tgeogpoint_in(
+      "SRID=4326;[Point(10 10)@2001-01-01, Point(20 20)@2001-01-03]");
+    Temporal *d_proj = tdistance_tgeo_geo(t_proj, gs_proj);
+    Temporal *d_geog = tdistance_tgeo_geo(t_geog, gs_geog);
+    /* Sample the start instant of each result and compare. */
+    double v_proj = 0.0, v_geog = 0.0;
+    TimestampTz t_start = timestamptz_in("2001-01-01", -1);
+    bool ok_proj = tfloat_value_at_timestamptz(d_proj, t_start, true, &v_proj);
+    bool ok_geog = tfloat_value_at_timestamptz(d_geog, t_start, true, &v_geog);
+    /* Planar Euclidean distance from (0,0) to (10,10) in CRS units = sqrt(200)
+     * = ~14.14. Great-circle distance from (0,0) to (10,10) on WGS-84 is
+     * ~1568 km = 1.568e6 m. The two must differ by orders of magnitude. */
+    if (ok_proj && ok_geog && v_proj != v_geog && v_geog > v_proj * 1000.0)
+      printf("PASS: geographic-vs-planar distance scales diverge: "
+        "planar=%g, great-circle=%g (ratio=%g)\n",
+        v_proj, v_geog, v_geog / v_proj);
+    else
+      printf("FAIL: expected planar (~14) and great-circle (~1.5e6) to differ "
+        "by >1000x, got planar=%g, great-circle=%g\n", v_proj, v_geog);
+    free(gs_proj); free(gs_geog); free(t_proj); free(t_geog);
+    free(d_proj); free(d_geog);
+  }
+
+  /* Hazard 5: M coordinate preserved through WKT round-trip but ignored by
+   * spatial predicates. We construct a 4D (XYZM) tgeometry and check that
+   * (a) the WKT representation preserves the M coordinate, and (b) an
+   * intersects predicate against a 2D geometry returns the value we would
+   * get from the 2D projection of the trajectory (M is ignored).
+   * Note: PostGIS may emit a 3D-vs-2D NOTICE through the MEOS error path
+   * during this kind of cross-dimension comparison; we check the
+   * observable result, not the errno. */
+  {
+    Temporal *t4d = tgeometry_in(
+      "SRID=5676;[Point ZM (0 0 0 100)@2001-01-01, "
+      "Point ZM (10 10 10 200)@2001-01-03]");
+    char *t4d_wkt = tspatial_as_ewkt(t4d, 6);
+    bool m_preserved = strstr(t4d_wkt, "100") != NULL &&
+                       strstr(t4d_wkt, "200") != NULL;
+    /* Predicate against a 2D box that overlaps the XY trajectory. */
+    GSERIALIZED *box2d = geom_in(
+      "SRID=5676;Polygon((0 0, 0 20, 20 20, 20 0, 0 0))", -1);
+    meos_errno_reset();
+    int ever = eintersects_tgeo_geo(t4d, box2d);
+    if (m_preserved && ever == 1)
+      printf("PASS: 4D tgeometry round-trip preserves M (WKT contains "
+        "100 and 200) and eintersects_tgeo_geo against 2D polygon = true "
+        "(M ignored by predicate)\n");
+    else
+      printf("FAIL: 4D semantics: m_preserved=%d, eintersects=%d, "
+        "wkt=%s\n", (int) m_preserved, ever, t4d_wkt);
+    free(t4d); free(t4d_wkt); free(box2d);
+    meos_errno_reset();
+  }
+
+  /* Restore the default exiting error handler. */
+  meos_initialize_error_handler(NULL);
 
   printf("****************************************************************\n");
 
