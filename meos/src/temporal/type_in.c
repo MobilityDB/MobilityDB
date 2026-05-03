@@ -779,6 +779,13 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != 1 || ndates != 1)
   {
+    /* Pointer-typed Datums (text, geometry, pose, ...) are not freed by
+     * pfree(values), which only releases the array storage. */
+    if (! basetype_byvalue(temptype_basetype(temptype)))
+    {
+      for (int i = 0; i < nvalues; i++)
+        pfree(DatumGetPointer(values[i]));
+    }
     pfree(values); pfree(times);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid number of elements in '%s' and/or 'datetimes' arrays",
@@ -826,6 +833,14 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != ndates)
   {
+    /* Pointer-typed Datums (text, geometry, pose, ...) are not freed by
+     * pfree(values), which only releases the array storage. */
+    if (! basetype_byvalue(temptype_basetype(temptype)))
+    {
+      for (int i = 0; i < nvalues; i++)
+        pfree(DatumGetPointer(values[i]));
+    }
+    pfree(values); pfree(times);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Distinct number of elements in '%s' and 'datetimes' arrays",
       ! isgeo ? "values" : "coordinates");
