@@ -88,7 +88,7 @@ extern Temporal *geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 extern Temporal *trgeo_to_tpose(const Temporal *temp);
-extern Temporal *trgeo_to_tpoint(const Temporal *temp);
+extern Temporal *trgeo_to_tgeompoint(const Temporal *temp);
 
 /*****************************************************************************
  * Accessor functions
