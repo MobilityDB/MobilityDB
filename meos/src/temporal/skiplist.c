@@ -718,6 +718,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       {
         void *newkey = palloc(list->key_size);
         memcpy(newkey, keys[i], list->key_size);
+        newelem->key = newkey;
       }
       else
         newelem->key = NULL;
