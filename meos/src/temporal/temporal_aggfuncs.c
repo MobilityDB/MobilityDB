@@ -1259,14 +1259,13 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 SkipList *
 timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
 {
+  /* Validate the existing skiplist's subtype *before* allocating instants,
+   * otherwise the early-return on subtype mismatch leaks the transform. */
+  if (state && ! ensure_same_skiplist_subtype(state, TINSTANT))
+    return NULL;
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
     state = temporal_skiplist_make();
-  else
-  {
-    if (! ensure_same_skiplist_subtype(state, TINSTANT))
-      return NULL;
-  }
   temporal_skiplist_splice(state, (void **) instants, 1, &datum_sum_int32,
     CROSSINGS_NO);
   pfree_array((void **) instants, 1);
@@ -1290,14 +1289,13 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
   if (! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
+  /* Validate the existing skiplist's subtype *before* allocating instants,
+   * otherwise the early-return on subtype mismatch leaks the transform. */
+  if (state && ! ensure_same_skiplist_subtype(state, TINSTANT))
+    return NULL;
   TInstant **instants = tstzset_transform_tcount(s);
   if (! state)
     state = temporal_skiplist_make();
-  else
-  {
-    if (! ensure_same_skiplist_subtype(state, TINSTANT))
-      return NULL;
-  }
   temporal_skiplist_splice(state, (void **) instants, s->count, &datum_sum_int32,
     CROSSINGS_NO);
   pfree_array((void **) instants, s->count);
@@ -1321,14 +1319,13 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
   if (! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
+  /* Validate the existing skiplist's subtype *before* allocating the
+   * transform, otherwise the early-return on subtype mismatch leaks it. */
+  if (state && ! ensure_same_skiplist_subtype(state, TSEQUENCE))
+    return NULL;
   TSequence *seq = tstzspan_transform_tcount(s);
   if (! state)
     state = temporal_skiplist_make();
-  else
-  {
-    if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
-      return NULL;
-  }
   temporal_skiplist_splice(state, (void **) &seq, 1, &datum_sum_int32,
     CROSSINGS_NO);
   pfree(seq);
@@ -1353,14 +1350,13 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
   if (! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
+  /* Validate the existing skiplist's subtype *before* allocating the
+   * transform, otherwise the early-return on subtype mismatch leaks it. */
+  if (state && ! ensure_same_skiplist_subtype(state, TSEQUENCE))
+    return NULL;
   TSequence **sequences = tstzspanset_transform_tcount(ss);
   if (! state)
     state = temporal_skiplist_make();
-  else
-  {
-    if (! ensure_same_skiplist_subtype(state, TSEQUENCE))
-      return NULL;
-  }
   for (int i = 0; i < ss->count; i++)
   {
     temporal_skiplist_splice(state, (void **) &sequences[i], 1,
