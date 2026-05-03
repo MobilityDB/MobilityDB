@@ -21,6 +21,10 @@ Pull Request Process
 --------------------
 You can fork this repository, make your own contribution, and submit a pull request. Please put as the pull request title the issue number that it closes (for example, `[Closes issue #xxx]`). Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
 
+Adding a New Temporal Type
+--------------------------
+Adding a new external base type and lifting it into a temporal type (the way `tcbuffer`, `tpose`, `tnpoint`, `trgeometry` were added) is a multi-week effort that touches the catalog, the bbox dispatch, the indexes, the datagen, the regression suite, and the DocBook chapter. A dedicated guide walks through the design decisions, the day-by-day milestones, the parity checklist every type must satisfy, and the production-readiness pass that turns a working type into one production workloads can rely on. Read it before opening any code: [doc/contributing/new_temporal_type.md](doc/contributing/new_temporal_type.md).
+
 Contribution Agreement
 ----------------------
 MobilityDB source code is provided under the [PostgreSQL license](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt). The documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/). Any contribution will automatically fall to the same license respectively.
