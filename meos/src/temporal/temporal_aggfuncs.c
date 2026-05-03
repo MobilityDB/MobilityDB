@@ -440,6 +440,22 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "The temporal values have different value at their common timestamp %s",
             t1);
+          /* Mirror the caller's pfree_array teardown: when tofree was
+           * requested, every result[] entry was tracked in tofree1; otherwise
+           * walk result[] directly. Either way, release the partially built
+           * TInstants and both pointer-array shells before bailing. */
+          if (tofree)
+          {
+            for (int k = 0; k < nfree1; k++)
+              pfree(tofree1[k]);
+          }
+          else
+          {
+            for (int k = 0; k < count; k++)
+              pfree(result[k]);
+          }
+          pfree(tofree1);
+          pfree(result);
           return NULL;
         }
       }
