@@ -49,6 +49,8 @@
 		</math>.
 	</para>
 
+	<para>The pose constructor accepts quaternions whose norm is within <varname>1e-3</varname> of unit (a tolerance wide enough to absorb the integrator drift typical of sensor-fusion clients such as IMUs and AR/VR runtimes), then renormalises to exactly unit norm before storing. Way-off norms (e.g., the obvious-bug case <varname>(1, 1, 1, 1)</varname> where <varname>|q| = 2</varname>), zero quaternions, and quaternions with <varname>NaN</varname>/<varname>Inf</varname> components are rejected up front. The on-disk representation is therefore independent of the caller's floating-point hygiene, and downstream comparison, hashing, SLERP, and Euler-decomposition code can rely on the unit-norm invariant.</para>
+
 	<para>
 		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
 	</para>
