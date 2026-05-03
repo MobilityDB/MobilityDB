@@ -347,6 +347,9 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
     return NULL;
   }
   Datum *values = palloc(sizeof(Datum) * nvalues);
+  /* Track whether the base type is by-reference so the cleanup paths know
+   * whether to walk @p values[0..i-1] before freeing the array */
+  bool typbyref = (temptype == T_TTEXT);
   for (int i = 0; i < nvalues; ++i)
   {
     json_object *jvalue = NULL;
@@ -356,6 +359,7 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
       case T_TBOOL:
         if (json_object_get_type(jvalue) != json_type_boolean)
         {
+          pfree(values);
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid boolean value in 'values' array in MFJSON string");
           return NULL;
@@ -365,6 +369,7 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
       case T_TINT:
         if (json_object_get_type(jvalue) != json_type_int)
         {
+          pfree(values);
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid integer value in 'values' array in MFJSON string");
           return NULL;
@@ -377,6 +382,12 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
       case T_TTEXT:
         if (json_object_get_type(jvalue) != json_type_string)
         {
+          if (typbyref)
+          {
+            for (int j = 0; j < i; j++)
+              pfree(DatumGetPointer(values[j]));
+          }
+          pfree(values);
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
             "Invalid string value in 'values' array in MFJSON string");
           return NULL;
@@ -384,6 +395,7 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
         values[i] = PointerGetDatum(cstring2text(json_object_get_string(jvalue)));
         break;
       default: /* Error! */
+        pfree(values);
         meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
           "Unknown temporal type in MFJSON string: %s",
           meostype_name(temptype));
