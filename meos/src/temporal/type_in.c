@@ -488,6 +488,9 @@ parse_mfjson_geos(json_object *mfjson, int32_t srid, bool geodetic, int *count)
     LWGEOM *geo = parse_geojson(geo_json, &hasz);
     if (! geo)
     {
+      /* Release previously-serialized geometries before bailing */
+      for (int j = 0; j < i; j++)
+        pfree(DatumGetPointer(values[j]));
       pfree(values);
       return NULL;
     }
