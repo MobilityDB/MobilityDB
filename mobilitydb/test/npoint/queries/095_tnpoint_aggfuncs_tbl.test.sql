@@ -44,6 +44,24 @@ SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
 
 -------------------------------------------------------------------------------
 
+-- extent(tnpoint): bulk aggregation across the per-subtype tables.
+-- Compare per-subtype to whole-table to verify the combine function folds
+-- partial states correctly (matters for parallel aggregation). Output is
+-- rounded to 6 decimals to mask cross-platform sub-ULP drift in the
+-- materialised X / Y bounds (Ubuntu vs macOS); see the round(extent(...))
+-- precedent in 076_tpoint_analytics_tbl.
+SELECT round(extent(inst), 6) FROM tbl_tnpoint_inst;
+SELECT round(extent(ti), 6) FROM tbl_tnpoint_discseq;
+SELECT round(extent(seq), 6) FROM tbl_tnpoint_seq;
+SELECT round(extent(ss), 6) FROM tbl_tnpoint_seqset;
+SELECT round(extent(temp), 6) FROM tbl_tnpoint;
+
+-- Group-by aggregation (ensures the combine path runs across partial states)
+SELECT k%10, round(extent(inst), 6) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, round(extent(temp), 6) FROM tbl_tnpoint GROUP BY k%10 ORDER BY k%10;
+
+-------------------------------------------------------------------------------
+
 SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
 SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
 SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
