@@ -771,6 +771,75 @@ trgeometry_sequences(const Temporal *temp, int *count)
   return result;
 }
 
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the set of distinct points seen along a temporal rigid
+ * geometry's antenna trajectory
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_points()
+ */
+Set *
+trgeo_points(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Set *result = tpose_points(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the rotation of a temporal rigid geometry as a temporal float
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_rotation()
+ */
+Temporal *
+trgeo_rotation(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Temporal *result = tpose_rotation(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the array of inter-instant segments of a temporal rigid
+ * geometry — one TSequence per consecutive pair of instants
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] count Number of resulting segments
+ * @csqlfn #Trgeometry_segments()
+ */
+TSequence **
+trgeo_segments(const Temporal *temp, int *count)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_continuous(temp))
+    return NULL;
+  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  TSequence **segs = temporal_segments(tpose, count);
+  pfree(tpose);
+  if (! segs)
+    return NULL;
+  TSequence **result = palloc(sizeof(TSequence *) * (*count));
+  for (int i = 0; i < *count; i++)
+  {
+    result[i] = geo_tposeseq_to_trgeo(geo, segs[i]);
+    pfree(segs[i]);
+  }
+  pfree(segs);
+  return result;
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
