@@ -2040,7 +2040,7 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
   /* Compute the result */
   Temporal *dist = tdistance_trgeo_geo(temp, geo);
   double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(geo);
+  pfree(dist); pfree(geo);
   if (hast)
     pfree(temp1);
   return result;
