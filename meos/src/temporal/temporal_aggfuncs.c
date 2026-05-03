@@ -612,9 +612,15 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
+        /* Free the instants built so far in this loop (j is the loop var, not
+         * i) plus the synced sequences and any "before intersection" sequence
+         * already in sequences[0..nseqs-1]. */
         for (int j = 0; j < i; j++)
-          pfree(instants[i]);
+          pfree(instants[j]);
         pfree(instants);
+        pfree(syncseq1); pfree(syncseq2);
+        for (int j = 0; j < nseqs; j++)
+          pfree(sequences[j]);
         return -1;
       }
     }
