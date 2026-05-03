@@ -1009,7 +1009,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   const char *typestr = json_object_get_string(poObjType);
   MeosType jtemptype = T_UNKNOWN;
   if (! ensure_temptype_mfjson(typestr))
+  {
+    json_object_put(poObj);
     return NULL;
+  }
   if (strcmp(typestr, "MovingBoolean") == 0)
     jtemptype = T_TBOOL;
   else if (strcmp(typestr, "MovingInteger") == 0)
@@ -1039,6 +1042,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
+    json_object_put(poObj);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string, expected: %s, received: %s",
       meostype_name(temptype), meostype_name(jtemptype));
@@ -1054,6 +1058,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   json_object *poObjInterp = findMemberByName(poObj, "interpolation");
   if (poObjInterp == NULL)
   {
+    json_object_put(poObj);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Unable to find 'interpolation' in MFJSON string");
     return NULL;
@@ -1110,6 +1115,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
       gs = parse_mfjson_ref_geo(poObj, srid, false);
       if (! gs)
       {
+        json_object_put(poObj);
         meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
           "Invalid 'geometry' value in MFJSON string");
         return NULL;
