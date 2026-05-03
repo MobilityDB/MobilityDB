@@ -490,6 +490,9 @@ keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
   int count1, void **keys2, void **values2, int count2, int *newcount,
   void ***newkeys, void ***tofree, int *nfree)
 {
+  /* Convention: result, *newkeys, and *tofree are three distinct allocations.
+   * The caller (skiplist_splice) frees the merged elements + the *tofree shell
+   * via pfree_array, then frees the result and *newkeys shells separately. */
   void **result = palloc(sizeof(void *) * (count1 + count2));
   void **newkeys1 = palloc(sizeof(void *) * (count1 + count2));
   void **tofree1 = palloc(sizeof(void *) * Max(count1, count2));
@@ -589,6 +592,12 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Array keeping the new aggregated values that must be freed */
   void **tofree = NULL;
   int nfree = 0;
+  /* Shells returned by the merge helpers; freed after the insertion loop.
+   * The merge helpers guarantee these are distinct allocations from tofree,
+   * so we can pfree them unconditionally without double-freeing the elements
+   * (which are released via pfree_array(tofree, nfree)). */
+  void **newvalues_shell = NULL;
+  void **newkeys_shell = NULL;
 
   /* Remove from the list the elements that overlap with the new elements
    * (if any) and compute their aggregation */
@@ -671,6 +680,9 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       keys = newkeys;
       values = newvalues;
       count = newcount;
+      /* Stash the merge-helper shells for release after the insertion loop. */
+      newvalues_shell = newvalues;
+      newkeys_shell = newkeys;
     }
   }
 
@@ -732,6 +744,13 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Free memory */
   if (spliced_count != 0)
     pfree_array((void **) tofree, nfree);
+  /* Release the merge-helper pointer-array shells. These are allocated by
+   * temporal_skiplist_merge / keyval_skiplist_merge as separate allocations
+   * from tofree, so freeing them here does not double-free the elements. */
+  if (newvalues_shell)
+    pfree(newvalues_shell);
+  if (newkeys_shell)
+    pfree(newkeys_shell);
   return;
 }
 

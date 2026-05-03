@@ -346,6 +346,10 @@ temporal_skiplist_merge(void **spliced, int spliced_count, void **values,
   int count, datum_func2 func, bool crossings, int *newcount, void ***tofree,
   int *nfree)
 {
+  /* Convention: *tofree must be a distinct allocation from the returned
+   * newvalues shell. The caller (skiplist_splice) frees the elements + the
+   * tofree shell via pfree_array, then frees the newvalues shell separately.
+   * Aliasing the two would cause skiplist_splice to either leak or double-free. */
   *newcount = 0;
   void **newvalues;
   uint8 subtype = ((Temporal *) values[0])->subtype;
@@ -356,7 +360,12 @@ temporal_skiplist_merge(void **spliced, int spliced_count, void **values,
   {
     newvalues = (void **) tsequence_tagg((TSequence **) spliced, spliced_count,
       (TSequence **) values, count, func, crossings, newcount);
-    *tofree = newvalues;
+    /* Duplicate the pointer-array shell so *tofree is distinct from
+     * newvalues; both shells then hold the same TSequence* element pointers,
+     * which the elements-free pass in skiplist_splice will release exactly once. */
+    void **tofree1 = palloc(sizeof(TSequence *) * (*newcount));
+    memcpy(tofree1, newvalues, sizeof(TSequence *) * (*newcount));
+    *tofree = tofree1;
     *nfree = *newcount;
   }
   return newvalues;
