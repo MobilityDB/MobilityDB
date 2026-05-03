@@ -433,6 +433,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
         if (tinstant_eq(inst1, inst2))
         {
           result[count++] = tinstant_copy(inst1);
+          if (tofree)
+            tofree1[nfree1++] = result[count - 1];
         }
         else
         {
