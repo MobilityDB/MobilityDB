@@ -103,21 +103,28 @@ datum_max_float8(Datum l, Datum r)
 }
 
 /**
- * @brief Return the minimum value of the two arguments
+ * @brief Return a fresh copy of the minimum value of the two arguments
+ * @note Returns a freshly-allocated Datum so that callers can always free the
+ * result without aliasing into one of the inputs. Required by the @p tagg
+ * paths, which free the per-element result Datum after copying it into a
+ * @p TInstant.
  */
  Datum
 datum_min_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) < 0 ? l : r;
+  Datum chosen = text_cmp(DatumGetTextP(l), DatumGetTextP(r)) < 0 ? l : r;
+  return datum_copy(chosen, T_TEXT);
 }
 
 /**
- * @brief Return the maximum value of the two arguments
+ * @brief Return a fresh copy of the maximum value of the two arguments
+ * @note See @ref datum_min_text for the always-fresh ownership contract.
  */
 Datum
 datum_max_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) > 0 ? l : r;
+  Datum chosen = text_cmp(DatumGetTextP(l), DatumGetTextP(r)) > 0 ? l : r;
+  return datum_copy(chosen, T_TEXT);
 }
 
 /**
@@ -399,8 +406,13 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func)
       {
-        result[count++] = tinstant_make(func(tinstant_value_p(inst1),
-          tinstant_value_p(inst2)), inst1->temptype, inst1->t);
+        /* All @p datum_func2 implementations passed here return a freshly
+         * allocated Datum (or by-value); aliasing variants are wrapped at
+         * source. @p tinstant_make copies the value, so the result Datum can
+         * be released right after construction. */
+        Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
+        result[count++] = tinstant_make(value, inst1->temptype, inst1->t);
+        DATUM_FREE(value, temptype_basetype(inst1->temptype));
         if (tofree)
           tofree1[nfree1++] = result[count - 1];
       }
@@ -543,16 +555,20 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   TSequence *syncseq1, *syncseq2;
   synchronize_tsequence_tsequence(seq1, seq2, &syncseq1, &syncseq2, crossings);
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
-  // MeosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 0; i < syncseq1->count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func)
     {
+      /* All @p datum_func2 implementations passed here return a freshly
+       * allocated Datum (or by-value); aliasing variants are wrapped at
+       * source. @p tinstant_make copies the value, so the result Datum can
+       * be released right after construction. */
       Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
       instants[i] = tinstant_make(value, seq1->temptype, inst1->t);
-      // DATUM_FREE(value, basetype); // TODO
+      DATUM_FREE(value, basetype);
     }
     else
     {
