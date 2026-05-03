@@ -19,8 +19,6 @@ list(SORT testfiles)
 # regenerated.
 set(SKIP_TESTS
   160_tcbuffer_distance_tbl         # NearestApproachDistance / |=| count drift
-  162_tcbuffer_spatialrels          # spatialrels output drift
-  162_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
   164_tcbuffer_tempspatialrels      # tempspatialrels output drift
   164_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
 )
