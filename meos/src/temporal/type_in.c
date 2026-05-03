@@ -1175,6 +1175,12 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     else
     {
       json_object_put(poObj);
+#if RGEO
+      /* Release the reference geometry parsed earlier when the dispatch
+       * fails after parse_mfjson_ref_geo succeeded */
+      if (gs)
+        pfree(gs);
+#endif /* RGEO */
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
         "Invalid 'interpolation' value in MFJSON string");
       return NULL;
@@ -1183,7 +1189,17 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   json_object_put(poObj);
 #if RGEO
   if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
-    return geo_tpose_to_trgeo(gs, result);
+  {
+    /* @ref geo_tpose_to_trgeo copies @p gs and the temporal pose into the
+     * new value; release the originals here regardless of whether
+     * construction succeeded. Same pattern as the trgeo.c callers. */
+    Temporal *trgeo = geo_tpose_to_trgeo(gs, result);
+    if (gs)
+      pfree(gs);
+    if (result)
+      pfree(result);
+    return trgeo;
+  }
 #endif /* RGEO */
   return result;
 }
