@@ -255,14 +255,19 @@ STBox *
 tspatial_extent_transfn(STBox *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! state || ! temp)
+  if (! state && ! temp)
+    return NULL;
+  /* Null state and non-null temporal, return the bbox of the temporal */
+  if (! state )
   {
-    if (! state && ! temp)
-      return NULL;
-    if (! state)
-      return tspatial_to_stbox(temp);
-    else
-      return state;
+    STBox *result = palloc0(sizeof(STBox));
+    tspatial_set_stbox(temp, result);
+    return result;
+  }
+  /* Non-null state and null temporal, return the state */
+  if (! temp)
+  {
+    return state;
   }
 
   /* Ensure the validity of the arguments */

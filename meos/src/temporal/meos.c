@@ -49,14 +49,11 @@
  * Functions for the Gnu Scientific Library (GSL)
  ***************************************************************************/
 
-/* Per-thread state: each thread gets its own RNG to avoid races on the GSL
- * generators (which are not internally synchronised). Random streams are
- * therefore per-thread; callers seeding for reproducibility should seed
- * each thread explicitly. */
+/* Global variables */
 
-static MEOS_TLS bool MEOS_GSL_INITIALIZED = false;
-static MEOS_TLS gsl_rng *MEOS_GENERATION_RNG = NULL;
-static MEOS_TLS gsl_rng *MEOS_AGGREGATION_RNG = NULL;
+static bool MEOS_GSL_INITIALIZED = false;
+static gsl_rng *MEOS_GENERATION_RNG = NULL;
+static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -114,11 +111,9 @@ gsl_get_aggregation_rng(void)
  * Functions for the PROJ library
  ***************************************************************************/
 
-/* Per-thread PROJ context. PROJ explicitly documents PJ_CONTEXT as not
- * thread-safe; the official guidance is one context per thread, which is
- * exactly what TLS gives us. */
+/* Global variables keeping Proj context */
 
-static MEOS_TLS PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
 
 /**
  * @brief Initialize the PROJ library

@@ -37,13 +37,12 @@
 
 #ifndef YY_WKT_YY_LWIN_WKT_PARSE_H_INCLUDED
 # define YY_WKT_YY_LWIN_WKT_PARSE_H_INCLUDED
-#include <meos_tls.h> /* MEOS: see issue #404 / lwin_wkt_lex.c */
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
 #endif
 #if YYDEBUG
-/* MEOS */ extern MEOS_TLS int wkt_yydebug;
+extern int wkt_yydebug;
 #endif
 
 /* Token kinds.  */
@@ -118,8 +117,8 @@ struct YYLTYPE
 #endif
 
 
-/* MEOS */ extern MEOS_TLS YYSTYPE wkt_yylval;
-/* MEOS */ extern MEOS_TLS YYLTYPE wkt_yylloc;
+extern YYSTYPE wkt_yylval;
+extern YYLTYPE wkt_yylloc;
 
 int wkt_yyparse (void);
 
