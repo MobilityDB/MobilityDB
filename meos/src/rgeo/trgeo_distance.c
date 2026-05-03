@@ -2012,6 +2012,18 @@ nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_rgeo_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box
+ * and a temporal rigid geometry
+ * @sqlop @p |=|
+ */
+double
+nad_stbox_trgeo(const STBox *box, const Temporal *temp)
+{
+  return nad_trgeo_stbox(temp, box);
+}
+
+/**
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a spatiotemporal box
  * @sqlop @p |=|
