@@ -694,7 +694,16 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
   for (int i = 0; i < nposes; ++i)
   {
     json_object *pose = json_object_array_get_idx(values_json, i);
-    values[i] = PointerGetDatum(parse_mfjson_pose(pose, srid));
+    Pose *p = parse_mfjson_pose(pose, srid);
+    if (! p)
+    {
+      /* Release previously-decoded poses before bailing */
+      for (int j = 0; j < i; j++)
+        pfree(DatumGetPointer(values[j]));
+      pfree(values);
+      return NULL;
+    }
+    values[i] = PointerGetDatum(p);
   }
   *count = nposes;
   return values;
