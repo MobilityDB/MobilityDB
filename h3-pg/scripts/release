@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -u
+VERSION="$1"
+: "$VERSION"
+
+# Version number should be changed in root `CMakeLists.txt`.
+sed -i -r "s/(  VERSION )[0-9\.]+/\1$VERSION/g" CMakeLists.txt
+
+# Set `INSTALL_VERSION` to "${PROJECT_VERSION}".
+sed -i '/set(INSTALL_VERSION "${PROJECT_VERSION}")/s/^#//g' CMakeLists.txt
+sed -i '/set(INSTALL_VERSION "unreleased")/s/^/#/g' CMakeLists.txt
+
+# Installer `.sql` files should have `@ availability` comments updated.
+sed -i "s/availability: unreleased/availability: $VERSION/g" h3/sql/install/*.sql
+sed -i "s/availability: unreleased/availability: $VERSION/g" h3_postgis/sql/install/*.sql
+
+# Update files (and cmake references) suffixed `--unreleased` should be renamed.
+rename unreleased "$VERSION" h3/sql/updates/*--unreleased.sql
+sed -i "s/unreleased/$VERSION/g" h3/sql/updates/*--$VERSION.sql
+sed -i "s/unreleased/$VERSION/g" h3/CMakeLists.txt
+
+rename unreleased "$VERSION" h3_postgis/sql/updates/*--unreleased.sql
+sed -i "s/unreleased/$VERSION/g" h3_postgis/sql/updates/*--$VERSION.sql
+sed -i "s/unreleased/$VERSION/g" h3_postgis/CMakeLists.txt
+
+# Generate docs
+scripts/documentation
+
+git checkout -b "release-$VERSION"
+
+echo "Remember to":
+echo "   - Update changelog by moving from \`Unreleased\` to a new section"

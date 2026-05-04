@@ -1,0 +1,22 @@
+build*/
+
+# C
+*.o
+*.bc
+*.so
+
+# Test results
+h3/test/regression.*
+h3/test/results
+
+# Generated
+/h3*.sql
+/h3/test/expected/ci-*.out
+/h3/test/sql/ci-*.sql
+/libh3-*/
+/h3-*.zip
+*.BAK
+
+# IDEs
+.vscode/*
+!.vscode/settings.json

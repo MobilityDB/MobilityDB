@@ -85,11 +85,13 @@ Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  MemoryContext ctx;
+  INPUT_AGG_TRANS_STATE(fcinfo, state, ctx);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   state = tpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
+  unset_aggregation_context(ctx);
   PG_RETURN_TEMPORAL_P(state);
 }
 

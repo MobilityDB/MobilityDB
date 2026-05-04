@@ -1246,13 +1246,13 @@ trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
  * @csqlfn #Temporal_before_timestamptz()
  */
 Temporal *
-trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *tpose = trgeo_to_tpose(temp);
-  Temporal *res = temporal_before_timestamptz(tpose, t, atfunc);
+  Temporal *res = temporal_before_timestamptz(tpose, t, strict);
   pfree(tpose); 
   if (! res)
     return NULL;
@@ -1272,13 +1272,13 @@ trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @csqlfn #Temporal_after_timestamptz()
  */
 Temporal *
-trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *tpose = trgeo_to_tpose(temp);
-  Temporal *res = temporal_after_timestamptz(tpose, t, atfunc);
+  Temporal *res = temporal_after_timestamptz(tpose, t, strict);
   pfree(tpose); 
   if (! res)
     return NULL;
