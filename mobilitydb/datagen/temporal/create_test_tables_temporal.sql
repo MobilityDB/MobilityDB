@@ -320,6 +320,15 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tboxint(0, 100, '2001-01-01', '2001-12-31', 10, 10)
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_tboxbigint;
+CREATE TABLE tbl_tboxbigint(k, t) AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tboxbigint(0, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) AS k;
+
+
 DROP TABLE IF EXISTS tbl_tboxfloat;
 CREATE TABLE tbl_tboxfloat(k, t) AS
 /* Add perc NULL values */
@@ -345,7 +354,7 @@ SET inst = (SELECT inst FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tbool_inst t1
-SET inst = (SELECT tbool_inst(random_bool(), getTimestamp(inst))
+SET inst = (SELECT random_tbool_inst(random_bool(), getTimestamp(inst))
   FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -362,8 +371,25 @@ SET inst = (SELECT inst FROM tbl_tint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tint_inst t1
-SET inst = (SELECT tint_inst(random_int(0, 100), getTimestamp(inst))
+SET inst = (SELECT tint(random_int(0, 100), getTimestamp(inst))
   FROM tbl_tint_inst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+
+DROP TABLE IF EXISTS tbl_tbigint_inst;
+CREATE TABLE tbl_tbigint_inst(k, inst) AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbigint_inst(0, 100, '2001-01-01', '2001-12-31')
+FROM generate_series(perc+1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tbigint_inst t1
+SET inst = (SELECT inst FROM tbl_tbigint_inst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tbigint_inst t1
+SET inst = (SELECT tbigint(random_bigint(0, 100), getTimestamp(inst))
+  FROM tbl_tbigint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
 DROP TABLE IF EXISTS tbl_tfloat_inst;
@@ -371,7 +397,7 @@ CREATE TABLE tbl_tfloat_inst(k, inst) AS
 /* Add perc NULL values */
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_inst(0, 100, '2001-01-01', '2001-12-31')
+SELECT k, tfloat(0, 100, '2001-01-01', '2001-12-31')
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloat_inst t1
@@ -379,7 +405,7 @@ SET inst = (SELECT inst FROM tbl_tfloat_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tfloat_inst t1
-SET inst = (SELECT tfloat_inst(random_float(1, 100), getTimestamp(inst))
+SET inst = (SELECT tfloat(random_float(1, 100), getTimestamp(inst))
   FROM tbl_tfloat_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -396,7 +422,7 @@ SET inst = (SELECT inst FROM tbl_ttext_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_ttext_inst t1
-SET inst = (SELECT ttext_inst(random_text(10), getTimestamp(inst))
+SET inst = (SELECT ttext(random_text(10), getTimestamp(inst))
   FROM tbl_ttext_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -419,12 +445,12 @@ SET ti = (SELECT ~ ti FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tbool_discseq t1
-SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
+SET ti = (SELECT shiftTime(ti, endTimestamp(ti)-startTimestamp(ti))
   FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tbool_discseq t1
-SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
+SET ti = (SELECT shiftTime(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
   FROM tbl_tbool_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -445,13 +471,39 @@ SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tint_discseq t2 WHERE t2.k = t1.
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tint_discseq t1
-SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
+SET ti = (SELECT shiftTime(ti, endTimestamp(ti)-startTimestamp(ti))
   FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tint_discseq t1
-SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
+SET ti = (SELECT shiftTime(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
   FROM tbl_tint_discseq t2 WHERE t2.k = t1.k+2)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
+
+DROP TABLE IF EXISTS tbl_tbigint_discseq;
+CREATE TABLE tbl_tbigint_discseq(k, ti) AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbigint_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+FROM generate_series(perc+1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tbigint_discseq t1
+SET ti = (SELECT ti FROM tbl_tbigint_discseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tbigint_discseq t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tbigint_discseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tbigint_discseq t1
+SET ti = (SELECT shiftTime(ti, endTimestamp(ti)-startTimestamp(ti))
+  FROM tbl_tbigint_discseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tbigint_discseq t1
+SET ti = (SELECT shiftTime(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
+  FROM tbl_tbigint_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 DROP TABLE IF EXISTS tbl_tfloat_discseq;
@@ -471,12 +523,12 @@ SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tfloat_discseq t2 WHERE t2.k = t
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_discseq t1
-SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
+SET ti = (SELECT shiftTime(ti, endTimestamp(ti)-startTimestamp(ti))
   FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_discseq t1
-SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
+SET ti = (SELECT shiftTime(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
   FROM tbl_tfloat_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -497,12 +549,12 @@ SET ti = (SELECT ti || text 'A' FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+perc
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_ttext_discseq t1
-SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
+SET ti = (SELECT shiftTime(ti, endTimestamp(ti)-startTimestamp(ti))
   FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_ttext_discseq t1
-SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
+SET ti = (SELECT shiftTime(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
   FROM tbl_ttext_discseq t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -525,11 +577,11 @@ SET seq = (SELECT ~ seq FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tbool_seq t1
-SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tbool_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute', duration(seq, true)/2))
+SET seq = (SELECT shiftTime(seq, date_trunc('minute', duration(seq, true)/2))
   FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -550,12 +602,37 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tint_seq t1
-SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tint_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
+SET seq = (SELECT shiftTime(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
+
+DROP TABLE IF EXISTS tbl_tbigint_seq;
+CREATE TABLE tbl_tbigint_seq(k, seq) AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbigint_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+FROM generate_series(perc+1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tbigint_seq t1
+SET seq = (SELECT seq FROM tbl_tbigint_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tbigint_seq t1
+SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tbigint_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tbigint_seq t1
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_tbigint_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tbigint_seq t1
+SET seq = (SELECT shiftTime(seq, date_trunc('minute',duration(seq, true)/2))
+  FROM tbl_tbigint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 DROP TABLE IF EXISTS tbl_tfloat_seq;
@@ -575,11 +652,11 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_seq t1
-SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
+SET seq = (SELECT shiftTime(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -600,11 +677,11 @@ SET seq = (SELECT seq || text 'A' FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_ttext_seq t1
-SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_ttext_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
+SET seq = (SELECT shiftTime(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -627,11 +704,11 @@ SET ts = (SELECT ~ ts FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tbool_seqset t1
-SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tbool_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -652,12 +729,37 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tint_seqset t1
-SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tint_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
+
+DROP TABLE IF EXISTS tbl_tbigint_seqset;
+CREATE TABLE tbl_tbigint_seqset(k, ts) AS
+/* Add perc NULL values */
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbigint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tbigint_seqset t1
+SET ts = (SELECT ts FROM tbl_tbigint_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tbigint_seqset t1
+SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tbigint_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tbigint_seqset t1
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_tbigint_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tbigint_seqset t1
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
+  FROM tbl_tbigint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 DROP TABLE IF EXISTS tbl_tfloat_seqset;
@@ -677,11 +779,11 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_seqset t1
-SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -702,11 +804,11 @@ SET ts = (SELECT ts || text 'A' FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_ttext_seqset t1
-SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_ttext_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -714,31 +816,38 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 DROP TABLE IF EXISTS tbl_tbool;
 CREATE TABLE tbl_tbool(k, temp) AS
-(SELECT k, inst FROM tbl_tbool_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tbool_discseq order by k limit size / 4) UNION all
-(SELECT k + size / 2, seq FROM tbl_tbool_seq order by k limit size / 4) UNION all
-(SELECT k + size / 4 * 3, ts FROM tbl_tbool_seqset order by k limit size / 4);
+(SELECT k, inst FROM tbl_tbool_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_tbool_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_tbool_seq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_tbool_seqset ORDER BY k LIMIT size / 4);
 
 DROP TABLE IF EXISTS tbl_tint;
 CREATE TABLE tbl_tint(k, temp) AS
-(SELECT k, inst FROM tbl_tint_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tint_discseq order by k limit size / 4) UNION all
-(SELECT k + size / 2, seq FROM tbl_tint_seq order by k limit size / 4) UNION all
-(SELECT k + size / 4 * 3, ts FROM tbl_tint_seqset order by k limit size / 4);
+(SELECT k, inst FROM tbl_tint_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_tint_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_tint_seq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_tint_seqset ORDER BY k LIMIT size / 4);
+
+DROP TABLE IF EXISTS tbl_tbigint;
+CREATE TABLE tbl_tbigint(k, temp) AS
+(SELECT k, inst FROM tbl_tbigint_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_tbigint_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_tbigint_seq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_tbigint_seqset ORDER BY k LIMIT size / 4);
 
 DROP TABLE IF EXISTS tbl_tfloat;
 CREATE TABLE tbl_tfloat(k, temp) AS
-(SELECT k, inst FROM tbl_tfloat_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_tfloat_discseq order by k limit size / 4) UNION all
-(SELECT k + size / 2, seq FROM tbl_tfloat_seq order by k limit size / 4) UNION all
-(SELECT k + size / 4 * 3, ts FROM tbl_tfloat_seqset order by k limit size / 4);
+(SELECT k, inst FROM tbl_tfloat_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_tfloat_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_tfloat_seq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_tfloat_seqset ORDER BY k LIMIT size / 4);
 
 DROP TABLE IF EXISTS tbl_ttext;
 CREATE TABLE tbl_ttext(k, temp) AS
-(SELECT k, inst FROM tbl_ttext_inst order by k limit size / 4) UNION all
-(SELECT k + size / 4, ti FROM tbl_ttext_discseq order by k limit size / 4) UNION all
-(SELECT k + size / 2, seq FROM tbl_ttext_seq order by k limit size / 4) UNION all
-(SELECT k + size / 4 * 3, ts FROM tbl_ttext_seqset order by k limit size / 4);
+(SELECT k, inst FROM tbl_ttext_inst ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_ttext_discseq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_ttext_seq ORDER BY k LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_ttext_seqset ORDER BY k LIMIT size / 4);
 
 ------------------------------------------------------------------------------
 -- Temporal Float Types with Step Interpolation
@@ -761,11 +870,11 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloat_step_seq t2 WHERE t2.k 
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_step_seq t1
-SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shiftTime(seq, duration(seq, true)) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_step_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
+SET seq = (SELECT shiftTime(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -786,11 +895,11 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloat_step_seqset t2 WHERE t2.k
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_step_seqset t1
-SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shiftTime(ts, duration(ts, true)) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_step_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
+SET ts = (SELECT shiftTime(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 

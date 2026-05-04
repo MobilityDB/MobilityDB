@@ -314,7 +314,7 @@ geo_distance_fn(int16 flags)
  * @brief Select the appropriate distance function
  */
 datum_func2
-pt_distance_fn(int16 flags)
+point_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
     return &datum_geog_distance;

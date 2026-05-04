@@ -405,6 +405,20 @@ Spanset_to_tbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_to_bigintspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_to_bigintspan);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Convert a temporal box into a big integer span
+ * @sqlfn floatspan()
+ */
+Datum
+Tbox_to_bigintspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  PG_RETURN_SPAN_P(tbox_to_bigintspan(box));
+}
+
 PGDLLEXPORT Datum Tbox_to_intspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_to_intspan);
 /**

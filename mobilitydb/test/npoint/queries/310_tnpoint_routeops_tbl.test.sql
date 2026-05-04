@@ -46,35 +46,35 @@ CREATE TABLE test_tnpoint_routeops(
 -- <type> op tnpoint
 
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '?@', 'bigint', 'tnpoint', COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE b ?@ temp;
+SELECT '?@', 'bigint', 'tnpoint', COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE i ?@ temp;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'bigint', 'tnpoint', COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE b @= temp;
+SELECT '@=', 'bigint', 'tnpoint', COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE i @= temp;
 
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @@ temp;
+SELECT '@@', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @@ temp;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@?', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @? temp;
+SELECT '@?', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @? temp;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '?@', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b ?@ temp;
+SELECT '?@', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i ?@ temp;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @= temp;
+SELECT '@=', 'bigintset', 'tnpoint', COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @= temp;
 
 -------------------------------------------------------------------------------
 --  tnpoint op <type>
 
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@?', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @? b;
+SELECT '@?', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @? i;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @= b;
+SELECT '@=', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @= i;
 
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @@ b;
+SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @@ i;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @? b;
+SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @? i;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp ?@ b;
+SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp ?@ i;
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @= b;
+SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @= i;
 
 INSERT INTO test_tnpoint_routeops(op, leftarg, rightarg, no_idx)
 SELECT '@@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp @@ t2.temp;
@@ -93,46 +93,46 @@ CREATE INDEX test_tnpoint_gin_idx ON tbl_tnpoint USING GIN(temp);
 -- <type> op tnpoint
 
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE b ?@ temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE i ?@ temp )
 WHERE op = '?@' and leftarg = 'bigint' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE b @= temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigint, tbl_tnpoint WHERE i @= temp )
 WHERE op = '@=' and leftarg = 'bigint' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @@ temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @@ temp )
 WHERE op = '@@' and leftarg = 'bigintset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @? temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @? temp )
 WHERE op = '@?' and leftarg = 'bigintset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b ?@ temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i ?@ temp )
 WHERE op = '?@' and leftarg = 'bigintset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE b @= temp )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset, tbl_tnpoint WHERE i @= temp )
 WHERE op = '@=' and leftarg = 'bigintset' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 -- tnpoint op <type>
 
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @? b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @? i )
 WHERE op = '@?' and leftarg = 'tnpoint' and rightarg = 'bigint';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @= b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigint WHERE temp @= i )
 WHERE op = '@=' and leftarg = 'tnpoint' and rightarg = 'bigint';
 
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @@ b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @@ i )
 WHERE op = '@@' and leftarg = 'tnpoint' and rightarg = 'bigintset';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @? b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @? i )
 WHERE op = '@?' and leftarg = 'tnpoint' and rightarg = 'bigintset';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp ?@ b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp ?@ i )
 WHERE op = '?@' and leftarg = 'tnpoint' and rightarg = 'bigintset';
 UPDATE test_tnpoint_routeops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @= b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_bigintset WHERE temp @= i )
 WHERE op = '@=' and leftarg = 'tnpoint' and rightarg = 'bigintset';
 
 UPDATE test_tnpoint_routeops
