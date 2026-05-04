@@ -138,6 +138,9 @@ proj_initialize(void)
 static void
 proj_finalize(void)
 {
+  /* Idempotency: only destroy if the context is live. */
+  if (! MEOS_PJ_CONTEXT)
+    return;
   proj_context_destroy(MEOS_PJ_CONTEXT);
   MEOS_PJ_CONTEXT = NULL;
   return;

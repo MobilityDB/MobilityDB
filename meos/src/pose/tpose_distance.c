@@ -83,7 +83,7 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
   GSERIALIZED *geom = pose_to_point(pose);
   Temporal *tpoint = tpose_to_tpoint(temp);
   Temporal *result = tdistance_tgeo_geo(tpoint, geom);
-  pfree(geom);
+  pfree(geom); pfree(tpoint);
   return result;
 }
 
@@ -273,7 +273,9 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
     return -1.0;
-  return DatumGetFloat8(temporal_min_value(dist));
+  double result = DatumGetFloat8(temporal_min_value(dist));
+  pfree(dist);
+  return result;
 }
 
 /*****************************************************************************
