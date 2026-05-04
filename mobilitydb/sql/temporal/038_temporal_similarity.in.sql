@@ -38,6 +38,10 @@ CREATE FUNCTION frechetDistance(tint, tint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION frechetDistance(tbigint, tbigint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION frechetDistance(tfloat, tfloat)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
@@ -47,12 +51,20 @@ CREATE FUNCTION dynTimeWarpDistance(tint, tint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynTimeWarpDistance(tbigint, tbigint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynTimeWarpDistance(tfloat, tfloat)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION hausdorffDistance(tint, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hausdorffDistance(tbigint, tbigint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -72,12 +84,20 @@ CREATE FUNCTION frechetDistancePath(tint, tint)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION frechetDistancePath(tbigint, tbigint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION frechetDistancePath(tfloat, tfloat)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION dynTimeWarpPath(tint, tint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynTimeWarpPath(tbigint, tbigint)
   RETURNS SETOF warp
   AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

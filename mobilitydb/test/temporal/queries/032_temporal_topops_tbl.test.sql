@@ -31,16 +31,19 @@
 
 DROP INDEX IF EXISTS tbl_tbool_rtree_idx;
 DROP INDEX IF EXISTS tbl_tint_rtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_rtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_rtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_rtree_idx;
 
 DROP INDEX IF EXISTS tbl_tbool_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tint_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_quadtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_quadtree_idx;
 
 DROP INDEX IF EXISTS tbl_tbool_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tint_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_kdtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_kdtree_idx;
 
@@ -66,6 +69,8 @@ SELECT '&&', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t && temp;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t && temp;
@@ -85,6 +90,15 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp && b;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp && i;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp && t;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp && b;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp && t2.temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp && f;
@@ -109,6 +123,8 @@ SELECT '@>', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t @> temp;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t @> temp;
@@ -128,6 +144,15 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp @> b;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp @> i;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp @> t;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp @> b;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp @> t2.temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp @> f;
@@ -152,6 +177,8 @@ SELECT '<@', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <@ temp;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t <@ temp;
@@ -171,6 +198,15 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp <@ b;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp <@ i;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <@ t;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <@ b;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <@ t2.temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp <@ f;
@@ -195,6 +231,8 @@ SELECT '-|-', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t -|- temp;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t -|- temp;
@@ -214,6 +252,15 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp -|- b;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp -|- i;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp -|- t;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)big
+SELECT '-|-', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp -|- b;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp -|- t2.temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp -|- f;
@@ -238,6 +285,8 @@ SELECT '~=', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t ~= temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t ~= temp;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t ~= temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t ~= temp;
@@ -259,6 +308,15 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp ~= i;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp ~= t;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp ~= b;
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp ~= t2.temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp ~= f;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp ~= t;
@@ -276,6 +334,7 @@ SELECT '~=', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1
 
 CREATE INDEX tbl_tbool_rtree_idx ON tbl_tbool USING GIST(temp);
 CREATE INDEX tbl_tint_rtree_idx ON tbl_tint USING GIST(temp);
+CREATE INDEX tbl_tbigint_rtree_idx ON tbl_tbigint USING GIST(temp);
 CREATE INDEX tbl_tfloat_rtree_idx ON tbl_tfloat USING GIST(temp);
 CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext USING GIST(temp);
 
@@ -289,6 +348,9 @@ WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbool';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tint';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
@@ -317,6 +379,19 @@ WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -351,6 +426,9 @@ UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -378,6 +456,19 @@ WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp @> f )
@@ -410,6 +501,9 @@ UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -437,6 +531,19 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -473,6 +580,9 @@ UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -500,6 +610,19 @@ WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -534,6 +657,9 @@ UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -561,6 +687,19 @@ WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -597,6 +736,7 @@ DROP INDEX tbl_ttext_rtree_idx;
 
 CREATE INDEX tbl_tbool_quadtree_idx ON tbl_tbool USING SPGIST(temp);
 CREATE INDEX tbl_tint_quadtree_idx ON tbl_tint USING SPGIST(temp);
+CREATE INDEX tbl_tbigint_quadtree_idx ON tbl_tbigint USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_quadtree_idx ON tbl_tfloat USING SPGIST(temp);
 CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext USING SPGIST(temp);
 
@@ -610,6 +750,9 @@ WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbool';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tint';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
@@ -640,6 +783,21 @@ WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -676,6 +834,9 @@ UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -703,6 +864,19 @@ WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -739,6 +913,9 @@ UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -766,6 +943,19 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -802,6 +992,9 @@ UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -829,6 +1022,19 @@ WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxint WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -863,6 +1069,9 @@ UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -892,6 +1101,21 @@ WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -928,6 +1152,7 @@ DROP INDEX tbl_ttext_quadtree_idx;
 
 CREATE INDEX tbl_tbool_kdtree_idx ON tbl_tbool USING SPGIST(temp tbool_kdtree_ops);
 CREATE INDEX tbl_tint_kdtree_idx ON tbl_tint USING SPGIST(temp tint_kdtree_ops);
+CREATE INDEX tbl_tbigint_kdtree_idx ON tbl_tbigint USING SPGIST(temp tbigint_kdtree_ops);
 CREATE INDEX tbl_tfloat_kdtree_idx ON tbl_tfloat USING SPGIST(temp tfloat_kdtree_ops);
 CREATE INDEX tbl_ttext_kdtree_idx ON tbl_ttext USING SPGIST(temp ttext_kdtree_ops);
 
@@ -941,6 +1166,9 @@ WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbool';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tint';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
@@ -971,6 +1199,21 @@ WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -1007,6 +1250,9 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -1034,6 +1280,19 @@ WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -1070,6 +1329,9 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -1097,6 +1359,19 @@ WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -1133,6 +1408,9 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -1160,6 +1438,19 @@ WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 
@@ -1194,6 +1485,9 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_topops
@@ -1223,6 +1517,19 @@ WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_topops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 -------------------------------------------------------------------------------
 

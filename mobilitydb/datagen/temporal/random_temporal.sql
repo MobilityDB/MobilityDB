@@ -293,6 +293,51 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * @brief Generate an array of random big integers in a range
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_bigint_array;
+CREATE FUNCTION random_bigint_array(lowvalue bigint, highvalue bigint,
+  maxdelta bigint, mincard int, maxcard int)
+  RETURNS int[] AS $$
+DECLARE
+  result bigint[];
+  delta bigint;
+  card int;
+  v int;
+BEGIN
+  IF lowvalue > highvalue THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
+      lowvalue, highvalue;
+  END IF;
+  card = random_int(mincard, maxcard);
+  v = random_bigint(lowvalue, highvalue);
+  FOR i IN 1..card
+  LOOP
+    result[i] = v;
+    IF i = card THEN EXIT; END IF;
+    delta = random_bigint(-1 * maxdelta, maxdelta);
+    /* If neither of these conditions is satisfied the same value is kept */
+    IF (v + delta >= lowvalue AND v + delta <= highvalue) THEN
+      v = v + delta;
+    ELSIF (v - delta >= lowvalue AND v - delta <= highvalue) THEN
+      v = v - delta;
+    END IF;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_bigint_array(-100, 100, 10, 5, 10) AS iarr
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * @brief Generate an array of random floats in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
@@ -1309,6 +1354,43 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
+ * @brief Generate a random tboxint within a range and a tstzspan
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] maxdelta Maximum value between the bounds
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ */
+DROP FUNCTION IF EXISTS random_tboxbigint;
+CREATE FUNCTION random_tboxbigint(lowvalue bigint, highvalue bigint,
+   lowtime timestamptz, hightime timestamptz, maxdelta bigint, maxminutes int)
+  RETURNS tbox AS $$
+DECLARE
+  xmin bigint;
+  tmin timestamptz;
+BEGIN
+  IF lowvalue > highvalue - maxdelta THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
+      lowvalue, highvalue, maxdelta;
+  END IF;
+  IF lowtime > hightime - interval '1 minute' * maxminutes THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes minutes: %, %, %',
+      lowtime, hightime, maxminutes;
+  END IF;
+  xmin = random_bigint(lowvalue, highvalue - maxdelta);
+  tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
+  RETURN tbox(span(xmin, xmin + random_bigint(1, maxdelta)),
+    span(tmin, tmin + random_minutes(1, maxminutes)));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tboxbigint(-100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * @brief Generate a random tboxfloat within a range and a tstzspan
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1395,6 +1477,36 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * @brief Generate a random tbigint instant
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ */
+DROP FUNCTION IF EXISTS random_tbigint_inst;
+CREATE FUNCTION random_tbigint_inst(lowvalue bigint, highvalue bigint,
+  lowtime timestamptz, hightime timestamptz)
+  RETURNS tbigint AS $$
+BEGIN
+  IF lowvalue > highvalue THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
+      lowvalue, highvalue;
+  END IF;
+  IF lowtime > hightime THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
+      lowtime, hightime;
+  END IF;
+  RETURN tbigint(random_bigint(lowvalue, highvalue),
+    random_timestamptz(lowtime, hightime));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tbigint_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -1522,6 +1634,45 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_discseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+FROM generate_series(1,10) k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * @brief Generate a random tbigint discrete sequence
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
+ */
+DROP FUNCTION IF EXISTS random_tbigint_discseq;
+CREATE FUNCTION random_tbigint_discseq(lowvalue bigint, highvalue bigint,
+  lowtime timestamptz, hightime timestamptz, maxdelta bigint, maxminutes int,
+  mincard int, maxcard int)
+  RETURNS tbigint AS $$
+DECLARE
+  bigintarr bigint[];
+  tsarr timestamptz[];
+  result tbigint[];
+  card int;
+BEGIN
+  SELECT random_bigint_array(lowvalue, highvalue, maxdelta, mincard, maxcard)
+    INTO bigintarr;
+  card = array_length(bigintarr, 1);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
+  INTO tsarr;
+  FOR i IN 1..card
+  LOOP
+    result[i] = tbigint(bigintarr[i], tsarr[i]);
+  END LOOP;
+  RETURN tbigintSeq(result, 'Discrete');
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tbigint_discseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1708,6 +1859,63 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * @brief Generate a random tbigint sequence
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
+DROP FUNCTION IF EXISTS random_tbigint_seq;
+CREATE FUNCTION random_tbigint_seq(lowvalue bigint, highvalue bigint,
+  lowtime timestamptz, hightime timestamptz, maxdelta bigint,
+  maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
+  RETURNS tbigint AS $$
+DECLARE
+  bigintarr bigint[];
+  tsarr timestamptz[];
+  result tbigint[];
+  card int;
+  lower_inc boolean;
+  upper_inc boolean;
+BEGIN
+  SELECT random_bigint_array(lowvalue, highvalue, maxdelta, mincard, maxcard)
+  INTO bigintarr;
+  card = array_length(bigintarr, 1);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
+    fixstart) INTO tsarr;
+  IF card = 1 THEN
+    lower_inc = true;
+    upper_inc = true;
+  ELSE
+    lower_inc = random() > 0.5;
+    upper_inc = random() > 0.5;
+  END IF;
+  FOR i IN 1..card - 1
+  LOOP
+    result[i] = tbigint(bigintarr[i], tsarr[i]);
+  END LOOP;
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc THEN
+    result[card] = tbigint(bigintarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tbigint(bigintarr[card], tsarr[card]);
+  END IF;
+  RETURN tbigintSeq(result, 'step', lower_inc, upper_inc);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tbigint_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1967,6 +2175,58 @@ $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * @brief Generate a random tbigint sequence set
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
+DROP FUNCTION IF EXISTS random_tbigint_seqset;
+CREATE FUNCTION random_tbigint_seqset(lowvalue bigint, highvalue bigint,
+  lowtime timestamptz, hightime timestamptz, maxdelta bigint, maxminutes int,
+  mincardseq int, maxcardseq int, mincard int, maxcard int)
+  RETURNS tbigint AS $$
+DECLARE
+  result tbigint[];
+  seq tbigint;
+  card int;
+  t1 timestamptz;
+  t2 timestamptz;
+BEGIN
+  IF lowvalue > highvalue THEN
+    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
+      lowvalue, highvalue;
+  END IF;
+  PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
+  t1 = lowtime;
+  t2 = hightime - interval '1 minute' *
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
+  FOR i IN 1..card
+  LOOP
+    -- the last parameter (fixstart) is set to true for all i except 1
+    SELECT random_tbigint_seq(lowvalue, highvalue, t1, t2, maxdelta,
+      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
+    result[i] = seq;
+    t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
+  END LOOP;
+  RETURN tbigintSeqSet(result);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_tbigint_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 */
 

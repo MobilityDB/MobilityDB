@@ -53,9 +53,9 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i + t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i + t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
@@ -75,9 +75,9 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i - t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i - t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
@@ -97,9 +97,9 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i * t2.i IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i * t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
@@ -119,9 +119,9 @@ SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intset t2;
 SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_int t2;
 SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intset t2;
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintset t2;
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigint t2;
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigint t1, tbl_bigintset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintset t1, tbl_bigint t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintset t1, tbl_bigintset t2;
 
 SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatset t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_float t2;
