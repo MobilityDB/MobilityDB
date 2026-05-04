@@ -154,8 +154,20 @@ if(TEST_OPER MATCHES "test_setup")
   #   error is encountered. This is the default mode.
   # -d <database> Name of the database to connect to.
   # -c <command> Specifies that psql is to execute the given command string
+  # When built with -DPOINTCLOUD=ON, mobilitydb's catalog references
+  # pcpoint / pcpatch — so pointcloud must be installed first; CASCADE
+  # cannot pull it in because the type references happen during the
+  # mobilitydb script itself, not at extension dependency resolution.
+  set(_create_ext "")
+  if("@POINTCLOUD@" STREQUAL "ON")
+    string(APPEND _create_ext "CREATE EXTENSION pointcloud; ")
+  endif()
+  string(APPEND _create_ext "CREATE EXTENSION mobilitydb CASCADE; ")
+  string(APPEND _create_ext "SELECT postgis_full_version(); ")
+  string(APPEND _create_ext "SELECT mobilitydb_full_version();")
+
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "${_create_ext}"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_VARIABLE TEST_ERROR

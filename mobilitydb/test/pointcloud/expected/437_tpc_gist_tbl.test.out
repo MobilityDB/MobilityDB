@@ -1,0 +1,170 @@
+CREATE INDEX tbl_tpcpoint_gist_idx ON tbl_tpcpoint USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_count FROM tbl_tpcpoint
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ seq_count 
+-----------
+        30
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_count FROM tbl_tpcpoint
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ idx_count 
+-----------
+        30
+(1 row)
+
+DROP INDEX tbl_tpcpoint_gist_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_count FROM tbl_tpcpatch
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ seq_count 
+-----------
+        34
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_count FROM tbl_tpcpatch
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ idx_count 
+-----------
+        34
+(1 row)
+
+DROP INDEX tbl_tpcpatch_gist_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+CREATE INDEX tbl_tpcpatch_gist_idx ON tbl_tpcpatch USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_contained FROM tbl_tpcpatch
+WHERE temp <@ tpcbox_zt(-1000, -1000, -1000, 1000, 1000, 1000,
+  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+ seq_contained 
+---------------
+           100
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_contained FROM tbl_tpcpatch
+WHERE temp <@ tpcbox_zt(-1000, -1000, -1000, 1000, 1000, 1000,
+  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+ idx_contained 
+---------------
+           100
+(1 row)
+
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_before FROM tbl_tpcpatch
+WHERE temp <<# tpcbox_zt(0, 0, 0, 100, 100, 100,
+  tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
+ seq_before 
+------------
+         97
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_before FROM tbl_tpcpatch
+WHERE temp <<# tpcbox_zt(0, 0, 0, 100, 100, 100,
+  tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
+ idx_before 
+------------
+         97
+(1 row)
+
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_left FROM tbl_tpcpatch
+WHERE temp << tpcbox_zt(50, -1000, -1000, 1000, 1000, 1000,
+  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+ seq_left 
+----------
+       10
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_left FROM tbl_tpcpatch
+WHERE temp << tpcbox_zt(50, -1000, -1000, 1000, 1000, 1000,
+  tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
+ idx_left 
+----------
+       10
+(1 row)
+
+DROP INDEX tbl_tpcpatch_gist_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET

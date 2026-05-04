@@ -1,0 +1,122 @@
+SELECT pcid(extent(b)) FROM tbl_tpcbox;
+ pcid 
+------
+    1
+(1 row)
+
+SELECT extent(b) ~= (SELECT extent(b) FROM tbl_tpcbox) FROM tbl_tpcbox;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcid(extent(temp)) FROM tbl_tpcpoint;
+ pcid 
+------
+    1
+(1 row)
+
+SELECT pcid(extent(temp)) FROM tbl_tpcpatch;
+ pcid 
+------
+    1
+(1 row)
+
+SELECT bool_and(startTimestamp(temp) >= tmin(ext) AND endTimestamp(temp) <= tmax(ext))
+FROM tbl_tpcpoint, (SELECT extent(temp) AS ext FROM tbl_tpcpoint) e;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startTimestamp(temp) >= tmin(ext) AND endTimestamp(temp) <= tmax(ext))
+FROM tbl_tpcpatch, (SELECT extent(temp) AS ext FROM tbl_tpcpatch) e;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tcount(inst)) > 0 FROM tbl_tpcpoint_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tcount(seq))  > 0 FROM tbl_tpcpoint_seq;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tcount(inst)) > 0 FROM tbl_tpcpatch_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tcount(seq))  > 0 FROM tbl_tpcpatch_seq;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(wcount(inst, '1 day'::interval)) > 0 FROM tbl_tpcpoint_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpoint_seq;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(wcount(inst, '1 day'::interval)) > 0 FROM tbl_tpcpatch_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_seq;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pcid(merge(inst)) FROM tbl_tpcpoint_inst;
+ pcid 
+------
+    1
+(1 row)
+
+SELECT pcid(merge(inst)) FROM tbl_tpcpatch_inst;
+ pcid 
+------
+    1
+(1 row)
+
+SELECT numInstants(tnpoints(inst)) > 0 FROM tbl_tpcpatch_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tnpoints(seq))  > 0 FROM tbl_tpcpatch_seq;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tdensity(inst)) > 0 FROM tbl_tpcpatch_inst;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq;
+ ?column? 
+----------
+ t
+(1 row)
+

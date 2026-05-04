@@ -1,0 +1,26 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "input.las"
+    },
+    {
+      "type": "filters.assign",
+      "value": [
+        "time_t = GpsTime * 1000000"
+      ]
+    },
+    {
+      "type": "filters.sort",
+      "dimension": "time_t",
+      "order": "ASC"
+    },
+    {
+      "type": "writers.tpcpatch",
+      "connection": "dbname=mobility",
+      "table": "trajectories",
+      "column": "traj",
+      "pcid": 100
+    }
+  ]
+}
