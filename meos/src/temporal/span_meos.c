@@ -326,7 +326,7 @@ int_to_span(int i)
  * @csqlfn #Value_to_span()
  */
 Span *
-bigint_to_span(int i)
+bigint_to_span(int64 i)
 {
   Span *result = palloc(sizeof(Span));
   /* Account for canonicalized spans */

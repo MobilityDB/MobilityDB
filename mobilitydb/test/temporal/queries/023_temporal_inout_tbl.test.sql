@@ -39,6 +39,7 @@ SELECT asText(tfloat 'Interp=Step;{[0.123456789@2000-01-01, 1.523456789@2000-01-
 SELECT asText('{}'::tfloat[]);
 SELECT asText(ARRAY[tbool 'true@2000-01-01']);
 SELECT asText(ARRAY[tint '1@2000-01-01']);
+SELECT asText(ARRAY[tbigint '1@2000-01-01']);
 SELECT asText(ARRAY[tfloat '1@2000-01-01']);
 SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
 
@@ -49,6 +50,11 @@ SELECT tintFromMFJSON(asMFJSON(tint '1@2000-01-01', 1, 3));
 SELECT tintFromMFJSON(asMFJSON(tint '{1@2000-01-01, 2@2000-01-02}', 1, 3));
 SELECT tintFromMFJSON(asMFJSON(tint '[1@2000-01-01, 2@2000-01-02]', 1, 3));
 SELECT tintFromMFJSON(asMFJSON(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3));
+
+SELECT tbigintFromMFJSON(asMFJSON(tbigint '1@2000-01-01', 1, 3));
+SELECT tbigintFromMFJSON(asMFJSON(tbigint '{1@2000-01-01, 2@2000-01-02}', 1, 3));
+SELECT tbigintFromMFJSON(asMFJSON(tbigint '[1@2000-01-01, 2@2000-01-02]', 1, 3));
+SELECT tbigintFromMFJSON(asMFJSON(tbigint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3));
 
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2000-01-01', 1, 3, 15));
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '{1@2000-01-01, 2@2000-01-02}', 1, 3, 15));
@@ -66,6 +72,7 @@ SELECT ttextFromMFJSON(asMFJSON(ttext '{[AAA@2000-01-01, BBB@2000-01-02], [CCC@2
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromMFJSON(asMFJSON(temp)) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromMFJSON(asMFJSON(temp)) <> temp;
+SELECT COUNT(*) FROM tbl_tbigint WHERE temp IS NOT NULL AND tbigintFromMFJSON(asMFJSON(temp)) <> temp;
 -- We need to add asText to avoid problems due to floating point precision
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND asText(tfloatFromMFJSON(asMFJSON(temp))) <> asText(temp);
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJSON(temp)) <> temp;
@@ -73,22 +80,26 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromMFJSON(asMFJS
 -- Little endian
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp, 'NDR')) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tbigint WHERE temp IS NOT NULL AND tbigintFromBinary(asBinary(temp, 'NDR')) <> temp;
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp, 'NDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp, 'NDR')) <> temp;
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tbigint WHERE temp IS NOT NULL AND tbigintFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'NDR')) <> temp;
 
 -- Big endian
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromBinary(asBinary(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromBinary(asBinary(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tbigint WHERE temp IS NOT NULL AND tbigintFromBinary(asBinary(temp, 'XDR')) <> temp;
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromBinary(asBinary(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromBinary(asBinary(temp, 'XDR')) <> temp;
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp IS NOT NULL AND tboolFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_tint WHERE temp IS NOT NULL AND tintFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
+SELECT COUNT(*) FROM tbl_tbigint WHERE temp IS NOT NULL AND tbigintFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 SELECT COUNT(*) from tbl_tfloat WHERE temp IS NOT NULL AND tfloatFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 SELECT COUNT(*) FROM tbl_ttext WHERE temp IS NOT NULL AND ttextFromHexWKB(asHexWKB(temp, 'XDR')) <> temp;
 

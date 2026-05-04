@@ -43,6 +43,10 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
+#if H3
+#include <h3api.h>
+#include "h3/h3index.h"
+#endif
 #include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -152,6 +156,16 @@ basetype_in(const char *str, MeosType type,
       *result = Int64GetDatum(i);
       return true;
     }
+#if H3
+    case T_H3INDEX:
+    {
+      H3Index cell = h3index_parse(str);
+      if (cell == (H3Index) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
+      return true;
+    }
+#endif
     case T_FLOAT8:
     {
       double d = float8_in(str, "double precision", str);
@@ -370,6 +384,16 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
           return NULL;
         }
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
+        break;
+      case T_TBIGINT:
+      case T_TH3INDEX:
+        if (json_object_get_type(jvalue) != json_type_int)
+        {
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+            "Invalid integer value in 'values' array in MFJSON string");
+          return NULL;
+        }
+        values[i] = Int64GetDatum(json_object_get_int64(jvalue));
         break;
       case T_TFLOAT:
         values[i] = Float8GetDatum(json_object_get_double(jvalue));
@@ -947,6 +971,7 @@ ensure_temptype_mfjson(const char *typestr)
 {
   if (strcmp(typestr, "MovingBoolean") != 0 &&
       strcmp(typestr, "MovingInteger") != 0 &&
+      strcmp(typestr, "MovingBigInteger") != 0 &&
       strcmp(typestr, "MovingFloat") != 0 &&
       strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingPoint") != 0 &&
@@ -1014,6 +1039,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TBOOL;
   else if (strcmp(typestr, "MovingInteger") == 0)
     jtemptype = T_TINT;
+  else if (strcmp(typestr, "MovingBigInteger") == 0)
+    jtemptype = T_TBIGINT;
+  else if (strcmp(typestr, "MovingH3Index") == 0)
+    jtemptype = T_TH3INDEX;
   else if (strcmp(typestr, "MovingFloat") == 0)
     jtemptype = T_TFLOAT;
   else if (strcmp(typestr, "MovingText") == 0)
@@ -1548,6 +1577,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
+#if H3
+    case T_H3INDEX:
+      /* h3index is a uint64 cell id, wire-format identical to int8. */
+      return Int64GetDatum(int64_from_wkb_state(s));
+#endif /* H3 */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));

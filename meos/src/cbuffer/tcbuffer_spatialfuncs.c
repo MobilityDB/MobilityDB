@@ -412,7 +412,7 @@ tcbufferinst_trav_area(const TInstant *inst)
 }
 
 /**
- * @ingroup meos_interal_cbuffer_spatial_accessor
+ * @ingroup meos_internal_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer sequence with
  * discrete or step interpolation
  * @param[in] seq Temporal circular buffer
