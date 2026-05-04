@@ -2641,6 +2641,30 @@ temporal_insts_p(const Temporal *temp, int *count)
   }
 }
 
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return an array of pointers to the distinct instants of a temporal
+ * value (no copy)
+ * @details This is the user-facing variant of #temporal_insts_p: it performs
+ * full input validation, while #temporal_insts_p is the fast loop helper used
+ * inside sequence/sequence-set internals where the surrounding container has
+ * already validated its arguments.
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @return On error return @p NULL
+ */
+const TInstant **
+temporal_instants_p(const Temporal *temp, int *count)
+{
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* Inline the temptype_subtype() check because that helper is compiled
+   * only in DEBUG builds (wrapped in #ifndef NDEBUG in meos_catalog.c) */
+  if (temp->subtype != TINSTANT && temp->subtype != TSEQUENCE &&
+      temp->subtype != TSEQUENCESET)
+    return NULL;
+  return temporal_insts_p(temp, count);
+}
+
 #if MEOS
 /**
  * @ingroup meos_temporal_accessor
