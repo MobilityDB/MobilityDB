@@ -1,0 +1,333 @@
+# Source of truth for which h3-pg functions are temporalised and how.
+# Each entry generates one MEOS lifted function + one PG V1 wrapper +
+# one SQL CREATE FUNCTION + one smoke test.
+#
+# flavour legend:
+#   unary_scalar     — f(h3index) -> scalar          lifts to f(th3index) -> t<scalar>
+#   unary_geometry   — f(h3index) -> geometry        lifts to f(th3index) -> tgeometry (or tgeompoint)
+#   lift_with_const  — f(X, const)                    second arg stays constant across instants
+#   binary_synced    — f(h3index, h3index)           synchronised over shared time axis
+#
+# `status: v1` entries ship in the first cut. `status: v2` entries are
+# the set-returning family; their static form ships as helpers on
+# `h3index` returning `h3indexset` / `intset` (see
+# `mobilitydb/sql/h3/260_h3index_sets.in.sql` +
+# `meos/src/h3/h3index_sets.c`). The temporal lift for that family
+# is deferred pending a `tset<T>` primitive design.
+
+entries:
+
+  # ---- Indexing (01-indexing.sql) -------------------------------------------
+  - h3_fn: h3_latlng_to_cell
+    status: v1
+    args:     [point, integer]
+    ret:      h3index
+    temporal:
+      in_types: [tgeogpoint, integer]   # geodetic canonical form
+      out_type: th3index
+      flavour:  lift_with_const
+
+  # Also accept tgeompoint SRID 4326 for convenience, to avoid forcing
+  # users to cast an existing tgeompoint column before feeding it in.
+  - h3_fn: h3_latlng_to_cell
+    status: v1
+    args:     [point, integer]
+    ret:      h3index
+    temporal:
+      in_types: [tgeompoint, integer]
+      out_type: th3index
+      flavour:  lift_with_const
+      overload_note: "SRID must be 4326; enforced at bind time"
+
+  - h3_fn: h3_cell_to_latlng
+    status: v1
+    args:     [h3index]
+    ret:      point
+    temporal:
+      in_types: [th3index]
+      out_type: tgeogpoint     # geodetic — lat/lng degrees, matches Q3 decision
+      flavour:  unary_geometry
+
+  - h3_fn: h3_cell_to_boundary
+    status: v1
+    args:     [h3index]
+    ret:      polygon
+    temporal:
+      in_types: [th3index]
+      out_type: tgeography
+      flavour:  unary_geometry
+
+  # ---- Inspection (02-inspection.sql) ---------------------------------------
+  - h3_fn: h3_get_resolution
+    status: v1
+    args:     [h3index]
+    ret:      integer
+    temporal:
+      in_types: [th3index]
+      out_type: tint
+      flavour:  unary_scalar
+
+  - h3_fn: h3_get_base_cell_number
+    status: v1
+    args:     [h3index]
+    ret:      integer
+    temporal:
+      in_types: [th3index]
+      out_type: tint
+      flavour:  unary_scalar
+
+  - h3_fn: h3_get_index_digit
+    status: v1
+    args:     [h3index, integer]
+    ret:      integer
+    temporal:
+      in_types: [th3index, integer]
+      out_type: tint
+      flavour:  lift_with_const
+
+  - h3_fn: h3_is_valid_cell
+    status: v1
+    args:     [h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index]
+      out_type: tbool
+      flavour:  unary_scalar
+
+  - h3_fn: h3_is_res_class_iii
+    status: v1
+    args:     [h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index]
+      out_type: tbool
+      flavour:  unary_scalar
+
+  - h3_fn: h3_is_pentagon
+    status: v1
+    args:     [h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index]
+      out_type: tbool
+      flavour:  unary_scalar
+
+  - h3_fn: h3_get_icosahedron_faces
+    status: v2  # array-valued instants need tset<int> design
+    args:     [h3index]
+    ret:      integer[]
+    temporal: {skip: "array return type"}
+
+  # ---- Traversal (03-traversal.sql) ------------------------------------------
+  - h3_fn: h3_grid_distance
+    status: v1
+    args:     [h3index, h3index]
+    ret:      bigint
+    temporal:
+      in_types: [th3index, th3index]
+      out_type: tbigint
+      flavour:  binary_synced
+
+  - h3_fn: h3_are_neighbor_cells
+    status: v1
+    args:     [h3index, h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index, th3index]
+      out_type: tbool
+      flavour:  binary_synced
+
+  - h3_fn: h3_cell_to_local_ij
+    status: v1
+    args:     [h3index, h3index]
+    ret:      point
+    temporal:
+      in_types: [th3index, th3index]
+      out_type: tgeompoint
+      flavour:  binary_synced
+
+  - h3_fn: h3_local_ij_to_cell
+    status: v1
+    args:     [h3index, point]
+    ret:      h3index
+    temporal:
+      in_types: [th3index, tgeompoint]
+      out_type: th3index
+      flavour:  binary_synced
+
+  - h3_fn: h3_grid_disk
+    status: v2  # SETOF return
+    temporal: {skip: "set-returning"}
+  - h3_fn: h3_grid_ring
+    status: v2
+    temporal: {skip: "set-returning"}
+  - h3_fn: h3_grid_path_cells
+    status: v2
+    temporal: {skip: "set-returning"}
+
+  # ---- Hierarchy (04-hierarchy.sql) ------------------------------------------
+  - h3_fn: h3_cell_to_parent
+    status: v1
+    args:     [h3index, integer]
+    ret:      h3index
+    temporal:
+      in_types: [th3index, integer]
+      out_type: th3index
+      flavour:  lift_with_const
+
+  - h3_fn: h3_cell_to_center_child
+    status: v1
+    args:     [h3index, integer]
+    ret:      h3index
+    temporal:
+      in_types: [th3index, integer]
+      out_type: th3index
+      flavour:  lift_with_const
+
+  - h3_fn: h3_cell_to_child_pos
+    status: v1
+    args:     [h3index, integer]
+    ret:      bigint
+    temporal:
+      in_types: [th3index, integer]
+      out_type: tbigint
+      flavour:  lift_with_const
+
+  - h3_fn: h3_child_pos_to_cell
+    status: v1
+    args:     [bigint, h3index, integer]
+    ret:      h3index
+    temporal:
+      in_types: [tbigint, th3index, integer]
+      out_type: th3index
+      flavour:  binary_synced  # synced on the two temporal args; third constant
+
+  - h3_fn: h3_cell_to_children
+    status: v2
+    temporal: {skip: "set-returning"}
+  - h3_fn: h3_compact_cells
+    status: v2
+    temporal: {skip: "set-returning"}
+  - h3_fn: h3_uncompact_cells
+    status: v2
+    temporal: {skip: "set-returning"}
+
+  # ---- Edge (06-edge.sql) ----------------------------------------------------
+  - h3_fn: h3_cells_to_directed_edge
+    status: v1
+    args:     [h3index, h3index]
+    ret:      h3index
+    temporal:
+      in_types: [th3index, th3index]
+      out_type: th3index
+      flavour:  binary_synced
+
+  - h3_fn: h3_is_valid_directed_edge
+    status: v1
+    args:     [h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index]
+      out_type: tbool
+      flavour:  unary_scalar
+
+  - h3_fn: h3_get_directed_edge_origin
+    status: v1
+    args:     [h3index]
+    ret:      h3index
+    temporal:
+      in_types: [th3index]
+      out_type: th3index
+      flavour:  unary_scalar
+
+  - h3_fn: h3_get_directed_edge_destination
+    status: v1
+    args:     [h3index]
+    ret:      h3index
+    temporal:
+      in_types: [th3index]
+      out_type: th3index
+      flavour:  unary_scalar
+
+  - h3_fn: h3_directed_edge_to_boundary
+    status: v1
+    args:     [h3index]
+    ret:      polygon
+    temporal:
+      in_types: [th3index]
+      out_type: tgeography
+      flavour:  unary_geometry
+
+  - h3_fn: h3_origin_to_directed_edges
+    status: v2
+    temporal: {skip: "set-returning"}
+
+  # ---- Vertex (07-vertex.sql) ------------------------------------------------
+  - h3_fn: h3_cell_to_vertex
+    status: v1
+    args:     [h3index, integer]
+    ret:      h3index
+    temporal:
+      in_types: [th3index, integer]
+      out_type: th3index
+      flavour:  lift_with_const
+
+  - h3_fn: h3_vertex_to_latlng
+    status: v1
+    args:     [h3index]
+    ret:      point
+    temporal:
+      in_types: [th3index]
+      out_type: tgeogpoint     # geodetic — same rationale as cell_to_latlng
+      flavour:  unary_geometry
+
+  - h3_fn: h3_is_valid_vertex
+    status: v1
+    args:     [h3index]
+    ret:      boolean
+    temporal:
+      in_types: [th3index]
+      out_type: tbool
+      flavour:  unary_scalar
+
+  - h3_fn: h3_cell_to_vertexes
+    status: v2
+    temporal: {skip: "set-returning"}
+
+  # ---- Miscellaneous (08-miscellaneous.sql) ---------------------------------
+  - h3_fn: h3_cell_area
+    status: v1
+    args:     [h3index, text]
+    ret:      double precision
+    temporal:
+      in_types: [th3index, text]
+      out_type: tfloat
+      flavour:  lift_with_const
+
+  - h3_fn: h3_edge_length
+    status: v1
+    args:     [h3index, text]
+    ret:      double precision
+    temporal:
+      in_types: [th3index, text]
+      out_type: tfloat
+      flavour:  lift_with_const
+
+  # constants that take no h3index are re-exposed as regular SQL wrappers
+  # (no "temporal" stanza), listed here for completeness.
+  - h3_fn: h3_get_hexagon_area_avg
+    status: passthrough
+    args:     [integer, text]
+    ret:      double precision
+  - h3_fn: h3_get_hexagon_edge_length_avg
+    status: passthrough
+    args:     [integer, text]
+    ret:      double precision
+  - h3_fn: h3_get_num_cells
+    status: passthrough
+    args:     [integer]
+    ret:      bigint
+  - h3_fn: h3_great_circle_distance
+    status: passthrough
+    args:     [point, point, text]
+    ret:      double precision

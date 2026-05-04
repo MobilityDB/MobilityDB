@@ -68,7 +68,7 @@ CREATE TABLE test_setops(
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b;
+SELECT '&&', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i && t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f && t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -79,7 +79,7 @@ SELECT '&&', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intset', 'int', COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i @> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b @> t2.b;
+SELECT '@>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i @> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'floatset', 'float', COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f @> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -90,7 +90,7 @@ SELECT '@>', 'tstzset', 'timestamptz', COUNT(*) FROM tbl_tstzset t1, tbl_timesta
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b;
+SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i @> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f @> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -101,7 +101,7 @@ SELECT '@>', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'int', 'intset', COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigint', 'bigintset', COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b <@ t2.b;
+SELECT '<@', 'bigint', 'bigintset', COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'float', 'floatset', COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f <@ t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -112,7 +112,7 @@ SELECT '<@', 'timestamptz', 'tstzset', COUNT(*) FROM tbl_timestamptz t1, tbl_tst
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b;
+SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f <@ t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -123,7 +123,7 @@ SELECT '<@', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'intset', 'int', COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i << t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b << t2.b;
+SELECT '<<', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i << t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'floatset', 'float', COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f << t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -134,7 +134,7 @@ SELECT '<<#', 'tstzset', 'timestamptz', COUNT(*) FROM tbl_tstzset t1, tbl_timest
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i << t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b << t2.b;
+SELECT '<<', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i << t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f << t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -145,7 +145,7 @@ SELECT '<<#', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'intset', 'int', COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &< t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &< t2.b;
+SELECT '&<', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &< t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'floatset', 'float', COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &< t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -156,7 +156,7 @@ SELECT '&<', 'tstzset', 'timestamptz', COUNT(*) FROM tbl_tstzset t1, tbl_timesta
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i &< t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &< t2.b;
+SELECT '&<', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &< t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &< t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -167,7 +167,7 @@ SELECT '&<#', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'intset', 'int', COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i >> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b >> t2.b;
+SELECT '>>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i >> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'floatset', 'float', COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f >> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -178,7 +178,7 @@ SELECT '>>', 'tstzset', 'timestamptz', COUNT(*) FROM tbl_tstzset t1, tbl_timesta
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i >> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b >> t2.b;
+SELECT '>>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i >> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f >> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -189,7 +189,7 @@ SELECT '#>>', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'intset', 'int', COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &> t2.b;
+SELECT '&>', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatset', 'float', COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -200,7 +200,7 @@ SELECT '&>', 'tstzset', 'timestamptz', COUNT(*) FROM tbl_tstzset t1, tbl_timesta
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2  WHERE t1.i &> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &> t2.b;
+SELECT '&>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &> t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &> t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -211,7 +211,7 @@ SELECT '#&>', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '=', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b;
+SELECT '=', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i = t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
@@ -222,7 +222,7 @@ SELECT '=', 'tstzset', 'tstzset', COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 W
 -------------------------------------------------------------------------------
 
 CREATE INDEX tbl_intset_rtree_idx ON tbl_intset USING GIST(i);
-CREATE INDEX tbl_bigintset_rtree_idx ON tbl_bigintset USING GIST(b);
+CREATE INDEX tbl_bigintset_rtree_idx ON tbl_bigintset USING GIST(i);
 CREATE INDEX tbl_floatset_rtree_idx ON tbl_floatset USING GIST(f);
 CREATE INDEX tbl_dateset_rtree_idx ON tbl_dateset USING GIST(d);
 CREATE INDEX tbl_tstzset_rtree_idx ON tbl_tstzset USING GIST(t);
@@ -233,7 +233,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f && t2.f )
@@ -249,7 +249,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b @> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f @> t2.f )
@@ -265,7 +265,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f @> t2.f )
@@ -281,7 +281,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -297,7 +297,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -313,7 +313,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b << t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f << t2.f )
@@ -329,7 +329,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b << t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f << t2.f )
@@ -345,7 +345,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &< t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &< t2.f )
@@ -361,7 +361,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &< t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &< t2.f )
@@ -377,7 +377,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b >> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f >> t2.f )
@@ -393,7 +393,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b >> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f >> t2.f )
@@ -409,7 +409,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &> t2.f )
@@ -425,7 +425,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2  WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &> t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &> t2.f )
@@ -441,7 +441,7 @@ UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )
@@ -464,7 +464,7 @@ DROP INDEX tbl_tstzset_rtree_idx;
 -------------------------------------------------------------------------------
 
 CREATE INDEX tbl_intset_quadtree_idx ON tbl_intset USING SPGIST(i);
-CREATE INDEX tbl_bigintset_quadtree_idx ON tbl_bigintset USING SPGIST(b);
+CREATE INDEX tbl_bigintset_quadtree_idx ON tbl_bigintset USING SPGIST(i);
 CREATE INDEX tbl_floatset_quadtree_idx ON tbl_floatset USING SPGIST(f);
 CREATE INDEX tbl_dateset_quadtree_idx ON tbl_dateset USING SPGIST(d);
 CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING SPGIST(t);
@@ -475,7 +475,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f && t2.f )
@@ -491,7 +491,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b @> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f @> t2.f )
@@ -507,7 +507,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f @> t2.f )
@@ -523,7 +523,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -539,7 +539,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -555,7 +555,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b << t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f << t2.f )
@@ -571,7 +571,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b << t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f << t2.f )
@@ -587,7 +587,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &< t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &< t2.f )
@@ -603,7 +603,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &< t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &< t2.f )
@@ -619,7 +619,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b >> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f >> t2.f )
@@ -635,7 +635,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b >> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f >> t2.f )
@@ -651,7 +651,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &> t2.f )
@@ -667,7 +667,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2  WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &> t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &> t2.f )
@@ -683,7 +683,7 @@ UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )
@@ -706,7 +706,7 @@ DROP INDEX tbl_tstzset_quadtree_idx;
 -------------------------------------------------------------------------------
 
 CREATE INDEX tbl_intset_kdtree_idx ON tbl_intset USING SPGIST(i intset_kdtree_ops);
-CREATE INDEX tbl_bigintset_kdtree_idx ON tbl_bigintset USING SPGIST(b bigintset_kdtree_ops);
+CREATE INDEX tbl_bigintset_kdtree_idx ON tbl_bigintset USING SPGIST(i bigintset_kdtree_ops);
 CREATE INDEX tbl_floatset_kdtree_idx ON tbl_floatset USING SPGIST(f floatset_kdtree_ops);
 CREATE INDEX tbl_dateset_kdtree_idx ON tbl_dateset USING SPGIST(d dateset_kdtree_ops);
 CREATE INDEX tbl_tstzset_kdtree_idx ON tbl_tstzset USING SPGIST(t tstzset_kdtree_ops);
@@ -717,7 +717,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f && t2.f )
@@ -733,7 +733,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b @> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f @> t2.f )
@@ -752,7 +752,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f @> t2.f )
@@ -768,7 +768,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -784,7 +784,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f <@ t2.f )
@@ -800,7 +800,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b << t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f << t2.f )
@@ -816,7 +816,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b << t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f << t2.f )
@@ -832,7 +832,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &< t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &< t2.f )
@@ -848,7 +848,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &< t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &< t2.f )
@@ -864,7 +864,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b >> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f >> t2.f )
@@ -880,7 +880,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b >> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f >> t2.f )
@@ -896,7 +896,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'int';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b &> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigint';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f &> t2.f )
@@ -912,7 +912,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2  WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b &> t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f &> t2.f )
@@ -928,7 +928,7 @@ UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i = t2.i )
 WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 UPDATE test_setops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )

@@ -10,6 +10,18 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp + i IS NOT NULL;
   9504
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i + temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp + i IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f + temp IS NOT NULL;
  count 
 -------
@@ -23,6 +35,12 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp + f IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp + t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp + t2.temp IS NOT NULL;
  count 
 -------
    124
@@ -46,6 +64,18 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp - i IS NOT NULL;
   9504
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i - temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp - i IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f - temp IS NOT NULL;
  count 
 -------
@@ -59,6 +89,12 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp - f IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp - t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp - t2.temp IS NOT NULL;
  count 
 -------
    124
@@ -82,6 +118,18 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp * i IS NOT NULL;
   9504
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i * temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp * i IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f * temp IS NOT NULL;
  count 
 -------
@@ -95,6 +143,12 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp * f IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp * t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp * t2.temp IS NOT NULL;
  count 
 -------
    124
@@ -118,6 +172,14 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp / i IS NOT NULL;
   9504
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i / temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp / i IS NOT NULL;
+ERROR:  Division by zero
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f / temp IS NOT NULL;
  count 
 -------
@@ -136,6 +198,12 @@ SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp / t2.temp IS NOT NUL
    124
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp / t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp / t2.temp IS NOT NULL;
  count 
 -------
@@ -146,6 +214,12 @@ SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
  count 
 -------
     64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint WHERE deltaValue(temp) IS NOT NULL;
+ count 
+-------
+    72
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
@@ -167,6 +241,12 @@ SELECT COUNT(*) FROM tbl_tfloat_seqset WHERE trend(ss) IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint WHERE abs(temp) IS NOT NULL;
  count 
 -------
     96
@@ -236,6 +316,12 @@ SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
  count 
 -------
     64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint WHERE deltaValue(temp) IS NOT NULL;
+ count 
+-------
+    72
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
