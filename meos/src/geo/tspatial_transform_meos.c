@@ -174,17 +174,25 @@ void
 meos_finalize_projsrs(void)
 {
   MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
-  /* Idempotency: bail when no cache is live, and null the global slot after
-   * release so a second finalize call (or finalize before any init) does not
-   * pfree(NULL) / double-free. */
+  /* Idempotency: bail when no cache is live, and null the global slot
+   * after release so a second finalize call (or finalize before any
+   * init) does not pfree(NULL) / double-free. */
   if (! cache)
     return;
   for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
   {
     if (cache->MEOSPROJSRSCache[i].projection)
+    {
       PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
+      /* Null the slot so finalize stays idempotent. */
+      cache->MEOSPROJSRSCache[i].projection = NULL;
+    }
   }
   pfree(cache);
+  /* Drop the dangling global pointer; otherwise a downstream
+   * dereference becomes use-after-free. The smoke suites surfaced a
+   * crash inside libproj/libsqlite3 reachable via this dangling
+   * pointer once code paths freed the cache via a different route. */
   MEOS_PROJ_CACHE = NULL;
   return;
 }
