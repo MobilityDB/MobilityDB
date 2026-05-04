@@ -1,0 +1,172 @@
+COPY tbl_npoint TO '/tmp/tbl_npoint' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_npoint_tmp;
+NOTICE:  table "tbl_npoint_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_npoint_tmp AS TABLE tbl_npoint WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_npoint_tmp FROM '/tmp/tbl_npoint' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint_tmp t2 WHERE t1.k = t2.k AND t1.np <> t2.np;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_npoint_tmp;
+DROP TABLE
+COPY tbl_nsegment TO '/tmp/tbl_nsegment' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_nsegment_tmp;
+NOTICE:  table "tbl_nsegment_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_nsegment_tmp AS TABLE tbl_nsegment WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_nsegment_tmp FROM '/tmp/tbl_nsegment' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment_tmp t2 WHERE t1.k = t2.k AND t1.ns <> t2.ns;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_nsegment_tmp;
+DROP TABLE
+SELECT MAX(route(np)) FROM tbl_npoint;
+ max 
+-----
+  98
+(1 row)
+
+SELECT MAX(getPosition(np)) FROM tbl_npoint;
+   max    
+----------
+ 0.999506
+(1 row)
+
+SELECT MAX(route(ns)) FROM tbl_nsegment;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(startPosition(ns)) FROM tbl_nsegment;
+   max    
+----------
+ 0.914219
+(1 row)
+
+SELECT MAX(endPosition(ns)) FROM tbl_nsegment;
+   max    
+----------
+ 0.997257
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint WHERE np::geometry IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment WHERE ns::geometry IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint WHERE np = (np::geometry)::npoint;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np = t2.np;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np != t2.np;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np < t2.np;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np <= t2.np;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np > t2.np;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint t2 WHERE t1.np >= t2.np;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns = t2.ns;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns != t2.ns;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns < t2.ns;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns <= t2.ns;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns > t2.ns;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment t2 WHERE t1.ns >= t2.ns;
+ count 
+-------
+  5050
+(1 row)
+

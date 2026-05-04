@@ -16,19 +16,19 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NUL
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
@@ -106,19 +106,19 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NUL
   9523
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9324
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9789
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9458
@@ -196,19 +196,19 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NUL
    941
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
    477
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
    477
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   1105
@@ -286,19 +286,19 @@ SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intspan t2;
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspan t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigint t1, tbl_bigintspan t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigint t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspan t1, tbl_bigint t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintspan t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspan t1, tbl_bigintspan t2;
  min 
 -----
    0

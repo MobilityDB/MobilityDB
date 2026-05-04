@@ -32,11 +32,14 @@
 -------------------------------------------------------------------------------
 
 SELECT tbox 'TBOXINT XT([1, 1],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
+SELECT tbox 'TBOXBIGINT XT([1, 1],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOXINT X([1, 1])'; -- Only X dimension
+SELECT tbox 'TBOXBIGINT X([1, 1])'; -- Only X dimension
 SELECT tbox 'TBOXFLOAT X([1.0, 1.0])'; -- Only X dimension
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])'; -- Only T dimension
 SELECT tbox 'TBOXINT XT([1,2][2000-01-01,2000-01-02])'; -- Optional comma
+SELECT tbox 'TBOXBIGINT XT([1,2][2000-01-01,2000-01-02])'; -- Optional comma
 
 /* Errors */
 SELECT tbox 'XXX(1, 2000-01-02)';
@@ -116,22 +119,30 @@ SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
 
 SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
 SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
 SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 /* Errors */
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::bigintspan;
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
 
 -------------------------------------------------------------------------------
 
 SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
+SELECT MIN(Xmin(temp::tbox)) FROM tbl_tbigint;
 SELECT round(MIN(Xmin(temp::tbox)),6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxfloat;
 SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxint;
+SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxbigint;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -175,6 +186,11 @@ SELECT MAX(xmax(b)) FROM tbl_tboxint;
 SELECT MIN(tmin(b)) FROM tbl_tboxint;
 SELECT MAX(tmax(b)) FROM tbl_tboxint;
 
+SELECT MIN(xmin(b)) FROM tbl_tboxbigint;
+SELECT MAX(xmax(b)) FROM tbl_tboxbigint;
+SELECT MIN(tmin(b)) FROM tbl_tboxbigint;
+SELECT MAX(tmax(b)) FROM tbl_tboxbigint;
+
 SELECT MIN(xmin(b)) FROM tbl_tboxfloat;
 SELECT MAX(xmax(b)) FROM tbl_tboxfloat;
 SELECT MIN(tmin(b)) FROM tbl_tboxfloat;
@@ -210,11 +226,13 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day', interval '-1 day');
 
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', 2);
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-12 hours');
 -- NULL
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1);
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1);
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02))', interval '-12 hours');
@@ -223,6 +241,7 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interv
 /* Errors */
 SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
 
@@ -255,6 +274,12 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b @> t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <@ t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b -|- t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b ~= t2.b;
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b && t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b @> t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <@ t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b -|- t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b ~= t2.b;
 
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b && t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b @> t2.b;
@@ -295,6 +320,15 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <<# t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b &<# t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b #>> t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b #&> t2.b;
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b << t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &< t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b >> t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &> t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <<# t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &<# t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b #>> t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b #&> t2.b;
 
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b << t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b &< t2.b;
@@ -351,6 +385,9 @@ SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' * tbox 'TBOXFLOAT 
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b && t2.b;
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxint t1, tbl_tboxint t2;
 
+SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b && t2.b;
+SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxbigint t1, tbl_tboxbigint t2;
+
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b && t2.b;
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
 
@@ -405,6 +442,14 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b < t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <= t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b > t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b >= t2.b;
+
+SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b = t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b < t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <= t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b > t2.b;
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b >= t2.b;
 
 SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b = t2.b;

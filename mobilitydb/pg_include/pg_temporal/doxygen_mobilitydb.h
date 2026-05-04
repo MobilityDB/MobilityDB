@@ -76,6 +76,10 @@
  * @ingroup mobilitydb_api
  * @brief Functions for temporal rigid geometries
  *
+ * @defgroup mobilitydb_h3 Functions for temporal H3 cell indices
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal H3 cell indices
+ *
  * @defgroup mobilitydb_misc Miscellaneous functions
  * @ingroup mobilitydb_api
  * @brief Miscellaneous functions
