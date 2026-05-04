@@ -2641,7 +2641,6 @@ temporal_insts_p(const Temporal *temp, int *count)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the distinct instants of a temporal value
@@ -2660,7 +2659,6 @@ temporal_instants(const Temporal *temp, int *count)
     instants[i] = tinstant_copy(instants[i]);
   return instants;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_temporal_accessor

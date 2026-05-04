@@ -399,10 +399,18 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func)
       {
-        result[count++] = tinstant_make(func(tinstant_value_p(inst1),
-          tinstant_value_p(inst2)), inst1->temptype, inst1->t);
+        Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
+        result[count++] = tinstant_make(value, inst1->temptype, inst1->t);
         if (tofree)
           tofree1[nfree1++] = result[count - 1];
+        /* Free freshly-allocated by-reference results. Callbacks like
+         * datum_min_text return one of their inputs verbatim; those
+         * pointers are still owned by the input TInstants and must not
+         * be freed here. */
+        if (! basetype_byvalue(temptype_basetype(inst1->temptype)) &&
+            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst1)) &&
+            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst2)))
+          pfree(DatumGetPointer(value));
       }
       else
       {
@@ -416,6 +424,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "The temporal values have different value at their common timestamp %s",
             t1);
+          pfree(t1);
           return NULL;
         }
       }
@@ -543,7 +552,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   TSequence *syncseq1, *syncseq2;
   synchronize_tsequence_tsequence(seq1, seq2, &syncseq1, &syncseq2, crossings);
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
-  // MeosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 0; i < syncseq1->count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
@@ -552,7 +561,14 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     {
       Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
       instants[i] = tinstant_make(value, seq1->temptype, inst1->t);
-      // DATUM_FREE(value, basetype); // TODO
+      /* Free freshly-allocated by-reference results. Callbacks like
+       * datum_min_text return one of their inputs verbatim; those
+       * pointers are still owned by the syncseqs and must not be freed
+       * here. */
+      if (! basetype_byvalue(basetype) &&
+          DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst1)) &&
+          DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst2)))
+        pfree(DatumGetPointer(value));
     }
     else
     {
@@ -564,6 +580,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
+        pfree(t1);
         for (int j = 0; j < i; j++)
           pfree(instants[i]);
         pfree(instants);
