@@ -441,6 +441,259 @@ tpose_rotation(const Temporal *temp)
   return result;
 }
 
+/**
+ * @brief Lift a pose-to-double Datum function through a temporal pose,
+ * returning a temporal float. Shared backend for the @p yaw / @p pitch /
+ * @p roll accessors below.
+ */
+static Temporal *
+tpose_lift_to_tfloat(const Temporal *temp, varfunc func)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = func;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TPOSE;
+  lfinfo.restype = T_TFLOAT;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the yaw angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ */
+Temporal *
+tpose_yaw(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_yaw);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the pitch angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ */
+Temporal *
+tpose_pitch(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_pitch);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the roll angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ */
+Temporal *
+tpose_roll(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_roll);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the speed of a temporal pose as a temporal float
+ * @details The result is the magnitude of the position-component
+ * velocity, i.e. distance travelled per unit time. The orientation
+ * component is not part of this scalar — angular velocity has its own
+ * accessor @p tpose_angular_speed.
+ * @param[in] temp Temporal pose
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_speed()
+ */
+Temporal *
+tpose_speed(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  Temporal *traj = tpose_to_tpoint(temp);
+  if (! traj)
+    return NULL;
+  Temporal *result = tpoint_speed(traj);
+  pfree(traj);
+  return result;
+}
+
+/**
+ * @brief Per-segment angular speed for a TSequence of tpose with linear
+ * interpolation. Builds a step-interpolation TSequence of tfloat where
+ * each instant carries the constant @p |omega| of the segment that
+ * starts at it.
+ */
+static TSequence *
+tposeseq_angular_speed(const TSequence *seq)
+{
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Instantaneous sequence — no segment, no angular speed. */
+  if (seq->count == 1)
+    return NULL;
+
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+  double angspeed = 0.0;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+    double dt = (double) (inst2->t - inst1->t) / 1000000.0;
+    angspeed = (dt > 0.0) ?
+      pose_angular_distance(pose1, pose2) / dt : 0.0;
+    instants[i] = tinstant_make(Float8GetDatum(angspeed), T_TFLOAT, inst1->t);
+    inst1 = inst2;
+    pose1 = pose2;
+  }
+  /* The trailing instant carries the previous segment's value, so the
+   * step-interpolated tfloat is well-defined on the closed interval. */
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(angspeed),
+    T_TFLOAT, seq->period.upper);
+  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  pfree_array((void **) instants, seq->count);
+  return result;
+}
+
+/**
+ * @brief Per-sequenceset angular speed.
+ */
+static TSequenceSet *
+tposeseqset_angular_speed(const TSequenceSet *ss)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    TSequence *r = tposeseq_angular_speed(seq);
+    if (r) sequences[nseqs++] = r;
+  }
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the angular speed of a temporal pose (radians per unit
+ * time) as a step-interpolated temporal float
+ * @details For 2D poses this is the per-segment shortest-arc theta delta
+ * divided by the segment duration. For 3D poses this is the SLERP arc
+ * angle @p 2 · acos(|q1 · q2|) divided by the segment duration; SLERP is
+ * by construction constant-angular-velocity over a segment so the
+ * resulting tfloat is step-interpolated.
+ * @param[in] temp Temporal pose with linear interpolation
+ * @return On error or for an instantaneous tpose return @p NULL
+ * @csqlfn #Tpose_angular_speed()
+ */
+Temporal *
+tpose_angular_speed(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
+    return NULL;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tposeseq_angular_speed((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tposeseqset_angular_speed(
+        (TSequenceSet *) temp);
+  }
+}
+
+/**
+ * @brief Per-sequence builder of @p applyPose: applies the rigid-body
+ * transform of each instant's pose to the body geometry, producing a
+ * tgeompoint sequence with the same temporal shape as the input.
+ */
+static TSequence *
+tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+    GSERIALIZED *world = pose_apply_geo(pose, body);
+    if (world == NULL)
+    {
+      for (int j = 0; j < i; j++) pfree(instants[j]);
+      pfree(instants);
+      return NULL;
+    }
+    instants[i] = tinstant_make(GserializedPGetDatum(world), T_TGEOMPOINT,
+      inst->t);
+  }
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+  pfree_array((void **) instants, seq->count);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the world-frame trajectory obtained by applying a
+ * temporal pose to a body-frame geometry
+ * @details Per instant the rigid-body transform @p R(q_i) · v + p_i is
+ * applied to the body geometry; the result is a temporal point with the
+ * same subtype and interpolation as the input @p tpose. v1 supports
+ * point and multipoint body geometries — the output is a tgeompoint
+ * carrying the per-instant transformed point. Linear interpolation of
+ * the resulting trajectory is the chord on each segment, which
+ * approximates the true rigid-body trajectory (a circular arc under
+ * SLERP); the same linear-interpolation trade-off MobilityDB already
+ * uses for spatial trajectories.
+ * @param[in] temp Temporal pose
+ * @param[in] body Body-frame geometry (POINT or MULTIPOINT)
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_apply_geo()
+ */
+Temporal *
+tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body)
+{
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(body, NULL);
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+      GSERIALIZED *world = pose_apply_geo(pose, body);
+      if (world == NULL) return NULL;
+      return (Temporal *) tinstant_make(GserializedPGetDatum(world),
+        T_TGEOMPOINT, inst->t);
+    }
+    case TSEQUENCE:
+      return (Temporal *) tposeseq_apply_geo((const TSequence *) temp, body);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+      for (int i = 0; i < ss->count; i++)
+      {
+        TSequence *r = tposeseq_apply_geo(TSEQUENCESET_SEQ_N(ss, i), body);
+        if (! r)
+        {
+          for (int j = 0; j < i; j++) pfree(sequences[j]);
+          pfree(sequences);
+          return NULL;
+        }
+        sequences[i] = r;
+      }
+      return (Temporal *) tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+    }
+  }
+}
+
 /*****************************************************************************/
 
 #if MEOS
