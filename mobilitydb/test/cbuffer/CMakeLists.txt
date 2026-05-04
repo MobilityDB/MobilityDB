@@ -14,15 +14,12 @@ set_tests_properties(load_cbuffer_tables PROPERTIES
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
-# Tests whose expected output is stale relative to the current behaviour
-# of the underlying functions. Re-enable once the expected output is
-# regenerated.
+# Tests skipped pending follow-up. See PR description for context.
 set(SKIP_TESTS
-  160_tcbuffer_distance_tbl         # NearestApproachDistance / |=| count drift
-  162_tcbuffer_spatialrels          # spatialrels output drift
-  162_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
-  164_tcbuffer_tempspatialrels      # tempspatialrels output drift
-  164_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
+  162_tcbuffer_spatialrels          # mixed-SRID rejections; queries need same-SRID inputs
+  162_tcbuffer_spatialrels_tbl      # mixed-SRID rejections; queries need same-SRID inputs
+  164_tcbuffer_tempspatialrels      # missing SQL fns + cbuffer-prefix parser change
+  164_tcbuffer_tempspatialrels_tbl  # missing SQL fns + missing tbl_tcbuffer3d fixture
 )
 
 foreach(file ${testfiles})
