@@ -1,0 +1,204 @@
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
+  geometry 'Point(2 2)'), 6);
+                 round                 
+---------------------------------------
+ 1.414214@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
+  geometry 'Point(2 2)'), 6);
+                 round                 
+---------------------------------------
+ 4.242641@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2000-01-01, Pose(Point(5 5),0)@2000-01-02}',
+  geometry 'Point(2 2)'), 6);
+                                     round                                      
+--------------------------------------------------------------------------------
+ {1.414214@Sat Jan 01 00:00:00 2000 PST, 4.242641@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  geometry 'Point(2 2)'), 6);
+                                     round                                      
+--------------------------------------------------------------------------------
+ [2.236068@Sat Jan 01 00:00:00 2000 PST, 2.828427@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(tdistance(
+  geometry 'Point(2 2)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+                                     round                                      
+--------------------------------------------------------------------------------
+ [2.236068@Sat Jan 01 00:00:00 2000 PST, 2.828427@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT round(tdistance(
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_trgeo not implemented yet.
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
+  geometry 'Point(2 2)'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  geometry 'Point(2 2)'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  geometry 'Point(2 2)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT asText(nearestApproachInstant(
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_trgeo not implemented yet.
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
+  geometry 'Point(2 2)'), 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  geometry 'Point(2 2)'), 6);
+  round   
+----------
+ 2.236068
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  geometry 'Point(2 2)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+  round   
+----------
+ 2.236068
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  stbox 'STBOX X((1,-1),(3,3))'), 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  stbox 'STBOX X((1,-1),(3,3))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT round(nearestApproachDistance(
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'), 6);
+ERROR:  Function tdistance_trgeo_trgeo not implemented yet.
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
+  geometry 'Point(2 2)'));
+         st_astext          
+----------------------------
+ LINESTRING(2.5e-323 0,2 2)
+(1 row)
+
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  geometry 'Point(2 2)'));
+         st_astext          
+----------------------------
+ LINESTRING(2.5e-323 0,2 2)
+(1 row)
+
+SELECT ST_AsText(shortestLine(
+  geometry 'Point(2 2)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
+         st_astext          
+----------------------------
+ LINESTRING(2.5e-323 0,2 2)
+(1 row)
+
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT ST_AsText(shortestLine(
+  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_tpoint not implemented yet.
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'));
+ERROR:  Function tdistance_trgeo_trgeo not implemented yet.
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tdistance(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  nearestApproachInstant(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  nearestApproachDistance(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  shortestLine(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

@@ -63,6 +63,9 @@
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_vclip.h"
 
+/* geom_apply_pose is defined in trgeo.c but not exported in a header */
+extern GSERIALIZED *geom_apply_pose(const GSERIALIZED *gs, const Pose *pose);
+
 /*****************************************************************************
  * cfp array utility functions
  *****************************************************************************/
@@ -287,8 +290,11 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 {
-  double dist = geom_distance2d(trgeoinst_geom_p(inst), gs);
-  return tinstant_make(Float8GetDatum(dist), T_FLOAT8, inst->t);
+  const Pose *pose = DatumGetPoseP(tinstant_value(inst));
+  GSERIALIZED *world_gs = geom_apply_pose(trgeoinst_geom_p(inst), pose);
+  double dist = geom_distance2d(world_gs, gs);
+  pfree(world_gs);
+  return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
 }
 
 /**
@@ -801,10 +807,11 @@ edge_vertex_tpoly_point(LWPOLY *poly, Pose *pose_start, Pose *pose_end,
  * @brief
  */
 TSequence *
-dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
+dist2d_trgeoseq_point(const GSERIALIZED *ref_gs, const TSequence *seq,
+  const GSERIALIZED *gs)
 {
-  /* TODO: Add check and code for stepwise seq */
-  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
+  /* ref_gs is the body-frame reference polygon (from trgeoseq_geom_p or
+   * trgeoseqset_geom_p when the sub-sequence has no embedded geometry). */
 
   /* TODO: check that polygon is convex */
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -899,7 +906,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    LINEAR, NORMALIZE);
 
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -1651,10 +1658,11 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
  * @brief
  */
 TSequence *
-dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
+dist2d_trgeoseq_poly(const GSERIALIZED *ref_gs, const TSequence *seq,
+  const GSERIALIZED *gs)
 {
-  /* TODO: Add check and code for stepwise seq */
-  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
+  /* ref_gs is the body-frame reference polygon (from trgeoseq_geom_p or
+   * trgeoseqset_geom_p when the sub-sequence has no embedded geometry). */
 
   /* TODO: check that both polygons are convex */
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -1777,7 +1785,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    LINEAR, NORMALIZE);
 
   lwpoly_free(poly1); lwpoly_free(poly2);
   free_cfp_array(&cfpa); free_tdist_array(&tda);
@@ -1787,18 +1795,37 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
 /**
  * @brief
  */
-TSequence *
-dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
+static TSequence *
+dist2d_trgeoseq_geo_with_geom(const GSERIALIZED *ref_gs, const TSequence *seq,
+  const GSERIALIZED *gs)
 {
+  /* For discrete/step sequences compute the distance at each instant */
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == DISCRETE || interp == STEP)
+  {
+    TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const Pose *pose = DatumGetPoseP(tinstant_value(inst));
+      GSERIALIZED *world_gs = geom_apply_pose(ref_gs, pose);
+      double dist = geom_distance2d(world_gs, gs);
+      pfree(world_gs);
+      instants[i] = tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
+    }
+    return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+      seq->period.upper_inc, interp, NORMALIZE);
+  }
+
   uint32_t gs_type = gserialized_get_type(gs);
   TSequence *result = NULL;
   switch (gs_type)
   {
     case POINTTYPE:
-      result = dist2d_trgeoseq_point(seq, gs);
+      result = dist2d_trgeoseq_point(ref_gs, seq, gs);
       break;
     case POLYGONTYPE:
-      result = dist2d_trgeoseq_poly(seq, gs);
+      result = dist2d_trgeoseq_poly(ref_gs, seq, gs);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -1811,12 +1838,23 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
 /**
  * @brief
  */
+TSequence *
+dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
+{
+  return dist2d_trgeoseq_geo_with_geom(trgeoseq_geom_p(seq), seq, gs);
+}
+
+/**
+ * @brief
+ */
 TSequenceSet *
 dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
 {
+  const GSERIALIZED *ref_gs = trgeoseqset_geom_p(ss);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = dist2d_trgeoseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs);
+    sequences[i] = dist2d_trgeoseq_geo_with_geom(ref_gs,
+      TSEQUENCESET_SEQ_N(ss, i), gs);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 

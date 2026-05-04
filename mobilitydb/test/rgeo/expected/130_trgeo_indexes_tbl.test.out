@@ -1,0 +1,219 @@
+ANALYZE tbl_trgeometry2d;
+ANALYZE
+DROP INDEX IF EXISTS tbl_trgeometry2d_rtree_idx;
+NOTICE:  index "tbl_trgeometry2d_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_trgeometry2d_quadtree_idx;
+NOTICE:  index "tbl_trgeometry2d_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_trgeometry2d_kdtree_idx;
+NOTICE:  index "tbl_trgeometry2d_kdtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_trgeometry2d_rtree_idx ON tbl_trgeometry2d USING GIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    93
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp < trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <= trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp > trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp >= trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp && trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp @> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <@ trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp -|- trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp << trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    17
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp &< trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    39
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp >> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     8
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp &> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <<| trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    21
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp &<| trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    31
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp |>> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp |&> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    17
+(1 row)
+
+DROP INDEX IF EXISTS tbl_trgeometry2d_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_trgeometry2d_quadtree_idx ON tbl_trgeometry2d USING SPGIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+    93
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp && trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp @> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <@ trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX IF EXISTS tbl_trgeometry2d_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_trgeometry2d_kdtree_idx ON tbl_trgeometry2d USING SPGIST(temp trgeometry_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp && trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp @> trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <@ trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
+ count 
+-------
+     0
+(1 row)
+
