@@ -1,0 +1,111 @@
+name: MEOS locale safety
+
+# Bootstrap CI for issue #425 (Localization support for the MEOS library).
+#
+# This job:
+#   1. Builds the standalone MEOS C library on Linux.
+#   2. Installs a locale that uses ',' as the decimal separator
+#      (de_DE.UTF-8 — same shape as fr_FR, it_IT, es_ES, etc.).
+#   3. Sets LC_NUMERIC to that locale and runs a tiny C test that calls
+#      meos_initialize() and parses '[1.5@2001-01-01]' as a tfloat.
+#
+# With the meos_strtod() wrapper in place (postgres_types.c) the parse
+# succeeds and the round-tripped value contains "1.5". Without it, the
+# libc strtod() respects LC_NUMERIC and would parse '.' as a thousands
+# separator, producing 15 — the test would then fail. This pins MEOS's
+# locale-blindness contract: numeric I/O is always C-locale, regardless
+# of the calling process's LC_NUMERIC.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/meos_locale.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/meos_locale.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+
+jobs:
+  meos-locale-smoke:
+    name: locale-smoke
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps and de_DE.UTF-8 locale
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            libgeos++-dev libproj-dev libjson-c-dev libgsl-dev \
+            locales
+          sudo locale-gen de_DE.UTF-8
+          sudo update-locale
+          locale -a | grep -i de_DE
+
+      - name: Configure standalone MEOS
+        run: |
+          cmake -S . -B build-meos \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
+            -DMEOS=ON \
+            -DCBUFFER=ON -DNPOINT=ON
+
+      - name: Build libmeos
+        run: cmake --build build-meos -j
+
+      - name: Install libmeos
+        run: cmake --install build-meos
+
+      - name: Compile locale smoke test
+        run: |
+          cat > /tmp/locale_smoke.c <<'EOF'
+          #include <stdio.h>
+          #include <stdlib.h>
+          #include <string.h>
+          #include <locale.h>
+          #include <meos.h>
+          int main(void) {
+            if (!setlocale(LC_NUMERIC, "de_DE.UTF-8")) {
+              fprintf(stderr, "FAIL: de_DE.UTF-8 not installed\n"); return 2;
+            }
+            meos_initialize();
+            meos_initialize_timezone("UTC");
+            Temporal *t = tfloat_in("[1.5@2001-01-01]");
+            if (!t) { fprintf(stderr, "FAIL: tfloat_in NULL\n"); return 1; }
+            char *out = tfloat_out(t, 6);
+            printf("parsed: %s\n", out);
+            int ok = strstr(out, "1.5") != NULL;
+            free(out); free(t); meos_finalize();
+            if (!ok) { fprintf(stderr, "FAIL: 1.5 mis-parsed under de_DE\n"); return 1; }
+            printf("OK\n"); return 0;
+          }
+          EOF
+          gcc -I meos-install/include -L meos-install/lib \
+            -o /tmp/locale_smoke /tmp/locale_smoke.c -lmeos
+
+      - name: Run locale smoke test under LC_NUMERIC=de_DE.UTF-8
+        env:
+          LD_LIBRARY_PATH: meos-install/lib
+          LC_NUMERIC: de_DE.UTF-8
+        run: /tmp/locale_smoke
+
+      - name: Run locale smoke test under LC_ALL=de_DE.UTF-8
+        env:
+          LD_LIBRARY_PATH: meos-install/lib
+          LC_ALL: de_DE.UTF-8
+        run: /tmp/locale_smoke
