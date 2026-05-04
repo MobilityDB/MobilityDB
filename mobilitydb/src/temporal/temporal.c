@@ -721,6 +721,23 @@ Tbool_to_tint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tint_to_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tint_to_tbigint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal integer into a temporal big integer
+ * @sqlfn tbigint()
+ * @sqlop @p ::
+ */
+Datum
+Tint_to_tbigint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tint_to_tbigint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
@@ -738,6 +755,40 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tbigint_to_tint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_to_tint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal big integer into a temporal integer
+ * @sqlfn tfloat()
+ * @sqlop @p ::
+ */
+Datum
+Tbigint_to_tint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tbigint_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tbigint_to_tfloat(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_to_tfloat);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal integer into a temporal float
+ * @sqlfn tfloat()
+ * @sqlop @p ::
+ */
+Datum
+Tbigint_to_tfloat(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tbigint_to_tfloat(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
@@ -751,6 +802,23 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_to_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_to_tbigint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal float into a temporal big integer
+ * @sqlfn tint()
+ * @sqlop @p ::
+ */
+Datum
+Tfloat_to_tbigint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_to_tbigint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

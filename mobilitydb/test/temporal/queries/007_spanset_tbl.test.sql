@@ -44,7 +44,7 @@ COPY tbl_bigintspanset TO '/tmp/tbl_bigintspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintspanset_tmp;
 CREATE TABLE tbl_bigintspanset_tmp AS TABLE tbl_bigintspanset WITH NO DATA;
 COPY tbl_bigintspanset_tmp FROM '/tmp/tbl_bigintspanset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 DROP TABLE tbl_bigintspanset_tmp;
 
 COPY tbl_floatspanset TO '/tmp/tbl_floatspanset' (FORMAT BINARY);
@@ -71,13 +71,13 @@ DROP TABLE tbl_tstzspanset_tmp;
 -- Input/output from/to WKB and HexWKB
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i;
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromBinary(asBinary(d)) <> d;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromBinary(asBinary(t)) <> t;
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(i)) <> i;
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromHexWKB(asHexWKB(d)) <> d;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <> t;
@@ -87,13 +87,13 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <>
 -------------------------------------------------------------------------------
 
 SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
-SELECT MAX(lower(spanset(b))) FROM tbl_bigintspan;
+SELECT MAX(lower(spanset(i))) FROM tbl_bigintspan;
 SELECT MAX(lower(spanset(f))) FROM tbl_floatspan;
 SELECT MAX(lower(spanset(d))) FROM tbl_datespan;
 SELECT MAX(lower(spanset(t))) FROM tbl_tstzspan;
 
 SELECT MAX(lower(span(i))) FROM tbl_intspanset;
-SELECT MAX(lower(span(b))) FROM tbl_bigintspanset;
+SELECT MAX(lower(span(i))) FROM tbl_bigintspanset;
 SELECT MAX(lower(span(f))) FROM tbl_floatspanset;
 SELECT MAX(lower(span(d))) FROM tbl_datespanset;
 SELECT MAX(lower(span(t))) FROM tbl_tstzspanset;
@@ -105,7 +105,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE (i::floatspanset)::intspanset <> i;
 SELECT COUNT(*) FROM tbl_datespanset WHERE (d::tstzspanset)::datespanset <> d;
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE b <> (b::int8multirange)::bigintspanset;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE i <> (i::int8multirange)::bigintspanset;
 SELECT COUNT(*) FROM tbl_datespanset WHERE d <> (d::datemultirange)::datespanset;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE t <> (t::tstzmultirange)::tstzspanset;
 
@@ -166,17 +166,17 @@ SELECT MAX(timestampN(t, 0)) FROM tbl_tstzspanset;
 SELECT MAX(startValue(timestamps(t))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
-SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(shift(i, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(shift(f, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
-SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(scale(i, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(scale(f, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(scale(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
-SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(shiftScale(f, 5, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
@@ -199,13 +199,13 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <= t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i > t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >= t2.i;
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE spanset_cmp(t1.b, t2.b) = -1;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b = t2.b;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <> t2.b;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b < t2.b;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <= t2.b;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b > t2.b;
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b >= t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i = t2.i;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i <> t2.i;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i < t2.i;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i <= t2.i;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i > t2.i;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i >= t2.i;
 
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE spanset_cmp(t1.f, t2.f) = -1;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f = t2.f;
