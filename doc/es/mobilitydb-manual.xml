@@ -23,6 +23,7 @@
 <!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_types_aggregation SYSTEM "temporal_types_aggregation.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
+<!ENTITY temporal_h3_index SYSTEM "temporal_h3_index.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
@@ -123,6 +124,7 @@
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
 	&temporal_network_points;
+	&temporal_h3_index;
 	&reference;
 	&data_generator;
 	<index />

@@ -1,0 +1,55 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),  -- res 3 hex   (6 vertices)
+  (2, th3index '590464201114255359@2001-01-01'),  -- res 3 pent  (5 vertices)
+  (3, th3index '595812165542215679@2001-01-01'),  -- res 4 pent  (5 vertices)
+  (4, th3index '612544986753269759@2001-01-01'),  -- res 8 hex   (6 vertices)
+  (5, th3index '612544986761658367@2001-01-01'),  -- res 8 hex   (6 vertices)
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_cell_to_vertex(temp, 0) IS NOT NULL;
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_cell_to_vertex(temp, 4) IS NOT NULL;
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_cell_to_vertex(temp, 0) = h3_cell_to_vertex(temp, 1)
+     OR h3_cell_to_vertex(temp, 1) = h3_cell_to_vertex(temp, 2)
+     OR h3_cell_to_vertex(temp, 2) = h3_cell_to_vertex(temp, 3)
+     OR h3_cell_to_vertex(temp, 3) = h3_cell_to_vertex(temp, 4);
+ERROR:  operator does not exist: th3index = th3index
+LINE 2:   WHERE h3_cell_to_vertex(temp, 0) = h3_cell_to_vertex(temp,...
+                                           ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE NOT startValue(h3_is_valid_vertex(h3_cell_to_vertex(temp, 0)));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE startValue(h3_is_valid_vertex(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_vertex_to_latlng(h3_cell_to_vertex(temp, 0)) IS NULL;
+ERROR:  h3_vertex_to_gs_point: adapter not yet implemented
+DROP TABLE tbl_th3index_known;
+DROP TABLE

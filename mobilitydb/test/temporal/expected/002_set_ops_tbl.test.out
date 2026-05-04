@@ -100,19 +100,19 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
  998001
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
  98901
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
  98901
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i + t2.i IS NOT NULL;
  count  
 --------
  998001
@@ -190,19 +190,19 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
  997002
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
  98901
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
  98196
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i - t2.i IS NOT NULL;
  count  
 --------
  997001
@@ -280,19 +280,19 @@ SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
  44615
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigint t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
    705
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
    705
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
  44457
@@ -370,19 +370,19 @@ SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intset t2;
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigint t1, tbl_bigintset t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigint t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintset t1, tbl_bigint t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintset t1, tbl_bigintset t2;
  min 
 -----
    0

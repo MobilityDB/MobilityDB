@@ -1,0 +1,65 @@
+name: test-macos
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  macos:
+    strategy:
+      matrix:
+        os: [macos-13]
+        pg: [17, 16, 15, 14, 13]
+        config: [Release, Debug]
+
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} 🐘${{ matrix.pg }} (${{ matrix.config }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pg_validate_extupgrade
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: pg_validate_extupgrade
+          git: https://github.com/rjuju/pg_validate_extupgrade
+
+      - name: Setup PostgreSQL
+        run: |
+          brew install postgresql@${{ matrix.pg }}
+          brew unlink postgresql@${{ matrix.pg }}
+          brew link --overwrite postgresql@${{ matrix.pg }}
+          brew services run postgresql@${{ matrix.pg }}
+
+      - name: Setup PostGIS
+        run: brew install postgis
+        if: ${{ matrix.pg == 17 || matrix.pg == 14 }}
+
+      - name: Fix gettext linkage for PostgreSQL >= 15
+        run: brew unlink gettext && brew link --overwrite --force gettext
+        if: ${{ matrix.pg >= 15 }}
+
+      - name: Generate
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        env:
+          # Fixes missing libintl.h on some runners
+          CFLAGS: "-I /usr/local/include"
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }}
+
+      - name: Install
+        run: sudo cmake --install build --component h3-pg --config ${{ matrix.config }}
+
+      - name: Create test database (for pg_validate_extupgrade)
+        run: createdb runner
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --build-config ${{ matrix.config }}
+
+      - name: Print regression diffs
+        if: ${{ failure() }}
+        run: cat build/*/test/regression.diffs

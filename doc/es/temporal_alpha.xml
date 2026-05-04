@@ -84,21 +84,18 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 
 			<listitem xml:id="tint_tfloat">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tfloat(tint)</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tint(tfloat)</varname></primary></indexterm>
-				<para>Convertir entre un entero integer y un número flotante temporal</para>
-				<para><varname>tint::tfloat</varname></para>
-				<para><varname>tfloat::tint</varname></para>
-				<para><varname>tfloat(tint)</varname></para>
-				<para><varname>tint(tfloat)</varname></para>
+				<indexterm significance="normal"><primary><varname>tnumber(tnumber)</varname></primary></indexterm>
+				<para>Convertir entre enteros, enteros largos y flotantes temporales</para>
+				<para><varname>tnumber::tnumber → tnumber</varname></para>
+				<para><varname>tnumber(tnumber)</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03]
-SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
+SELECT tbigint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01, 2@2001-01-03]
-SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 </programlisting>
 			</listitem>

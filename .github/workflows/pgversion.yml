@@ -85,17 +85,52 @@ jobs:
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
-          sudo apt-get -y install lcov
+          # libh3-dev so the coverage build can compile -DH3=ON; without
+          # it, meos/src/h3/* is invisible to gcov and shows as 404 on
+          # Coveralls (the actual cause of the apparent coverage gap on
+          # h3-introducing PRs, not a real test deficit).
+          sudo apt-get -y install lcov libh3-dev
+
+      - name: Locate libh3 on disk and pin its paths
+        if: matrix.coverage == '1'
+        # The pgdg libh3-dev package's layout differs between releases —
+        # h3api.h has been seen at /usr/include/h3api.h, /usr/include/h3/h3api.h,
+        # and (rarely) /usr/include/h3-3/h3api.h. Find both header and lib
+        # at runtime and export them so the cmake step can pin -DH3_LIBRARY
+        # / -DH3_INCLUDE_DIR explicitly, sidestepping CMake's find_path /
+        # find_library defaults entirely.
+        run: |
+          dpkg -L libh3-dev || true
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null
+            find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"
+            exit 1
+          fi
+          H3_INC_DIR=$(dirname "$H3_INC")
+          echo "H3_INCLUDE_DIR=$H3_INC_DIR" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+          echo "Found libh3 headers at: $H3_INC_DIR"
+          echo "Found libh3 library at: $H3_LIB"
 
       - name: Configure for gcc
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage build enables all opt-in subsystems so their sources get instrumented.
+          # Coverage matrix entry enables the opt-in subsystems whose
+          # sources would otherwise be stripped from the gcov-instrumented
+          # build (#if XX blocks preprocessed away, dispatch lines in
+          # cross-cutting files appearing as missed). Non-coverage entries
+          # keep the lean default to verify the gating still works.
+          # When matrix.coverage=1, env.H3_INCLUDE_DIR/H3_LIBRARY were
+          # populated by the 'Locate libh3' step; pin them via -D so the
+          # find_path / find_library defaults can't miss the layout.
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON' || '' }} \
+            ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
             ..
 
       - name: Build
