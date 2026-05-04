@@ -2502,7 +2502,14 @@ pnstrdup(const char *in, Size size)
  * @param[in] txt Text value
  * @note PostgreSQL function: @p lower() in file @p varlena.c.
  * Notice that @p DEFAULT_COLLATION_OID is used instead of
- * @p PG_GET_COLLATION()
+ * @p PG_GET_COLLATION().
+ *
+ * In standalone MEOS this is an ASCII-only fold: bytes 0x41..0x5A
+ * become 0x61..0x7A; bytes >= 0x80 (UTF-8 continuation/lead bytes)
+ * are left unchanged. So `text_lower("ZÜRICH")` returns `"zÜRICH"`
+ * (the ASCII letters are folded but `Ü` is preserved verbatim). This
+ * is the documented UTF-8 contract — see meos.h. Issue #403 tracks
+ * adding a Unicode-aware fold.
  */
 text *
 text_lower(const text *txt)
@@ -2534,7 +2541,13 @@ datum_lower(Datum value)
  * @param[in] txt Text value
  * @note PostgreSQL function: @p upper() in file @p varlena.c.
  * Notice that @p DEFAULT_COLLATION_OID is used instead of
- * @p PG_GET_COLLATION()
+ * @p PG_GET_COLLATION().
+ *
+ * In standalone MEOS this is an ASCII-only fold: bytes 0x61..0x7A
+ * become 0x41..0x5A; bytes >= 0x80 (UTF-8 continuation/lead bytes)
+ * are left unchanged. So `text_upper("Zürich")` returns `"ZüRICH"`,
+ * not `"ZÜRICH"`. This is the documented UTF-8 contract — see
+ * meos.h. Issue #403 tracks adding a Unicode-aware fold.
  */
 text *
 text_upper(const text *txt)
@@ -2566,7 +2579,11 @@ datum_upper(Datum value)
  * @param[in] txt Text value
  * @note PostgreSQL function: @p initcap() in file @p varlena.c.
  * Notice that @p DEFAULT_COLLATION_OID is used instead of
- * @p PG_GET_COLLATION()
+ * @p PG_GET_COLLATION().
+ *
+ * In standalone MEOS this is an ASCII-only fold; bytes >= 0x80 are
+ * passed through unchanged. See meos.h for the UTF-8 contract and
+ * issue #403 for the Unicode-aware follow-up.
  */
 text *
 text_initcap(const text *txt)
