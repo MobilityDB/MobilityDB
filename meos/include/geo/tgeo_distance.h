@@ -54,8 +54,6 @@ extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
   
-extern double tnumberinst_distance(const TInstant *inst1,
-  const TInstant *inst2);
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func);
 

@@ -45,7 +45,7 @@ COPY tbl_bigintset TO '/tmp/tbl_bigintset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintset_tmp;
 CREATE TABLE tbl_bigintset_tmp AS TABLE tbl_bigintset WITH NO DATA;
 COPY tbl_bigintset_tmp FROM '/tmp/tbl_bigintset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 DROP TABLE tbl_bigintset_tmp;
 
 COPY tbl_floatset TO '/tmp/tbl_floatset' (FORMAT BINARY);
@@ -79,14 +79,14 @@ DROP TABLE tbl_tstzset_tmp;
 -- Input/output from/to WKB and HexWKB
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
-SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
 SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromBinary(asBinary(d)) <> d;
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(t)) <> t;
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
-SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_textset WHERE textsetFromHexWKB(asHexWKB(t)) <> t;
 SELECT COUNT(*) FROM tbl_dateset WHERE datesetFromHexWKB(asHexWKB(d)) <> d;
@@ -127,17 +127,17 @@ SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
 -- Transformation functions
 
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
-SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(shift(i, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
 
 SELECT MIN(startValue(scale(i, 5))) FROM tbl_intset;
-SELECT MIN(startValue(scale(b, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(scale(i, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(scale(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(scale(t, '5 min'))) FROM tbl_tstzset;
 
 SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_intset;
-SELECT MIN(startValue(shiftScale(b, 5, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shiftScale(f, 5, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzset;
 
@@ -150,7 +150,7 @@ SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
 -- Set_union and unnest functions
 
 SELECT numValues(setUnion(i)) FROM tbl_int;
-SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(i)) FROM tbl_bigint;
 SELECT numValues(setUnion(f)) FROM tbl_float;
 SELECT numValues(setUnion(d)) FROM tbl_date;
 SELECT numValues(setUnion(t)) FROM tbl_timestamptz;
@@ -161,11 +161,11 @@ WITH test1(k, i) AS (
 test2 (k, i) AS (
   SELECT k, setUnion(i) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_intset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
-WITH test1(k, b) AS (
-  SELECT k, unnest(b) FROM tbl_bigintset ),
-test2 (k, b) AS (
-  SELECT k, setUnion(b) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+WITH test1(k, i) AS (
+  SELECT k, unnest(i) FROM tbl_bigintset ),
+test2 (k, i) AS (
+  SELECT k, setUnion(i) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 WITH test1(k, f) AS (
   SELECT k, unnest(f) FROM tbl_floatset ),
 test2 (k, f) AS (
@@ -199,14 +199,14 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t >= t2.t;
 
 SELECT MAX(set_hash(i)) FROM tbl_intset;
-SELECT MAX(set_hash(b)) FROM tbl_bigintset;
+SELECT MAX(set_hash(i)) FROM tbl_bigintset;
 SELECT MAX(set_hash(f)) FROM tbl_floatset;
 SELECT MAX(set_hash(t)) FROM tbl_textset;
 SELECT MAX(set_hash(d)) FROM tbl_dateset;
 SELECT MAX(set_hash(t)) FROM tbl_tstzset;
 
 SELECT MAX(set_hash_extended(i, 1)) FROM tbl_intset;
-SELECT MAX(set_hash_extended(b, 1)) FROM tbl_bigintset;
+SELECT MAX(set_hash_extended(i, 1)) FROM tbl_bigintset;
 SELECT MAX(set_hash_extended(f, 1)) FROM tbl_floatset;
 SELECT MAX(set_hash_extended(t, 1)) FROM tbl_textset;
 SELECT MAX(set_hash_extended(d, 1)) FROM tbl_dateset;
@@ -216,13 +216,13 @@ SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
 -- Aggregation functions
 
 SELECT numValues(setUnion(i)) FROM tbl_int;
-SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(i)) FROM tbl_bigint;
 SELECT numValues(setUnion(f)) FROM tbl_float;
 SELECT numValues(setUnion(t)) FROM tbl_text;
 SELECT numValues(setUnion(d)) FROM tbl_date;
 
 SELECT k%2, numValues(setUnion(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
-SELECT k%2, numValues(setUnion(b)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(i)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
 SELECT k%2, numValues(setUnion(f)) FROM tbl_floatset GROUP BY k%2 ORDER BY k%2;
 SELECT k%2, numValues(setUnion(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
 SELECT k%2, numValues(setUnion(d)) FROM tbl_dateset GROUP BY k%2 ORDER BY k%2;

@@ -1,0 +1,77 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),  -- res 3 hex
+  (2, th3index '590464201114255359@2001-01-01'),  -- res 3 pentagon
+  (3, th3index '595812165542215679@2001-01-01'),  -- res 4 pentagon
+  (4, th3index '612544986753269759@2001-01-01'),  -- res 8 hex
+  (5, th3index '612544986761658367@2001-01-01'),  -- res 8 hex
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+DROP TABLE IF EXISTS tbl_tgeogpoint_known;
+NOTICE:  table "tbl_tgeogpoint_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tgeogpoint_known(k int PRIMARY KEY, p tgeogpoint);
+CREATE TABLE
+INSERT INTO tbl_tgeogpoint_known VALUES
+  (1, tgeogpoint 'POINT(-73.96 40.78)@2001-01-01'),
+  (2, tgeogpoint 'POINT(2.35 48.86)@2001-01-01'),
+  (3, tgeogpoint 'POINT(151.21 -33.87)@2001-01-01'),
+  (4, tgeogpoint 'POINT(0 0)@2001-01-01');
+INSERT 0 4
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE startValue(h3_cell_area(temp, 'km2')) <= 0;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE startValue(h3_cell_area(temp, 'm2')) <= 0;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE abs(startValue(h3_cell_area(temp, 'm2'))
+          - 1e6 * startValue(h3_cell_area(temp, 'km2')))
+        > 1e-3 * startValue(h3_cell_area(temp, 'm2'));
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT startValue(h3_cell_area((SELECT temp FROM tbl_th3index_known WHERE k = 1), 'km2'))
+     > startValue(h3_cell_area((SELECT temp FROM tbl_th3index_known WHERE k = 6), 'km2'));
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT COUNT(*) FROM (
+  SELECT h3_cells_to_directed_edge(
+    (SELECT temp FROM tbl_th3index_known WHERE k = 4),
+    (SELECT temp FROM tbl_th3index_known WHERE k = 5)) AS e
+  ) AS e
+  WHERE startValue(h3_edge_length(e, 'km')) <= 0;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT abs(
+    startValue(h3_edge_length(h3_cells_to_directed_edge(
+      (SELECT temp FROM tbl_th3index_known WHERE k = 4),
+      (SELECT temp FROM tbl_th3index_known WHERE k = 5)), 'm'))
+    - 1000 * startValue(h3_edge_length(h3_cells_to_directed_edge(
+      (SELECT temp FROM tbl_th3index_known WHERE k = 4),
+      (SELECT temp FROM tbl_th3index_known WHERE k = 5)), 'km')))
+  < 1e-6;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_tgeogpoint_known
+  WHERE startValue(h3_great_circle_distance(p, p, 'km')) <> 0;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_tgeogpoint_known t1, tbl_tgeogpoint_known t2
+  WHERE t1.k <> t2.k
+    AND startValue(h3_great_circle_distance(t1.p, t2.p, 'km')) <= 0;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_tgeogpoint_known t1, tbl_tgeogpoint_known t2
+  WHERE t1.k < t2.k
+    AND abs(startValue(h3_great_circle_distance(t1.p, t2.p, 'km'))
+          - startValue(h3_great_circle_distance(t2.p, t1.p, 'km')))
+        > 1e-6;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_tgeogpoint_known t1, tbl_tgeogpoint_known t2
+  WHERE t1.k < t2.k
+    AND abs(startValue(h3_great_circle_distance(t1.p, t2.p, 'm'))
+          - 1000 * startValue(h3_great_circle_distance(t1.p, t2.p, 'km')))
+        > 1e-3 * startValue(h3_great_circle_distance(t1.p, t2.p, 'm'));
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+DROP TABLE tbl_th3index_known;
+DROP TABLE
+DROP TABLE tbl_tgeogpoint_known;
+DROP TABLE

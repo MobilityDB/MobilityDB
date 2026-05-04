@@ -1,0 +1,470 @@
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01', 6);
+                                           astext                                           
+--------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2000-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2000-01-03}', 6);
+                                                                                                             astext                                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2.123457 2.123457),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2000-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2000-01-03]', 6);
+                                                                                                             astext                                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2.123457 2.123457),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2000-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2000-01-03],[Pose(Point(3.123456789 3.123456789),0.5)@2000-01-04, Pose(Point(3.123456789 3.123456789),0.5)@2000-01-05]}', 6);
+                                                                                                                                                                                astext                                                                                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2.123457 2.123457),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(3.123457 3.123457),0.5)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(3.123457 3.123457),0.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2000-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2000-01-03]', 6);
+                                                                                                                   astext                                                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;[Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2.123457 2.123457),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1.123456789 1.123456789),0.5)@2000-01-01, Pose(Point(2.123456789 2.123456789),0.5)@2000-01-02, Pose(Point(1.123456789 1.123456789),0.5)@2000-01-03],[Pose(Point(3.123456789 3.123456789),0.5)@2000-01-04, Pose(Point(3.123456789 3.123456789),0.5)@2000-01-05]}', 6);
+                                                                                                                                                                                      astext                                                                                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2.123457 2.123457),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1.123457 1.123457),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(3.123457 3.123457),0.5)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(3.123457 3.123457),0.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2000-01-01')));
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02}')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02)')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));(Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));(Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));(Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02)')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));(Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02],[Pose(Point(1 2),0.5)@2000-01-03, Pose(Point(3 4),0.5)@2000-01-04]}')));
+                                                                                                                   asewkt                                                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(1 2),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                                    asewkt                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02],[Pose(Point(1 2),0.5)@2000-01-03, Pose(Point(3 4),0.5)@2000-01-04]}')));
+                                                                                                                         asewkt                                                                                                                          
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(1 2),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2000-01-01',1,0,2)));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02}',1,0,2)));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]',1,0,2)));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromMFJSON(asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02],[Pose(Point(1 2),0.5)@2000-01-03, Pose(Point(3 4),0.5)@2000-01-04]}',1,0,2)));
+                                                                                                                        asewkt                                                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(1 2),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT trgeometryFromMFJSON('ABC');
+ERROR:  Error while processing MFJSON string unexpected character (at offset 0)
+SELECT trgeometryFromMFJSON('{"types":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolation":"Discrete"}');
+ERROR:  Unable to find 'type' in MFJSON string
+SELECT trgeometryFromMFJSON('{"type":"XXX","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolation":"Discrete"}');
+ERROR:  Invalid 'type' value in MFJSON string: XXX
+SELECT trgeometryFromMFJSON('{"type":"MovingFloat","values":[1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tfloat
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interp":"Discrete"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolation":"XXX"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimess":"2000-01-01T00:00:00+01","interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":"2000-01-01T00:00:00+01","interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":["XXX"],"interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinatess":[1,1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Discrete"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Discrete"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Linear"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lowerInc":true,"upperInc":true},"interpolation":"Linear"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT trgeometryFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolation":"Linear"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: trgeometry, received: tgeompoint
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2000-01-01')));
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02}')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02)')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));(Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));(Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));(Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02)')));
+                                                              asewkt                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));(Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST)
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02],[Pose(Point(1 2),0.5)@2000-01-03, Pose(Point(3 4),0.5)@2000-01-04]}')));
+                                                                                                                   asewkt                                                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(1 2),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 2),0.5)@2000-01-01')));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02}')));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02]')));
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 2),0.5)@2000-01-01, Pose(Point(3 4),0.5)@2000-01-02],[Pose(Point(1 2),0.5)@2000-01-03, Pose(Point(3 4),0.5)@2000-01-04]}')));
+                                                                                                                        asewkt                                                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(1 2),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 4),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'XDR')));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'XDR')));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+/* Errors */
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'ABC')));
+ERROR:  Invalid value for endian flag
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                    astext                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03}');
+                                                                                        astext                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03]');
+                                                                                        astext                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(3 3),0.5)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(3 3),0.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText('{}'::trgeometry[]);
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01']);
+                        astext                         
+-------------------------------------------------------
+ {"Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03}');
+                                                                                        asewkt                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03]');
+                                                                                        asewkt                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                             asewkt                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(3 3),0.5)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(3 3),0.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asEWKT('{}'::trgeometry[]);
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asEWKT(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01']);
+                        asewkt                         
+-------------------------------------------------------
+ {"Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                                                                                              asmfjson                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03}');
+                                                                                                                                                                                                              asmfjson                                                                                                                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03]');
+                                                                                                                                                                                                             asmfjson                                                                                                                                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                                                                                                                                                                                                                 asmfjson                                                                                                                                                                                                                                                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"sequences":[{"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"values":[{"position":{"lat":3,"lon":3},"rotation":0.5},{"position":{"lat":3,"lon":3},"rotation":0.5}],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                                                                                              asmfjson                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03}');
+                                                                                                                                                                                                              asmfjson                                                                                                                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Discrete"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03]');
+                                                                                                                                                                                                             asmfjson                                                                                                                                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                                                                                                                                                                                                                 asmfjson                                                                                                                                                                                                                                                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"sequences":[{"values":[{"position":{"lat":1,"lon":1},"rotation":0.5},{"position":{"lat":2,"lon":2},"rotation":0.5},{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST","Sun Jan 02T00:00:00 2000 PST","Mon Jan 03T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true},{"values":[{"position":{"lat":3,"lon":3},"rotation":0.5},{"position":{"lat":3,"lon":3},"rotation":0.5}],"datetimes":["Tue Jan 04T00:00:00 2000 PST","Wed Jan 05T00:00:00 2000 PST"],"lower_inc":true,"upper_inc":true}],"interpolation":"Linear"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 0, 0, 20);
+                                                                                                              asmfjson                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0.5}],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 0, 0, -1);
+                                                                                                             asmfjson                                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":1,"lon":1},"rotation":0}],"datetimes":["Sat Jan 01T00:00:00 2000 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 3, 0, 2);
+                                                                                                                                                                                                                                asmfjson                                                                                                                                                                                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"bbox":[[50.81,4.38],[50.81,4.38]],"period":{"begin":"Tue Jan 01T08:00:00.15 2019 PST","end":"Tue Jan 01T08:00:00.15 2019 PST","lower_inc":true,"upper_inc":true},"geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":4.38,"lon":50.81},"rotation":0.5}],"datetimes":["Tue Jan 01T08:00:00.15 2019 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 0, 2);
+                                                                                                                                                        asmfjson                                                                                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","crs":{"type":"Name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}},"geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":4.38,"lon":50.81},"rotation":0.5}],"datetimes":["Tue Jan 01T08:00:00.15 2019 PST"],"interpolation":"None"}
+(1 row)
+
+SELECT asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 2),0.5)@2019-01-01, Pose(Point(3 4),0.5)@2019-01-02]', 1, 0, 2);
+                                                                                                                                                                                                                                                     asmfjson                                                                                                                                                                                                                                                     
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingRigidGeometry","bbox":[[-2.16,-1.16],[6.16,7.16]],"period":{"begin":"Tue Jan 01T00:00:00 2019 PST","end":"Wed Jan 02T00:00:00 2019 PST","lower_inc":true,"upper_inc":true},"geometry":{"type":"Polygon","coordinates":[[[1,1],[2,2],[3,1],[1,1]]]},"values":[{"position":{"lat":2,"lon":1},"rotation":0.5},{"position":{"lat":4,"lon":3},"rotation":0.5}],"datetimes":["Tue Jan 01T00:00:00 2019 PST","Wed Jan 02T00:00:00 2019 PST"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"}
+(1 row)
+
+SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 1, 3, 15)));
+                                    astext                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02}', 1, 3, 15)));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02]', 1, 3, 15)));
+                                                              astext                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02], [Pose(Point(3 3),0.5)@2000-01-03, Pose(Point(3 3),0.5)@2000-01-04]}', 1, 3, 15)));
+                                                                                                                   astext                                                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(3 3),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 3),0.5)@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
+ERROR:  SRID 123456 unknown in spatial_ref_sys table
+SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                                                                                                asbinary                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ \x013e000101030000000100000004000000000000000000f03f000000000000f03f000000000000004000000000000000400000000000000840000000000000f03f000000000000f03f000000000000f03f01000000000000f03f000000000000f03f000000000000e03f00209db406000000
+(1 row)
+
+SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'NDR');
+                                                                                                                asbinary                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ \x013e000101030000000100000004000000000000000000f03f000000000000f03f000000000000004000000000000000400000000000000840000000000000f03f000000000000f03f000000000000f03f01000000000000f03f000000000000f03f000000000000e03f00209db406000000
+(1 row)
+
+SELECT asBinary(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'XDR');
+                                                                                                                asbinary                                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ \x00003e01000000000300000001000000043ff00000000000003ff00000000000004000000000000000400000000000000040080000000000003ff00000000000003ff00000000000003ff0000000000000013ff00000000000003ff00000000000003fe000000000000000000006b49d2000
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01]');
+                                                                                                                   ashexewkb                                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 013E000E01030000000100000004000000000000000000F03F000000000000F03F000000000000004000000000000000400000000000000840000000000000F03F000000000000F03F000000000000F03F010000000301000000000000F03F000000000000F03F000000000000E03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01]', 'NDR');
+                                                                                                                   ashexewkb                                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 013E000E01030000000100000004000000000000000000F03F000000000000F03F000000000000004000000000000000400000000000000840000000000000F03F000000000000F03F000000000000F03F010000000301000000000000F03F000000000000F03F000000000000E03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01]', 'XDR');
+                                                                                                                   ashexewkb                                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 00003E0E000000000300000001000000043FF00000000000003FF00000000000004000000000000000400000000000000040080000000000003FF00000000000003FF00000000000003FF00000000000000000000103013FF00000000000003FF00000000000003FE000000000000000000006B49D2000
+(1 row)
+
+SELECT asEWKT(trgeometryFromEWKB(asEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01')));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=4326;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+                                                                                                                          ashexewkb                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 013E0041E61000000103000020E61000000100000004000000000000000000F03F000000000000F03F000000000000004000000000000000400000000000000840000000000000F03F000000000000F03F000000000000F03F41E6100000000000000000F03F000000000000F03F000000000000E03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'NDR');
+                                                                                                                          ashexewkb                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 013E00412C16000001030000202C1600000100000004000000000000000000F03F000000000000F03F000000000000004000000000000000400000000000000840000000000000F03F000000000000F03F000000000000F03F412C160000000000000000F03F000000000000F03F000000000000E03F00209DB406000000
+(1 row)
+
+SELECT asHexEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'XDR');
+                                                                                                                          ashexewkb                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 00003E410000162C00200000030000162C00000001000000043FF00000000000003FF00000000000004000000000000000400000000000000040080000000000003FF00000000000003FF00000000000003FF0000000000000410000162C3FF00000000000003FF00000000000003FE000000000000000000006B49D2000
+(1 row)
+
+/* Errors */
+SELECT asEWKB(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 'ABCD');
+ERROR:  Invalid value for endian flag
+SELECT astext('{}'::geometry[]);
+ astext 
+--------
+ 
+(1 row)
+

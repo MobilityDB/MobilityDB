@@ -1,0 +1,135 @@
+SELECT numValues(h3_grid_disk(h3index '8a2a1072b59ffff', 0)) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_disk(h3index '8a2a1072b59ffff', 1)) = 7;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_disk(h3index '8a2a1072b59ffff', 2)) = 19;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_disk(h3index '8a2a1072b59ffff', 3)) = 37;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT h3_grid_disk(h3index '8a2a1072b59ffff', -1);
+ERROR:  h3_grid_disk: k must be >= 0
+SELECT numValues(h3_grid_ring(h3index '8a2a1072b59ffff', 0)) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_ring(h3index '8a2a1072b59ffff', 1)) = 6;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_ring(h3index '8a2a1072b59ffff', 2)) = 12;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_ring(h3index '8a2a1072b59ffff', 3)) = 18;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_grid_path_cells(
+  h3index '8a2a1072b59ffff', h3index '8a2a1072b59ffff')) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_cell_to_children(h3index '8a2a1072b59ffff', 11)) = 7;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_cell_to_children(h3index '8a2a1072b59ffff', 10)) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_cell_to_children(h3index '8a2a1072b59ffff', 12)) = 49;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+-- childRes coarser than cellRes
+SELECT h3_cell_to_children(h3index '8a2a1072b59ffff', 5);
+ERROR:  h3_cell_to_children: cellToChildrenSize failed (child resolution coarser than cell resolution?)
+SELECT h3_uncompact_cells(
+         h3_compact_cells(h3_cell_to_children(
+           h3index '8a2a1072b59ffff', 11)), 11)
+       = h3_cell_to_children(h3index '8a2a1072b59ffff', 11);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_compact_cells(
+         h3_cell_to_children(h3index '8a2a1072b59ffff', 11))) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(h3_origin_to_directed_edges(h3index '8a2a1072b59ffff')) = 6;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_is_valid_directed_edge(valueN(
+  h3_origin_to_directed_edges(h3index '8a2a1072b59ffff'), 1));
+ h3_is_valid_directed_edge 
+---------------------------
+ t
+(1 row)
+
+SELECT numValues(h3_cell_to_vertexes(h3index '8a2a1072b59ffff')) = 6;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_is_valid_vertex(valueN(
+  h3_cell_to_vertexes(h3index '8a2a1072b59ffff'), 1));
+ h3_is_valid_vertex 
+--------------------
+ t
+(1 row)
+
+SELECT numValues(h3_get_icosahedron_faces(h3index '8a2a1072b59ffff')) = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT valueN(h3_get_icosahedron_faces(h3index '8a2a1072b59ffff'), 1)
+  BETWEEN 0 AND 19;
+ ?column? 
+----------
+ t
+(1 row)
+
