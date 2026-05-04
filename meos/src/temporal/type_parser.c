@@ -42,6 +42,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"  /* meos_strtod */
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"
@@ -271,7 +272,8 @@ bool
 double_parse(const char **str, double *result)
 {
   char *nextstr = (char *) *str;
-  *result = strtod(*str, &nextstr);
+  /* Locale-safe: see meos_strtod() in postgres_types.c (issue #425). */
+  *result = meos_strtod(*str, &nextstr);
   if (*str == nextstr)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
