@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/MobilityDB/MobilityDB/blob/master/schemas/meos-api-0.1-draft.json",
+  "title": "MEOS-API Catalog (draft v0.1.0)",
+  "description": "JSON Schema for meos-api.json — a machine-readable description of the MEOS C library's public API. See doc/specs/meos-api-0.1-draft.md for the full specification.",
+  "type": "object",
+  "required": ["version", "meos_version", "generated_at", "functions", "structs", "enums"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Schema version this document conforms to. For v0.1 the literal string '0.1.0-draft'.",
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-draft$"
+    },
+    "meos_version": {
+      "description": "Version of the MEOS C library this catalog was generated from.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([.-][A-Za-z0-9.+-]+)?$"
+    },
+    "generated_at": {
+      "description": "ISO 8601 UTC timestamp at which the catalog was emitted.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "functions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/function" }
+    },
+    "structs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/struct" }
+    },
+    "enums": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/enum" }
+    }
+  },
+  "$defs": {
+    "typeRef": {
+      "type": "object",
+      "required": ["c", "canonical"],
+      "additionalProperties": false,
+      "properties": {
+        "c": {
+          "description": "C type spelling exactly as declared in the header.",
+          "type": "string"
+        },
+        "canonical": {
+          "description": "Normalised type form (may equal 'c' in v0.1; reserved for future normalisation rules).",
+          "type": "string"
+        }
+      }
+    },
+    "ownership": {
+      "description": "Who owns the returned object's lifetime.",
+      "type": "string",
+      "enum": ["caller", "callee", "none"]
+    },
+    "direction": {
+      "description": "Parameter direction. Defaults to 'in' if absent.",
+      "type": "string",
+      "enum": ["in", "out", "inout"]
+    },
+    "arrayShape": {
+      "description": "Array layout. Either 'lengthFrom' (length carried in another parameter) or 'zeroTerminated' (NULL-terminated).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lengthFrom": {
+          "description": "Name of the parameter carrying the array length.",
+          "type": "string"
+        },
+        "zeroTerminated": {
+          "description": "True if the array is NULL-terminated.",
+          "type": "boolean"
+        }
+      },
+      "oneOf": [
+        { "required": ["lengthFrom"] },
+        { "required": ["zeroTerminated"] }
+      ]
+    },
+    "closureShape": {
+      "description": "Callback / closure metadata.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "description": "Lifetime of the callback. Reserved for future use; may be 'async', 'notified', or 'call'.",
+          "type": "string",
+          "enum": ["async", "notified", "call"]
+        },
+        "userData": {
+          "description": "Name of the parameter carrying the callback's user-data pointer.",
+          "type": "string"
+        },
+        "destroy": {
+          "description": "Name of the parameter carrying the callback's destroy-notify function.",
+          "type": "string"
+        }
+      }
+    },
+    "param": {
+      "type": "object",
+      "required": ["name", "cType", "canonical"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "cType": { "type": "string" },
+        "canonical": { "type": "string" },
+        "direction": { "$ref": "#/$defs/direction" },
+        "nullable": { "type": "boolean" },
+        "array": { "$ref": "#/$defs/arrayShape" },
+        "closure": { "$ref": "#/$defs/closureShape" },
+        "doc": { "type": "string" }
+      }
+    },
+    "function": {
+      "type": "object",
+      "required": ["name", "file", "returnType", "params"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Function name as declared in the header.",
+          "type": "string"
+        },
+        "file": {
+          "description": "Header file in which the declaration appears, relative to the MEOS include root.",
+          "type": "string"
+        },
+        "returnType": { "$ref": "#/$defs/typeRef" },
+        "params": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/param" }
+        },
+        "ownership": { "$ref": "#/$defs/ownership" },
+        "nullable": { "type": "boolean" },
+        "doc": { "type": "string" }
+      }
+    },
+    "structField": {
+      "type": "object",
+      "required": ["name", "cType"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "cType": { "type": "string" },
+        "nullable": { "type": "boolean" },
+        "doc": { "type": "string" }
+      }
+    },
+    "struct": {
+      "type": "object",
+      "required": ["name", "file", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "file": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/structField" }
+        },
+        "opaque": {
+          "description": "True if the struct is forward-declared in the public header but has no field list.",
+          "type": "boolean"
+        },
+        "doc": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "opaque": { "const": true } }, "required": ["opaque"] },
+          "then": { "properties": { "fields": { "maxItems": 0 } } }
+        }
+      ]
+    },
+    "enumValue": {
+      "type": "object",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "value": { "type": "integer" },
+        "doc": { "type": "string" }
+      }
+    },
+    "enum": {
+      "type": "object",
+      "required": ["name", "file", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "file": { "type": "string" },
+        "values": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/enumValue" }
+        },
+        "doc": { "type": "string" }
+      }
+    }
+  }
+}
