@@ -346,6 +346,12 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02, Point(1 1)@2001-01-03]', true));
 -- LINESTRING(1 1,2 2)
+SELECT ST_AsText(traversedArea(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-02}'));
+-- MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((1 0,2 0,2 1,1 1,1 0)))
+SELECT ST_AsText(traversedArea(trgeometry
+  'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-02}', true));
+-- POLYGON((0 0,0 1,1 1,2 1,2 0,1 0,0 0))
 </programlisting>
 			</listitem>
 
