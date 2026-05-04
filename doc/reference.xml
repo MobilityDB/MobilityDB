@@ -63,7 +63,7 @@
 						<entry><varname>bigintset</varname></entry>
 						<entry><varname>bigintspan</varname></entry>
 						<entry><varname>bigintspanset</varname></entry>
-						<entry><varname/></entry>
+						<entry><varname>tbigint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
@@ -868,7 +868,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname>, <varname>tfloat(tint)</varname>, <varname>tint(tfloat)</varname></link>: Convert between a temporal integer and a temporal float</para>
+					<para><link linkend="tint_tfloat"><varname>tnumber::tnumber</varname>, <varname>tnumber(tnumber)</varname></link>: Convert between temporal integers, temporal big integers, and temporal floats</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -191,6 +191,16 @@ int32_as_mfjson_sb(stringbuffer_t *sb, int i)
 }
 
 /**
+ * @brief Write into the buffer a big integer in the MF-JSON representation
+ */
+static void
+int64_as_mfjson_sb(stringbuffer_t *sb, int64 i)
+{
+  stringbuffer_aprintf(sb, "%ld", i);
+  return;
+}
+
+/**
  * @brief Write into the buffer a double in the MF-JSON representation
  */
 static void
@@ -302,6 +312,9 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
       break;
     case T_TINT:
       int32_as_mfjson_sb(sb, DatumGetInt32(value));
+      break;
+    case T_TBIGINT:
+      int64_as_mfjson_sb(sb, DatumGetInt64(value));
       break;
     case T_TFLOAT:
       double_as_mfjson_sb(sb, DatumGetFloat8(value), precision);
@@ -438,6 +451,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
     case T_TTEXT:
       tstzspan_as_mfjson_sb(sb, (Span *) box);
       break;
+    case T_TBIGINT:
     case T_TINT:
     case T_TFLOAT:
       tbox_as_mfjson_sb(sb, (TBox *) box, precision);
@@ -473,6 +487,9 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
       break;
     case T_TINT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingInteger\",", 24);
+      break;
+    case T_TBIGINT:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingBigInteger\",", 27);
       break;
     case T_TFLOAT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingFloat\",", 22);

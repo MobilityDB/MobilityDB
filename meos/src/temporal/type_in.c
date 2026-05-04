@@ -371,6 +371,15 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
         }
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
         break;
+      case T_TBIGINT:
+        if (json_object_get_type(jvalue) != json_type_int)
+        {
+          meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+            "Invalid integer value in 'values' array in MFJSON string");
+          return NULL;
+        }
+        values[i] = Int64GetDatum(json_object_get_int64(jvalue));
+        break;
       case T_TFLOAT:
         values[i] = Float8GetDatum(json_object_get_double(jvalue));
         break;
@@ -947,6 +956,7 @@ ensure_temptype_mfjson(const char *typestr)
 {
   if (strcmp(typestr, "MovingBoolean") != 0 &&
       strcmp(typestr, "MovingInteger") != 0 &&
+      strcmp(typestr, "MovingBigInteger") != 0 &&
       strcmp(typestr, "MovingFloat") != 0 &&
       strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingPoint") != 0 &&
@@ -1014,6 +1024,8 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TBOOL;
   else if (strcmp(typestr, "MovingInteger") == 0)
     jtemptype = T_TINT;
+  else if (strcmp(typestr, "MovingBigInteger") == 0)
+    jtemptype = T_TBIGINT;
   else if (strcmp(typestr, "MovingFloat") == 0)
     jtemptype = T_TFLOAT;
   else if (strcmp(typestr, "MovingText") == 0)
