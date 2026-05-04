@@ -63,11 +63,28 @@ SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
 SELECT rotation(pose 'Pose(Point(1 1),0.5)');
 SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
 
+-- (yaw, pitch, roll) accessors. For a 2D pose the rotation theta is yaw;
+-- pitch and roll are zero by definition. For a 3D pose these are the
+-- ZYX intrinsic Tait-Bryan decomposition (the OGC GeoPose convention).
+SELECT yaw(pose 'Pose(Point(1 1),0.5)');
+SELECT pitch(pose 'Pose(Point(1 1),0.5)');
+SELECT roll(pose 'Pose(Point(1 1),0.5)');
+-- 3D identity quaternion: zero yaw / pitch / roll.
+SELECT yaw(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+SELECT pitch(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+SELECT roll(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+
 -------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
 
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
+
+-- A 2D pose is returned unchanged (no quaternion to renormalise).
+SELECT asText(normalise(pose 'Pose(Point(1 1), 0.5)'));
+-- A unit-norm 3D pose round-trips identically.
+SELECT asText(normalise(pose 'Pose(Point(1 1 1), 1, 0, 0, 0)'));
+SELECT asText(normalise(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
 
 -------------------------------------------------------------------------------
 -- Cast functions 
@@ -121,3 +138,22 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 
 -------------------------------------------------------------------------------/
+
+-- Cross-SRID frame transforms (workstream #6). The orientation correction
+-- between WGS-84 geographic (4326) and WGS-84 ECEF (4978) is the local
+-- East-North-Up basis change at the point. Round-trip lands at the input.
+SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
+-- At lat=lon=0 the ENU->ECEF rotation maps body identity to (0.5,-0.5,-0.5,-0.5).
+SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- Same-SRID transform is a no-op.
+SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4326));
+
+-- applyPose — body↔world rigid transform via the pose's (R, p).
+-- Identity pose: body geometry passes through unchanged.
+SELECT ST_AsText(applyPose(ST_Point(1,2), pose 'Pose(Point(0 0), 0)'));
+-- 2D pose with theta=pi/2 at (10,20): body (1,0) rotates to (0,1), then translates.
+SELECT ST_AsText(applyPose(ST_Point(1,0), pose 'Pose(Point(10 20), 1.5707963267948966)'));
+-- 3D identity quaternion + translate: body (1,0,0) shifts to (11,20,30).
+SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(10 20 30), 1, 0, 0, 0)'));
+-- 3D 90deg yaw: body X axis rotates to world Y axis (epsilon-clean).
+SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)'));
