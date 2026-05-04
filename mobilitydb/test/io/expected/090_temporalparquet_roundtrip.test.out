@@ -1,0 +1,74 @@
+DROP TABLE IF EXISTS tparq_test, tparq_test_imported CASCADE;
+NOTICE:  table "tparq_test" does not exist, skipping
+NOTICE:  table "tparq_test_imported" does not exist, skipping
+DROP TABLE
+CREATE TABLE tparq_test (
+  id    bigint PRIMARY KEY,
+  label text,
+  traj  tgeompoint,
+  trajg tgeogpoint,
+  speed tfloat,
+  passengers tint
+);
+CREATE TABLE
+INSERT INTO tparq_test VALUES
+  (1, 'two-point sequence',
+   tgeompoint 'SRID=4326;[Point(0 0)@2026-01-01, Point(10 10)@2026-01-02]',
+   tgeogpoint 'SRID=4326;[Point(0 0)@2026-01-01, Point(10 10)@2026-01-02]',
+   tfloat '[1.5@2026-01-01, 2.5@2026-01-02]',
+   tint '[5@2026-01-01, 10@2026-01-02]'),
+  (2, 'three-point sequence',
+   'SRID=4326;[Point(5 5)@2026-01-01, Point(15 5)@2026-01-02, Point(15 15)@2026-01-03]',
+   'SRID=4326;[Point(5 5)@2026-01-01, Point(15 5)@2026-01-02, Point(15 15)@2026-01-03]',
+   '[10.0@2026-01-01, 20.0@2026-01-02, 30.0@2026-01-03]',
+   '[1@2026-01-01, 2@2026-01-02, 3@2026-01-03]'),
+  (3, 'instant subtype',
+   'SRID=4326;Point(42 42)@2026-01-15',
+   'SRID=4326;Point(42 42)@2026-01-15',
+   '99.9@2026-01-15',
+   '99@2026-01-15'),
+  (4, 'all-NULL row', NULL, NULL, NULL, NULL);
+INSERT 0 4
+CREATE TABLE tparq_test_imported (LIKE tparq_test INCLUDING ALL);
+CREATE TABLE
+SELECT
+  bool_and(t1.label IS NOT DISTINCT FROM t2.label) AS label_ok,
+  bool_and(t1.traj  IS NOT DISTINCT FROM t2.traj)  AS traj_ok,
+  bool_and(t1.trajg IS NOT DISTINCT FROM t2.trajg) AS trajg_ok,
+  bool_and(t1.speed IS NOT DISTINCT FROM t2.speed) AS speed_ok,
+  bool_and(t1.passengers IS NOT DISTINCT FROM t2.passengers) AS passengers_ok,
+  count(*)::int = 4 AS row_count_ok
+FROM tparq_test t1 JOIN tparq_test_imported t2 USING (id);
+ label_ok | traj_ok | trajg_ok | speed_ok | passengers_ok | row_count_ok 
+----------+---------+----------+----------+---------------+--------------
+ t        | t       | t        | t        | t             | t
+(1 row)
+
+DROP TABLE IF EXISTS tparq_scale, tparq_scale_imported CASCADE;
+NOTICE:  table "tparq_scale" does not exist, skipping
+NOTICE:  table "tparq_scale_imported" does not exist, skipping
+DROP TABLE
+CREATE TABLE tparq_scale (id bigint PRIMARY KEY, traj tgeompoint);
+CREATE TABLE
+INSERT INTO tparq_scale
+SELECT i,
+  format(
+    'SRID=4326;[Point(%s %s)@2026-01-01, Point(%s %s)@2026-01-02]',
+    (i % 100)::float / 10, ((i*7) % 100)::float / 10,
+    ((i*3) % 100)::float / 10, ((i*11) % 100)::float / 10
+  )::tgeompoint
+FROM generate_series(1, 10000) i;
+INSERT 0 10000
+CREATE TABLE tparq_scale_imported (LIKE tparq_scale INCLUDING ALL);
+CREATE TABLE
+SELECT
+  bool_and(t1.traj IS NOT DISTINCT FROM t2.traj) AS traj_ok,
+  count(*)::int = 10000 AS row_count_ok
+FROM tparq_scale t1 JOIN tparq_scale_imported t2 USING (id);
+ traj_ok | row_count_ok 
+---------+--------------
+ t       | t
+(1 row)
+
+DROP TABLE tparq_test, tparq_test_imported, tparq_scale, tparq_scale_imported CASCADE;
+DROP TABLE
