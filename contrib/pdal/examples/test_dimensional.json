@@ -1,0 +1,19 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (EXTRACT(EPOCH FROM t)*1000000)::bigint AS t, pcp, PC_PCId(pcp) AS pcid FROM test_dim_plugin ORDER BY id",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.text",
+      "filename": "/tmp/tpcpatch_dim_smoke.csv",
+      "format": "csv",
+      "order": "X,Y,Z,time_t",
+      "keep_unspecified": "false"
+    }
+  ]
+}

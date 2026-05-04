@@ -1,0 +1,102 @@
+SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'SRID=0;POINT(0 0)', tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(99 99)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(99 99)');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(1 1)', 5.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(99 99)', 5.0);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), geometry 'SRID=0;POINT(0 0)', 1.0);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), 1e-9);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-02'::timestamptz)]), geometry 'SRID=0;POINT(0 0)', 1.0);
+ edwithin 
+----------
+ t
+(1 row)
+

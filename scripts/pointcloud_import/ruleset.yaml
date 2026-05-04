@@ -1,0 +1,69 @@
+# Token / macro substitutions applied by extract.py when transforming
+# pgpointcloud's `Fname(PG_FUNCTION_ARGS)` bodies into MEOS-compatible C.
+#
+# Modeled on scripts/h3pg_import/ruleset.yaml. See
+# scripts/pointcloud_import/README.md for the rule-authoring loop
+# (run extractor, check failures, add rule OR opt-out, repeat).
+#
+# Sections:
+#   arg_readers : match a line like "TYPE name = PG_GETARG_...(idx);"
+#                 and emit (c_type, arg_name) for the generated signature.
+#   returns     : map PG_RETURN_X(x) → a plain "return x;" with an inferred
+#                 C return type for the whole function.
+#   rewrites    : simple literal substitutions applied line-by-line to
+#                 the body after arg-readers and returns are consumed.
+#
+# When an upstream line matches none of the rules, extract.py emits a
+# "needs opt-out" diagnostic for that function. Moving it into
+# opt-out.yaml is the standard resolution.
+
+arg_readers:
+  # Minimal starter set. Grow this list as new macros in the
+  # pgsql/*.c upstream bodies need handling. The h3pg_import
+  # ruleset.yaml has the fully-evolved version for h3 — consult it
+  # as a shape reference.
+
+  # PG_GETARG_INT32
+  - pattern: '^\s*(?:int|int32|int32_t)\s+(\w+)\s*=\s*PG_GETARG_INT32\(\d+\)\s*;\s*$'
+    c_type:  "int32"
+    emit:    "{arg}"
+
+  # PG_GETARG_INT64
+  - pattern: '^\s*(?:int64|int64_t)\s+(\w+)\s*=\s*PG_GETARG_INT64\(\d+\)\s*;\s*$'
+    c_type:  "int64"
+    emit:    "{arg}"
+
+  # PG_GETARG_BOOL
+  - pattern: '^\s*bool\s+(\w+)\s*=\s*PG_GETARG_BOOL\(\d+\)\s*;\s*$'
+    c_type:  "bool"
+    emit:    "{arg}"
+
+  # PG_GETARG_FLOAT8
+  - pattern: '^\s*(?:double|float8)\s+(\w+)\s*=\s*PG_GETARG_FLOAT8\(\d+\)\s*;\s*$'
+    c_type:  "double"
+    emit:    "{arg}"
+
+returns:
+  - pattern: '^\s*PG_RETURN_INT32\(([^)]*)\)\s*;\s*$'
+    c_type:  "int32"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_INT64\(([^)]*)\)\s*;\s*$'
+    c_type:  "int64"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_BOOL\(([^)]*)\)\s*;\s*$'
+    c_type:  "bool"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_FLOAT8\(([^)]*)\)\s*;\s*$'
+    c_type:  "double"
+    emit:    "return {expr};"
+
+rewrites:
+  # `PG_FREE_IF_COPY(x, n);`  → dropped (MEOS args aren't toasted)
+  - pattern: '^\s*PG_FREE_IF_COPY\([^)]*\)\s*;\s*$'
+    replace: ""
+
+# Any function whose body contains tokens listed in the `opt-out`
+# section of opt-out.yaml is skipped by the extractor and must be
+# implemented by hand in `meos/src/pointcloud/pc_adapter.c`. This
+# keeps complex PG-varlena adaptation (PCPATCH serialization, schema
+# XML, ArrayType iteration) out of the generated path.

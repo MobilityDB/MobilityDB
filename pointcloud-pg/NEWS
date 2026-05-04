@@ -1,0 +1,139 @@
+1.2.5, 2023-09-19
+-----------------
+
+- Bug fixes
+ - Fix compilation with PostgreSQL 16 (#340)
+
+1.2.4, 2022-09-26
+-----------------
+
+- Bug fixes
+  - Add upgrade paths for pointcloud_postgis (#327)
+
+- Enhancements
+  - Add support for PostgreSQL 15 (#318)
+
+1.2.3, 2022-09-12
+-----------------
+
+- Bug fixes
+  - Fix segmentation fault in pcpatch_transform (#322)
+  - Fixes uninitialised schema cache during first call (#317)
+  - Don't call SPI_finish() when erroring out (#312)
+  - No crash when an invalid dimensional patch is compressed (#320)
+
+- Enhancements
+  - Add documentation for debugging with Valgrind (#316)
+  - Add documentation for debugging with GDB (#321)
+
+1.2.2, 2022-05-10
+-----------------
+
+- Breaking changes
+ - Drop support for PG 9.6
+
+- Bug fixes
+ - Fix dump and restore #301 #306
+ - Fix compilation with GCC 10.1 #273
+ - Fix compilation with PostgreSQL 13 beta 1 #270
+ - Fix Debian regression tests on 32-bits architecture #260
+ - Fix CXXFLAGS #257
+
+- Enhancements
+ - Add documentation for NESTED_QSORT #293
+ - Add tutorial for schema and compression #299
+ - Add Dockerfile with PostgreSQL 12 and PostGIS 3 #265
+
+1.2.1, 2020-01-01
+-----------------
+
+- Bug fixes
+ - Fix compilation with PostgreSQL 11 #237
+ - Fix compilation with PostgreSQL 12 #243
+
+- Enhancements
+ - Improve documentation for PC_MemSize #232
+ - Fix unit tests with PostgreSQL >= 10 #253
+ - Fix typo in README #238
+
+1.2.0, 2018-08-22
+-----------------
+
+- New features
+ - Add PC_MakePatch(pcid integer, values float8[]) #220
+ - Mark functions as PARALLEL SAFE #227
+
+- Bug fixes
+ - patch fails to compress as GHT #35
+ - libght breaks schema parsing #196
+ - Fix memcpy size in pc_patch_wkb_set_int32 #226
+
+- Enhancements
+ - Improve doc for PC_FilterBetween #217
+ - Remove GHT support #214
+ - Fix installcheck when lazperf is disabled #222
+ - Fix compilation and installcheck when lazperf is disabled #224
+
+1.1.1, 2018-06-12
+-----------------
+
+- Bug fixes
+ - Fix bug in pc_patch_uncompressed_from_lazperf (#215)
+
+- Enhancements
+ - Document creating a PC_EnvelopeGeometry-based index (#208)
+ - Use PostgreSQL 9.6 with PostGIS 2.4 on Travis (#210)
+ - Add missing description in AC_DEFINE (#213)
+
+1.1.0, 2018-04-30
+-----------------
+
+- New functions
+ - PC_PCId(pcpoint|pcpatch)
+ - PC_Get(pcpoint) returns float8[]
+ - PC_Summary(pcpatch)
+ - PC_Patch{Min,Max,Avg}(pcpatch) returns pcpoint (#77)
+ - PC_Upgrade([<target_version>])
+ - PC_Lib_Version(), PC_Script_Version() (#40)
+ - PC_Sort(pcpatch,text[]) (#106)
+ - PC_IsSorted(pcpatch,text[],boolean) (#106)
+ - PC_Range(pcpatch, int, int) returns pcpatch (#152)
+ - PC_BoundingDiagonalAsBinary(pcpatch) and PC_BoundingDiagonalGeometry(pcpach) (#158)
+ - PC_SetPCId(pcpatch, int, float8 default 0.0) (#163)
+ - PC_Transform(pcpatch, int, float8 default 0.0) (#165)
+ - PC_Full_Version() (#201)
+
+- Enhancements
+ - Support sigbits encoding for 64bit integers (#61)
+ - Warn about truncated values (#68)
+ - Warn about script/lib version mismatch (#40)
+ - Compatibility with PostgreSQL 9.5 (#90)
+ - Support LAZ compression for PcPatch (#105)
+
+1.0.1, 2015-08-09
+-----------------
+
+- Bug fixes
+  - #79, Fix PC_Filter stats computation with dimensionally-compressed
+    patches
+  - #78, Fix PC_Filter stats computation with scaled dimensions
+  - #71, Fix crash in pc_schema_from_xml
+  - #66, Fix crash in pc_schema_clone (unexploitable via SQL)
+  - #37, Fix access to uninitialized variables
+  - #31, Fix crash in pc_patch
+  - #28, Fix uninterruptible loop from pc_schemaisvalid
+  - #27, Fix pointcloud_columns view definition to handle
+    null-typmoded cols
+  - #23, Fix computation of dimensional patch extent
+  - #26, Fix cmake build with GCC 4.8 (-fPIC)
+
+- Enhancements
+  - #39, Provide upgrade scripts
+
+1.0.0
+-----
+
+Initial release, also known as:
+  - 0.1.0 (git tag v0.1.0)
+  - 1.0 (extension script filename)
+

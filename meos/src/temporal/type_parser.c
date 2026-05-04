@@ -740,8 +740,7 @@ error:
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single sequence to ensure there is
  * no more input after the sequence
- * @param[out] result New sequence, may be NULL
- * @return On error return false
+ * @return Newly-allocated TSequence on success, NULL on parse error
  */
 TSequence *
 tcontseq_parse(const char **str, MeosType temptype, interpType interp,

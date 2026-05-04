@@ -1,0 +1,19 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (EXTRACT(EPOCH FROM t)*1000000)::bigint AS t, pcp, PC_PCId(pcp) AS pcid FROM xform_patches ORDER BY id",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.tpcpatch",
+      "connection": "dbname=mobility",
+      "table": "xform_roundtrip",
+      "column": "traj",
+      "pcid": 600
+    }
+  ]
+}

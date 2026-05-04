@@ -111,6 +111,11 @@
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>             /* TPCBox, DatumGetTpcboxP */
+  #include "pointcloud/tpcbox.h"
+  #include "pointcloud/tpc_boxops.h"       /* tpcbox_set_stbox */
+#endif
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
@@ -733,6 +738,19 @@ tspatial_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
     Temporal *temp = temporal_slice(scankey->sk_argument);
     tspatial_set_stbox(temp, result);
   }
+#if POINTCLOUD
+  else if (type == T_TPCBOX)
+  {
+    tpcbox_set_stbox(DatumGetTpcboxP(scankey->sk_argument), result);
+  }
+  else if (type == T_TPCPOINT || type == T_TPCPATCH)
+  {
+    Temporal *temp = temporal_slice(scankey->sk_argument);
+    TPCBox tpcbox;
+    temporal_set_bbox(temp, &tpcbox);
+    tpcbox_set_stbox(&tpcbox, result);
+  }
+#endif
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;

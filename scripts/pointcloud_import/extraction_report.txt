@@ -1,0 +1,11 @@
+Extracted 0 functions, skipped 4 (opt-out), failed 0 (unsupported patterns).
+
+== Extracted ==
+
+== Skipped (opt-out) ==
+  pointcloud-pg/pgsql/pc_access.c::*  [parking lot — ruleset not yet authored for PG-layer wrappers]
+  pointcloud-pg/pgsql/pc_editor.c::*  [parking lot — ruleset not yet authored for PG-layer wrappers]
+  pointcloud-pg/pgsql/pc_inout.c::*  [parking lot — ruleset not yet authored for PG-layer wrappers]
+  pointcloud-pg/pgsql/pc_pgsql.c::*  [parking lot — ruleset not yet authored for PG-layer wrappers]
+
+== Failed (need a new rule or an opt-out entry) ==
