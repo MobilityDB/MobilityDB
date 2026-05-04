@@ -1,0 +1,134 @@
+# Functions from h3-pg the extractor should NOT transform automatically.
+# Each entry names a source file and a function; that function is skipped
+# during generation and is expected to be implemented by hand in
+# meos/src/h3/h3_adapter.c (declared in meos/include/h3/h3_adapter.h).
+#
+# Reasons to opt out:
+#   * varlena-heavy body (POLYGON, GSERIALIZED, array types) needing lwgeom
+#   * uses GUC variables (h3_guc_strict, h3_guc_extend_antimeridian)
+#   * uses PG_NARGS() / variadic PG calling convention
+#   * uses H3_DEPRECATION / ASSERT macros needing manual wiring
+#   * calls set-returning infrastructure (SRF_FIRSTCALL_INIT, etc.)
+#
+# One entry per function, file-scoped so name collisions stay local.
+
+skip:
+  # ---- h3/src/binding/indexing.c ------------------------------------------
+  - file: h3-pg/h3/src/binding/indexing.c
+    fn:   h3_latlng_to_cell
+    why:  uses PG Point varlena, GUC h3_guc_strict, ASSERT macros; rewritten in h3_adapter.c as h3_gs_point_to_cell() operating on GSERIALIZED
+  - file: h3-pg/h3/src/binding/indexing.c
+    fn:   h3_cell_to_latlng
+    why:  returns PG Point varlena; rewritten in h3_adapter.c as h3_cell_to_gs_point()
+  - file: h3-pg/h3/src/binding/indexing.c
+    fn:   h3_cell_to_boundary
+    why:  returns PG POLYGON varlena + uses PG_NARGS/GUC h3_guc_extend_antimeridian; rewritten in h3_adapter.c as h3_cell_to_gs_boundary()
+
+  # ---- h3_postgis/src/*.c -------------------------------------------------
+  # The entire h3_postgis/ tree is PostGIS-WKB plumbing and is opt-out
+  # wholesale. The MEOS side re-uses its own liblwgeom bundle instead.
+  - file_glob: h3-pg/h3_postgis/**/*.c
+    why:  PostGIS-side WKB conversions; the MEOS liblwgeom bundle already covers this
+
+  # ---- h3/src/opclass_*.c -------------------------------------------------
+  # PG index op-class machinery; MobilityDB's Rtree/SPGiST stack is
+  # independent of h3-pg's implementation.
+  - file_glob: h3-pg/h3/src/opclass_*.c
+    why:  PG index op-class machinery; not reused in MEOS
+
+  # ---- h3/src/{init,extension,guc,deprecated}.c ---------------------------
+  # PG extension plumbing; no analogue in MEOS.
+  - file: h3-pg/h3/src/init.c
+    why:  PG extension init; no analogue
+  - file: h3-pg/h3/src/extension.c
+    why:  PG extension version / metadata
+  - file: h3-pg/h3/src/guc.c
+    why:  PG GUC variables; MEOS has no GUC
+  - file: h3-pg/h3/src/deprecated.c
+    why:  SQL-level deprecation shims; not reused
+
+  # ---- h3/src/srf.c + binding/regions.c + hierarchy.c
+  # Set-returning functions; whole v2 class.
+  - file: h3-pg/h3/src/srf.c
+    why:  set-returning-function scaffolding (SRF_FIRSTCALL_INIT, …)
+  - file_glob: h3-pg/h3/src/binding/regions.c
+    why:  polygon → set-of-cells; v2 scope
+
+  # ---- Per-function opt-outs scattered across binding/*.c ----------------
+  # SRFs in otherwise-importable files
+  - file: h3-pg/h3/src/binding/edge.c
+    fn:   h3_origin_to_directed_edges
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/hierarchy.c
+    fn:   h3_cell_to_children
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/hierarchy.c
+    fn:   h3_compact_cells
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/hierarchy.c
+    fn:   h3_uncompact_cells
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_get_res_0_cells
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_get_pentagons
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/vertex.c
+    fn:   h3_cell_to_vertexes
+    why:  set-returning; v2 scope
+  # traversal.c — everything except `h3_grid_distance` (a plain int64
+  # return) is either a SRF or a varlena-Point hop; extract the one
+  # non-SRF and opt out the rest.
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_grid_disk
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_grid_disk_distances
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_grid_ring_unsafe
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_grid_path_cells
+    why:  set-returning; v2 scope
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_cell_to_local_ij
+    why:  returns PG Point varlena; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/traversal.c
+    fn:   h3_local_ij_to_cell
+    why:  takes PG Point varlena arg; rewritten in h3_adapter.c
+
+  # Complex returns / args needing manual lwgeom-aware adapter:
+  - file: h3-pg/h3/src/binding/edge.c
+    fn:   h3_directed_edge_to_cells
+    why:  returns PG record (TupleDesc + HeapTuple); rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/edge.c
+    fn:   h3_directed_edge_to_boundary
+    why:  returns PG POLYGON varlena + GUC h3_guc_extend_antimeridian; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/inspection.c
+    fn:   h3_get_icosahedron_faces
+    why:  returns PG INT[] array; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_great_circle_distance
+    why:  takes PG Point varlena args; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/vertex.c
+    fn:   h3_vertex_to_latlng
+    why:  returns PG Point varlena; rewritten in h3_adapter.c
+
+  # Unit-string functions: the text_to_cstring(PG_GETARG_TEXT_PP) read +
+  # ASSERT() error fall-through is awkward to template; cleaner to
+  # implement once in h3_adapter.c using a single h3_unit_from_cstring()
+  # dispatcher and call libh3's *Km2 / *M2 / *Rads2 variants directly.
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_get_hexagon_area_avg
+    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_cell_area
+    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_get_hexagon_edge_length_avg
+    why:  text-arg unit dispatch; rewritten in h3_adapter.c
+  - file: h3-pg/h3/src/binding/miscellaneous.c
+    fn:   h3_edge_length
+    why:  text-arg unit dispatch; rewritten in h3_adapter.c

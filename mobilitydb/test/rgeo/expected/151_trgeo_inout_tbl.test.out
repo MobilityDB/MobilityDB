@@ -1,0 +1,72 @@
+SELECT asText(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
+                                                astext                                                
+------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(10.338692 -58.200485),0.030147)@Sun Sep 16 17:25:00 2001 PDT
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-67.721795 81.046026),0.047303)@Thu Mar 08 19:40:00 2001 PST
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(78.36298 78.215387),-0.026405)@Wed Dec 05 22:12:00 2001 PST
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-83.031902 86.912206),-0.00735)@Sun Jun 24 09:02:00 2001 PDT
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(76.278784 -87.858732),0.037311)@Mon Dec 24 07:19:00 2001 PST
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-71.806583 -52.190233),-0.022078)@Wed Oct 17 20:45:00 2001 PDT
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(48.454482 60.645397),-0.035669)@Mon Oct 29 09:46:00 2001 PST
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(71.069155 97.648668),0.011201)@Tue Mar 27 10:36:00 2001 PST
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(40.817187 21.321739),0.049747)@Mon Sep 17 23:27:00 2001 PDT
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(47.762926 -82.962951),-0.049694)@Tue Dec 18 02:40:00 2001 PST
+(10 rows)
+
+SELECT asEWKT(round(temp, 6)) FROM tbl_trgeometry2d LIMIT 10;
+                                                     asewkt                                                     
+----------------------------------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(10.338692 -58.200485),0.030147)@Sun Sep 16 17:25:00 2001 PDT
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-67.721795 81.046026),0.047303)@Thu Mar 08 19:40:00 2001 PST
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(78.36298 78.215387),-0.026405)@Wed Dec 05 22:12:00 2001 PST
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-83.031902 86.912206),-0.00735)@Sun Jun 24 09:02:00 2001 PDT
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(76.278784 -87.858732),0.037311)@Mon Dec 24 07:19:00 2001 PST
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(-71.806583 -52.190233),-0.022078)@Wed Oct 17 20:45:00 2001 PDT
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(48.454482 60.645397),-0.035669)@Mon Oct 29 09:46:00 2001 PST
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(71.069155 97.648668),0.011201)@Tue Mar 27 10:36:00 2001 PST
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(40.817187 21.321739),0.049747)@Mon Sep 17 23:27:00 2001 PDT
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(47.762926 -82.962951),-0.049694)@Tue Dec 18 02:40:00 2001 PST
+(10 rows)
+
+SELECT asEWKT(array_agg(round(inst, 6) ORDER BY k)) FROM tbl_trgeometry2d_inst WHERE inst IS NOT NULL AND k % 10 = 1;
+                                                                                                                                                                                                                                                                                                                                                                                                                              asewkt                                                                                                                                                                                                                                                                                                                                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"SRID=5676;Pose(POINT(10.338692 -58.200485),0.030147)@Sun Sep 16 17:25:00 2001 PDT","SRID=5676;Pose(POINT(40.812993 -65.27354),-0.01145)@Fri Jan 26 05:01:00 2001 PST","SRID=5676;Pose(POINT(64.766535 3.870047),0.038801)@Mon Jul 23 18:04:00 2001 PDT","SRID=5676;Pose(POINT(-43.39073 30.899186),0.047687)@Sat Jun 09 19:49:00 2001 PDT","SRID=5676;Pose(POINT(94.429291 -85.982392),0.048)@Sun Feb 25 12:57:00 2001 PST","SRID=5676;Pose(POINT(93.844053 18.453379),0.047513)@Thu Aug 09 15:34:00 2001 PDT","SRID=5676;Pose(POINT(24.123425 -82.546097),0.035335)@Sun Sep 02 18:23:00 2001 PDT","SRID=5676;Pose(POINT(21.81614 91.148203),0.007283)@Tue Feb 27 04:30:00 2001 PST","SRID=5676;Pose(POINT(-16.010509 -68.742976),-0.023351)@Mon Feb 19 14:50:00 2001 PST","SRID=5676;Pose(POINT(-43.329488 -6.952507),0.03946)@Wed Jun 13 19:56:00 2001 PDT"}
+(1 row)
+
+SELECT DISTINCT asText(trgeometryFromText(asText(temp))) = asText(temp) FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asEWKT(trgeometryFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT asText(trgeometryFromMFJSON(asMFJSON(temp))) = asText(temp) FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT setSRID(trgeometryFromBinary(asBinary(temp)), 5676) = temp FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT trgeometryFromEWKB(asEWKB(temp)) = temp FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT trgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_trgeometry2d;
+ ?column? 
+----------
+ t
+(1 row)
+

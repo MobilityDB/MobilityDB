@@ -4081,6 +4081,11 @@ mec_circle3(POINT2D a, POINT2D b, POINT2D c)
   Circle circ = { .center = {0.0, 0.0}, .radius = 0.0 };
   if (fabs(G) < 1e-12)
   {
+    /* Degenerate input (collinear points): return a sentinel circle
+     * with negative radius. Initialise the centre too so callers that
+     * inspect it on the failure path don't see undefined memory. */
+    circ.center.x = 0;
+    circ.center.y = 0;
     circ.radius = -1;
     return circ;
   }

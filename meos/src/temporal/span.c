@@ -284,22 +284,22 @@ span_incr_bound(Datum lower, MeosType basetype)
  * @brief Return the bound decreased by 1 for accounting for canonicalized spans
  */
 Datum
-span_decr_bound(Datum lower, MeosType basetype)
+span_decr_bound(Datum upper, MeosType basetype)
 {
   Datum result;
   switch (basetype)
   {
     case T_INT4:
-      result = Int32GetDatum(DatumGetInt32(lower) - (int32) 1);
+      result = Int32GetDatum(DatumGetInt32(upper) - (int32) 1);
       break;
     case T_INT8:
-      result = Int64GetDatum(DatumGetInt64(lower) - (int64) 1);
+      result = Int64GetDatum(DatumGetInt64(upper) - (int64) 1);
       break;
     case T_DATE:
-      result = DateADTGetDatum(DatumGetDateADT(lower) - 1);
+      result = DateADTGetDatum(DatumGetDateADT(upper) - 1);
       break;
     default:
-      result = lower;
+      result = upper;
   }
   return result;
 }
@@ -604,6 +604,69 @@ set_to_span(const Set *s)
 /**
  * @ingroup meos_internal_setspan_conversion
  * @brief Return the second span initialized with the first one transformed to
+ * a big integer span
+ * @param[in] s1,s2 Spans
+ */
+void
+intspan_set_bigintspan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == T_INTSPAN);
+  Datum lower = Int64GetDatum((int64) DatumGetInt32(s1->lower));
+  Datum upper = Int64GetDatum((int64) (DatumGetInt32(s1->upper) - 1));
+  span_set(lower, upper, true, true, T_INT8, T_BIGINTSPAN, s2);
+  return;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert an integer span into a float span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+intspan_to_bigintspan(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  Span *result = palloc(sizeof(Span));
+  intspan_set_bigintspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Return the second span initialized with the first one transformed to
+ * an integer span
+ * @param[in] s1,s2 Spans
+ */
+void
+bigintspan_set_intspan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == T_BIGINTSPAN);
+  Datum lower = Int32GetDatum((int) DatumGetInt64(s1->lower));
+  Datum upper = Int32GetDatum((int) (DatumGetInt64(s1->upper) - 1));
+  span_set(lower, upper, true, true, T_INT4, T_INTSPAN, s2);
+  return;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a big integer span into an integer span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+bigintspan_to_intspan(const Span *s)
+{
+  VALIDATE_BIGINTSPAN(s, NULL);
+  Span *result = palloc(sizeof(Span));
+  bigintspan_set_intspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Return the second span initialized with the first one transformed to
  * a float span
  * @param[in] s1,s2 Spans
  */
@@ -630,6 +693,69 @@ intspan_to_floatspan(const Span *s)
   VALIDATE_INTSPAN(s, NULL);
   Span *result = palloc(sizeof(Span));
   intspan_set_floatspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Return the second span initialized with the first one transformed to
+ * a float span
+ * @param[in] s1,s2 Spans
+ */
+void
+bigintspan_set_floatspan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == T_BIGINTSPAN);
+  Datum lower = Float8GetDatum((double) DatumGetInt64(s1->lower));
+  Datum upper = Float8GetDatum((double) (DatumGetInt64(s1->upper) - 1));
+  span_set(lower, upper, true, true, T_FLOAT8, T_FLOATSPAN, s2);
+  return;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a big integer span into a float span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+bigintspan_to_floatspan(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  Span *result = palloc(sizeof(Span));
+  bigintspan_set_floatspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Return the second span initialized with the first one transformed to
+ * an integer span
+ * @param[in] s1,s2 Spans
+ */
+void
+floatspan_set_bigintspan(const Span *s1, Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == T_FLOATSPAN);
+  Datum lower = Int64GetDatum((int64) DatumGetFloat8(s1->lower));
+  Datum upper = Int64GetDatum((int64) (DatumGetFloat8(s1->upper)));
+  span_set(lower, upper, s1->lower_inc, s1->upper_inc, T_INT8, T_BIGINTSPAN, s2);
+  return;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a float span into an integer span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+floatspan_to_bigintspan(const Span *s)
+{
+  VALIDATE_FLOATSPAN(s, NULL);
+  Span *result = palloc(sizeof(Span));
+  floatspan_set_bigintspan(s, result);
   return result;
 }
 

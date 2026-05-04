@@ -178,7 +178,7 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
     return datum_double(distance_value_value(value1, value2, type), type);
   if (geo_basetype(type))
   {
-    datum_func2 point_distance = pt_distance_fn(flags);
+    datum_func2 point_distance = point_distance_fn(flags);
     return DatumGetFloat8(point_distance(value1, value2));
   }
 #if NPOINT
@@ -847,6 +847,8 @@ tsequenceset_max_val(const TSequenceSet *ss)
     MeosType basetype = temptype_basetype(ss->temptype);
     if (basetype == T_INT4)
       max = Int32GetDatum(DatumGetInt32(max) - 1);
+    else if (basetype == T_INT8)
+      max = Int64GetDatum(DatumGetInt64(max) - 1);
     return max;
   }
 

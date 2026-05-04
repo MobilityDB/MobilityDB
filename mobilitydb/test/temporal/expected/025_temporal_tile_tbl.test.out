@@ -10,6 +10,18 @@ SELECT SUM(array_length(bins(i, 2, 1), 1)) AS bl FROM tbl_intspan;
  358
 (1 row)
 
+SELECT SUM(array_length(bins(i, 2), 1)) AS bl FROM tbl_bigintspan;
+ bl  
+-----
+ 351
+(1 row)
+
+SELECT SUM(array_length(bins(i, 2, 1), 1)) AS bl FROM tbl_bigintspan;
+ bl  
+-----
+ 356
+(1 row)
+
 SELECT SUM(array_length(bins(f, 2.5), 1)) AS bl FROM tbl_floatspan;
  bl  
 -----
@@ -60,6 +72,22 @@ SELECT getBin(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMI
  [73, 75) |     6
  [1, 3)   |     5
  [21, 23) |     5
+(3 rows)
+
+SELECT getBin(i, 2), COUNT(*) FROM tbl_bigint GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+  getbin  | count 
+----------+-------
+ [48, 50) |     5
+ [2, 4)   |     4
+ [14, 16) |     4
+(3 rows)
+
+SELECT getBin(i, 2, 1), COUNT(*) FROM tbl_bigint GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+  getbin  | count 
+----------+-------
+ [95, 97) |     6
+ [5, 7)   |     4
+ [29, 31) |     4
 (3 rows)
 
 SELECT getBin(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -166,6 +194,24 @@ SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1, '2001-06-01'), 1)) 
  627
 (1 row)
 
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week'), 1)) FROM tbl_tbigint;
+ sum  
+------
+ 1040
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1), 1)) FROM tbl_tbigint;
+ sum  
+------
+ 1022
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1, '2001-06-01'), 1)) FROM tbl_tbigint;
+ sum  
+------
+ 1022
+(1 row)
+
 SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week'), 1)) FROM tbl_tfloat;
  sum  
 ------
@@ -198,6 +244,22 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2, 1) AS s
      25 |    19
      41 |    18
      49 |    18
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     46 |    29
+     66 |    28
+     52 |    27
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2, 1) AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     65 |    28
+     57 |    27
+     45 |    26
 (3 rows)
 
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -259,6 +321,22 @@ SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001
  Sun Feb 11 23:00:00 2001 PST |     2
 (3 rows)
 
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+             time             | count 
+------------------------------+-------
+ Fri Jan 05 08:00:00 2001 PST |     2
+ Fri Jan 05 10:00:00 2001 PST |     2
+ Fri Jan 05 12:00:00 2001 PST |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+             time             | count 
+------------------------------+-------
+ Fri Jan 05 09:00:00 2001 PST |     2
+ Fri Jan 05 11:00:00 2001 PST |     2
+ Sun Jan 21 13:00:00 2001 PST |     2
+(3 rows)
+
 SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
              time             | count 
 ------------------------------+-------
@@ -316,6 +394,22 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 
      25 |    19
      41 |    18
      49 |    18
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     46 |    29
+     66 |    28
+     52 |    27
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days', 1, '2001-06-01') AS sp FROM tbl_tbigint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ number | count 
+--------+-------
+     65 |    28
+     45 |    27
+     57 |    27
 (3 rows)
 
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

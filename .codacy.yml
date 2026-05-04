@@ -19,12 +19,26 @@ engines:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "h3-pg/**"
     config:
       languages:
         - "c"
+# Exclusions:
+#   * postgis/**, postgres/**, pgtypes/** - verbatim upstream source.
+#   * h3-pg/**                            - vendored Apache-2.0 project;
+#                                           we don't own its style
+#                                           guidelines, and edits would
+#                                           be clobbered by re-vendoring.
+#   * scripts/h3pg_import/**              - one-shot import tooling, not
+#                                           production code (Bandit's
+#                                           "use of assert" warning is
+#                                           a non-issue for a dev script
+#                                           that runs once).
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "h3-pg/**"
+  - "scripts/h3pg_import/**"
   - "meos/test/**"
   - "meos/examples/**"

@@ -24,7 +24,7 @@ CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_bigintspan_tmp FROM '/tmp/tbl_bigintspan' (FORMAT BINARY);
 COPY 100
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
      0
@@ -89,7 +89,7 @@ SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromBinary(asBinary(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromBinary(asBinary(i)) <> i;
  count 
 -------
      0
@@ -119,7 +119,7 @@ SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromHexWKB(asHexWKB(i)) <> i;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromHexWKB(asHexWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromHexWKB(asHexWKB(i)) <> i;
  count 
 -------
      0
@@ -227,7 +227,7 @@ SELECT COUNT(*) FROM tbl_intspan WHERE i <> (i::int4range)::intspan;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan WHERE b <> (b::int8range)::bigintspan;
+SELECT COUNT(*) FROM tbl_bigintspan WHERE i <> (i::int8range)::bigintspan;
  count 
 -------
      0
@@ -397,7 +397,7 @@ SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
  197
 (1 row)
 
-SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
+SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_bigintspan t1, tbl_bigint t2;
  max 
 -----
  190
@@ -427,7 +427,7 @@ SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i 
   99
 (1 row)
 
-SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
+SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.i > 0;
  max 
 -----
   90
@@ -457,7 +457,7 @@ SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2,
  197
 (1 row)
 
-SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
+SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.i > 0;
  max 
 -----
  190

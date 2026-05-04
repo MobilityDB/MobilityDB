@@ -24,7 +24,7 @@ CREATE TABLE tbl_bigintset_tmp AS TABLE tbl_bigintset WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_bigintset_tmp FROM '/tmp/tbl_bigintset' (FORMAT BINARY);
 COPY 1000
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
      0
@@ -106,7 +106,7 @@ SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(i)) <> i;
  count 
 -------
      0
@@ -142,7 +142,7 @@ SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(i)) <> i;
  count 
 -------
      0
@@ -268,7 +268,7 @@ SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
    6
 (1 row)
 
-SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(shift(i, 5))) FROM tbl_bigintset;
  min 
 -----
    7
@@ -292,7 +292,7 @@ SELECT MIN(startValue(scale(i, 5))) FROM tbl_intset;
    1
 (1 row)
 
-SELECT MIN(startValue(scale(b, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(scale(i, 5))) FROM tbl_bigintset;
  min 
 -----
    2
@@ -316,7 +316,7 @@ SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_intset;
    6
 (1 row)
 
-SELECT MIN(startValue(shiftScale(b, 5, 5))) FROM tbl_bigintset;
+SELECT MIN(startValue(shiftScale(i, 5, 5))) FROM tbl_bigintset;
  min 
 -----
    7
@@ -364,7 +364,7 @@ SELECT numValues(setUnion(i)) FROM tbl_int;
         60
 (1 row)
 
-SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(i)) FROM tbl_bigint;
  numvalues 
 -----------
         62
@@ -404,11 +404,11 @@ SELECT COUNT(*) FROM test2 t1, tbl_intset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
      0
 (1 row)
 
-WITH test1(k, b) AS (
-  SELECT k, unnest(b) FROM tbl_bigintset ),
-test2 (k, b) AS (
-  SELECT k, setUnion(b) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+WITH test1(k, i) AS (
+  SELECT k, unnest(i) FROM tbl_bigintset ),
+test2 (k, i) AS (
+  SELECT k, setUnion(i) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
      0
@@ -502,7 +502,7 @@ SELECT MAX(set_hash(i)) FROM tbl_intset;
  2141239878
 (1 row)
 
-SELECT MAX(set_hash(b)) FROM tbl_bigintset;
+SELECT MAX(set_hash(i)) FROM tbl_bigintset;
     max     
 ------------
  2140877551
@@ -538,7 +538,7 @@ SELECT MAX(set_hash_extended(i, 1)) FROM tbl_intset;
  9215683723210280632
 (1 row)
 
-SELECT MAX(set_hash_extended(b, 1)) FROM tbl_bigintset;
+SELECT MAX(set_hash_extended(i, 1)) FROM tbl_bigintset;
          max         
 ---------------------
  9180839711525586122
@@ -574,7 +574,7 @@ SELECT numValues(setUnion(i)) FROM tbl_int;
         60
 (1 row)
 
-SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(i)) FROM tbl_bigint;
  numvalues 
 -----------
         62
@@ -605,7 +605,7 @@ SELECT k%2, numValues(setUnion(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
         1 |       942
 (2 rows)
 
-SELECT k%2, numValues(setUnion(b)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(i)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
  ?column? | numvalues 
 ----------+-----------
         0 |       928

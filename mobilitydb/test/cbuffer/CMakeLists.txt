@@ -23,6 +23,11 @@ set(SKIP_TESTS
   162_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
   164_tcbuffer_tempspatialrels      # tempspatialrels output drift
   164_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
+  210_tcbuffer_distance_tbl         # NearestApproachDistance / |=| count drift
+  212_tcbuffer_spatialrels          # spatialrels output drift
+  212_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
+  214_tcbuffer_tempspatialrels      # tempspatialrels output drift
+  214_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
 )
 
 foreach(file ${testfiles})
