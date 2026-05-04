@@ -513,7 +513,13 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
        * crossing if there is one */
        Datum startvalue = tinstant_value_p(start);
        Datum endvalue = tinstant_value_p(end);
-      int cross = tsegment_intersection_value(startvalue, endvalue, value,
+      /* See cross_type comment in eafunc_tlinearseq_base — when the
+       * right-hand value is a different type from the temporal's
+       * basetype, datumsegm_locate would reinterpret its bytes and
+       * trip a garbage SRID-equality check. Skip the intersection
+       * search and treat the segment as having no crossing. */
+      int cross = lfinfo->cross_type ? 0 :
+        tsegment_intersection_value(startvalue, endvalue, value,
         start->temptype, start->t, end->t, &tpt1, &tpt2);
       if (! cross)
       {
@@ -1807,6 +1813,20 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
     /* Continue if the segment is constant */
     if (datum_eq(startvalue, endvalue, basetype))
       continue;
+    /* Cross-type comparison (e.g. trgeometry vs geometry): skip the
+     * segment-locate intersection finder. datumsegm_locate dispatches
+     * by the temporal type's basetype (Pose for trgeometry), but the
+     * right-hand `value` is a different type (a GSERIALIZED), so the
+     * dispatcher would reinterpret the bytes through the wrong base
+     * type and trip the SRID-equality check on garbage SRID bits.
+     * The bounds-only checks above already cover the common case;
+     * mid-segment crossings are conservatively missed for ?= / ?<>. */
+    if (lfinfo->cross_type)
+    {
+      start = end;
+      lower_inc = true;
+      continue;
+    }
     TimestampTz tpt1, tpt2;
     /* To avoid floating point imprecission, if the lifted function to
      * apply is datum2_eq or datum_point_eq, the equality test is computed in

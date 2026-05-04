@@ -17,12 +17,15 @@ list(SORT testfiles)
 # Tests whose expected output is stale relative to the current behaviour
 # of the underlying functions. Re-enable once the expected output is
 # regenerated.
+# 162_tcbuffer_spatialrels was previously skipped; its output is now
+# regenerated and reactivated. The 11 mixed-SRID errors in its expected
+# output are intentional negative tests under /* Errors */ markers
+# (queries with explicit SRID=3812 vs default-SRID literals validating
+# the strict ensure_same_srid -> ERROR contract).
 set(SKIP_TESTS
-  160_tcbuffer_distance_tbl         # NearestApproachDistance / |=| count drift
-  162_tcbuffer_spatialrels          # spatialrels output drift
-  162_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
-  164_tcbuffer_tempspatialrels      # tempspatialrels output drift
-  164_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
+  160_tcbuffer_distance_tbl         # flaky: LIMIT 10 without ORDER BY is non-deterministic across OID-affecting changes
+  164_tcbuffer_tempspatialrels      # missing tcontains/econtains/ecovers SQL declarations for tcbuffer
+  164_tcbuffer_tempspatialrels_tbl  # missing tcontains/econtains/ecovers SQL declarations for tcbuffer (table form)
 )
 
 foreach(file ${testfiles})

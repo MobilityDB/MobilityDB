@@ -14,14 +14,19 @@ set_tests_properties(load_rgeo_tables PROPERTIES
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
-# Tests whose expected output is stale relative to the current behaviour
-# of the underlying functions. Re-enable once the expected output is
-# regenerated.
-set(SKIP_TESTS
-  122_trgeo               # Operation on mixed SRID drift
-  124_trgeo_compops       # Operation on mixed SRID drift
-  124_trgeo_compops_tbl   # Operation on mixed SRID drift (table form)
-)
+# 122_trgeo, 124_trgeo_compops, 124_trgeo_compops_tbl were previously
+# skipped because their sequence/sequenceset trgeometry-vs-geometry
+# comparison queries spuriously raised "Operation on mixed SRID" even
+# when the SRIDs were aligned. Root cause was in the lifting
+# infrastructure: tsegment_intersection_value -> datumsegm_locate
+# dispatched on the temporal value's basetype (T_POSE for trgeometry)
+# and reinterpreted the right-hand GSERIALIZED bytes through
+# posesegm_locate, tripping ensure_valid_pose_pose's SRID check on
+# garbage data. Fixed in this change — see meos/src/temporal/lifting.c
+# (cross_type guard) and meos/src/rgeo/trgeo_compops.c
+# (eacomp_trgeo_geo / tcomp_geo_trgeo / tcomp_trgeo_geo set
+# lfinfo.cross_type=true). Tests reactivated with regenerated expected.
+set(SKIP_TESTS)
 
 foreach(file ${testfiles})
   get_filename_component(TESTNAME ${file} NAME_WE)
