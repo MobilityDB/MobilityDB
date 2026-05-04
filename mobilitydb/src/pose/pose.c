@@ -52,6 +52,7 @@
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "pose/pose.h"
+#include "pg_geo/postgis.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
@@ -288,6 +289,77 @@ Pose_as_hexwkb(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * OGC GeoPose JSON I/O
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pose_from_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_from_geopose);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return a pose from its OGC GeoPose JSON representation
+ * @details Auto-detects the conformance class (Basic-Quaternion if a
+ * `quaternion` member is present; Basic-YPR if an `angles` member is
+ * present). Position is parsed as `{lat, lon, h}` (degrees, degrees,
+ * metres) and the resulting pose has SRID 4326.
+ * @sqlfn poseFromGeoPose()
+ */
+Datum
+Pose_from_geopose(PG_FUNCTION_ARGS)
+{
+  text *json_text = PG_GETARG_TEXT_P(0);
+  char *json = text2cstring(json_text);
+  Pose *result = pose_from_geopose(json);
+  pfree(json);
+  PG_FREE_IF_COPY(json_text, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POSE_P(result);
+}
+
+PGDLLEXPORT Datum Pose_as_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_as_geopose);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return the OGC GeoPose JSON representation of a pose
+ * @details Conformance argument: 0 = Basic-Quaternion (default),
+ * 1 = Basic-YPR. Precision argument: significant digits to keep in the
+ * JSON numbers (negative = json-c default of full lossless precision).
+ * @sqlfn asGeoPose()
+ */
+Datum
+Pose_as_geopose(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  int conformance = PG_GETARG_INT32(1);
+  int precision   = PG_GETARG_INT32(2);
+  char *result = pose_as_geopose(pose, conformance, precision);
+  PG_FREE_IF_COPY(pose, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_TEXT_P(cstring2text(result));
+}
+
+PGDLLEXPORT Datum Pose_apply_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_apply_geo);
+/**
+ * @ingroup mobilitydb_pose_base_geopose
+ * @brief Return the world-frame geometry obtained by applying a pose's
+ * rigid-body transform to a body-frame geometry
+ * @sqlfn applyPose()
+ */
+Datum
+Pose_apply_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *body = PG_GETARG_GSERIALIZED_P(0);
+  Pose *pose = PG_GETARG_POSE_P(1);
+  GSERIALIZED *result = pose_apply_geo(pose, body);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(pose, 1);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
@@ -497,9 +569,74 @@ Pose_orientation(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(HeapTupleGetDatum(tuple));
 }
 
+PGDLLEXPORT Datum Pose_yaw(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_yaw);
+/**
+ * @ingroup mobilitydb_pose_base_accessor
+ * @brief Return the yaw angle of a pose, in radians
+ * @sqlfn yaw()
+ */
+Datum
+Pose_yaw(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  double result = pose_yaw(pose);
+  PG_FREE_IF_COPY(pose, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Pose_pitch(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_pitch);
+/**
+ * @ingroup mobilitydb_pose_base_accessor
+ * @brief Return the pitch angle of a pose, in radians
+ * @sqlfn pitch()
+ */
+Datum
+Pose_pitch(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  double result = pose_pitch(pose);
+  PG_FREE_IF_COPY(pose, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Pose_roll(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_roll);
+/**
+ * @ingroup mobilitydb_pose_base_accessor
+ * @brief Return the roll angle of a pose, in radians
+ * @sqlfn roll()
+ */
+Datum
+Pose_roll(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  double result = pose_roll(pose);
+  PG_FREE_IF_COPY(pose, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+PGDLLEXPORT Datum Pose_normalise(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_normalise);
+/**
+ * @ingroup mobilitydb_pose_base_transf
+ * @brief Return a pose whose orientation quaternion has been renormalised
+ * to unit norm
+ * @sqlfn normalise()
+ */
+Datum
+Pose_normalise(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  Pose *result = pose_normalise(pose);
+  PG_FREE_IF_COPY(pose, 0);
+  PG_RETURN_POSE_P(result);
+}
 
 PGDLLEXPORT Datum Pose_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_round);
