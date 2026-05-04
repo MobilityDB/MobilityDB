@@ -88,6 +88,14 @@ extern char *int8_out(int64 val);
 extern float8 float8_in(const char *num, const char *type_name,
   const char *orig_string);
 extern char *float8_out(double num, int maxdd);
+
+/*
+ * Locale-safe strtod(). Pins numeric I/O to the C locale (decimal point
+ * is always '.') regardless of the calling process's LC_NUMERIC setting.
+ * See issue #425 and the comment in postgres_types.c for context.
+ */
+extern double meos_strtod(const char *str, char **endptr);
+
 extern float8 pg_dsin(float8 arg1);
 extern float8 pg_dcos(float8 arg1);
 extern float8 pg_datan(float8 arg1);
