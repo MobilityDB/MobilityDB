@@ -3,6 +3,7 @@ set(RGEO_SRCS
   trgeo_boxops.c
   trgeo_compops.c
   trgeo_distance.c
+  trgeo_geom_clip.c
   trgeo_inst.c
   trgeo_parser.c
   trgeo_seq.c

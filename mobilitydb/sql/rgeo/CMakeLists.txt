@@ -9,6 +9,7 @@ SET(LOCAL_FILES
   161_trgeo_distance
   161_trgeo_vclip
   162_trgeo_indexes
+  163_trgeo_geom_clip
   )
 
 foreach (f ${LOCAL_FILES})
