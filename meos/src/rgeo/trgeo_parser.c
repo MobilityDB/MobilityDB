@@ -318,7 +318,7 @@ trgeo_parse(const char **str, MeosType temptype)
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */
-  if (strncasecmp(*str, "Interp=Step;", 12) == 0)
+  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
   {
     /* Move str after the semicolon */
     *str += 12;

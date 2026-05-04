@@ -19,9 +19,17 @@ set(MEOS_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 set(MEOS_LIB_NAME "meos")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# Set the location of the directory of the time zone database
-add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
-message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
+# Set the location of the directory of the time zone database. On UNIX-like
+# systems we point the embedded PostgreSQL timezone code at the standard
+# /usr/share/zoneinfo. On Windows there is no system zoneinfo directory; the
+# embedded code falls back to using the timezone name set at runtime via
+# meos_initialize_timezone() rather than reading IANA files from disk.
+if(NOT WIN32)
+  add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
+  message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
+else()
+  message(STATUS "Skipping SYSTEMTZDIR (Windows: timezone resolved at runtime)")
+endif()
 
 # Option to build MEOS as a shared or static library
 option(BUILD_SHARED_LIBS
