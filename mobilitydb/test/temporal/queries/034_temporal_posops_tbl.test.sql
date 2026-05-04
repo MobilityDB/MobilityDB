@@ -31,16 +31,19 @@
 
 DROP INDEX IF EXISTS tbl_tbool_rtree_idx;
 DROP INDEX IF EXISTS tbl_tint_rtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_rtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_rtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_rtree_idx;
 
 DROP INDEX IF EXISTS tbl_tbool_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tint_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_quadtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_quadtree_idx;
 
 DROP INDEX IF EXISTS tbl_tbool_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tint_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tbigint_kdtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_kdtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_kdtree_idx;
 
@@ -65,10 +68,15 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'intspan', 'tint', COUNT(*) FROM tbl_intspan, tbl_tint WHERE i << temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'bigintspan', 'tbigint', COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i << temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'floatspan', 'tfloat', COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f << temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b << temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b << temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b << temp;
 
@@ -80,6 +88,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp << b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp << i;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp << b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp << t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp << f;
@@ -96,10 +111,15 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'intspan', 'tint', COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &< temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'bigintspan', 'tbigint', COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &< temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'floatspan', 'tfloat', COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &< temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &< temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &< temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &< temp;
 
@@ -111,6 +131,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp &< b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &< i;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &< b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &< t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &< f;
@@ -127,10 +154,15 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'intspan', 'tint', COUNT(*) FROM tbl_intspan, tbl_tint WHERE i >> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'bigintspan', 'tbigint', COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i >> temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'floatspan', 'tfloat', COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f >> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b >> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b >> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b >> temp;
 
@@ -142,6 +174,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp >> b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp >> i;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp >> b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp >> t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp >> f;
@@ -158,10 +197,15 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'intspan', 'tint', COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'bigintspan', 'tbigint', COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &> temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatspan', 'tfloat', COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &> temp;
 
@@ -173,6 +217,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp &> b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tbigint', 'bigintspan', COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &> i;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &> b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &> t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'tfloat', 'floatspan', COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &> f;
@@ -190,12 +241,16 @@ SELECT '<<#', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <<# temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t <<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b <<# temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b <<# temp;
 
@@ -212,6 +267,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp <<# b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <<# t;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <<# b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <<# t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp <<# t;
@@ -234,12 +296,16 @@ SELECT '&<#', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t &<# temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t &<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &<# temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &<# temp;
 
@@ -256,6 +322,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp &<# b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp &<# t;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &<# b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &<# t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp &<# t;
@@ -278,12 +351,16 @@ SELECT '#>>', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #>> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t #>> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #>> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #>> temp;
 
@@ -300,6 +377,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tint', 'tbox', COUNT(*) FROM tbl_tint, tbl_tboxint WHERE temp #>> b;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #>> t;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #>> b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #>> t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #>> t;
@@ -322,12 +406,16 @@ SELECT '#&>', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tint', COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tstzspan', 'tbigint', COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #&> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tfloat', COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'ttext', COUNT(*) FROM tbl_tstzspan, tbl_ttext WHERE t #&> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tbox', 'tint', COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #&> temp;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbox', 'tbigint', COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #&> temp;
 
@@ -346,6 +434,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tint', 'tint', COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #&> t2.temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbigint', 'tstzspan', COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #&> t;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbigint', 'tbox', COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #&> b;
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tbigint', 'tbigint', COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #&> t2.temp;
+
+INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #&> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tfloat', 'tbox', COUNT(*) FROM tbl_tfloat, tbl_tboxfloat WHERE temp #&> b;
@@ -361,6 +456,7 @@ SELECT '#&>', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t
 
 CREATE INDEX tbl_tbool_rtree_idx ON tbl_tbool USING GIST(temp);
 CREATE INDEX tbl_tint_rtree_idx ON tbl_tint USING GIST(temp);
+CREATE INDEX tbl_tbigint_rtree_idx ON tbl_tbigint USING GIST(temp);
 CREATE INDEX tbl_tfloat_rtree_idx ON tbl_tfloat USING GIST(temp);
 CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext USING GIST(temp);
 
@@ -373,12 +469,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i << temp )
 WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i << temp )
+WHERE op = '<<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f << temp )
 WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -394,6 +497,16 @@ WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp << i )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp << f )
@@ -414,12 +527,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &< temp )
 WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &< temp )
+WHERE op = '&<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &< temp )
 WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -435,6 +555,16 @@ WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &< i )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &< f )
@@ -455,12 +585,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i >> temp )
 WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i >> temp )
+WHERE op = '>>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f >> temp )
 WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -476,6 +613,16 @@ WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp >> i )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp >> f )
@@ -496,12 +643,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &> temp )
 WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &> temp )
+WHERE op = '&>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &> temp )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -517,6 +671,16 @@ WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &> i )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &> f )
@@ -539,6 +703,9 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -548,6 +715,9 @@ WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -570,6 +740,16 @@ WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp <<# t )
@@ -599,6 +779,9 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -608,6 +791,9 @@ WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -630,6 +816,16 @@ WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp &<# t )
@@ -659,6 +855,9 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -668,6 +867,9 @@ WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -690,6 +892,16 @@ WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #>> t )
@@ -719,6 +931,9 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -728,6 +943,9 @@ WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -752,6 +970,16 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #&
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 UPDATE test_posops
@@ -772,6 +1000,7 @@ WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
 DROP INDEX tbl_tbool_rtree_idx;
 DROP INDEX tbl_tint_rtree_idx;
+DROP INDEX tbl_tbigint_rtree_idx;
 DROP INDEX tbl_tfloat_rtree_idx;
 DROP INDEX tbl_ttext_rtree_idx;
 
@@ -779,6 +1008,7 @@ DROP INDEX tbl_ttext_rtree_idx;
 
 CREATE INDEX tbl_tbool_quadtree_idx ON tbl_tbool USING SPGIST(temp);
 CREATE INDEX tbl_tint_quadtree_idx ON tbl_tint USING SPGIST(temp);
+CREATE INDEX tbl_tbigint_quadtree_idx ON tbl_tbigint USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_quadtree_idx ON tbl_tfloat USING SPGIST(temp);
 CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext USING SPGIST(temp);
 
@@ -791,12 +1021,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i << temp 
 WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i << temp )
+WHERE op = '<<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f << temp )
 WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -812,6 +1049,16 @@ WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp << i )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp << f )
@@ -832,12 +1079,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &< temp 
 WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &< temp )
+WHERE op = '&<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &< temp )
 WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -853,6 +1107,16 @@ WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &< i )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &< f )
@@ -873,12 +1137,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i >> temp 
 WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i >> temp )
+WHERE op = '>>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f >> temp )
 WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -894,6 +1165,16 @@ WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp >> i )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp >> f )
@@ -914,12 +1195,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &> temp 
 WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &> temp )
+WHERE op = '&>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &> temp )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -935,6 +1223,16 @@ WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &> i )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &> f )
@@ -957,6 +1255,9 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -966,6 +1267,9 @@ WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -988,6 +1292,16 @@ WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp <<# t )
@@ -1017,6 +1331,9 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1026,6 +1343,9 @@ WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1048,6 +1368,16 @@ WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp &<# t )
@@ -1077,6 +1407,9 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1086,6 +1419,9 @@ WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1108,6 +1444,16 @@ WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #>> t )
@@ -1137,6 +1483,9 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1146,6 +1495,9 @@ WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1170,6 +1522,16 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 UPDATE test_posops
@@ -1190,6 +1552,7 @@ WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
 DROP INDEX tbl_tbool_quadtree_idx;
 DROP INDEX tbl_tint_quadtree_idx;
+DROP INDEX tbl_tbigint_quadtree_idx;
 DROP INDEX tbl_tfloat_quadtree_idx;
 DROP INDEX tbl_ttext_quadtree_idx;
 
@@ -1197,6 +1560,7 @@ DROP INDEX tbl_ttext_quadtree_idx;
 
 CREATE INDEX tbl_tbool_kdtree_idx ON tbl_tbool USING SPGIST(temp tbool_kdtree_ops);
 CREATE INDEX tbl_tint_kdtree_idx ON tbl_tint USING SPGIST(temp tint_kdtree_ops);
+CREATE INDEX tbl_tbigint_kdtree_idx ON tbl_tbigint USING SPGIST(temp tbigint_kdtree_ops);
 CREATE INDEX tbl_tfloat_kdtree_idx ON tbl_tfloat USING SPGIST(temp tfloat_kdtree_ops);
 CREATE INDEX tbl_ttext_kdtree_idx ON tbl_ttext USING SPGIST(temp ttext_kdtree_ops);
 
@@ -1209,12 +1573,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i << temp )
 WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i << temp )
+WHERE op = '<<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f << temp )
 WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b << temp )
 WHERE op = '<<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1230,6 +1601,16 @@ WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp << i )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp << b )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp << f )
@@ -1250,12 +1631,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &< temp )
 WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &< temp )
+WHERE op = '&<' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &< temp )
 WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &< temp )
+WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &< temp )
 WHERE op = '&<' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1271,6 +1659,16 @@ WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &< i )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &< b )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &< f )
@@ -1291,12 +1689,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i >> temp )
 WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i >> temp )
+WHERE op = '>>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f >> temp )
 WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b >> temp )
 WHERE op = '>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1312,6 +1717,16 @@ WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp >> i )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp >> b )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp >> f )
@@ -1332,12 +1747,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan, tbl_tint WHERE i &> temp )
 WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan, tbl_tbigint WHERE i &> temp )
+WHERE op = '&>' AND leftarg = 'bigintspan' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan, tbl_tfloat WHERE f &> temp )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'tfloat';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &> temp )
+WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &> temp )
 WHERE op = '&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1353,6 +1775,16 @@ WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_bigintspan WHERE temp &> i )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'bigintspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &> b )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp &> f )
@@ -1375,6 +1807,9 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1384,6 +1819,9 @@ WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b <<# temp )
 WHERE op = '<<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1406,6 +1844,16 @@ WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp <<# b )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp <<# t )
@@ -1435,6 +1883,9 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1444,6 +1895,9 @@ WHERE op = '&<#' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b &<# temp )
+WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b &<# temp )
 WHERE op = '&<#' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1466,6 +1920,16 @@ WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp &<# b )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp &<# t )
@@ -1495,6 +1959,9 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1504,6 +1971,9 @@ WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #>> temp )
 WHERE op = '#>>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1526,6 +1996,16 @@ WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tbox';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tint';
+
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #>> b )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #>> t )
@@ -1555,6 +2035,9 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tint WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tint';
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tbigint WHERE t #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tbigint';
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tfloat WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tfloat';
 UPDATE test_posops
@@ -1564,6 +2047,9 @@ WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxint, tbl_tint WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tint';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxbigint, tbl_tbigint WHERE b #&> temp )
+WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tbigint';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tboxfloat, tbl_tfloat WHERE b #&> temp )
 WHERE op = '#&>' AND leftarg = 'tbox' AND rightarg = 'tfloat';
@@ -1588,6 +2074,16 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tint';
 
 UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tstzspan';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp #&> b )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbox';
+UPDATE test_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' AND leftarg = 'tbigint' AND rightarg = 'tbigint';
+
+UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzspan';
 UPDATE test_posops
@@ -1608,6 +2104,7 @@ WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
 DROP INDEX tbl_tbool_kdtree_idx;
 DROP INDEX tbl_tint_kdtree_idx;
+DROP INDEX tbl_tbigint_kdtree_idx;
 DROP INDEX tbl_tfloat_kdtree_idx;
 DROP INDEX tbl_ttext_kdtree_idx;
 

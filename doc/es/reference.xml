@@ -63,7 +63,7 @@
 						<entry><varname>bigintset</varname></entry>
 						<entry><varname>bigintspan</varname></entry>
 						<entry><varname>bigintspanset</varname></entry>
-						<entry><varname></varname></entry>
+						<entry><varname>tbigint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
@@ -870,7 +870,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname>, <varname>tfloat(tint)</varname>, <varname>tint(tfloat)</varname></link>: Convertir entre un entero temporal y un flotante temporal</para>
+					<para><link linkend="tint_tfloat"><varname>tnumber::tnumber</varname>, <varname>tnumber(tnumber)</varname></link>: Convertir entre enteros, enteros largos, y flotantes temporales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

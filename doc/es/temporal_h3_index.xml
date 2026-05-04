@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="th3index">
+	<title>Índices de Celdas H3 Temporales</title>
+
+	<para>El tipo de índice de celda H3 temporal <varname>th3index</varname> representa el movimiento de los objetos como una secuencia de identificadores de celdas hexagonales H3. <ulink url="https://h3geo.org/">H3 de Uber</ulink> es un sistema de cuadrícula global discreta que tesela la esfera en 122 celdas base en la resolución 0 y subdivide cada celda en 7 hijos en cada resolución más fina (hasta la resolución 15). Cada celda tiene un identificador entero de 64 bits que codifica la celda base, la resolución y la posición jerárquica.</para>
+
+	<para>El tipo <varname>th3index</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de H3 cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente — sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
+
+	<para>Como con otros tipos temporales, <varname>th3index</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas H3 son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
+
+	<sect1 xml:id="th3index_inout">
+		<title>Entrada y Salida</title>
+		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta tanto la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original) como el equivalente en decimal sin signo. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>831c02fffffffff</varname> empleado en los ejemplos corresponde al valor decimal <varname>590464338553208831</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '831c02fffffffff@2001-01-01';
+SELECT th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}';
+SELECT th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]';
+SELECT th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02],
+  [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}';
+</programlisting>
+		<para>El tipo acepta modificadores de tipo (<varname>typmod</varname>) para restringir una columna a un subtipo específico: <varname>Instant</varname>, <varname>Sequence</varname>, o <varname>SequenceSet</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index(Instant) '831c02fffffffff@2001-01-01';
+SELECT th3index(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}';
+-- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
+SELECT th3index(Sequence) '831c02fffffffff@2001-01-01';
+</programlisting>
+	</sect1>
+
+	<sect1 xml:id="th3index_conversions">
+		<title>Conversiones</title>
+
+		<para>Un valor <varname>th3index</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis> — requiere <varname>::</varname> — para que las funciones específicas de H3 no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_tbigint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir entre un <varname>th3index</varname> y un <varname>tbigint</varname> (explícita, sin coste)</para>
+				<para><varname>tbigint::th3index</varname></para>
+				<para><varname>th3index::tbigint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (tbigint '590464338553208831@2001-01-01')::th3index;
+-- 831c02fffffffff@2001-01-01
+SELECT ((th3index '831c02fffffffff@2001-01-01')::tbigint)::th3index
+  = th3index '831c02fffffffff@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_tgeogpoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir una celda H3 temporal en un punto temporal geodésico o planar de los centroides de las celdas. Las dos sobrecargas dan al usuario una elección entre la representación geodésica (<varname>tgeogpoint</varname>) y la planar SRID 4326 (<varname>tgeompoint</varname>).</para>
+				<para><varname>th3index::tgeogpoint</varname></para>
+				<para><varname>th3index::tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (th3index '831c02fffffffff@2001-01-01')::tgeogpoint;
+SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_accessors">
+		<title>Funciones de Acceso</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_startValue">
+				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>
+				<para>Devolver el primer o el último identificador de celda H3 de un valor temporal</para>
+				<para><varname>startValue(th3index) → h3index</varname></para>
+				<para><varname>endValue(th3index) → h3index</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT startValue(th3index '831c02fffffffff@2001-01-01');
+-- 831c02fffffffff
+SELECT endValue(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
+-- 831c00fffffffff
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_valueN">
+				<indexterm significance="normal"><primary><varname>valueN</varname></primary></indexterm>
+				<para>Devolver el <varname>n</varname>-ésimo identificador de celda H3 distinto (indexado desde 1). Devuelve <varname>NULL</varname> si está fuera del rango.</para>
+				<para><varname>valueN(th3index,integer) → h3index</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueN(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
+-- 831c02fffffffff
+SELECT valueN(th3index '831c02fffffffff@2001-01-01', 99);
+-- NULL
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_getValues">
+				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
+				<para>Devolver el conjunto de identificadores de celda H3 distintos que toma la trayectoria</para>
+				<para><varname>getValues(th3index) → h3indexset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getValues(th3index '831c02fffffffff@2001-01-01');
+-- {831c02fffffffff}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_valueAtTimestamp">
+				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Devolver el identificador de celda H3 en una marca de tiempo dada, utilizando interpolación de pasos</para>
+				<para><varname>valueAtTimestamp(th3index,timestamptz) → h3index</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueAtTimestamp(th3index
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
+  '2001-01-03');
+-- 831c02fffffffff
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_inspection">
+		<title>Inspección de Índices</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_get_resolution">
+				<indexterm significance="normal"><primary><varname>h3_get_resolution</varname></primary></indexterm>
+				<para>Devolver la resolución temporal (0–15) de cada celda en una trayectoria</para>
+				<para><varname>h3_get_resolution(th3index) → tint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3_get_resolution(th3index '831c02fffffffff@2001-01-01');
+-- 3@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_get_base_cell_number">
+				<indexterm significance="normal"><primary><varname>h3_get_base_cell_number</varname></primary></indexterm>
+				<para>Devolver el número de celda base temporal (0–121) de cada celda en una trayectoria</para>
+				<para><varname>h3_get_base_cell_number(th3index) → tint</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_is_valid_cell">
+				<indexterm significance="normal"><primary><varname>h3_is_valid_cell</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica en cada instante si el valor es una celda H3 válida</para>
+				<para><varname>h3_is_valid_cell(th3index) → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3_is_valid_cell(th3index '0@2001-01-01');
+-- f@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_is_res_class_iii">
+				<indexterm significance="normal"><primary><varname>h3_is_res_class_iii</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica si cada celda tiene orientación de Clase III. La Clase III se alterna con la resolución: las resoluciones impares son de clase III, las pares son de clase II.</para>
+				<para><varname>h3_is_res_class_iii(th3index) → tbool</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_is_pentagon">
+				<indexterm significance="normal"><primary><varname>h3_is_pentagon</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica si cada celda es un pentágono (12 celdas por resolución son pentágonos; las restantes 110 en cada celda base descienden como hexágonos)</para>
+				<para><varname>h3_is_pentagon(th3index) → tbool</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_hierarchy">
+		<title>Jerarquía</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_cell_to_parent">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_parent</varname></primary></indexterm>
+				<para>Devolver la celda padre temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más gruesa.</para>
+				<para><varname>h3_cell_to_parent(th3index,integer) → th3index</varname></para>
+				<para><varname>h3_cell_to_parent(th3index) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_center_child">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_center_child</varname></primary></indexterm>
+				<para>Devolver la celda hijo central temporal en la resolución dada. La forma sin argumento desciende a la siguiente resolución más fina.</para>
+				<para><varname>h3_cell_to_center_child(th3index,integer) → th3index</varname></para>
+				<para><varname>h3_cell_to_center_child(th3index) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_child_pos">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_child_pos</varname></primary></indexterm>
+				<para>Devolver la posición ordinal (basada en 0) de cada celda entre los hijos de su padre en la resolución dada</para>
+				<para><varname>h3_cell_to_child_pos(th3index,integer) → tbigint</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_child_pos_to_cell">
+				<indexterm significance="normal"><primary><varname>h3_child_pos_to_cell</varname></primary></indexterm>
+				<para>Devolver la celda hijo temporal en una posición ordinal dada del padre dado, en la resolución de hijo dada. Los dos operandos temporales se sincronizan sobre su eje de tiempo compartido.</para>
+				<para><varname>h3_child_pos_to_cell(tbigint,th3index,integer) → th3index</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_latlng">
+		<title>Conversiones de Latitud/Longitud</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_latlng_to_cell">
+				<indexterm significance="normal"><primary><varname>h3_latlng_to_cell</varname></primary></indexterm>
+				<para>Devolver la celda H3 temporal en la resolución dada que contiene cada punto de un punto temporal geodésico o planar (el SRID debe ser 4326 para la sobrecarga de <varname>tgeompoint</varname>)</para>
+				<para><varname>h3_latlng_to_cell(tgeogpoint,integer) → th3index</varname></para>
+				<para><varname>h3_latlng_to_cell(tgeompoint,integer) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_latlng">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_latlng</varname></primary></indexterm>
+				<para>Devolver el centroide geodésico temporal de cada celda en una trayectoria. Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>h3_cell_to_latlng_tgeompoint</varname>.</para>
+				<para><varname>h3_cell_to_latlng(th3index) → tgeogpoint</varname></para>
+				<para><varname>h3_cell_to_latlng_tgeompoint(th3index) → tgeompoint</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_boundary">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_boundary</varname></primary></indexterm>
+				<para>Devolver el límite poligonal temporal de cada celda en una trayectoria, como una geografía temporal</para>
+				<para><varname>h3_cell_to_boundary(th3index) → tgeography</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_edges">
+		<title>Aristas Dirigidas</title>
+		<para>Las aristas dirigidas H3 son a su vez identificadores de 64 bits (codificados de manera diferente a los identificadores de celda — <varname>h3_is_valid_directed_edge</varname> los distingue). El tipo <varname>th3index</varname> de MobilityDB transporta las aristas dirigidas por convención: el mismo tipo, interpretado a través de las funciones de acceso específicas de las aristas.</para>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_are_neighbor_cells">
+				<indexterm significance="normal"><primary><varname>h3_are_neighbor_cells</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica si dos celdas temporales son vecinas en la cuadrícula en cada instante. Los dos operandos se sincronizan.</para>
+				<para><varname>h3_are_neighbor_cells(th3index,th3index) → tbool</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cells_to_directed_edge">
+				<indexterm significance="normal"><primary><varname>h3_cells_to_directed_edge</varname></primary></indexterm>
+				<para>Devolver un identificador de arista dirigida temporal a partir de un par de celdas temporales origen/destino</para>
+				<para><varname>h3_cells_to_directed_edge(th3index,th3index) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_is_valid_directed_edge">
+				<indexterm significance="normal"><primary><varname>h3_is_valid_directed_edge</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica en cada instante si el valor es una arista dirigida H3 válida</para>
+				<para><varname>h3_is_valid_directed_edge(th3index) → tbool</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_get_directed_edge_origin">
+				<indexterm significance="normal"><primary><varname>h3_get_directed_edge_origin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>h3_get_directed_edge_destination</varname></primary></indexterm>
+				<para>Devolver la celda origen o destino temporal de una arista dirigida temporal</para>
+				<para><varname>h3_get_directed_edge_origin(th3index) → th3index</varname></para>
+				<para><varname>h3_get_directed_edge_destination(th3index) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_directed_edge_to_boundary">
+				<indexterm significance="normal"><primary><varname>h3_directed_edge_to_boundary</varname></primary></indexterm>
+				<para>Devolver el límite poligonal temporal de cada arista dirigida en una trayectoria, como una geografía temporal</para>
+				<para><varname>h3_directed_edge_to_boundary(th3index) → tgeography</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_vertices">
+		<title>Vértices</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_cell_to_vertex">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_vertex</varname></primary></indexterm>
+				<para>Devolver el vértice H3 temporal en el número de vértice dado (0–5 para hexágonos, 0–4 para pentágonos)</para>
+				<para><varname>h3_cell_to_vertex(th3index,integer) → th3index</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_vertex_to_latlng">
+				<indexterm significance="normal"><primary><varname>h3_vertex_to_latlng</varname></primary></indexterm>
+				<para>Devolver las coordenadas geodésicas temporales de cada vértice en una trayectoria</para>
+				<para><varname>h3_vertex_to_latlng(th3index) → tgeogpoint</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_is_valid_vertex">
+				<indexterm significance="normal"><primary><varname>h3_is_valid_vertex</varname></primary></indexterm>
+				<para>Devolver un booleano temporal que indica en cada instante si el valor es un vértice H3 válido</para>
+				<para><varname>h3_is_valid_vertex(th3index) → tbool</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_traversal">
+		<title>Recorrido de la Cuadrícula</title>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_grid_distance">
+				<indexterm significance="normal"><primary><varname>h3_grid_distance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Devolver la distancia temporal de saltos en la cuadrícula (número de pasos de una sola celda) entre dos celdas temporales. De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia. Los dos operandos se sincronizan sobre su eje de tiempo compartido.</para>
+				<para><varname>h3_grid_distance(th3index,th3index) → tbigint</varname></para>
+				<para><varname>th3index &lt;-&gt; th3index → tbigint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '880326b885fffff@2001-01-01'
+   &lt;-&gt; th3index '880326b88dfffff@2001-01-01';
+-- 1@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_local_ij">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_local_ij</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>h3_local_ij_to_cell</varname></primary></indexterm>
+				<para>Convertir entre una celda temporal y un par de coordenadas locales (I, J) temporales relativas a una celda temporal de origen. La coordenada local se expone como un <varname>tgeompoint</varname> con el eje I en el slot <varname>x</varname> y J en <varname>y</varname>.</para>
+				<para><varname>h3_cell_to_local_ij(th3index,th3index) → tgeompoint</varname></para>
+				<para><varname>h3_local_ij_to_cell(th3index,tgeompoint) → th3index</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_metrics">
+		<title>Métricas</title>
+		<para>Las tres funciones métricas aceptan un argumento opcional de unidad. Para áreas: <varname>km2</varname> (por defecto), <varname>m2</varname>, o <varname>rads2</varname>. Para longitudes: <varname>km</varname> (por defecto), <varname>m</varname>, o <varname>rads</varname>. Pasar una unidad de área a una función de longitud (o viceversa) provoca un error.</para>
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_cell_area">
+				<indexterm significance="normal"><primary><varname>h3_cell_area</varname></primary></indexterm>
+				<para>Devolver el área temporal de cada celda en una trayectoria, en la unidad solicitada</para>
+				<para><varname>h3_cell_area(th3index,text='km2') → tfloat</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_edge_length">
+				<indexterm significance="normal"><primary><varname>h3_edge_length</varname></primary></indexterm>
+				<para>Devolver la longitud temporal de cada arista dirigida en una trayectoria, en la unidad solicitada</para>
+				<para><varname>h3_edge_length(th3index,text='km') → tfloat</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_great_circle_distance">
+				<indexterm significance="normal"><primary><varname>h3_great_circle_distance</varname></primary></indexterm>
+				<para>Devolver la distancia temporal del gran círculo entre dos puntos geodésicos temporales (no entre celdas). Los dos operandos se sincronizan.</para>
+				<para><varname>h3_great_circle_distance(tgeogpoint,tgeogpoint,text='km') → tfloat</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_comparisons">
+		<title>Comparaciones</title>
+
+		<sect2 xml:id="th3index_ever_always">
+			<title>Comparaciones Siempre y Alguna Vez</title>
+			<para>El operando de prueba puede ser un identificador de celda H3 <varname>h3index</varname> simple o otra trayectoria <varname>th3index</varname>; ambos son soportados en cualquier posición de operando.</para>
+
+			<itemizedlist>
+				<listitem xml:id="th3index_ever_eq">
+					<indexterm significance="normal"><primary><varname>ever_eq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+					<para>Devolver <varname>true</varname> si una celda H3 temporal es alguna vez igual a la prueba en al menos un instante</para>
+					<para><varname>ever_eq({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>ever_eq(th3index,h3index) → boolean</varname></para>
+					<para><varname>{h3index,th3index} ?= th3index</varname></para>
+					<para><varname>th3index ?= h3index</varname></para>
+				</listitem>
+
+				<listitem xml:id="th3index_always_eq">
+					<indexterm significance="normal"><primary><varname>always_eq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+					<para>Devolver <varname>true</varname> si una celda H3 temporal es siempre igual a la prueba a lo largo de todo su eje de tiempo</para>
+					<para><varname>always_eq({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>always_eq(th3index,h3index) → boolean</varname></para>
+					<para><varname>{h3index,th3index} %= th3index</varname></para>
+					<para><varname>th3index %= h3index</varname></para>
+				</listitem>
+
+				<listitem xml:id="th3index_ever_ne">
+					<indexterm significance="normal"><primary><varname>ever_ne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+					<para>Devolver <varname>true</varname> si una celda H3 temporal es alguna vez diferente de la prueba</para>
+					<para><varname>ever_ne({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>ever_ne(th3index,h3index) → boolean</varname></para>
+				</listitem>
+
+				<listitem xml:id="th3index_always_ne">
+					<indexterm significance="normal"><primary><varname>always_ne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+					<para>Devolver <varname>true</varname> si una celda H3 temporal es siempre diferente de la prueba</para>
+					<para><varname>always_ne({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>always_ne(th3index,h3index) → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="th3index_temp_comparisons">
+			<title>Comparaciones Temporales</title>
+			<itemizedlist>
+				<listitem xml:id="th3index_temporal_teq">
+					<indexterm significance="normal"><primary><varname>temporal_teq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>temporal_tne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
+					<para>Devolver un booleano temporal que da la igualdad (o desigualdad) por instante entre una celda H3 temporal y una prueba</para>
+					<para><varname>temporal_teq({h3index,th3index},th3index) → tbool</varname></para>
+					<para><varname>temporal_teq(th3index,h3index) → tbool</varname></para>
+					<para><varname>temporal_tne({h3index,th3index},th3index) → tbool</varname></para>
+					<para><varname>temporal_tne(th3index,h3index) → tbool</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 xml:id="th3index_bbox_ops">
+		<title>Operadores de Caja Envolvente</title>
+		<para>Los siguientes operadores comparan la <emphasis>extensión temporal</emphasis> de las celdas H3 temporales, no la inclusión jerárquica de celdas. <varname>th3index</varname> está clasificado como un tipo temporal solo-tiempo (como <varname>ttext</varname> / <varname>tbool</varname>): los identificadores de celda H3 no tienen un orden total significativo, por lo que la caja envolvente se reduce al período <varname>tstzspan</varname> de la trayectoria. Los operadores a continuación comparan ese período.</para>
+
+		<note>
+			<para>El operador <varname>@&gt;</varname> prueba la inclusión del período temporal, <emphasis>no</emphasis> la inclusión jerárquica de H3. Para probar si una celda es el padre de otra en una resolución dada, use <link linkend="th3index_h3_cell_to_parent"><varname>h3_cell_to_parent</varname></link>.</para>
+		</note>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_overlaps">
+				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+				<para>Solapamiento de período temporal, contiene, contenido por, igual y adyacente</para>
+				<para><varname>th3index &amp;&amp; {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index @&gt; {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index &lt;@ {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index ~= {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index -|- {tstzspan,th3index} → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_time_position">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+				<para>Posición relativa a lo largo del eje de tiempo (estrictamente antes, solapa antes, estrictamente después, solapa después)</para>
+				<para><varname>th3index &lt;&lt;# {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index &amp;&lt;# {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index #&gt;&gt; {tstzspan,th3index} → boolean</varname></para>
+				<para><varname>th3index #&amp;&gt; {tstzspan,th3index} → boolean</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_set_returning">
+		<title>Funciones que devuelven conjuntos</title>
+		<para>Las siguientes funciones estáticas devuelven un <varname>h3indexset</varname> (o <varname>intset</varname> para <varname>h3_get_icosahedron_faces</varname>) — el tipo compañero de colección finita de <varname>h3index</varname>. Operan sobre un <varname>h3index</varname> estático (o un <varname>h3indexset</varname>) y no están elevadas a <varname>th3index</varname>; el levantamiento temporal está diferido a la espera de una primitiva <varname>tset&lt;T&gt;</varname>.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_h3_grid_disk">
+				<indexterm significance="normal"><primary><varname>h3_grid_disk</varname></primary></indexterm>
+				<para>Todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (incluyendo el origen cuando k=0).</para>
+				<para><varname>h3_grid_disk(h3index, integer) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_grid_ring">
+				<indexterm significance="normal"><primary><varname>h3_grid_ring</varname></primary></indexterm>
+				<para>Las celdas a <emphasis>exactamente</emphasis> <varname>k</varname> pasos de cuadrícula del origen. Falla cerca de pentágonos.</para>
+				<para><varname>h3_grid_ring(h3index, integer) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_grid_path_cells">
+				<indexterm significance="normal"><primary><varname>h3_grid_path_cells</varname></primary></indexterm>
+				<para>El camino inclusivo de celdas entre dos celdas de la misma resolución.</para>
+				<para><varname>h3_grid_path_cells(h3index, h3index) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_children">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_children</varname></primary></indexterm>
+				<para>Todas las celdas hijas de una celda en la resolución objetivo.</para>
+				<para><varname>h3_cell_to_children(h3index, integer) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_compact_cells">
+				<indexterm significance="normal"><primary><varname>h3_compact_cells</varname></primary></indexterm>
+				<para>Representación compactada de un conjunto de celdas — las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente.</para>
+				<para><varname>h3_compact_cells(h3indexset) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_uncompact_cells">
+				<indexterm significance="normal"><primary><varname>h3_uncompact_cells</varname></primary></indexterm>
+				<para>Representación descompactada a la resolución dada — la inversa de <varname>h3_compact_cells</varname>.</para>
+				<para><varname>h3_uncompact_cells(h3indexset, integer) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_origin_to_directed_edges">
+				<indexterm significance="normal"><primary><varname>h3_origin_to_directed_edges</varname></primary></indexterm>
+				<para>Todas las aristas dirigidas salientes de una celda (6 para hexágonos, 5 para pentágonos).</para>
+				<para><varname>h3_origin_to_directed_edges(h3index) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_cell_to_vertexes">
+				<indexterm significance="normal"><primary><varname>h3_cell_to_vertexes</varname></primary></indexterm>
+				<para>Todos los vértices de una celda (6 para hexágonos, 5 para pentágonos).</para>
+				<para><varname>h3_cell_to_vertexes(h3index) → h3indexset</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3index_h3_get_icosahedron_faces">
+				<indexterm significance="normal"><primary><varname>h3_get_icosahedron_faces</varname></primary></indexterm>
+				<para>Los índices de caras del icosaedro (0..19) intersectadas por una celda.</para>
+				<para><varname>h3_get_icosahedron_faces(h3index) → intset</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="th3index_indexing">
+		<title>Indexación</title>
+		<para>Las clases de operadores GiST y SP-GiST están definidas para que los operadores de caja envolvente de la sección anterior puedan ser utilizados con los índices correspondientes.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_rtree_ops">
+				<indexterm significance="normal"><primary><varname>th3index_rtree_ops</varname></primary></indexterm>
+				<para>Clase de operadores GiST para celdas H3 temporales. Indexa un período de tiempo <varname>tstzspan</varname> por fila (th3index es un tipo temporal solo-tiempo).</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING gist(cells);       -- usa th3index_rtree_ops por defecto
+CREATE INDEX ON trips USING gist(cells th3index_rtree_ops);
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_quadtree_ops">
+				<indexterm significance="normal"><primary><varname>th3index_quadtree_ops</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3index_kdtree_ops</varname></primary></indexterm>
+				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por el período <varname>tstzspan</varname>. <varname>th3index_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3index_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING spgist(cells);     -- usa th3index_quadtree_ops por defecto
+CREATE INDEX ON trips USING spgist(cells th3index_kdtree_ops);
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+</chapter>

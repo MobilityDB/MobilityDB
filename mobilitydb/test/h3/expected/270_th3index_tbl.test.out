@@ -1,0 +1,182 @@
+DROP TABLE IF EXISTS tbl_th3index;
+NOTICE:  table "tbl_th3index" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_inst;
+NOTICE:  table "tbl_th3index_inst" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_discseq;
+NOTICE:  table "tbl_th3index_discseq" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_seq;
+NOTICE:  table "tbl_th3index_seq" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_seqset;
+NOTICE:  table "tbl_th3index_seqset" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index AS
+  SELECT k, temp::th3index AS temp FROM tbl_tbigint;
+SELECT 100
+CREATE TABLE tbl_th3index_inst AS
+  SELECT k, inst::th3index AS inst FROM tbl_tbigint_inst;
+SELECT 100
+CREATE TABLE tbl_th3index_discseq AS
+  SELECT k, ti::th3index AS ti FROM tbl_tbigint_discseq;
+SELECT 100
+CREATE TABLE tbl_th3index_seq AS
+  SELECT k, seq::th3index AS seq FROM tbl_tbigint_seq;
+SELECT 100
+CREATE TABLE tbl_th3index_seqset AS
+  SELECT k, ss::th3index AS ss FROM tbl_tbigint_seqset;
+SELECT 100
+SELECT (SELECT COUNT(*) FROM tbl_th3index)         = (SELECT COUNT(*) FROM tbl_tbigint);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT COUNT(*) FROM tbl_th3index_inst)    = (SELECT COUNT(*) FROM tbl_tbigint_inst);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT COUNT(*) FROM tbl_th3index_discseq) = (SELECT COUNT(*) FROM tbl_tbigint_discseq);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT COUNT(*) FROM tbl_th3index_seq)     = (SELECT COUNT(*) FROM tbl_tbigint_seq);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (SELECT COUNT(*) FROM tbl_th3index_seqset)  = (SELECT COUNT(*) FROM tbl_tbigint_seqset);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_th3index t2
+  WHERE t1.k = t2.k AND t1.temp IS NOT NULL
+  AND (t2.temp::tbigint) <> t1.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_inst t1, tbl_th3index_inst t2
+  WHERE t1.k = t2.k AND t1.inst IS NOT NULL
+  AND (t2.inst::tbigint) <> t1.inst;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_discseq t1, tbl_th3index_discseq t2
+  WHERE t1.k = t2.k AND t1.ti IS NOT NULL
+  AND (t2.ti::tbigint) <> t1.ti;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_seq t1, tbl_th3index_seq t2
+  WHERE t1.k = t2.k AND t1.seq IS NOT NULL
+  AND (t2.seq::tbigint) <> t1.seq;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_seqset t1, tbl_th3index_seqset t2
+  WHERE t1.k = t2.k AND t1.ss IS NOT NULL
+  AND (t2.ss::tbigint) <> t1.ss;
+ count 
+-------
+     0
+(1 row)
+
+COPY tbl_th3index_inst    TO '/tmp/tbl_th3index_inst'    (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_discseq TO '/tmp/tbl_th3index_discseq' (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_seq     TO '/tmp/tbl_th3index_seq'     (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_seqset  TO '/tmp/tbl_th3index_seqset'  (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_th3index_inst_tmp;
+NOTICE:  table "tbl_th3index_inst_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_discseq_tmp;
+NOTICE:  table "tbl_th3index_discseq_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_seq_tmp;
+NOTICE:  table "tbl_th3index_seq_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_th3index_seqset_tmp;
+NOTICE:  table "tbl_th3index_seqset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_inst_tmp    AS TABLE tbl_th3index_inst    WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_th3index_discseq_tmp AS TABLE tbl_th3index_discseq WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_th3index_seq_tmp     AS TABLE tbl_th3index_seq     WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_th3index_seqset_tmp  AS TABLE tbl_th3index_seqset  WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_th3index_inst_tmp    FROM '/tmp/tbl_th3index_inst'    (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_discseq_tmp FROM '/tmp/tbl_th3index_discseq' (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_seq_tmp     FROM '/tmp/tbl_th3index_seq'     (FORMAT BINARY);
+COPY 100
+COPY tbl_th3index_seqset_tmp  FROM '/tmp/tbl_th3index_seqset'  (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_th3index_inst t1, tbl_th3index_inst_tmp t2
+  WHERE t1.k = t2.k AND t1.inst IS NOT NULL AND t1.inst::tbigint <> t2.inst::tbigint;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_discseq t1, tbl_th3index_discseq_tmp t2
+  WHERE t1.k = t2.k AND t1.ti IS NOT NULL AND t1.ti::tbigint <> t2.ti::tbigint;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_seq t1, tbl_th3index_seq_tmp t2
+  WHERE t1.k = t2.k AND t1.seq IS NOT NULL AND t1.seq::tbigint <> t2.seq::tbigint;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_seqset t1, tbl_th3index_seqset_tmp t2
+  WHERE t1.k = t2.k AND t1.ss IS NOT NULL AND t1.ss::tbigint <> t2.ss::tbigint;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_th3index_inst_tmp;
+DROP TABLE
+DROP TABLE tbl_th3index_discseq_tmp;
+DROP TABLE
+DROP TABLE tbl_th3index_seq_tmp;
+DROP TABLE
+DROP TABLE tbl_th3index_seqset_tmp;
+DROP TABLE
+DROP TABLE tbl_th3index;
+DROP TABLE
+DROP TABLE tbl_th3index_inst;
+DROP TABLE
+DROP TABLE tbl_th3index_discseq;
+DROP TABLE
+DROP TABLE tbl_th3index_seq;
+DROP TABLE
+DROP TABLE tbl_th3index_seqset;
+DROP TABLE

@@ -1,0 +1,60 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),  -- res 3 hexagon
+  (2, th3index '590464201114255359@2001-01-01'),  -- res 3 pentagon
+  (3, th3index '595812165542215679@2001-01-01'),  -- res 4 pentagon
+  (4, th3index '612544986753269759@2001-01-01'),  -- res 8 hexagon
+  (5, th3index '612544986761658367@2001-01-01'),  -- res 8 hexagon (neighbour)
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+SELECT SUM(startValue(h3_get_resolution(temp)))::int FROM tbl_th3index_known;
+ sum 
+-----
+  36
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_get_resolution(temp) IS NOT NULL;
+ count 
+-------
+     6
+(1 row)
+
+SELECT bool_and(startValue(h3_get_base_cell_number(temp)) BETWEEN 0 AND 121)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(h3_is_valid_cell(temp))) FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT startValue(h3_is_valid_cell(th3index
+  '{590464338553208831@2001-01-01, 0@2001-01-02}'));
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 2:   '{590464338553208831@2001-01-01, 0@2001-01-02}'));
+          ^
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE startValue(h3_is_res_class_iii(temp));
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE startValue(h3_is_pentagon(temp));
+ count 
+-------
+     2
+(1 row)
+
+DROP TABLE tbl_th3index_known;
+DROP TABLE

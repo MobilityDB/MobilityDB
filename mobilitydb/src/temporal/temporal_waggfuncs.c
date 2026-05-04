@@ -51,18 +51,18 @@
 /**
  * @brief Helper macro to input the current aggregate state
  */
-#define INPUT_AGG_TRANS_STATE_ARG(fcinfo, state)  \
+#define INPUT_AGG_TRANS_STATE_ARG(fcinfo, state, ctx)  \
   do {  \
-    MemoryContext ctx = set_aggregation_context(fcinfo); \
+    ctx = set_aggregation_context(fcinfo); \
     state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_SKIPLIST_P(0);  \
     if (PG_ARGISNULL(1) || PG_ARGISNULL(2))  \
     {  \
+      unset_aggregation_context(ctx); \
       if (state)  \
         PG_RETURN_SKIPLIST_P(state);  \
       else  \
         PG_RETURN_NULL();  \
     }  \
-    unset_aggregation_context(ctx); \
   } while (0)
 
 /**
@@ -78,7 +78,8 @@ Temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   bool crossings)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state);
+  MemoryContext ctx;
+  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state, ctx);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ( temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags) &&
@@ -89,6 +90,7 @@ Temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   SkipList *result = temporal_wagg_transfn(state, temp, interval, func, min,
     crossings);
   PG_FREE_IF_COPY(temp, 1);
+  unset_aggregation_context(ctx);
   PG_RETURN_SKIPLIST_P(result);
 }
 
@@ -101,7 +103,8 @@ Temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state);
+  MemoryContext ctx;
+  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state, ctx);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   store_fcinfo(fcinfo);
@@ -109,6 +112,7 @@ Temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
     func, transform);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(interval, 2);
+  unset_aggregation_context(ctx);
   PG_RETURN_SKIPLIST_P(result);
 }
 
@@ -126,6 +130,20 @@ inline Datum
 Tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
+}
+
+PGDLLEXPORT Datum Tbigint_wmin_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wmin_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window minimun aggregation for
+ * temporal integers
+ * @sqlfn wMin()
+ */
+inline Datum
+Tbigint_wmin_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_min_int64, GET_MIN, CROSSINGS);
 }
 
 PGDLLEXPORT Datum Tfloat_wmin_transfn(PG_FUNCTION_ARGS);
@@ -156,6 +174,20 @@ Tint_wmax_transfn(PG_FUNCTION_ARGS)
   return Temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tbigint_wmax_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wmax_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window maximun aggregation for
+ * temporal integers
+ * @sqlfn wMax()
+ */
+inline Datum
+Tbigint_wmax_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_max_int64, GET_MAX, CROSSINGS);
+}
+
 PGDLLEXPORT Datum Tfloat_wmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
 /**
@@ -182,6 +214,20 @@ inline Datum
 Tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_wsum_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wsum_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window sum aggregation for temporal
+ * integers
+ * @sqlfn wSum()
+ */
+inline Datum
+Tbigint_wsum_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_sum_int64, GET_MIN, CROSSINGS_NO);
 }
 
 PGDLLEXPORT Datum Tfloat_wsum_transfn(PG_FUNCTION_ARGS);

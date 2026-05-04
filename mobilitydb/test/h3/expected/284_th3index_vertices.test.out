@@ -1,0 +1,60 @@
+SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0)
+  IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 5)
+  IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_cell_to_vertex(th3index
+  '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', 0)
+  IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_cell_to_vertex(th3index
+  '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]', 0)
+  IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0)
+  <> h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 1);
+ERROR:  operator does not exist: th3index <> th3index
+LINE 2:   <> h3_cell_to_vertex(th3index '612544986753269759@2001-01-...
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+/* Errors */
+SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 9);
+ERROR:  h3 library error
+SELECT h3_is_valid_vertex(
+  h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0));
+       h3_is_valid_vertex       
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_vertex(th3index '612544986753269759@2001-01-01');
+       h3_is_valid_vertex       
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_vertex(th3index '0@2001-01-01');
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 1: SELECT h3_is_valid_vertex(th3index '0@2001-01-01');
+                                           ^
+SELECT h3_vertex_to_latlng(
+  h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0))
+  IS NOT NULL;
+ERROR:  h3_vertex_to_gs_point: adapter not yet implemented
