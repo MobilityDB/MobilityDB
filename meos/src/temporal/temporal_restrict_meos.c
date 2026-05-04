@@ -48,6 +48,21 @@
 
 /**
  * @ingroup meos_temporal_restrict
+ * @brief Return a temporal big integer restricted to a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tbigint_at_value(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); 
+  return temporal_restrict_value(temp, Int64GetDatum(i), REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
  * @brief Return a temporal boolean restricted to a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
@@ -107,6 +122,22 @@ ttext_at_value(const Temporal *temp, text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal big integer restricted to the complement of a big
+ * integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tbigint_minus_value(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); 
+  return temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
+}
 
 /**
  * @ingroup meos_temporal_restrict
@@ -204,6 +235,28 @@ temporal_minus_values(const Temporal *temp, const Set *s)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal big integer at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tbigint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+  int64 *value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, false); VALIDATE_NOT_NULL(value, false);
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetInt64(res);
+  return result;
+}
 
 /**
  * @ingroup meos_temporal_accessor

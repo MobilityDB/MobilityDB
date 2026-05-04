@@ -119,8 +119,10 @@ tnumberinst_double(const TInstant *inst)
   Datum value = tinstant_value_p(inst);
   if (inst->temptype == T_TINT)
     return (double)(DatumGetInt32(value));
-  else /* inst->temptype == T_TFLOAT */
-    return DatumGetFloat8(value);
+  if (inst->temptype == T_TBIGINT)
+    return (double)(DatumGetInt64(value));
+  /* inst->temptype == T_TFLOAT */
+  return DatumGetFloat8(value);
 }
 
 /*****************************************************************************
@@ -218,8 +220,10 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
 
   size_t value_offset = offsetof(TInstant, value);
   size_t size = value_offset;
+
   /* Create the temporal instant */
   size_t value_size;
+  size_t actual_size;  /* actual bytes to copy (differs from value_size for varlena) */
   void *value_from;
   MeosType basetype = temptype_basetype(temptype);
   bool typbyval = basetype_byvalue(basetype);
@@ -228,20 +232,29 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
   {
     /* For base types passed by value */
     value_size = DOUBLE_PAD(sizeof(Datum));
+    actual_size = value_size;
     value_from = &value;
   }
   else
   {
-    /* For base types passed by reference */
     int16 typlen = meostype_length(basetype);
     value_from = DatumGetPointer(value);
-    value_size = (typlen != -1) ? DOUBLE_PAD((unsigned int) typlen) :
-      DOUBLE_PAD(VARSIZE(value_from));
+    if (typlen != -1)
+    {
+      value_size = DOUBLE_PAD((unsigned int) typlen);
+      actual_size = value_size;
+    }
+    else
+    {
+      actual_size = VARSIZE_ANY(value_from);   /* actual bytes to copy */
+      value_size = DOUBLE_PAD(actual_size);    /* padded for allocation */
+    }
   }
   size += value_size;
   TInstant *result = palloc0(size);
   void *value_to = ((char *) result) + value_offset;
-  memcpy(value_to, value_from, value_size);
+  memcpy(value_to, value_from, actual_size);  /* ← use actual_size, not value_size */
+
   /* Initialize fixed-size values */
   result->temptype = temptype;
   result->subtype = TINSTANT;

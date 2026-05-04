@@ -118,6 +118,21 @@ ttextseq_in(const char *str, interpType interp)
 
 /**
  * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer discrete sequence from a big integer
+ * and a timestamptz set
+ * @param[in] i Value
+ * @param[in] s Set
+ */
+TSequence *
+tbigintseq_from_base_tstzset(int64 i, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(Int64GetDatum(i), T_TBIGINT, s);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
  * @brief Return a temporal boolean discrete sequence from a boolean and a
  * timestamptz set
  * @param[in] b Value
@@ -177,6 +192,21 @@ ttextseq_from_base_tstzset(const text *txt, const Set *s)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer sequence from a big integer and a
+ * timestamptz span
+ * @param[in] i Value
+ * @param[in] s Span
+ */
+TSequence *
+tbigintseq_from_base_tstzspan(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(Int64GetDatum(i), T_TBIGINT, s, STEP);
+}
 
 /**
  * @ingroup meos_temporal_constructor
