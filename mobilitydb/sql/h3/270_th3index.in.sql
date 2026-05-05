@@ -15,9 +15,10 @@
  * every other temporal type; the basetype is the dedicated
  * `h3index`, not `int8`, and the catalog entry
  * `{T_TH3INDEX, T_H3INDEX}` drives dispatch. th3index is
- * classified as a `talpha_type` — its bounding box is a
- * `tstzspan` (time only), like `tbool` / `ttext`, because H3
- * cell ids have no meaningful total order.
+ * classified as a `tspatial_type` and `tgeodetic_type` — H3 cells
+ * are geographic hexagons on the WGS84 sphere, always geodetic and
+ * always lat/lon, so the bounding box is a geodetic `stbox` (X/Y +
+ * T dimensions, GEODETIC flag set), matching `tgeogpoint`.
  *
  * Casts to / from `tbigint` are ASSIGNMENT-only — the user must
  * spell out the cast, mistakes surface as a clear binder error
