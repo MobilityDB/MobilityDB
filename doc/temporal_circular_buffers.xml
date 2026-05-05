@@ -972,6 +972,65 @@ FROM Temp;
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tcbuffer_simplification">
+		<title>Simplification</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_minDistSimplify">
+				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Return a temporal circular buffer simplified ensuring that consecutive centers are at least a certain distance or time interval apart</para>
+				<para><varname>minDistSimplify(tcbuffer,mindist float) → tcbuffer</varname></para>
+				<para><varname>minTimeDeltaSimplify(tcbuffer,mint interval) → tcbuffer</varname></para>
+				<para>The simplification operates on the center trajectory of the temporal circular buffer and preserves the radius at each surviving instant. Simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given value is returned.</para>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_douglasPeuckerSimplify">
+				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Return a temporal circular buffer simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink></para>
+				<para><varname>maxDistSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer</varname></para>
+				<para><varname>douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer</varname></para>
+				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm. As for the functions above, the simplification operates on the center trajectory and preserves the radius at each surviving instant.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
+  Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03,
+  Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0));
+-- {Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(4 4),0.5)@2000-01-04 00:00:00+01}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tcbuffer_tile">
+		<title>Tile</title>
+		<para>The tile functions tile the center trajectory of a temporal circular buffer. The radius is not taken into account in the resulting boxes; the split functions preserve the radius in the temporal circular buffer fragments they return.</para>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_boxes">
+				<indexterm significance="normal"><primary><varname>spaceBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
+				<para>Return the array of spatial, temporal, or spatiotemporal boxes covering the center trajectory of a temporal circular buffer with respect to a tiling of the space and/or the time dimensions</para>
+				<para><varname>spaceBoxes(tcbuffer,xsize float,ysize float,zsize float,sorigin geometry='Point(0 0 0)',bitmatrix bool=true,borderInc bool=true) → stbox[]</varname></para>
+				<para><varname>timeBoxes(tcbuffer,interval,torigin timestamptz='2000-01-03',bitmatrix bool=true,borderInc bool=true) → stbox[]</varname></para>
+				<para><varname>spaceTimeBoxes(tcbuffer,xsize float,ysize float,zsize float,interval,sorigin geometry='Point(0 0 0)',torigin timestamptz='2000-01-03',bitmatrix bool=true,borderInc bool=true) → stbox[]</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT spaceBoxes(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
+  Cbuffer(Point(3 3),0.5)@2000-01-03]', 2.0);
+-- {"STBOX XT(((1,1),(2,2)),[2000-01-01 00:00:00+01, 2000-01-02 00:00:00+01))",
+--  "STBOX XT(((2,2),(3,3)),[2000-01-02 00:00:00+01, 2000-01-03 00:00:00+01])"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_split">
+				<indexterm significance="normal"><primary><varname>spaceSplit</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spaceTimeSplit</varname></primary></indexterm>
+				<para>Split a temporal circular buffer with respect to a tiling of the space or the space and time dimensions of its center trajectory, returning for each tile the tile point and the temporal circular buffer fragment restricted to the tile</para>
+				<para><varname>spaceSplit(tcbuffer,xsize float,ysize float,zsize float,sorigin geometry='Point(0 0 0)',bitmatrix bool=true,borderInc bool=true) → setof (point geometry, tcbuffer tcbuffer)</varname></para>
+				<para><varname>spaceTimeSplit(tcbuffer,xsize float,ysize float,zsize float,interval,sorigin geometry='Point(0 0 0)',torigin timestamptz='2000-01-03',bitmatrix bool=true,borderInc bool=true) → setof (point geometry, time timestamptz, tcbuffer tcbuffer)</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tcbuffer_indexing">
 		<title>Indexing</title>
 
