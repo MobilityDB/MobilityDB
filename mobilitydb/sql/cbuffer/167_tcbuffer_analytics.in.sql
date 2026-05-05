@@ -28,43 +28,50 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal network points.
+ * @file
+ * @brief Analytic functions for temporal circular buffers
+ *
+ * All functions simplify the center-point trajectory (cast to tgeompoint),
+ * extract the surviving timestamps, and restrict the original tcbuffer to
+ * those timestamps — preserving the radius channel at each surviving instant.
  */
 
-#ifndef __TCBUFFER_SPATIALFUNCS_H__
-#define __TCBUFFER_SPATIALFUNCS_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-/* MEOS */
-#include "temporal/temporal.h"
-#include "cbuffer/cbuffer.h"
-
 /*****************************************************************************/
 
-/* Traversed area functions */
+CREATE FUNCTION minDistSimplify(tcbuffer, float)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.minDistSimplify($1::@extschema@.tgeompoint, $2))))
+  $$;
 
-extern GSERIALIZED *tcbufferinst_traversed_area(const TInstant *inst);
-extern GSERIALIZED *tcbufferseq_traversed_area(const TSequence *seq,
-  bool unary_union);
-extern GSERIALIZED *tcbufferseqset_traversed_area(const TSequenceSet *ss,
-  bool unary_union);
-extern GSERIALIZED *tcbuffersegm_traversed_area(const TInstant *inst1,
-  const TInstant *inst2);
+CREATE FUNCTION minTimeDeltaSimplify(tcbuffer, interval)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.minTimeDeltaSimplify($1::@extschema@.tgeompoint, $2))))
+  $$;
 
-/* Spatial accessor functions */
+CREATE FUNCTION maxDistSimplify(tcbuffer, float, boolean DEFAULT TRUE)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.maxDistSimplify($1::@extschema@.tgeompoint, $2, $3))))
+  $$;
 
-extern GSERIALIZED *tcbuffer_convex_hull(const Temporal *temp);
-
-/* Restriction functions */
-
-extern Temporal *tcbuffer_restrict_cbuffer(const Temporal *temp,
-  const Cbuffer *cb, bool atfunc);
-extern Temporal *tcbuffer_restrict_stbox(const Temporal *temp,
- const STBox *box, bool border_inc, bool atfunc);
-extern Temporal *tcbuffer_restrict_geom(const Temporal *temp,
-  const GSERIALIZED *gs, bool atfunc);
+CREATE FUNCTION douglasPeuckerSimplify(tcbuffer, float, boolean DEFAULT TRUE)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.douglasPeuckerSimplify($1::@extschema@.tgeompoint, $2, $3))))
+  $$;
 
 /*****************************************************************************/
-
-#endif /* __TCBUFFER_SPATIALFUNCS_H__ */
