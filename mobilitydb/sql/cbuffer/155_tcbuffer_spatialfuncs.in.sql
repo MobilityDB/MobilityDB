@@ -66,6 +66,16 @@ CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT true)
   AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION centroid(tcbuffer)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION convexHull(tcbuffer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tcbuffer_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/
@@ -90,15 +100,15 @@ CREATE FUNCTION minusGeometry(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atStbox(tcbuffer, stbox, borderInc bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusStbox(tcbuffer, stbox, borderInc bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
