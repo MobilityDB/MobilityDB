@@ -1175,11 +1175,7 @@ inline bool
 talphanum_type(MeosType type)
 {
   return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
-    type == T_TFLOAT || type == T_TTEXT
-#if H3
-    || type == T_TH3INDEX
-#endif
-    );
+    type == T_TFLOAT || type == T_TTEXT);
 }
 #endif
 
@@ -1191,11 +1187,7 @@ inline bool
 talpha_type(MeosType type)
 {
   return (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
-    type == T_TDOUBLE3 || type == T_TDOUBLE4
-#if H3
-    || type == T_TH3INDEX
-#endif
-    );
+    type == T_TDOUBLE3 || type == T_TDOUBLE4);
 }
 
 /**
@@ -1266,7 +1258,7 @@ tnumber_spantype(MeosType type)
 inline bool
 tspatial_type(MeosType type)
 {
-  return (type == T_TGEOMPOINT || type == T_TGEOGPOINT || 
+  return (type == T_TGEOMPOINT || type == T_TGEOGPOINT ||
     type == T_TGEOMETRY || type == T_TGEOGRAPHY
 #if CBUFFER
     || type == T_TCBUFFER
@@ -1279,6 +1271,9 @@ tspatial_type(MeosType type)
 #endif
 #if RGEO
     || type == T_TRGEOMETRY
+#endif
+#if H3
+    || type == T_TH3INDEX
 #endif
     );
 }
@@ -1399,7 +1394,11 @@ ensure_tgeometry_type(MeosType type)
 inline bool
 tgeodetic_type(MeosType type)
 {
-  return (type == T_TGEOGPOINT || type == T_TGEOGRAPHY);
+  return (type == T_TGEOGPOINT || type == T_TGEOGRAPHY
+#if H3
+    || type == T_TH3INDEX
+#endif
+    );
 }
 
 #if MEOS
