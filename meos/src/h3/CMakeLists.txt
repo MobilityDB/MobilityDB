@@ -14,6 +14,9 @@ set(H3_SRCS
   # conversions, accessors, validators.
   th3index.c
 
+  # Bounding box functions: geodetic STBox from H3 cell boundary.
+  th3index_boxops.c
+
   # Per-section lifted public API, listed in the same order as
   # the @defgroup sequence in meos/include/h3/doxygen_meos_h3.h
   # and the chapter sections in doc/temporal_h3_index.xml. Each of
