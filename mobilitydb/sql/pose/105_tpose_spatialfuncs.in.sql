@@ -81,4 +81,23 @@ CREATE FUNCTION minusStbox(tpose, stbox, bool DEFAULT TRUE)
   AS 'MODULE_PATHNAME', 'Tpose_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * traversedArea, centroid, convexHull
+ *****************************************************************************/
+
+CREATE FUNCTION traversedArea(tpose, bool DEFAULT FALSE)
+  RETURNS geometry
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
+  $$ SELECT @extschema@.traversedArea($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2) $$;
+
+CREATE FUNCTION centroid(tpose)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpose_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION convexHull(tpose)
+  RETURNS geometry
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
+  $$ SELECT @extschema@.convexHull($1::@extschema@.tgeompoint) $$;
+
 /*****************************************************************************/
