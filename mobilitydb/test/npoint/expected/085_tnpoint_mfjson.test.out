@@ -1,0 +1,59 @@
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01')));
+                   astext                   
+--------------------------------------------
+ NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')));
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.5)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')));
+                                                                astext                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.1)@2000-01-04, Npoint(2, 0.2)@2000-01-05]}')));
+                                                                                                              astext                                                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.1)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.2)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')));
+                                                                      astext                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02]')));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ [NPoint(1,0)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,1)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+/* Errors */
+-------------------------------------------------------------------------------
+-- Malformed JSON
+SELECT tnpointFromMFJSON('ABC');
+ERROR:  Error while processing MFJSON string unexpected character (at offset 0)
+SELECT tnpointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string, expected: tnpoint, received: tgeompoint
+SELECT tnpointFromMFJSON('{"type":"XXX","values":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  Invalid 'type' value in MFJSON string: XXX
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  Unable to find 'route' in MFJSON string
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  Unable to find 'position' in MFJSON string
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":-0.1}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":1.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":99999,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+ERROR:  There is no route with gid value 99999 in table ways
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"]}');
+ERROR:  Unable to find 'interpolation' in MFJSON string
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"XXX"}');
+ERROR:  Invalid 'interpolation' value in MFJSON string
