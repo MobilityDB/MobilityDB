@@ -113,6 +113,16 @@ extern void meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
 extern const char *meos_pc_schema_xml(uint32_t pcid);
 
 /**
+ * @brief Return the SRID cached for @p pcid (SRID_INVALID on miss).
+ *
+ * The SRID is extracted from the PCSCHEMA at registration time so
+ * callers do not need the full PCSCHEMA struct definition (which lives
+ * in pointcloud-pg/lib/pc_api.h, unavailable outside the pointcloud
+ * build target).
+ */
+extern int32_t meos_pc_schema_get_srid(uint32_t pcid);
+
+/**
  * @brief Drop every entry from the MEOS schema cache.
  *
  * Does NOT free the cached PCSCHEMA values themselves — they belong
