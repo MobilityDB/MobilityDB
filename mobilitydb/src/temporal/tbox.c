@@ -218,7 +218,7 @@ Datum
 Tbox_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Datum box = PG_GETARG_DATUM(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX, false));
 }
 
 /*****************************************************************************

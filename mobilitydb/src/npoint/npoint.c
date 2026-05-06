@@ -341,7 +341,7 @@ Datum
 Npoint_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(np), T_NPOINT));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(np), T_NPOINT, true));
 }
 
 /*****************************************************************************

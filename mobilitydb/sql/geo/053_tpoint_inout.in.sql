@@ -178,13 +178,26 @@ CREATE FUNCTION asEWKB(tgeogpoint, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(tgeompoint, endianenconding text DEFAULT '')
+-- asHexWKB: base hex-WKB (variant 0, no SRID) — portable RFC #861 name,
+-- byte-for-byte identical to MobilityDuck asHexWKB and MobilitySpark asHexWKB.
+CREATE FUNCTION asHexWKB(tgeompoint, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexEWKB(tgeogpoint, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tgeogpoint, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) —
+-- mirrors asEWKB() and is consistent with MobilityDuck asHexEWKB.
+CREATE FUNCTION asHexEWKB(tgeompoint, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(tgeogpoint, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

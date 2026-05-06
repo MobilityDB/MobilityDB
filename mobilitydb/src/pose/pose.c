@@ -284,7 +284,7 @@ Datum
 Pose_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pose), T_POSE));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pose), T_POSE, true));
 }
 
 /*****************************************************************************
