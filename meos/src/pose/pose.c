@@ -356,17 +356,38 @@ ensure_valid_rotation(double theta)
   return true;
 }
 
+/* Tolerance for the |q|=1 check on input. Real sensor-fusion clients
+ * (IMUs, AR/VR runtimes, third-party physics engines) routinely deliver
+ * quaternions with drift of 1e-9 to 1e-6 in |q| because they don't
+ * renormalise on every frame. The previous MEOS_EPSILON (1e-7) bound
+ * rejected these as malformed, forcing every caller to renormalise
+ * client-side. The wider bound below accepts any quaternion within 0.1%
+ * of unit norm — enough to absorb the worst integrator drift seen in
+ * practice — while still catching obvious bugs (an unnormalised
+ * (1,1,1,1) is at |q|=2 and gets rejected). pose_make_3d will
+ * renormalise on acceptance so the on-disk representation is always
+ * exactly unit norm. */
+#define POSE_QUATERNION_NORM_TOLERANCE 1e-3
+
 /**
- * @brief Ensure that a 3D orientation has a unit norm
+ * @brief Ensure that a 3D orientation has a unit norm (within
+ * @p POSE_QUATERNION_NORM_TOLERANCE of 1)
  */
 bool
 ensure_unit_norm(double W, double X, double Y, double Z)
 {
-  if (fabs(sqrt(W * W + X * X + Y * Y + Z * Z) - 1) > MEOS_EPSILON)
+  double norm = sqrt(W * W + X * X + Y * Y + Z * Z);
+  if (! isfinite(norm) || norm == 0.0)
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "Rotation quaternion must be of unit norm. Received: %f",
-      sqrt(W * W + X * X + Y * Y + Z * Z));
+      "Rotation quaternion must be a finite, non-zero unit quaternion");
+    return false;
+  }
+  if (fabs(norm - 1.0) > POSE_QUATERNION_NORM_TOLERANCE)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Rotation quaternion must be of unit norm (within %g). Received |q|=%f",
+      POSE_QUATERNION_NORM_TOLERANCE, norm);
     return false;
   }
   return true;
@@ -761,7 +782,15 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
 
-  /* Ensure a unique representation for the quaternion */
+  /* Renormalise to absorb the small input drift permitted by
+   * POSE_QUATERNION_NORM_TOLERANCE. After this step |q|=1 to machine
+   * precision regardless of the caller's floating-point hygiene, so
+   * cmp/hash byte-equality and SLERP/Euler-decomposition correctness
+   * are independent of input quality. */
+  double inv_norm = 1.0 / sqrt(W * W + X * X + Y * Y + Z * Z);
+  W *= inv_norm; X *= inv_norm; Y *= inv_norm; Z *= inv_norm;
+
+  /* Ensure a unique representation for the quaternion (q ↔ -q). */
   if (W < 0.0)
   {
     W = -W;

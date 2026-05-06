@@ -49,6 +49,8 @@
 		</math>.
 	</para>
 
+	<para>The pose constructor accepts quaternions whose norm is within <varname>1e-3</varname> of unit (a tolerance wide enough to absorb the integrator drift typical of sensor-fusion clients such as IMUs and AR/VR runtimes), then renormalises to exactly unit norm before storing. Way-off norms (e.g., the obvious-bug case <varname>(1, 1, 1, 1)</varname> where <varname>|q| = 2</varname>), zero quaternions, and quaternions with <varname>NaN</varname>/<varname>Inf</varname> components are rejected up front. The on-disk representation is therefore independent of the caller's floating-point hygiene, and downstream comparison, hashing, SLERP, and Euler-decomposition code can rely on the unit-norm invariant.</para>
+
 	<para>
 		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
 	</para>
@@ -62,6 +64,8 @@
 			Maxime Schoemans, <ulink url="https://docs.mobilitydb.com/pub/maxime_schoemans_thesis.pdf"><emphasis>Managing Rigid Temporal Geometries in Moving Object Databases</emphasis></ulink>, PhD thesis, Université libre de Bruxelles, 2025.
 		</listitem>
 	</itemizedlist>
+
+	<para>Operational guidance on choosing between <varname>tpose</varname> and <varname>tgeompoint</varname>; the frame conventions the implementation enforces (Hamilton quaternion ordering, ZYX intrinsic Tait-Bryan decomposition, body-frame and outer-frame axis conventions); the numerical hazards production workloads should anticipate (q vs -q double cover, input drift in <varname>|q|</varname>, SLERP near antipode and identity, gimbal lock, cross-frame orientation transform); and the durability and storage conventions are collected in <xref linkend="pose_production_guidance"/>.</para>
 
 	<sect1 xml:id="static_poses">
 		<title>Static Poses</title>
@@ -1160,6 +1164,70 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</listitem>
 		</itemizedlist>
 		<para>These operators work on bounding boxes, not the entire values.</para>
+	</sect1>
+
+	<sect1 xml:id="pose_production_guidance">
+		<title>Production guidance</title>
+		<para>This section captures the operational knowledge production workloads need on top of the function reference: when <varname>pose</varname> / <varname>tpose</varname> are the right type, the conventions the implementation assumes, and the numerical hazards that bite real sensor-fusion clients. Most of these are surfaced separately throughout the chapter; the goal here is one place a new contributor can read end-to-end before instrumenting an application.</para>
+
+		<sect2 xml:id="pose_when_to_use">
+			<title>When to use pose vs tgeompoint</title>
+			<para>Use <varname>tgeompoint</varname> when only the trajectory of a body's <emphasis>position</emphasis> matters &#x2014; vehicle GPS tracks, animal movement, AIS feeds. The orientation, if known, is implicit (e.g., heading derived from the chord between two consecutive points).</para>
+			<para>Use <varname>tpose</varname> when the <emphasis>orientation</emphasis> is part of the value &#x2014; a drone whose camera is gimballed independently of its flight direction, an industrial robot whose tool-frame attitude is queried per-instant, an AR/VR headset whose viewport is the consumed signal. The orientation is stored explicitly per-instant; SLERP-interpolated by the engine; queryable with the Euler-angle and angular-speed accessors.</para>
+			<para>The trajectory of the position component of a <varname>tpose</varname> is recoverable as a <varname>tgeompoint</varname> via <varname>tpose_to_tgeompoint(tpose) -&gt; tgeompoint</varname>; consequently a single <varname>tpose</varname> column subsumes a <varname>tgeompoint</varname> column when both are needed and the storage cost (an extra unit quaternion per instant) is acceptable.</para>
+		</sect2>
+
+		<sect2 xml:id="pose_frame_conventions">
+			<title>Frame conventions</title>
+			<para>MobilityDB pose values follow these conventions consistently across the C-API, the SQL surface, and the OGC GeoPose JSON I/O:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>Quaternion convention</emphasis>: Hamilton, with components stored as <varname>(W, X, Y, Z)</varname>. The unit quaternion <varname>q</varname> takes vectors from the body frame to the outer (world) frame: <varname>v_world = q * v_body * q*</varname>. The right-hand rule applies for the rotation axis.</para></listitem>
+				<listitem><para><emphasis>2D pose orientation</emphasis>: a single rotation angle <varname>theta</varname> in <varname>(-pi, pi]</varname>, expressed in radians, about the world Z axis. By convention this is the body's <emphasis>yaw</emphasis>.</para></listitem>
+				<listitem><para><emphasis>3D pose orientation</emphasis>: a unit quaternion. The Basic-YPR conformance class of OGC GeoPose maps to the ZYX intrinsic Tait-Bryan decomposition: yaw about Z, then pitch about the new Y, then roll about the new X. The <varname>yaw / pitch / roll</varname> accessors implement this convention.</para></listitem>
+				<listitem><para><emphasis>Outer frame</emphasis>: encoded by the SRID. SRID 4326 is the WGS-84 geographic frame (lat / lon / h, with the local frame being East-North-Up at each point). SRID 4978 is WGS-84 ECEF. Custom frames can be registered in the <varname>geopose_frames</varname> catalog. The <varname>transform(pose, srid)</varname> function applies both the position transform and the orientation rotation between known frame pairs (currently 4326 and 4978).</para></listitem>
+				<listitem><para><emphasis>Inner (body) frame</emphasis>: by convention right-handed body axes &#x2014; X forward, Y left, Z up. Stored implicitly in v1 (no per-pose inner-frame identifier).</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_hazards">
+			<title>Numerical hazards</title>
+			<para>Five hazards reliably bite real sensor-fusion clients. The implementation mitigates each as follows:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Quaternion double cover (q vs -q)</emphasis>. The same physical orientation has two quaternion representations differing only in sign. Naive byte-comparison would say they are different values, breaking <varname>=</varname> / <varname>cmp</varname> / <varname>hash</varname> / distinct-set semantics in <varname>poseset</varname>.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>pose_make_3d</varname> canonicalises every constructed pose to <varname>W &gt;= 0</varname>, and a regression test pins the invariant across the WKT parser, the SQL constructor, the WKB recv path, and the hash function so a future refactor cannot silently regress it.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Input drift in <varname>|q|</varname></emphasis>. IMUs, AR/VR runtimes, and physics engines routinely emit quaternions with <varname>|q| - 1</varname> in the range <varname>1e-9</varname> to <varname>1e-6</varname> because they do not renormalise on every frame.</para>
+					<para><emphasis>Mitigation</emphasis>: the constructor accepts any quaternion within <varname>1e-3</varname> of unit norm and renormalises to exactly unit on acceptance, so the on-disk representation is independent of the caller's floating-point hygiene. Way-off norms are still rejected with a clear error.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>SLERP near antipode / identity</emphasis>. For two near-identical quaternions the <varname>acos(dot)</varname> term in SLERP suffers catastrophic cancellation; for two near-antipodal quaternions the shortest-arc direction is ambiguous.</para>
+					<para><emphasis>Mitigation</emphasis>: the SLERP implementation falls back to LERP+normalise when <varname>|q1 . q2| &gt; 0.9995</varname>, and flips one quaternion when the dot product is negative (shortest-path interpolation). Renormalisation after the SLERP step uses <varname>1 / sqrt(|q|^2)</varname>, not the squared norm, so drift is correctly damped over long compositions.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Gimbal lock at pitch = +/- pi/2</emphasis>. The yaw / roll components of the ZYX intrinsic Tait-Bryan decomposition are undetermined when pitch is exactly +/- pi/2 &#x2014; the rotation axis for yaw and roll coincide.</para>
+					<para><emphasis>Mitigation</emphasis>: the Euler-decomposition code clamps the <varname>asin</varname> argument to <varname>[-1, 1]</varname> so floating-point drift past <varname>|q| = 1</varname> does not produce <varname>NaN</varname>, but the gimbal-lock case itself is intrinsic to the ZYX convention. Workloads that need to query orientation continuously through a gimbal-locked configuration should query the quaternion directly via <varname>pose_orientation</varname> rather than through yaw / pitch / roll.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Cross-frame orientation transform</emphasis>. <varname>ST_Transform</varname>-style position transforms are well-defined under PROJ. The orientation, however, is expressed in the local frame's basis at the pose's point &#x2014; when crossing frames (e.g., WGS-84 geographic to ECEF), the orientation must be rotated by the basis-change matrix at that point.</para>
+					<para><emphasis>Mitigation</emphasis>: the <varname>transform</varname> function implements the orientation correction for the canonical OGC GeoPose case (geographic and ECEF), and emits a <varname>NOTICE</varname> for SRID pairs where the correction is not yet defined (rather than silently passing the orientation through and producing wrong rotations).</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of a <varname>pose</varname> is the position followed by the unit quaternion (3D) or the rotation angle (2D). The byte layout is stable: <varname>asBinary(pose)</varname> / <varname>poseFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit, and the WKB / EWKB / HexEWKB serialisations follow the standard PostGIS endian-flag-then-payload pattern.</para>
+			<para>The <varname>pg_dump</varname> output of a table containing <varname>pose</varname> or <varname>tpose</varname> columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable.</para>
+			<para>The <varname>geopose_frames</varname> catalog is marked as a configuration table, so <varname>pg_dump</varname> preserves user-added frame rows (custom frames keep their <varname>frame_id</varname> across dump / restore).</para>
+		</sect2>
+
+		<sect2 xml:id="pose_mfjson_conformance">
+			<title>MFJSON conformance</title>
+			<para>The MFJSON output of a <varname>pose</varname> instant follows the OGC GeoPose Basic-YPR conformance class layout: <varname>{"position":{"lat":...,"lon":...,"h":...},"quaternion":{"x":...,"y":...,"z":...,"w":...}}</varname> for 3D and <varname>{"position":{"lat":...,"lon":...},"rotation":...}</varname> for 2D. The <varname>position</varname>, <varname>quaternion</varname>, and <varname>rotation</varname> top-level keys match the corresponding SQL accessors (<varname>point</varname>, <varname>orientation</varname>, <varname>rotation</varname>) on the natural-language descriptor convention.</para>
+			<para>The <varname>lat</varname>, <varname>lon</varname>, and <varname>h</varname> inner labels assume the position is expressed in a geographic CRS (typically <varname>SRID 4326</varname>, the documented happy path for GeoPose). When a <varname>pose</varname> is stored in <varname>SRID 4978</varname> (ECEF) or in a projected frame, the JSON shape is the same but the labels are not the OGC-canonical ones for those frames; consumers should interpret the three coordinates as the underlying frame's <varname>x</varname> / <varname>y</varname> / <varname>z</varname>. The conformance class is not currently switched at output time based on the SRID — this is a deliberate design choice (the JSON shape stays stable across SRIDs and round-trips through <varname>poseFromMFJSON</varname> are bit-stable) rather than an oversight.</para>
+		</sect2>
 	</sect1>
 </chapter>
 
