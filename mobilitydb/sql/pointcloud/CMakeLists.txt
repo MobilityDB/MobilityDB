@@ -11,7 +11,12 @@ SET(LOCAL_FILES
   438_tpc_spgist
   439_tpc_distance
   440_tpc_aggfuncs
+  441_tpcpoint_spatialfuncs
   442_tpcpoint_spatialrels
+  443_tpcpoint_tempspatialrels
+  444_tpcpoint_analytics
+  445_tpcpoint_tile
+  446_tpcpoint_distance
   )
 
 foreach (f ${LOCAL_FILES})

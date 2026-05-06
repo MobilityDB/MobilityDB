@@ -17,7 +17,15 @@
 #if ! MEOS
   #include <utils/memutils.h>  /* TopMemoryContext */
 #endif
+/* pc_api.h gives the full PCSCHEMA struct definition; it lives in
+ * pointcloud-pg/lib/ which is in this target's include path. */
+#include "pc_api.h"
 #include <meos.h>
+/* SRID_INVALID lives in PostGIS liblwgeom.h, which is not in this
+ * CMake target's include path.  Define the sentinel locally. */
+#ifndef SRID_INVALID
+#define SRID_INVALID (-1)
+#endif
 #include "pointcloud/meos_schema_hook.h"
 
 /*****************************************************************************
@@ -27,7 +35,8 @@
 typedef struct schema_entry {
   uint32_t pcid;
   PCSCHEMA *schema;
-  char *xml_text;  /* NULL if registered without XML */
+  int32_t srid;      /* cached so callers need not dereference PCSCHEMA */
+  char *xml_text;    /* NULL if registered without XML */
 } schema_entry;
 
 /* Small dynamic array; linear scan.  Workloads rarely exceed a handful
@@ -112,11 +121,13 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
   /* If already present, replace; preserve previously-cached XML when
    * the new call passes NULL for xml_text (so a parse-only re-register
    * doesn't accidentally drop a prior XML registration). */
+  int32_t srid = schema ? (int32_t) schema->srid : SRID_INVALID;
   for (int i = 0; i < cache_count; i++)
   {
     if (cache_buf[i].pcid == pcid)
     {
       cache_buf[i].schema = schema;
+      cache_buf[i].srid = srid;
       if (xml_text)
       {
         if (cache_buf[i].xml_text)
@@ -129,6 +140,7 @@ meos_pc_schema_register_xml(uint32_t pcid, PCSCHEMA *schema,
   ensure_cache_capacity();
   cache_buf[cache_count].pcid = pcid;
   cache_buf[cache_count].schema = schema;
+  cache_buf[cache_count].srid = srid;
   cache_buf[cache_count].xml_text = copy_xml_long_lived(xml_text);
   cache_count++;
 }
@@ -168,6 +180,36 @@ meos_pc_schema_clear(void)
   }
   cache_count = 0;
   cache_cap = 0;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Return the cached SRID for a pcid (SRID_INVALID on miss).
+ *
+ * The SRID is extracted from the PCSCHEMA at registration time so
+ * callers (e.g. spatial_srid in tspatial_srid.c) do not need the full
+ * PCSCHEMA struct definition.
+ */
+int32_t
+meos_pc_schema_get_srid(uint32_t pcid)
+{
+  /* Cache hit */
+  for (int i = 0; i < cache_count; i++)
+  {
+    if (cache_buf[i].pcid == pcid)
+      return cache_buf[i].srid;
+  }
+  /* Trigger hook so the schema is registered; then retry. */
+  PCSCHEMA *s = meos_pc_schema(pcid);
+  if (s)
+  {
+    for (int i = 0; i < cache_count; i++)
+    {
+      if (cache_buf[i].pcid == pcid)
+        return cache_buf[i].srid;
+    }
+  }
+  return SRID_INVALID;
 }
 
 /**

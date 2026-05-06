@@ -63,6 +63,10 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/meos_schema_hook.h"
+#endif
 
 /*
  * Maximum length of an ESPG string to lookup
@@ -97,6 +101,12 @@ spatial_srid(Datum d, MeosType basetype)
 #if POSE
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT: {
+      const Pcpoint *pt = DatumGetPcpointP(d);
+      return meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+    }
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
