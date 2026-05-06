@@ -1,0 +1,728 @@
+COPY tbl_trgeometry2d TO '/tmp/tbl_trgeometry2d' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_trgeometry2d_tmp;
+NOTICE:  table "tbl_trgeometry2d_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_trgeometry2d_tmp AS TABLE tbl_trgeometry2d WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_trgeometry2d_tmp FROM '/tmp/tbl_trgeometry2d' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d_tmp t2
+  WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_trgeometry2d_tmp;
+DROP TABLE
+SELECT DISTINCT tempSubtype(trgeometryInst(inst)) FROM tbl_trgeometry2d_inst;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_trgeometry2d_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeq(inst)) FROM tbl_trgeometry2d_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(inst)) FROM tbl_trgeometry2d_inst;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometryInst(inst)) FROM tbl_trgeometry3d_inst;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_trgeometry3d_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeq(inst)) FROM tbl_trgeometry3d_inst;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(inst)) FROM tbl_trgeometry3d_inst;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometryInst(seq)) FROM tbl_trgeometry2d_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_trgeometry2d_discseq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeq(seq)) FROM tbl_trgeometry2d_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(seq)) FROM tbl_trgeometry2d_discseq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometryInst(seq)) FROM tbl_trgeometry3d_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_trgeometry3d_discseq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeq(seq)) FROM tbl_trgeometry3d_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(seq)) FROM tbl_trgeometry3d_discseq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(seq)) FROM tbl_trgeometry2d_seq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(trgeometrySeqSet(seq)) FROM tbl_trgeometry3d_seq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_trgeometry2d ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ Sequence
+ SequenceSet
+(3 rows)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_trgeometry3d ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ Sequence
+ SequenceSet
+(3 rows)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE memSize(temp) > 0;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d WHERE memSize(temp) > 0;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_trgeometry2d;
+   max    
+----------
+ 83.76899
+(1 row)
+
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_trgeometry3d;
+    max    
+-----------
+ 84.062144
+(1 row)
+
+SELECT COUNT(getValue(inst)) FROM tbl_trgeometry2d_inst;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(getValue(inst)) FROM tbl_trgeometry3d_inst;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(getValues(temp)) FROM tbl_trgeometry2d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(getValues(temp)) FROM tbl_trgeometry3d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_trgeometry2d;
+ max 
+-----
+ 104
+(1 row)
+
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_trgeometry3d;
+ max 
+-----
+ 144
+(1 row)
+
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_trgeometry2d;
+ max 
+-----
+ 104
+(1 row)
+
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_trgeometry3d;
+ max 
+-----
+ 144
+(1 row)
+
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_trgeometry2d;
+ max 
+-----
+ 104
+(1 row)
+
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_trgeometry3d;
+ max 
+-----
+ 144
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_trgeometry2d_inst;
+             max              
+------------------------------
+ Thu Dec 27 02:32:00 2001 PST
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_trgeometry3d_inst;
+             max              
+------------------------------
+ Thu Dec 27 18:44:00 2001 PST
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_trgeometry2d;
+   max    
+----------
+ 04:31:00
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_trgeometry3d;
+   max    
+----------
+ 04:21:00
+(1 row)
+
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_trgeometry2d;
+   max    
+----------
+ 05:08:00
+(1 row)
+
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_trgeometry3d;
+   max    
+----------
+ 05:09:00
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_trgeometry2d;
+   max    
+----------
+ 04:31:00
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_trgeometry3d;
+   max    
+----------
+ 04:21:00
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_trgeometry2d_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_trgeometry3d_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(duration(startSequence(seq))) FROM tbl_trgeometry2d_seq;
+   max    
+----------
+ 01:07:00
+(1 row)
+
+SELECT MAX(duration(startSequence(seq))) FROM tbl_trgeometry3d_seq;
+   max    
+----------
+ 01:02:00
+(1 row)
+
+SELECT MAX(duration(endSequence(seq))) FROM tbl_trgeometry2d_seq;
+   max    
+----------
+ 01:07:00
+(1 row)
+
+SELECT MAX(duration(endSequence(seq))) FROM tbl_trgeometry3d_seq;
+   max    
+----------
+ 01:02:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_trgeometry2d_seq;
+   max    
+----------
+ 01:07:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_trgeometry3d_seq;
+   max    
+----------
+ 01:02:00
+(1 row)
+
+SELECT MAX(array_length(sequences(seq), 1)) FROM tbl_trgeometry2d_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(array_length(sequences(seq), 1)) FROM tbl_trgeometry3d_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(ss)) FROM tbl_trgeometry2d_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numSequences(ss)) FROM tbl_trgeometry3d_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(duration(startSequence(ss))) FROM tbl_trgeometry2d_seqset;
+   max    
+----------
+ 00:59:00
+(1 row)
+
+SELECT MAX(duration(startSequence(ss))) FROM tbl_trgeometry3d_seqset;
+   max    
+----------
+ 01:07:00
+(1 row)
+
+SELECT MAX(duration(endSequence(ss))) FROM tbl_trgeometry2d_seqset;
+   max    
+----------
+ 01:00:00
+(1 row)
+
+SELECT MAX(duration(endSequence(ss))) FROM tbl_trgeometry3d_seqset;
+   max    
+----------
+ 01:03:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_trgeometry2d_seqset;
+   max    
+----------
+ 01:00:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_trgeometry3d_seqset;
+   max    
+----------
+ 01:03:00
+(1 row)
+
+SELECT MAX(array_length(sequences(ss), 1)) FROM tbl_trgeometry2d_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(array_length(sequences(ss), 1)) FROM tbl_trgeometry3d_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_trgeometry2d;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_trgeometry3d;
+ max 
+-----
+  53
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_trgeometry2d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_trgeometry3d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_trgeometry2d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_trgeometry3d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_trgeometry2d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_trgeometry3d;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MAX(array_length(instants(temp), 1)) FROM tbl_trgeometry2d;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(array_length(instants(temp), 1)) FROM tbl_trgeometry3d;
+ max 
+-----
+  53
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_trgeometry2d;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_trgeometry3d;
+ max 
+-----
+  53
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_trgeometry2d;
+             max              
+------------------------------
+ Thu Dec 27 04:33:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_trgeometry3d;
+             max              
+------------------------------
+ Tue Dec 25 16:28:00 2001 PST
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_trgeometry2d;
+             max              
+------------------------------
+ Thu Dec 27 05:11:00 2001 PST
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_trgeometry3d;
+             max              
+------------------------------
+ Tue Dec 25 17:06:00 2001 PST
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_trgeometry2d;
+             max              
+------------------------------
+ Thu Dec 27 05:11:00 2001 PST
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_trgeometry3d;
+             max              
+------------------------------
+ Tue Dec 25 17:06:00 2001 PST
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp), 1)) FROM tbl_trgeometry2d;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp), 1)) FROM tbl_trgeometry3d;
+ max 
+-----
+  53
+(1 row)
+
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_trgeometry2d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_trgeometry3d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_trgeometry2d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_trgeometry3d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_trgeometry2d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_trgeometry3d, tbl_interval;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ?= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp ?= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp %= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp %= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_timestamptz
+  WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d, tbl_timestamptz
+  WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_timestamptz
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d, tbl_timestamptz
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_tstzset
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d, tbl_tstzset
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_tstzspan
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d, tbl_tstzspan
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_tstzspanset
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d, tbl_tstzspanset
+  WHERE atTime(temp, t) IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp = t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp < t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp <= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp > t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+  WHERE t1.temp >= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp = t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp < t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp <= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp > t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry3d t1, tbl_trgeometry3d t2
+  WHERE t1.temp >= t2.temp;
+ count 
+-------
+  5050
+(1 row)
+

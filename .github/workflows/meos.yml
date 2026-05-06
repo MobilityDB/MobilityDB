@@ -66,6 +66,44 @@ jobs:
           gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
 
+  build-h3:
+    name: Build with H3
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev \
+            libh3-dev
+
+      - name: Locate libh3 on disk and pin its paths
+        run: |
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null; find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"; exit 1
+          fi
+          echo "H3_INCLUDE_DIR=$(dirname $H3_INC)" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DH3=on \
+            -DH3_INCLUDE_DIR=${{ env.H3_INCLUDE_DIR }} \
+            -DH3_LIBRARY=${{ env.H3_LIBRARY }} ..
+          make -j $(nproc)
+          sudo make install
+
   threaded:
     name: Thread-safety (TSan)
     runs-on: ubuntu-latest

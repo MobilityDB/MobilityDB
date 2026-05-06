@@ -6,7 +6,7 @@ SET(LOCAL_FILES
   054_tpoint_compops
   056_tpoint_spatialfuncs
   058_tpoint_tile
-  060_tpoint_boxops
+  060_tpoint_topops
   062_tpoint_posops
   064_tpoint_distance
   066_tpoint_similarity
@@ -27,7 +27,7 @@ list(APPEND LOCAL_FILES
   054_tgeo_compops
   056_tgeo_spatialfuncs
   058_tgeo_tile
-  060_tgeo_boxops
+  060_tgeo_topops
   062_tgeo_posops
   064_tgeo_distance
   068_tgeo_aggfuncs

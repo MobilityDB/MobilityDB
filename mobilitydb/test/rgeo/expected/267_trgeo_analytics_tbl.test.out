@@ -1,0 +1,36 @@
+SELECT MAX(numInstants(minTimeDeltaSimplify(seq, '3 min'))) FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(minDistSimplify(seq, 4.0)))          FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(maxDistSimplify(seq, 4.0)))          FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(maxDistSimplify(seq, 4.0, false)))   FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(douglasPeuckerSimplify(seq, 4.0)))   FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(douglasPeuckerSimplify(seq, 4.0, false))) FROM tbl_trgeometry2d_seq;
+ max 
+-----
+  10
+(1 row)
+

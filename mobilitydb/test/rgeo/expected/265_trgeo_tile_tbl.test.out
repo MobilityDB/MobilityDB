@@ -1,0 +1,37 @@
+SELECT COUNT(*) FROM tbl_trgeometry2d,
+  LATERAL spaceBoxes(temp, 1.0) b WHERE b IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d,
+  LATERAL timeBoxes(temp, interval '1 day', '2000-01-03') b WHERE b IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d,
+  LATERAL spaceTimeBoxes(temp, 1.0, interval '1 day') b WHERE b IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM (
+  SELECT * FROM tbl_trgeometry2d, LATERAL spaceSplit(temp, 1.0) AS s
+) t WHERE (t).trgeo IS NOT NULL;
+ count 
+-------
+ 86577
+(1 row)
+
+SELECT COUNT(*) FROM (
+  SELECT * FROM tbl_trgeometry2d, LATERAL spaceTimeSplit(temp, 1.0, interval '1 day') AS s
+) t WHERE (t).trgeo IS NOT NULL;
+ count 
+-------
+ 87199
+(1 row)
+

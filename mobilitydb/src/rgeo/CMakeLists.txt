@@ -1,8 +1,12 @@
 add_library(pg_rgeo OBJECT
   trgeo.c
+  trgeo_boxops.c
   trgeo_compops.c
   trgeo_distance.c
-  # trgeo_spatialfuncs.c
-  # trgeo_spatialrels.c
+  trgeo_spatialfuncs.c
+  trgeo_geom_clip.c
+  trgeo_spatialrels.c
+  trgeo_tempspatialrels.c
+  trgeo_tile.c
   trgeo_vclip.c
   )

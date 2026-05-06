@@ -5,7 +5,7 @@ set(GEO_SRCS
   stbox_index.c
   tgeo.c
   tgeo_aggfuncs.c
-  tgeo_boxops.c
+  tgeo_topops.c
   tgeo_compops.c
   tgeo_distance.c
   tgeo_restrict.c

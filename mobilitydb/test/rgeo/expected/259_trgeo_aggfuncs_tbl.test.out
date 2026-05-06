@@ -1,0 +1,216 @@
+SELECT numInstants(tcount(inst)) FROM tbl_trgeometry2d_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_trgeometry2d_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(seq)) FROM tbl_trgeometry2d_discseq;
+ numinstants 
+-------------
+         538
+(1 row)
+
+SELECT k%10, numInstants(tcount(seq)) FROM tbl_trgeometry2d_discseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          56
+        1 |          61
+        2 |          51
+        3 |          49
+        4 |          64
+        5 |          51
+        6 |          45
+        7 |          55
+        8 |          61
+        9 |          45
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_trgeometry2d_seq;
+ numsequences 
+--------------
+           98
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_trgeometry2d_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |            9
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ss)) FROM tbl_trgeometry2d_seqset;
+ numsequences 
+--------------
+          566
+(1 row)
+
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_trgeometry2d_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           54
+        1 |           49
+        2 |           51
+        3 |           55
+        4 |           54
+        5 |           48
+        6 |           64
+        7 |           57
+        8 |           53
+        9 |           77
+(10 rows)
+
+SELECT numInstants(tcount(inst)) FROM tbl_trgeometry3d_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_trgeometry3d_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(seq)) FROM tbl_trgeometry3d_discseq;
+ numinstants 
+-------------
+         573
+(1 row)
+
+SELECT k%10, numInstants(tcount(seq)) FROM tbl_trgeometry3d_discseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          58
+        1 |          46
+        2 |          65
+        3 |          51
+        4 |          62
+        5 |          71
+        6 |          60
+        7 |          57
+        8 |          52
+        9 |          53
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_trgeometry3d_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_trgeometry3d_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ss)) FROM tbl_trgeometry3d_seqset;
+ numsequences 
+--------------
+          552
+(1 row)
+
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_trgeometry3d_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           59
+        1 |           36
+        2 |           49
+        3 |           71
+        4 |           54
+        5 |           57
+        6 |           51
+        7 |           72
+        8 |           46
+        9 |           55
+(10 rows)
+
+SELECT round(extent(inst), 6) FROM tbl_trgeometry2d_inst;
+                                                               round                                                               
+-----------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX XT(((-96.225027,-96.592012),(100.146781,99.670945)),[Tue Jan 02 12:23:00 2001 PST, Thu Dec 27 02:32:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6)  FROM tbl_trgeometry2d_discseq;
+                                                               round                                                                
+------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX XT(((-98.423665,-99.105653),(103.029147,101.560728)),[Fri Jan 05 12:00:00 2001 PST, Sun Dec 30 07:47:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6)  FROM tbl_trgeometry2d_seq;
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX XT(((-102.468788,-102.924681),(102.975505,102.763837)),(Mon Jan 01 04:21:00 2001 PST, Fri Dec 28 23:40:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ss), 6)   FROM tbl_trgeometry2d_seqset;
+                                                                round                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX XT(((-103.135878,-103.082984),(103.155518,103.159159)),[Mon Jan 01 10:51:00 2001 PST, Tue Dec 25 15:50:00 2001 PST])
+(1 row)
+
+SELECT round(extent(inst), 6) FROM tbl_trgeometry3d_inst;
+                                                                            round                                                                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX ZT(((-141.891401,-241.477533,-243.971877),(127.243674,244.250792,241.326175)),[Sat Jan 06 11:57:00 2001 PST, Thu Dec 27 18:44:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6)  FROM tbl_trgeometry3d_discseq;
+                                                                             round                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX ZT(((-311.926909,-1167.60556,-1166.309712),(326.151708,1301.198548,1302.606289)),[Mon Jan 01 07:36:00 2001 PST, Thu Dec 27 14:22:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6)  FROM tbl_trgeometry3d_seq;
+                                                                            round                                                                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX ZT(((-229.518003,-828.914894,-828.914894),(220.777572,650.432007,650.432007)),[Thu Jan 04 04:59:00 2001 PST, Tue Dec 25 17:06:00 2001 PST))
+(1 row)
+
+SELECT round(extent(ss), 6)   FROM tbl_trgeometry3d_seqset;
+                                                                              round                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;STBOX ZT(((-348.475743,-3248.758197,-3248.758197),(436.795325,2184.639422,2184.639422)),[Sun Jan 07 07:24:00 2001 PST, Sat Dec 29 11:26:00 2001 PST))
+(1 row)
+

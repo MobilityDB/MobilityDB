@@ -1,0 +1,113 @@
+SELECT round(v_clip_poly_point(
+  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+  geometry 'Point(5 0)'), 6);
+ round 
+-------
+     4
+(1 row)
+
+SELECT round(v_clip_poly_point(
+  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+  geometry 'Point(4 0)'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT v_clip_poly_poly(
+  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+  geometry 'Polygon((1 0,2 0,2 1,1 1,1 0))');
+ v_clip_poly_poly 
+------------------
+                0
+(1 row)
+
+SELECT round(v_clip_poly_poly(
+  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+  geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))'), 6);
+ round 
+-------
+     4
+(1 row)
+
+SELECT round(v_clip_tpoly_point(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Point(0.5 0.5)',
+  timestamptz '2001-01-05'), 6);
+  round   
+----------
+ 3.535534
+(1 row)
+
+SELECT v_clip_tpoly_point(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Point(0.5 0.5)',
+  timestamptz '2000-01-01');
+ v_clip_tpoly_point 
+--------------------
+                   
+(1 row)
+
+SELECT v_clip_tpoly_poly(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Polygon((1 0,2 0,2 1,1 1,1 0))',
+  timestamptz '2001-01-01');
+ v_clip_tpoly_poly 
+-------------------
+                 0
+(1 row)
+
+SELECT v_clip_tpoly_poly(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Polygon((4 0,5 0,5 1,4 1,4 0))',
+  timestamptz '2001-01-05');
+ v_clip_tpoly_poly 
+-------------------
+                 0
+(1 row)
+
+SELECT round(v_clip_tpoly_poly(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))',
+  timestamptz '2001-01-01'), 6);
+ round 
+-------
+     4
+(1 row)
+
+SELECT v_clip_tpoly_tpoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  tgeompoint '[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-05]',
+  timestamptz '2001-01-01');
+ v_clip_tpoly_tpoint 
+---------------------
+                   0
+(1 row)
+
+SELECT round(v_clip_tpoly_tpoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  tgeompoint '[Point(0.5 0.5)@2001-01-01, Point(0.5 0.5)@2001-01-05]',
+  timestamptz '2001-01-05'), 6);
+  round   
+----------
+ 3.535534
+(1 row)
+
+SELECT v_clip_tpoly_tpoly(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  timestamptz '2001-01-03');
+ v_clip_tpoly_tpoly 
+--------------------
+                  0
+(1 row)
+
+SELECT round(v_clip_tpoly_tpoly(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0),0.0)@2001-01-01',
+  timestamptz '2001-01-01'), 6);
+ round 
+-------
+     4
+(1 row)
+

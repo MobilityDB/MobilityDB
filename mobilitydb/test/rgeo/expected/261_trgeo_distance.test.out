@@ -1,0 +1,83 @@
+SELECT asText(round(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Point(5 0)'), 6));
+                              astext                              
+------------------------------------------------------------------
+ {4@Mon Jan 01 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(round(tdistance(
+  geometry 'Point(5 0)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'),
+  6));
+                              astext                              
+------------------------------------------------------------------
+ {4@Mon Jan 01 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(round(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'
+  <-> geometry 'Point(5 0)', 6));
+                              astext                              
+------------------------------------------------------------------
+ {4@Mon Jan 01 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Point(5 0)'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@Fri Jan 05 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  geometry 'Point(5 0)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(4 0),0)@Fri Jan 05 00:00:00 2001 PST
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  geometry 'Point(5 0)'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  geometry 'Point(5 0)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'),
+  6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]',
+  stbox 'STBOX X((5, 0), (6, 1))'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  stbox 'STBOX X((5, 0), (6, 1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'),
+  6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(4 0),0.0)@2001-01-05]'
+  |=| geometry 'Point(5 0)', 6);
+ round 
+-------
+     0
+(1 row)
+

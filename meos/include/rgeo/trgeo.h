@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* MEOS */
 #include "temporal/temporal.h"
+#include "pose/pose.h"
 
 /** Symbolic constants for the temporal instant geometry constuctor */
 #define WITH_GEOM       true
@@ -58,6 +59,7 @@ extern bool ensure_valid_trgeo_trgeo(const Temporal *temp1,
 extern bool ensure_valid_trgeo_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 extern const GSERIALIZED *trgeo_geom_p(const Temporal *temp);
+extern GSERIALIZED *geom_apply_pose(const GSERIALIZED *gs, const Pose *pose);
 
 /* Input/output functions */
 

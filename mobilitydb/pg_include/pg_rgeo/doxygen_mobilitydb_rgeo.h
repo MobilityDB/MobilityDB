@@ -63,8 +63,21 @@
  * @ingroup mobilitydb_rgeo
  * @brief Restriction functions for temporal rigid geometries
  *
+ * @defgroup mobilitydb_rgeo_bbox Bounding box functions
  * @ingroup mobilitydb_rgeo
- * @brief Distance functions for temporal rigid geometries
+ * @brief Bounding box functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_boxops Box operation functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Box operation functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_tile Tile functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Tile functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_analytics Analytics functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Analytics functions for temporal rigid geometries
  *
  * @defgroup mobilitydb_rgeo_dist Distance functions
  * @ingroup mobilitydb_rgeo

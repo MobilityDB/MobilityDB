@@ -4,7 +4,7 @@ add_library(pg_geo OBJECT
   stbox.c
   tgeo.c
   tgeo_aggfuncs.c
-  tgeo_boxops.c
+  tgeo_topops.c
   tgeo_compops.c
   tgeo_distance.c
   tgeo_spatialfuncs.c
