@@ -1,0 +1,90 @@
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  geometry 'Point(0 5)', geometry 'Point(1 5)',
+  geometry 'Polygon((10 10, 20 10, 20 20, 10 20, 10 10))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ 
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(1 1)', geometry 'Point(2 1)',
+  geometry 'Point(1 2)', geometry 'Point(2 2)',
+  geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ {[0, 1]}
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  geometry 'Point(0 4)', geometry 'Point(1 4)',
+  geometry 'Polygon((0 2, 5 2, 5 5, 0 5, 0 2))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ {[0.5, 1]}
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  geometry 'Point(0 10)', geometry 'Point(1 10)',
+  geometry 'Polygon((0 3, 5 3, 5 5, 0 5, 0 3))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ {[0.3, 0.5]}
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  geometry 'Point(0 1)', geometry 'Point(2 1)',
+  geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ 
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  geometry 'Point(0 1)', geometry 'Point(1 1)',
+  geometry 'LINESTRING(0 0, 1 0)');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ 
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon(
+  geometry 'Point(1 1)', geometry 'Point(2 1)',
+  geometry 'Point(1 1)', geometry 'Point(2 1)',
+  geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))');
+ _trgeo_geom_clip_polygon 
+--------------------------
+ {[0, 1]}
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon_posed(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  pose 'Pose(Point(0 0), 0)', pose 'Pose(Point(0 4), 0)',
+  geometry 'Polygon((0 2, 5 2, 5 5, 0 5, 0 2))');
+ _trgeo_geom_clip_polygon_posed 
+--------------------------------
+ {[0.5, 1]}
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon_posed(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  pose 'Pose(Point(0 0), 0)', pose 'Pose(Point(0 4), 0.0872665)',
+  geometry 'Polygon((0 2, 5 2, 5 5, 0 5, 0 2))') IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT _trgeo_geom_clip_polygon_posed(
+  geometry 'Point(0 0)', geometry 'Point(1 0)',
+  pose 'Pose(Point(0 0), 0)', pose 'Pose(Point(0 4), 1.0472)',
+  geometry 'Polygon((0 2, 5 2, 5 5, 0 5, 0 2))') IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -42,9 +42,13 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
+#include <meos_geo.h>
+#include <meos_rgeo.h>
 #include <meos_internal.h>
 #include "geo/stbox.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
+#include "rgeo/trgeo.h"
 #include "rgeo/trgeo_inst.h"
 
 /*****************************************************************************/
@@ -218,7 +222,7 @@ lwgeom_apply_pose(const Pose *pose, LWGEOM *geom)
 /*****************************************************************************/
 
 /**
- * @brief 
+ * @brief
  */
 double
 geom_radius(const GSERIALIZED *gs)
