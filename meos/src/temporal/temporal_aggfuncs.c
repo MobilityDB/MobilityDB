@@ -428,6 +428,14 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
         DATUM_FREE(value, temptype_basetype(inst1->temptype));
         if (tofree)
           tofree1[nfree1++] = result[count - 1];
+        /* Free freshly-allocated by-reference results. Callbacks like
+         * datum_min_text return one of their inputs verbatim; those
+         * pointers are still owned by the input TInstants and must not
+         * be freed here. */
+        if (! basetype_byvalue(temptype_basetype(inst1->temptype)) &&
+            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst1)) &&
+            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst2)))
+          pfree(DatumGetPointer(value));
       }
       else
       {
@@ -443,6 +451,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "The temporal values have different value at their common timestamp %s",
             t1);
+          pfree(t1);
           /* Mirror the caller's pfree_array teardown: when tofree was
            * requested, every result[] entry was tracked in tofree1; otherwise
            * walk result[] directly. Either way, release the partially built
@@ -601,7 +610,14 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
        * be released right after construction. */
       Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
       instants[i] = tinstant_make(value, seq1->temptype, inst1->t);
-      DATUM_FREE(value, basetype);
+      /* Free freshly-allocated by-reference results. Callbacks like
+       * datum_min_text return one of their inputs verbatim; those
+       * pointers are still owned by the syncseqs and must not be freed
+       * here. */
+      if (! basetype_byvalue(basetype) &&
+          DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst1)) &&
+          DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst2)))
+        pfree(DatumGetPointer(value));
     }
     else
     {
@@ -613,6 +629,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
+        pfree(t1);
         /* Free the instants built so far in this loop (j is the loop var, not
          * i) plus the synced sequences and any "before intersection" sequence
          * already in sequences[0..nseqs-1]. */

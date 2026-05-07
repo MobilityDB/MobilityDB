@@ -249,6 +249,7 @@ ensure_valid_tseqarr(TSequence **sequences, int count)
         char *t2 = pg_timestamptz_out(lower2);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+        pfree(t1); pfree(t2);
         return false;
       }
       if (! ensure_spatial_validity((Temporal *) sequences[i - 1],
