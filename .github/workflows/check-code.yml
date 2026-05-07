@@ -24,3 +24,12 @@ jobs:
           sudo apt install -y licensecheck
       - name: Run License Check
         run: ./tools/scripts/test_license.sh
+
+  int64_check:
+    name: int64 vs int64_t header convention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject int64_t / uint64_t in MobilityDB public headers
+        run: ./tools/scripts/check_int64_in_headers.sh
