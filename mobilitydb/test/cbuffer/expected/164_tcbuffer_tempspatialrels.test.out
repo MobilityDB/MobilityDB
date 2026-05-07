@@ -1,0 +1,910 @@
+SELECT tContains(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Point(1 1)', NULL::tcbuffer);
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+           tcontains            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tContains(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+                                            tcontains                                             
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tContains(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Point empty', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Point empty', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 12:00:00 2000 PST], (f@Sat Jan 01 12:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tContains(geometry 'Point(1 1)', tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Po...
+                                                         ^
+SELECT tContains(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+SELECT tDisjoint(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(1 1)', NULL::tcbuffer);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(NULL::tcbuffer, geometry 'Point(1 1)');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::tcbuffer);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+           tdisjoint            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+                                            tdisjoint                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+                                                                                                             tdisjoint                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 08:29:07.012947 2000 PST], (t@Sat Jan 01 08:29:07.012947 2000 PST, f@Sun Jan 02 15:30:52.987052 2000 PST], (t@Sun Jan 02 15:30:52.987052 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                              tdisjoint                                                                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 08:29:07.012947 2000 PST], (t@Sat Jan 01 08:29:07.012947 2000 PST, f@Sun Jan 02 15:30:52.987052 2000 PST], (t@Sun Jan 02 15:30:52.987052 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(geometry 'Point empty', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(geometry 'Point empty', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+           tdisjoint            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+                                            tdisjoint                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+                                                                                                             tdisjoint                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 08:29:07.012947 2000 PST], (t@Sat Jan 01 08:29:07.012947 2000 PST, f@Sun Jan 02 15:30:52.987052 2000 PST], (t@Sun Jan 02 15:30:52.987052 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+                                                                                                                                              tdisjoint                                                                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 08:29:07.012947 2000 PST], (t@Sat Jan 01 08:29:07.012947 2000 PST, f@Sun Jan 02 15:30:52.987052 2000 PST], (t@Sun Jan 02 15:30:52.987052 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(2 1),0.5)@2000-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 18:00:00 2000 PST, f@Mon Jan 03 06:00:00 2000 PST], (t@Mon Jan 03 06:00:00 2000 PST, t@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-04]', geometry 'Linestring(1 1,2 1)');
+                                                                                         tdisjoint                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 22:32:38.961158 2000 PST, f@Mon Jan 03 23:59:59.999999 2000 PST], (t@Mon Jan 03 23:59:59.999999 2000 PST, t@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-04]', geometry 'Linestring(0 0,1 1)');
+                                                                                         tdisjoint                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 01:27:21.038841 2000 PST, f@Sun Jan 02 22:32:38.961158 2000 PST], (t@Sun Jan 02 22:32:38.961158 2000 PST, t@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point empty');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point empty');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point empty');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+/* Errors */
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01...
+                                  ^
+SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03}', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1 1),0.5)@2000-0...
+                                  ^
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03]', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1 1),0.5)@2000-0...
+                                  ^
+SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3 3),0.5)@2000-01-04, Cbuffer(Point(3 3 3),0.5)@2000-01-05]}', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2000-...
+                                  ^
+SELECT tIntersects(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(geometry 'Point(1 1)', NULL::tcbuffer);
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(NULL::tcbuffer, geometry 'Point(1 1)');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry);
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::tcbuffer);
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+          tintersects           
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+                                                                                                            tintersects                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:29:07.012947 2000 PST], (f@Sat Jan 01 08:29:07.012947 2000 PST, t@Sun Jan 02 15:30:52.987052 2000 PST], (f@Sun Jan 02 15:30:52.987052 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+                                                                                                                                             tintersects                                                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:29:07.012947 2000 PST], (f@Sat Jan 01 08:29:07.012947 2000 PST, t@Sun Jan 02 15:30:52.987052 2000 PST], (f@Sun Jan 02 15:30:52.987052 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(geometry 'Point empty', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(geometry 'Point empty', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+          tintersects           
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+                                                                                                            tintersects                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:29:07.012947 2000 PST], (f@Sat Jan 01 08:29:07.012947 2000 PST, t@Sun Jan 02 15:30:52.987052 2000 PST], (f@Sun Jan 02 15:30:52.987052 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+                                                                                                                                             tintersects                                                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:29:07.012947 2000 PST], (f@Sat Jan 01 08:29:07.012947 2000 PST, t@Sun Jan 02 15:30:52.987052 2000 PST], (f@Sun Jan 02 15:30:52.987052 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(2 1),0.5)@2000-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 18:00:00 2000 PST, t@Mon Jan 03 06:00:00 2000 PST], (f@Mon Jan 03 06:00:00 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-04]', geometry 'Linestring(1 1,2 1)');
+                                                                                        tintersects                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 22:32:38.961158 2000 PST, t@Mon Jan 03 23:59:59.999999 2000 PST], (f@Mon Jan 03 23:59:59.999999 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-04]', geometry 'Linestring(0 0,1 1)');
+                                                                                        tintersects                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 01:27:21.038841 2000 PST, t@Sun Jan 02 22:32:38.961158 2000 PST], (f@Sun Jan 02 22:32:38.961158 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point empty');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point empty');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point empty');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', geometry 'Linestring(1 1,2 2)');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Linestring(1 2,1 0,2 0,2 2)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:00:00 2000 PST], (f@Sat Jan 01 08:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2000-01-02');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 1),0.5)@2000-01-01, Cbuffer(Point(1 2),0.5)@2000-01-02]');
+                           tintersects                            
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+/* Errors */
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tIntersects(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-...
+                                    ^
+SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03}', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1 1),0.5)@2000...
+                                    ^
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03]', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1 1),0.5)@2000...
+                                    ^
+SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@2000-01-01, Cbuffer(Point(2 2 2),0.5)@2000-01-02, Cbuffer(Point(1 1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3 3),0.5)@2000-01-04, Cbuffer(Point(3 3 3),0.5)@2000-01-05]}', geometry 'Point(2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tIntersects(tcbuffer '{[Cbuffer(Point(1 1 1),0.5)@200...
+                                    ^
+SELECT tTouches(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Point(1 1)', NULL::tcbuffer);
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+            ttouches            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tTouches(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+                                             ttouches                                             
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tTouches(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+                              ttouches                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Point empty', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Point empty', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(NULL::tcbuffer, geometry 'Point(1 1)');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry);
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+            ttouches            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tTouches(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+                                             ttouches                                             
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+                              ttouches                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point empty');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point empty');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point empty');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT tTouches(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+                              ttouches                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+/* Errors */
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
+SELECT tTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID
+SELECT tTouches(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+SELECT tTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Poi...
+                                                        ^
+SELECT tDwithin(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1)...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', NULL::tcbuffer, 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', NULL::tcbuffer, 2);
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL);
+ERROR:  function tdwithin(geometry, tcbuffer, unknown) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Poi...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Poi...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Po...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Po...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(P...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point empty', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point empty', tcbuffer 'Cbuffer(Po...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point empty', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point empty', tcbuffer '{Cbuffer(P...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point empty', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point empty', tcbuffer '[Cbuffer(P...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Point empty', tcbuffer '{[Cbuffer(...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(NULL::tcbuffer, geometry 'Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(NULL::tcbuffer, geometry 'Point(1 1)', 2);
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry, 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)', NULL);
+ERROR:  function tdwithin(tcbuffer, geometry, unknown) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point empty', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point empty', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point empty', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(NULL::tcbuffer, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::tcbuffer, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tDwithin(tcbuffer '(Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', geometry 'Point(0 1)', 1);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '(Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 2),0.5)@2000-01-03]', geometry 'Point(2 3)', 1);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 3),0.5)@2000-01-03]', geometry 'Point(1 2)', 0);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 2),0.5)@2000-01-03]', geometry 'Point(1 3)', 0);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-0...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer '(Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 0),0.5)@2000-01-01, Cbuffer(Point(2 0),0.5)@2000-01-02]', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {(f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 0),0.5)@2000-01-01, Cbuffer(Point(2 0),0.5)@2000-01-02]', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 0),0.5)@2000-01-01, Cbuffer(Point(1 0),0.5)@2000-01-02]', 1);
+                                                                      tdwithin                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 04:15:03.543362 2000 PST], (f@Sat Jan 01 04:15:03.543362 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 2),0.5)@2000-01-01, Cbuffer(Point(1 3),0.5)@2000-01-02]', 1);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(4 0),0.5)@2000-01-01, Cbuffer(Point(3 1),0.5)@2000-01-02]', 0);
+                              tdwithin                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03, Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 1);
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer 'Cb...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+/* Errors */
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 2: SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tcbuffer 'C...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(0 0)', -1);
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tDwithin(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', 2);
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDwithin(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(P...
+                                                          ^
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', geometry 'Point(1 1 1)', 2);
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-...
+                                 ^
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', 2);
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-...
+                                 ^
+SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  The geometry cannot have Z dimension
+LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-...
+                                 ^
