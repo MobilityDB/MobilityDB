@@ -149,4 +149,21 @@ CREATE AGGREGATE appendSequence(trgeometry) (
   PARALLEL = safe
 );
 
+/*****************************************************************************
+ * extent
+ *****************************************************************************/
+
+-- The function is not STRICT
+CREATE FUNCTION tspatial_extent_transfn(stbox, trgeometry)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(trgeometry) (
+  SFUNC = tspatial_extent_transfn,
+  STYPE = stbox,
+  COMBINEFUNC = stbox_extent_combinefn,
+  PARALLEL = safe
+);
+
 /*****************************************************************************/

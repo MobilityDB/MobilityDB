@@ -100,13 +100,13 @@ static const int16 TSpatialStrategies[] =
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
   [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = InvalidStrategy,
   [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
   /* Always spatial relationships */
   [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = InvalidStrategy,
   [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,

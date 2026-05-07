@@ -142,24 +142,29 @@ CREATE FUNCTION aCovers(tcbuffer, cbuffer)
 CREATE FUNCTION eDisjoint(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDisjoint(tcbuffer, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDisjoint(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -167,24 +172,29 @@ CREATE FUNCTION eDisjoint(tcbuffer, tcbuffer)
 CREATE FUNCTION aDisjoint(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aDisjoint(tcbuffer, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aDisjoint(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

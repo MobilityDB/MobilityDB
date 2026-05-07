@@ -38,6 +38,8 @@
 /* MEOS */
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_inst.h"
+#include "rgeo/trgeo_spatialfuncs.h"
+#include "rgeo/trgeo_spatialrels.h"
 #include "rgeo/trgeo_seq.h"
 #include "rgeo/trgeo_seqset.h"
 

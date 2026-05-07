@@ -225,8 +225,16 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
 long double
 posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
 {
-  if (! ensure_valid_pose_pose(start, end) ||
-      ! ensure_valid_pose_pose(start, value))
+  VALIDATE_NOT_NULL(start, -1.0); VALIDATE_NOT_NULL(end, -1.0);
+  VALIDATE_NOT_NULL(value, -1.0);
+  /* Use silent checks instead of ensure_valid_pose_pose: the lifting
+   * infrastructure may pass a GSERIALIZED geometry miscast as a Pose
+   * (trgeometry vs geometry comparison), so emitting an ERROR is wrong.
+   * SRID/dimension mismatch means no crossing — return -1.0. */
+  int32_t srid = pose_srid(start);
+  if (pose_srid(end) != srid || pose_srid(value) != srid ||
+      MEOS_FLAGS_GET_Z(start->flags) != MEOS_FLAGS_GET_Z(end->flags) ||
+      MEOS_FLAGS_GET_Z(start->flags) != MEOS_FLAGS_GET_Z(value->flags))
     return -1.0;
 
   GSERIALIZED *gs1 = pose_to_point(start);

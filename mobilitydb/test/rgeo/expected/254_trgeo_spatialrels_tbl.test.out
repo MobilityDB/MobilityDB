@@ -1,0 +1,152 @@
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eContains(ST_SetSRID(g, 5676), temp);
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE aContains(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+    40
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eContains(temp, ST_SetSRID(g, 5676));
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE aContains(temp, ST_SetSRID(g, 5676));
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eContains(t1.temp, t2.temp);
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE aContains(t1.temp, t2.temp);
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eCovers(ST_SetSRID(g, 5676), temp);
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE aCovers(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+    40
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eCovers(temp, ST_SetSRID(g, 5676));
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE aCovers(temp, ST_SetSRID(g, 5676));
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eCovers(t1.temp, t2.temp);
+ERROR:  GEOSRelatePattern returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE aCovers(t1.temp, t2.temp);
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eDisjoint(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+  9360
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eDisjoint(temp, ST_SetSRID(g, 5676));
+ count 
+-------
+  9360
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+    14
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_trgeometry2d t2 WHERE t1.k % 3 = 0 AND aDisjoint(ST_SetSRID(t1.g, 5676), t2.temp);
+ count 
+-------
+  2643
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_geometry t2 WHERE t1.k % 3 = 0 AND aDisjoint(t1.temp, ST_SetSRID(t2.g, 5676));
+ count 
+-------
+  2552
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE t1.k % 3 = 0 AND aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eIntersects(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+  1445
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eIntersects(temp, ST_SetSRID(g, 5676));
+ count 
+-------
+  1445
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE aIntersects(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+  9360
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE aIntersects(temp, ST_SetSRID(g, 5676));
+ count 
+-------
+  9360
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+    86
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eTouches(ST_SetSRID(g, 5676), temp);
+ count 
+-------
+   579
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eTouches(temp, ST_SetSRID(g, 5676));
+ count 
+-------
+   579
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eTouches(t1.temp, t2.temp);
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE aTouches(ST_SetSRID(g, 5676), temp);
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE aTouches(temp, ST_SetSRID(g, 5676));
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE aTouches(t1.temp, t2.temp);
+ERROR:  GEOS returned error
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE eDwithin(ST_SetSRID(g, 5676), temp, 10.0);
+ count 
+-------
+  3724
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE eDwithin(temp, ST_SetSRID(g, 5676), 10.0);
+ count 
+-------
+  3724
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE eDwithin(t1.temp, t2.temp, 10.0);
+ERROR:  Unknown geometry type: 416 - Invalid type
+SELECT COUNT(*) FROM tbl_geometry, tbl_trgeometry2d WHERE aDwithin(ST_SetSRID(g, 5676), temp, 10.0);
+ count 
+-------
+   254
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d, tbl_geometry WHERE aDwithin(temp, ST_SetSRID(g, 5676), 10.0);
+ count 
+-------
+   254
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE aDwithin(t1.temp, t2.temp, 10.0);
+ERROR:  Unknown geometry type: 416 - Invalid type

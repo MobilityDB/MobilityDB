@@ -1,0 +1,104 @@
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, 2.0), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(timeBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  interval '3 days', '2000-01-01'), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(spaceTimeBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, interval '3 days'), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(spaceTimeBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, interval '3 days'), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT array_length(spaceTimeBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, 2.0, interval '3 days'), 1) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, 2.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceTimeSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, interval '3 days');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceTimeSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, interval '3 days');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) > 0 FROM spaceTimeSplit(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 1), 0.0)@2000-01-01, Pose(Point(10 10), 0.0)@2000-01-10]',
+  2.0, 2.0, 2.0, interval '3 days');
+ ?column? 
+----------
+ t
+(1 row)
+

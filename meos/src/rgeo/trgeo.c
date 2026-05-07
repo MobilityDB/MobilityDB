@@ -770,6 +770,170 @@ trgeo_sequences(const Temporal *temp, int *count)
   return result;
 }
 
+/*
+ * @brief Adaptive sub-sampling tolerances for trgeo_traversed_area.
+ *
+ * Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH
+ * in the trgeometry distance kernel (see meos/src/rgeo/trgeo_distance.c).
+ * Pure-translation segments need no sampling: the convex hull of two
+ * endpoint polygons equals the swept ribbon. Rotation-heavy segments
+ * are bisected while the rotation magnitude across the half-segment
+ * exceeds the tolerance (radians). At the default tolerance of 0.05 rad
+ * (~2.86°) and a max depth of 5, a 90° rotation produces 32 sub-samples;
+ * a 180° rotation hits the depth cap.
+ */
+#define TRGEO_TRAVERSED_AREA_ANGLE_TOL    0.05
+#define TRGEO_TRAVERSED_AREA_MAX_DEPTH    5
+
+/**
+ * @brief Append the materialised polygon at timestamp @p t to the running
+ * geom array, growing it as needed.
+ */
+static void
+trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
+  GSERIALIZED ***buf, int *buf_n, int *buf_cap)
+{
+  Datum value;
+  if (! trgeo_value_at_timestamptz(temp, t, false, &value))
+    return;
+  if (*buf_n == *buf_cap)
+  {
+    *buf_cap *= 2;
+    *buf = repalloc(*buf, sizeof(GSERIALIZED *) * (*buf_cap));
+  }
+  (*buf)[(*buf_n)++] = DatumGetGserializedP(value);
+}
+
+/**
+ * @brief Recursive bisection for trgeo_traversed_area: append samples on
+ * (t_a, t_b] where the rotation magnitude exceeds the tolerance. Models
+ * the same depth-bounded recursion as `trgeo_pair_dist_adaptive` in the
+ * distance kernel; the convergence test here is the rotation magnitude
+ * across the half-segment, since pure-translation segments need no
+ * extra samples (the convex hull of the two endpoint polygons already
+ * equals the swept ribbon under unary union).
+ */
+static void
+trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
+  const TInstant *inst_b, int depth, GSERIALIZED ***buf, int *buf_n,
+  int *buf_cap)
+{
+  Pose *pose_a = DatumGetPoseP(tinstant_value_p((TInstant *) inst_a));
+  Pose *pose_b = DatumGetPoseP(tinstant_value_p((TInstant *) inst_b));
+  /* Angular shortest-path distance between the two pose orientations. */
+  double dtheta = pose_b->data[2] - pose_a->data[2];
+  while (dtheta > M_PI)  dtheta -= 2.0 * M_PI;
+  while (dtheta < -M_PI) dtheta += 2.0 * M_PI;
+  double abs_dtheta = fabs(dtheta);
+  if (abs_dtheta < TRGEO_TRAVERSED_AREA_ANGLE_TOL ||
+      depth >= TRGEO_TRAVERSED_AREA_MAX_DEPTH ||
+      inst_b->t - inst_a->t <= 1)
+  {
+    /* Rotation is small enough across [t_a, t_b] that the convex hull
+     * of the two endpoint polygons covers the swept ribbon. Emit only
+     * t_b (t_a was emitted by the caller as the previous segment's
+     * endpoint or the initial instant). */
+    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+    return;
+  }
+  /* Bisect: emit a midpoint sample, then recurse on both halves. */
+  TimestampTz t_m = inst_a->t + (inst_b->t - inst_a->t) / 2;
+  /* Build a virtual midpoint instant on the stack so we can recurse on
+   * the same shape as inst_a / inst_b. trgeo_value_at_timestamptz
+   * gives us a fresh GSERIALIZED for the midpoint pose's materialised
+   * polygon, but we need the underlying Pose to compute dtheta on the
+   * sub-segment. Read it via the public tpose accessor.
+   */
+  Datum dpose_m;
+  Temporal *tpose_t = trgeo_to_tpose(temp);
+  bool ok = tpose_t &&
+    temporal_value_at_timestamptz(tpose_t, t_m, false, &dpose_m);
+  if (tpose_t) pfree(tpose_t);
+  if (! ok)
+  {
+    /* Fall back to flat sampling at the midpoint and stop. */
+    trgeo_trav_emit_at(temp, t_m, buf, buf_n, buf_cap);
+    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+    return;
+  }
+  TInstant *inst_m = tinstant_make(dpose_m, T_TPOSE, t_m);
+  trgeo_trav_adaptive(temp, inst_a, inst_m, depth + 1, buf, buf_n, buf_cap);
+  trgeo_trav_adaptive(temp, inst_m, inst_b, depth + 1, buf, buf_n, buf_cap);
+  pfree(inst_m); pfree(DatumGetPointer(dpose_m));
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the union of every materialised polygon of a temporal rigid
+ * geometry over its time domain
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] unary_union True to apply a unary spatial union to the per-
+ * instant polygons; false to return the raw GeometryCollection
+ * @csqlfn #Trgeometry_traversed_area()
+ *
+ * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
+ * for general temporal geometries; the trgeometry-specific step is
+ * materialising the reference polygon at every emitted sample via
+ * `geom_apply_pose`. Sample selection mirrors the adaptive recursive
+ * bisection in `tdistance_trgeoseq_trgeoseq_linear`: each input instant
+ * is emitted; between two consecutive instants the segment is bisected
+ * while the rotation magnitude across the half-segment exceeds
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` and the recursion depth is below
+ * `TRGEO_TRAVERSED_AREA_MAX_DEPTH`. Pure-translation segments
+ * terminate at depth 0 with two samples (start and end). The unary
+ * union dissolves any redundant overlap between samples.
+ */
+GSERIALIZED *
+trgeo_traversed_area(const Temporal *temp, bool unary_union)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  int n_insts = 0;
+  /* temporal_insts_p returns a pointer-to-array of in-place instants;
+   * neither the elements nor the array itself need element-freeing —
+   * we only pfree the array wrapper at the end. (The MEOS-public
+   * temporal_instants is gated by #if MEOS, so it isn't available in
+   * the PG-extension build.) */
+  const TInstant **insts = temporal_insts_p(temp, &n_insts);
+  if (! insts || n_insts <= 0)
+    return NULL;
+
+  /* Initial capacity is generous — bisection rarely goes deep. */
+  int cap = (n_insts > 1) ? n_insts * 4 : n_insts;
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * cap);
+  int n_geoms = 0;
+
+  /* Emit the first instant. */
+  trgeo_trav_emit_at(temp, insts[0]->t, &geoms, &n_geoms, &cap);
+  /* Per inter-instant segment, recursively bisect. The recursion
+   * appends samples on (t_m, t_b], reusing the t_a sample emitted by
+   * the previous iteration. */
+  for (int i = 0; i + 1 < n_insts; i++)
+    trgeo_trav_adaptive(temp, insts[i], insts[i + 1], 0,
+      &geoms, &n_geoms, &cap);
+
+  GSERIALIZED *result;
+  if (n_geoms == 1)
+  {
+    result = geoms[0];
+  }
+  else
+  {
+    GSERIALIZED *coll = geo_collect_garray(geoms, n_geoms);
+    for (int i = 0; i < n_geoms; i++)
+      pfree(geoms[i]);
+    if (unary_union)
+    {
+      result = geom_unary_union(coll, -1);
+      pfree(coll);
+    }
+    else
+      result = coll;
+  }
+  pfree(geoms);
+  pfree(insts);
+  return result;
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/

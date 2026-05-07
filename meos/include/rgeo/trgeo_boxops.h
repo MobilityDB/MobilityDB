@@ -55,6 +55,14 @@ extern void trgeoinstarr_rotating_stbox(const GSERIALIZED *geom,
 extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
   TInstant **instants, int count, interpType interp, void *box);
 
+/* stboxes / splitNStboxes / splitEachNStboxes */
+
+extern STBox *trgeo_stboxes(const Temporal *temp, int *count);
+extern STBox *trgeo_split_n_stboxes(const Temporal *temp, int box_count,
+  int *count);
+extern STBox *trgeo_split_each_n_stboxes(const Temporal *temp,
+  int elems_per_box, int *count);
+
 /*****************************************************************************/
 
 #endif /* __TRGEO_BOXOPS_H__ */

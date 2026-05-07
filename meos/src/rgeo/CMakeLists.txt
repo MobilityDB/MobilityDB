@@ -7,7 +7,10 @@ set(RGEO_SRCS
   trgeo_parser.c
   trgeo_seq.c
   trgeo_seqset.c
-  # trgeo_spatialrels.c
+  trgeo_spatialfuncs.c
+  trgeo_geom_clip.c
+  trgeo_spatialrels.c
+  trgeo_tempspatialrels.c
   trgeo_utils.c
   trgeo_vclip.c
   )

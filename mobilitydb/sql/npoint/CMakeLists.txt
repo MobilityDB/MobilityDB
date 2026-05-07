@@ -1,18 +1,18 @@
 # No Postgres version dependant files
 
 SET(LOCAL_FILES
-  081_npoint
-  082_npointset
-  083_tnpoint
-  085_tnpoint_compops
-  087_tnpoint_spatialfuncs
-  089_tnpoint_topops
-  090_tnpoint_posops
-  091_tnpoint_routeops
-  092_tnpoint_gin
-  093_tnpoint_distance
-  095_tnpoint_aggfuncs
-  098_tnpoint_indexes
+  200_npoint
+  201_npointset
+  202_tnpoint
+  204_tnpoint_compops
+  206_tnpoint_spatialfuncs
+  208_tnpoint_topops
+  209_tnpoint_posops
+  210_tnpoint_routeops
+  211_tnpoint_gin
+  212_tnpoint_distance
+  214_tnpoint_aggfuncs
+  217_tnpoint_indexes
   )
 
 foreach (f ${LOCAL_FILES})

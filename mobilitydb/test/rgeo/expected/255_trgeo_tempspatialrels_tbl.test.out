@@ -1,0 +1,98 @@
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tIntersects(temp, ST_SetSRID(geometry 'Polygon((0 0,100 100,100 0,0 0))', 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tIntersects(ST_SetSRID(geometry 'Polygon((0 0,100 100,100 0,0 0))', 5676), temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE
+  tIntersects(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tDisjoint(temp, ST_SetSRID(geometry 'Polygon((0 0,100 100,100 0,0 0))', 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tDisjoint(ST_SetSRID(geometry 'Polygon((0 0,100 100,100 0,0 0))', 5676), temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tContains(ST_SetSRID(geometry 'Polygon((0 0,10000 0,10000 10000,0 10000,0 0))', 5676), temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tContains(temp, ST_SetSRID(geometry 'Point(50 50)', 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tCovers(ST_SetSRID(geometry 'Polygon((0 0,10000 0,10000 10000,0 10000,0 0))', 5676), temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tCovers(temp, ST_SetSRID(geometry 'Point(50 50)', 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tTouches(temp, ST_SetSRID(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 5676)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tTouches(ST_SetSRID(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 5676), temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tDwithin(temp, ST_SetSRID(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 5676), 10.0) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
+  tDwithin(ST_SetSRID(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 5676), temp, 10.0) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2 WHERE
+  tDwithin(t1.temp, t2.temp, 10.0) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

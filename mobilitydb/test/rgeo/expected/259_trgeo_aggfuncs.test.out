@@ -1,0 +1,51 @@
+SELECT tcount(temp) FROM (VALUES
+  (NULL::trgeometry),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01'),
+  (NULL::trgeometry)) t(temp);
+              tcount              
+----------------------------------
+ {1@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(1 0),0.0)@2001-01-02]'),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0.0)@2001-01-03, Pose(Point(3 0),0.0)@2001-01-04]')) t(temp);
+                                                                tcount                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST], [1@Wed Jan 03 00:00:00 2001 PST, 1@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT wcount(temp, interval '1 day') FROM (VALUES
+  (NULL::trgeometry),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01'),
+  (NULL::trgeometry)) t(temp);
+                               wcount                               
+--------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT wcount(temp, interval '1 day') FROM (VALUES
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(1 0),0.0)@2001-01-02]'),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0.0)@2001-01-03, Pose(Point(3 0),0.0)@2001-01-04]')) t(temp);
+                                                                wcount                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST], (1@Wed Jan 03 00:00:00 2001 PST, 1@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+  (NULL::trgeometry),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01'),
+  (NULL::trgeometry)) t(temp);
+                                        extent                                        
+--------------------------------------------------------------------------------------
+ STBOX XT(((0,0),(1,1)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0.0)@2001-01-01, Pose(Point(1 0),0.0)@2001-01-02]'),
+  (trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0.0)@2001-01-03, Pose(Point(3 0),0.0)@2001-01-04]')) t(temp);
+                                                                         extent                                                                         
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ STBOX XT(((-1.414213562373095,-1.414213562373095),(4.414213562373095,1.414213562373095)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+

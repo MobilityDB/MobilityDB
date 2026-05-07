@@ -92,7 +92,7 @@
  *   @ingroup meos_geo_bbox
  *   @brief Position functions for temporal geometries
  *
- * @defgroup meos_geo_distance Distance functions
+ * @defgroup meos_geo_dist Distance functions
  * @ingroup meos_geo
  * @brief Distance functions for temporal geometries
  *
@@ -160,7 +160,7 @@
  * @ingroup meos_geo_base
  * @brief Bounding box functions for static geometries
  *
- * @defgroup meos_geo_base_distance Distance functions
+ * @defgroup meos_geo_base_dist Distance functions
  * @ingroup meos_geo_base
  * @brief Distance functions for static geometries
  *

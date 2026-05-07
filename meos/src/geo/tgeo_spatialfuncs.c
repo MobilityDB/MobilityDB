@@ -647,7 +647,7 @@ ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @brief Return true if a spatiotemporal value and a geometry/geography have
- * thesame dimensionality
+ * the same dimensionality
  */
 bool
 same_dimensionality_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)

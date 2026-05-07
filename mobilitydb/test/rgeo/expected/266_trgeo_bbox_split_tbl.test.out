@@ -1,0 +1,60 @@
+SELECT COUNT(*) FROM tbl_trgeometry2d_inst WHERE expandSpace(inst, 1.0) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq  WHERE expandSpace(seq, 1.0) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_inst WHERE spans(inst) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq  WHERE spans(seq)  IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_inst WHERE stboxes(inst) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq  WHERE stboxes(seq)  IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq WHERE splitNSpans(seq, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq WHERE splitEachNSpans(seq, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq WHERE splitNStboxes(seq, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d_seq WHERE splitEachNStboxes(seq, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
