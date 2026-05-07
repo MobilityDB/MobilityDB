@@ -175,19 +175,23 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
       t_out = t;
     }
 
-    /* Check if the turning points are truly internal */
-    if (t_in > lower && t_out < upper)
+    /* Only return timestamps strictly inside (lower, upper); boundary values
+     * can arise when alpha_in/alpha_out fall outside [0, 1]. */
+    bool in_internal  = (t_in  > lower && t_in  < upper);
+    bool out_internal = (t_out > lower && t_out < upper);
+
+    if (in_internal && out_internal)
     {
       *t1 = t_in;
       *t2 = t_out;
       return 2;
     }
-    else if (t_in > lower && t_out >= upper)
+    else if (in_internal)
     {
       *t1 = *t2 = t_in;
       return 1;
     }
-    else if (t_in <= lower && t_out < upper)
+    else if (out_internal)
     {
       *t1 = *t2 = t_out;
       return 1;
@@ -286,19 +290,25 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
     TimestampTz t_out = lower + (TimestampTz)((t_rel +
       (duration - t_rel) * alpha_out));
 
-    /* Check if the turning points are truly internal */
-    if (t_in > lower && t_out < upper)
+    /* Only return timestamps strictly inside (lower, upper); boundary values
+     * can arise when both dist_start and dist_end are negative (circles
+     * overlap throughout the segment), causing alpha_in/alpha_out to fall
+     * outside [0, 1]. */
+    bool in_internal  = (t_in  > lower && t_in  < upper);
+    bool out_internal = (t_out > lower && t_out < upper);
+
+    if (in_internal && out_internal)
     {
       *t1 = t_in;
       *t2 = t_out;
       return 2;
     }
-    else if (t_in > lower && t_out >= upper)
+    else if (in_internal)
     {
       *t1 = *t2 = t_in;
       return 1;
     }
-    else if (t_in <= lower && t_out < upper)
+    else if (out_internal)
     {
       *t1 = *t2 = t_out;
       return 1;

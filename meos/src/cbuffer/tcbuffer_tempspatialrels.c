@@ -876,10 +876,10 @@ tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Tdisjoint_tcbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tinterrel_tspatial_tspatial(temp1, temp2, TDISJOINT);
+  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_disjoint);
 }
 
 /*****************************************************************************
@@ -949,10 +949,10 @@ tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Tintersects_tcbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tinterrel_tspatial_tspatial(temp1, temp2, TINTERSECTS);
+  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_intersects);
 }
 
 /*****************************************************************************
