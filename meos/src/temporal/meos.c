@@ -81,8 +81,18 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(MEOS_GENERATION_RNG);
-  gsl_rng_free(MEOS_AGGREGATION_RNG);
+  /* Idempotency: only free live generators, and null the slots so a
+   * second finalize call does not double-free. */
+  if (MEOS_GENERATION_RNG)
+  {
+    gsl_rng_free(MEOS_GENERATION_RNG);
+    MEOS_GENERATION_RNG = NULL;
+  }
+  if (MEOS_AGGREGATION_RNG)
+  {
+    gsl_rng_free(MEOS_AGGREGATION_RNG);
+    MEOS_AGGREGATION_RNG = NULL;
+  }
   MEOS_GSL_INITIALIZED = false;
   return;
 }
@@ -138,6 +148,11 @@ proj_initialize(void)
 static void
 proj_finalize(void)
 {
+  /* Idempotency: skip when the per-thread context is already gone. PROJ
+   * documents proj_context_destroy(NULL) as destroying the *default* PROJ
+   * context, which is not what we want on a second finalize call. */
+  if (! MEOS_PJ_CONTEXT)
+    return;
   proj_context_destroy(MEOS_PJ_CONTEXT);
   MEOS_PJ_CONTEXT = NULL;
   return;

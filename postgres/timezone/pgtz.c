@@ -521,10 +521,18 @@ meos_initialize_timezone(const char *tz_str)
 void
 meos_finalize_timezone(void)
 {
+  /* Idempotency: null each slot after destroying it so a second
+   * meos_finalize() call does not double-free. */
   if (session_timezone)
-    pfree(session_timezone); 
+  {
+    pfree(session_timezone);
+    session_timezone = NULL;
+  }
   if (timezone_cache)
+  {
     tzcache_my_destroy(timezone_cache);
+    timezone_cache = NULL;
+  }
   return;
 }
 /*****************************************************************************/
