@@ -125,6 +125,6 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry
   WHERE tDwithin(temp, g, 10) ?= true <> edwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
-
+  
 -------------------------------------------------------------------------------
 
