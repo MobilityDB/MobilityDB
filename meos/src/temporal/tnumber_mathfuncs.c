@@ -641,7 +641,7 @@ tnumberseq_trend(const TSequence *seq)
 TSequenceSet *
 tnumberseqset_trend(const TSequenceSet *ss)
 {
-  assert(ss); assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  assert(ss);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
@@ -667,8 +667,8 @@ tnumber_trend(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_linear_interp(temp->flags))
-    return NULL;
+  /* trend is defined for both step and linear interpolation */
+  VALIDATE_TNUMBER(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

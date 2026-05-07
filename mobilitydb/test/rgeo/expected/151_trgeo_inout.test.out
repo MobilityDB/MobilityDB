@@ -396,6 +396,14 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST], [Pose(POINT(3 3),0.5)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT(3 3),0.5)@Tue Jan 04 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALUES (
+  trgeometry 'POLYGON((-0.5 -1,-0.5 1,0.5 1,0.5 -1,-0.5 -1));[Pose(POINT(-104.5 41.5),0)@2025-12-24 20:05:06+00, Pose(POINT(-104.5 41.5),-2.5)@2025-12-24 20:05:07+00]'
+)) t(v);
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
 ERROR:  SRID 123456 unknown in spatial_ref_sys table
