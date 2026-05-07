@@ -150,7 +150,13 @@ GetWaysCache()
 void
 meos_finalize_ways(void)
 {
+  /* Idempotency: only destroy a live cache, and null the slot so a
+   * second finalize call does not double-free the cache and its
+   * stored geometries. */
+  if (! MEOS_WAYS_CACHE)
+    return;
   DestroyWaysCache(MEOS_WAYS_CACHE);
+  MEOS_WAYS_CACHE = NULL;
 }
 
 /**

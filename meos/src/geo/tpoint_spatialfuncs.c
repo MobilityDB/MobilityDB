@@ -3300,10 +3300,12 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         GEOSGeom_destroy(pt2);
         break;
       default:
+        GEOSGeom_destroy(mrr_geom);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
         return -1.0;
     }
+    GEOSGeom_destroy(mrr_geom);
   }
   return result;
 }

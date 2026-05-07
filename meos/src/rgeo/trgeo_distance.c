@@ -2040,7 +2040,7 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
   /* Compute the result */
   Temporal *dist = tdistance_trgeometry_geo(temp, geo);
   double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(geo);
+  pfree(dist); pfree(geo);
   if (hast)
     pfree(temp1);
   return result;
@@ -2115,6 +2115,7 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
   LWGEOM *line = (LWGEOM *) lwline_make(value, PointerGetDatum(gs));
   GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
+  pfree(dist);
   return result;
 }
 
