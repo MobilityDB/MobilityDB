@@ -121,3 +121,34 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 
 -------------------------------------------------------------------------------/
+
+-- Quaternion drift tolerance. Real sensor-fusion clients (IMUs, AR/VR
+-- runtimes, physics engines) deliver quaternions with |q|=1+e where e
+-- is up to ~1e-6 because they don't renormalise on every frame. These
+-- are accepted within a 1e-3 tolerance and auto-renormalised on
+-- construction, so the on-disk representation is always exactly unit
+-- norm and downstream cmp/hash/SLERP code is independent of input
+-- quality.
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 1.0000005::float, 0::float, 0::float, 0::float, 0));
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 0.5005::float, 0.5005::float, 0.5005::float, 0.5005::float, 0));
+-- Way-off norms (|q|=2 here) are rejected as obvious bugs.
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 1::float, 1::float, 1::float, 1::float, 0));
+-- Zero / NaN / Inf components are rejected up front (regardless of norm).
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0));
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::float, 0::float, 0));
+
+-- Quaternion double-cover canonicalization audit: q and -q represent the
+-- same orientation, so every construction path must canonicalize to a
+-- single representative (chosen as W >= 0). Without this invariant the
+-- byte-level B-tree opclass and hash opclass would treat q and -q as
+-- distinct values and break distinct-set / GROUP BY semantics on poseset.
+-- Exercises the four entry points (WKT parser, constructor, WKB recv,
+-- approximate equality) plus pose_hash to confirm they all agree.
+SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' = pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS wkt_canonical;
+SELECT pose(0::float, 0::float, 0::float, 0.5::float, 0.5::float, 0.5::float, 0.5::float, 0)
+     = pose(0::float, 0::float, 0::float, -0.5::float, -0.5::float, -0.5::float, -0.5::float, 0) AS ctor_canonical;
+SELECT poseFromBinary(asBinary(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)'))
+     = pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' AS wkb_canonical;
+SELECT pose_hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
+     = pose_hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
+SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS approx_canonical;
