@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on ..
           make -j $(nproc)
           sudo make install
 
@@ -65,6 +65,8 @@ jobs:
           ./geo_test
           gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
+          gcc -Wall -g -I/usr/local/include -o cbuffer_test cbuffer_test.c -L/usr/local/lib -lmeos
+          ./cbuffer_test
 
   threaded:
     name: Thread-safety (TSan)
