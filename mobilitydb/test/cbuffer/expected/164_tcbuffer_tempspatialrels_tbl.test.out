@@ -28,6 +28,11 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tContains(t1.temp, t
    102
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tContains(g, temp) ?= true <> eContains(g, temp);
+ERROR:  function econtains(geometry, tcbuffer) does not exist
+LINE 1: ... tbl_tcbuffer WHERE tContains(g, temp) ?= true <> eContains(...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE tContains(cb, temp) ?= true <> eContains(cb, temp);
  count 
 -------
@@ -52,6 +57,11 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tCovers(t1.temp, t2.
    102
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tCovers(g, temp) ?= true <> eCovers(g, temp);
+ERROR:  function ecovers(geometry, tcbuffer) does not exist
+LINE 1: ...y, tbl_tcbuffer WHERE tCovers(g, temp) ?= true <> eCovers(g,...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
@@ -73,13 +83,13 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tDisjoint(t1.temp, t
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
 -------
-    88
+    91
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tDisjoint(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
-    88
+    91
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
@@ -104,19 +114,19 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) IS NO
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
-  6096
+  6493
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
  count 
 -------
-  6096
+  6493
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eIntersects(temp, g);
  count 
 -------
-   404
+   801
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
@@ -157,17 +167,15 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tTouches(temp, g) ?= true 
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDwithin(g, temp, 10) IS NOT NULL;
- count 
--------
-  9400
-(1 row)
-
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 1: ...CT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDwithin(g...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tDwithin(temp, g, 10) IS NOT NULL;
- count 
--------
-  9400
-(1 row)
-
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 1: ...CT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tDwithin(t...
+                                                             ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
@@ -176,18 +184,16 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tDwithin(t1.temp, t2
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer
   WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
- count 
--------
-   393
-(1 row)
-
+ERROR:  function tdwithin(geometry, tcbuffer, integer) does not exist
+LINE 2:   WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 1...
+                ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry
   WHERE tDwithin(temp, g, 10) ?= true <> edwithin(temp, g, 10);
- count 
--------
-   393
-(1 row)
-
+ERROR:  function tdwithin(tcbuffer, geometry, integer) does not exist
+LINE 2:   WHERE tDwithin(temp, g, 10) ?= true <> edwithin(temp, g, 1...
+                ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 

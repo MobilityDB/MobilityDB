@@ -32,6 +32,8 @@
  * @brief Temporal distance for temporal circular buffers
  */
 
+/* C */
+#include <float.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -173,9 +175,11 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
       t_out = t;
     }
 
-    /* Keep only turning points strictly inside (lower, upper) */
+    /* Only return timestamps strictly inside (lower, upper); boundary values
+     * can arise when alpha_in/alpha_out fall outside [0, 1]. */
     bool in_internal  = (t_in  > lower && t_in  < upper);
     bool out_internal = (t_out > lower && t_out < upper);
+
     if (in_internal && out_internal)
     {
       *t1 = t_in;
@@ -194,6 +198,7 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
     }
     else
     {
+      /* No true internal turning point */
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }
@@ -285,9 +290,13 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
     TimestampTz t_out = lower + (TimestampTz)((t_rel +
       (duration - t_rel) * alpha_out));
 
-    /* Keep only turning points strictly inside (lower, upper) */
+    /* Only return timestamps strictly inside (lower, upper); boundary values
+     * can arise when both dist_start and dist_end are negative (circles
+     * overlap throughout the segment), causing alpha_in/alpha_out to fall
+     * outside [0, 1]. */
     bool in_internal  = (t_in  > lower && t_in  < upper);
     bool out_internal = (t_out > lower && t_out < upper);
+
     if (in_internal && out_internal)
     {
       *t1 = t_in;
@@ -306,6 +315,7 @@ cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
     }
     else
     {
+      /* No true internal turning point */
       *t1 = *t2 = (TimestampTz) 0;
       return 0;
     }
@@ -521,7 +531,7 @@ nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_stbox(cb, box))
-    return -1.0;
+    return DBL_MAX;
 
   Datum geocbuf = PointerGetDatum(cbuffer_to_geom(cb));
   Datum geobox = PointerGetDatum(stbox_geo(box));
@@ -545,9 +555,9 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1.0;
+    return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   double result = geom_distance2d(trav, gs);
   pfree(trav);
   return result;
@@ -566,9 +576,9 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_stbox(temp, box))
-    return -1.0;
+    return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav); pfree(geo);
@@ -588,10 +598,10 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   double result = geom_distance2d(trav, geom);
   pfree(trav); pfree(geom);
   return result;
@@ -608,11 +618,11 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
-    return -1.0;
+    return DBL_MAX;
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
@@ -637,7 +647,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, gs);
   pfree(trav);
   return result;
@@ -659,7 +669,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return NULL;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, geom);
   pfree(geom); pfree(trav);
   return result;

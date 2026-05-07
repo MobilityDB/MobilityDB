@@ -43,11 +43,6 @@ foreach(file ${testfiles})
     message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.test.out")
     set(DOTEST FALSE)
   endif()
-  list(FIND SKIP_TESTS ${TESTNAME} _skip_idx)
-  if(NOT _skip_idx EQUAL -1)
-    message("Disabling test ${TESTNAME}: in SKIP_TESTS")
-    set(DOTEST FALSE)
-  endif()
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}
