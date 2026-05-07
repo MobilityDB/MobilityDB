@@ -845,6 +845,8 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tcbuffer_espatialrels">
 				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
@@ -853,9 +855,11 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
-				<para>TODO Ever and always relationships</para>
+				<para>The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied (see <xref linkend="ever_always_comparison"/>) and return a <varname>boolean</varname>. Examples are the <varname>eIntersects</varname> and <varname>aIntersects</varname> functions.</para>
 				<para><varname>eContains(geometry,tcbuffer) → boolean</varname></para>
 				<para><varname>aContains(geometry,tcbuffer) → boolean</varname></para>
+				<para><varname>eCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
+				<para><varname>aCovers({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
 				<para><varname>eDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
 				<para><varname>aDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</varname></para>
 				<para><varname>eDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean</varname></para>
