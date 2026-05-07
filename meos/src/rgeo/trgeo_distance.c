@@ -287,8 +287,11 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 {
-  double dist = geom_distance2d(trgeoinst_geom_p(inst), gs);
-  return tinstant_make(Float8GetDatum(dist), T_FLOAT8, inst->t);
+  Datum world;
+  trgeo_value_at_timestamptz((const Temporal *) inst, inst->t, true, &world);
+  double dist = geom_distance2d(DatumGetGserializedP(world), gs);
+  pfree(DatumGetPointer(world));
+  return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
 }
 
 /**
@@ -1855,23 +1858,233 @@ tdistance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the temporal distance between two temporal rigid geometry
+ * sequences by sampling at the union of their instant timestamps within their
+ * overlapping period.  No turning-point detection is performed.
+ * @param[in] full1,full2 Full Temporal values (with geometry) used for value
+ * lookup; may be TSequence or TSequenceSet — only their GSERIALIZED* and
+ * pose interpolation are accessed.
+ * @param[in] seq1,seq2 Component sequences used only for timestamp enumeration
+ * and period intersection; may be geometry-stripped TSequence components from
+ * a TSequenceSet.
+ */
+static TSequence *
+dist2d_trgeoseq_trgeoseq(const Temporal *full1, const Temporal *full2,
+  const TSequence *seq1, const TSequence *seq2)
+{
+  Span inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
+    return NULL;
+
+  int n1 = seq1->count, n2 = seq2->count;
+  TimestampTz *merged = palloc(sizeof(TimestampTz) * (n1 + n2));
+  int nmerged = 0;
+  for (int i = 0; i < n1; i++)
+  {
+    TimestampTz t = TSEQUENCE_INST_N(seq1, i)->t;
+    if (contains_span_timestamptz(&inter, t))
+      merged[nmerged++] = t;
+  }
+  for (int i = 0; i < n2; i++)
+  {
+    TimestampTz t = TSEQUENCE_INST_N(seq2, i)->t;
+    if (contains_span_timestamptz(&inter, t))
+      merged[nmerged++] = t;
+  }
+  if (nmerged == 0)
+  {
+    pfree(merged);
+    return NULL;
+  }
+
+  tstzarr_sort(merged, nmerged);
+  int nuniq = 0;
+  for (int i = 0; i < nmerged; i++)
+    if (i == 0 || merged[i] != merged[i - 1])
+      merged[nuniq++] = merged[i];
+
+  TInstant **instants = palloc(sizeof(TInstant *) * nuniq);
+  int k = 0;
+  for (int i = 0; i < nuniq; i++)
+  {
+    TimestampTz t = merged[i];
+    Datum val1, val2;
+    /* Use the full Temporal (with geometry) for value lookup, not the
+     * component sequence which may have its geometry stripped. */
+    if (! trgeo_value_at_timestamptz(full1, t, false, &val1))
+      continue;
+    if (! trgeo_value_at_timestamptz(full2, t, false, &val2))
+    {
+      pfree(DatumGetPointer(val1));
+      continue;
+    }
+    double dist = geom_distance2d(DatumGetGserializedP(val1),
+      DatumGetGserializedP(val2));
+    pfree(DatumGetPointer(val1));
+    pfree(DatumGetPointer(val2));
+    instants[k++] = tinstant_make(Float8GetDatum(dist), T_TFLOAT, t);
+  }
+  pfree(merged);
+
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, true, true, STEP, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal distance between a temporal rigid geometry
+ * sequence and a temporal geometry point sequence.
+ * @param[in] full1 Full trgeo Temporal (with geometry) used for value lookup.
+ * @param[in] seq1 trgeo component sequence used only for timestamp enumeration
+ * and period intersection; may be geometry-stripped.
+ * @param[in] seq2 tgeompoint component sequence used for both timestamp
+ * enumeration and value lookup (tgeompoint sequences are self-contained).
+ */
+static TSequence *
+dist2d_trgeoseq_tpointseq(const Temporal *full1,
+  const TSequence *seq1, const TSequence *seq2)
+{
+  Span inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
+    return NULL;
+
+  int n1 = seq1->count, n2 = seq2->count;
+  TimestampTz *merged = palloc(sizeof(TimestampTz) * (n1 + n2));
+  int nmerged = 0;
+  for (int i = 0; i < n1; i++)
+  {
+    TimestampTz t = TSEQUENCE_INST_N(seq1, i)->t;
+    if (contains_span_timestamptz(&inter, t))
+      merged[nmerged++] = t;
+  }
+  for (int i = 0; i < n2; i++)
+  {
+    TimestampTz t = TSEQUENCE_INST_N(seq2, i)->t;
+    if (contains_span_timestamptz(&inter, t))
+      merged[nmerged++] = t;
+  }
+  if (nmerged == 0)
+  {
+    pfree(merged);
+    return NULL;
+  }
+
+  tstzarr_sort(merged, nmerged);
+  int nuniq = 0;
+  for (int i = 0; i < nmerged; i++)
+    if (i == 0 || merged[i] != merged[i - 1])
+      merged[nuniq++] = merged[i];
+
+  TInstant **instants = palloc(sizeof(TInstant *) * nuniq);
+  int k = 0;
+  for (int i = 0; i < nuniq; i++)
+  {
+    TimestampTz t = merged[i];
+    Datum val1, val2;
+    /* Use the full trgeo Temporal (with geometry) for value lookup. */
+    if (! trgeo_value_at_timestamptz(full1, t, false, &val1))
+      continue;
+    if (! temporal_value_at_timestamptz((const Temporal *) seq2, t, false, &val2))
+    {
+      pfree(DatumGetPointer(val1));
+      continue;
+    }
+    double dist = geom_distance2d(DatumGetGserializedP(val1),
+      DatumGetGserializedP(val2));
+    pfree(DatumGetPointer(val1));
+    pfree(DatumGetPointer(val2));
+    instants[k++] = tinstant_make(Float8GetDatum(dist), T_TFLOAT, t);
+  }
+  pfree(merged);
+
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, true, true, STEP, NORMALIZE);
+}
+
+/**
  * @ingroup meos_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries.
+ * @brief Return the temporal distance between a temporal rigid geometry and a
+ * temporal geometry point
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeo_tpoint(const Temporal *temp1 UNUSED,
-  const Temporal *temp2 UNUSED)
+tdistance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
-  /* TODO */
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented yet.", __FUNCTION__);
-  return NULL;
+  if (MEOS_FLAGS_GET_Z(temp1->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
+
+  /* TInstant fast path */
+  if (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT)
+  {
+    const TInstant *inst = temp1->subtype == TINSTANT
+      ? (const TInstant *) temp1 : (const TInstant *) temp2;
+    Datum val1, val2;
+    if (! trgeo_value_at_timestamptz(temp1, inst->t, false, &val1))
+      return NULL;
+    if (! temporal_value_at_timestamptz(temp2, inst->t, false, &val2))
+    {
+      pfree(DatumGetPointer(val1));
+      return NULL;
+    }
+    double dist = geom_distance2d(DatumGetGserializedP(val1),
+      DatumGetGserializedP(val2));
+    pfree(DatumGetPointer(val1));
+    pfree(DatumGetPointer(val2));
+    return (Temporal *) tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
+  }
+
+  /* Both TSequence */
+  if (temp1->subtype == TSEQUENCE && temp2->subtype == TSEQUENCE)
+    return (Temporal *) dist2d_trgeoseq_tpointseq(
+      temp1, (const TSequence *) temp1, (const TSequence *) temp2);
+
+  /* At least one TSequenceSet — decompose over component sequences.
+   * Pass the full Temporal (full1/temp1) so that trgeo_value_at_timestamptz
+   * can reach the geometry; component TSequences of a TSequenceSet have their
+   * geometry stripped and must not be passed as the first argument. */
+  const TSequenceSet *ss1 = temp1->subtype == TSEQUENCESET
+    ? (const TSequenceSet *) temp1 : NULL;
+  const TSequenceSet *ss2 = temp2->subtype == TSEQUENCESET
+    ? (const TSequenceSet *) temp2 : NULL;
+  const TSequence *seq1 = ss1 ? NULL : (const TSequence *) temp1;
+  const TSequence *seq2 = ss2 ? NULL : (const TSequence *) temp2;
+
+  int outer_count = ss1 ? ss1->count : 1;
+  int inner_count = ss2 ? ss2->count : 1;
+  TSequence **seqs = palloc(sizeof(TSequence *) * outer_count * inner_count);
+  int k = 0;
+  for (int i = 0; i < outer_count; i++)
+  {
+    const TSequence *s1 = ss1 ? TSEQUENCESET_SEQ_N(ss1, i) : seq1;
+    for (int j = 0; j < inner_count; j++)
+    {
+      const TSequence *s2 = ss2 ? TSEQUENCESET_SEQ_N(ss2, j) : seq2;
+      TSequence *dist_seq = dist2d_trgeoseq_tpointseq(temp1, s1, s2);
+      if (dist_seq != NULL)
+        seqs[k++] = dist_seq;
+    }
+  }
+  if (k == 0)
+  {
+    pfree(seqs);
+    return NULL;
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, k, NORMALIZE);
 }
 
 /**
@@ -1880,17 +2093,75 @@ tdistance_trgeo_tpoint(const Temporal *temp1 UNUSED,
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeo_trgeo(const Temporal *temp1 UNUSED,
-  const Temporal *temp2 UNUSED)
+tdistance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
 
-  /* TODO */
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented yet.", __FUNCTION__);
-  return NULL;
+  if (MEOS_FLAGS_GET_Z(temp1->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
+
+  /* TInstant fast path */
+  if (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT)
+  {
+    const TInstant *inst = temp1->subtype == TINSTANT
+      ? (const TInstant *) temp1 : (const TInstant *) temp2;
+    Datum val1, val2;
+    if (! trgeo_value_at_timestamptz(temp1, inst->t, false, &val1))
+      return NULL;
+    if (! trgeo_value_at_timestamptz(temp2, inst->t, false, &val2))
+    {
+      pfree(DatumGetPointer(val1));
+      return NULL;
+    }
+    double dist = geom_distance2d(DatumGetGserializedP(val1),
+      DatumGetGserializedP(val2));
+    pfree(DatumGetPointer(val1));
+    pfree(DatumGetPointer(val2));
+    return (Temporal *) tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
+  }
+
+  /* Both TSequence */
+  if (temp1->subtype == TSEQUENCE && temp2->subtype == TSEQUENCE)
+    return (Temporal *) dist2d_trgeoseq_trgeoseq(
+      temp1, temp2, (const TSequence *) temp1, (const TSequence *) temp2);
+
+  /* At least one TSequenceSet — decompose over component sequences.
+   * Pass the full Temporals so that trgeo_value_at_timestamptz can reach the
+   * geometry; component TSequences from a TSequenceSet have it stripped. */
+  const TSequenceSet *ss1 = temp1->subtype == TSEQUENCESET
+    ? (const TSequenceSet *) temp1 : NULL;
+  const TSequenceSet *ss2 = temp2->subtype == TSEQUENCESET
+    ? (const TSequenceSet *) temp2 : NULL;
+  const TSequence *seq1 = ss1 ? NULL : (const TSequence *) temp1;
+  const TSequence *seq2 = ss2 ? NULL : (const TSequence *) temp2;
+
+  int outer_count = ss1 ? ss1->count : 1;
+  int inner_count = ss2 ? ss2->count : 1;
+  TSequence **seqs = palloc(sizeof(TSequence *) * outer_count * inner_count);
+  int k = 0;
+  for (int i = 0; i < outer_count; i++)
+  {
+    const TSequence *s1 = ss1 ? TSEQUENCESET_SEQ_N(ss1, i) : seq1;
+    for (int j = 0; j < inner_count; j++)
+    {
+      const TSequence *s2 = ss2 ? TSEQUENCESET_SEQ_N(ss2, j) : seq2;
+      TSequence *dist_seq = dist2d_trgeoseq_trgeoseq(temp1, temp2, s1, s2);
+      if (dist_seq != NULL)
+        seqs[k++] = dist_seq;
+    }
+  }
+  if (k == 0)
+  {
+    pfree(seqs);
+    return NULL;
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, k, NORMALIZE);
 }
 
 /*****************************************************************************

@@ -1,0 +1,155 @@
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> ST_SetSRID(ST_MakePoint(20, 5), 5676)
+), 6);
+ round 
+-------
+    10
+(1 row)
+
+SELECT round(maxValue(
+  ST_SetSRID(ST_MakePoint(20, 5), 5676)
+  <-> trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+), 6);
+ round 
+-------
+    10
+(1 row)
+
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> ST_SetSRID(ST_MakePoint(5, 5), 5676)
+), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(50 0),0)@2000-01-02]'
+  <-> ST_SetSRID(ST_MakePoint(25, 20), 5676)
+), 6);
+   round   
+-----------
+ 32.015621
+(1 row)
+
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <->
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(20 0),0)@2000-01-01'
+), 6);
+ round 
+-------
+    15
+(1 row)
+
+SELECT trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(20 0),0)@2000-01-02';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]'
+  <->
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+), 6);
+ round 
+-------
+    15
+(1 row)
+
+SELECT trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]'
+  <-> trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-03, Pose(Point(20 0),0)@2000-01-04]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+    ST_SetSRID(ST_MakePoint(20, 5), 5676)
+  ), 6);
+ round 
+-------
+    10
+(1 row)
+
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]',
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+  ), 6);
+ round 
+-------
+    15
+(1 row)
+
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(15 0),0)@2000-01-02]',
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+  ), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+  ST_SetSRID(ST_MakePoint(20, 5), 5676)
+));
+                                       astext                                       
+------------------------------------------------------------------------------------
+ POLYGON((0 0,10 0,10 10,0 10,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]',
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+));
+         gettimestamp         
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(15 0),0)@2000-01-02]',
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+));
+         gettimestamp         
+------------------------------
+ Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> setSRID(tgeompoint 'Point(20 5)@2000-01-01', 5676)
+), 6);
+ round 
+-------
+    10
+(1 row)
+
+SELECT asText(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(50 0),0)@2000-01-02]'
+  <-> setSRID(tgeompoint '[Point(25 20)@2000-01-01 12:00, Point(25 5)@2000-01-02]', 5676)
+);
+                                     astext                                     
+--------------------------------------------------------------------------------
+ Interp=Step;[10@Sat Jan 01 12:00:00 2000 PST, 25@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+  setSRID(tgeompoint 'Point(20 5)@2000-01-01', 5676)
+), 6);
+ round 
+-------
+    10
+(1 row)
+
+/*****************************************************************************/
