@@ -13,6 +13,7 @@ SET(LOCAL_FILES
   093_tnpoint_distance
   095_tnpoint_aggfuncs
   098_tnpoint_indexes
+  096_aggregate_renames
   )
 
 foreach (f ${LOCAL_FILES})

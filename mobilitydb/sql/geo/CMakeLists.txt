@@ -36,6 +36,7 @@ list(APPEND LOCAL_FILES
   073_tgeo_gist
   074_tgeo_spgist
   076_tgeo_analytics
+  069_aggregate_renames
   )
 
 foreach (f ${LOCAL_FILES})

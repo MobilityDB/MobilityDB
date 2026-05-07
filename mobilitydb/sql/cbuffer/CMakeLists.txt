@@ -12,6 +12,7 @@ SET(LOCAL_FILES
   162_tcbuffer_spatialrels
   164_tcbuffer_tempspatialrels
   166_tcbuffer_indexes
+  167_aggregate_renames
   )
 
 foreach (f ${LOCAL_FILES})
