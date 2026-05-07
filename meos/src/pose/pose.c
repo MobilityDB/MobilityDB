@@ -1204,7 +1204,9 @@ pose_distance(Datum pose1, Datum pose2)
 {
   Datum geom1 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose1)));
   Datum geom2 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose2)));
-  return datum_pt_distance2d(geom1, geom2);
+  Datum result = datum_pt_distance2d(geom1, geom2);
+  pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
+  return result;
 }
 
 /**
