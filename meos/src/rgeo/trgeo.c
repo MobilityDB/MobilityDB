@@ -267,8 +267,7 @@ trgeometry_to_tpose(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_conversion
- * @brief Return a temporal point obtained from the points of the temporal
- * pose of a temporal rigid geometry
+ * @brief Return a temporal geometry point from a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *

@@ -51,16 +51,16 @@
  * @brief Return the temporal distance between a geometry and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #Tdistance_tpose_point()
+ * @csqlfn #Tdistance_tpose_geo()
  */
 Temporal *
-tdistance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   Temporal *result = tdistance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
@@ -81,7 +81,7 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
     return NULL;
 
   GSERIALIZED *geom = pose_to_point(pose);
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   Temporal *result = tdistance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
@@ -100,8 +100,8 @@ tdistance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tpose_tpose(temp1, temp2))
     return NULL;
 
-  Temporal *tpoint1 = tpose_to_tpoint(temp1);
-  Temporal *tpoint2 = tpose_to_tpoint(temp2);
+  Temporal *tpoint1 = tpose_to_tgeompoint(temp1);
+  Temporal *tpoint2 = tpose_to_tgeompoint(temp2);
   Temporal *result = tdistance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
@@ -126,7 +126,7 @@ nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
@@ -152,7 +152,7 @@ nai_tpose_pose(const Temporal *temp, const Pose *pose)
     return NULL;
 
   GSERIALIZED *geom = pose_to_point(pose);
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   TInstant *res = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
@@ -337,8 +337,8 @@ shortestline_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tpose_tpose(temp1, temp2))
     return NULL;
 
-  Temporal *tpoint1 = tpose_to_tpoint(temp1);
-  Temporal *tpoint2 = tpose_to_tpoint(temp2);
+  Temporal *tpoint1 = tpose_to_tgeompoint(temp1);
+  Temporal *tpoint2 = tpose_to_tgeompoint(temp2);
   GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;

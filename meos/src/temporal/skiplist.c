@@ -606,7 +606,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
     /* Determine the elements that will be spliced-out (if any) */
     int lower, upper;
 #if MEOS
-    spliced_count = (sktype == TEMPORAL) ?
+    spliced_count = (sktype == SKIPLIST_TEMPORAL) ?
       temporal_skiplist_common(list, values, count, &lower, &upper, update) :
       keyval_skiplist_common(list, keys, values, count, &lower, &upper, update);
 #else
@@ -654,7 +654,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       int newcount = 0;
       void **newkeys = NULL;
 #if MEOS
-      void **newvalues = (sktype == TEMPORAL) ?
+      void **newvalues = (sktype == SKIPLIST_TEMPORAL) ?
         temporal_skiplist_merge(spliced_vals, spliced_count, values, count,
           func, crossings, &newcount, &tofree, &nfree) :
         keyval_skiplist_merge(list, spliced_keys, spliced_vals, spliced_count,
@@ -708,7 +708,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
 #if ! MEOS
     MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    if (sktype == TEMPORAL)
+    if (sktype == SKIPLIST_TEMPORAL)
     {
       newelem->value = temporal_copy(values[i]);
     }
