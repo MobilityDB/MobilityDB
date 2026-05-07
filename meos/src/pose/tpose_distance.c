@@ -231,7 +231,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
   GSERIALIZED *traj = tpose_trajectory(temp);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(traj, geo);
-  pfree(traj);
+  pfree(traj); pfree(geo);
   return result;
 }
 
