@@ -511,3 +511,217 @@ SELECT eDwithin(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1
 SELECT eDwithin(tgeography 'SRID=4283;Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
+-- aContains
+-------------------------------------------------------------------------------
+
+SELECT aContains(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aContains(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aContains(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aContains(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+
+SELECT aContains(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+
+/* Errors */
+SELECT aContains(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+
+SELECT aContains(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT aContains(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT aContains(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT aContains(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+SELECT aContains(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))');
+SELECT aContains(tgeometry '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(1 1)');
+
+/* Errors */
+SELECT aContains(tgeometry 'SRID=3812;Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+
+-- Temporal x Temporal
+SELECT aContains(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aContains(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aContains(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+/* Errors */
+SELECT aContains(tgeometry 'SRID=3812;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
+-- aCovers
+-------------------------------------------------------------------------------
+
+SELECT aCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aCovers(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aCovers(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aCovers(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aCovers(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+
+SELECT aCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+
+/* Errors */
+SELECT aCovers(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+
+SELECT aCovers(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT aCovers(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT aCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT aCovers(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+SELECT aCovers(tgeometry '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(1 1)');
+SELECT aCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geometry 'Point(1 1)');
+
+/* Errors */
+SELECT aCovers(tgeometry 'SRID=3812;Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+
+-- Temporal x Temporal
+SELECT aCovers(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aCovers(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+/* Errors */
+SELECT aCovers(tgeometry 'SRID=3812;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
+-- aDisjoint
+-------------------------------------------------------------------------------
+
+SELECT aDisjoint(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aDisjoint(geometry 'Point(2 2)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
+
+SELECT aDisjoint(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT aDisjoint(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT aDisjoint(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+-- Temporal x Temporal
+SELECT aDisjoint(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+SELECT aDisjoint(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
+-- Geography
+SELECT aDisjoint(geography 'Point(1 1)', tgeography 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(geography 'Point(1 1)', tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aDisjoint(geography 'Point(1 1)', tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aDisjoint(geography 'Point(1 1)', tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aDisjoint(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1)');
+SELECT aDisjoint(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point(1 1)');
+SELECT aDisjoint(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point(1 1)');
+SELECT aDisjoint(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point(1 1)');
+
+SELECT aDisjoint(tgeography 'Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeography '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+/* Errors */
+SELECT aDisjoint(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- aIntersects
+-------------------------------------------------------------------------------
+
+SELECT aIntersects(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aIntersects(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aIntersects(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aIntersects(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aIntersects(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT aIntersects(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT aIntersects(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT aIntersects(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+SELECT aIntersects(geometry 'Linestring(0 0,4 4)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aIntersects(geometry 'Linestring(0 0,4 4)', tgeometry '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+
+-- Temporal x Temporal
+SELECT aIntersects(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aIntersects(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+-- Geography
+SELECT aIntersects(geography 'Point(1 1)', tgeography 'Point(1 1)@2000-01-01');
+SELECT aIntersects(geography 'Point(1 1)', tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aIntersects(geography 'Point(1 1)', tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aIntersects(geography 'Point(1 1)', tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aIntersects(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1)');
+SELECT aIntersects(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point(1 1)');
+SELECT aIntersects(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point(1 1)');
+SELECT aIntersects(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point(1 1)');
+
+SELECT aIntersects(tgeography 'Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
+/* Errors */
+SELECT aIntersects(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- aTouches
+-------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
+
+SELECT aTouches(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aTouches(geometry 'Point(1 1)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aTouches(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aTouches(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '[Point(0 1)@2000-01-01, Point(0 2)@2000-01-02]');
+SELECT aTouches(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '[Point(1 1)@2000-01-01, Point(1 2)@2000-01-02]');
+
+SELECT aTouches(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT aTouches(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)');
+SELECT aTouches(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
+SELECT aTouches(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
+
+-- Temporal x Temporal
+SELECT aTouches(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aTouches(tgeometry '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', tgeometry '[Point(2 0)@2000-01-01, Point(2 4)@2000-01-04]');
+SELECT aTouches(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+/* Errors */
+SELECT aTouches(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
+SELECT aTouches(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
+SELECT aTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
+-- aDwithin
+-------------------------------------------------------------------------------
+
+SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tgeometry 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+
+SELECT aDwithin(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 2);
+SELECT aDwithin(geometry 'Point(1 1)', tgeometry '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]', 2);
+
+SELECT aDwithin(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+SELECT aDwithin(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring(1 1,2 2)', 2);
+SELECT aDwithin(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring(1 1,2 2)', 2);
+SELECT aDwithin(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', 2);
+
+-- Temporal x Temporal
+SELECT aDwithin(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02]', 2);
+SELECT aDwithin(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeometry '[Point(4 4)@2000-01-01, Point(5 5)@2000-01-02]', 2);
+
+-- Geography
+SELECT aDwithin(tgeography 'Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02]', 2);
+SELECT aDwithin(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeography '[Point(10 10)@2000-01-01, Point(11 11)@2000-01-02]', 2);
+
+/* Errors */
+SELECT aDwithin(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)', 2);
+SELECT aDwithin(tgeometry 'SRID=3812;Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-01', 2);
+
+SELECT aDwithin(tgeography 'SRID=4283;Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01', 2);
+
+-------------------------------------------------------------------------------
