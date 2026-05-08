@@ -20,6 +20,7 @@
  */
 #define SIZEOF_VOID_P         @SIZEOF_VOID_P@
 #define SIZEOF_LONG           @SIZEOF_LONG@
+#define SIZEOF_LONG_LONG      @SIZEOF_LONG_LONG@
 #define SIZEOF_SIZE_T         @SIZEOF_SIZE_T@
 
 /*
