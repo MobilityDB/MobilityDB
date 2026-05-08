@@ -199,6 +199,16 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
   GSERIALIZED *traj = tpointseq_linear_trajectory(seq, UNARY_UNION_NO);
   GSERIALIZED *inter = geom_intersection2d(traj, gs);
   pfree(traj);
+  /* geom_intersection2d returns a planar geometry (GEODETIC=0, SRID from gs).
+   * For geodetic sequences the instants carry GEODETIC=1 and SRID=4326, so
+   * datum_point_eq rejects any comparison. Promote the intersection result to
+   * geography here so that tpointseq_interperiods can locate timestamps. */
+  if (! gserialized_is_empty(inter) && MEOS_FLAGS_GET_GEODETIC(seq->flags))
+  {
+    GSERIALIZED *inter_geog = geom_to_geog(inter);
+    pfree(inter);
+    inter = inter_geog;
+  }
   if (gserialized_is_empty(inter))
   {
     result = palloc(sizeof(TSequence *));
