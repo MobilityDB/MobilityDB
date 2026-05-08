@@ -173,6 +173,11 @@ static bool
 set_basetype_quotes(MeosType type)
 {
   /* Text values are already output with quotes in the #basetype_out function */
+#if H3
+  /* H3 cell IDs are hex strings (e.g. 831c02fffffffff) — no quoting needed */
+  if (type == T_H3INDEX)
+    return false;
+#endif
   if (type == T_TIMESTAMPTZ || spatial_basetype(type))
     return true;
   return false;

@@ -53,28 +53,30 @@ extern void unset_aggregation_context(MemoryContext ctx);
 /**
  * Helper macros to input the current aggregate state
  */
-#define INPUT_AGG_TRANS_STATE(fcinfo, state)  \
+#define INPUT_AGG_TRANS_STATE(fcinfo, state, ctx)  \
   do {  \
-    MemoryContext ctx = set_aggregation_context(fcinfo); \
+    ctx = set_aggregation_context(fcinfo); \
     state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \
     if (PG_ARGISNULL(1))  \
     {  \
+      unset_aggregation_context(ctx); \
       if (state)  \
         PG_RETURN_POINTER(state);  \
       else  \
         PG_RETURN_NULL();  \
     }  \
-    unset_aggregation_context(ctx); \
   } while (0)
 
-#define INPUT_AGG_COMB_STATE(fcinfo, state1, state2)  \
+#define INPUT_AGG_COMB_STATE(fcinfo, state1, state2, ctx)  \
   do {  \
-    MemoryContext ctx = set_aggregation_context(fcinfo); \
+    ctx = set_aggregation_context(fcinfo); \
     state1 = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \
     state2 = PG_ARGISNULL(1) ? NULL : (SkipList *) PG_GETARG_POINTER(1);  \
     if (! state1 && ! state2)  \
+    {  \
+      unset_aggregation_context(ctx); \
       PG_RETURN_NULL();  \
-    unset_aggregation_context(ctx); \
+    }  \
   } while (0)
 
 /*****************************************************************************/

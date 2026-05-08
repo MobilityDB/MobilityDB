@@ -1,0 +1,180 @@
+SELECT th3index '622236723497533439@2012-01-01 08:00:00';
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+/* Errors */
+SELECT th3index 'ABC@2012-01-01 08:00:00';
+ERROR:  h3index value ABC does not encode a valid H3 cell
+LINE 2: SELECT th3index 'ABC@2012-01-01 08:00:00';
+                        ^
+SELECT th3index '622236723497533439@2012-01-01 08:00:00,';
+ERROR:  Could not parse th3index value: Extraneous characters at the end
+LINE 1: SELECT th3index '622236723497533439@2012-01-01 08:00:00,';
+                        ^
+SELECT th3index ' { 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 } ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' { 622236723497533439@2001-01-01 08:00:00 ,...
+                        ^
+SELECT th3index '{622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{622236723497533439@2001-01-01 08:00:00,622...
+                        ^
+/* Errors */
+SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 2: SELECT th3index '{622236723497533439@2001-01-01, 62223672349...
+                        ^
+SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03},';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{622236723497533439@2001-01-01, 62223672349...
+                        ^
+SELECT th3index ' [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 ] ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' [ 622236723497533439@2001-01-01 08:00:00 ,...
+                        ^
+SELECT th3index '[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '[622236723497533439@2001-01-01 08:00:00,622...
+                        ^
+SELECT th3index 'Interp=Step;[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index 'Interp=Step;[622236723497533439@2001-01-01 ...
+                        ^
+SELECT th3index ' { [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 ] , [ 622236723497533441@2001-01-01 08:10:00 , 622236723497533442@2001-01-01 08:15:00 ] } ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' { [ 622236723497533439@2001-01-01 08:00:00...
+                        ^
+SELECT th3index '{[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00],[622236723497533441@2001-01-01 08:10:00,622236723497533442@2001-01-01 08:15:00]}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{[622236723497533439@2001-01-01 08:00:00,62...
+                        ^
+SELECT th3index(Instant) '622236723497533439@2012-01-01 08:00:00';
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT th3index(Sequence) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(Sequence) '{622236723497533439@2001-01-01, 6...
+                                  ^
+SELECT th3index(Sequence) '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(Sequence) '[622236723497533439@2001-01-01, 6...
+                                  ^
+SELECT th3index(SequenceSet) '{[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(SequenceSet) '{[622236723497533439@2001-01-0...
+                                     ^
+/* Errors */
+SELECT th3index(Instant) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 2: SELECT th3index(Instant) '{622236723497533439@2001-01-01, 62...
+                                 ^
+SELECT th3index(Sequence) '622236723497533439@2012-01-01 08:00:00';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:00:00';
+ERROR:  Invalid temporal type modifier: garbage
+LINE 1: SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:0...
+               ^
+SELECT (tbigint '622236723497533439@2012-01-01 08:00:00')::th3index;
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::th3index;
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ {8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::th3index;
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ [8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT (th3index '622236723497533439@2012-01-01 08:00:00')::tbigint;
+                     tbigint                     
+-------------------------------------------------
+ 622236723497533439@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::tbigint;
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT (th3index '{622236723497533439@2001-01-01, 6222367234...
+                         ^
+SELECT (th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::tbigint;
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT (th3index '[622236723497533439@2001-01-01, 6222367234...
+                         ^
+SELECT ((tbigint '622236723497533439@2012-01-01 08:00:00')::th3index)::tbigint
+  = tbigint '622236723497533439@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ((th3index '622236723497533439@2012-01-01 08:00:00')::tbigint)::th3index
+  = th3index '622236723497533439@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_th3index_assign;
+NOTICE:  table "tbl_th3index_assign" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_assign(k int, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_assign VALUES (1, tbigint '622236723497533439@2012-01-01 08:00:00');
+INSERT 0 1
+SELECT * FROM tbl_th3index_assign;
+ k |                     temp                     
+---+----------------------------------------------
+ 1 | 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+DROP TABLE tbl_th3index_assign;
+DROP TABLE
+/* Errors */
+SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497533439@2012-01-01 08:00:00';
+ERROR:  operator does not exist: tbigint = th3index
+LINE 2: ... tbigint '622236723497533439@2012-01-01 08:00:00' = th3index...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+DROP TABLE IF EXISTS tbl_th3index_binio;
+NOTICE:  table "tbl_th3index_binio" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_binio(k int, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_binio VALUES
+  (1, th3index '622236723497533439@2012-01-01 08:00:00'),
+  (2, th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}'),
+  (3, th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]');
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 3:   (2, th3index '{622236723497533439@2001-01-01, 622236723497...
+                       ^
+COPY tbl_th3index_binio TO '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY 0
+DROP TABLE IF EXISTS tbl_th3index_binio_tmp;
+NOTICE:  table "tbl_th3index_binio_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_binio_tmp AS TABLE tbl_th3index_binio WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_th3index_binio_tmp FROM '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY 0
+SELECT COUNT(*) FROM tbl_th3index_binio t1, tbl_th3index_binio_tmp t2
+  WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_th3index_binio;
+DROP TABLE
+DROP TABLE tbl_th3index_binio_tmp;
+DROP TABLE

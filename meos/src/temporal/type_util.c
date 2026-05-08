@@ -115,6 +115,9 @@ datum_cmp(Datum l, Datum r, MeosType type)
     case T_INT4:
       return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
         ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
         ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
@@ -197,6 +200,9 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_DATE:
     case T_BOOL:
     case T_INT4:
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return l == r;
     case T_FLOAT8:
@@ -323,6 +329,9 @@ datum_add(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
     case T_FLOAT8:
@@ -350,6 +359,9 @@ datum_sub(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
     case T_FLOAT8:
@@ -374,6 +386,9 @@ datum_mult(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
     case T_FLOAT8:
@@ -395,6 +410,9 @@ datum_div(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
     case T_FLOAT8:
@@ -430,6 +448,9 @@ datum_hash(Datum d, MeosType type)
       return hash_bytes_uint32((int32) DatumGetBool(d));
     case T_INT4:
       return hash_bytes_uint32(DatumGetInt32(d));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return pg_hashint8(DatumGetInt64(d));
     case T_FLOAT8:
@@ -479,6 +500,9 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
       return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
     case T_INT4:
       return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return pg_hashint8extended(DatumGetInt64(d), seed);
     case T_FLOAT8:
@@ -538,6 +562,9 @@ datum_double(Datum d, MeosType type)
   {
     case T_INT4:
       return (double) DatumGetInt32(d);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return (double) DatumGetInt64(d);
     case T_FLOAT8:
@@ -563,6 +590,9 @@ double_datum(double d, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum((int) d);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum((int64) d);
     case T_FLOAT8:

@@ -107,6 +107,14 @@ CMAKE_DEPENDENT_OPTION(RGEO
   OFF
   )
 
+# Option for including temporal H3 index (`th3index`), which depends
+# on libh3 and the embedded h3-pg subtree under `h3-pg/`.
+option(H3
+  "Set ON|OFF (default=OFF) to include the temporal H3 index type
+  (th3index). Requires libh3 on the build path."
+  OFF
+  )
+
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   add_definitions(-DCBUFFER=1)
@@ -137,6 +145,27 @@ if(RGEO)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
+endif()
+
+if(H3)
+  message(STATUS "Including temporal H3 index (th3index)")
+  find_library(H3_LIBRARY NAMES h3)
+  # PATH_SUFFIXES h3 — pgdg's libh3-dev installs to /usr/include/h3/h3api.h
+  # (subdirectory) rather than /usr/include/h3api.h. Add the suffix so
+  # find_path catches both layouts.
+  find_path(H3_INCLUDE_DIR NAMES h3api.h PATH_SUFFIXES h3)
+  if(NOT H3_LIBRARY OR NOT H3_INCLUDE_DIR)
+    message(FATAL_ERROR
+      "H3=ON was requested but libh3 was not found.\n"
+      "Install libh3 (https://github.com/uber/h3) or pass\n"
+      "  -DH3_LIBRARY=/path/to/libh3.so -DH3_INCLUDE_DIR=/path/to/h3api.h\n"
+      "to cmake.")
+  endif()
+  add_definitions(-DH3=1)
+  include_directories(${H3_INCLUDE_DIR})
+else()
+  message(STATUS "Excluding temporal H3 index")
+  add_definitions(-DH3=0)
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file

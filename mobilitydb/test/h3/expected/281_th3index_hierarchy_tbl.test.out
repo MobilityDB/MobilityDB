@@ -1,0 +1,93 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),  -- res 3 hexagon
+  (2, th3index '590464201114255359@2001-01-01'),  -- res 3 pentagon
+  (3, th3index '595812165542215679@2001-01-01'),  -- res 4 pentagon
+  (4, th3index '612544986753269759@2001-01-01'),  -- res 8 hexagon
+  (5, th3index '612544986761658367@2001-01-01'),  -- res 8 hexagon
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+SELECT bool_and(startValue(h3_get_resolution(h3_cell_to_parent(temp, 0))) = 0)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(h3_get_resolution(h3_cell_to_parent(temp, 2))) = 2)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(
+    startValue(h3_get_resolution(h3_cell_to_parent(temp))) =
+    startValue(h3_get_resolution(temp)) - 1)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_cell_to_parent(h3_cell_to_parent(temp))
+      <> h3_cell_to_parent(temp,
+           startValue(h3_get_resolution(temp)) - 2);
+ count 
+-------
+     0
+(1 row)
+
+SELECT bool_and(startValue(h3_get_resolution(
+    h3_cell_to_center_child(temp, 12))) = 12)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_cell_to_parent(
+          h3_cell_to_center_child(temp, 14),
+          startValue(h3_get_resolution(temp))) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT bool_and(
+    startValue(h3_get_resolution(h3_cell_to_center_child(temp))) =
+    startValue(h3_get_resolution(temp)) + 1)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startValue(h3_cell_to_child_pos(temp,
+                  startValue(h3_get_resolution(temp)) - 1)) BETWEEN 0 AND 6)
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE h3_child_pos_to_cell(
+          h3_cell_to_child_pos(temp,
+            startValue(h3_get_resolution(temp)) - 1),
+          h3_cell_to_parent(temp),
+          startValue(h3_get_resolution(temp)))
+        <> temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_th3index_known;
+DROP TABLE

@@ -201,7 +201,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   assert(seq); assert(duration); assert(positive_duration(duration));
-  assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
+  assert(seq->temptype == T_TINT || seq->temptype == T_TBIGINT ||
+    seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
     seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
 
@@ -349,7 +350,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration); assert(positive_duration(duration));
-  assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
+  assert(ss->temptype == T_TINT || ss->temptype == T_TBIGINT || 
+    ss->temptype == T_TFLOAT ||
     ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
 
   int64 tunits = interval_units(duration);
@@ -741,7 +743,7 @@ static double
 tinstarr_similarity1(double *dist, TInstant **instants1, int count1,
   TInstant **instants2, int count2, SimFunc simfunc)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  datum_func2 func = point_distance_fn(instants1[0]->flags);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -997,7 +999,11 @@ static void
 tinstarr_similarity_matrix1(TInstant **instants1, int count1,
   TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  /* The flags are needed to select the spatial distance function */
+  MeosType temptype = instants1[0]->temptype;
+  datum_func2 func = tgeo_type(temptype) ?
+    geo_distance_fn(instants1[0]->flags) : ( tpoint_type(temptype) ? 
+    point_distance_fn(instants1[0]->flags) : NULL );
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -1151,7 +1157,7 @@ static double
 tinstarr_hausdorff_distance(TInstant **instants1, int count1,
   TInstant **instants2, int count2)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  datum_func2 func = point_distance_fn(instants1[0]->flags);
   const TInstant *inst1, *inst2;
   double cmax = 0.0, cmin;
   double d;
@@ -1230,7 +1236,7 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 TSequence *
 tsequence_simplify_min_dist(const TSequence *seq, double dist)
 {
-  datum_func2 func = pt_distance_fn(seq->flags);
+  datum_func2 func = point_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);

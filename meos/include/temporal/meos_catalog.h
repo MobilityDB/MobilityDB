@@ -116,6 +116,11 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
+  /* 63..69 reserved for pgPointCloud temporal types (PR #818) */
+  T_TBIGINT        = 70,  /**< temporal big integer type */
+  T_H3INDEX        = 71,  /**< static H3 cell index type (uint64) */
+  T_H3INDEXSET     = 72,  /**< h3index set type */
+  T_TH3INDEX       = 73,  /**< temporal H3 index type (libh3 cell index over time) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

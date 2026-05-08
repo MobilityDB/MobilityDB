@@ -1,0 +1,92 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),  -- res 3 hex
+  (2, th3index '590464201114255359@2001-01-01'),  -- res 3 pentagon
+  (3, th3index '595812165542215679@2001-01-01'),  -- res 4 pentagon
+  (4, th3index '612544986753269759@2001-01-01'),  -- res 8 hex
+  (5, th3index '612544986761658367@2001-01-01'),  -- res 8 hex (neighbour of #4)
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+DROP TABLE IF EXISTS tbl_th3index_pairs;
+NOTICE:  table "tbl_th3index_pairs" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_pairs AS
+  SELECT t1.k AS k1, t2.k AS k2, t1.temp AS a, t2.temp AS b
+  FROM tbl_th3index_known t1, tbl_th3index_known t2;
+SELECT 36
+ANALYZE tbl_th3index_pairs;
+ANALYZE
+SELECT COUNT(*) FROM tbl_th3index_pairs
+  WHERE k1 = k2 AND startValue(h3_are_neighbor_cells(a, b));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_pairs
+  WHERE k1 <> k2 AND startValue(h3_are_neighbor_cells(a, b));
+ERROR:  h3 library error
+SELECT COUNT(*) FROM tbl_th3index_pairs
+  WHERE k1 = 4 AND k2 = 5
+    AND h3_get_directed_edge_origin(h3_cells_to_directed_edge(a, b)) <> a;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index_pairs
+  WHERE k1 = 4 AND k2 = 5
+    AND h3_get_directed_edge_destination(h3_cells_to_directed_edge(a, b)) <> b;
+ count 
+-------
+     0
+(1 row)
+
+SELECT bool_and(NOT startValue(h3_is_valid_directed_edge(temp)))
+  FROM tbl_th3index_known;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT startValue(h3_is_valid_directed_edge(
+  h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01')));
+ startvalue 
+------------
+ t
+(1 row)
+
+SELECT bool_and(
+    h3_get_directed_edge_origin(h3_cells_to_directed_edge(a, b)) IS NOT NULL)
+  FROM tbl_th3index_pairs WHERE (k1, k2) IN ((4, 5), (5, 4));
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(
+    h3_get_directed_edge_destination(h3_cells_to_directed_edge(a, b)) IS NOT NULL)
+  FROM tbl_th3index_pairs WHERE (k1, k2) IN ((4, 5), (5, 4));
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(h3_directed_edge_to_boundary(
+    h3_cells_to_directed_edge(a, b)) IS NOT NULL)
+  FROM tbl_th3index_pairs WHERE (k1, k2) IN ((4, 5), (5, 4));
+ bool_and 
+----------
+ t
+(1 row)
+
+DROP TABLE tbl_th3index_pairs;
+DROP TABLE
+DROP TABLE tbl_th3index_known;
+DROP TABLE

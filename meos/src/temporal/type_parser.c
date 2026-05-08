@@ -349,8 +349,15 @@ tbox_parse(const char **str)
     *str += 7;
     p_whitespace(str);
   }
+  else if (pg_strncasecmp(*str, "TBOXBIGINT", 10) == 0)
+  {
+    spantype = T_BIGINTSPAN;
+    *str += 10;
+    p_whitespace(str);
+  }
   else if (pg_strncasecmp(*str, "TBOXFLOAT", 9) == 0)
   {
+    spantype = T_FLOATSPAN;
     *str += 9;
     p_whitespace(str);
   }
@@ -740,7 +747,6 @@ error:
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single sequence to ensure there is
  * no more input after the sequence
- * @param[out] result New sequence, may be NULL
  * @return On error return false
  */
 TSequence *

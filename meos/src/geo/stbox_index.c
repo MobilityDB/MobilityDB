@@ -238,11 +238,12 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
 bool
 stbox_index_recheck(StrategyNumber strategy)
 {
-  /* These operators are based on bounding boxes and do not consider
-   * inclusive or exclusive bounds */
+  /* Position operators are exact: bbox containment/position can be checked
+   * without knowing inclusive/exclusive bounds. Adjacent is lossy — the bbox
+   * intersection-is-a-point check cannot distinguish a truly adjacent pair
+   * from a degenerate contained single-point period, so a recheck is needed. */
   switch (strategy)
   {
-    case RTAdjacentStrategyNumber:
     case RTLeftStrategyNumber:
     case RTOverLeftStrategyNumber:
     case RTRightStrategyNumber:

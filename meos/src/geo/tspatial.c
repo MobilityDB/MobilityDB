@@ -67,7 +67,10 @@
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_inst.h"
   #include "rgeo/trgeo_boxops.h"
-#endif 
+#endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 
 /*****************************************************************************
  * Input/output functions
@@ -448,15 +451,46 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
         trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
           (TInstant *) temp, box);
 #endif
+#if H3
+      else if (temp->temptype == T_TH3INDEX)
+        th3indexinst_set_stbox((TInstant *) temp, box);
+#endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown spatiotemporal type: %s", meostype_name(temp->temptype));
       break;
     case TSEQUENCE:
-      tspatialseq_set_stbox((TSequence *) temp, box);
+#if H3
+      if (temp->temptype == T_TH3INDEX)
+      {
+        /* The cached bbox is a TBox (tbigint layout); TBox and STBox share
+         * Span period as their first field — copy just the period and fill
+         * the spatial flags correctly for geodetic th3index. */
+        memset(box, 0, sizeof(STBox));
+        memcpy(&box->period, TSEQUENCE_BBOX_PTR((TSequence *) temp),
+          sizeof(Span));
+        MEOS_FLAGS_SET_X(box->flags, true);
+        MEOS_FLAGS_SET_GEODETIC(box->flags, true);
+        MEOS_FLAGS_SET_T(box->flags, true);
+      }
+      else
+#endif
+        tspatialseq_set_stbox((TSequence *) temp, box);
       break;
     default: /* TSEQUENCESET */
-      tspatialseqset_set_stbox((TSequenceSet *) temp, box);
+#if H3
+      if (temp->temptype == T_TH3INDEX)
+      {
+        memset(box, 0, sizeof(STBox));
+        memcpy(&box->period, TSEQUENCESET_BBOX_PTR((TSequenceSet *) temp),
+          sizeof(Span));
+        MEOS_FLAGS_SET_X(box->flags, true);
+        MEOS_FLAGS_SET_GEODETIC(box->flags, true);
+        MEOS_FLAGS_SET_T(box->flags, true);
+      }
+      else
+#endif
+        tspatialseqset_set_stbox((TSequenceSet *) temp, box);
   }
   return;
 }

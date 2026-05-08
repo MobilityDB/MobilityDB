@@ -28,31 +28,31 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i + t2.i IS N
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
   9801
@@ -178,31 +178,31 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i - t2.i IS N
   9702
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   7705
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9210
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
   9702
@@ -328,31 +328,31 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i * t2.i IS N
   9569
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   2096
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   2096
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
   9529
@@ -478,31 +478,31 @@ SELECT MIN(t1.i <-> t2.i) FROM tbl_intspanset t1, tbl_intspanset t2;
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspanset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigint t1, tbl_bigintspanset t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintspanset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspan t1, tbl_bigintspanset t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspanset t1, tbl_bigint t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspanset t1, tbl_bigint t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspanset t1, tbl_bigintspan t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspanset t1, tbl_bigintspan t2;
  min 
 -----
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspanset t1, tbl_bigintspanset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_bigintspanset t1, tbl_bigintspanset t2;
  min 
 -----
    0

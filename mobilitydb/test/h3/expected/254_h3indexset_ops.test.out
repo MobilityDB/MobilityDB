@@ -1,0 +1,119 @@
+SELECT h3indexset '{8a2a1072b59ffff, 880326b885fffff}' @> h3index '8a2a1072b59ffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT (h3indexset '{8a2a1072b59ffff}' @> h3index '831c02fffffffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{8a2a1072b59ffff, 880326b885fffff, 831c02fffffffff}'
+  @> h3indexset '{8a2a1072b59ffff, 831c02fffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT (h3indexset '{8a2a1072b59ffff}'
+  @> h3indexset '{8a2a1072b59ffff, 831c02fffffffff}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3index '8a2a1072b59ffff' <@ h3indexset '{8a2a1072b59ffff, 880326b885fffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{8a2a1072b59ffff}'
+  <@ h3indexset '{8a2a1072b59ffff, 880326b885fffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{8a2a1072b59ffff, 831c02fffffffff}'
+  && h3indexset '{831c02fffffffff, 880326b885fffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT (h3indexset '{8a2a1072b59ffff}'
+  && h3indexset '{831c02fffffffff}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff}' + h3index '831c02fffffffff') = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3index '831c02fffffffff' + h3indexset '{8a2a1072b59ffff}') = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff, 831c02fffffffff}'
+  + h3indexset '{831c02fffffffff, 880326b885fffff}') = 3;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff}' + h3index '8a2a1072b59ffff') = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff, 831c02fffffffff}' - h3index '831c02fffffffff') = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff, 831c02fffffffff, 880326b885fffff}'
+  - h3indexset '{831c02fffffffff}') = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3indexset '{8a2a1072b59ffff}' - h3index '831c02fffffffff'
+  = h3indexset '{8a2a1072b59ffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff, 831c02fffffffff}'
+  * h3indexset '{831c02fffffffff, 880326b885fffff}') = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(
+  h3indexset '{8a2a1072b59ffff, 831c02fffffffff}' * h3index '831c02fffffffff') = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
