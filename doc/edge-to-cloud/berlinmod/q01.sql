@@ -1,3 +1,7 @@
+-- Copyright(c) MobilityDB Contributors
+-- This file is part of MobilityDB documentation.
+-- Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+--
 -- BerlinMOD Q1: Models of vehicles with licences from QueryLicences.
 --
 -- Portable: works unchanged on MobilityDB/PostgreSQL, MobilityDuck/DuckDB,

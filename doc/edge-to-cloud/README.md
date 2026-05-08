@@ -1,3 +1,10 @@
+<!--
+Copyright(c) MobilityDB Contributors
+
+This documentation is provided under Creative Commons Attribution 4.0
+International License (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+-->
+
 # RFC: Edge-to-Cloud SQL Portability for the MobilityDB Ecosystem
 
 > **Discussion [#861](https://github.com/MobilityDB/MobilityDB/discussions/861)** — community discussion and sign-off
