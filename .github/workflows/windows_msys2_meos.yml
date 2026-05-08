@@ -1,20 +1,16 @@
 name: Build MEOS on Windows (MSYS2/UCRT64)
 
 # Builds the standalone MEOS C library natively on Windows under MSYS2's
-# UCRT64 runtime. This is the bootstrap step for issue #513 — it does not
-# yet build the MobilityDB PostgreSQL extension under MEOS-mode (the
-# existing windows_msys2.yml already covers the extension build, which
-# inherits Windows support from PostgreSQL itself).
+# UCRT64 runtime.  This workflow gates issue #513 (native Windows MEOS support).
 #
 # What this job verifies:
 #   * cmake -DMEOS=ON resolves all dependencies under MSYS2 mingw-w64
-#     (json-c, geos, proj, gsl).
-#   * The standalone libmeos.dll links cleanly without -Wl,-undefined,
-#     dynamic_lookup (a macOS-only flag).
+#     (json-c, geos, proj, gsl, tzdata).
+#   * The standalone libmeos.dll links cleanly.
 #   * A minimal smoke test (meos/test/temporal_test) builds and runs.
 #
 # Note: full MSVC support requires sweeping PGDLLEXPORT onto every public
-# extern declaration in meos.h / meos_*.h. That is intentionally left as
+# extern declaration in meos.h / meos_*.h.  That is intentionally left as
 # a follow-up; MinGW-GCC under MSYS2 exports symbols by default
 # (--export-all-symbols) so this CI runs without that sweep.
 
@@ -43,13 +39,6 @@ jobs:
   build-meos:
     name: meos-windows
     runs-on: windows-latest
-    # Bootstrap signal only — the standalone MEOS build is known to be
-    # incomplete on Windows (the embedded PostgreSQL pg_bitutils.h /
-    # get_share_path expects a configured PG build env, which we don't
-    # set up yet). This job runs to surface what's still broken and is
-    # marked non-blocking until the follow-up PRs land. The job logs are
-    # the canonical reference for the next iteration.
-    continue-on-error: true
     defaults:
       run:
         shell: msys2 {0}
@@ -71,38 +60,36 @@ jobs:
             mingw-w64-ucrt-x86_64-geos
             mingw-w64-ucrt-x86_64-proj
             mingw-w64-ucrt-x86_64-gsl
+            mingw-w64-ucrt-x86_64-tzdata
 
-      # Each build/test step is marked continue-on-error so the bootstrap
-      # CI signal stays on the run page even when the embedded PostgreSQL
-      # subtree fails to compile on Windows. The job's overall conclusion
-      # is then "success" so the PR is not blocked. Once the follow-up
-      # PostgreSQL Windows build fixes land, drop the per-step flags.
+      - name: Resolve native timezone data path
+        run: |
+          # cygpath -m converts the MSYS2 POSIX path to a Windows-native path
+          # (forward slashes, e.g. C:/msys64/ucrt64/share/zoneinfo) that fopen()
+          # inside the compiled DLL can open at runtime.
+          TZDATA_WIN=$(cygpath -m "$MSYSTEM_PREFIX/share/zoneinfo")
+          echo "MEOS_TZDATA_WIN=$TZDATA_WIN" >> "$GITHUB_ENV"
 
       - name: Configure (MEOS=ON, no PostgreSQL extension)
-        continue-on-error: true
         run: |
           # POSE pulls in RGEO via CMAKE_DEPENDENT_OPTION; we leave RGEO off
           # for now because rgeo's compilation on Windows depends on PostGIS
           # build-tree generated headers that have not been verified there.
-          # Keeping the smoke build minimal lets CI surface the next layer
-          # of issues in isolation.
           cmake -S . -B build-meos \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
             -DMEOS=ON \
-            -DCBUFFER=ON -DNPOINT=ON -DPOSE=OFF -DRGEO=OFF
+            -DCBUFFER=ON -DNPOINT=ON -DPOSE=OFF -DRGEO=OFF \
+            -DMEOS_TZDATA_DIR="$MEOS_TZDATA_WIN"
 
       - name: Build libmeos
-        continue-on-error: true
         run: cmake --build build-meos -j
 
       - name: Install libmeos
-        continue-on-error: true
         run: cmake --install build-meos
 
       - name: Show built artifacts
-        continue-on-error: true
         run: |
           ls -la build-meos/
           ls -la meos-install/bin meos-install/lib meos-install/include 2>/dev/null || true
@@ -111,16 +98,11 @@ jobs:
           test -f build-meos/libmeos.dll || (echo "libmeos.dll not produced"; exit 1)
 
       - name: Smoke test (build temporal_test against installed libmeos)
-        continue-on-error: true
         run: |
-          # The install step renames meos_export.h -> meos.h in the include
-          # tree, so we point gcc at the install prefix to compile against
-          # the public API as a downstream consumer would.
           gcc -I meos-install/include \
             -L meos-install/lib \
             -o meos-install/temporal_test.exe \
             meos/test/temporal_test.c \
             -lmeos
-          # Make the DLL discoverable to the .exe loader.
           PATH="$PWD/meos-install/bin:$PWD/build-meos:$PATH" ./meos-install/temporal_test.exe \
             || (echo "temporal_test.exe failed at runtime"; exit 1)
