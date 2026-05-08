@@ -1807,6 +1807,17 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
     /* Continue if the segment is constant */
     if (datum_eq(startvalue, endvalue, basetype))
       continue;
+    /* discont=false on a linear segment: apply step semantics — the result
+     * is determined solely by the values at the stored instants, with no
+     * crossing detection between them. Used when the comparison value type
+     * does not match the segment base type and interpolated crossing
+     * detection would be incorrect. */
+    if (! lfinfo->discont)
+    {
+      start = end;
+      lower_inc = true;
+      continue;
+    }
     TimestampTz tpt1, tpt2;
     /* To avoid floating point imprecission, if the lifted function to
      * apply is datum2_eq or datum_point_eq, the equality test is computed in

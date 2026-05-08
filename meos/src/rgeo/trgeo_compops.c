@@ -65,7 +65,24 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   assert(func);
-  return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_BOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  /* Step semantics: the comparison value is a geometry but the segment base
+   * type is T_POSE, so interpolated crossing detection is not possible.
+   * Evaluating at stored instants only (discont=false) is the correct and
+   * sufficient answer. */
+  lfinfo.discont = false;
+  lfinfo.ever = ever;
+  return eafunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /**
@@ -268,7 +285,20 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT;
+  /* Step semantics: see eacomp_trgeo_geo. */
+  lfinfo.discont = false;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /**
@@ -286,7 +316,20 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  /* Step semantics: see eacomp_trgeo_geo. */
+  lfinfo.discont = false;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /*****************************************************************************/

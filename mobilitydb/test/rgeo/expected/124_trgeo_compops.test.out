@@ -11,9 +11,9 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01,
 (1 row)
 
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' #= geometry 'Polygon((1 1,2 2,3 1,1 1))';
-                              ?column?                              
---------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' #= geometry 'Polygon((1 1,2 2,3 1,1 1))';
@@ -35,9 +35,9 @@ SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #= trgeometry 'Polygon((1 1,2 2,3 1
 (1 row)
 
 SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #= trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
-                              ?column?                              
---------------------------------------------------------------------
- {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #= trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
@@ -155,9 +155,9 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01,
 (1 row)
 
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' #<> geometry 'Polygon((1 1,2 2,3 1,1 1))';
-                              ?column?                              
---------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' #<> geometry 'Polygon((1 1,2 2,3 1,1 1))';
@@ -179,9 +179,9 @@ SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #<> trgeometry 'Polygon((1 1,2 2,3 
 (1 row)
 
 SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #<> trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
-                              ?column?                              
---------------------------------------------------------------------
- {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 SELECT geometry 'Polygon((1 1,2 2,3 1,1 1))' #<> trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
