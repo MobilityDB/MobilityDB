@@ -1,0 +1,82 @@
+name: Build standalone MEOS on macOS
+
+# Builds libmeos.dylib on macOS (Apple Silicon) without PostgreSQL.
+# This is the native library consumed by JMEOS / MobilitySpark on macOS.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/meos_macos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/meos_macos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+
+jobs:
+  build-meos-macos:
+    name: meos-macos (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Homebrew)
+        run: |
+          brew install json-c geos proj gsl cmake ninja
+
+      - name: Configure (MEOS=ON, no PostgreSQL extension)
+        run: |
+          BREW_PREFIX="$(brew --prefix)"
+          cmake -S . -B build-meos \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
+            -DCMAKE_PREFIX_PATH="$BREW_PREFIX" \
+            -DMEOS=ON \
+            -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON
+
+      - name: Build libmeos.dylib
+        run: cmake --build build-meos -j
+
+      - name: Install libmeos.dylib
+        run: cmake --install build-meos
+
+      - name: Verify artifact
+        run: |
+          ls -lh meos-install/lib/libmeos.dylib
+          file meos-install/lib/libmeos.dylib
+
+      - name: Smoke test (compile and run 01_hello_world.c)
+        run: |
+          export DYLD_LIBRARY_PATH="$PWD/meos-install/lib"
+          gcc -I meos-install/include \
+              -L meos-install/lib \
+              -o meos_hello meos/examples/01_hello_world.c \
+              -lmeos
+          ./meos_hello
+
+      - name: Upload libmeos.dylib artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmeos-dylib-${{ matrix.os }}
+          path: meos-install/lib/libmeos.dylib
+          if-no-files-found: error
