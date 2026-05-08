@@ -1661,10 +1661,18 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
     }
     TimestampTz t1, t2;
     GSERIALIZED *gspoint;
+    bool geodetic = FLAGS_GET_GEODETIC(gsinter->gflags);
     /* Each intersection is either a point or a linestring */
     if (type == POINTTYPE)
     {
       gspoint = geo_serialize((LWGEOM *) point_inter);
+      /* geo_serialize strips the geodetic flag; restore it for geodetic seqs */
+      if (geodetic)
+      {
+        GSERIALIZED *tmp = geom_to_geog(gspoint);
+        pfree(gspoint);
+        gspoint = tmp;
+      }
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* If the intersection is not at an exclusive bound */
@@ -1679,12 +1687,24 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
       LWPOINT *point = lwline_get_lwpoint(line_inter, 0);
       gspoint = geo_serialize((LWGEOM *) point);
       lwpoint_free(point);
+      if (geodetic)
+      {
+        GSERIALIZED *tmp = geom_to_geog(gspoint);
+        pfree(gspoint);
+        gspoint = tmp;
+      }
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* Get the fraction of the end point of the intersecting line */
       point = lwline_get_lwpoint(line_inter, line_inter->points->npoints - 1);
       gspoint = geo_serialize((LWGEOM *) point);
       lwpoint_free(point);
+      if (geodetic)
+      {
+        GSERIALIZED *tmp = geom_to_geog(gspoint);
+        pfree(gspoint);
+        gspoint = tmp;
+      }
       tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2);
       pfree(gspoint);
       /* If t1 == t2 and the intersection is not at an exclusive bound */
