@@ -14,14 +14,7 @@ set_tests_properties(load_rgeo_tables PROPERTIES
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
-# Tests whose expected output is stale relative to the current behaviour
-# of the underlying functions. Re-enable once the expected output is
-# regenerated.
-set(SKIP_TESTS
-  122_trgeo               # Operation on mixed SRID drift
-  124_trgeo_compops       # Operation on mixed SRID drift
-  124_trgeo_compops_tbl   # Operation on mixed SRID drift (table form)
-)
+set(SKIP_TESTS)
 
 foreach(file ${testfiles})
   get_filename_component(TESTNAME ${file} NAME_WE)

@@ -32,6 +32,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 LWTIN* lwtin_from_geos(const GEOSGeometry* geom, uint8_t want3d);
 
@@ -74,6 +75,34 @@ lwgeom_geos_error_minversion(const char *functionality, const char *minver)
 		" this version of PostGIS was built against version %s",
 		functionality, minver, lwgeom_geos_compiled_version()
 	);
+}
+
+/*
+ * Thread-safe once-per-process GEOS initialisation.
+ *
+ * The non-reentrant GEOS API (initGEOS / GEOSIntersects / ...) uses a single
+ * global GEOSContextHandle_t.  Calling initGEOS concurrently from multiple
+ * threads corrupts that handle.  We therefore call it exactly once, protected
+ * by pthread_once, and never call finishGEOS from individual operations
+ * (those calls used to clean up "per-call" state that was never truly
+ * per-call — the handle is process-global).
+ *
+ * GEOSGeometry objects created and destroyed within each function call are
+ * independent allocations and are safe to use concurrently once GEOS is
+ * initialised.
+ */
+static pthread_once_t meos_geos_once_ctrl = PTHREAD_ONCE_INIT;
+
+static void
+meos_geos_init_fn(void)
+{
+	initGEOS(lwnotice, lwgeom_geos_error);
+}
+
+void
+meos_initialize_geos(void)
+{
+	pthread_once(&meos_geos_once_ctrl, meos_geos_init_fn);
 }
 
 /* Destroy any non-null GEOSGeometry* pointers passed as arguments */
@@ -667,7 +696,7 @@ lwgeom_normalize(const LWGEOM* geom)
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -677,7 +706,6 @@ lwgeom_normalize(const LWGEOM* geom)
 	if (!(result = GEOS2LWGEOM(g, is3d))) GEOS_FREE_AND_FAIL(g);
 
 	GEOSGeom_destroy(g);
-  finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -705,7 +733,7 @@ lwgeom_intersection_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 	/* Empty.Intersection(A) == Empty */
 	if (lwgeom_is_empty(geom1)) return lwgeom_clone_deep(geom1); /* match empty type? */
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -714,7 +742,6 @@ lwgeom_intersection_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision intersection", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSIntersectionPrec(g1, g2, prec);
@@ -731,7 +758,6 @@ lwgeom_intersection_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 	if (!(result = GEOS2LWGEOM(g3, is3d))) GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -755,7 +781,7 @@ lwgeom_linemerge_directed(const LWGEOM* geom, int directed)
 	/* Empty.Linemerge() == Empty */
 	if (lwgeom_is_empty(geom)) return lwgeom_clone_deep(geom); /* match empty type to linestring? */
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -805,7 +831,7 @@ lwgeom_unaryunion_prec(const LWGEOM* geom, double prec)
 	/* Empty.UnaryUnion() == Empty */
 	if (lwgeom_is_empty(geom)) return lwgeom_clone_deep(geom);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -813,7 +839,6 @@ lwgeom_unaryunion_prec(const LWGEOM* geom, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision unary union", "3.9");
 		GEOS_FREE_AND_FAIL(g1);
-		finishGEOS(); // MEOS to remove memory leak
 		return NULL;
 #else
 		g3 = GEOSUnaryUnionPrec(g1, prec);
@@ -831,7 +856,6 @@ lwgeom_unaryunion_prec(const LWGEOM* geom, double prec)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-	finishGEOS(); // MEOS to remove memory leak
 
 	return result;
 }
@@ -858,7 +882,7 @@ lwgeom_difference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 	/* Empty.Intersection(A) == Empty */
 	if (lwgeom_is_empty(geom1)) return lwgeom_clone_deep(geom1); /* match empty type? */
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -867,7 +891,6 @@ lwgeom_difference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision difference", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSDifferencePrec(g1, g2, prec);
@@ -885,7 +908,6 @@ lwgeom_difference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -911,7 +933,7 @@ lwgeom_symdifference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 	/* Empty.DymDifference(B) == B */
 	if (lwgeom_is_empty(geom1)) return lwgeom_clone_deep(geom2);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -920,7 +942,6 @@ lwgeom_symdifference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision symdifference", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSSymDifferencePrec(g1, g2, prec);
@@ -938,7 +959,6 @@ lwgeom_symdifference_prec(const LWGEOM* geom1, const LWGEOM* geom2, double prec)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -958,7 +978,7 @@ lwgeom_centroid(const LWGEOM* geom)
 		return lwpoint_as_lwgeom(lwp);
 	}
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -971,7 +991,6 @@ lwgeom_centroid(const LWGEOM* geom)
 		GEOS_FREE_AND_FAIL(g1);
 
 	GEOS_FREE(g1, g3);
-	finishGEOS(); // MEOS remove memory leak
 
 	return result;
 }
@@ -994,7 +1013,7 @@ lwgeom_reduceprecision(const LWGEOM* geom, double gridSize)
 	if (lwgeom_is_empty(geom))
 		return lwgeom_clone_deep(geom);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1007,7 +1026,6 @@ lwgeom_reduceprecision(const LWGEOM* geom, double gridSize)
 		GEOS_FREE_AND_FAIL(g1);
 
 	GEOS_FREE(g1, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 #endif
 }
@@ -1028,7 +1046,7 @@ lwgeom_pointonsurface(const LWGEOM *geom)
 		return lwpoint_as_lwgeom(lwp);
 	}
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1041,7 +1059,6 @@ lwgeom_pointonsurface(const LWGEOM *geom)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1067,7 +1084,7 @@ lwgeom_union_prec(const LWGEOM* geom1, const LWGEOM* geom2, double gridSize)
 	/* B.Union(empty) == B */
 	if (lwgeom_is_empty(geom2)) return lwgeom_clone_deep(geom1);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -1076,7 +1093,6 @@ lwgeom_union_prec(const LWGEOM* geom1, const LWGEOM* geom2, double gridSize)
 #if POSTGIS_GEOS_VERSION < 30900
 		lwgeom_geos_error_minversion("Fixed-precision union", "3.9");
 		GEOS_FREE_AND_FAIL(g1, g2);
-		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 #else
 		g3 = GEOSUnionPrec(g1, g2, gridSize);
@@ -1094,7 +1110,6 @@ lwgeom_union_prec(const LWGEOM* geom1, const LWGEOM* geom2, double gridSize)
 		GEOS_FREE_AND_FAIL(g1, g2, g3);
 
 	GEOS_FREE(g1, g2, g3);
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1111,7 +1126,7 @@ lwgeom_clip_by_rect(const LWGEOM *geom1, double x1, double y1, double x2, double
 
 	is3d = FLAGS_GET_Z(geom1->flags);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX)))
 		GEOS_FAIL_DEBUG();
@@ -1128,7 +1143,6 @@ lwgeom_clip_by_rect(const LWGEOM *geom1, double x1, double y1, double x2, double
 
 	result->srid = geom1->srid;
 
-	finishGEOS(); // MEOS remove memory leak
 	return result;
 }
 
@@ -1146,7 +1160,7 @@ lwgeom_buildarea(const LWGEOM* geom)
 	/* Can't build an area from an empty! */
 	if (lwgeom_is_empty(geom)) return (LWGEOM*)lwpoly_construct_empty(srid, is3d, 0);
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1159,7 +1173,6 @@ lwgeom_buildarea(const LWGEOM* geom)
 	if (GEOSGetNumGeometries(g3) == 0)
 	{
 		GEOS_FREE(g1, g3);
-		finishGEOS(); // MEOS remove memory leak
 		return NULL;
 	}
 
@@ -1167,7 +1180,6 @@ lwgeom_buildarea(const LWGEOM* geom)
 		GEOS_FREE_AND_FAIL(g1, g3);
 
 	GEOS_FREE(g1, g3);
-	finishGEOS(); // MEOS remove memory leak
 
 	return result;
 }
@@ -1183,7 +1195,7 @@ lwgeom_is_simple(const LWGEOM* geom)
 	/* Empty is always simple */
 	if (lwgeom_is_empty(geom)) return LW_TRUE;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g = LWGEOM2GEOS(geom, AUTOFIX))) return -1;
 
@@ -1209,7 +1221,7 @@ lwgeom_geos_noop(const LWGEOM* geom)
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1234,7 +1246,7 @@ lwgeom_snap(const LWGEOM* geom1, const LWGEOM* geom2, double tolerance)
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -1261,7 +1273,7 @@ lwgeom_sharedpaths(const LWGEOM* geom1, const LWGEOM* geom2)
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom1, AUTOFIX))) GEOS_FAIL();
 	if (!(g2 = LWGEOM2GEOS(geom2, AUTOFIX))) GEOS_FREE_AND_FAIL(g1);
@@ -1289,7 +1301,7 @@ lwline_offsetcurve(const LWLINE *lwline, double size, int quadsegs, int joinStyl
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1507,7 +1519,7 @@ lwpoly_to_points(const LWPOLY* lwpoly, uint32_t npoints, int32_t seed)
 	}
 
 	/* Prepare the polygon for fast true/false testing */
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 	g = (GEOSGeometry*)LWGEOM2GEOS(lwgeom, 0);
 	if (!g)
 	{
@@ -1777,7 +1789,7 @@ lwgeom_delaunay_triangulation(const LWGEOM* geom, double tolerance, int32_t outp
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1864,7 +1876,7 @@ lwgeom_voronoi_diagram(const LWGEOM* g, const GBOX* env, double tolerance, int o
 		return lwcollection_as_lwgeom(empty);
 	}
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	/* Instead of using the standard LWGEOM2GEOS transformer, we read the vertices of the LWGEOM directly and put
 	 * them into a single GEOS CoordinateSeq that can be used to define a LineString.  This allows us to process
@@ -1912,7 +1924,7 @@ lwgeom_concavehull(const LWGEOM* geom, double ratio, uint32_t allow_holes)
 	GEOSGeometry *g1, *g3;
 	int geosGeomType;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1945,7 +1957,7 @@ lwgeom_simplify_polygonal(const LWGEOM* geom, double vertex_fraction, uint32_t i
 	uint8_t is3d = FLAGS_GET_Z(geom->flags);
 	GEOSGeometry *g1, *g3;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 
@@ -1973,7 +1985,7 @@ lwgeom_triangulate_polygon(const LWGEOM* geom)
 
 	if (srid == SRID_INVALID) return NULL;
 
-	initGEOS(lwnotice, lwgeom_geos_error);
+	meos_initialize_geos();
 
 	if (!(g1 = LWGEOM2GEOS(geom, AUTOFIX))) GEOS_FAIL();
 

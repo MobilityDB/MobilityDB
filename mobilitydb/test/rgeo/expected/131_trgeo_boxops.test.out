@@ -1,0 +1,122 @@
+SELECT round(unnest(stboxes(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]')), 6);
+                                        round                                         
+--------------------------------------------------------------------------------------
+ STBOX XT(((0,0),(5,1)),[Thu Jan 01 00:00:00 2026 PST, Fri Jan 02 00:00:00 2026 PST])
+(1 row)
+
+SELECT COUNT(*) FROM unnest(stboxes(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));{[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-01 12:00], [Pose(Point(4 0),0)@2026-01-02, Pose(Point(6 0),0)@2026-01-03]}'));
+ count 
+-------
+     2
+(1 row)
+
+SELECT round(expandSpace(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]', 1.0), 6);
+                                                       round                                                        
+--------------------------------------------------------------------------------------------------------------------
+ STBOX XT(((-2.414214,-2.414214),(6.414214,2.414214)),[Thu Jan 01 00:00:00 2026 PST, Fri Jan 02 00:00:00 2026 PST])
+(1 row)
+
+SELECT spans(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]');
+                              spans                               
+------------------------------------------------------------------
+ {"[Thu Jan 01 00:00:00 2026 PST, Fri Jan 02 00:00:00 2026 PST]"}
+(1 row)
+
+SELECT splitNSpans(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-03]', 2);
+                           splitnspans                            
+------------------------------------------------------------------
+ {"[Thu Jan 01 00:00:00 2026 PST, Sat Jan 03 00:00:00 2026 PST]"}
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE splitEachNSpans(temp, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM unnest(splitNStboxes(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-03]', 2));
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE splitEachNStboxes(temp, 2) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT round(length(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]')::numeric, 6);
+  round   
+----------
+ 4.000000
+(1 row)
+
+SELECT numInstants(cumulativeLength(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]'));
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT numInstants(speed(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]'));
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT ST_AsText(round(twCentroid(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-02]'), 6));
+ st_astext  
+------------
+ POINT(2 0)
+(1 row)
+
+SELECT asText(tprecision(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-03]',
+  interval '1 day'));
+                                                                                       astext                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));[Pose(POINT(1 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(3 0),0)@Fri Jan 02 00:00:00 2026 PST, Pose(POINT(4 0),0)@Sat Jan 03 00:00:00 2026 PST]
+(1 row)
+
+SELECT asText(tsample(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(4 0),0)@2026-01-03]',
+  interval '1 day'));
+                                                                                       astext                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{Pose(POINT(0 0),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(2 0),0)@Fri Jan 02 00:00:00 2026 PST, Pose(POINT(4 0),0)@Sat Jan 03 00:00:00 2026 PST}
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE spans(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE stboxes(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE length(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d WHERE CASE WHEN interp(temp) = 'Linear' THEN speed(temp) IS NOT NULL ELSE FALSE END;
+ count 
+-------
+    46
+(1 row)
+

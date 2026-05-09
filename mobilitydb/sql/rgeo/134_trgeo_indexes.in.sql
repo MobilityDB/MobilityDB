@@ -106,6 +106,18 @@ CREATE OPERATOR CLASS trgeometry_rtree_ops
   OPERATOR  31    #&> (trgeometry, tstzspan),
   OPERATOR  31    #&> (trgeometry, stbox),
   OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- functions
   FUNCTION  1 trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -181,6 +193,18 @@ CREATE OPERATOR CLASS trgeometry_quadtree_ops
   OPERATOR  31    #&> (trgeometry, tstzspan),
   OPERATOR  31    #&> (trgeometry, stbox),
   OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -255,6 +279,18 @@ CREATE OPERATOR CLASS trgeometry_kdtree_ops
   OPERATOR  31    #&> (trgeometry, tstzspan),
   OPERATOR  31    #&> (trgeometry, stbox),
   OPERATOR  31    #&> (trgeometry, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (trgeometry, stbox),
+  OPERATOR  32    &</ (trgeometry, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (trgeometry, stbox),
+  OPERATOR  33    <</ (trgeometry, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (trgeometry, stbox),
+  OPERATOR  34    />> (trgeometry, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (trgeometry, stbox),
+  OPERATOR  35    /&> (trgeometry, trgeometry),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),

@@ -1,0 +1,38 @@
+SELECT COUNT(*) FROM spaceTiles(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]',
+  2.0) t(index, tile);
+ count 
+-------
+    14
+(1 row)
+
+SELECT COUNT(*) FROM timeTiles(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]',
+  interval '6 hours') t(index, tile);
+ count 
+-------
+     5
+(1 row)
+
+SELECT COUNT(*) FROM spaceTimeTiles(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(10 0),0)@2026-01-02]',
+  4.0, interval '12 hours') t(index, tile);
+ count 
+-------
+    24
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d,
+  LATERAL spaceTiles(temp, 2.0) t WHERE tile IS NOT NULL;
+ count  
+--------
+ 431360
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d,
+  LATERAL timeTiles(temp, interval '1 day') t WHERE tile IS NOT NULL;
+ count 
+-------
+   104
+(1 row)
+

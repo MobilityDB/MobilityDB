@@ -23,69 +23,52 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
 /**
  * @file
- * @brief General functions for temporal rigid geometries
+ * @brief Similarity distance functions for temporal rigid geometries
+ * @note The reference-point centroid trajectory is used as a proxy for pose
+ * distance, consistent with all other trgeometry distance functions
  */
 
-#ifndef __TRGEO_H__
-#define __TRGEO_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-/* MEOS */
-#include "temporal/temporal.h"
-#include "pose/pose.h"
-
-/** Symbolic constants for the temporal instant geometry constuctor */
-#define WITH_GEOM       true
-#define NO_GEOM         false
-
 /*****************************************************************************
- * Miscellaneous functions defined in trgeo.c
+ * Frechet distance and path
  *****************************************************************************/
 
-extern bool ensure_has_geom(int16 flags);
-extern bool ensure_valid_trgeo_geo(const Temporal *temp,
-  const GSERIALIZED *gs);
-extern bool ensure_valid_trgeo_stbox(const Temporal *temp,
-  const STBox *box);
-extern bool ensure_valid_trgeo_trgeo(const Temporal *temp1,
-  const Temporal *temp2);
-extern bool ensure_valid_trgeo_tpoint(const Temporal *temp1,
-  const Temporal *temp2);
-extern const GSERIALIZED *trgeo_geom_p(const Temporal *temp);
+CREATE FUNCTION frechetDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_frechet_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Input/output functions */
+CREATE FUNCTION frechetDistancePath(trgeometry, trgeometry)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Trgeometry_frechet_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-extern char *trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended);
+/*****************************************************************************
+ * Dynamic Time Warp distance and path
+ *****************************************************************************/
 
-/* Constructor functions */
+CREATE FUNCTION dynTimeWarpDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_dyntimewarp_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-extern TInstant *geo_tposeinst_to_trgeo(const GSERIALIZED *gs,
-  const TInstant *inst);
-extern TSequence *geo_tposeseq_to_trgeo(const GSERIALIZED *gs,
-  const TSequence *seq);
-extern TSequenceSet *geo_tposeseqset_to_trgeo(const GSERIALIZED *gs,
-  const TSequenceSet *ss);
+CREATE FUNCTION dynTimeWarpPath(trgeometry, trgeometry)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Trgeometry_dyntimewarp_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Conversion functions */
+/*****************************************************************************
+ * Hausdorff distance
+ *****************************************************************************/
 
-
-/* Accessor functions */
-
-extern GSERIALIZED *geom_apply_pose(const GSERIALIZED *gs, const Pose *pose);
-
-extern bool trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t,
-  bool strict, Datum *result);
-
-/* Transformation functions */
-
+CREATE FUNCTION hausdorffDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
-
-#endif /* __TRGEO_H__ */

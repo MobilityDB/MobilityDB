@@ -23,47 +23,58 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
 /**
- * @file
- * @brief Bounding box operators for temporal rigid geometries
+ * @brief Spatial functions for temporal rigid geometries.
  */
 
-#ifndef __TRGEO_BOXOPS_H__
-#define __TRGEO_BOXOPS_H__
+#ifndef __TRGEO_SPATIALFUNCS_H__
+#define __TRGEO_SPATIALFUNCS_H__
 
-/* Postgres */
-#include <postgres.h>
-/* MEOS */
+#include <meos.h>
 #include "temporal/temporal.h"
-#include "geo/stbox.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
 
-/* Functions computing the bounding box at the creation of the temporal rigid 
- * geometry */
+/* Accessor functions */
 
-extern void trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst,
-  STBox *box);
-extern void trgeoinstarr_static_stbox(const GSERIALIZED *geom, 
-  TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_rotating_stbox(const GSERIALIZED *geom,
-  TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
-  TInstant **instants, int count, interpType interp, void *box);
+extern GSERIALIZED *trgeo_traversed_area(const Temporal *temp,
+  bool unary_union);
+extern Temporal *trgeo_centroid(const Temporal *temp);
+extern GSERIALIZED *trgeo_convex_hull(const Temporal *temp);
 
-/* Functions decomposing a temporal rigid geometry into per-instant or
- * per-segment spatiotemporal boxes */
+/* Body-frame trajectory functions */
 
-extern STBox *trgeo_stboxes(const Temporal *temp, int *count);
-extern STBox *trgeo_split_n_stboxes(const Temporal *temp, int box_count,
+extern Temporal *trgeo_body_point_trajectory(const Temporal *temp,
+  const GSERIALIZED *gs);
+
+/* Restriction functions */
+
+extern Temporal *trgeo_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, bool atfunc);
+extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
+
+/* Similarity distance functions */
+
+extern double trgeo_hausdorff_distance(const Temporal *temp1,
+  const Temporal *temp2);
+
+#if MEOS
+extern double trgeo_frechet_distance(const Temporal *temp1,
+  const Temporal *temp2);
+extern double trgeo_dyntimewarp_distance(const Temporal *temp1,
+  const Temporal *temp2);
+extern Match *trgeo_frechet_path(const Temporal *temp1, const Temporal *temp2,
   int *count);
-extern STBox *trgeo_split_each_n_stboxes(const Temporal *temp,
-  int elems_per_box, int *count);
+extern Match *trgeo_dyntimewarp_path(const Temporal *temp1,
+  const Temporal *temp2, int *count);
+#endif /* MEOS */
 
 /*****************************************************************************/
 
-#endif /* __TRGEO_BOXOPS_H__ */
+#endif /* __TRGEO_SPATIALFUNCS_H__ */

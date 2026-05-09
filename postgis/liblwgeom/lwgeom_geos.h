@@ -52,6 +52,17 @@ POINTARRAY* ptarray_from_GEOSCoordSeq(const GEOSCoordSequence* cs, uint8_t want3
 extern char lwgeom_geos_errmsg[];
 extern void lwgeom_geos_error(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
+/*
+ * Thread-safe GEOS initialisation.
+ *
+ * Call initGEOS exactly once per process (guarded by pthread_once) so that
+ * multiple MEOS threads do not concurrently modify the single global
+ * GEOSContextHandle used by the non-reentrant GEOS API.  Individual
+ * operations must never call finishGEOS() — the context lives for the
+ * lifetime of the process.
+ */
+extern void meos_initialize_geos(void);
+
 
 /*
  * Debug macros

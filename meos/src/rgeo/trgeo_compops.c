@@ -56,6 +56,10 @@
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] func Comparison function
+ * @note The generic lifting infrastructure routes through the trgeo basetype
+ * (T_POSE), causing type confusion when comparing against a geometry.
+ * This function materializes the world-frame geometry at each instant and
+ * compares using T_GEOMETRY semantics instead.
  */
 static int
 eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -65,7 +69,59 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   assert(func);
-  return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
+
+  const GSERIALIZED *body = trgeo_geom_p(temp);
+  Datum gs_datum = PointerGetDatum(gs);
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      GSERIALIZED *world = geom_apply_pose(body,
+        DatumGetPoseP(tinstant_value(inst)));
+      bool result = DatumGetBool(func(PointerGetDatum(world), gs_datum,
+        T_GEOMETRY));
+      pfree(world);
+      return (int) result;
+    }
+    case TSEQUENCE:
+    {
+      const TSequence *seq = (const TSequence *) temp;
+      for (int i = 0; i < seq->count; i++)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+        GSERIALIZED *world = geom_apply_pose(body,
+          DatumGetPoseP(tinstant_value(inst)));
+        bool cmp = DatumGetBool(func(PointerGetDatum(world), gs_datum,
+          T_GEOMETRY));
+        pfree(world);
+        if (ever && cmp) return 1;
+        if (! ever && ! cmp) return 0;
+      }
+      return ever ? 0 : 1;
+    }
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+      {
+        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+        for (int j = 0; j < seq->count; j++)
+        {
+          const TInstant *inst = TSEQUENCE_INST_N(seq, j);
+          GSERIALIZED *world = geom_apply_pose(body,
+            DatumGetPoseP(tinstant_value(inst)));
+          bool cmp = DatumGetBool(func(PointerGetDatum(world), gs_datum,
+            T_GEOMETRY));
+          pfree(world);
+          if (ever && cmp) return 1;
+          if (! ever && ! cmp) return 0;
+        }
+      }
+      return ever ? 0 : 1;
+    }
+  }
 }
 
 /**
@@ -254,21 +310,27 @@ always_ne_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal comparison of a geometry and a temporal rigid
- * geometry
- * @param[in] temp Temporal value
- * @param[in] gs Geometry
- * @param[in] func Comparison function
+ * @brief Build a TBool TSequence from one sequence of a trgeo vs geometry
+ * comparison
  */
-static Temporal *
-tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
-  Datum (*func)(Datum, Datum, MeosType))
+static TSequence *
+tcomp_trgeo_geo_seq_inner(const TSequence *seq, const GSERIALIZED *body,
+  Datum gs_datum, Datum (*func)(Datum, Datum, MeosType))
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    return NULL;
-  assert(func);
-  return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    GSERIALIZED *world = geom_apply_pose(body,
+      DatumGetPoseP(tinstant_value(inst)));
+    Datum cmp = func(PointerGetDatum(world), gs_datum, T_GEOMETRY);
+    pfree(world);
+    instants[i] = tinstant_make(cmp, T_TBOOL, inst->t);
+  }
+  /* Preserve DISCRETE interpolation; use STEP for STEP/LINEAR. */
+  interpType out_interp = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? DISCRETE : STEP;
+  return tsequence_make_free(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, out_interp, NORMALIZE);
 }
 
 /**
@@ -277,6 +339,10 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] func Comparison function
+ * @note The generic lifting infrastructure routes through the trgeo basetype
+ * (T_POSE), causing type confusion when comparing against a geometry.
+ * This function materializes the world-frame geometry at each instant and
+ * compares using T_GEOMETRY semantics instead.
  */
 static Temporal *
 tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -286,7 +352,58 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
+
+  const GSERIALIZED *body = trgeo_geom_p(temp);
+  Datum gs_datum = PointerGetDatum(gs);
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      GSERIALIZED *world = geom_apply_pose(body,
+        DatumGetPoseP(tinstant_value(inst)));
+      Datum cmp = func(PointerGetDatum(world), gs_datum, T_GEOMETRY);
+      pfree(world);
+      return (Temporal *) tinstant_make(cmp, T_TBOOL, inst->t);
+    }
+    case TSEQUENCE:
+    {
+      const TSequence *seq = (const TSequence *) temp;
+      TSequence *result = tcomp_trgeo_geo_seq_inner(seq, body, gs_datum, func);
+      if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+      {
+        TSequence **seqs = palloc(sizeof(TSequence *));
+        seqs[0] = result;
+        return (Temporal *) tsequenceset_make_free(seqs, 1, NORMALIZE);
+      }
+      return (Temporal *) result;
+    }
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+      for (int i = 0; i < ss->count; i++)
+        seqs[i] = tcomp_trgeo_geo_seq_inner(TSEQUENCESET_SEQ_N(ss, i), body,
+          gs_datum, func);
+      return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
+    }
+  }
+}
+
+/**
+ * @brief Return the temporal comparison of a geometry and a temporal rigid
+ * geometry
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal value
+ * @param[in] func Comparison function
+ * @note eq and ne are commutative, so this simply delegates to tcomp_trgeo_geo.
+ */
+static Temporal *
+tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  Datum (*func)(Datum, Datum, MeosType))
+{
+  return tcomp_trgeo_geo(temp, gs, func);
 }
 
 /*****************************************************************************/

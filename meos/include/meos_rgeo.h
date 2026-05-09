@@ -21,7 +21,7 @@
  *
  * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURRGEO. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
@@ -110,6 +110,9 @@ extern TSequence *trgeo_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeo_start_value(const Temporal *temp);
 extern bool trgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED *trgeo_traversed_area(const Temporal *temp, bool unary_union);
+extern Temporal *trgeo_centroid(const Temporal *temp);
+extern GSERIALIZED *trgeo_convex_hull(const Temporal *temp);
+extern Temporal *trgeo_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************
  * Transformation functions
@@ -140,13 +143,11 @@ extern Temporal *trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool
 extern Temporal *trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc);
 extern Temporal *trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss, bool atfunc);
 
-// extern Temporal *trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeo_at_geo(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+extern Temporal *trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *trgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+extern Temporal *trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 // extern Temporal *trgeo_at_elevation(const Temporal *temp, const Span *s);
-// extern Temporal *trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeo_minus_geo(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 // extern Temporal *trgeo_minus_elevation(const Temporal *temp, const Span *s);
 
 /*****************************************************************************
@@ -167,6 +168,16 @@ extern TInstant *nai_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+
+/*****************************************************************************
+ * Similarity distance functions
+ *****************************************************************************/
+
+extern double trgeo_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeo_frechet_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeo_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
+extern Match *trgeo_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
+extern Match *trgeo_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
 
 /*****************************************************************************
  * Comparison functions

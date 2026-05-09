@@ -387,6 +387,26 @@ CREATE FUNCTION segments(trgeometry)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION traversedArea(trgeometry, bool DEFAULT FALSE)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_traversed_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION centroid(trgeometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION convexHull(trgeometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bodyPointTrajectory(trgeometry, geometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_body_point_trajectory'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Transformation functions
  ******************************************************************************/
@@ -435,17 +455,17 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION tprecision(trgeometry, duration interval,
---   origin timestamptz DEFAULT '2000-01-03')
---   RETURNS trgeometry
---   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
---   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tprecision(trgeometry, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION tsample(trgeometry, duration interval,
---   origin timestamptz DEFAULT '2000-01-03')
---   RETURNS trgeometry
---   AS 'MODULE_PATHNAME', 'Temporal_tsample'
---   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tsample(trgeometry, duration interval,
+  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Restriction Functions
@@ -519,6 +539,26 @@ CREATE FUNCTION beforeTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRU
 CREATE FUNCTION afterTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atGeometry(trgeometry, geometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_at_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusGeometry(trgeometry, geometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atStbox(trgeometry, stbox, borderInc bool DEFAULT TRUE)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(trgeometry, stbox, borderInc bool DEFAULT TRUE)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
