@@ -23,6 +23,7 @@
 <!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_types_aggregation SYSTEM "temporal_types_aggregation.xml">
 <!ENTITY temporal_poses SYSTEM "temporal_poses.xml">
+<!ENTITY temporal_rigid_geometries SYSTEM "temporal_rigid_geometries.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY temporal_circular_buffers SYSTEM "temporal_circular_buffers.xml">
 <!ENTITY temporal_h3_index SYSTEM "temporal_h3_index.xml">
@@ -127,6 +128,7 @@
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
 	&temporal_poses;
+	&temporal_rigid_geometries;
 	&temporal_network_points;
 	&temporal_circular_buffers;
 	&temporal_h3_index;
