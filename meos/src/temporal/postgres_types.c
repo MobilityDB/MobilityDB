@@ -68,6 +68,20 @@
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 
+/* On Windows, <postgres.h> transitively pulls in port/win32_port.h
+ * which redefines setlocale() to pgwin32_setlocale() — a PostgreSQL-
+ * internal helper provided by libpgport. MEOS standalone builds do
+ * not link libpgport, so the macro causes an undefined-reference link
+ * error in meos_strtod(). Undefine it so the libc setlocale prototype
+ * pulled in transitively via <locale.h> remains the call target. The
+ * non-MEOS in-extension build keeps the macro and its libpgport
+ * linkage (the server backend statically links libpgport). */
+#if defined(_WIN32) && defined(MEOS)
+  #ifdef setlocale
+    #undef setlocale
+  #endif
+#endif
+
 #if ! MEOS
   extern Datum call_function1(PGFunction func, Datum arg1);
   extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);

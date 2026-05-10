@@ -24,6 +24,8 @@ check_type_size("void *"          SIZEOF_VOID_P           BUILTIN_TYPES_ONLY)
 check_type_size("long"            SIZEOF_LONG             BUILTIN_TYPES_ONLY)
 check_type_size("size_t"          SIZEOF_SIZE_T)
 check_type_size("long long int"   SIZEOF_LONG_LONG_INT    BUILTIN_TYPES_ONLY)
+# pg_bitutils.h uses SIZEOF_LONG_LONG (no _INT suffix); alias the detected value.
+set(SIZEOF_LONG_LONG ${SIZEOF_LONG_LONG_INT})
 
 #-----------------------------------------------------------------------
 # 2. Alignment (no native CMake check; use offsetof trick via CHECK_C_SOURCE_RUNS)
