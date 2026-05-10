@@ -76,6 +76,11 @@
  * @ingroup mobilitydb_api
  * @brief Functions for temporal rigid geometries
  *
+ * @defgroup mobilitydb_pointcloud Functions for temporal pgpointcloud types
+ * @ingroup mobilitydb_api
+ * @brief Functions for static, set, box, and temporal pgpointcloud types
+ *   (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch)
+ *
  * @defgroup mobilitydb_misc Miscellaneous functions
  * @ingroup mobilitydb_api
  * @brief Miscellaneous functions

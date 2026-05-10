@@ -121,6 +121,20 @@
 					<entry><varname/></entry>
 					<entry><varname>tcbuffer</varname></entry>
 				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pcpoint</varname></emphasis></entry>
+					<entry><varname>pcpointset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpcpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pcpatch</varname></emphasis></entry>
+					<entry><varname>pcpatchset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpcpatch</varname></entry>
+				</row>
 			</tbody>
 			</tgroup>
 		</table>
@@ -2442,6 +2456,411 @@
 					<para><link linkend="tjsonb_wCount"><varname>wCount</varname></link>: Window count</para>
 				</listitem>
 			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal Point Clouds</title>
+
+		<sect2>
+			<title>Static Point Clouds</title>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpoint_pcid"><varname>pcid</varname></link>: Return the schema id of a pcpoint or pcpatch</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pcpoint_getXYZ"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Return a coordinate of a pcpoint</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pcpoint_getDim"><varname>getDim</varname></link>: Return any named dimension of a pcpoint</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pcpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Point Cloud Sets</title>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpointset_set"><varname>set</varname></link>: Construct a pcpointset / pcpatchset from an array of values</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>TPCBox</title>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_const"><varname>tpcbox</varname>, <varname>tpcbox_z</varname>, <varname>tpcbox_t</varname>, <varname>tpcbox_xt</varname>, <varname>tpcbox_zt</varname></link>: Construct a tpcbox from explicit X/Y/Z/T bounds and a pcid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_pcpoint_to_tpcbox"><varname>tpcbox</varname></link>: Convert a pcpoint to a degenerate tpcbox</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_pcpatch_to_tpcbox"><varname>tpcbox</varname></link>: Convert a pcpatch to a tpcbox using the embedded PCBOUNDS</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_hasXZT"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Return whether a tpcbox has the X/Y, Z, or T dimensions set</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_xyzminmax"><varname>xmin</varname>, <varname>xmax</varname>, <varname>ymin</varname>, <varname>ymax</varname>, <varname>zmin</varname>, <varname>zmax</varname></link>: Return a coordinate bound</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_tminmax"><varname>tmin</varname>, <varname>tmax</varname></link>: Return a temporal bound</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_pcid_srid"><varname>pcid</varname>, <varname>SRID</varname></link>: Return the schema id and SRID</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_round"><varname>round</varname></link>: Round coordinates to a number of decimal digits</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_setSRID"><varname>setSRID</varname></link>: Overwrite the SRID</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Set Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_union"><varname>tpcbox_union</varname>, <varname>+</varname></link>: Union of two tpcboxes</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_intersection"><varname>tpcbox_intersection</varname>, <varname>*</varname></link>: Intersection of two tpcboxes</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Topological Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_contains"><varname>@&gt;</varname></link>: Contains</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_contained"><varname>&lt;@</varname></link>: Contained</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_overlaps"><varname>&amp;&amp;</varname></link>: Overlaps</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Same</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_adjacent"><varname>-|-</varname></link>: Adjacent</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Position Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_left_right"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname></link>: X-axis ordering</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_below_above"><varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname></link>: Y-axis ordering</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_front_back"><varname>&lt;&lt;/</varname>, <varname>&amp;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>/&amp;&gt;</varname></link>: Z-axis ordering</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcbox_before_after"><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Time-axis ordering</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcbox_btree"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Temporal Point Clouds</title>
+
+			<sect3>
+				<title>Input and output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_mfjson"><varname>asMFJSON</varname></link>: MF-JSON output for tpcpoint with extracted X/Y/Z coordinates</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_mfjson"><varname>asMFJSON</varname></link>: MF-JSON output for tpcpatch with pcid + npoints + bounds</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pcpoint_xy_xyz"><varname>pcpoint</varname></link>: Build a pcpoint from raw x/y(/z) coordinates (ergonomic wrapper over PC_MakePoint)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pcpatch_variadic"><varname>pcpatch</varname></link>: Build a pcpatch from a variadic list of pcpoints (ergonomic wrapper over PC_Patch)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_inst"><varname>tpcpoint</varname></link>: Construct a temporal pcpoint of instant subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_seq"><varname>tpcpointSeq</varname></link>: Construct a temporal pcpoint of sequence subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_seqset"><varname>tpcpointSeqSet</varname></link>: Construct a temporal pcpoint of sequence-set subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_inst"><varname>tpcpatch</varname></link>: Construct a temporal pcpatch of instant subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_seq"><varname>tpcpatchSeq</varname></link>: Construct a temporal pcpatch of sequence subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_seqset"><varname>tpcpatchSeqSet</varname></link>: Construct a temporal pcpatch of sequence-set subtype</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_tgeompoint"><varname>tpcpoint::tgeompoint</varname></link>: Cast a tpcpoint to a temporal geometry point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_pcid"><varname>pcid</varname></link>: Return the pgPointCloud schema id</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_SRID"><varname>SRID</varname></link>: Return the SRID inherited from the schema</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_numpoints"><varname>startNumPoints</varname>, <varname>endNumPoints</varname></link>: Return the number of points in a tpcpatch's first/last instant</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_total_numpoints"><varname>numPoints</varname></link>: Return the total number of points across every instant's patch</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_points"><varname>points</varname></link>: Set-returning function emitting one row per (instant timestamp, point), decomposed in C through pgPointCloud's in-memory API</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_perpoint_roadmap">Per-point operations</link>: granularity matrix of patch-level vs. per-point operators on tpcpatch</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Per-Dimension Projections</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_getXYZ"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Project a tpcpoint onto a spatial dimension as a tfloat</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_getDim"><varname>getDim</varname></link>: Project a tpcpoint onto any named schema dimension as a tfloat</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict a tpcpoint to a time selector or remove it</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpoint to a tpcbox or remove it</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to a tpcbox by patch-level PCBOUNDS overlap, or remove it</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname>, <varname>minusTpcboxFine</varname></link>: Per-point restrict — keep only the points inside (or outside) the tpcbox; surviving instants carry a freshly-built patch</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Per-point restrict by 2D geometry intersection (XY only)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch, geometry)</varname></link>: Return true iff at least one point of any instant's patch intersects the geometry</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_btree"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_ever_eq"><varname>?=</varname>, <varname>%=</varname></link>: Ever and always equal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Topological operators</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_topo"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Bbox topological predicates on tpcpoint</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_topo"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Bbox topological predicates on tpcpatch</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Position operators</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_pos">Strict directional + overlap-or-X predicates</link>: tpcpoint vs tpcbox / tstzspan / tpcpoint on the X / Y / Z / time axes</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_pos">Strict directional + overlap-or-X predicates</link>: tpcpatch variants</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Distance / KNN</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_knn"><varname>|=|</varname></link>: Nearest-approach distance on tpcpoint, KNN-orderable through GiST</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_knn"><varname>|=|</varname></link>: Nearest-approach distance on tpcpatch, KNN-orderable through GiST</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>B-tree ordering</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_btree_ordering">B-tree ordering on tpcpoint</link>: byte-wise total order with pcid as primary discriminator — semantics + caveats</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_btree">B-tree ordering on tpcpatch</link>: byte-wise total order with pcid as primary discriminator — semantics + caveats</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_intersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever / always intersects (tpcpoint)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_disjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Ever / always disjoint (tpcpoint)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Ever / always within distance (tpcpoint)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Aggregations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_extent"><varname>extent</varname></link>: Bounding-box aggregate over tpcpoint, tpcpatch, or tpcbox values; rejects mixed pcids.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_tcount"><varname>tcount</varname>, <varname>wcount</varname></link>: Temporal and window count over tpcpoint or tpcpatch.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_merge"><varname>merge</varname></link>: Combine multiple temporal values into one.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpcpoint_append"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Streaming construction aggregates.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 

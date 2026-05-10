@@ -107,6 +107,17 @@ CMAKE_DEPENDENT_OPTION(RGEO
   OFF
   )
 
+# Option for including pgpointcloud temporal types (tpcpoint, tpcpatch).
+# Requires pgpointcloud (libpointcloud-dev on Debian/Ubuntu) installed
+# alongside PostGIS on the user's machine. The embedded
+# `pointcloud-pg/` subtree provides the source MEOS imports a minimal
+# subset of, but the runtime still links against the system library.
+option(POINTCLOUD
+  "Set ON|OFF (default=OFF) to include pgpointcloud temporal types
+  "
+  OFF
+  )
+
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   add_definitions(-DCBUFFER=1)
@@ -137,6 +148,25 @@ if(RGEO)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
+endif()
+
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=1)
+else()
+  message(STATUS "Excluding pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=0)
+endif()
+
+# Build the 'requires =' clause for the generated mobilitydb.control file
+# from the same flags that gate C compilation and SQL inclusion. PostGIS
+# is always required; pgPointCloud is required only when POINTCLOUD=ON,
+# because that is the only flag that maps to an external extension.
+# CBUFFER / NPOINT / POSE / RGEO add internal types that live inside
+# libMobilityDB itself with no extra CREATE EXTENSION dependency.
+set(MOBILITYDB_REQUIRES "postgis")
+if(POINTCLOUD)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file

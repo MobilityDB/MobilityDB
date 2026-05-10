@@ -1,0 +1,72 @@
+# pointcloud
+
+include ../config.mk
+
+SQLPP = @SQLPP@
+
+OBJS = \
+	pc_inout.o \
+	pc_access.o \
+	pc_editor.o \
+	pc_pgsql.o
+
+SED = sed
+EXTENSION = pointcloud
+EXTVERSION=$(shell cat ../Version.config)
+EXTVERSION_MAJOR=$(shell cut -d. -f1,2 ../Version.config)
+MODULE_big = $(EXTENSION)-$(EXTVERSION_MAJOR)
+UPGRADABLE = 1.1.0 1.1.1 1.2.0 1.2.1 1.2.2 1.2.3 1.2.4
+
+UPGRADES = \
+  $(shell echo $(UPGRADABLE) | \
+     $(SED) 's/^/$(EXTENSION)--/' | \
+     $(SED) 's/$$/--$(EXTVERSION).sql/' | \
+     $(SED) 's/ /--$(EXTVERSION).sql $(EXTENSION)--/g') \
+  $(EXTENSION)--$(EXTVERSION)--$(EXTVERSION)next.sql \
+  $(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
+
+DATA_built = \
+  $(EXTENSION).control \
+  $(EXTENSION)--$(EXTVERSION).sql \
+  $(UPGRADES)
+
+REGRESS =
+
+ifeq ("$(PGSQL_MAJOR_VERSION)", "9")
+REGRESS += pointcloud_pg9
+else
+REGRESS += pointcloud
+endif
+
+REGRESS += pointcloud_columns schema
+
+ifeq ("$(PGSQL_MAJOR_VERSION)", "9")
+ifneq ("$(LAZPERF_STATUS)", "disabled")
+REGRESS += pointcloud_laz_pg9
+endif
+else
+ifneq ("$(LAZPERF_STATUS)", "disabled")
+REGRESS += pointcloud_laz
+endif
+endif
+
+# Add in build/link flags for lib
+PG_CPPFLAGS += -I../lib
+SHLIB_LINK += ../lib/$(LIB_A) ../lib/$(LIB_A_LAZPERF) -lstdc++ $(filter -lm, $(LIBS)) $(XML2_LDFLAGS) $(ZLIB_LDFLAGS)
+
+# We are going to use PGXS for sure
+include $(PGXS)
+
+$(EXTENSION).control: $(EXTENSION).control.in Makefile
+	$(SED) -e 's/#POINTCLOUD_VERSION#/$(EXTVERSION)/' \
+         -e 's/#POINTCLOUD_VERSION_MAJOR#/$(EXTVERSION_MAJOR)/' $< > $@
+
+$(EXTENSION)--$(EXTVERSION).sql: $(EXTENSION).sql.in Makefile
+	$(SQLPP) -I. $< | $(SED) -e 's/#POINTCLOUD_VERSION#/$(EXTVERSION)/' > $@
+
+# NOTE: relies on PERL being defined by PGXS
+$(EXTENSION)--%--$(EXTVERSION).sql: $(EXTENSION)--$(EXTVERSION).sql ../util/proc_upgrade.pl
+	cat $< | ../util/proc_upgrade.pl > $@
+
+$(EXTENSION)--%--$(EXTVERSION)next.sql: $(EXTENSION)--$(EXTVERSION)next--$(EXTVERSION).sql
+	ln -f $< $@
