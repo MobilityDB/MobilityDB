@@ -16,6 +16,7 @@ list(SORT testfiles)
 
 set(SKIP_TESTS)
 
+
 foreach(file ${testfiles})
   get_filename_component(TESTNAME ${file} NAME_WE)
   set(DOTEST TRUE)
@@ -29,11 +30,6 @@ foreach(file ${testfiles})
   # script otherwise reports the entire actual output as a diff.
   if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/expected/${TESTNAME}.test.out")
     message("Disabling test ${TESTNAME}: missing expected/${TESTNAME}.test.out")
-    set(DOTEST FALSE)
-  endif()
-  list(FIND SKIP_TESTS ${TESTNAME} _skip_idx)
-  if(NOT _skip_idx EQUAL -1)
-    message("Disabling test ${TESTNAME}: in SKIP_TESTS")
     set(DOTEST FALSE)
   endif()
   if(DOTEST)
