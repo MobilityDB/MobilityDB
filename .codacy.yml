@@ -5,7 +5,20 @@
 # MobilityDB runs its own cppcheck in .github/workflows/cppcheck.yml
 # instead: it feeds cppcheck the real compile_commands.json (so include
 # resolution works) and publishes SARIF to GitHub Code Scanning (inline
-# PR annotations, Security tab). Turn Codacy's copy off.
+# PR annotations, Security tab).
+#
+# Note: modern Codacy ignores the `engines:` block below for tool
+# enablement (see https://docs.codacy.com/repositories-configure/) —
+# Cppcheck and TSQLLint are disabled at the repository-settings level
+# on **both** the upstream `MobilityDB/MobilityDB` and the
+# `estebanzimanyi/MobilityDB` Codacy installs via the Account API:
+#     PATCH /api/v3/.../tools/{toolUuid}  body {"enabled": false}
+#     Cppcheck uuid = 02eb6a1c-757f-4324-81bf-094835a1578b
+#     TSQLLint uuid = 35cf97c2-6548-483e-baf9-549433891295
+# This YAML keeps the legacy directives as documentation; the UI/API
+# settings are the load-bearing ones. TSQLLint targets Microsoft SQL
+# Server T-SQL (SET NOCOUNT ON, SET QUOTED_IDENTIFIER ON, T-SQL
+# keyword capitalisation, …) — irrelevant for PostgreSQL.
 engines:
   cppcheck:
     # Belt-and-braces: `enabled: false` is the documented kill switch
@@ -14,11 +27,14 @@ engines:
     enabled: false
     exclude_paths:
       - "**"
+  tsqllint:
+    enabled: false
   duplication:
     exclude_paths:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "clipper2/**"
     config:
       languages:
         - "c"
@@ -26,5 +42,6 @@ exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "clipper2/**"
   - "meos/test/**"
   - "meos/examples/**"
