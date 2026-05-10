@@ -1,0 +1,124 @@
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((0 3,3 0,6 3,3 6,0 3))'));
+                   st_astext                    
+------------------------------------------------
+ POLYGON((4 1,2 1,1 2,1 4,2 5,4 5,5 4,5 2,4 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 1,3 5,7 5,7 1,3 1))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 1,3 1,3 5,5 5,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((1 3,1 7,5 7,5 3,1 3))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 3,1 3,1 5,5 5,5 3))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((0 3,3 0,6 3,3 6,0 3))',
+  geometry 'Polygon((1 4,4 1,7 4,4 7,1 4))'));
+           st_astext            
+--------------------------------
+ POLYGON((6 3,4 1,1 4,3 6,6 3))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 1,3 6,7 6,7 1,3 1))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 1,3 1,3 5,5 5,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((1 3,1 7,6 8,6 3,1 3))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 3,1 3,1 5,5 5,5 3))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((0 3,3 0,6 3,3 6,0 3))',
+  geometry 'Polygon((0 5,4 1,7 4,3 8,0 5))'));
+           st_astext            
+--------------------------------
+ POLYGON((6 3,4 1,1 4,3 6,6 3))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1),(2 2,2 4,3 4,3 2,2 2))',
+  geometry 'Polygon((4 1,4 5,8 5,8 1,4 1))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 1,4 1,4 5,5 5,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1),(2 2,2 4,3 4,3 2,2 2))',
+  geometry 'Polygon((3 1,3 5,6 5,6 1,3 1))'));
+           st_astext            
+--------------------------------
+ POLYGON((5 1,3 1,3 5,5 5,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1),(2 2,2 4,4 4,4 2,2 2))',
+  geometry 'Polygon((3 1,3 5,6 5,6 1,3 1))'));
+                   st_astext                    
+------------------------------------------------
+ POLYGON((5 1,3 1,3 2,4 2,4 4,3 4,3 5,5 5,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1),(2 2,4 2,4 4,2 4,2 2))',
+  geometry 'Polygon((0 3,3 0,6 3,3 6,0 3))'));
+                              st_astext                               
+----------------------------------------------------------------------
+ POLYGON((4 1,2 1,1 2,1 4,2 5,4 5,5 4,5 2,4 1),(2 2,4 2,4 4,2 4,2 2))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_union(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+                   st_astext                    
+------------------------------------------------
+ POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+               st_astext                
+----------------------------------------
+ POLYGON((5 1,1 1,1 5,3 5,3 3,5 3,5 1))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_sym_difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
+  geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ MULTIPOLYGON(((7 3,5 3,5 5,3 5,3 7,7 7,7 3)),((5 1,1 1,1 5,3 5,3 3,5 3,5 1)))
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(
+  geometry 'MultiPolygon(((1 1,1 3,3 3,3 1,1 1)),((5 1,5 3,7 3,7 1,5 1)))',
+  geometry 'Polygon((0 0,0 4,8 4,8 0,0 0))'));
+                           st_astext                           
+---------------------------------------------------------------
+ MULTIPOLYGON(((3 1,1 1,1 3,3 3,3 1)),((7 1,5 1,5 3,7 3,7 1)))
+(1 row)
+
+SELECT _mdb_internal_clip_intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
+  geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT st_astext(_mdb_internal_clip_intersection(
+  geometry 'Polygon((0 0,0 4,8 4,8 0,0 0))',
+  geometry 'MultiPolygon(((1 1,1 3,3 3,3 1,1 1)),((5 1,5 3,7 3,7 1,5 1)))'));
+                           st_astext                           
+---------------------------------------------------------------
+ MULTIPOLYGON(((3 1,1 1,1 3,3 3,3 1)),((7 1,5 1,5 3,7 3,7 1)))
+(1 row)
+
+SELECT _mdb_internal_clip_intersection(geometry 'Point(0 0)',
+  geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))');
+ERROR:  The function only accepts (multi)polygons
