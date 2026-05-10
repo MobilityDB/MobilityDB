@@ -240,7 +240,7 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    GSERIALIZED *trav = tcbuffersegm_trav_area(inst1, inst2);
+    GSERIALIZED *trav = tcbuffersegm_traversed_area(inst1, inst2);
     int result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
     pfree(trav);
     if (result == 1 && ever)
@@ -1501,7 +1501,8 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
-  lfinfo.restype = T_TFLOAT;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
