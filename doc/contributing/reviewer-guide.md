@@ -8,7 +8,7 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 # MobilityDB PR Reviewer Guide
 
-Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-10 — 49 open PRs (net −8 today via consolidation): folds #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934.  Closed as superseded: #905 (duplicate of #872), #862 (subset of #891), #818 (subset of #867).  Squashed in place: #876, #847, #891, #803, #817, #899, #898, #818, #929. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks.**
+Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-10 — 49 open PRs (net −8 today via consolidation): folds #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934.  Closed as superseded: #905 (duplicate of #872), #862 (subset of #891), #818 (subset of #867).  Squashed in place: #876, #847, #891, #803, #817, #899, #898, #818, #929. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
 
 ---
 
@@ -204,6 +204,7 @@ Run `python3 tools/check_sql_doc_alignment.py` — target: 0 errors.
 | DocBook `<indexterm>` | Required for every public SQL function |
 | No GEOS criticism | Neutral wording in public docs |
 | No LCOV_EXCL markers | Live with coverage drop |
+| State-current language | No "no longer", "now returns", "dropped", "renamed", "Forward-compat alias for X → Y", "once MEOS exposes Z", "until upstream catches up" — describe the AS-IS contract. Reviewers should reject comments / commits / PR bodies / docs / SQL that narrate API evolution; the next upstream change ages them out. |
 | Guide update | **Update this file in the same commit** |
 
 ---
