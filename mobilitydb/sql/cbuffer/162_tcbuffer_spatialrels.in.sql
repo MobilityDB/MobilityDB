@@ -45,7 +45,11 @@
  * eContains, aContains
  *****************************************************************************/
 
-/* eContains(geometry, tcbuffer) is not supported */
+CREATE FUNCTION eContains(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eContains(cbuffer, tcbuffer)
   RETURNS boolean
@@ -92,7 +96,11 @@ CREATE FUNCTION aContains(tcbuffer, cbuffer)
  * eCovers, aCovers
  *****************************************************************************/
 
-/* eCovers(geometry, tcbuffer) is not supported */
+CREATE FUNCTION eCovers(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ecovers_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eCovers(cbuffer, tcbuffer)
   RETURNS boolean

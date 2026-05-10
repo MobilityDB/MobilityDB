@@ -47,10 +47,16 @@
 #include <meos_internal.h>
 #include "temporal/lifting.h"
 #include "geo/postgis_funcs.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "rgeo/trgeo.h"
-#include "rgeo/trgeo_spatialfuncs.h"
+#include "rgeo/trgeo_inst.h"
+#include "rgeo/trgeo_seq.h"
+#include "rgeo/trgeo_seqset.h"
+
+/* Forward declaration for function defined later in this file */
+int eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************
  * Generic ever/always spatial relationship functions
@@ -77,58 +83,52 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
-  Datum trav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
-  Datum result;
-  if (numparam == 2)
-  {
-    datum_func2 func2 = (datum_func2) func;
-    result = invert ? func2(geo, trav) : func2(trav, geo);
-  }
-  else /* numparam == 3 */
-  {
-    datum_func3 func3 = (datum_func3) func;
-    result = invert ? func3(geo, trav, param) : func3(trav, geo, param);
-  }
-  pfree(DatumGetPointer(trav));
-  return result ? 1 : 0;
-}
+  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  Datum dtrav, result;
 
-/*****************************************************************************/
+  LWGEOM *lwgeom = lwgeom_from_gserialized(trav);
 
-/**
- * @brief Generic spatial relationship for the traversed area of a temporal
- * rigid geometry and a geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] numparam Number of parameters of the functions
- * @param[in] invert True if the arguments should be inverted
- * @return On error return -1
- */
-static int
-spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum param, varfunc func, int numparam, bool invert)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
+  /* Call the GEOS function directly if the traversed area is not a collection */
+  if (! lwgeom_is_collection(lwgeom))
+  {
+    dtrav = PointerGetDatum(trav);
+    if (numparam == 2)
+    {
+      datum_func2 func2 = (datum_func2) func;
+      result = invert ? func2(geo, dtrav) : func2(dtrav, geo);
+    }
+    else /* numparam == 3 */
+    {
+      datum_func3 func3 = (datum_func3) func;
+      result = invert ? func3(geo, dtrav, param) : func3(dtrav, geo, param);
+    }
+    lwgeom_free(lwgeom);
+    pfree(DatumGetPointer(dtrav));
+    return result ? 1 : 0;
+  }
 
-  assert(numparam == 2 || numparam == 3);
-  Datum dgeo = PointerGetDatum(gs);
-  Datum dtrav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
-  Datum result;
-  if (numparam == 2)
+  /* Call the GEOS function for each element in the collection */
+  LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom);
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
   {
-    datum_func2 func2 = (datum_func2) func;
-    result = invert ? func2(dgeo, dtrav) : func2(dtrav, dtrav);
+    const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
+    dtrav = PointerGetDatum(geo_serialize(elem));
+    if (numparam == 2)
+    {
+      datum_func2 func2 = (datum_func2) func;
+      result = invert ? func2(geo, dtrav) : func2(dtrav, geo);
+    }
+    else /* numparam == 3 */
+    {
+      datum_func3 func3 = (datum_func3) func;
+      result = invert ? func3(geo, dtrav, param) : func3(dtrav, geo, param);
+    }
+    pfree(DatumGetPointer(dtrav));
+    if (result)
+      break;
   }
-  else /* numparam == 3 */
-  {
-    datum_func3 func3 = (datum_func3) func;
-    result = invert ? func3(dgeo, dtrav, param) : func3(dtrav, dgeo, param);
-  }
-  pfree(DatumGetPointer(dtrav));
+  lwcollection_free(coll);
+  pfree(trav);
   return result ? 1 : 0;
 }
 
@@ -154,9 +154,15 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+  if (ever)
+  {
+    char p[10] = "T********";
+    return spatialrel_trgeo_trav_geo(temp, gs, PointerGetDatum(p),
+      (varfunc) &datum_geom_relate_pattern, 3, INVERT);
+  }
   GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
-    geom_contains(gs, trav);
+  bool result = DatumGetBool(datum_geom_contains(PointerGetDatum(gs),
+    PointerGetDatum(trav)));
   pfree(trav);
   return result ? 1 : 0;
 }
@@ -220,9 +226,12 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = tgeo_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
-    geom_covers(gs, trav);
+  if (ever)
+    return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
+      (varfunc) &datum_geom_covers, 2, INVERT);
+  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  bool result = DatumGetBool(datum_geom_covers(PointerGetDatum(gs),
+    PointerGetDatum(trav)));
   pfree(trav);
   return result ? 1 : 0;
 }
@@ -284,9 +293,12 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = tgeo_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
-    geom_covers(trav, gs);
+  if (ever)
+    return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
+      (varfunc) &datum_geom_covers, 2, INVERT_NO);
+  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  bool result = DatumGetBool(datum_geom_covers(PointerGetDatum(trav),
+    PointerGetDatum(gs)));
   pfree(trav);
   return result ? 1 : 0;
 }
@@ -616,33 +628,40 @@ adwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @pre The temporal rigid geometries are synchronized
  */
 static bool
-ea_dwithin_trgeoinst_trgeoinst(const TInstant *inst1, const TInstant *inst2,
-  double dist)
+ea_dwithin_trgeoinst_trgeoinst(const TInstant *inst1, const GSERIALIZED *geo1,
+  const TInstant *inst2, const GSERIALIZED *geo2, double dist)
 {
-  assert(inst1); assert(inst2);
-  /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(datum_geom_dwithin2d(tinstant_value_p(inst1),
-    tinstant_value_p(inst2), Float8GetDatum(dist)));
+  assert(inst1); assert(inst2); assert(geo1); assert(geo2);
+  /* Apply the pose to the base geometry to get the actual position */
+  GSERIALIZED *g1 = geom_apply_pose(geo1, DatumGetPoseP(tinstant_value_p(inst1)));
+  GSERIALIZED *g2 = geom_apply_pose(geo2, DatumGetPoseP(tinstant_value_p(inst2)));
+  bool res = DatumGetBool(datum_geom_dwithin2d(PointerGetDatum(g1),
+    PointerGetDatum(g2), Float8GetDatum(dist)));
+  pfree(g1); pfree(g2);
+  return res;
 }
 
 /**
  * @brief Return true if two temporal rigid geometries are ever within a
  * distance
  * @param[in] seq1,seq2 Temporal rigid geometries
+ * @param[in] geo1,geo2 Base geometries (may differ from seq embedded geom
+ * when sequences were produced by synchronization)
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @pre The temporal rigid geometries are synchronized
  */
 static bool
 ea_dwithin_trgeoseq_trgeoseq_discstep(const TSequence *seq1,
-  const TSequence *seq2, double dist, bool ever)
+  const GSERIALIZED *geo1, const TSequence *seq2, const GSERIALIZED *geo2,
+  double dist, bool ever)
 {
-  assert(seq1); assert(seq2);
+  assert(seq1); assert(seq2); assert(geo1); assert(geo2);
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < seq1->count; i++)
   {
-    bool res = ea_dwithin_trgeoinst_trgeoinst(TSEQUENCE_INST_N(seq1, i),
-      TSEQUENCE_INST_N(seq2, i), dist);
+    bool res = ea_dwithin_trgeoinst_trgeoinst(TSEQUENCE_INST_N(seq1, i), geo1,
+      TSEQUENCE_INST_N(seq2, i), geo2, dist);
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -675,22 +694,25 @@ tdwithin_trgeosegm_trgeosegm(Datum sv1 UNUSED, Datum ev1 UNUSED,
  * @brief Return true if two temporal rigid geometries are ever within a
  * distance
  * @param[in] seq1,seq2 Temporal rigid geometries
+ * @param[in] geo1,geo2 Base geometries (may differ from seq embedded geom
+ * when sequences were produced by synchronization)
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @pre The temporal rigid geometries are synchronized
  */
 static bool
-ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1, const TSequence *seq2,
+ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1,
+  const GSERIALIZED *geo1, const TSequence *seq2, const GSERIALIZED *geo2,
   double dist, bool ever)
 {
-  assert(seq1); assert(seq2);
+  assert(seq1); assert(seq2); assert(geo1); assert(geo2);
 
   const TInstant *start1, *start2;
   if (seq1->count == 1)
   {
     start1 = TSEQUENCE_INST_N(seq1, 0);
     start2 = TSEQUENCE_INST_N(seq2, 0);
-    return ea_dwithin_trgeoinst_trgeoinst(start1, start2, dist);
+    return ea_dwithin_trgeoinst_trgeoinst(start1, geo1, start2, geo2, dist);
   }
 
   start1 = TSEQUENCE_INST_N(seq1, 0);
@@ -747,15 +769,18 @@ ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1, const TSequence *seq2,
  * @brief Return true if two temporal rigid geometries are ever within a
  * distance
  * @param[in] ss1,ss2 Temporal rigid geometries
+ * @param[in] geo1,geo2 Base geometries (may differ from seqset embedded geom
+ * when sequence sets were produced by synchronization)
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @pre The temporal rigid geometries are synchronized
  */
 static bool
 ea_dwithin_trgeoseqset_trgeoseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, double dist, bool ever)
+  const GSERIALIZED *geo1, const TSequenceSet *ss2, const GSERIALIZED *geo2,
+  double dist, bool ever)
 {
-  assert(ss1); assert(ss2);
+  assert(ss1); assert(ss2); assert(geo1); assert(geo2);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(ss2->flags);
   bool ret_loop = ever ? true : false;
@@ -764,8 +789,8 @@ ea_dwithin_trgeoseqset_trgeoseqset(const TSequenceSet *ss1,
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
     bool res = linear ?
-      ea_dwithin_trgeoseq_trgeoseq_cont(seq1, seq2, dist, ever) :
-      ea_dwithin_trgeoseq_trgeoseq_discstep(seq1, seq2, dist, ever);
+      ea_dwithin_trgeoseq_trgeoseq_cont(seq1, geo1, seq2, geo2, dist, ever) :
+      ea_dwithin_trgeoseq_trgeoseq_discstep(seq1, geo1, seq2, geo2, dist, ever);
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
   }
@@ -777,28 +802,30 @@ ea_dwithin_trgeoseqset_trgeoseqset(const TSequenceSet *ss1,
 /**
  * @brief Return 1 if two temporal rigid geometries are ever within a distance,
  * 0 if not, -1 if the temporal rigid geometries do not intersect on time
+ * @param[in] sync1,sync2 Synchronized temporal rigid geometries
+ * @param[in] geo1,geo2 Base geometries from the original (pre-sync) temporals
  * @pre The temporal rigid geometries are synchronized
  */
 int
-ea_dwithin_trgeo_trgeo_sync(const Temporal *sync1, const Temporal *sync2,
-  double dist, bool ever)
+ea_dwithin_trgeo_trgeo_sync(const Temporal *sync1, const GSERIALIZED *geo1,
+  const Temporal *sync2, const GSERIALIZED *geo2, double dist, bool ever)
 {
   assert(temptype_subtype(sync1->subtype));
   switch (sync1->subtype)
   {
     case TINSTANT:
-      return ea_dwithin_trgeoinst_trgeoinst((TInstant *) sync1,
-        (TInstant *) sync2, dist);
+      return ea_dwithin_trgeoinst_trgeoinst((TInstant *) sync1, geo1,
+        (TInstant *) sync2, geo2, dist);
     case TSEQUENCE:
       return MEOS_FLAGS_LINEAR_INTERP(sync1->flags) ||
           MEOS_FLAGS_LINEAR_INTERP(sync2->flags) ?
-        ea_dwithin_trgeoseq_trgeoseq_cont((TSequence *) sync1,
-          (TSequence *) sync2, dist, ever) :
-        ea_dwithin_trgeoseq_trgeoseq_discstep((TSequence *) sync1,
-          (TSequence *) sync2, dist, ever);
+        ea_dwithin_trgeoseq_trgeoseq_cont((TSequence *) sync1, geo1,
+          (TSequence *) sync2, geo2, dist, ever) :
+        ea_dwithin_trgeoseq_trgeoseq_discstep((TSequence *) sync1, geo1,
+          (TSequence *) sync2, geo2, dist, ever);
     default: /* TSEQUENCESET */
-      return ea_dwithin_trgeoseqset_trgeoseqset((TSequenceSet *) sync1,
-        (TSequenceSet *) sync2, dist, ever);
+      return ea_dwithin_trgeoseqset_trgeoseqset((TSequenceSet *) sync1, geo1,
+        (TSequenceSet *) sync2, geo2, dist, ever);
   }
 }
 
@@ -821,6 +848,10 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* Extract base geometries before sync: synced temporals don't carry geom */
+  const GSERIALIZED *geo1 = trgeo_geom_p(temp1);
+  const GSERIALIZED *geo2 = trgeo_geom_p(temp2);
+
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal rigid geometries do not intersect in time
    * The operation is synchronization without adding crossings */
@@ -828,7 +859,7 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
     &sync1, &sync2))
     return -1;
 
-  bool result = ea_dwithin_trgeo_trgeo_sync(sync1, sync2, dist, ever);
+  bool result = ea_dwithin_trgeo_trgeo_sync(sync1, geo1, sync2, geo2, dist, ever);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;
 }
@@ -861,6 +892,63 @@ inline int
 adwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, ALWAYS);
+}
+
+/*****************************************************************************
+ * Unified ea_ wrappers required by the MobilityDB PG dispatch layer
+ *****************************************************************************/
+
+int
+ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+{
+  return ea_disjoint_trgeo_geo(temp, gs, ever);
+}
+
+int
+ea_disjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+{
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, ever);
+}
+
+int
+ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  return ever ?
+    spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
+      (varfunc) &datum_geom_intersects2d, 2, INVERT_NO) :
+    INVERT_RESULT(ea_disjoint_trgeo_geo(temp, gs, EVER));
+}
+
+int
+ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+{
+  return ea_intersects_trgeo_geo(temp, gs, ever);
+}
+
+int
+ea_intersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+{
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, ever);
+}
+
+int
+ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+{
+  /* etouches and atouches are non-inline, safe to call directly */
+  return ever ? etouches_trgeo_geo(temp, gs) : atouches_trgeo_geo(temp, gs);
+}
+
+int
+ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+{
+  return ea_touches_trgeo_geo(temp, gs, ever);
+}
+
+int
+ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool ever)
+{
+  return ever ? edwithin_trgeo_geo(temp, gs, dist) : adwithin_trgeo_geo(temp, gs, dist);
 }
 
 /*****************************************************************************/

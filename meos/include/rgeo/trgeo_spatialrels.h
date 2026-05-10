@@ -23,13 +23,13 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
 /**
  * @file
- * @brief Distance functions for temporal rigid geometries
+ * @brief Spatial relationship functions for temporal rigid geometries
  */
 
 #ifndef __TRGEO_SPATIALRELS_H__
@@ -45,14 +45,43 @@
 
 /*****************************************************************************/
 
+/* Contains */
 extern int ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
+
+/* Covers */
 extern int ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
-  bool ever)
+  bool ever);
 extern int ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
+
+/* Disjoint */
+extern int ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
 extern int ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool ever)
+  bool ever);
+extern int ea_disjoint_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
+
+/* Intersects */
+extern int ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
+extern int ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_intersects_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2, bool ever);
+
+/* Touches */
+extern int ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
+extern int ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+
+/* Dwithin */
+extern int ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool ever);
+extern int ea_dwithin_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever);
 
 /*****************************************************************************/
 

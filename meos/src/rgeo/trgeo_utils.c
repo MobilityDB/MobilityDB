@@ -43,8 +43,11 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos_internal.h>
+#include <meos_geo.h>
+#include <meos_rgeo.h>
 #include "geo/stbox.h"
 #include "pose/pose.h"
+#include "rgeo/trgeo.h"
 #include "rgeo/trgeo_inst.h"
 
 /*****************************************************************************/
@@ -236,6 +239,43 @@ geom_radius(const GSERIALIZED *gs)
   lwpointiterator_destroy(it);
   lwgeom_free(geom);
   return r;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the traversed area of a temporal rigid geometry as a geometry
+ * collection of all instantaneous positions
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] unary_union True to apply ST_UnaryUnion to the result
+ * @return On error return @p NULL
+ * @csqlfn #Trgeometry_traversed_area()
+ */
+GSERIALIZED *
+trgeo_traversed_area(const Temporal *temp, bool unary_union)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  const GSERIALIZED *base_geo = trgeo_geom_p(temp);
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+    geoms[i] = geom_apply_pose(base_geo,
+      DatumGetPoseP(tinstant_value_p(instants[i])));
+  pfree(instants);
+
+  GSERIALIZED *res = geo_collect_garray(geoms, count);
+  for (int i = 0; i < count; i++)
+    pfree(geoms[i]);
+  pfree(geoms);
+
+  if (! unary_union)
+    return res;
+  GSERIALIZED *result = geom_unary_union(res, -1);
+  pfree(res);
+  return result;
 }
 
 /*****************************************************************************/

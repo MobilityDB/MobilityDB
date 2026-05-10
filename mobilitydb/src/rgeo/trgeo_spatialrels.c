@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_trgeo);
 inline Datum
 Edwithin_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, EVER);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeo_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_geo_trgeo(PG_FUNCTION_ARGS);
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_trgeo);
 inline Datum
 Adwithin_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, ALWAYS);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edwithin_trgeo_geo(PG_FUNCTION_ARGS);
@@ -422,21 +422,21 @@ PG_FUNCTION_INFO_V1(Edwithin_trgeo_geo);
 inline Datum
 Edwithin_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, EVER);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_trgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adwithin_trgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal rigid geometry and a geometry are ever
+ * @brief Return true if a temporal rigid geometry and a geometry are always
  * within a distance
  * @sqlfn aDwithin()
  */
 inline Datum
 Adwithin_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, ALWAYS);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);
 }
 
 /**
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Adwithin_trgeo_trgeo);
 inline Datum
 Adwithin_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);
+  return EA_dwithin_trgeo_trgeo(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************/

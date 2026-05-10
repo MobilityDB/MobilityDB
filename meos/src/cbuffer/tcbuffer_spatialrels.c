@@ -430,17 +430,28 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Acontains_geo_tcbuffer()
- * @note The function is not supported for the `ever` semantics
+ * @csqlfn #Econtains_geo_tcbuffer(), #Acontains_geo_tcbuffer()
  */
 int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  /* This function is not provided for the ever semantics */
-  assert(! ever);
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever contains a temporal circular buffer,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Econtains_geo_tcbuffer()
+ */
+inline int
+econtains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return ea_contains_geo_tcbuffer(gs, temp, EVER);
 }
 
 /**
@@ -449,8 +460,6 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
- * @note The function tests whether the traversed area is contained in the
- * geometry
  * @csqlfn #Acontains_geo_tcbuffer()
  */
 inline int
@@ -624,16 +633,27 @@ acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function is not supported for the `ever` semantics
- * @csqlfn #Acovers_geo_tcbuffer()
+ * @csqlfn #Ecovers_geo_tcbuffer(), #Acovers_geo_tcbuffer()
  */
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  /* This function is not provided for the ever semantics */
-  assert(! ever);
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_covers, 2, ever, INVERT);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever covers a temporal circular buffer,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Ecovers_geo_tcbuffer()
+ */
+inline int
+ecovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return ea_covers_geo_tcbuffer(gs, temp, EVER);
 }
 
 /**
@@ -642,8 +662,6 @@ ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
- * @note The function tests whether the traversed area is covered in the
- * geometry
  * @csqlfn #Acovers_geo_tcbuffer()
  */
 inline int

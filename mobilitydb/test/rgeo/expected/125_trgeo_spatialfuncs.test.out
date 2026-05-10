@@ -1,0 +1,148 @@
+SELECT SRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+ srid 
+------
+    0
+(1 row)
+
+SELECT SRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03}');
+ srid 
+------
+    0
+(1 row)
+
+SELECT SRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.4)@2000-01-01, Pose(Point(1 1),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03]');
+ srid 
+------
+    0
+(1 row)
+
+SELECT SRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.4)@2000-01-01, Pose(Point(1 1),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}');
+ srid 
+------
+    0
+(1 row)
+
+SELECT SRID(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+ srid 
+------
+ 5676
+(1 row)
+
+/*****************************************************************************/
+SELECT asEWKT(setSRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01', 5676));
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(setSRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03}', 5676));
+                                                                                        asewkt                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(2 2),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.7)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(setSRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.4)@2000-01-01, Pose(Point(1 1),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03]', 5676));
+                                                                                        asewkt                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.4)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.7)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(setSRID(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.4)@2000-01-01, Pose(Point(1 1),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03],[Pose(Point(3 3),0.5)@2000-01-04, Pose(Point(3 3),0.5)@2000-01-05]}', 5676));
+                                                                                                                                             asewkt                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.4)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.7)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(3 3),0.5)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(3 3),0.5)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(0 0),0.0)@2000-01-01'));
+         st_astext          
+----------------------------
+ POLYGON((1 1,2 2,3 1,1 1))
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(0 0),0.0)@2000-01-02}'));
+                       st_astext                       
+-------------------------------------------------------
+ MULTIPOLYGON(((1 1,2 2,3 1,1 1)),((1 1,2 2,3 1,1 1)))
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(0 0),0.0)@2000-01-02]'));
+                       st_astext                       
+-------------------------------------------------------
+ MULTIPOLYGON(((1 1,2 2,3 1,1 1)),((1 1,2 2,3 1,1 1)))
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(0 0),0.0)@2000-01-02],[Pose(Point(0 0),0.0)@2000-01-03, Pose(Point(0 0),0.0)@2000-01-04]}'));
+                                           st_astext                                           
+-----------------------------------------------------------------------------------------------
+ MULTIPOLYGON(((1 1,2 2,3 1,1 1)),((1 1,2 2,3 1,1 1)),((1 1,2 2,3 1,1 1)),((1 1,2 2,3 1,1 1)))
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(0 0),0.0)@2000-01-02}', true));
+         st_astext          
+----------------------------
+ POLYGON((2 2,3 1,1 1,2 2))
+(1 row)
+
+SELECT ST_AsText(traversedArea(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(0 0),0.0)@2000-01-02]', true));
+         st_astext          
+----------------------------
+ POLYGON((2 2,3 1,1 1,2 2))
+(1 row)
+
+/*****************************************************************************/
+-------------------------------------------------------------------------------
+-- atGeometry / minusGeometry
+-------------------------------------------------------------------------------
+-- TInstant: pose at (0,0) -> triangle overlaps bounding box
+SELECT asEWKT(atGeometry(trgeometry 'Polygon((0 0,2 0,1 2,0 0));Pose(Point(0 0),0.0)@2000-01-01', 'Polygon((-1 -1,3 -1,3 3,-1 3,-1 -1))'::geometry));
+                                   asewkt                                   
+----------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(atGeometry(trgeometry 'Polygon((0 0,2 0,1 2,0 0));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(10 10),0.0)@2000-01-02}', 'Polygon((-1 -1,3 -1,3 3,-1 3,-1 -1))'::geometry));
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));{Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(minusGeometry(trgeometry 'Polygon((0 0,2 0,1 2,0 0));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(10 10),0.0)@2000-01-02}', 'Polygon((-1 -1,3 -1,3 3,-1 3,-1 -1))'::geometry));
+                                     asewkt                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));{Pose(POINT(10 10),0)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(atGeometry(trgeometry 'Polygon((0 0,2 0,1 2,0 0));Pose(Point(10 10),0.0)@2000-01-01', 'Polygon((-1 -1,3 -1,3 3,-1 3,-1 -1))'::geometry));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asEWKT(atGeometry(trgeometry 'Polygon((0 0,2 0,1 2,0 0));[Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(1 1),0.0)@2000-01-02]', 'Polygon((-1 -1,3 -1,3 3,-1 3,-1 -1))'::geometry));
+ERROR:  atGeometry not supported for trgeometry with linear interpolation
+/*****************************************************************************/
+-------------------------------------------------------------------------------
+-- atStbox / minusStbox
+-------------------------------------------------------------------------------
+-- TInstant: pose at (0,0), stbox covers the triangle
+SELECT asEWKT(atStbox(trgeometry 'Polygon((0 0,2 0,1 2,0 0));Pose(Point(0 0),0.0)@2000-01-01', 'STBOX XT(((-1,-1),(3,3)),[2000-01-01,2000-01-02])'::stbox));
+                                   asewkt                                   
+----------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(atStbox(trgeometry 'Polygon((0 0,2 0,1 2,0 0));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(10 10),0.0)@2000-01-02}', 'STBOX XT(((-1,-1),(3,3)),[2000-01-01,2000-01-02])'::stbox));
+                                    asewkt                                    
+------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));{Pose(POINT(0 0),0)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(minusStbox(trgeometry 'Polygon((0 0,2 0,1 2,0 0));{Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(10 10),0.0)@2000-01-02}', 'STBOX XT(((-1,-1),(3,3)),[2000-01-01,2000-01-02])'::stbox));
+                                     asewkt                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,1 2,0 0));{Pose(POINT(10 10),0)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(atStbox(trgeometry 'Polygon((0 0,2 0,1 2,0 0));[Pose(Point(0 0),0.0)@2000-01-01, Pose(Point(1 1),0.0)@2000-01-02]', 'STBOX XT(((-1,-1),(3,3)),[2000-01-01,2000-01-02])'::stbox));
+ERROR:  atStbox not supported for trgeometry with linear interpolation
+/*****************************************************************************/

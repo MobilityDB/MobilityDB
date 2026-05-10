@@ -6,6 +6,7 @@ SET(LOCAL_FILES
   125_trgeo_spatialfuncs
   128_trgeo_topops
   129_trgeo_posops
+  130_trgeo_spatialrels
   133_trgeo_distance
   133_trgeo_vclip
   134_trgeo_indexes

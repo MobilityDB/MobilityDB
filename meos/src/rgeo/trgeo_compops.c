@@ -39,11 +39,108 @@
 #include <meos_internal.h>
 #include <meos_rgeo.h>
 #include "temporal/postgres_types.h"
-#include "temporal/lifting.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
 #include "rgeo/trgeo.h"
+
+/*****************************************************************************
+ * Helper: per-instant pose materialization for trgeo vs geometry comparisons
+ *****************************************************************************/
+
+/*
+ * Evaluate func(geom_apply_pose(base_geo, pose_i), gs, T_GEOMETRY) at each
+ * key instant of temp and return a step TBool temporal with the same structure.
+ *
+ * For LINEAR TSequence inputs the result is a step TSequenceSet (not a
+ * TSequence) to match the discont=true lifting semantics.
+ */
+static Temporal *
+tcomp_trgeo_geo_impl(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, MeosType))
+{
+  const GSERIALIZED *base_geo = trgeo_geom_p(temp);
+  Temporal *result;
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      GSERIALIZED *positioned = geom_apply_pose(base_geo,
+        DatumGetPoseP(tinstant_value_p(inst)));
+      Datum cmp = func(PointerGetDatum(positioned), PointerGetDatum(gs),
+        T_GEOMETRY);
+      pfree(positioned);
+      result = (Temporal *) tinstant_make(cmp, T_TBOOL, inst->t);
+      break;
+    }
+    case TSEQUENCE:
+    {
+      const TSequence *seq = (const TSequence *) temp;
+      int count = seq->count;
+      TInstant **insts = palloc(sizeof(TInstant *) * count);
+      for (int i = 0; i < count; i++)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+        GSERIALIZED *positioned = geom_apply_pose(base_geo,
+          DatumGetPoseP(tinstant_value_p(inst)));
+        Datum cmp = func(PointerGetDatum(positioned), PointerGetDatum(gs),
+          T_GEOMETRY);
+        pfree(positioned);
+        insts[i] = tinstant_make(cmp, T_TBOOL, inst->t);
+      }
+      interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+      if (interp == LINEAR)
+      {
+        /* Linear input: produce step TSequenceSet */
+        TSequence *step = tsequence_make_free(insts, count,
+          seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+        TSequence **seqs = palloc(sizeof(TSequence *));
+        seqs[0] = step;
+        result = (Temporal *) tsequenceset_make_free(seqs, 1, NORMALIZE);
+      }
+      else
+      {
+        /* Step or discrete: preserve the interpolation type */
+        result = (Temporal *) tsequence_make_free(insts, count,
+          seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+      }
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **result_seqs = palloc(sizeof(TSequence *) * ss->count);
+      for (int s = 0; s < ss->count; s++)
+      {
+        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, s);
+        int count = seq->count;
+        TInstant **insts = palloc(sizeof(TInstant *) * count);
+        for (int i = 0; i < count; i++)
+        {
+          const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+          GSERIALIZED *positioned = geom_apply_pose(base_geo,
+            DatumGetPoseP(tinstant_value_p(inst)));
+          Datum cmp = func(PointerGetDatum(positioned), PointerGetDatum(gs),
+            T_GEOMETRY);
+          pfree(positioned);
+          insts[i] = tinstant_make(cmp, T_TBOOL, inst->t);
+        }
+        interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+        /* Convert linear interpolation to step for boolean result */
+        if (interp == LINEAR)
+          interp = STEP;
+        result_seqs[s] = tsequence_make_free(insts, count,
+          seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+      }
+      result = (Temporal *) tsequenceset_make_free(result_seqs, ss->count,
+        NORMALIZE);
+      break;
+    }
+  }
+  return result;
+}
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -65,7 +162,25 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   assert(func);
-  return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
+  /* Use per-instant pose materialization to avoid type mismatch in the
+   * lifting infrastructure (T_TRGEOMETRY has basetype T_POSE but we need
+   * to compare the fully-positioned geometry against a T_GEOMETRY value). */
+  const GSERIALIZED *base_geo = trgeo_geom_p(temp);
+  int count;
+  const TInstant **insts = temporal_insts_p(temp, &count);
+  int result = ever ? 0 : 1;
+  for (int i = 0; i < count; i++)
+  {
+    GSERIALIZED *positioned = geom_apply_pose(base_geo,
+      DatumGetPoseP(tinstant_value_p(insts[i])));
+    bool cmp = DatumGetBool(func(PointerGetDatum(positioned),
+      PointerGetDatum(gs), T_GEOMETRY));
+    pfree(positioned);
+    if (ever && cmp)  { result = 1; break; }
+    if (!ever && !cmp) { result = 0; break; }
+  }
+  pfree(insts);
+  return result;
 }
 
 /**
@@ -268,7 +383,8 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
+  /* Equality is commutative: reuse trgeo_geo implementation */
+  return tcomp_trgeo_geo_impl(temp, gs, func);
 }
 
 /**
@@ -286,7 +402,7 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
+  return tcomp_trgeo_geo_impl(temp, gs, func);
 }
 
 /*****************************************************************************/

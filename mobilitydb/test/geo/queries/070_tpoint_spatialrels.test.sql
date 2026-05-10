@@ -529,3 +529,131 @@ SELECT eDwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1
 SELECT eDwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
+-- aContains
+-------------------------------------------------------------------------------
+
+SELECT aContains(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aContains(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aContains(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aContains(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aContains(geometry 'Linestring(0 0,4 4)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aContains(geometry 'Linestring(0 0,4 4)', tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+
+SELECT aContains(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+
+/* Errors */
+SELECT aContains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
+-- aDisjoint
+-------------------------------------------------------------------------------
+
+SELECT aDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aDisjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aDisjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+SELECT aDisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+SELECT aDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+SELECT aDisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+
+-- Temporal x Temporal
+SELECT aDisjoint(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+SELECT aDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
+-- Geography
+SELECT aDisjoint(geography 'Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(geography 'Point(1 1)', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aDisjoint(geography 'Point(1 1)', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aDisjoint(geography 'Point(1 1)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aDisjoint(tgeogpoint 'Point(1 1)@2000-01-01',  geography 'Point(1 1)');
+SELECT aDisjoint(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geography 'Point(1 1)');
+SELECT aDisjoint(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geography 'Point(1 1)');
+SELECT aDisjoint(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geography 'Point(1 1)');
+
+SELECT aDisjoint(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeogpoint '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+/* Errors */
+SELECT aDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- aIntersects
+-------------------------------------------------------------------------------
+
+SELECT aIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aIntersects(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aIntersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aIntersects(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aIntersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
+SELECT aIntersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
+SELECT aIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
+SELECT aIntersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
+
+SELECT aIntersects(geometry 'Linestring(0 0,4 4)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aIntersects(geometry 'Linestring(0 0,4 4)', tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+
+-- Temporal x Temporal
+SELECT aIntersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SELECT aIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(3 3)@2000-01-01, Point(4 4)@2000-01-02]');
+
+-- Geography
+SELECT aIntersects(geography 'Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT aIntersects(geography 'Point(1 1)', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT aIntersects(geography 'Point(1 1)', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT aIntersects(geography 'Point(1 1)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT aIntersects(tgeogpoint 'Point(1 1)@2000-01-01',  geography 'Point(1 1)');
+SELECT aIntersects(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geography 'Point(1 1)');
+SELECT aIntersects(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geography 'Point(1 1)');
+SELECT aIntersects(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geography 'Point(1 1)');
+
+SELECT aIntersects(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
+/* Errors */
+SELECT aIntersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- aDwithin
+-------------------------------------------------------------------------------
+
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+
+SELECT aDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', 2);
+SELECT aDwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', 2);
+SELECT aDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', 2);
+SELECT aDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', 2);
+
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint '[Point(1.5 1.5)@2000-01-01, Point(0.5 0.5)@2000-01-02]', 2);
+SELECT aDwithin(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(4 4)@2000-01-02]', 2);
+
+-- Temporal x Temporal
+SELECT aDwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02]', 2);
+SELECT aDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(5 5)@2000-01-02]', 2);
+
+-- Geography (only tgeogpoint x tgeogpoint is defined; geo x tgeogpoint omitted, see SQL comment)
+SELECT aDwithin(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02]', 2);
+SELECT aDwithin(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeogpoint '[Point(10 10)@2000-01-01, Point(11 11)@2000-01-02]', 2);
+
+/* Errors */
+SELECT aDwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT aDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
+SELECT aDwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+
+-------------------------------------------------------------------------------

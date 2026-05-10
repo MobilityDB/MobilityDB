@@ -50,6 +50,8 @@
 #include "temporal/spanset.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/stbox.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
@@ -1286,6 +1288,204 @@ trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
   pfree(res);
   return result;
 }
+
+/*****************************************************************************
+ * Restriction functions for geometry
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to (the complement of) a
+ * geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @note For discrete and step subtypes, checks each key instant exactly.
+ * Linear interpolation sequences are not supported (crossing-time computation
+ * not implemented).
+ * @csqlfn #Trgeo_at_geom(), #Trgeo_minus_geom()
+ */
+Temporal *
+trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+    return NULL;
+
+  if (gserialized_is_empty(gs))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "atGeometry not supported for trgeometry with linear interpolation");
+    return NULL;
+  }
+
+  /* Bounding box test */
+  STBox *box1 = tspatial_to_stbox(temp);
+  STBox *box2 = geo_stbox(gs);
+  bool over = overlaps_stbox_stbox(box1, box2);
+  pfree(box1); pfree(box2);
+  if (! over)
+    return atfunc ? NULL : temporal_copy(temp);
+
+  const GSERIALIZED *base_geo = trgeo_geom_p(temp);
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+
+  Datum *datums = palloc(sizeof(Datum) * count);
+  int nmatching = 0;
+  for (int i = 0; i < count; i++)
+  {
+    GSERIALIZED *positioned = geom_apply_pose(base_geo,
+      DatumGetPoseP(tinstant_value_p(instants[i])));
+    bool intersects = geom_intersects2d(positioned, gs);
+    pfree(positioned);
+    if (atfunc ? intersects : ! intersects)
+      datums[nmatching++] = TimestampTzGetDatum(instants[i]->t);
+  }
+  pfree(instants);
+
+  if (nmatching == 0)
+  {
+    pfree(datums);
+    return NULL;
+  }
+
+  Set *s = set_make(datums, nmatching, T_TIMESTAMPTZ, ORDER_NO);
+  pfree(datums);
+  Temporal *result = trgeo_restrict_tstzset(temp, s, REST_AT);
+  pfree(s);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to a geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @csqlfn #Trgeo_at_geom()
+ */
+inline Temporal *
+trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return trgeo_restrict_geom(temp, gs, REST_AT);
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of a
+ * geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @csqlfn #Trgeo_minus_geom()
+ */
+inline Temporal *
+trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return trgeo_restrict_geom(temp, gs, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to (the complement of) a
+ * spatiotemporal box
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box border is inclusive
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @note For discrete and step subtypes, checks each key instant exactly.
+ * Linear interpolation sequences are not supported.
+ * @csqlfn #Trgeo_at_stbox(), #Trgeo_minus_stbox()
+ */
+Temporal *
+trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc UNUSED, bool atfunc)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_STBOX, box->flags) ||
+      ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
+      ! ensure_same_spatial_dimensionality(temp->flags, box->flags))
+    return NULL;
+
+  /* Bounding box test */
+  STBox box1;
+  tspatial_set_stbox(temp, &box1);
+  if (! overlaps_stbox_stbox(&box1, box))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "atStbox not supported for trgeometry with linear interpolation");
+    return NULL;
+  }
+
+  const GSERIALIZED *base_geo = trgeo_geom_p(temp);
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+
+  Datum *datums = palloc(sizeof(Datum) * count);
+  int nmatching = 0;
+  for (int i = 0; i < count; i++)
+  {
+    GSERIALIZED *positioned = geom_apply_pose(base_geo,
+      DatumGetPoseP(tinstant_value_p(instants[i])));
+    STBox ibox;
+    geo_set_stbox(positioned, &ibox);
+    pfree(positioned);
+    bool overlaps = overlaps_stbox_stbox(&ibox, box);
+    if (atfunc ? overlaps : ! overlaps)
+      datums[nmatching++] = TimestampTzGetDatum(instants[i]->t);
+  }
+  pfree(instants);
+
+  if (nmatching == 0)
+  {
+    pfree(datums);
+    return NULL;
+  }
+
+  Set *s = set_make(datums, nmatching, T_TIMESTAMPTZ, ORDER_NO);
+  pfree(datums);
+  Temporal *result = trgeo_restrict_tstzset(temp, s, REST_AT);
+  pfree(s);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to a spatiotemporal box
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box border is inclusive
+ * @csqlfn #Trgeo_at_stbox()
+ */
+inline Temporal *
+trgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return trgeo_restrict_stbox(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of a
+ * spatiotemporal box
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box border is inclusive
+ * @csqlfn #Trgeo_minus_stbox()
+ */
+inline Temporal *
+trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
+}
+
+/*****************************************************************************/
 
 /*****************************************************************************
  * Modification functions

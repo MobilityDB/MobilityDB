@@ -1,399 +1,1293 @@
--------------------------------------------------------------------------------
---
--- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
--- contributors
---
--- MobilityDB includes portions of PostGIS version 3 source code released
--- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2025, PostGIS contributors
---
--- Permission to use, copy, modify, and distribute this software and its
--- documentation for any purpose, without fee, and without a written
--- agreement is hereby granted, provided that the above copyright notice and
--- this paragraph and the following two paragraphs appear in all copies.
---
--- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
--- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
--- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
--- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
--- OF SUCH DAMAGE.
---
--- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
--- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
--- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
--- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
--- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
---
--------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
--- eContains
--------------------------------------------------------------------------------
-
 SELECT eContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ econtains 
+-----------
+ t
+(1 row)
 
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ econtains 
+-----------
+ t
+(1 row)
 
 SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3)');
-SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
-SELECT eContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
-SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ econtains 
+-----------
+ t
+(1 row)
 
--- geometry ever contains tcbuffer (disk fully inside geometry at some instant)
+SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer 'Cbuffer(Point(5 5),0.5)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ econtains 
+-----------
+ f
+(1 row)
+
 SELECT eContains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ econtains 
+-----------
+ f
+(1 row)
 
 /* Errors */
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- eCovers, aCovers
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ ecovers 
+---------
+ t
+(1 row)
 
 SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
 
 SELECT eCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3)');
-SELECT eCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
-SELECT eCovers(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
-SELECT eCovers(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ ecovers 
+---------
+ f
+(1 row)
 
--- geometry ever covers tcbuffer (disk inside geometry at some instant, boundary allowed)
+SELECT eCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ ecovers 
+---------
+ f
+(1 row)
+
 SELECT eCovers(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer 'Cbuffer(Point(5 5),0.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
 SELECT eCovers(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
 SELECT eCovers(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
 
 /* Errors */
 SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
+ERROR:  Operation on mixed SRID
 /*****************************************************************************/
-
 SELECT aCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ acovers 
+---------
+ t
+(1 row)
+
 SELECT aCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ acovers 
+---------
+ f
+(1 row)
 
 SELECT aCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acovers 
+---------
+ t
+(1 row)
+
 SELECT aCovers(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acovers 
+---------
+ f
+(1 row)
 
 SELECT aCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3)');
-SELECT aCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
-SELECT aCovers(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
-SELECT aCovers(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acovers 
+---------
+ f
+(1 row)
 
--- geometry always covers tcbuffer
+SELECT aCovers(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer 'Cbuffer(Point(5 5),0.5)@2000-01-01');
+ acovers 
+---------
+ t
+(1 row)
+
 SELECT aCovers(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ acovers 
+---------
+ f
+(1 row)
+
 SELECT aCovers(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(8 8),0.5)@2000-01-02]');
+ acovers 
+---------
+ t
+(1 row)
 
 /* Errors */
 SELECT aCovers(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- eDisjoint
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ edisjoint 
+-----------
+ t
+(1 row)
+
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ edisjoint 
+-----------
+ t
+(1 row)
 
 SELECT eDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
 SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ edisjoint 
+-----------
+ t
+(1 row)
 
 /* Errors */
 SELECT eDisjoint(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT eDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- eIntersects
--------------------------------------------------------------------------------
-
-------------------------
--- Geo x Temporal
-------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ eintersects 
+-------------
+ t
+(1 row)
 
-------------------------
--- Temporal x Geo
-------------------------
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01',  cbuffer 'Cbuffer(Point(1 1),0.5)');
-SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
-SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
-SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ eintersects 
+-------------
+ t
+(1 row)
 
-------------------------
--- Temporal x Temporal
-------------------------
--- Temporal x Instant
+SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
--- Temporal x Discrete Sequence
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
--- Temporal x Continuous Sequence
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
--- Temporal x SequenceSet
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ eintersects 
+-------------
+ t
+(1 row)
 
 /* Errors */
 SELECT eIntersects(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
+ERROR:  Operation on mixed SRID
 SELECT eIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'SRID=3812;Cbuffer(Point(1 1),0.5)@2000-01-01');
-
--------------------------------------------------------------------------------
--- eTouches
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ etouches 
+----------
+ f
+(1 row)
 
 SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ etouches 
+----------
+ f
+(1 row)
 
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT eTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
+ etouches 
+----------
+ f
+(1 row)
 
 /* Errors */
 SELECT eTouches(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
--- unsupported geometry type
+ERROR:  Operation on mixed SRID
 SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]',
   geometry 'POLYHEDRALSURFACE( ((0 0 0, 0 0 1, 0 1 1, 0 1 0, 0 0 0)),
   ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)), ((0 0 0, 1 0 0, 1 0 1, 0 0 1, 0 0 0)),
   ((1 1 0, 1 1 1, 1 0 1, 1 0 0, 1 1 0)),
   ((0 1 0, 0 1 1, 1 1 1, 1 1 0, 0 1 0)), ((0 0 1, 1 0 1, 1 1 1, 0 1 1, 0 0 1)) )');
-
--------------------------------------------------------------------------------
--- eDwithin
--------------------------------------------------------------------------------
+ etouches 
+----------
+ f
+(1 row)
 
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
 
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
 
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-03}', 10);
-SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03, Cbuffer(Point(1 1),0.5)@2000-01-05]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-06}', 10);
-SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 2),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', 2);
-SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 2),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', 2);
-SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-04}', 10);
-SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]', 10);
-SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01],[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]}', 10);
+ edwithin 
+----------
+ 
+(1 row)
 
--- Step interpolation
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03, Cbuffer(Point(1 1),0.5)@2000-01-05]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-06}', 10);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 2),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 2),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-04}', 10);
+ edwithin 
+----------
+ 
+(1 row)
+
+SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]', 10);
+ edwithin 
+----------
+ 
+(1 row)
+
+SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01],[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]}', 10);
+ edwithin 
+----------
+ 
+(1 row)
+
 SELECT eDwithin(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ edwithin 
+----------
+ t
+(1 row)
 
 /* Errors */
 SELECT eDwithin(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)', 2);
+ERROR:  Operation on mixed SRID
 SELECT eDwithin(tcbuffer 'SRID=3812;Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
-
--------------------------------------------------------------------------------
--- aContains
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT aContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ acontains 
+-----------
+ t
+(1 row)
+
 SELECT aContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ acontains 
+-----------
+ f
+(1 row)
 
 SELECT aContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acontains 
+-----------
+ t
+(1 row)
+
 SELECT aContains(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ acontains 
+-----------
+ f
+(1 row)
 
 SELECT aContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3)');
-SELECT aContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
-SELECT aContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
-SELECT aContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acontains 
+-----------
+ f
+(1 row)
 
--- geometry always contains tcbuffer (disk fully inside geometry at every instant)
+SELECT aContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 4),0.5)@2000-01-02]', geometry 'Linestring(1 1,3 3,1 1)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer 'Cbuffer(Point(5 5),0.5)@2000-01-01');
+ acontains 
+-----------
+ t
+(1 row)
+
 SELECT aContains(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(50 50),0.5)@2000-01-02]');
+ acontains 
+-----------
+ f
+(1 row)
+
 SELECT aContains(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', tcbuffer '[Cbuffer(Point(5 5),0.5)@2000-01-01, Cbuffer(Point(8 8),0.5)@2000-01-02]');
+ acontains 
+-----------
+ t
+(1 row)
 
 /* Errors */
 SELECT aContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- aDisjoint
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT aDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ adisjoint 
+-----------
+ f
+(1 row)
 
 SELECT aDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ adisjoint 
+-----------
+ f
+(1 row)
 
 SELECT aDisjoint(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ adisjoint 
+-----------
+ f
+(1 row)
 
 SELECT aDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+ adisjoint 
+-----------
+ f
+(1 row)
 
 SELECT aDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT aDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(10 10),0.5)@2000-01-01, Cbuffer(Point(11 11),0.5)@2000-01-02]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
 SELECT aDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+ adisjoint 
+-----------
+ f
+(1 row)
 
 /* Errors */
 SELECT aDisjoint(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT aDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- aIntersects
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ aintersects 
+-------------
+ f
+(1 row)
 
 SELECT aIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ aintersects 
+-------------
+ f
+(1 row)
 
 SELECT aIntersects(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ aintersects 
+-------------
+ f
+(1 row)
 
 SELECT aIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+ aintersects 
+-------------
+ f
+(1 row)
+
 SELECT aIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+ aintersects 
+-------------
+ f
+(1 row)
 
 SELECT aIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT aIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(10 10),0.5)@2000-01-01, Cbuffer(Point(11 11),0.5)@2000-01-02]');
+ aintersects 
+-------------
+ f
+(1 row)
 
 /* Errors */
 SELECT aIntersects(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT aIntersects(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- aTouches
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT aTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ atouches 
+----------
+ f
+(1 row)
 
 SELECT aTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ atouches 
+----------
+ f
+(1 row)
 
 SELECT aTouches(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(geometry 'Point(1 1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(geometry 'Point(1 1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(geometry 'Point(1 1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ atouches 
+----------
+ f
+(1 row)
 
 SELECT aTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
+
 SELECT aTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)');
+ atouches 
+----------
+ f
+(1 row)
 
 /* Errors */
 SELECT aTouches(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT aTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
-
--------------------------------------------------------------------------------
--- aDwithin
--------------------------------------------------------------------------------
-
+ERROR:  Operation on mixed SRID
 SELECT aDwithin(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ adwithin 
+----------
+ f
+(1 row)
 
 SELECT aDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)', 2);
+ adwithin 
+----------
+ f
+(1 row)
+
 SELECT aDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)', 2);
+ adwithin 
+----------
+ f
+(1 row)
 
 SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', 2);
+ adwithin 
+----------
+ t
+(1 row)
 
 SELECT aDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Linestring(1 1,2 2)', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Linestring(1 1,2 2)', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point(1 1)', 2);
+ adwithin 
+----------
+ f
+(1 row)
 
 SELECT aDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1.5 1.5),0.5)@2000-01-01, Cbuffer(Point(2.5 2.5),0.5)@2000-01-02]', 2);
+ adwithin 
+----------
+ t
+(1 row)
+
 SELECT aDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(10 10),0.5)@2000-01-01, Cbuffer(Point(11 11),0.5)@2000-01-02]', 2);
+ adwithin 
+----------
+ f
+(1 row)
 
 /* Errors */
 SELECT aDwithin(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
+ERROR:  Operation on mixed SRID
 SELECT aDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)', 2);
+ERROR:  Operation on mixed SRID
 SELECT aDwithin(tcbuffer 'SRID=3812;Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
-
--------------------------------------------------------------------------------
+ERROR:  Operation on mixed SRID
