@@ -17,6 +17,15 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 
 The MobilityDB project is managed by a [steering committee](https://github.com/MobilityDB/MobilityDB/wiki/MobilityDB-Project-Steering-Committe).
 
+### For contributors and reviewers
+
+- New contributor?  See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Reviewing a pull request?  See the
+  [PR Reviewer Guide](doc/contributing/reviewer-guide.md) — tier ranking,
+  dependency chains and the standards checklist.  Reviewers landing in
+  any of the three platform repos (MobilityDB / MobilityDuck /
+  MobilitySpark) find the same canonical structure at the same path.
+
 You can find detailed explanations about MobilityDB and its use in various application scenarios in our texbook
 
   * Mahmoud Sakr, Alejandro Vaisman, Esteban Zimányi<br>

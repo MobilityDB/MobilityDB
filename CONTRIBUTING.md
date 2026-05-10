@@ -21,6 +21,8 @@ Pull Request Process
 --------------------
 You can fork this repository, make your own contribution, and submit a pull request. Please put as the pull request title the issue number that it closes (for example, `[Closes issue #xxx]`). Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
 
+The **[PR Reviewer Guide](doc/contributing/reviewer-guide.md)** lists all open pull requests by review tier, their dependency ordering, CI status, and the standards checklist every contribution must satisfy. Update it in the same commit when your PR changes the queue state.
+
 Contribution Agreement
 ----------------------
 MobilityDB source code is provided under the [PostgreSQL license](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt). The documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/). Any contribution will automatically fall to the same license respectively.
