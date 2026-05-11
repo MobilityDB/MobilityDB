@@ -8,7 +8,7 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 # MobilityDB PR Reviewer Guide
 
-Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-11 — 43 open PRs (net −6 today via two consolidations): folds #807+#938+#943+#893 → #944 (th3index complete), folds #819+#865+#925+#857 → #945 (tpose feature batch). Prior consolidations still in flight: #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934. Closed as superseded: #905 (duplicate of #872), #862 (subset of #891), #818 (subset of #867). Squashed in place: #876, #847, #891, #803, #817, #899, #898, #818, #929. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
+Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-11 (later) — 37 open PRs (net −10 today via four consolidations): folds #807+#938+#943+#893 → #944 (th3index complete), folds #819+#865+#925+#857 → #945 (tpose feature batch), folds #849+#923 → #946 (rgeo lifting + asMFJSON pfree, clears rgeo SKIP_TESTS), opens #947 (cbuffer SKIP_TESTS clear + 160 LIMIT-determinism, stacked on #946). The 8 superseded PRs (#807, #893, #938, #943, #819, #865, #925, #857) are now CLOSED and the fork branches deleted. #866 retitled from "feat(th3index): spatial wiring" to "feat(rgeo): file-naming uniformization + trgeo geom-clip/tile/analytics" — it never contained h3 code. Prior consolidations still in flight: #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
 
 ---
 
@@ -92,6 +92,15 @@ The two known pre-existing th3index bugs surfaced during the sibling-PR sweep (u
 ```
 
 Single review surface for the GeoPose v1.0 + parity + drift + coverage stack. Pose-adjacent multi-type PRs (#874, #886, #907, #908) live in their respective batches (bug-fix / tests / docs / refactor).
+
+### rgeo / cbuffer beta-blocker SKIP_TESTS clearance
+
+```
+#946 (rgeo lifting + asMFJSON pfree — consolidates #849 + #923)
+  └─► #947 (cbuffer SKIP_TESTS clear + 160 LIMIT determinism, stacked on #946)
+```
+
+`#946` clears `mobilitydb/test/rgeo/CMakeLists.txt` SKIP_TESTS (was 6) entirely and reduces `mobilitydb/test/cbuffer/CMakeLists.txt` SKIP_TESTS from 10 to 3. `#947` clears the remaining 3 cbuffer skips. Beta requires both to land; trgeo feature batch (#820, #858, #859, #860, #866, #903, #916) is a separate consolidation that does *not* gate beta.
 
 ### tpcpoint chain
 ```
