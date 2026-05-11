@@ -13,20 +13,33 @@ INSERT INTO tbl_th3index_known VALUES
 INSERT 0 6
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_cell_to_latlng(temp) IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     6
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_latlng_to_cell(h3_cell_to_latlng(temp),
           startValue(h3_get_resolution(temp))) <> temp;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 3:           startValue(h3_get_resolution(temp))) <> temp;
-                                                       ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_cell_to_latlng_tgeompoint(temp) IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     6
+(1 row)
+
 SELECT startValue(h3_get_resolution(h3_latlng_to_cell(
     tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9))) = 9;
-ERROR:  h3_gs_point_to_cell: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM (
   VALUES
     (tgeogpoint 'POINT(0 0)@2001-01-01'),
@@ -39,12 +52,24 @@ SELECT COUNT(*) FROM (
     (tgeogpoint 'POINT(180 0)@2001-01-01')
   ) AS pts(p)
   WHERE h3_latlng_to_cell(p, 5) IS NOT NULL;
-ERROR:  h3_gs_point_to_cell: adapter not yet implemented
+ count 
+-------
+     8
+(1 row)
+
 SELECT startValue(h3_get_resolution(h3_latlng_to_cell(
     tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9))) = 9;
-ERROR:  h3_gs_point_to_cell: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_cell_to_boundary(temp) IS NOT NULL;
-ERROR:  h3_cell_to_gs_boundary: adapter not yet implemented
+ count 
+-------
+     6
+(1 row)
+
 DROP TABLE tbl_th3index_known;
 DROP TABLE

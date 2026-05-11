@@ -13,40 +13,62 @@ INSERT INTO tbl_th3index_known VALUES
 INSERT 0 6
 SELECT bool_and(startValue(h3_get_resolution(h3_cell_to_parent(temp, 0))) = 0)
   FROM tbl_th3index_known;
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT bool_and(startValue(h3_get_resolution(h3_cell_to_parent(temp, 2))) = 2)
   FROM tbl_th3index_known;
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT bool_and(
     startValue(h3_get_resolution(h3_cell_to_parent(temp))) =
     startValue(h3_get_resolution(temp)) - 1)
   FROM tbl_th3index_known;
-ERROR:  h3_cell_to_parent_next_meos: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_cell_to_parent(h3_cell_to_parent(temp))
       <> h3_cell_to_parent(temp,
            startValue(h3_get_resolution(temp)) - 2);
-ERROR:  operator does not exist: th3index <> th3index
-LINE 3:       <> h3_cell_to_parent(temp,
-              ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT bool_and(startValue(h3_get_resolution(
     h3_cell_to_center_child(temp, 12))) = 12)
   FROM tbl_th3index_known;
-ERROR:  h3_cell_to_center_child_meos: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_cell_to_parent(
           h3_cell_to_center_child(temp, 14),
           startValue(h3_get_resolution(temp))) <> temp;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 4:           startValue(h3_get_resolution(temp))) <> temp;
-                                                       ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT bool_and(
     startValue(h3_get_resolution(h3_cell_to_center_child(temp))) =
     startValue(h3_get_resolution(temp)) + 1)
   FROM tbl_th3index_known;
-ERROR:  h3_cell_to_center_child_next_meos: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 SELECT bool_and(startValue(h3_cell_to_child_pos(temp,
                   startValue(h3_get_resolution(temp)) - 1)) BETWEEN 0 AND 6)
   FROM tbl_th3index_known;
@@ -62,9 +84,10 @@ SELECT COUNT(*) FROM tbl_th3index_known
           h3_cell_to_parent(temp),
           startValue(h3_get_resolution(temp)))
         <> temp;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 7:         <> temp;
-                ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_th3index_known;
 DROP TABLE

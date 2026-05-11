@@ -1,12 +1,24 @@
 SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT (th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeogpoint
   IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint
   ~= h3_cell_to_latlng(th3index '590464338553208831@2001-01-01');
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 DROP TABLE IF EXISTS tbl_th3index_cast_test;
 NOTICE:  table "tbl_th3index_cast_test" does not exist, skipping
@@ -22,14 +34,26 @@ HINT:  You will need to rewrite or cast the expression.
 DROP TABLE IF EXISTS tbl_th3index_cast_test;
 DROP TABLE
 SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT (th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeompoint
   IS NOT NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint
   ~= h3_cell_to_latlng_tgeompoint(th3index '590464338553208831@2001-01-01');
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 DROP TABLE IF EXISTS tbl_th3index_cast_test;
 NOTICE:  table "tbl_th3index_cast_test" does not exist, skipping

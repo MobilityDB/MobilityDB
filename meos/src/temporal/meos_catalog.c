@@ -775,6 +775,9 @@ set_basetype(MeosType type)
 #if POSE || RGEO
     || type == T_POSE
 #endif
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 #endif
