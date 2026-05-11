@@ -1,0 +1,79 @@
+   geotoh3cell   
+-----------------
+ 871fa4418ffffff
+(1 row)
+
+   geotoh3cell   
+-----------------
+ 801ffffffffffff
+(1 row)
+
+   geotoh3cell   
+-----------------
+ 871fa4418ffffff
+(1 row)
+
+  geotoh3indexset  
+-------------------
+ {871fa4418ffffff}
+(1 row)
+
+ numvalues 
+-----------
+         1
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ numvalues 
+-----------
+         2
+(1 row)
+
+ numvalues 
+-----------
+         1
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+ geotoh3indexset 
+-----------------
+ 
+(1 row)
+
+psql:mobilitydb/test/h3/queries/289_h3_geo.test.sql:127: ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+psql:mobilitydb/test/h3/queries/289_h3_geo.test.sql:128: ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+psql:mobilitydb/test/h3/queries/289_h3_geo.test.sql:145: ERROR:  Unknown SRID function for type: h3index
+psql:mobilitydb/test/h3/queries/289_h3_geo.test.sql:157: ERROR:  Unknown SRID function for type: h3index
