@@ -98,6 +98,11 @@ spatial_srid(Datum d, MeosType basetype)
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
 #endif
+#if H3
+    case T_H3INDEX:
+      (void) d;
+      return 4326;   /* H3 cells are by construction on the WGS84 globe */
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown SRID function for type: %s", meostype_name(basetype));

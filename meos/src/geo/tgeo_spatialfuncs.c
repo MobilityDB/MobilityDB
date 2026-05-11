@@ -429,7 +429,23 @@ pose_flags(Pose *pose)
   MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
   return result;
 }
-#endif /* POSE || RGEO */ 
+#endif /* POSE || RGEO */
+
+#if H3
+/**
+ * @brief Get the MEOS flags from an H3 cell index. H3 cells are by
+ * construction on the WGS84 sphere (2-D geodetic): X = true, GEODETIC
+ * = true; Z and T are not set at the basetype level.
+ */
+static int16
+h3index_flags(void)
+{
+  int16 result = 0;
+  MEOS_FLAGS_SET_X(result, true);
+  MEOS_FLAGS_SET_GEODETIC(result, true);
+  return result;
+}
+#endif /* H3 */
 
 /**
  * @brief Get the MEOS flags from a spatial value
@@ -454,6 +470,11 @@ spatial_flags(Datum d, MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
+#endif
+#if H3
+    case T_H3INDEX:
+      (void) d;
+      return h3index_flags();
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
