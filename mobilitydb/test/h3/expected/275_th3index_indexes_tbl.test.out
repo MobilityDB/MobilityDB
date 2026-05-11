@@ -1,15 +1,28 @@
 DROP TABLE IF EXISTS tbl_th3index_big;
 NOTICE:  table "tbl_th3index_big" does not exist, skipping
 DROP TABLE
-CREATE TABLE tbl_th3index_big AS
-  SELECT k, temp::th3index AS temp FROM tbl_tbigint_big;
-SELECT 1000
+CREATE TABLE tbl_th3index_big(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_big
+SELECT k,
+  h3_latlng_to_cell(
+    tgeompoint(
+      ST_SetSRID(
+        ST_Point(4.30 + (k % 10) * 0.01, 50.80 + ((k / 10) % 10) * 0.01),
+        4326
+      ),
+      timestamptz '2001-01-01' + (k * interval '4 days')
+    ),
+    7
+  )
+FROM generate_series(1, 100) k;
+INSERT 0 100
 ANALYZE tbl_th3index_big;
 ANALYZE
 SELECT COUNT(*) FROM tbl_th3index_big;
  count 
 -------
-  1000
+   100
 (1 row)
 
 DROP TABLE IF EXISTS test_idxops_th3index;
@@ -43,10 +56,10 @@ INSERT INTO test_idxops_th3index(op, rightarg, no_idx)
 SELECT '#>>', 'tstzspan',   COUNT(*) FROM tbl_th3index_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
 INSERT 0 1
 INSERT INTO test_idxops_th3index(op, rightarg, no_idx)
-SELECT '&&',  'th3index',   COUNT(*) FROM tbl_th3index_big WHERE temp && (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index;
+SELECT '&&',  'th3index',   COUNT(*) FROM tbl_th3index_big WHERE temp && th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]';
 INSERT 0 1
 INSERT INTO test_idxops_th3index(op, rightarg, no_idx)
-SELECT '~=',  'th3index',   COUNT(*) FROM tbl_th3index_big WHERE temp ~= (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index;
+SELECT '~=',  'th3index',   COUNT(*) FROM tbl_th3index_big WHERE temp ~= th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]';
 INSERT 0 1
 CREATE INDEX tbl_th3index_big_rtree_idx ON tbl_th3index_big USING GIST(temp);
 CREATE INDEX
@@ -62,9 +75,9 @@ UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_
 UPDATE 1
 UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )  WHERE op = '#>>' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '&&' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '&&' AND rightarg = 'th3index';
 UPDATE 1
-UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '~=' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET rtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '~=' AND rightarg = 'th3index';
 UPDATE 1
 DROP INDEX tbl_th3index_big_rtree_idx;
 DROP INDEX
@@ -82,9 +95,9 @@ UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3ind
 UPDATE 1
 UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )  WHERE op = '#>>' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '&&' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '&&' AND rightarg = 'th3index';
 UPDATE 1
-UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '~=' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '~=' AND rightarg = 'th3index';
 UPDATE 1
 DROP INDEX tbl_th3index_big_quadtree_idx;
 DROP INDEX
@@ -102,9 +115,9 @@ UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index
 UPDATE 1
 UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]' )  WHERE op = '#>>' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '&&' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp && th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '&&' AND rightarg = 'th3index';
 UPDATE 1
-UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= (tbigint '[1@2001-01-01, 100@2001-02-01]')::th3index ) WHERE op = '~=' AND rightarg = 'th3index';
+UPDATE test_idxops_th3index SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_th3index_big WHERE temp ~= th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-02-01]' ) WHERE op = '~=' AND rightarg = 'th3index';
 UPDATE 1
 DROP INDEX tbl_th3index_big_kdtree_idx;
 DROP INDEX

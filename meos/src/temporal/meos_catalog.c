@@ -724,7 +724,7 @@ geo_basetype(MeosType type)
 inline bool
 spatial_basetype(MeosType type)
 {
-  return (type == T_GEOMETRY || type == T_GEOGRAPHY 
+  return (type == T_GEOMETRY || type == T_GEOGRAPHY
 #if CBUFFER
     || type == T_CBUFFER
 #endif
@@ -733,6 +733,9 @@ spatial_basetype(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if H3
+    || type == T_H3INDEX
 #endif
     );
 }
