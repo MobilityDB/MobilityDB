@@ -25,6 +25,7 @@
 <!ENTITY temporal_poses SYSTEM "temporal_poses.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY temporal_circular_buffers SYSTEM "temporal_circular_buffers.xml">
+<!ENTITY temporal_parquet SYSTEM "temporal_parquet.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
@@ -129,6 +130,7 @@
 	&temporal_circular_buffers;
 	&reference;
 	&data_generator;
+	&temporal_parquet;
 <!--
 	<index />
 -->

@@ -220,7 +220,10 @@ Please include:
 |---|---|---|
 | [#911](https://github.com/MobilityDB/MobilityDB/pull/911) | MobilityDB | RFC spec document (`doc/temporal-parquet/README.md`) |
 | [#831](https://github.com/MobilityDB/MobilityDB/pull/831) | MobilityDB | Python PoC — export / import / inspect scripts + regression test |
+| [#912](https://github.com/MobilityDB/MobilityDB/pull/912) | MobilityDB | Temporal Data Lake umbrella RFC (uses TemporalParquet as the file-format substrate) |
 | [#113](https://github.com/MobilityDB/MobilityDuck/pull/113) | MobilityDuck | `temporalFooter()` scalar function + `tgeogpoint` + SRID/geodetic fix |
+| [#129](https://github.com/MobilityDB/MobilityDuck/pull/129) | MobilityDuck | `th3index` binding — full H3 cell index API (66 MEOS exports), includes `asBinary` / `fromBinary` |
+| [#9](https://github.com/MobilityDB/MobilitySpark/pull/9)   | MobilitySpark | `th3index` spatial prefilter UDFs for cross-join queries (10 UDFs covering the BerlinMOD-relevant subset) |
 
 ### Implementation status
 
@@ -231,10 +234,34 @@ Please include:
 | `temporalFooter(MAP) → VARCHAR` in MobilityDuck | done (PR #113) |
 | `asBinary` / `fromBinary` for `tgeompoint`, `tgeogpoint` | done |
 | `asBinary` / `fromBinary` for `tint`, `tfloat`, `tbool`, `ttext` | done |
+| `asBinary` / `fromBinary` for `th3index` (incl. `h3_resolution` metadata field) | **done** — MobilityDB [#807](https://github.com/MobilityDB/MobilityDB/pull/807) + [#866](https://github.com/MobilityDB/MobilityDB/pull/866) + [#938](https://github.com/MobilityDB/MobilityDB/pull/938); MobilityDuck [#129](https://github.com/MobilityDB/MobilityDuck/pull/129); MobilitySpark [#9](https://github.com/MobilityDB/MobilitySpark/pull/9) |
 | `asBinary` / `fromBinary` for `tgeometry`, `tgeography`, spans, spansets | not yet wired |
-| `asBinary` / `fromBinary` for `tcbuffer`, `tnpoint`, `tpose`, `trgeo`, `th3index` | not yet |
+| `asBinary` / `fromBinary` for `tcbuffer`, `tnpoint`, `tpose`, `trgeo`, `tpcpoint`, `tpcpatch` | not yet — `th3index` is the reference shape for the remaining extended types |
 | Automatic footer injection on `COPY TO '*.parquet'` | not yet — manual `KV_METADATA` call required |
 | Streaming export (row-at-a-time without full table in RAM) | out of scope for v1.0 |
+
+### Test scenario: `th3index` cross-platform round-trip
+
+The `th3index` port shipped across the three platforms with the same SQL surface. To exercise it end-to-end, the BerlinMOD H3-prefilter recipe (cell membership prefilters via `everEqTh3IndexTh3Index` at resolution 7) runs unchanged on MobilityDB, MobilityDuck, and MobilitySpark — see [MobilitySpark PR #9](https://github.com/MobilityDB/MobilitySpark/pull/9) for the cross-platform Q1–Q17 portable SQL examples. A TemporalParquet shard with both a `tgeompoint` trajectory column and a `th3index` companion column round-trips losslessly:
+
+```sql
+-- Export from MobilityDB:
+COPY (SELECT vehId, trip, tgeompoint_to_th3index(trip, 7) AS trip_h3 FROM Trips)
+TO 'trips.parquet' (FORMAT PARQUET);
+
+-- Annotate the footer (Python POC):
+python3 scripts/parquet/tp_export.py annotate trips.parquet \
+    --column trip:tgeompoint --column 'trip_h3:th3index;h3_resolution=7'
+
+-- Re-import on MobilityDuck or MobilitySpark, then run the prefiltered Q5:
+SELECT t1.licence, t2.licence,
+       nearestApproachDistance(t1.trip, t2.trip) AS d
+FROM   Trips t1 JOIN Trips t2 ON t1.vehId < t2.vehId
+WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)
+  AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
+```
+
+The query produces identical answers on all three engines.
 
 ### Review checklist (committer)
 
