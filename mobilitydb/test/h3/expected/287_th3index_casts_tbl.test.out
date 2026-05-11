@@ -12,14 +12,30 @@ INSERT INTO tbl_th3index_known VALUES
   (6, th3index '622236750694711295@2001-01-01');
 INSERT 0 6
 SELECT COUNT(*) FROM tbl_th3index_known WHERE temp::tgeogpoint IS NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE NOT (temp::tgeogpoint ~= h3_cell_to_latlng(temp));
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known WHERE temp::tgeompoint IS NULL;
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE NOT (temp::tgeompoint ~= h3_cell_to_latlng_tgeompoint(temp));
-ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_th3index_known;
 DROP TABLE
