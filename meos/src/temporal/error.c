@@ -190,6 +190,37 @@ meos_initialize_error_handler(error_handler_fn err_handler)
   __atomic_store_n(&MEOS_ERROR_HANDLER, h, __ATOMIC_RELEASE);
   return;
 }
+
+/**
+ * @brief Error handler that records the errno but does NOT call exit()
+ * @details The default_error_handler in MEOS calls exit() on every error,
+ * which is fatal in embedded contexts (notably JNR-FFI threads in JVM
+ * processes — exit() from a foreign thread tears the entire JVM down with
+ * SIGSEGV in libc, with no recovery path). Install this handler once at
+ * startup via meos_initialize_noexit_error_handler() so MEOS errors are
+ * reported via meos_errno() instead of process termination.
+ */
+static void
+noexit_error_handler(int errlevel __attribute__((__unused__)), int errcode,
+  const char *errmsg)
+{
+  fprintf(stderr, "%s\n", errmsg);
+  meos_errno_set(errcode);
+  return;
+}
+
+/**
+ * @brief Install the no-exit error handler
+ * @details Safe to call from multiple threads — the underlying atomic
+ * store is idempotent and always sets the same function pointer.
+ */
+void
+meos_initialize_noexit_error_handler(void)
+{
+  __atomic_store_n(&MEOS_ERROR_HANDLER,
+    (meos_error_handler_t) noexit_error_handler, __ATOMIC_RELEASE);
+  return;
+}
 #endif /* MEOS */
 
 /*****************************************************************************/

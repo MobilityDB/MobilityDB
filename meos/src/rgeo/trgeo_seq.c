@@ -235,7 +235,7 @@ trgeoseq_make1_exp(const GSERIALIZED *geom, TInstant **instants,
  * @brief Construct a temporal sequence from an array of temporal instants
  * @pre The validity of the arguments has been tested before
  */
-inline TSequence *
+TSequence *
 trgeoseq_make1(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
@@ -278,7 +278,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
  */
-inline TSequence *
+TSequence *
 trgeoseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
@@ -333,7 +333,7 @@ trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants, int count,
  * @note Does not free the reference geometry
  * @see tsequence_make
  */
-inline TSequence *
+TSequence *
 trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {

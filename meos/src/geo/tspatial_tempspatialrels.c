@@ -812,7 +812,7 @@ tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Tdisjoint_tgeo_tgeo()
  */
-inline Temporal *
+Temporal *
 tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TDISJOINT);
@@ -857,7 +857,7 @@ tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Tintersects_tgeo_tgeo()
  */
-inline Temporal *
+Temporal *
 tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TINTERSECTS);

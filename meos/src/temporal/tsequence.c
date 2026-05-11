@@ -1075,7 +1075,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
  * @param[in] normalize True if the resulting value should be normalized
  * @see #tsequence_make
  */
-inline TSequence *
+TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
@@ -2476,7 +2476,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * @param[out] inter1,inter2 Output values
  * @return Return false if the input values do not overlap on time.
  */
-inline bool
+bool
 intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   TSequence **inter1, TSequence **inter2)
 {
@@ -2738,7 +2738,7 @@ intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
  * @param[out] inter1, inter2 Output values
  * @return Return false if the input values do not overlap on time.
  */
-inline bool
+bool
 intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {

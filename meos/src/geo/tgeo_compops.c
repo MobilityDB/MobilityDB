@@ -95,7 +95,7 @@ eacomp_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal geo
  * @csqlfn #Ever_eq_geo_tgeo()
  */
-inline int
+int
 ever_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_eq, EVER);
@@ -108,7 +108,7 @@ ever_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geo
  * @csqlfn #Ever_eq_tgeo_geo()
  */
-inline int
+int
 ever_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_eq, EVER);
@@ -121,7 +121,7 @@ ever_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal geo
  * @csqlfn #Ever_ne_geo_tgeo()
  */
-inline int
+int
 ever_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_ne, EVER);
@@ -134,7 +134,7 @@ ever_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geo
  * @csqlfn #Ever_ne_tgeo_geo()
  */
-inline int
+int
 ever_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_ne, EVER);
@@ -147,7 +147,7 @@ ever_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal geo
  * @csqlfn #Always_eq_geo_tgeo()
  */
-inline int
+int
 always_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_eq, ALWAYS);
@@ -160,7 +160,7 @@ always_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geo
  * @csqlfn #Always_eq_tgeo_geo()
  */
-inline int
+int
 always_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_eq, ALWAYS);
@@ -173,7 +173,7 @@ always_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal geo
  * @csqlfn #Always_ne_geo_tgeo()
  */
-inline int
+int
 always_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_ne, ALWAYS);
@@ -186,7 +186,7 @@ always_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geo
  * @csqlfn #Always_ne_tgeo_geo()
  */
-inline int
+int
 always_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_tgeo_geo(temp, gs, &datum2_ne, ALWAYS);
@@ -200,7 +200,7 @@ always_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_eq_tgeo_tgeo()
  */
-inline int
+int
 ever_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tgeo_tgeo(temp1, temp2, &datum2_eq, EVER);
@@ -212,7 +212,7 @@ ever_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_ne_tgeo_tgeo()
  */
-inline int
+int
 ever_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tgeo_tgeo(temp1, temp2, &datum2_ne, EVER);
@@ -224,7 +224,7 @@ ever_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_eq_tgeo_tgeo()
  */
-inline int
+int
 always_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tgeo_tgeo(temp1, temp2, &datum2_eq, ALWAYS);
@@ -236,7 +236,7 @@ always_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_ne_tgeo_tgeo()
  */
-inline int
+int
 always_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tgeo_tgeo(temp1, temp2, &datum2_ne, ALWAYS);
@@ -291,7 +291,7 @@ tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal geo
  * @csqlfn #Teq_geo_tgeo()
  */
-inline Temporal *
+Temporal *
 teq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tcomp_geo_tgeo(gs, temp, &datum2_eq);
@@ -304,7 +304,7 @@ teq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal geo
  * @csqlfn #Tne_geo_tgeo()
  */
-inline Temporal *
+Temporal *
 tne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tcomp_geo_tgeo(gs, temp, &datum2_ne);
@@ -319,7 +319,7 @@ tne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geo
  * @csqlfn #Teq_tgeo_geo()
  */
-inline Temporal *
+Temporal *
 teq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tcomp_tgeo_geo(temp, gs, &datum2_eq);
@@ -332,7 +332,7 @@ teq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geo
  * @csqlfn #Tne_tgeo_geo()
  */
-inline Temporal *
+Temporal *
 tne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tcomp_tgeo_geo(temp, gs, &datum2_ne);

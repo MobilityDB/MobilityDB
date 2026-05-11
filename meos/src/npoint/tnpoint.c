@@ -810,7 +810,7 @@ tnpoint_restrict_npoint(const Temporal *temp, const Npoint *np, bool atfunc)
  * @param[in] np Network point
  * @csqlfn #Tnpoint_at_npoint()
  */
-inline Temporal *
+Temporal *
 tnpoint_at_npoint(const Temporal *temp, const Npoint *np)
 {
   return tnpoint_restrict_npoint(temp, np, REST_AT);
@@ -823,7 +823,7 @@ tnpoint_at_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] np Network point
  * @csqlfn #Tnpoint_minus_npoint()
  */
-inline Temporal *
+Temporal *
 tnpoint_minus_npoint(const Temporal *temp, const Npoint *np)
 {
   return tnpoint_restrict_npoint(temp, np, REST_MINUS);
@@ -860,7 +860,7 @@ tnpoint_restrict_npointset(const Temporal *temp, const Set *s, bool atfunc)
  * @param[in] s Set of network points
  * @csqlfn #Tnpoint_at_npointset()
  */
-inline Temporal *
+Temporal *
 tnpoint_at_npointset(const Temporal *temp, const Set *s)
 {
   return tnpoint_restrict_npointset(temp, s, REST_AT);
@@ -874,7 +874,7 @@ tnpoint_at_npointset(const Temporal *temp, const Set *s)
  * @param[in] s Set of network points
  * @csqlfn #Tnpoint_minus_npointset()
  */
-inline Temporal *
+Temporal *
 tnpoint_minus_npointset(const Temporal *temp, const Set *s)
 {
   return tnpoint_restrict_npointset(temp, s, REST_MINUS);

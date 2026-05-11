@@ -821,7 +821,7 @@ tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] gs Geometry
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TDISJOINT);
@@ -835,7 +835,7 @@ tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Geometry
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TDISJOINT);
@@ -849,7 +849,7 @@ tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] cb Circular buffer
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
@@ -863,7 +863,7 @@ tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
@@ -876,7 +876,7 @@ tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Tdisjoint_tcbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TDISJOINT);
@@ -894,7 +894,7 @@ tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] gs Geometry
  * @csqlfn #Tintersects_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS);
@@ -908,7 +908,7 @@ tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Tintersects_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS);
@@ -922,7 +922,7 @@ tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
@@ -936,7 +936,7 @@ tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
-inline Temporal *
+Temporal *
 tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
@@ -949,7 +949,7 @@ tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Tintersects_tcbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TINTERSECTS);

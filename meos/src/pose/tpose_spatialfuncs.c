@@ -109,7 +109,7 @@ tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
  * @param[in] gs Geometry
  * @csqlfn #Tpose_at_geom()
  */
-inline Temporal *
+Temporal *
 tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tpose_restrict_geom(temp, gs, REST_AT);
@@ -122,7 +122,7 @@ tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Tpose_minus_geom()
  */
-inline Temporal *
+Temporal *
 tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tpose_restrict_geom(temp, gs, REST_MINUS);
@@ -173,7 +173,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tpose_at_stbox()
  */
-inline Temporal *
+Temporal *
 tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tpose_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -187,7 +187,7 @@ tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tpose_minus_stbox()
  */
-inline Temporal *
+Temporal *
 tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tpose_restrict_stbox(temp, box, border_inc, REST_MINUS);

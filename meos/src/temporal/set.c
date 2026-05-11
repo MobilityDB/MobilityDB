@@ -1086,7 +1086,7 @@ set_eq(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_ne()
  */
-inline bool
+bool
 set_ne(const Set *s1, const Set *s2)
 {
   return ! set_eq(s1, s2);
@@ -1134,7 +1134,7 @@ set_cmp(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_lt()
  */
-inline bool
+bool
 set_lt(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) < 0;
@@ -1146,7 +1146,7 @@ set_lt(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_le()
  */
-inline bool
+bool
 set_le(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) <= 0;
@@ -1158,7 +1158,7 @@ set_le(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_gt()
  */
-inline bool
+bool
 set_gt(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) > 0;
@@ -1170,7 +1170,7 @@ set_gt(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_ge()
  */
-inline bool
+bool
 set_ge(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) >= 0;

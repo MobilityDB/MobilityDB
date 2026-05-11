@@ -511,7 +511,7 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
  * @param[in] gs Geometry
  * @csqlfn #Tnpoint_at_geom()
  */
-inline Temporal *
+Temporal *
 tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tnpoint_restrict_geom(temp, gs, REST_AT);
@@ -524,7 +524,7 @@ tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Tnpoint_minus_geom()
  */
-inline Temporal *
+Temporal *
 tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tnpoint_restrict_geom(temp, gs, REST_MINUS);
@@ -569,7 +569,7 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tnpoint_at_stbox()
  */
-inline Temporal *
+Temporal *
 tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tnpoint_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -583,7 +583,7 @@ tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tnpoint_minus_stbox()
  */
-inline Temporal *
+Temporal *
 tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tnpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);

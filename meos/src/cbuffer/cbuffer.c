@@ -1367,7 +1367,7 @@ cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_ne()
  */
-inline bool
+bool
 cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return (! cbuffer_eq(cb1, cb2));
@@ -1397,7 +1397,7 @@ cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2)
  * @brief Return true if two circular buffers are approximately equal with
  * respect to an epsilon value
  */
-inline bool
+bool
 cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return ! cbuffer_same(cb1, cb2);
@@ -1450,7 +1450,7 @@ cbuffer_cmp(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_lt()
  */
-inline bool
+bool
 cbuffer_lt(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return cbuffer_cmp(cb1, cb2) < 0;
@@ -1463,7 +1463,7 @@ cbuffer_lt(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_le()
  */
-inline bool
+bool
 cbuffer_le(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return cbuffer_cmp(cb1, cb2) <= 0;
@@ -1475,7 +1475,7 @@ cbuffer_le(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_gt()
  */
-inline bool
+bool
 cbuffer_gt(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return cbuffer_cmp(cb1, cb2) > 0;
@@ -1488,7 +1488,7 @@ cbuffer_gt(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_ge()
  */
-inline bool
+bool
 cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return cbuffer_cmp(cb1, cb2) >= 0;

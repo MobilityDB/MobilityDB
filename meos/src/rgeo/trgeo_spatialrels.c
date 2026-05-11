@@ -173,7 +173,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acontains_geo_trgeo()
  */
-inline int
+int
 econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_contains_geo_trgeo(gs, temp, EVER);
@@ -191,7 +191,7 @@ econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acontains_geo_trgeo()
  */
-inline int
+int
 acontains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_contains_geo_trgeo(gs, temp, ALWAYS);
@@ -239,7 +239,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Ecovers_geo_trgeo()
  */
-inline int
+int
 ecovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_covers_geo_trgeo(gs, temp, EVER);
@@ -257,7 +257,7 @@ ecovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acovers_geo_trgeo()
  */
-inline int
+int
 acovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_covers_geo_trgeo(gs, temp, ALWAYS);
@@ -303,7 +303,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Ecovers_trgeo_geo()
  */
-inline int
+int
 ecovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_covers_trgeo_geo(temp, gs, EVER);
@@ -321,7 +321,7 @@ ecovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acovers_trgeo_geo()
  */
-inline int
+int
 acovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_covers_trgeo_geo(temp, gs, ALWAYS);
@@ -358,7 +358,7 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_trgeo_geo()
  */
-inline int
+int
 edisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_disjoint_trgeo_geo(temp, gs, EVER);
@@ -373,7 +373,7 @@ edisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
  * @csqlfn #Adisjoint_trgeo_geo()
  */
-inline int
+int
 adisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_disjoint_trgeo_geo(temp, gs, ALWAYS);
@@ -387,7 +387,7 @@ adisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Edisjoint_trgeo_trgeo()
  */
-inline int
+int
 edisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, EVER);
@@ -401,7 +401,7 @@ edisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Adisjoint_trgeo_trgeo()
  */
-inline int
+int
 adisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne,
@@ -421,7 +421,7 @@ adisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_trgeo_geo()
  */
-inline int
+int
 eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL, 
@@ -437,7 +437,7 @@ eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @note aIntersects(trgeo, gs) is equivalent to NOT eDisjoint(trgeo, gs)
  * @csqlfn #Aintersects_trgeo_geo()
  */
-inline int
+int
 aintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return INVERT_RESULT(edisjoint_trgeo_geo(temp, gs));
@@ -451,7 +451,7 @@ aintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Eintersects_trgeo_trgeo()
  */
-inline int
+int
 eintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, EVER);
@@ -464,7 +464,7 @@ eintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Aintersects_trgeo_trgeo()
  */
-inline int
+int
 aintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq,
@@ -842,7 +842,7 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] dist Distance
  * @csqlfn #EA_dwithin_trgeo_trgeo()
  */
-inline int
+int
 edwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, EVER);
@@ -857,7 +857,7 @@ edwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
  * @param[in] dist Distance
  * @csqlfn #Adwithin_trgeo_trgeo()
  */
-inline int
+int
 adwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, ALWAYS);

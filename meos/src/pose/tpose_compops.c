@@ -97,7 +97,7 @@ eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_pose_tpose()
  */
-inline int
+int
 ever_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, EVER);
@@ -111,7 +111,7 @@ ever_eq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Ever_eq_tpose_pose()
  */
-inline int
+int
 ever_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, EVER);
@@ -124,7 +124,7 @@ ever_eq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_pose_tpose()
  */
-inline int
+int
 ever_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, EVER);
@@ -138,7 +138,7 @@ ever_ne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Ever_ne_tpose_pose()
  */
-inline int
+int
 ever_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, EVER);
@@ -151,7 +151,7 @@ ever_ne_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_pose_tpose()
  */
-inline int
+int
 always_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, ALWAYS);
@@ -165,7 +165,7 @@ always_eq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Always_eq_tpose_pose()
  */
-inline int
+int
 always_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, ALWAYS);
@@ -178,7 +178,7 @@ always_eq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_pose_tpose()
  */
-inline int
+int
 always_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, ALWAYS);
@@ -192,7 +192,7 @@ always_ne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Always_ne_tpose_pose()
  */
-inline int
+int
 always_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, ALWAYS);
@@ -206,7 +206,7 @@ always_ne_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_eq_tpose_tpose()
  */
-inline int
+int
 ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_eq, EVER);
@@ -218,7 +218,7 @@ ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_ne_tpose_tpose()
  */
-inline int
+int
 ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_ne, EVER);
@@ -230,7 +230,7 @@ ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_eq_tpose_tpose()
  */
-inline int
+int
 always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_eq, ALWAYS);
@@ -242,7 +242,7 @@ always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_ne_tpose_tpose()
  */
-inline int
+int
 always_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_ne, ALWAYS);
@@ -298,7 +298,7 @@ tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
  * @param[in] temp Temporal value
  * @csqlfn #Teq_pose_tpose()
  */
-inline Temporal *
+Temporal *
 teq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return tcomp_pose_tpose(pose, temp, &datum2_eq);
@@ -311,7 +311,7 @@ teq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] temp Temporal value
  * @csqlfn #Tne_pose_tpose()
  */
-inline Temporal *
+Temporal *
 tne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return tcomp_pose_tpose(pose, temp, &datum2_ne);
@@ -327,7 +327,7 @@ tne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Teq_tpose_pose()
  */
-inline Temporal *
+Temporal *
 teq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return tcomp_tpose_pose(temp, pose, &datum2_eq);
@@ -341,7 +341,7 @@ teq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] pose Pose
  * @csqlfn #Tne_tpose_pose()
  */
-inline Temporal *
+Temporal *
 tne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return tcomp_tpose_pose(temp, pose, &datum2_ne);

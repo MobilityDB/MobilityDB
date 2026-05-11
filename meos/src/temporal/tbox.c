@@ -249,7 +249,7 @@ number_timestamptz_to_tbox(Datum value, MeosType basetype, TimestampTz t)
  * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
-inline TBox *
+TBox *
 int_timestamptz_to_tbox(int i, TimestampTz t)
 {
   return number_timestamptz_to_tbox(Int32GetDatum(i), T_INT4, t);
@@ -262,7 +262,7 @@ int_timestamptz_to_tbox(int i, TimestampTz t)
  * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
-inline TBox *
+TBox *
 float_timestamptz_to_tbox(double d, TimestampTz t)
 {
   return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
@@ -1368,7 +1368,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Contained_tbox_tbox()
  */
-inline bool
+bool
 contained_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   return contains_tbox_tbox(box2, box1);
@@ -1714,7 +1714,7 @@ tbox_eq(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_ne()
  */
-inline bool
+bool
 tbox_ne(const TBox *box1, const TBox *box2)
 {
   return ! tbox_eq(box1, box2);
@@ -1766,7 +1766,7 @@ tbox_cmp(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_lt()
  */
-inline bool
+bool
 tbox_lt(const TBox *box1, const TBox *box2)
 {
   return tbox_cmp(box1, box2) < 0;
@@ -1779,7 +1779,7 @@ tbox_lt(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_le()
  */
-inline bool
+bool
 tbox_le(const TBox *box1, const TBox *box2)
 {
   return tbox_cmp(box1, box2) <= 0;
@@ -1792,7 +1792,7 @@ tbox_le(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_ge()
  */
-inline bool
+bool
 tbox_ge(const TBox *box1, const TBox *box2)
 {
   int cmp = tbox_cmp(box1, box2);
@@ -1805,7 +1805,7 @@ tbox_ge(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Tbox_gt()
  */
-inline bool
+bool
 tbox_gt(const TBox *box1, const TBox *box2)
 {
   return tbox_cmp(box1, box2) > 0;
