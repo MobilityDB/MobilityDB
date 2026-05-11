@@ -59,24 +59,24 @@ SELECT valueN(th3index '590464338553208831@2001-01-01', 99);
 (1 row)
 
 SELECT getValues(th3index '590464338553208831@2001-01-01');
-     getvalues     
--------------------
- {831c02fffffffff}
+      getvalues      
+---------------------
+ {"831c02fffffffff"}
 (1 row)
 
 SELECT getValues(th3index
   '{590464338553208831@2001-01-01, 590464338553208831@2001-01-02}');
-     getvalues     
--------------------
- {831c02fffffffff}
+      getvalues      
+---------------------
+ {"831c02fffffffff"}
 (1 row)
 
 SELECT getValues(th3index
   '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02,
     612544986753269759@2001-01-03]');
-                      getvalues                      
------------------------------------------------------
- {831c00fffffffff, 831c02fffffffff, 880326b885fffff}
+                         getvalues                         
+-----------------------------------------------------------
+ {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
 (1 row)
 
 SELECT valueAtTimestamp(th3index '590464338553208831@2001-01-01',

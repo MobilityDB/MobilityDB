@@ -33,17 +33,19 @@ ERROR:  h3 library error
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE k1 = 4 AND k2 = 5
     AND h3_get_directed_edge_origin(h3_cells_to_directed_edge(a, b)) <> a;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 3: ..._directed_edge_origin(h3_cells_to_directed_edge(a, b)) <> a;
-                                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE k1 = 4 AND k2 = 5
     AND h3_get_directed_edge_destination(h3_cells_to_directed_edge(a, b)) <> b;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 3: ...cted_edge_destination(h3_cells_to_directed_edge(a, b)) <> b;
-                                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT bool_and(NOT startValue(h3_is_valid_directed_edge(temp)))
   FROM tbl_th3index_known;
  bool_and 
@@ -79,7 +81,11 @@ SELECT bool_and(
 SELECT bool_and(h3_directed_edge_to_boundary(
     h3_cells_to_directed_edge(a, b)) IS NOT NULL)
   FROM tbl_th3index_pairs WHERE (k1, k2) IN ((4, 5), (5, 4));
-ERROR:  h3_directed_edge_to_gs_boundary: adapter not yet implemented
+ bool_and 
+----------
+ t
+(1 row)
+
 DROP TABLE tbl_th3index_pairs;
 DROP TABLE
 DROP TABLE tbl_th3index_known;
