@@ -30,10 +30,11 @@ SELECT h3_cell_to_vertex(th3index
 
 SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0)
   <> h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 1);
-ERROR:  operator does not exist: th3index <> th3index
-LINE 2:   <> h3_cell_to_vertex(th3index '612544986753269759@2001-01-...
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 9);
 ERROR:  h3 library error
@@ -57,4 +58,8 @@ LINE 1: SELECT h3_is_valid_vertex(th3index '0@2001-01-01');
 SELECT h3_vertex_to_latlng(
   h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0))
   IS NOT NULL;
-ERROR:  h3_vertex_to_gs_point: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+
