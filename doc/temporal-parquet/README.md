@@ -10,20 +10,21 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 > **Issue [#830](https://github.com/MobilityDB/MobilityDB/issues/830)** — community discussion and sign-off
 
-## Status (2026-05-07)
+## Status (2026-05-11)
 
 | Item | State | Pointer |
 |---|---|---|
 | Convention spec (DocBook + docs page) | open | this document |
 | Reference Python implementation | **done** | [`tools/temporal_parquet.py`](https://github.com/MobilityDB/MobilityDuck/blob/main/tools/temporal_parquet.py) in MobilityDuck |
 | Round-trip regression test | **done** | [`test/sql/parquet/temporal_parquet.test`](https://github.com/MobilityDB/MobilityDuck/blob/main/test/sql/parquet/temporal_parquet.test) in MobilityDuck |
-| MobilityDuck `asBinary` / `fromBinary` functions | **done** | tgeompoint + tgeogpoint + tint/tfloat/tbool/ttext; tgeography/tgeometry, spans, spansets, extended types pending |
+| MobilityDuck `asBinary` / `fromBinary` functions | **done** | tgeompoint + tgeogpoint + tint/tfloat/tbool/ttext + th3index; tgeography/tgeometry, spans, spansets, remaining extended types pending |
 | MobilityDuck `TGEOGPOINT` type | **done** | geodetic (spheroidal-metre) type; `eIntersects(GEOMETRY, tgeogpoint)` and all 12 `(GEOMETRY, temporal)` spatial predicates work; see [Geodetic Distances](#geodetic-distances) |
 | MobilityDuck automatic footer injection on `COPY TO PARQUET` | open | `temporalFooter()` function available; automatic injection on COPY in design |
 | Zero-data quickstart (no CSV needed) | **done** | [`examples/quickstart/quickstart.sql`](https://github.com/MobilityDB/MobilityDuck/blob/feat/edge-to-cloud-quickstart/examples/quickstart/quickstart.sql) — 5 synthetic vessels; full pipeline in ~1 s |
 | PostgreSQL companion quickstart | **done** | [`examples/quickstart/quickstart_mobilitydb.sql`](https://github.com/MobilityDB/MobilityDuck/blob/feat/edge-to-cloud-quickstart/examples/quickstart/quickstart_mobilitydb.sql) — identical queries on MobilityDB |
 | Generic CSV ingest template | **done** | [`examples/generic-ingest/generic_ingest.sql`](https://github.com/MobilityDB/MobilityDuck/blob/feat/edge-to-cloud-quickstart/examples/generic-ingest/generic_ingest.sql) — parameterised; replace CSV path + column names |
 | End-to-end AIS data-lake demo (real-world scale) | **done** | [`examples/ais-data-lake/ais_data_lake.sql`](https://github.com/MobilityDB/MobilityDuck/blob/main/examples/ais-data-lake/ais_data_lake.sql) — 588k pings, ~2.5 s |
+| **Cross-platform `th3index` port** (first extended type) | **done across the three platforms** | MobilityDB [#807](https://github.com/MobilityDB/MobilityDB/pull/807) + [#866](https://github.com/MobilityDB/MobilityDB/pull/866) + [#938](https://github.com/MobilityDB/MobilityDB/pull/938); MobilityDuck [#129](https://github.com/MobilityDB/MobilityDuck/pull/129); MobilitySpark [#9](https://github.com/MobilityDB/MobilitySpark/pull/9). Same BerlinMOD prefilter SQL runs unchanged on all three. See [Worked example: `th3index`](#worked-example-th3index) |
 
 ## The Problem
 
@@ -83,11 +84,23 @@ The `temporal` object coexists with GeoParquet's `geo` object: a single file can
 | `tbool`, `tint`, `tfloat`, `ttext` | `tbool` / `tint` / `tfloat` / `ttext` | scalar temporals |
 | `tgeompoint`, `tgeogpoint` | `tgeompoint` / `tgeogpoint` | spatial-temporal; `srid` + `geodetic` + `has_z` populated |
 | `tgeometry`, `tgeography` | `tgeometry` / `tgeography` | general spatial-temporal |
-| `tcbuffer`, `tnpoint`, `tpose`, `trgeo`, `tpcpoint`, `tpcpatch`, `th3index` | each as its own `base_type` | extended temporal types |
+| `th3index` | `th3index` | **first cross-platform extended type**; spatial via `h3_resolution`, see [Worked example](#worked-example-th3index) |
+| `tcbuffer`, `tnpoint`, `tpose`, `trgeo`, `tpcpoint`, `tpcpatch` | each as its own `base_type` | remaining extended temporal types |
 | `stbox`, `tbox` | `stbox` / `tbox` | bounding boxes |
 | `intspan`, `floatspan`, `tstzspan`, spansets, sets | each as its own `base_type` | spans, spansets, sets |
 
 The `subtype` field applies only to lifted temporal types (Instant / Sequence / SequenceSet); span/set/box columns omit it.
+
+#### Type-specific optional fields
+
+Some `base_type` values may carry optional metadata that helps consumers decide whether the column is usable for a given workload **without decoding any row**:
+
+| Field | Applies to | Semantics |
+|---|---|---|
+| `srid` | `tgeompoint`, `tgeogpoint`, `tgeometry`, `tgeography` | EPSG code of the column's CRS; required for spatial-temporal types |
+| `geodetic` | `tgeogpoint`, `tgeography` | `true` ⇒ spheroidal-metre math (Haversine / Vincenty); see [Geodetic Distances](#geodetic-distances) |
+| `has_z` | spatial-temporal types | column carries a Z dimension throughout |
+| `h3_resolution` | `th3index` | **optional**; integer in `[0, 15]` declaring that every cell in the column was produced at this resolution. Consumers MAY rely on this for cell-membership prefilters (e.g. cross-join probes via `ever_eq(h3index, th3index)` only make sense when both sides share a resolution) |
 
 ### Encoding versioning
 
@@ -102,6 +115,52 @@ The `subtype` field applies only to lifted temporal types (Instant / Sequence / 
 When writing TemporalParquet files that consumers will use for distance or speed analytics, prefer `tgeogpoint` (set `"geodetic": true` in the column metadata).  The geodetic flag is self-describing in MEOS-WKB: a file written with `asBinary(tgeogpointSeq(...))` will reconstruct as a geodetic sequence on any platform that calls `tgeogpointFromBinary(blob)`.
 
 *Implementation note*: DuckDB does not have a native GEOGRAPHY type in its core (the community `duckdb-geography` extension uses Google S2's spherical model, which is incompatible with MEOS's spheroidal Vincenty engine). MobilityDuck's `TGEOGPOINT` therefore accepts the same `GEOMETRY` (lon/lat) input as `TGEOMPOINT` and sets the geodetic flag internally — all geodetic math lives exclusively in MEOS. This is the uniform pattern across MobilityDB, MobilityDuck, and PyMEOS.
+
+### Worked example: `th3index`
+
+`th3index` is the first **extended** temporal type to ship a cross-platform binding pair: MobilityDB ([#807](https://github.com/MobilityDB/MobilityDB/pull/807) + [#866](https://github.com/MobilityDB/MobilityDB/pull/866) + [#938](https://github.com/MobilityDB/MobilityDB/pull/938)), MobilityDuck ([#129](https://github.com/MobilityDB/MobilityDuck/pull/129) — 66 MEOS exports), and MobilitySpark ([#9](https://github.com/MobilityDB/MobilitySpark/pull/9) — 10 UDFs covering the BerlinMOD-relevant subset). All three execute the same H3-prefiltered BerlinMOD `.sql` files without per-engine rewrites.
+
+A `th3index` column in TemporalParquet uses the same `BYTE_ARRAY` carrier as every other temporal type — the MEOS-WKB encoder handles th3index payload identically to tbigint (both lift over an `int64`). The metadata `base_type` is the discriminator. Example footer entry for a BerlinMOD trips table:
+
+```jsonc
+{
+  "version": "1.0.0",
+  "primary_temporal_column": "trip",
+  "columns": {
+    "trip": {
+      "encoding": "MEOS-WKB",
+      "encoding_version": "1.0",
+      "base_type": "tgeompoint",
+      "subtype": "Sequence",
+      "interpolation": "linear",
+      "srid": 4326,
+      "geodetic": false,
+      "has_z": false
+    },
+    "trip_h3": {
+      "encoding": "MEOS-WKB",
+      "encoding_version": "1.0",
+      "base_type": "th3index",
+      "subtype": "Sequence",
+      "interpolation": "step",
+      "h3_resolution": 7
+    }
+  }
+}
+```
+
+The companion `trip_h3` column is produced once at load time via `tgeompoint_to_th3index(trip, 7)` and acts as a cheap cell-membership prefilter on subsequent cross-join queries:
+
+```sql
+-- BerlinMOD Q5 (nearest-approach), runs unchanged on PG / DuckDB / Spark
+SELECT t1.licence AS licence1, t2.licence AS licence2,
+       nearestApproachDistance(t1.trip, t2.trip) AS d
+FROM   Trips t1 JOIN Trips t2 ON t1.vehId < t2.vehId
+WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)        -- h3-cell prefilter
+  AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
+```
+
+At H3 resolution 7 (cell edge ≈ 1.2 km), the prefilter is sound for BerlinMOD's 3-10 m thresholds; consumers can verify this by reading `h3_resolution` from the footer without decoding any row. `interpolation` is always `step` for th3index (a vehicle is in exactly one cell at a time); `subtype` follows the source `tgeompoint`'s subtype after the lifted conversion.
 
 ### What ships
 
@@ -124,13 +183,22 @@ No C-side changes in MobilityDB itself for v1.0. The MEOS-WKB encoders / decoder
 - **Directional sign-off** on the BLOB-plus-footer approach over MF-JSON / struct-of-arrays.
 - **Naming**: is `TemporalParquet` the right name? Alternatives: `MovingParquet`, `MFParquet`. Naming carefully matters because the convention may outlive any one tool.
 - **Footer schema completeness**: does the proposed per-column object cover everything PyMEOS / JMEOS / meos-rs / MobilityDuck / MobilityPandas need? Anything missing?
-- **Coverage gap for `asBinary`/`fromBinary`**: tgeography, tgeometry, spans, spansets, and extended types (tcbuffer, tnpoint, tpose, trgeo, th3index) are declared in the type coverage table but `asBinary()`/`*FromBinary()` functions are not yet registered in MobilityDuck. These will follow in a subsequent commit once the scalar + tgeompoint/tgeogpoint baseline is ratified.
+- **Coverage gap for `asBinary`/`fromBinary`**: tgeography, tgeometry, spans, spansets, and the remaining extended types (tcbuffer, tnpoint, tpose, trgeo) are declared in the type coverage table but `asBinary()`/`*FromBinary()` functions are not yet registered in MobilityDuck. These will follow in subsequent commits using the th3index port as the reference shape. **`th3index` is no longer in this gap** — its three-platform port landed via the PRs linked in [Status](#status-2026-05-11).
 
 ## Related
 
 - [Issue #830](https://github.com/MobilityDB/MobilityDB/issues/830) — community discussion and sign-off thread
 - [PR #833](https://github.com/MobilityDB/MobilityDB/pull/833) — MEOS-WKB byte-format spec (defines the encoding that TemporalParquet columns carry)
 - [RFC #836 / doc/meos-api/](../meos-api/README.md) — MEOS-API catalog (the machine-readable function registry that bindings consuming TemporalParquet files will also use)
+- [RFC #912](https://github.com/MobilityDB/MobilityDB/pull/912) — Temporal Data Lake (edge-to-cloud architecture; TemporalParquet is its file-format substrate)
 - [GeoParquet specification](https://geoparquet.org/) — the spatial-Parquet standard this RFC is modelled on
 - [MobilityDuck](https://github.com/MobilityDB/MobilityDuck) — DuckDB extension; primary consumer of TemporalParquet on the read/write path
+
+### `th3index` reference port
+
+- MobilityDB [#807](https://github.com/MobilityDB/MobilityDB/pull/807) — temporal H3 cell index type (full implementation)
+- MobilityDB [#866](https://github.com/MobilityDB/MobilityDB/pull/866) — spatial wiring + stbox recheck fix + fixture-based tests
+- MobilityDB [#938](https://github.com/MobilityDB/MobilityDB/pull/938) — static-geometry → H3 cell-set public API
+- MobilityDuck [#129](https://github.com/MobilityDB/MobilityDuck/pull/129) — full H3 cell index API (66 MEOS exports)
+- MobilitySpark [#9](https://github.com/MobilityDB/MobilitySpark/pull/9) — th3index spatial prefilter for cross-join queries
 - [Discussion #861 / doc/edge-to-cloud/](../edge-to-cloud/README.md) — cross-platform SQL portability (TemporalParquet is the interchange format for that initiative)
