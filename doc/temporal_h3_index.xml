@@ -17,6 +17,8 @@
 
 	<para>As with other temporal types, <varname>th3index</varname> has four subtypes: <varname>Instant</varname>, discrete-sequence, continuous-sequence with step interpolation (H3 cells are discrete — linear interpolation is meaningless), and <varname>SequenceSet</varname>.</para>
 
+	<para>Operational guidance on when to choose <varname>th3index</varname> over <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>; the H3-specific hazards consumers should anticipate (int64 ordering arbitrary with respect to grid geometry, resolution mixing in operations, pentagon cells, compaction round-trip cell-order non-preservation, antimeridian and pole behaviour at high resolution); and the durability and storage conventions are collected in <xref linkend="h3index_operational_notes"/>.</para>
+
 	<sect1 xml:id="th3index_inout">
 		<title>Input and Output</title>
 		<para>A <varname>th3index</varname> value is entered using the standard temporal syntax with the underlying 64-bit H3 cell identifier. The input parser accepts both the canonical hexadecimal form (as produced by the H3 CLI and by <varname>h3_cell_to_string</varname> upstream) and the equivalent unsigned decimal. Hexadecimal is idiomatic in the H3 ecosystem and is what the output function emits — all examples below use it. For reference, the hex value <varname>831c02fffffffff</varname> used in the examples corresponds to the decimal value <varname>590464338553208831</varname>.</para>
@@ -567,5 +569,55 @@ CREATE INDEX ON trips USING spgist(cells th3index_kdtree_ops);
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="h3index_operational_notes">
+		<title>Operational notes</title>
+		<para>This section captures the operational knowledge consumers need on top of the function reference: when <varname>th3index</varname> is the right type, the conventions the implementation assumes, and the H3-specific hazards real workloads need to be aware of. The H3 hierarchical hexagonal grid has a few non-obvious properties that the bitwise <varname>int64</varname> encoding hides; this section surfaces them so they don't surprise consumers.</para>
+
+		<sect2 xml:id="h3index_when_to_use">
+			<title>When to use th3index</title>
+			<para>Use <varname>th3index</varname> when the natural identifier for a discrete location at a given resolution is an H3 cell &#x2014; vehicle trips bucketed at H3 resolution 9, environmental sensor readings binned by H3 cell, geo-fenced events keyed by their containing cell. The type stores one H3 cell per instant; resolution may vary across instants in a single trajectory but most workloads pin one resolution per column.</para>
+			<para>Choose <varname>tgeompoint</varname> / <varname>tgeogpoint</varname> over <varname>th3index</varname> when the actual geographic position (sub-cell precision) is the value of interest. Choose <varname>tbigint</varname> over <varname>th3index</varname> when the values happen to be 64-bit integers but carry no H3 semantics &#x2014; the binary representations are identical (they cast losslessly via <varname>th3index :: tbigint</varname> and back) but the SQL type system uses the distinction to reject h3-agnostic functions on h3-specific trajectories.</para>
+		</sect2>
+
+		<sect2 xml:id="h3index_hazards">
+			<title>H3-specific hazards</title>
+			<para>Five hazards reliably bite workloads using H3 cells. Each is a property of the H3 grid itself rather than a MobilityDB implementation choice; the mitigations below explain how to work with them.</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Int64 ordering is arbitrary with respect to grid geometry</emphasis>. H3 cell identifiers are 64-bit unsigned integers whose bitpattern encodes resolution, base cell, and hierarchical position. The bitwise ordering of two cells carries no geographic meaning &#x2014; two cells that are bit-adjacent may be on opposite sides of the planet, and two cells that are spatially adjacent may have wildly different bitpatterns.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>th3index</varname> deliberately has no <varname>h3indexspan</varname> / <varname>h3indexspanset</varname> companion types (precedent: <varname>geometry</varname> has no <varname>geometryspan</varname>), and the bbox indexes are time-only (<varname>tstzspan</varname>). Value-range filtering must go through <varname>h3_*</varname> inspection functions (resolution, base cell, hierarchy checks) or explicit set enumeration via <varname>h3indexset</varname>. Code that assumes <varname>cell_a &lt; cell_b</varname> reflects spatial proximity will silently produce wrong results.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Resolution mixing in operations</emphasis>. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; <varname>h3_cell_to_parent(cell, coarser_res)</varname> coarsens, <varname>h3_cell_to_children(parent, finer_res)</varname> refines, and <varname>h3_compact_cells</varname> / <varname>h3_uncompact_cells</varname> round-trip correctly only when input resolutions are compatible.</para>
+					<para><emphasis>Mitigation</emphasis>: consumers should document the resolution invariant per trajectory (e.g. "all cells are resolution 9") and validate inputs at the ingestion boundary. The <varname>h3_get_resolution</varname> accessor lets a CHECK constraint enforce this.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Pentagon cells</emphasis>. The H3 grid has 12 pentagonal (instead of hexagonal) cells per resolution &#x2014; the Eisenstein duals of the icosahedron's 12 vertices. <varname>h3_grid_ring</varname> may fail near these pentagons; <varname>h3_grid_path_cells</varname> fails if the path crosses one. The error is loud (libh3 raises an explicit failure), but workloads that expect ring / path operations to always succeed need a guard.</para>
+					<para><emphasis>Mitigation</emphasis>: defensive code should wrap pentagon-sensitive calls and check <varname>h3_is_pentagon_cell</varname> on inputs and key outputs. For trajectories that pass near a pentagon, fall back to <varname>h3_grid_disk</varname> (which is pentagon-safe) or compute path segments in pieces around the pentagon.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Compaction / decompaction round-trip</emphasis>. <varname>h3_compact_cells</varname> produces the most compact mixed-resolution representation of a set of cells; <varname>h3_uncompact_cells</varname> expands it back. The round-trip is lossless in spatial extent, but <emphasis>cell ordering is not preserved</emphasis> &#x2014; libh3 does not guarantee a sorted output. Queries that consume the output as if its order were stable will return different results before and after compaction even when the underlying spatial set is identical.</para>
+					<para><emphasis>Mitigation</emphasis>: re-sort post-compaction if order matters (e.g. <varname>ORDER BY cell</varname> in SQL or <varname>ARRAY_AGG ... ORDER BY 1</varname> when materialising). For temporal sets, prefer the <varname>h3indexset</varname> set-equality semantics over array-equality semantics.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Antimeridian and pole behaviour</emphasis>. H3's base cells are positioned on an icosahedron; at high resolutions some cells near the antimeridian or poles can have counter-intuitive geometry. <varname>h3_cell_to_latlng</varname> / <varname>h3_latlng_to_cell</varname> round-trip correctly, but coordinates near &#xb1;180&#xb0; longitude or near the poles may resolve to cells in unexpected base-cell groups.</para>
+					<para><emphasis>Mitigation</emphasis>: workloads at polar latitudes or that cross the antimeridian should validate representative cells against the libh3 reference implementation directly and add fixtures for the specific edge cases the workload encounters.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="h3index_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of <varname>th3index</varname> is byte-identical to <varname>tbigint</varname> (each instant carries one 64-bit H3 cell ID plus a timestamp). Consequences for storage planning:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>WKT</emphasis> via <varname>th3index_in</varname> and <varname>th3index_out</varname>. Cells render as canonical hex strings (e.g. <varname>'8928308280fffff'</varname>); both decimal and hex are accepted on input. Round-trip is bit-stable.</para></listitem>
+				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> via the standard PostGIS endian-flag-then-payload pattern. Stable across PostgreSQL major versions.</para></listitem>
+				<listitem><para><emphasis>MFJSON</emphasis> via <varname>asMFJSON(th3index)</varname> and <varname>th3indexFromMFJSON(text)</varname>. The cell payload renders as the canonical hex string (not the int64 value) so external consumers using libh3 directly can parse it without transformation.</para></listitem>
+				<listitem><para><emphasis>pg_dump</emphasis> uses WKT in plain mode and WKB under <varname>--binary-upgrade</varname>; both round-trip cleanly.</para></listitem>
+				<listitem><para><emphasis>Cross-cast with <varname>tbigint</varname></emphasis>: the bidirectional <varname>th3index :: tbigint</varname> casts are zero-cost bitwise reinterpretations. Use them when working with both type-safe (<varname>th3index</varname>) and arithmetic-friendly (<varname>tbigint</varname>) views of the same trajectory in a single query.</para></listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 </chapter>
