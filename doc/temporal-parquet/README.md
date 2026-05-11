@@ -14,7 +14,9 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 | Item | State | Pointer |
 |---|---|---|
-| Convention spec (DocBook + docs page) | open | this document |
+| Convention spec — RFC body | **done** | [`doc/temporal-parquet/README.md`](README.md) |
+| Convention spec — DocBook chapter | **done** | [`doc/temporal_parquet.xml`](../temporal_parquet.xml) — appendix wired in `doc/mobilitydb-manual.xml` |
+| Convention spec — docs.mobilitydb.com page | open | follows the next manual build; no spec change required |
 | Reference Python implementation | **done** | [`tools/temporal_parquet.py`](https://github.com/MobilityDB/MobilityDuck/blob/main/tools/temporal_parquet.py) in MobilityDuck |
 | Round-trip regression test | **done** | [`test/sql/parquet/temporal_parquet.test`](https://github.com/MobilityDB/MobilityDuck/blob/main/test/sql/parquet/temporal_parquet.test) in MobilityDuck |
 | MobilityDuck `asBinary` / `fromBinary` functions | **done** | tgeompoint + tgeogpoint + tint/tfloat/tbool/ttext + th3index; tgeography/tgeometry, spans, spansets, remaining extended types pending |
