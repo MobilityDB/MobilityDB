@@ -22,7 +22,9 @@
 #include <meos_geo.h>
 #include <meos_h3.h>
 
-#include "pg_temporal/temporal.h"     /* PG_GETARG_TEMPORAL_P, PG_GETARG_SET_P, PG_RETURN_SET_P */
+#include "temporal/set.h"             /* PG_GETARG_SET_P / PG_RETURN_SET_P */
+#include "pg_temporal/temporal.h"     /* PG_GETARG_TEMPORAL_P */
+#include "pg_geo/postgis.h"           /* PG_GETARG_GSERIALIZED_P */
 
 PGDLLEXPORT Datum Geo_gs_point_to_h3index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_gs_point_to_h3index);
