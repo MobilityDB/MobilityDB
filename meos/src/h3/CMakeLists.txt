@@ -34,6 +34,11 @@ set(H3_SRCS
   # Comparison operators — last group in the doxygen hierarchy,
   # so last in the source list too.
   th3index_compops.c
+
+  # Static-geometry → H3 cell / cell set (POINT, LINESTRING, POLYGON,
+  # MULTI*, GEOMETRYCOLLECTION) + the ever-intersects predicate that
+  # consumes the resulting cell set against a th3index trip path.
+  h3_geo.c
 )
 
 add_library(h3 OBJECT ${H3_SRCS})
