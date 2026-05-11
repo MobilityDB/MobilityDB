@@ -8,7 +8,7 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 # MobilityDB PR Reviewer Guide
 
-Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-11 (later) — 37 open PRs (net −10 today via four consolidations): folds #807+#938+#943+#893 → #944 (th3index complete), folds #819+#865+#925+#857 → #945 (tpose feature batch), folds #849+#923 → #946 (rgeo lifting + asMFJSON pfree, clears rgeo SKIP_TESTS), opens #947 (cbuffer SKIP_TESTS clear + 160 LIMIT-determinism, stacked on #946). The 8 superseded PRs (#807, #893, #938, #943, #819, #865, #925, #857) are now CLOSED and the fork branches deleted. #866 retitled from "feat(th3index): spatial wiring" to "feat(rgeo): file-naming uniformization + trgeo geom-clip/tile/analytics" — it never contained h3 code. Prior consolidations still in flight: #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
+Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-11 (later still) — 33 open PRs (net −14 today via five consolidations): folds #807+#938+#943+#893 → #944 (th3index complete), folds #819+#865+#925+#857 → #945 (tpose feature batch), folds #849+#923 → #946 (rgeo lifting + asMFJSON pfree, clears rgeo SKIP_TESTS), opens #947 (cbuffer SKIP_TESTS clear + 160 LIMIT-determinism, stacked on #946), folds #906+#908+#909+#921+#940 → #948 (MEOS quality batch — bug-audit + naming + correctness + geodetic + lifting STEP). The 13 superseded PRs (#807, #893, #938, #943, #819, #865, #925, #857, #906, #908, #909, #921, #940) are now CLOSED and the fork branches deleted. #866 retitled from "feat(th3index): spatial wiring" to "feat(rgeo): file-naming uniformization + trgeo geom-clip/tile/analytics" — it never contained h3 code. Prior consolidations still in flight: #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
 
 ---
 
@@ -101,6 +101,14 @@ Single review surface for the GeoPose v1.0 + parity + drift + coverage stack. Po
 ```
 
 `#946` clears `mobilitydb/test/rgeo/CMakeLists.txt` SKIP_TESTS (was 6) entirely and reduces `mobilitydb/test/cbuffer/CMakeLists.txt` SKIP_TESTS from 10 to 3. `#947` clears the remaining 3 cbuffer skips. Beta requires both to land; trgeo feature batch (#820, #858, #859, #860, #866, #903, #916) is a separate consolidation that does *not* gate beta.
+
+### MEOS quality batch — single consolidated PR
+
+```
+#948 (MEOS quality batch — consolidates #906 + #908 + #909 + #921 + #940)
+```
+
+Five independent fixes / refactors in one PR (5 commits): bug-audit + naming cleanups + correctness batch + geodetic-tIntersects fix + lifting STEP demote. The two-way conflict in `temporal_aggfuncs.c` between #906 and #909 was resolved by keeping both fixes (DATUM_FREE + pfree(t1)).
 
 ### tpcpoint chain
 ```
