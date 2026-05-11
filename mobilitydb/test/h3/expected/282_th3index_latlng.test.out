@@ -51,7 +51,7 @@ SELECT h3_get_resolution(h3_latlng_to_cell(
   9));
                            h3_get_resolution                            
 ------------------------------------------------------------------------
- [9@Mon Jan 01 00:00:00 2001 PST, 9@Mon Jan 01 23:59:58.23632 2001 PST]
+ [9@Mon Jan 01 00:00:00 2001 PST, 9@Mon Jan 01 23:59:57.969185 2001 PST]
 (1 row)
 
 SELECT h3_get_resolution(h3_latlng_to_cell(
