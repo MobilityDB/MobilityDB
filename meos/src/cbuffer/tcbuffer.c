@@ -870,7 +870,7 @@ tcbuffer_members(const Temporal *temp, bool point)
  * @brief Return the array of points or radius of a temporal circular buffer
  * @csqlfn #Tcbuffer_points()
  */
-inline Set *
+Set *
 tcbuffer_points(const Temporal *temp)
 {
   return tcbuffer_members(temp, true);
@@ -881,7 +881,7 @@ tcbuffer_points(const Temporal *temp)
  * @brief Return the array of radii of a temporal circular buffer
  * @csqlfn #Tcbuffer_points()
  */
-inline Set *
+Set *
 tcbuffer_radius(const Temporal *temp)
 {
   return tcbuffer_members(temp, false);

@@ -170,7 +170,7 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
  * @param[in] inst Temporal instant
  * @param[in] maxdd Maximum number of decimal digits
  */
-inline char *
+char *
 tinstant_out(const TInstant *inst, int maxdd)
 {
   return tinstant_to_string(inst, maxdd, &basetype_out);

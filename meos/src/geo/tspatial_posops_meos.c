@@ -60,7 +60,7 @@
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Left_stbox_tspatial()
  */
-inline bool
+bool
 left_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &left_stbox_stbox, INVERT);
@@ -74,7 +74,7 @@ left_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overleft_stbox_tspatial()
  */
-inline bool
+bool
 overleft_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overleft_stbox_stbox, INVERT);
@@ -88,7 +88,7 @@ overleft_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Right_stbox_tspatial()
  */
-inline bool
+bool
 right_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &right_stbox_stbox, INVERT);
@@ -102,7 +102,7 @@ right_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overright_stbox_tspatial()
  */
-inline bool
+bool
 overright_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overright_stbox_stbox, INVERT);
@@ -115,7 +115,7 @@ overright_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Below_stbox_tspatial()
  */
-inline bool
+bool
 below_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &below_stbox_stbox, INVERT);
@@ -129,7 +129,7 @@ below_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overbelow_stbox_tspatial()
  */
-inline bool
+bool
 overbelow_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overbelow_stbox_stbox, INVERT);
@@ -142,7 +142,7 @@ overbelow_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Above_stbox_tspatial()
  */
-inline bool
+bool
 above_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &above_stbox_stbox, INVERT);
@@ -156,7 +156,7 @@ above_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overabove_stbox_tspatial()
  */
-inline bool
+bool
 overabove_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overabove_stbox_stbox, INVERT);
@@ -170,7 +170,7 @@ overabove_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Front_stbox_tspatial()
  */
-inline bool
+bool
 front_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &front_stbox_stbox, INVERT);
@@ -184,7 +184,7 @@ front_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overfront_stbox_tspatial()
  */
-inline bool
+bool
 overfront_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overfront_stbox_stbox, INVERT);
@@ -198,7 +198,7 @@ overfront_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Back_stbox_tspatial()
  */
-inline bool
+bool
 back_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &back_stbox_stbox, INVERT);
@@ -212,7 +212,7 @@ back_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overback_stbox_tspatial()
  */
-inline bool
+bool
 overback_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overback_stbox_stbox, INVERT);
@@ -226,7 +226,7 @@ overback_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Before_stbox_tspatial()
  */
-inline bool
+bool
 before_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &before_stbox_stbox, INVERT);
@@ -240,7 +240,7 @@ before_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overbefore_stbox_tspatial()
  */
-inline bool
+bool
 overbefore_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overbefore_stbox_stbox, INVERT);
@@ -253,7 +253,7 @@ overbefore_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #After_stbox_tspatial()
  */
-inline bool
+bool
 after_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &after_stbox_stbox, INVERT);
@@ -267,7 +267,7 @@ after_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] temp Spatiotemporal value
  * @csqlfn #Overafter_stbox_tspatial()
  */
-inline bool
+bool
 overafter_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overafter_stbox_stbox, INVERT);
@@ -285,7 +285,7 @@ overafter_stbox_tspatial(const STBox *box, const Temporal *temp)
  * @param[in] box Spatiotemporal box
 box * @csqlfn #Left_tspatial_stbox()
  */
-inline bool
+bool
 left_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &left_stbox_stbox, INVERT_NO);
@@ -299,7 +299,7 @@ left_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overleft_tspatial_stbox()
  */
-inline bool
+bool
 overleft_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overleft_stbox_stbox, INVERT_NO);
@@ -313,7 +313,7 @@ overleft_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Right_tspatial_stbox()
  */
-inline bool
+bool
 right_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &right_stbox_stbox, INVERT_NO);
@@ -327,7 +327,7 @@ right_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overright_tspatial_stbox()
  */
-inline bool
+bool
 overright_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overright_stbox_stbox, INVERT_NO);
@@ -340,7 +340,7 @@ overright_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Below_tspatial_stbox()
  */
-inline bool
+bool
 below_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &below_stbox_stbox, INVERT_NO);
@@ -354,7 +354,7 @@ below_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overbelow_tspatial_stbox()
  */
-inline bool
+bool
 overbelow_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overbelow_stbox_stbox, INVERT_NO);
@@ -367,7 +367,7 @@ overbelow_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Above_tspatial_stbox()
  */
-inline bool
+bool
 above_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &above_stbox_stbox, INVERT_NO);
@@ -381,7 +381,7 @@ above_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overabove_tspatial_stbox()
  */
-inline bool
+bool
 overabove_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overabove_stbox_stbox, INVERT_NO);
@@ -395,7 +395,7 @@ overabove_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Front_tspatial_stbox()
  */
-inline bool
+bool
 front_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &front_stbox_stbox, INVERT_NO);
@@ -409,7 +409,7 @@ front_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overfront_tspatial_stbox()
  */
-inline bool
+bool
 overfront_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overfront_stbox_stbox, INVERT_NO);
@@ -423,7 +423,7 @@ overfront_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Back_tspatial_stbox()
  */
-inline bool
+bool
 back_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &back_stbox_stbox, INVERT_NO);
@@ -437,7 +437,7 @@ back_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overback_tspatial_stbox()
  */
-inline bool
+bool
 overback_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overback_stbox_stbox, INVERT_NO);
@@ -451,7 +451,7 @@ overback_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Before_tspatial_stbox()
  */
-inline bool
+bool
 before_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &before_stbox_stbox, INVERT_NO);
@@ -465,7 +465,7 @@ before_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overbefore_tspatial_stbox()
  */
-inline bool
+bool
 overbefore_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overbefore_stbox_stbox, INVERT_NO);
@@ -478,7 +478,7 @@ overbefore_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #After_tspatial_stbox()
  */
-inline bool
+bool
 after_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &after_stbox_stbox, INVERT_NO);
@@ -492,7 +492,7 @@ after_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overafter_tspatial_stbox()
  */
-inline bool
+bool
 overafter_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overafter_stbox_stbox, INVERT_NO);
@@ -508,7 +508,7 @@ overafter_tspatial_stbox(const Temporal *temp, const STBox *box)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Left_tspatial_tspatial()
  */
-inline bool
+bool
 left_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &left_stbox_stbox);
@@ -521,7 +521,7 @@ left_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overleft_tspatial_tspatial()
  */
-inline bool
+bool
 overleft_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overleft_stbox_stbox);
@@ -534,7 +534,7 @@ overleft_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Right_tspatial_tspatial()
  */
-inline bool
+bool
 right_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &right_stbox_stbox);
@@ -547,7 +547,7 @@ right_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overright_tspatial_tspatial()
  */
-inline bool
+bool
 overright_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overright_stbox_stbox);
@@ -560,7 +560,7 @@ overright_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Below_tspatial_tspatial()
  */
-inline bool
+bool
 below_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &below_stbox_stbox);
@@ -573,7 +573,7 @@ below_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overbelow_tspatial_tspatial()
  */
-inline bool
+bool
 overbelow_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overbelow_stbox_stbox);
@@ -586,7 +586,7 @@ overbelow_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Above_tspatial_tspatial()
  */
-inline bool
+bool
 above_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &above_stbox_stbox);
@@ -600,7 +600,7 @@ above_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overabove_tspatial_tspatial()
  */
-inline bool
+bool
 overabove_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overabove_stbox_stbox);
@@ -613,7 +613,7 @@ overabove_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Front_tspatial_tspatial()
  */
-inline bool
+bool
 front_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &front_stbox_stbox);
@@ -626,7 +626,7 @@ front_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overfront_tspatial_tspatial()
  */
-inline bool
+bool
 overfront_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overfront_stbox_stbox);
@@ -639,7 +639,7 @@ overfront_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Back_tspatial_tspatial()
  */
-inline bool
+bool
 back_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &back_stbox_stbox);
@@ -652,7 +652,7 @@ back_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overback_tspatial_tspatial()
  */
-inline bool
+bool
 overback_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overback_stbox_stbox);
@@ -665,7 +665,7 @@ overback_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Before_tspatial_tspatial()
  */
-inline bool
+bool
 before_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &before_stbox_stbox);
@@ -678,7 +678,7 @@ before_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overbefore_tspatial_tspatial()
  */
-inline bool
+bool
 overbefore_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overbefore_stbox_stbox);
@@ -691,7 +691,7 @@ overbefore_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #After_tspatial_tspatial()
  */
-inline bool
+bool
 after_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &after_stbox_stbox);
@@ -704,7 +704,7 @@ after_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Spatiotemporal values
  * @csqlfn #Overafter_tspatial_tspatial()
  */
-inline bool
+bool
 overafter_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overafter_stbox_stbox);

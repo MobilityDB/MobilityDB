@@ -69,7 +69,7 @@
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-inline TSequence *
+TSequence *
 tboolseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TBOOL, interp);
@@ -82,7 +82,7 @@ tboolseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-inline TSequence *
+TSequence *
 tintseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TINT, interp);
@@ -95,7 +95,7 @@ tintseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-inline TSequence *
+TSequence *
 tfloatseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TFLOAT, interp);
@@ -108,7 +108,7 @@ tfloatseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-inline TSequence *
+TSequence *
 ttextseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TTEXT, interp);

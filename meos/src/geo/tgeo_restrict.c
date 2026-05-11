@@ -1177,7 +1177,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tgeo_at_stbox()
  */
-inline Temporal *
+Temporal *
 tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tgeo_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -1192,7 +1192,7 @@ tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tgeo_minus_stbox()
  */
-inline Temporal *
+Temporal *
 tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
@@ -2051,7 +2051,7 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
-inline Temporal *
+Temporal *
 tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_AT);
@@ -2064,7 +2064,7 @@ tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Tgeo_at_geom()
  */
-inline Temporal *
+Temporal *
 tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_AT);
@@ -2079,7 +2079,7 @@ tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
-inline Temporal *
+Temporal *
 tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_MINUS);
@@ -2092,7 +2092,7 @@ tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Tgeo_minus_geom()
  */
-inline Temporal *
+Temporal *
 tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_MINUS);
@@ -2154,7 +2154,7 @@ tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
  * @param[in] s Elevation span
  * @csqlfn #Tgeo_at_elevation()
  */
-inline Temporal *
+Temporal *
 tpoint_at_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_AT);
@@ -2167,7 +2167,7 @@ tpoint_at_elevation(const Temporal *temp, const Span *s)
  * @param[in] s Elevation span
  * @csqlfn #Tgeo_at_elevation()
  */
-inline Temporal *
+Temporal *
 tgeo_at_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_AT);
@@ -2182,7 +2182,7 @@ tgeo_at_elevation(const Temporal *temp, const Span *s)
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
-inline Temporal *
+Temporal *
 tpoint_minus_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_MINUS);
@@ -2195,7 +2195,7 @@ tpoint_minus_elevation(const Temporal *temp, const Span *s)
  * @param[in] s Elevation span
  * @csqlfn #Tgeo_minus_elevation()
  */
-inline Temporal *
+Temporal *
 tgeo_minus_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_MINUS);

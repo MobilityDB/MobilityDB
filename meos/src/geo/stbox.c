@@ -1804,7 +1804,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Contained_stbox_stbox()
  */
-inline bool
+bool
 contained_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   return contains_stbox_stbox(box2, box1);
@@ -2435,7 +2435,7 @@ stbox_eq(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_ne()
  */
-inline bool
+bool
 stbox_ne(const STBox *box1, const STBox *box2)
 {
   return ! stbox_eq(box1, box2);
@@ -2520,7 +2520,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_lt()
  */
-inline bool
+bool
 stbox_lt(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) < 0;
@@ -2533,7 +2533,7 @@ stbox_lt(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_le()
  */
-inline bool
+bool
 stbox_le(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) <= 0;
@@ -2546,7 +2546,7 @@ stbox_le(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_ge()
  */
-inline bool
+bool
 stbox_ge(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) >= 0;
@@ -2559,7 +2559,7 @@ stbox_ge(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Stbox_gt()
  */
-inline bool
+bool
 stbox_gt(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) > 0;

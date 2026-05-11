@@ -825,7 +825,7 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
  * @param[in] d Date
  * @note PostgreSQL function: @p date_timestamptz(PG_FUNCTION_ARGS)
  */
-inline TimestampTz
+TimestampTz
 date_to_timestamptz(DateADT d)
 {
   return date2timestamptz_opt_overflow(d, NULL);
@@ -1426,7 +1426,7 @@ timestamptz_out(TimestampTz t)
 {
   return timestamp_out_common(t, true);
 }
-inline char *
+char *
 pg_timestamptz_out(TimestampTz t)
 {
   return timestamp_out_common(t, true);

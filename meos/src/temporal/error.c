@@ -190,6 +190,45 @@ meos_initialize_error_handler(error_handler_fn err_handler)
   __atomic_store_n(&MEOS_ERROR_HANDLER, h, __ATOMIC_RELEASE);
   return;
 }
+
+/**
+ * @brief Error handler that records the errno without writing to stderr
+ * and without calling exit()
+ * @details The default error handler writes every error message to stderr
+ * and calls exit() at the ERROR level.  Both side effects are harmful in
+ * embedded contexts:
+ *
+ *   - exit() from a foreign thread in a JVM (JNR-FFI on Spark / JMEOS)
+ *     tears the host process down with SIGSEGV in libc.
+ *   - Unconditional stderr writes serialise per-row errors inside
+ *     cross-join queries (BerlinMOD Q10 / Q11 on mixed-SRID input emit
+ *     one stderr line per pair, dominating wall-clock at scale).
+ *
+ * This handler reports errors via meos_errno() only — the canonical
+ * library-style mechanism.  Callers that want a per-error log line should
+ * read meos_errno() after each MEOS call and route the message to the
+ * host's logging framework.
+ */
+static void
+noexit_error_handler(int errlevel __attribute__((__unused__)), int errcode,
+  const char *errmsg __attribute__((__unused__)))
+{
+  meos_errno_set(errcode);
+  return;
+}
+
+/**
+ * @brief Install the no-exit error handler
+ * @details Safe to call from multiple threads — the underlying atomic
+ * store is idempotent and always sets the same function pointer.
+ */
+void
+meos_initialize_noexit_error_handler(void)
+{
+  __atomic_store_n(&MEOS_ERROR_HANDLER,
+    (meos_error_handler_t) noexit_error_handler, __ATOMIC_RELEASE);
+  return;
+}
 #endif /* MEOS */
 
 /*****************************************************************************/

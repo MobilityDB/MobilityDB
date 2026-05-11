@@ -1087,7 +1087,7 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_int_set(int i, const Set *s)
 {
   return union_set_int(s, i);
@@ -1100,7 +1100,7 @@ union_int_set(int i, const Set *s)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_bigint_set(int64 i, const Set *s)
 {
   return union_set_bigint(s, i);
@@ -1113,7 +1113,7 @@ union_bigint_set(int64 i, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_float_set(double d, const Set *s)
 {
   return union_set_float(s, d);
@@ -1126,7 +1126,7 @@ union_float_set(double d, const Set *s)
  * @param[in] txt Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_text_set(const text *txt, const Set *s)
 {
   return union_set_text(s, txt);
@@ -1139,7 +1139,7 @@ union_text_set(const text *txt, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_date_set(const DateADT d, const Set *s)
 {
   return union_set_date(s, d);
@@ -1152,7 +1152,7 @@ union_date_set(const DateADT d, const Set *s)
  * @param[in] t Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 union_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return union_set_timestamptz(s, t);
@@ -1261,7 +1261,7 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_int_set(int i, const Set *s)
 {
   return intersection_set_int(s, i);
@@ -1274,7 +1274,7 @@ intersection_int_set(int i, const Set *s)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_bigint_set(int64 i, const Set *s)
 {
   return intersection_set_bigint(s, i);
@@ -1287,7 +1287,7 @@ intersection_bigint_set(int64 i, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_float_set(double d, const Set *s)
 {
   return intersection_set_float(s, d);
@@ -1300,7 +1300,7 @@ intersection_float_set(double d, const Set *s)
  * @param[in] txt Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_text_set(const text *txt, const Set *s)
 {
   return intersection_set_text(s, txt);
@@ -1313,7 +1313,7 @@ intersection_text_set(const text *txt, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_date_set(const DateADT d, const Set *s)
 {
   return intersection_set_date(s, d);
@@ -1326,7 +1326,7 @@ intersection_date_set(const DateADT d, const Set *s)
  * @param[in] t Value
  * @csqlfn #Union_set_value()
  */
-inline Set *
+Set *
 intersection_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return intersection_set_timestamptz(s, t);

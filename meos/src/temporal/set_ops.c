@@ -237,7 +237,7 @@ contains_set_set(const Set *s1, const Set *s2)
  * @param[in] value Value
  * @param[in] s Set
  */
-inline bool
+bool
 contained_value_set(Datum value, const Set *s)
 {
   return contains_set_value(s, value);
@@ -249,7 +249,7 @@ contained_value_set(Datum value, const Set *s)
  * @param[in] s1,s2 Sets
  * @csqlfn #Contained_set_set()
  */
-inline bool
+bool
 contained_set_set(const Set *s1, const Set *s2)
 {
   return contains_set_set(s2, s1);
@@ -346,7 +346,7 @@ left_set_set(const Set *s1, const Set *s2)
  * @param[in] value Value
  * @param[in] s Set
  */
-inline bool
+bool
 right_value_set(Datum value, const Set *s)
 {
   return left_set_value(s, value);
@@ -358,7 +358,7 @@ right_value_set(Datum value, const Set *s)
  * @param[in] s Set
  * @param[in] value Value
  */
-inline bool
+bool
 right_set_value(const Set *s, Datum value)
 {
   return left_value_set(value, s);
@@ -370,7 +370,7 @@ right_set_value(const Set *s, Datum value)
  * @param[in] s1,s2 Sets
  * @csqlfn #Right_set_set()
  */
-inline bool
+bool
 right_set_set(const Set *s1, const Set *s2)
 {
   return left_set_set(s2, s1);
@@ -513,7 +513,7 @@ union_set_value(const Set *s, Datum value)
  * @param[in] value Value
  * @param[in] s Set
  */
-inline Set *
+Set *
 union_value_set(Datum value, const Set *s)
 {
   return union_set_value(s, value);
@@ -559,7 +559,7 @@ intersection_set_value(const Set *s, Datum value)
  * @param[in] value Value
  * @param[in] s Set
  */
-inline Set *
+Set *
 intersection_value_set(Datum value, const Set *s)
 {
   return intersection_set_value(s, value);

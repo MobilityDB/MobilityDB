@@ -92,7 +92,7 @@ eacomp_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal network point
  * @csqlfn #Ever_eq_npoint_tnpoint()
  */
-inline int
+int
 ever_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, EVER);
@@ -107,7 +107,7 @@ ever_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
  * @param[in] np Network point
  * @csqlfn #Ever_eq_tnpoint_npoint()
  */
-inline int
+int
 ever_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, EVER);
@@ -122,7 +122,7 @@ ever_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] temp Temporal network point
  * @csqlfn #Ever_ne_npoint_tnpoint()
  */
-inline int
+int
 ever_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, EVER);
@@ -137,7 +137,7 @@ ever_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
  * @param[in] np Network point
  * @csqlfn #Ever_ne_tnpoint_npoint()
  */
-inline int
+int
 ever_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, EVER);
@@ -152,7 +152,7 @@ ever_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] temp Temporal network point
  * @csqlfn #Always_eq_npoint_tnpoint()
  */
-inline int
+int
 always_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, ALWAYS);
@@ -167,7 +167,7 @@ always_eq_npoint_tnpoint(const Npoint *np, const Temporal *temp)
  * @param[in] np Network point
  * @csqlfn #Always_eq_tnpoint_npoint()
  */
-inline int
+int
 always_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_eq, ALWAYS);
@@ -182,7 +182,7 @@ always_eq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] temp Temporal network point
  * @csqlfn #Always_ne_npoint_tnpoint()
  */
-inline int
+int
 always_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, ALWAYS);
@@ -197,7 +197,7 @@ always_ne_npoint_tnpoint(const Npoint *np, const Temporal *temp)
  * @param[in] np Network point
  * @csqlfn #Always_ne_tnpoint_npoint()
  */
-inline int
+int
 always_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return eacomp_tnpoint_npoint(temp, np, &datum2_ne, ALWAYS);
@@ -211,7 +211,7 @@ always_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_eq_tnpoint_tnpoint()
  */
-inline int
+int
 ever_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tnpoint_tnpoint(temp1, temp2, &datum2_eq, EVER);
@@ -223,7 +223,7 @@ ever_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_ne_tnpoint_tnpoint()
  */
-inline int
+int
 ever_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tnpoint_tnpoint(temp1, temp2, &datum2_ne, EVER);
@@ -235,7 +235,7 @@ ever_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_eq_tnpoint_tnpoint()
  */
-inline int
+int
 always_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tnpoint_tnpoint(temp1, temp2, &datum2_eq, ALWAYS);
@@ -247,7 +247,7 @@ always_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_ne_tnpoint_tnpoint()
  */
-inline int
+int
 always_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tnpoint_tnpoint(temp1, temp2, &datum2_ne, ALWAYS);
@@ -285,7 +285,7 @@ tcomp_tnpoint_npoint(const Temporal *temp, const Npoint *np,
  * @param[in] np Network point
  * @csqlfn #Teq_tnpoint_npoint()
  */
-inline Temporal *
+Temporal *
 teq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return tcomp_tnpoint_npoint(temp, np, &datum2_eq);
@@ -299,7 +299,7 @@ teq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] np Network point
  * @csqlfn #Tne_tnpoint_npoint()
  */
-inline Temporal *
+Temporal *
 tne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   return tcomp_tnpoint_npoint(temp, np, &datum2_ne);

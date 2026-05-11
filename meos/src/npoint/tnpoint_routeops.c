@@ -73,7 +73,7 @@ contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
  * @brief Return true if a temporal network point and a route satisfy the
  * function
  */
-inline bool
+bool
 contained_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert)
 {
@@ -136,7 +136,7 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
  * @brief Return true if a temporal network point and a big integer set
  * satisfy the function
  */
-inline bool
+bool
 contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
@@ -181,7 +181,7 @@ contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
  * @brief Return true if a temporal network point and a network point
  * satisfy the function
  */
-inline bool
+bool
 contained_rid_npoint_tnpoint(const Temporal *temp, const Npoint *np,
   bool invert)
 {
