@@ -45,8 +45,7 @@
 #include <meos_internal_geo.h>
 
 #include "h3/h3index.h"
-#include "h3/th3index_internal.h"
-#include "temporal/temporal.h"  /* for SET_VAL_N if needed */
+#include "temporal/temporal.h"  /* ORDER macro for set_make_free */
 
 /*****************************************************************************
  * Growable buffer of H3Index — accumulator for the recursive walker
@@ -133,7 +132,7 @@ h3_buf_to_set(h3_buf *buf)
   for (int i = 0; i < n; i++)
     datums[i] = H3IndexGetDatum(buf->cells[i]);
   h3_buf_free(buf);
-  return set_make_free(datums, n, T_H3INDEX, ORDERED);
+  return set_make_free(datums, n, T_H3INDEX, ORDER);
 }
 
 /*****************************************************************************
