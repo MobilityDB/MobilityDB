@@ -66,6 +66,11 @@ CREATE FUNCTION eContains(tcbuffer, cbuffer)
 
 /*****************************************************************************/
 
+CREATE FUNCTION eContains(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aContains(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acontains_geo_tcbuffer'
@@ -118,6 +123,11 @@ CREATE FUNCTION eCovers(tcbuffer, tcbuffer)
 
 /*****************************************************************************/
 
+CREATE FUNCTION eCovers(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ecovers_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aCovers(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acovers_geo_tcbuffer'

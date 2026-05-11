@@ -556,10 +556,10 @@ int main(void)
   printf("tcbuffer_points(%s, 6): %s", tcbuffer1_out, char_result);
   free(floatset_result); free(char_result);
 
-  /* GSERIALIZED *tcbuffer_trav_area(const Temporal *temp, bool merge_union); */
-  geom_result = tcbuffer_trav_area(tcbuffer1, true);
+  /* GSERIALIZED *tcbuffer_traversed_area(const Temporal *temp, bool merge_union); */
+  geom_result = tcbuffer_traversed_area(tcbuffer1, true);
   char_result = geo_as_text(geom_result, 6);
-  printf("tcbuffer_trav_area(%s, true): %s\n", tcbuffer1_out, char_result);
+  printf("tcbuffer_traversed_area(%s, true): %s\n", tcbuffer1_out, char_result);
   free(geom_result); free(char_result);
 
   /*****************************************************************************

@@ -40,7 +40,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer,
 WHERE NearestApproachDistance(temp, ST_SetSRID(g, 3812)) IS NOT NULL;
  count 
 -------
-  1000
+   900
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1,
@@ -48,7 +48,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1,
 WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-  1000
+    10
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer,
@@ -56,7 +56,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer,
 WHERE ST_SetSRID(g, 3812) |=| temp IS NOT NULL;
  count 
 -------
-  1000
+   900
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1,
@@ -64,7 +64,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1,
 WHERE t1.temp |=| t2.temp IS NOT NULL;
  count 
 -------
-  1000
+    10
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer,

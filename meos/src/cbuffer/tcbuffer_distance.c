@@ -557,7 +557,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   double result = geom_distance2d(trav, gs);
   pfree(trav);
   return result;
@@ -578,7 +578,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav); pfree(geo);
@@ -601,7 +601,7 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return DBL_MAX;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   double result = geom_distance2d(trav, geom);
   pfree(trav); pfree(geom);
   return result;
@@ -647,7 +647,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, gs);
   pfree(trav);
   return result;
@@ -669,7 +669,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return NULL;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   GSERIALIZED *result = geom_shortestline2d(trav, geom);
   pfree(geom); pfree(trav);
   return result;
