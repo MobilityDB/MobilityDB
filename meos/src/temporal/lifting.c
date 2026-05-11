@@ -181,11 +181,34 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/meos_catalog.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+
+/*****************************************************************************
+ * Local helpers
+ *****************************************************************************/
+
+/**
+ * @brief Return the output interpolation for a lift operation
+ *
+ * The output sequence's interpolation matches the input's, demoted to
+ * STEP when the result type does not support LINEAR interpolation
+ * (`temptype_supports_linear(restype)` is false).  Using the catalog
+ * predicate keeps the interpolation contract enforceable at the lift
+ * level for every result type.
+ */
+static interpType
+lift_result_interp(const TSequence *seq, MeosType restype)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == LINEAR && ! temptype_supports_linear(restype))
+    interp = STEP;
+  return interp;
+}
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.
@@ -240,7 +263,8 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
   for (int i = 0; i < seq->count; i++)
     instants[i] = tfunc_tinstant(TSEQUENCE_INST_N(seq, i), lfinfo);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    seq->period.upper_inc, lift_result_interp(seq, lfinfo->restype),
+    NORMALIZE);
 }
 
 /**
@@ -335,11 +359,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tfunc_tinstant_base(TSEQUENCE_INST_N(seq, i), value, lfinfo);
-  /* Set the interpolation depending on the one of the sequence and the result
-   * as stated in the `lfinfo` structure */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (interp == LINEAR && ! lfinfo->reslinear)
-    interp = STEP;
+  interpType interp = lift_result_interp(seq, lfinfo->restype);
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
   if (! seq->period.upper_inc && interp == STEP)
