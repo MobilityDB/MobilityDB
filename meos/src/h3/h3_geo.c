@@ -255,6 +255,48 @@ geoloop_free(GeoLoop *loop)
   loop->numVerts = 0;
 }
 
+/**
+ * @brief Push the 7 cells of `gridDisk(c, 1)` (the cell + its 6 neighbors)
+ *
+ * The 1-ring is the unit of coverage expansion used by
+ * `polygon_to_cells_into` to ensure that any cell the polygon overlaps
+ * appears in the output set, including cells whose centroid lies
+ * outside the polygon.
+ */
+static void
+h3_buf_push_ring1(h3_buf *out, H3Index c)
+{
+  if (c == (H3Index) 0)
+    return;
+  H3Index neighbors[7];   /* gridDisk(_, 1) returns exactly 7 cells */
+  memset(neighbors, 0, sizeof(neighbors));
+  if (gridDisk(c, 1, neighbors) != E_SUCCESS)
+  {
+    /* gridDisk failure: fall back to the centre cell */
+    h3_buf_push(out, c);
+    return;
+  }
+  for (int i = 0; i < 7; i++)
+    if (neighbors[i] != (H3Index) 0)
+      h3_buf_push(out, neighbors[i]);
+}
+
+/**
+ * @brief Push the cells covering an LWPOLY into the accumulator
+ *
+ * Coverage is layered so that the union is a superset of every cell
+ * whose interior intersects the polygon:
+ *
+ *   (a) `polygonToCells` (cells with centroid inside the polygon),
+ *       each expanded by `gridDisk(c, 1)` to include boundary cells.
+ *
+ *   (b) Each polygon vertex's containing cell, also expanded by
+ *       `gridDisk(c, 1)`.  Covers polygons that contain no cell
+ *       centroid (i.e. polygons smaller than a hexagon at the
+ *       chosen resolution).
+ *
+ * Layers (a) and (b) merge via the sort+dedup in `h3_buf_to_set`.
+ */
 static void
 polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
 {
@@ -274,6 +316,7 @@ polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
     gp.holes = NULL;
   }
 
+  /* (a) Centroid-containment cells, each expanded by gridDisk(k=1). */
   int64_t max_cells = 0;
   H3Error err = maxPolygonToCellsSize(&gp, resolution, 0, &max_cells);
   if (err == E_SUCCESS && max_cells > 0)
@@ -282,12 +325,21 @@ polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
     err = polygonToCells(&gp, resolution, 0, cells);
     if (err == E_SUCCESS)
     {
-      h3_buf_grow(out, (int) max_cells);
       for (int64_t i = 0; i < max_cells; i++)
         if (cells[i] != (H3Index) 0)
-          out->cells[out->count++] = cells[i];
+          h3_buf_push_ring1(out, cells[i]);
     }
     pfree(cells);
+  }
+
+  /* (b) Vertex cells, each expanded by gridDisk(k=1). */
+  uint32_t nv = gp.geoloop.numVerts;
+  for (uint32_t i = 0; i < nv; i++)
+  {
+    LatLng *ll = &gp.geoloop.verts[i];
+    H3Index c;
+    if (latLngToCell(ll, resolution, &c) == E_SUCCESS)
+      h3_buf_push_ring1(out, c);
   }
 
   geoloop_free(&gp.geoloop);
