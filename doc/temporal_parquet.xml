@@ -184,8 +184,17 @@ WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)
   AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
 </programlisting>
 		<para>
-			At H3 resolution 7 (cell edge ≈ 1.2 km) the prefilter is sound for BerlinMOD's 3-10 m thresholds; consumers can verify this by reading <varname>h3_resolution</varname> from the footer without decoding any row. <varname>interpolation</varname> is always <varname>step</varname> for <varname>th3index</varname> (a vehicle is in exactly one cell at a time); <varname>subtype</varname> follows the source <varname>tgeompoint</varname>'s subtype after the lifted conversion.
+			<varname>interpolation</varname> is always <varname>step</varname> for <varname>th3index</varname> (a vehicle is in exactly one cell at a time); <varname>subtype</varname> follows the source <varname>tgeompoint</varname>'s subtype after the lifted conversion. The <varname>h3_resolution</varname> field is the consumer-side hint that lets a reader gate the prefilter without decoding any row.
 		</para>
+		<note>
+			<title>Soundness note (2026-05-11)</title>
+			<para>
+				The current <varname>tgeompoint_to_th3index</varname> implementation samples one cell per source instant; cells traversed by the trip's straight-line segment between consecutive instants are not visited. Until the <varname>fix/th3index-srid-flags-lift</varname> branch and the prefilter-soundness follow-ups land, <varname>trip_h3</varname> is an <emphasis>under-sampling</emphasis> of the true cell set, and any prefilter built on it may miss true hits.
+			</para>
+			<para>
+				The TemporalParquet metadata schema is unaffected — <varname>base_type: "th3index"</varname> and <varname>h3_resolution</varname> describe the bytes regardless of how the column was produced. Consumers who need strict semantic correctness must run the underlying <varname>tgeompoint</varname> predicate without relying on the prefilter as a <varname>WHERE</varname> clause; treat the prefilter as a future optimisation tracked by the th3index port chain (MobilityDB PRs #807, #866, #938 plus the pending fix branch).
+			</para>
+		</note>
 	</sect1>
 
 	<sect1>

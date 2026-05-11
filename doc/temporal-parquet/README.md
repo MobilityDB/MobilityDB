@@ -162,7 +162,12 @@ WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)        -- h3-cell prefilte
   AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
 ```
 
-At H3 resolution 7 (cell edge ≈ 1.2 km), the prefilter is sound for BerlinMOD's 3-10 m thresholds; consumers can verify this by reading `h3_resolution` from the footer without decoding any row. `interpolation` is always `step` for th3index (a vehicle is in exactly one cell at a time); `subtype` follows the source `tgeompoint`'s subtype after the lifted conversion.
+`interpolation` is always `step` for th3index (a vehicle is in exactly one cell at a time); `subtype` follows the source `tgeompoint`'s subtype after the lifted conversion. The `h3_resolution` field is the consumer-side hint that lets a reader gate the prefilter without decoding any row.
+
+> **Soundness note (2026-05-11).** The current `tgeompoint_to_th3index` implementation samples one cell per source instant; cells traversed by the trip's straight-line segment between consecutive instants are not visited. Until [`fix/th3index-srid-flags-lift`](https://github.com/MobilityDB/MobilityDB/issues) and the prefilter-soundness follow-ups land, `trip_h3` is an **under-sampling** of the true cell set, and any prefilter built on it may miss true hits. Two consequences for TemporalParquet:
+>
+> - The metadata schema is unaffected — `base_type: "th3index"` and `h3_resolution` describe the bytes regardless of how the column was produced.
+> - Consumers who need strict semantic correctness must run the underlying `tgeompoint` predicate without relying on the prefilter as a `WHERE` clause. Treat the prefilter as a future optimisation; track its soundness in the th3index port chain (MobilityDB [#807](https://github.com/MobilityDB/MobilityDB/pull/807) + [#866](https://github.com/MobilityDB/MobilityDB/pull/866) + [#938](https://github.com/MobilityDB/MobilityDB/pull/938) + the pending `fix/th3index-srid-flags-lift`).
 
 ### What ships
 

@@ -242,7 +242,9 @@ Please include:
 
 ### Test scenario: `th3index` cross-platform round-trip
 
-The `th3index` port shipped across the three platforms with the same SQL surface. To exercise it end-to-end, the BerlinMOD H3-prefilter recipe (cell membership prefilters via `everEqTh3IndexTh3Index` at resolution 7) runs unchanged on MobilityDB, MobilityDuck, and MobilitySpark — see [MobilitySpark PR #9](https://github.com/MobilityDB/MobilitySpark/pull/9) for the cross-platform Q1–Q17 portable SQL examples. A TemporalParquet shard with both a `tgeompoint` trajectory column and a `th3index` companion column round-trips losslessly:
+The `th3index` port shipped across the three platforms with the same SQL surface. The TemporalParquet round-trip (bytes + metadata) works end-to-end. The H3 prefilter built on `trip_h3` is **not yet sound** (see soundness note below) — exercise the binary round-trip and the metadata, but verify any prefilter result against the underlying `tgeompoint` predicate until the th3index port chain's soundness fixes land.
+
+A TemporalParquet shard with both a `tgeompoint` trajectory column and a `th3index` companion column round-trips losslessly:
 
 ```sql
 -- Export from MobilityDB:
@@ -253,15 +255,24 @@ TO 'trips.parquet' (FORMAT PARQUET);
 python3 scripts/parquet/tp_export.py annotate trips.parquet \
     --column trip:tgeompoint --column 'trip_h3:th3index;h3_resolution=7'
 
--- Re-import on MobilityDuck or MobilitySpark, then run the prefiltered Q5:
+-- Re-import on MobilityDuck or MobilitySpark, then run Q5 against the
+-- semantic predicate (use the prefilter only after the th3index port
+-- chain's soundness fixes have landed):
 SELECT t1.licence, t2.licence,
        nearestApproachDistance(t1.trip, t2.trip) AS d
 FROM   Trips t1 JOIN Trips t2 ON t1.vehId < t2.vehId
-WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)
-  AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
+WHERE  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
 ```
 
-The query produces identical answers on all three engines.
+The round-trip itself (bytes, metadata, base_type / h3_resolution recovery) produces identical answers on all three engines. The prefilter on `trip_h3` is a separate concern tracked in the soundness note below.
+
+### Soundness note (2026-05-11)
+
+The current `tgeompoint_to_th3index` implementation samples one cell per source instant; cells traversed by the trip's straight-line segment between consecutive instants are not visited. PR #938's cell-set prefilter additionally uses libh3's `CONTAINMENT_CENTER` mode which drops cells whose centroid is outside the polygon. Combined, the BerlinMOD ch1 benchmark shows the prefilter losing roughly 81% of true `eIntersects` hits.
+
+Both gaps are tracked: `fix/th3index-srid-flags-lift` covers the three latent th3index defects (SRID dispatch, spatial-flags dispatch, lifting machinery); a separate prefilter-soundness pass covers the polygon-side `polygonToCellsExperimental` (libh3 4.2+) or `gridDisk(c, 1)` (4.1 wrapper) and the trip-side oversampling between instants.
+
+Until both land, the `trip_h3` column should be treated as a candidate-filter (useful for index seeding, partition pruning, query shape) and not as a `WHERE` clause that prunes rows.
 
 ### Review checklist (committer)
 
