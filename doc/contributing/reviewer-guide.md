@@ -8,7 +8,7 @@ https://creativecommons.org/licenses/by-sa/3.0/
 
 # MobilityDB PR Reviewer Guide
 
-Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-10 — 49 open PRs (net −8 today via consolidation): folds #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934.  Closed as superseded: #905 (duplicate of #872), #862 (subset of #891), #818 (subset of #867).  Squashed in place: #876, #847, #891, #803, #817, #899, #898, #818, #929. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
+Quick reference for anyone reviewing open pull requests. Updated in the same commit as any PR that changes PR state or adds new branches. **Last updated: 2026-05-11 — 43 open PRs (net −6 today via two consolidations): folds #807+#938+#943+#893 → #944 (th3index complete), folds #819+#865+#925+#857 → #945 (tpose feature batch). Prior consolidations still in flight: #927+#928 → #932, #918+#930+#910 → #933, #813+#814+#812 → #934. Closed as superseded: #905 (duplicate of #872), #862 (subset of #891), #818 (subset of #867). Squashed in place: #876, #847, #891, #803, #817, #899, #898, #818, #929. The "production-readiness" framing has been retired — use "docs chapter + hazard table" for documentation work and "memory audit / bug-audit batch" for memory-related checks. Added review-checklist row for state-current language (no API-evolution narration in code/docs/PR bodies).**
 
 ---
 
@@ -69,19 +69,15 @@ Four ordering constraints must be respected. Merging out of order forces a rebas
 ### cbuffer ordering (#872 before #929)
 `#872` (missing spatialrels) and `#929` (spatial-rel parity) share 11 cbuffer test files. Land `#872` first.
 
-### th3index ecosystem chain — cross-repo
+### th3index chain — single consolidated PR
 
 ```
-#807 (th3index — full implementation, foundation)
-  └─► #866 (spatial wiring + geodetic STBox bbox + smoke harness)
-        ├─► #893 (production-readiness docs / hazard chapter)
-        └─► #938 (geo_to_h3index_set + h3_gs_point_to_cell + ever_eq_anyof —
-                  POINT/LINESTRING/POLYGON/MULTI*/GeometryCollection in one
-                  walker; PG SQL wrappers; pg_regress tests verified locally)
+#944 (th3index complete — consolidates #807 + #938 + #943 + #893)
 ```
 
-`#807` is the foundational unlock — once it lands, all of #866 / #893 / #938 follow.
-Both `#866` and `#867` need Codacy UI override before they can merge.
+`#944` is the single review surface for all temporal H3 work. The four-PR sibling sequence (foundation → static-geo walker → trip-side densification → docs) is linearised into one branch with a commit-per-feature history. `#866` (mis-titled "th3index spatial wiring") is actually rgeo refactoring — see trgeo chain below.
+
+The two known pre-existing th3index bugs surfaced during the sibling-PR sweep (unconditional `#include <fmgr.h>` breaking `-DMEOS=ON -DH3=ON` builds; missing h3index SRID resolver) are addressed inside `#944`.
 
 **Downstream consumers** of the th3index public surface:
 - `MobilityDB-BerlinMOD/#24` — `berlinmod_portability_export()` writes `trip_h3` (cross-platform).
@@ -89,9 +85,13 @@ Both `#866` and `#867` need Codacy UI override before they can merge.
 - MobilityDuck th3index port — parallel-session work.
 - `MobilitySpark/#9` — 86 UDFs at 100% parity + portable BerlinMOD SQL prefilter.
 
-**Known pre-existing th3index bugs** (surfaced by PR #938's local build pass):
-1. `meos/include/h3/th3index_internal.h` unconditionally `#include <fmgr.h>` — breaks `-DMEOS=ON -DH3=ON` MEOS-only builds. Suggested fix: `#ifndef MEOS` guard. One-line follow-up.
-2. h3index basetype lacks an SRID resolver — any wrapper iterating a catalog-stored `h3indexset` raises `Unknown SRID function for type: h3index`.
+### tpose chain — single consolidated PR
+
+```
+#945 (tpose feature batch — consolidates #819 + #865 + #925 + #857)
+```
+
+Single review surface for the GeoPose v1.0 + parity + drift + coverage stack. Pose-adjacent multi-type PRs (#874, #886, #907, #908) live in their respective batches (bug-fix / tests / docs / refactor).
 
 ### tpcpoint chain
 ```
@@ -111,6 +111,7 @@ Needs Codacy UI override before merging.
 | #933 | `ci/cleanup-batch` | CI cleanup batch — codacy excludes + macOS MEOS CI + int64 ban (consolidates #918+#930+#910) | ✅ |
 | #912 | `rfc/temporal-data-lake` | Temporal Data Lake RFC doc | ✅ |
 | #926 | `feat/pose-synthetic-example` | End-to-end pose/tpose synthetic-trajectory MEOS example | ✅ |
+| #941 | `fix/ci-green-before-push-tooling` | Pre-push parity-check script + CONTRIBUTING guidance | ✅ |
 
 ## Tier 2 — Small, focused, green (2–16 files, one reviewer session)
 
@@ -118,14 +119,11 @@ Needs Codacy UI override before merging.
 |----|--------|-------------|----| ------|
 | #875 | `doc/fix-broken-docbook-xrefs` | Fix 13 broken DocBook cross-references | ✅ | |
 | #826 | `doc/getbin-typo-fix` | getBin missing return types + stale example | ✅ | |
-| #925 | `fix/pose-quaternion-drift` | Widen quaternion drift tolerance + auto-renormalise | ✅ | |
 | #903 | `test/trgeo-meos-suite` | trgeo MEOS unit-test suite | ✅ | |
 | **#849** | `fix-trgeo-cross-type-lifting` | **trgeo↔geometry lifting crash fix** | ✅ | **Land before all other trgeo PRs** |
 | #916 | `feat/trgeo-distance-tests` | tdistance trgeo×tgeompoint + trgeo×trgeo; dist2d fix | ✅ | After #849–#860 |
-| #865 | `feat/tpose-spatial-wiring` | tpose spatial parity via tgeompoint composition | ✅ | |
 | #915 | `cbufferset-xml-section` | Surface cbufferset in Set-and-Span-Types chapter | ✅ | |
 | #924 | `geo/production-readiness` | geo docs chapter + hazard regression suite | ✅ | |
-| #857 | `pose/spatialfuncs-distance-tests` | tpose SQL regression coverage | ✅ | |
 
 ## Tier 3 — Medium, green (10–40 files, one reviewer session)
 
@@ -166,9 +164,10 @@ Needs Codacy UI override before merging.
 | PR | Branch | Description | CI | C/H files | Notes |
 |----|--------|-------------|----| --------- | ------|
 | #891 | `trgeo/production-readiness` | trgeo full parity + docs chapter (subsumes #862; 189 total, ~125 C/H) | ⏳ | ~125 | After #849–#860–#916 |
-| #866 | `feat/th3index-spatial-wiring` | th3index spatial wiring (190 total, 43 C/H) | ⏳ Codacy | 43 | Needs Codacy UI override |
+| #944 | `feat/th3index-complete` | Temporal H3 index — consolidated (consolidates #807+#938+#943+#893) | ⏳ | ~150 | Single review surface for all th3index work |
+| #945 | `feat/tpose-complete` | tpose feature batch — GeoPose v1.0 + parity + drift + coverage (consolidates #819+#865+#925+#857) | ⏳ | ~40 | Single review surface for tpose work |
+| #866 | `feat/th3index-spatial-wiring` | **Mis-titled** — actually rgeo refactoring (122→250 renumbering + trgeo geom-clip/tile/analytics) — fold into trgeo consolidation next session | ⏳ Codacy | 43 | NOT in th3index cluster |
 | #867 | `feat/tpcpoint-parity` | tpcpoint parity (285 total, 95 C/H) | ⏳ Codacy | 95 | Needs Codacy UI override |
-| #893 | `th3index-production-guidance` | th3index docs chapter (589 total, 124 C/H) | ⏳ Codacy | 124 | After #866 |
 | #842 | `chore/copyright-2026` | Copyright year bump (688 files, all mechanical) | ✅ | 0 | **Land last** — conflicts everything |
 
 ## Codacy-gated (maintainer UI override, then merge-ready)
@@ -200,11 +199,8 @@ Needs Codacy UI override before merging.
 | #793 | `pr749-rebase` | EKF outlier filtering + AIS cleaning | ✅ |
 | #802 | `set_escape` | String-literal escape handling | ✅ |
 | #803 | `jsontypes` | Temporal JSONB support | ❓ |
-| #807 | `th3index` | Temporal H3 index — full implementation (foundation of the th3index ecosystem chain — see dependency-chain section above) | ❓ |
-| #938 | `feat/h3-static-geo-coverage` | Static-geometry → H3 cell set public API (POINT/LINESTRING/POLYGON/MULTI*/GeometryCollection) — stacks on #866; locally build-verified | ❓ |
 | #934 | `meos/bootstrap-batch` | MEOS bootstrap batch — locale + UTF-8 + Windows (consolidates #813+#814+#812) | ✅⚠️ |
 | #817 | `clip-clipper2-prod` | Clipper2 polygon-Boolean + open-path clip | ✅ |
-| #819 | `geopose-json-io` | OGC GeoPose v1.0 JSON I/O | ✅ |
 | #824 | `coverage-mec-followup` | ST_MinimumBoundingCircle coverage | ✅ |
 | #831 | `temporalparquet-poc` | TemporalParquet exporter + importer | ⏳ Codacy |
 | #833 | `meos-wkb-spec` | MEOS-WKB byte-format specification | ✅ |
