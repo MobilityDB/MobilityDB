@@ -69,12 +69,35 @@ Four ordering constraints must be respected. Merging out of order forces a rebas
 ### cbuffer ordering (#872 before #929)
 `#872` (missing spatialrels) and `#929` (spatial-rel parity) share 11 cbuffer test files. Land `#872` first.
 
-### th3index / tpcpoint chains
+### th3index ecosystem chain — cross-repo
+
 ```
-#866 (th3index spatial wiring)  →  #893 (th3index docs / hazard chapter)
+#807 (th3index — full implementation, foundation)
+  └─► #866 (spatial wiring + geodetic STBox bbox + smoke harness)
+        ├─► #893 (production-readiness docs / hazard chapter)
+        └─► #938 (geo_to_h3index_set + h3_gs_point_to_cell + ever_eq_anyof —
+                  POINT/LINESTRING/POLYGON/MULTI*/GeometryCollection in one
+                  walker; PG SQL wrappers; pg_regress tests verified locally)
+```
+
+`#807` is the foundational unlock — once it lands, all of #866 / #893 / #938 follow.
+Both `#866` and `#867` need Codacy UI override before they can merge.
+
+**Downstream consumers** of the th3index public surface:
+- `MobilityDB-BerlinMOD/#24` — `berlinmod_portability_export()` writes `trip_h3` (cross-platform).
+- JMEOS regen (`feat/regen-against-meos-1.4`) — auto-picks up the new symbols.
+- MobilityDuck th3index port — parallel-session work.
+- `MobilitySpark/#9` — 86 UDFs at 100% parity + portable BerlinMOD SQL prefilter.
+
+**Known pre-existing th3index bugs** (surfaced by PR #938's local build pass):
+1. `meos/include/h3/th3index_internal.h` unconditionally `#include <fmgr.h>` — breaks `-DMEOS=ON -DH3=ON` MEOS-only builds. Suggested fix: `#ifndef MEOS` guard. One-line follow-up.
+2. h3index basetype lacks an SRID resolver — any wrapper iterating a catalog-stored `h3indexset` raises `Unknown SRID function for type: h3index`.
+
+### tpcpoint chain
+```
 #867 (tpcpoint parity, subsumes pgPointCloud foundation from #818 — closed as duplicate)
 ```
-Both `#866` and `#867` need Codacy UI override before they can merge.
+Needs Codacy UI override before merging.
 
 ---
 
@@ -177,7 +200,8 @@ Both `#866` and `#867` need Codacy UI override before they can merge.
 | #793 | `pr749-rebase` | EKF outlier filtering + AIS cleaning | ✅ |
 | #802 | `set_escape` | String-literal escape handling | ✅ |
 | #803 | `jsontypes` | Temporal JSONB support | ❓ |
-| #807 | `th3index` | Temporal H3 index — full implementation | ❓ |
+| #807 | `th3index` | Temporal H3 index — full implementation (foundation of the th3index ecosystem chain — see dependency-chain section above) | ❓ |
+| #938 | `feat/h3-static-geo-coverage` | Static-geometry → H3 cell set public API (POINT/LINESTRING/POLYGON/MULTI*/GeometryCollection) — stacks on #866; locally build-verified | ❓ |
 | #934 | `meos/bootstrap-batch` | MEOS bootstrap batch — locale + UTF-8 + Windows (consolidates #813+#814+#812) | ✅⚠️ |
 | #817 | `clip-clipper2-prod` | Clipper2 polygon-Boolean + open-path clip | ✅ |
 | #819 | `geopose-json-io` | OGC GeoPose v1.0 JSON I/O | ✅ |
