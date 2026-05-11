@@ -17,9 +17,9 @@ SELECT geoToH3Cell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
 (1 row)
 
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
-  geotoh3indexset  
--------------------
- {871fa4418ffffff}
+   geotoh3indexset   
+---------------------
+ {"871fa4418ffffff"}
 (1 row)
 
 SELECT numvalues(geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7));
@@ -137,7 +137,23 @@ SELECT everIntersectsH3IndexSet_Th3Index(
                                                      4.45 50.95, 4.30 50.95,
                                                      4.30 50.80))', 7),
          t.th3idx) FROM t;
-server closed the connection unexpectedly
-	This probably means the server terminated abnormally
-	before or while processing the request.
-connection to server was lost
+ everintersectsh3indexset_th3index 
+-----------------------------------
+ t
+(1 row)
+
+WITH t AS (
+  SELECT h3_latlng_to_cell(
+    tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
+                 POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
+)
+SELECT everIntersectsH3IndexSet_Th3Index(
+         geoToH3IndexSet(geometry 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+                                                     10.5 50.5, 10.0 50.5,
+                                                     10.0 50.0))', 7),
+         t.th3idx) FROM t;
+ everintersectsh3indexset_th3index 
+-----------------------------------
+ f
+(1 row)
+
