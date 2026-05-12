@@ -591,3 +591,31 @@ SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-
 SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' >= tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------/
+
+-- (yaw, pitch, roll) accessors lifted through tpose. 2D tpose: yaw tracks
+-- the stored rotation theta, pitch and roll are flat zero. 3D tpose: each
+-- accessor returns the corresponding ZYX intrinsic Tait-Bryan component
+-- per instant (the OGC GeoPose Basic-YPR convention).
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+SELECT asText(pitch(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point(1 1 1), 1, 0, 0, 0)@2000-01-02]'));
+SELECT asText(roll(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point(1 1 1), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+
+-- speed(tpose) — distance per unit time along the position component.
+-- 2D: position moves diagonally sqrt(2) units in one day.
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- 3D: position moves 1 unit along X over one day; orientation unchanged.
+SELECT asText(speed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point(1 0 0), 1, 0, 0, 0)@2000-01-02]'));
+
+-- angularSpeed(tpose) — radians per unit time. SLERP is constant-angular-
+-- velocity per segment so the output is always step-interpolated.
+-- 2D: theta sweeps 0 -> 0.5 over 86400 s -> 5.787e-6 rad/s.
+SELECT asText(angularSpeed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- 3D: 90 degree yaw rotation over 86400 s -> pi/2 / 86400 ≈ 1.818e-5 rad/s.
+SELECT asText(angularSpeed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+-- 3D: position changes but orientation is unchanged -> 0 rad/s.
+SELECT asText(angularSpeed(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point(1 0 0), 1, 0, 0, 0)@2000-01-02]'));
+
+-- applyPose temporal lift: body sensor traced through a tpose trajectory.
+-- The body point (1,0) at the first instant (identity) stays at (1,0); at
+-- the second instant the pose rotates it to (0,1) and translates by (10,20).
+SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));

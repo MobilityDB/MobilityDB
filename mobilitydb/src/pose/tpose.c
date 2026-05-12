@@ -42,6 +42,7 @@
 #include "pose/pose.h"
 /* MobilityDB */
 #include "pg_geo/tspatial.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -174,6 +175,161 @@ Tpose_rotation(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_yaw(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_yaw);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the yaw of a temporal pose (radians) as a temporal float
+ * @sqlfn yaw()
+ */
+Datum
+Tpose_yaw(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_yaw(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_pitch(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_pitch);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the pitch of a temporal pose (radians) as a temporal float
+ * @sqlfn pitch()
+ */
+Datum
+Tpose_pitch(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_pitch(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_roll(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_roll);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the roll of a temporal pose (radians) as a temporal float
+ * @sqlfn roll()
+ */
+Datum
+Tpose_roll(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_roll(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_speed);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the speed of a temporal pose (distance per unit time
+ * along the position component) as a temporal float
+ * @sqlfn speed()
+ */
+Datum
+Tpose_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_angular_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_angular_speed);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the angular speed of a temporal pose (radians per unit
+ * time) as a step-interpolated temporal float
+ * @sqlfn angularSpeed()
+ */
+Datum
+Tpose_angular_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_angular_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * OGC GeoPose temporal JSON I/O
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpose_from_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_from_geopose);
+/**
+ * @ingroup mobilitydb_pose_inout
+ * @brief Return a temporal pose from its TemporalGeoPose JSON envelope
+ * @sqlfn tposeFromGeoPose()
+ */
+Datum
+Tpose_from_geopose(PG_FUNCTION_ARGS)
+{
+  text *json_text = PG_GETARG_TEXT_P(0);
+  char *json = text2cstring(json_text);
+  Temporal *result = tpose_from_geopose(json);
+  pfree(json);
+  PG_FREE_IF_COPY(json_text, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_as_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_as_geopose);
+/**
+ * @ingroup mobilitydb_pose_inout
+ * @brief Return the TemporalGeoPose JSON envelope of a temporal pose
+ * @sqlfn asGeoPose()
+ */
+Datum
+Tpose_as_geopose(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int conformance = PG_GETARG_INT32(1);
+  int precision   = PG_GETARG_INT32(2);
+  char *result = tpose_as_geopose(temp, conformance, precision);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring2text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
+/*****************************************************************************
+ * Body-to-world rigid transform (workstream #4)
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpose_apply_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_apply_geo);
+/**
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the world-frame temporal trajectory obtained by applying
+ * a temporal pose to a body-frame point geometry
+ * @sqlfn applyPose()
+ */
+Datum
+Tpose_apply_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *body = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tpose_apply_geo(temp, body);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! result) PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 

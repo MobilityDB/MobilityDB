@@ -97,6 +97,28 @@ CREATE FUNCTION poseFromHexEWKB(text)
   AS 'MODULE_PATHNAME', 'Pose_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * OGC GeoPose JSON I/O — Basic-Quaternion + Basic-YPR conformance
+ *****************************************************************************/
+
+CREATE FUNCTION poseFromGeoPose(text)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_geopose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR
+-- maxdecimaldigits: significant digits to keep; -1 = lossless
+CREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,
+    maxdecimaldigits int4 DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pose_as_geopose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION applyPose(geometry, pose)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Pose_apply_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION asText(pose, maxdecimaldigits int4 DEFAULT 15)
@@ -185,6 +207,21 @@ CREATE FUNCTION rotation(pose)
   AS 'MODULE_PATHNAME', 'Pose_rotation'
   LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION yaw(pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Pose_yaw'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION pitch(pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Pose_pitch'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION roll(pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Pose_roll'
+  LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE quaternion AS (
   W float,
   X float,
@@ -200,6 +237,11 @@ CREATE FUNCTION orientation(pose)
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/
+
+CREATE FUNCTION normalise(pose)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_normalise'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(pose, integer DEFAULT 0)
   RETURNS pose
