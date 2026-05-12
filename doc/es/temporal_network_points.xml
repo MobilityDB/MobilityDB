@@ -398,6 +398,36 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 -- NULL
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tnpoint_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un punto de red temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tnpoint) → tnpoint</varname></para>
+				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. Un punto de red se descompone en una estructura con el identificador de ruta rid y la fracción de posición pos; la reconstrucción requiere que la red esté cargada. El resultado es igual a la entrada.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+-- NPoint(1,0.5)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>Entrada y Salida MF-JSON</title>
+		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
+				<para>Genera un punto de red temporal como MF-JSON y lo lee de vuelta; el ciclo de ida y vuelta es sin pérdida. La salida toma los argumentos de opciones, banderas y dígitos decimales compartidos con los demás tipos temporales.</para>
+				<para><varname>asMFJSON(tnpoint,integer,integer,integer) → text</varname></para>
+				<para><varname>tnpointFromMFJSON(text) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
+  = tnpoint 'NPoint(1, 0.5)@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -908,7 +938,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 			<itemizedlist>
 				<listitem>
 					<para><emphasis>Limitación del parámetro de posición a [0, 1]</emphasis>. Una posición fuera de <varname>[0, 1]</varname> no tiene significado en una ruta que no se ha extendido.</para>
-					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> rechaza <varname>pos &lt; 0</varname> o <varname>pos &gt; 1</varname> en la construcción con el mensaje "The relative position must be a real number between 0 and 1", y la misma comprobación se aplica en las entradas de los analizadores WKT y WKB. Los extremos <varname>0.0</varname> (inicio de ruta) y <varname>1.0</varname> (fin de ruta) son válidos y admitidos &#x2014; el conjunto de pruebas ejercita ambos. Los datos de flujo corruptos o sin recortar fallan de forma explícita en lugar de contaminar una consulta posterior.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> rechaza <varname>pos &lt; 0</varname> o <varname>pos &gt; 1</varname> en la construcción con el mensaje "The relative position must be a real number between 0 and 1", y la misma comprobación se aplica en las entradas de los analizadores WKT, WKB y MFJSON. Los extremos <varname>0.0</varname> (inicio de ruta) y <varname>1.0</varname> (fin de ruta) son válidos y admitidos &#x2014; el conjunto de pruebas ejercita ambos. Los datos de flujo corruptos o sin recortar fallan de forma explícita en lugar de contaminar una consulta posterior.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Manejo de SRID mixtos</emphasis>. Un <varname>tnpoint</varname> hereda su SRID de su ruta, mientras que un argumento <varname>geometry</varname> lleva su SRID explícitamente.</para>
@@ -916,7 +946,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 				</listitem>
 				<listitem>
 					<para><emphasis>Ruta no registrada</emphasis>. Un <varname>npoint</varname> que referencia un gid de ruta no presente en la caché de ways no puede resolverse a una geometría.</para>
-					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> llama a <varname>ensure_route_exists</varname> en la construcción; los constructores SQL WKT, WKB y <varname>npoint(...)</varname> fluyen todos por esta comprobación y generan "There is no route with gid value &lt;n&gt; in table ways" si no se encuentra. Los usuarios de MEOS independiente que omitan el arranque <varname>meos_register_ways(...)</varname> verán este error en la primera operación de red, no más tarde como una consulta silenciosa de resultado cero.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> llama a <varname>ensure_route_exists</varname> en la construcción; los constructores SQL WKT, WKB, MFJSON y <varname>npoint(...)</varname> fluyen todos por esta comprobación y generan "There is no route with gid value &lt;n&gt; in table ways" si no se encuentra. Los usuarios de MEOS independiente que omitan el arranque <varname>meos_register_ways(...)</varname> verán este error en la primera operación de red, no más tarde como una consulta silenciosa de resultado cero.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Operaciones entre redes</emphasis>. Dos valores <varname>tnpoint</varname> cuyas rutas pertenecen a redes diferentes (o a componentes conexas diferentes de la misma red) no pueden relacionarse mediante distancia de red.</para>
@@ -927,7 +957,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 
 		<sect2 xml:id="tnpoint_durability">
 			<title>Durabilidad y almacenamiento</title>
-			<para>La representación en disco de un <varname>npoint</varname> es una tupla de 16 bytes: un id de ruta de 8 bytes seguido de una posición de 8 bytes. La disposición de bytes es estable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> realizan un ciclo de ida y vuelta que preserva el valor bit a bit, y las serializaciones WKB / HexEWKB siguen el patrón estándar de los tipos temporales de bandera de endianidad seguida de la carga útil.</para>
+			<para>La representación en disco de un <varname>npoint</varname> es una tupla de 16 bytes: un id de ruta de 8 bytes seguido de una posición de 8 bytes. La disposición de bytes es estable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> realizan un ciclo de ida y vuelta que preserva el valor bit a bit, y las serializaciones WKB / HexEWKB siguen el patrón estándar de los tipos temporales de bandera de endianidad seguida de la carga útil. El par <varname>asMFJSON(tnpoint)</varname> / <varname>tnpointFromMFJSON(text)</varname> es bidireccional, por lo que MovingFeatures-JSON es un formato de intercambio viable en igualdad de condiciones con WKB. Cada instante se representa como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname>, con los nombres de campo coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>) según la convención de descriptores en lenguaje natural.</para>
 			<para>El id de ruta se emite como un número JSON, que realiza un ciclo de ida y vuelta sin pérdida entre los codificadores y decodificadores de MEOS (ambos conservan la precisión completa de <varname>int64</varname> mediante <varname>INT64_FORMAT</varname> / <varname>strtoll</varname>). Sin embargo, no es sin pérdida en consumidores JavaScript / ECMAScript: el tipo <varname>Number</varname> tiene una mantisa de 53 bits, por lo que los ids de ruta más allá de <varname>2^53</varname> (~9 × 10^15) pierden precisión cuando los analiza un <varname>JSON.parse</varname> genérico del lado del navegador. Para redes derivadas de OSM esto importa en la práctica — los ids de vía de OSM cruzaron <varname>2^53</varname> en 2025 — y la mitigación recomendada del lado de JS es analizar con una biblioteca que materialice los números como <varname>BigInt</varname> (por ejemplo <varname>json-bigint</varname>) en lugar de confiar en el comportamiento por defecto. Esta es una decisión de diseño deliberada, no un descuido: la alternativa (emitir la ruta como una cadena JSON, como hace <varname>th3index</varname> para su carga útil de celda int64) divergiría de la forma JSON que devuelven todos los accesores numéricos de este tipo y rompería el ciclo de ida y vuelta con el análisis ingenuo de enteros en cada consumidor que <emphasis>sí</emphasis> maneja correctamente los enteros de 64 bits.</para>
 			<para>La salida de <varname>pg_dump</varname> de una tabla que contiene columnas <varname>npoint</varname> o <varname>tnpoint</varname> usa la representación WKT por defecto; <varname>pg_dump --binary-upgrade</varname> usa la representación WKB. Ambas son estables en el ciclo de ida y vuelta, pero un volcado solo se puede restaurar en una base de datos cuya tabla <varname>public.ways</varname> contenga todos los ids de ruta referenciados: el registro de rutas es lógicamente una clave foránea en cada columna <varname>npoint</varname>, aunque no se imponga como tal.</para>
 		</sect2>	</sect1>

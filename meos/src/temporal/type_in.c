@@ -686,6 +686,83 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
 }
 #endif /* POSE */
 
+#if NPOINT
+/**
+ * @brief Return a network point from its MF-JSON value
+ *
+ * The expected payload shape (matching the asMFJSON output side) is
+ * @code {"route":<route>,"position":<position>} @endcode.  The position
+ * must be in [0, 1] and the route id must be present in the loaded ways
+ * cache; both are validated by @c npoint_make.  The @p srid argument is
+ * ignored: a network point inherits its SRID from its route, so the
+ * caller-supplied SRID has no effect on the resulting Npoint.
+ */
+static Npoint *
+parse_mfjson_npoint(json_object *mfjson, int32_t srid __attribute__((unused)))
+{
+  assert(mfjson);
+  /* Get the route id */
+  json_object *rid_json = findMemberByName(mfjson, "route");
+  if (rid_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'route' in MFJSON string");
+    return NULL;
+  }
+  int64 rid = (int64) json_object_get_int64(rid_json);
+
+  /* Get the position */
+  json_object *pos_json = findMemberByName(mfjson, "position");
+  if (pos_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'position' in MFJSON string");
+    return NULL;
+  }
+  double pos = json_object_get_double(pos_json);
+
+  /* npoint_make validates route registration and pos in [0, 1] */
+  return npoint_make(rid, pos);
+}
+
+/**
+ * @brief Return an array of network points from its MF-JSON values
+ */
+static Datum *
+parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *values_json = findMemberByName(mfjson, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  int nnpoints = (int) json_object_array_length(values_json);
+  if (nnpoints < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  Datum *values = palloc(sizeof(Datum) * nnpoints);
+  for (int i = 0; i < nnpoints; ++i)
+  {
+    json_object *np = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
+  }
+  *count = nnpoints;
+  return values;
+}
+#endif /* NPOINT */
+
 /*****************************************************************************/
 
 /**
@@ -768,10 +845,14 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "Unknown spatial type for MF-JSON input function: %s", 
+        "Unknown spatial type for MF-JSON input function: %s",
         meostype_name(temptype));
       return NULL;
     }
@@ -815,10 +896,14 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* RGEO */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "Unknown spatial type for MF-JSON input function: %s", 
+        "Unknown spatial type for MF-JSON input function: %s",
         meostype_name(temptype));
       return NULL;
     }
@@ -952,7 +1037,8 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
       strcmp(typestr, "MovingPose") != 0 &&
-      strcmp(typestr, "MovingRigidGeometry") != 0 )
+      strcmp(typestr, "MovingRigidGeometry") != 0 &&
+      strcmp(typestr, "MovingNetworkPoint") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string: %s", typestr);
@@ -1036,6 +1122,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TPOSE;
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;
+#if NPOINT
+  else if (strcmp(typestr, "MovingNetworkPoint") == 0)
+    jtemptype = T_TNPOINT;
+#endif /* NPOINT */
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {

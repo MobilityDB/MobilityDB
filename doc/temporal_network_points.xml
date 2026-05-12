@@ -416,6 +416,36 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 -- NULL
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tnpoint_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convert a temporal network point to the Arrow C Data Interface and back, returning the reconstructed value</para>
+				<para><varname>arrowRoundtrip(tnpoint) → tnpoint</varname></para>
+				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. A network point decomposes to a Struct of the route identifier rid and the position fraction pos; reconstruction requires the network to be loaded. The result is equal to the input.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+-- NPoint(1,0.5)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>MF-JSON Input and Output</title>
+		<para>A temporal network point is written to and read from Moving-Features JSON. Each instant renders its network point as <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — the route id as a JSON number and the position as a float in <varname>[0, 1]</varname> — matching the SQL accessor surface (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
+				<para>Output a temporal network point as MF-JSON and read it back; the round trip is lossless. The output takes the options, flags, and decimal-digits arguments shared with the other temporal types.</para>
+				<para><varname>asMFJSON(tnpoint,integer,integer,integer) → text</varname></para>
+				<para><varname>tnpointFromMFJSON(text) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
+  = tnpoint 'NPoint(1, 0.5)@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -926,7 +956,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 			<itemizedlist>
 				<listitem>
 					<para><emphasis>Position-parameter clamping at [0, 1]</emphasis>. A position outside <varname>[0, 1]</varname> has no meaning on a route that has not been extended.</para>
-					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> rejects <varname>pos &lt; 0</varname> or <varname>pos &gt; 1</varname> at construction with the message "The relative position must be a real number between 0 and 1", and the same check is applied at the WKT and WKB parser entries. The endpoints <varname>0.0</varname> (start of route) and <varname>1.0</varname> (end of route) are valid and supported &#x2014; the test suite exercises both. Corrupt or unclipped feed data fails loudly rather than poisoning a downstream query.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> rejects <varname>pos &lt; 0</varname> or <varname>pos &gt; 1</varname> at construction with the message "The relative position must be a real number between 0 and 1", and the same check is applied at the WKT, WKB, and MFJSON parser entries. The endpoints <varname>0.0</varname> (start of route) and <varname>1.0</varname> (end of route) are valid and supported &#x2014; the test suite exercises both. Corrupt or unclipped feed data fails loudly rather than poisoning a downstream query.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Mixed-SRID handling</emphasis>. A <varname>tnpoint</varname> inherits its SRID from its route, while a <varname>geometry</varname> argument carries its SRID explicitly.</para>
@@ -934,7 +964,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 				</listitem>
 				<listitem>
 					<para><emphasis>Route-not-registered</emphasis>. An <varname>npoint</varname> referencing a route gid not present in the ways cache cannot resolve to a geometry.</para>
-					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> calls <varname>ensure_route_exists</varname> at construction; the WKT, WKB, and <varname>npoint(...)</varname> SQL constructors all flow through this check and raise "There is no route with gid value &lt;n&gt; in table ways" on miss. Standalone MEOS users who skip the <varname>meos_register_ways(...)</varname> bootstrap will see this error on the first network operation, not later as a silent zero-result query.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> calls <varname>ensure_route_exists</varname> at construction; the WKT, WKB, MFJSON, and <varname>npoint(...)</varname> SQL constructors all flow through this check and raise "There is no route with gid value &lt;n&gt; in table ways" on miss. Standalone MEOS users who skip the <varname>meos_register_ways(...)</varname> bootstrap will see this error on the first network operation, not later as a silent zero-result query.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Cross-network operations</emphasis>. Two <varname>tnpoint</varname> values whose routes belong to different networks (or different connected components of the same network) cannot be related through network distance.</para>
@@ -945,7 +975,7 @@ SELECT extent(temp) FROM tbl_tnpoint;
 
 		<sect2 xml:id="tnpoint_durability">
 			<title>Durability and storage</title>
-			<para>The on-disk representation of an <varname>npoint</varname> is a 16-byte tuple: an 8-byte route id followed by an 8-byte position. The byte layout is stable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit, and the WKB / HexEWKB serialisations follow the standard temporal-types endian-flag-then-payload pattern.</para>
+			<para>The on-disk representation of an <varname>npoint</varname> is a 16-byte tuple: an 8-byte route id followed by an 8-byte position. The byte layout is stable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit, and the WKB / HexEWKB serialisations follow the standard temporal-types endian-flag-then-payload pattern. The <varname>asMFJSON(tnpoint)</varname> / <varname>tnpointFromMFJSON(text)</varname> pair is bidirectional, so MovingFeatures-JSON is a viable interchange format on equal footing with WKB. Each instant renders as <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname>, with the field names matching the SQL accessor surface (<varname>route</varname>, <varname>getPosition</varname>) on the natural-language descriptor convention.</para>
 			<para>The route id is emitted as a JSON number, which round-trips losslessly between MEOS encoders and decoders (both retain full <varname>int64</varname> precision via <varname>INT64_FORMAT</varname> / <varname>strtoll</varname>). It is not, however, lossless across JavaScript / ECMAScript consumers: the <varname>Number</varname> type has a 53-bit mantissa, so route ids beyond <varname>2^53</varname> (~9 × 10^15) lose precision when parsed by a generic browser-side <varname>JSON.parse</varname>. For OSM-derived networks this matters in practice — OSM way ids crossed <varname>2^53</varname> in 2025 — and the recommended mitigation on the JS side is to parse with a library that materialises numbers as <varname>BigInt</varname> (for example <varname>json-bigint</varname>) rather than rely on the default. This is a deliberate design choice, not an oversight: the alternative (emitting the route as a JSON string, as <varname>th3index</varname> does for its int64 cell payload) would diverge from the JSON shape that all numeric accessors return for this type and break the round-trip with naive int-parsing on every consumer that <emphasis>does</emphasis> handle 64-bit integers correctly.</para>
 			<para>The <varname>pg_dump</varname> output of a table containing <varname>npoint</varname> or <varname>tnpoint</varname> columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable, but a dump is only restorable into a database whose <varname>public.ways</varname> table contains all referenced route ids: the route registry is logically a foreign key on every <varname>npoint</varname> column, even though it is not enforced as one.</para>
 		</sect2>	</sect1>

@@ -235,6 +235,7 @@ extern Set *union_set_npoint(const Set *s, const Npoint *np);
  *****************************************************************************/
 
 extern Temporal *tnpoint_in(const char *str);
+extern Temporal *tnpoint_from_mfjson(const char *mfjson);
 extern char *tnpoint_out(const Temporal *temp, int maxdd);
 
 /*****************************************************************************
