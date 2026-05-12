@@ -417,6 +417,25 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>MF-JSON Input and Output</title>
+		<para>A temporal network point is written to and read from Moving-Features JSON. Each instant renders its network point as <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — the route id as a JSON number and the position as a float in <varname>[0, 1]</varname> — matching the SQL accessor surface (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
+				<para>Output a temporal network point as MF-JSON and read it back; the round trip is lossless. The output takes the options, flags, and decimal-digits arguments shared with the other temporal types.</para>
+				<para><varname>asMFJSON(tnpoint,integer,integer,integer) → text</varname></para>
+				<para><varname>tnpointFromMFJSON(text) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
+  = tnpoint 'NPoint(1, 0.5)@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tnpoint_accessors">
 		<title>Accessors</title>
 		<itemizedlist>
