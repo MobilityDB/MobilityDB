@@ -33,7 +33,9 @@
 #define __TH3INDEX_INTERNAL_H__
 
 #include <postgres.h>
+#ifndef MEOS
 #include <fmgr.h>
+#endif
 
 #include <h3api.h>
 #include <liblwgeom.h>
