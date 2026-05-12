@@ -30,22 +30,23 @@
 -------------------------------------------------------------------------------
 
 -- extent(tnpoint): mixed temporal subtypes folded together, NULLs filtered
-SELECT round(extent(temp), 6) FROM ( VALUES
+-- round to 10 decimal places to suppress platform floating-point ULP differences
+SELECT round(extent(temp), 10) FROM ( VALUES
   (NULL::tnpoint),
   ('Npoint(1, 0.5)@2000-01-01'),
   ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT round(extent(temp), 10) FROM ( VALUES
   (tnpoint 'Npoint(1, 0.5)@2000-01-01'),
   ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'),
   (NULL)) t(temp);
 
 -- extent(tnpoint): linear sequence + step sequenceset over disjoint footprints
-SELECT round(extent(temp), 6) FROM ( VALUES
+SELECT round(extent(temp), 10) FROM ( VALUES
   (tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'),
   ('{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.1)@2000-01-04, Npoint(2, 0.2)@2000-01-05]}')) t(temp);
 
 -- extent(tnpoint): single row degenerate cases
-SELECT round(extent(temp), 6) FROM ( VALUES (tnpoint 'Npoint(1, 0.5)@2000-01-01')) t(temp);
-SELECT round(extent(temp), 6) FROM ( VALUES (NULL::tnpoint)) t(temp);
+SELECT round(extent(temp), 10) FROM ( VALUES (tnpoint 'Npoint(1, 0.5)@2000-01-01')) t(temp);
+SELECT round(extent(temp), 10) FROM ( VALUES (NULL::tnpoint)) t(temp);
 
 -------------------------------------------------------------------------------

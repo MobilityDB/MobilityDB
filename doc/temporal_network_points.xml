@@ -32,6 +32,8 @@
 
 	<para>The <varname>npoint</varname> type serves as base type for defining the temporal network point type <varname>tnpoint</varname>. The <varname>tnpoint</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname> with the exception that it only considers two dimensions. Thus, all functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tnpoint</varname> type. In addition, there are specific functions defined for the <varname>tnpoint</varname> type.</para>
 
+	<para>Operational guidance on choosing between <varname>tnpoint</varname> and <varname>tgeompoint</varname>; the SRID-inheritance contract (the SRID is read from the route registered in <varname>ways</varname>, not carried explicitly on the value); the numerical hazards production workloads should anticipate (position-parameter clamping at <varname>[0, 1]</varname>, mixed-SRID handling, route-not-registered errors, cross-network operations); and the durability, storage, extent, and aggregation conventions are collected in <xref linkend="tnpoint_production_guidance"/>.</para>
+
 	<sect1 xml:id="static_network_types">
 		<title>Static Network Types</title>
 
@@ -877,5 +879,59 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</listitem>
 		</itemizedlist>
 		<para>These operators work on bounding boxes, not the entire values.</para>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_production_guidance">
+		<title>Production guidance</title>
+		<para>This section captures the operational knowledge production workloads need on top of the function reference: when <varname>npoint</varname> / <varname>tnpoint</varname> are the right type, how SRIDs flow from the network registry, the numerical hazards that bite network-constrained tracking workloads, and the durability story for serialised values. Most of these points are surfaced separately throughout the chapter; the goal here is one place a new contributor can read end-to-end before instrumenting an application.</para>
+
+		<sect2 xml:id="tnpoint_when_to_use">
+			<title>When to use tnpoint vs tgeompoint</title>
+			<para>A <varname>tgeompoint</varname> tracks a position in free space; a <varname>tnpoint</varname> tracks a position constrained to a known network of routes. Each network-point value is a pair <varname>(rid, pos)</varname> where <varname>rid</varname> is the route identifier and <varname>pos</varname> is the relative position along that route, normalised to <varname>[0, 1]</varname> (start of route to end of route).</para>
+			<para>Use <varname>tgeompoint</varname> when the moving object is not constrained to a network, when the network topology is unknown, or when only the trajectory geometry matters &#x2014; vehicle GPS tracks at the raw-feed level, animal movement, AIS feeds.</para>
+			<para>Use <varname>tnpoint</varname> when motion is on a known network and you want network-relative semantics: distances measured along the route, not in free space; aggregations grouped by route segment; spatial joins constrained to "same network". Canonical workloads are train-network and road-network tracking, where map-matched feeds become <varname>tnpoint</varname> values.</para>
+			<para>The position component of a <varname>tnpoint</varname> is recoverable as a <varname>tgeompoint</varname> via the standard cast (or as a <varname>geometry</varname> via <varname>geometry(npoint)</varname>); a <varname>geometry</varname> can be projected back onto the loaded network with <varname>npoint(geometry)</varname>. Consequently a single <varname>tnpoint</varname> column subsumes a map-matched <varname>tgeompoint</varname> column when network-relative semantics are needed.</para>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_srid_inheritance">
+			<title>SRID inheritance from the network registry</title>
+			<para>An <varname>npoint</varname> value does not carry its own SRID; it inherits the SRID of the route referenced by its <varname>rid</varname> field. The set of known routes &#x2014; the <emphasis>ways</emphasis> registry &#x2014; is loaded into a per-process cache (see <varname>meos/src/npoint/ways_meos.c</varname>) the first time a network function runs, and is keyed by route gid. Every <varname>npoint</varname> accessor that needs the route geometry (<varname>npoint_to_geompoint</varname>, <varname>npoint_to_stbox</varname>, all spatial predicates and distance functions) consults this cache.</para>
+			<para>In the PostgreSQL extension the cache is populated automatically from the <varname>public.ways</varname> table. In standalone MEOS the application must call <varname>meos_register_ways(...)</varname> with the route table before any <varname>npoint</varname> operation; <varname>meos_finalize_ways()</varname> is idempotent and can be called multiple times safely. Cross-type operations between an <varname>npoint</varname> and a geometry validate that the route's SRID matches the geometry's SRID; mismatches raise an explicit error rather than silently re-projecting.</para>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_hazards">
+			<title>Numerical hazards</title>
+			<para>Four hazards reliably bite real network-constrained tracking workloads. The implementation mitigates each as follows:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Position-parameter clamping at [0, 1]</emphasis>. A position outside <varname>[0, 1]</varname> has no meaning on a route that has not been extended.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> rejects <varname>pos &lt; 0</varname> or <varname>pos &gt; 1</varname> at construction with the message "The relative position must be a real number between 0 and 1", and the same check is applied at the WKT, WKB, and MFJSON parser entries. The endpoints <varname>0.0</varname> (start of route) and <varname>1.0</varname> (end of route) are valid and supported &#x2014; the test suite exercises both. Corrupt or unclipped feed data fails loudly rather than poisoning a downstream query.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Mixed-SRID handling</emphasis>. A <varname>tnpoint</varname> inherits its SRID from its route, while a <varname>geometry</varname> argument carries its SRID explicitly.</para>
+					<para><emphasis>Mitigation</emphasis>: every cross-type operator (<varname>tnpoint &lt;-&gt; geometry</varname>, <varname>tnpoint &amp;&amp; geometry</varname>, <varname>distance(tnpoint, geometry)</varname>) validates the two SRIDs match through <varname>ensure_same_srid</varname>; mismatches raise an explicit error rather than silently re-projecting one side onto the other.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Route-not-registered</emphasis>. An <varname>npoint</varname> referencing a route gid not present in the ways cache cannot resolve to a geometry.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>npoint_make</varname> calls <varname>ensure_route_exists</varname> at construction; the WKT, WKB, MFJSON, and <varname>npoint(...)</varname> SQL constructors all flow through this check and raise "There is no route with gid value &lt;n&gt; in table ways" on miss. Standalone MEOS users who skip the <varname>meos_register_ways(...)</varname> bootstrap will see this error on the first network operation, not later as a silent zero-result query.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Cross-network operations</emphasis>. Two <varname>tnpoint</varname> values whose routes belong to different networks (or different connected components of the same network) cannot be related through network distance.</para>
+					<para><emphasis>Mitigation</emphasis>: distance and spatial-relationship operators between two <varname>tnpoint</varname> values lower both sides to <varname>tgeompoint</varname> first and compute the result as free-space distance / topology. This is documented behaviour: callers who need true network distance must restrict their query to a single connected component upstream.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of an <varname>npoint</varname> is a 16-byte tuple: an 8-byte route id followed by an 8-byte position. The byte layout is stable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit, and the WKB / HexEWKB serialisations follow the standard temporal-types endian-flag-then-payload pattern. The <varname>asMFJSON(tnpoint)</varname> / <varname>tnpointFromMFJSON(text)</varname> pair is bidirectional, so MovingFeatures-JSON is a viable interchange format on equal footing with WKB. Each instant renders as <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname>, with the field names matching the SQL accessor surface (<varname>route</varname>, <varname>getPosition</varname>) on the natural-language descriptor convention.</para>
+			<para>The route id is emitted as a JSON number, which round-trips losslessly between MEOS encoders and decoders (both retain full <varname>int64</varname> precision via <varname>INT64_FORMAT</varname> / <varname>strtoll</varname>). It is not, however, lossless across JavaScript / ECMAScript consumers: the <varname>Number</varname> type has a 53-bit mantissa, so route ids beyond <varname>2^53</varname> (~9 × 10^15) lose precision when parsed by a generic browser-side <varname>JSON.parse</varname>. For OSM-derived networks this matters in practice — OSM way ids crossed <varname>2^53</varname> in 2025 — and the recommended mitigation on the JS side is to parse with a library that materialises numbers as <varname>BigInt</varname> (for example <varname>json-bigint</varname>) rather than rely on the default. This is a deliberate design choice, not an oversight: the alternative (emitting the route as a JSON string, as <varname>th3index</varname> does for its int64 cell payload) would diverge from the JSON shape that all numeric accessors return for this type and break the round-trip with naive int-parsing on every consumer that <emphasis>does</emphasis> handle 64-bit integers correctly.</para>
+			<para>The <varname>pg_dump</varname> output of a table containing <varname>npoint</varname> or <varname>tnpoint</varname> columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable, but a dump is only restorable into a database whose <varname>public.ways</varname> table contains all referenced route ids: the route registry is logically a foreign key on every <varname>npoint</varname> column, even though it is not enforced as one.</para>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_extent_aggregation">
+			<title>Extent and aggregation</title>
+			<para>The <varname>extent(tnpoint)</varname> aggregate returns the spatiotemporal <varname>STBox</varname> covering every materialised position in the input. It is polymorphic with the <varname>extent</varname> aggregates on the other spatial temporal types, so a single query can compute one bounding box across a heterogeneous set of <varname>tgeompoint</varname>, <varname>tgeometry</varname>, and <varname>tnpoint</varname> columns. Note that the spatial extent of a <varname>tnpoint</varname> requires resolving each instant through the ways cache; over a large input this dominates the cost of the aggregate.</para>
+		</sect2>
 	</sect1>
 </chapter>
