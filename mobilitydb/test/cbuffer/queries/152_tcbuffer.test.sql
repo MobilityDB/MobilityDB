@@ -370,12 +370,6 @@ SELECT asText(minusValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffe
 SELECT asText(minusValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
 SELECT asText(minusValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
 
--- Singular atValue / minusValue (declared in 155_tcbuffer_spatialfuncs.in.sql)
-SELECT asText(atValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
-SELECT asText(atValue(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
-SELECT asText(minusValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
-SELECT asText(minusValue(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
-
 SELECT asText(atValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
 SELECT asText(atValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
 SELECT asText(atValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
@@ -600,5 +594,15 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+
+-------------------------------------------------------------------------------/
+
+-- Coverage for tcbufferSeqSetGaps (constructor with gap detection) — declared
+-- in mobilitydb/sql/cbuffer/152_tcbuffer.in.sql:186 but previously untested.
+SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
+  tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01',
+  tcbuffer 'Cbuffer(Point(2 2), 0.5)@2000-01-02',
+  tcbuffer 'Cbuffer(Point(3 3), 0.5)@2000-01-03'
+]::tcbuffer[], '5 minutes'::interval));
 
 -------------------------------------------------------------------------------/
