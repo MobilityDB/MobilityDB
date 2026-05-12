@@ -1,0 +1,95 @@
+SELECT npoint(1, 0.0);
+   npoint    
+-------------
+ NPoint(1,0)
+(1 row)
+
+SELECT npoint(1, 1.0);
+   npoint    
+-------------
+ NPoint(1,1)
+(1 row)
+
+SELECT npoint(1, 0.0001);
+      npoint      
+------------------
+ NPoint(1,0.0001)
+(1 row)
+
+SELECT npoint(1, 0.9999);
+      npoint      
+------------------
+ NPoint(1,0.9999)
+(1 row)
+
+SELECT round(geometry(npoint(1, 0.0))::geometry, 6);
+                       round                        
+----------------------------------------------------
+ 01010000202C160000734C16F71FD254401172DEFFC7855540
+(1 row)
+
+SELECT round(geometry(npoint(1, 1.0))::geometry, 6);
+                       round                        
+----------------------------------------------------
+ 01010000202C160000D6355A0EF4182B403BA6EECA2EF45140
+(1 row)
+
+/* Errors */
+SELECT npoint(1, -0.0001);
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT npoint(1, 1.0001);
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT npoint(1, -1);
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT npoint(1, 2);
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT npoint 'Npoint(1, 0.0)';
+   npoint    
+-------------
+ NPoint(1,0)
+(1 row)
+
+SELECT npoint 'Npoint(1, 1.0)';
+   npoint    
+-------------
+ NPoint(1,1)
+(1 row)
+
+/* Errors */
+SELECT npoint 'Npoint(1, -0.0001)';
+ERROR:  The relative position must be a real number between 0 and 1
+LINE 2: SELECT npoint 'Npoint(1, -0.0001)';
+                      ^
+SELECT npoint 'Npoint(1, 1.0001)';
+ERROR:  The relative position must be a real number between 0 and 1
+LINE 1: SELECT npoint 'Npoint(1, 1.0001)';
+                      ^
+SELECT asText(tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.0}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}'));
+                  astext                  
+------------------------------------------
+ NPoint(1,0)@Fri Dec 31 15:00:00 1999 PST
+(1 row)
+
+SELECT asText(tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":1.0}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}'));
+                  astext                  
+------------------------------------------
+ NPoint(1,1)@Fri Dec 31 15:00:00 1999 PST
+(1 row)
+
+SELECT nsegment(1, 1.0, 0.0);
+    nsegment     
+-----------------
+ NSegment(1,0,1)
+(1 row)
+
+SELECT nsegment(1, 0.0, 1.0);
+    nsegment     
+-----------------
+ NSegment(1,0,1)
+(1 row)
+
+/* Errors */
+SELECT nsegment(1, -0.0001, 1.0);
+ERROR:  The relative position must be a real number between 0 and 1
+SELECT nsegment(1, 0.0, 1.0001);
+ERROR:  The relative position must be a real number between 0 and 1
