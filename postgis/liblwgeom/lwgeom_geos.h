@@ -52,6 +52,12 @@ POINTARRAY* ptarray_from_GEOSCoordSeq(const GEOSCoordSequence* cs, uint8_t want3
 extern char lwgeom_geos_errmsg[];
 extern void lwgeom_geos_error(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
+/* MEOS: per-thread GEOS context.  Every liblwgeom GEOS helper retrieves the
+ * thread-local handle via lwgeom_geos_context() and uses the reentrant
+ * GEOSXxx_r API. */
+/* MEOS */ extern GEOSContextHandle_t lwgeom_geos_context(void);
+/* MEOS */ extern void lwgeom_geos_finalize(void);
+
 
 /*
  * Debug macros
@@ -60,15 +66,16 @@ extern void lwgeom_geos_error(const char* fmt, ...) __attribute__ ((format (prin
 
 /* Display a notice and a WKT representation of a geometry
  * at the given debug level */
-#define LWDEBUGGEOS(level, geom, msg) \
-  if (POSTGIS_DEBUG_LEVEL >= level) \
-  do { \
-		GEOSWKTWriter *wktwriter = GEOSWKTWriter_create(); \
-		char *wkt = GEOSWKTWriter_write(wktwriter, (geom)); \
-		LWDEBUGF(1, msg " (GEOS): %s", wkt); \
-		GEOSFree(wkt); \
-		GEOSWKTWriter_destroy(wktwriter); \
-  } while (0);
+/* MEOS */ #define LWDEBUGGEOS(level, geom, msg) \
+/* MEOS */   if (POSTGIS_DEBUG_LEVEL >= level) \
+/* MEOS */   do { \
+/* MEOS */ 		GEOSContextHandle_t _ctx = lwgeom_geos_context(); \
+/* MEOS */ 		GEOSWKTWriter *wktwriter = GEOSWKTWriter_create_r(_ctx); \
+/* MEOS */ 		char *wkt = GEOSWKTWriter_write_r(_ctx, wktwriter, (geom)); \
+/* MEOS */ 		LWDEBUGF(1, msg " (GEOS): %s", wkt); \
+/* MEOS */ 		GEOSFree_r(_ctx, wkt); \
+/* MEOS */ 		GEOSWKTWriter_destroy_r(_ctx, wktwriter); \
+/* MEOS */   } while (0);
 
 #else /* POSTGIS_DEBUG_LEVEL <= 0 */
 

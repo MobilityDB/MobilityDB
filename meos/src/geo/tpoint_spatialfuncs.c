@@ -3220,12 +3220,13 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 static double
 geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 {
+  GEOSContextHandle_t ctx = geos_get_context();
   /* Skip PostGIS function calls */
   double x1, y1, x2, y2;
-  GEOSGeomGetX(pt1, &x1);
-  GEOSGeomGetY(pt1, &y1);
-  GEOSGeomGetX(pt2, &x2);
-  GEOSGeomGetY(pt2, &y2);
+  GEOSGeomGetX_r(ctx, pt1, &x1);
+  GEOSGeomGetY_r(ctx, pt1, &y1);
+  GEOSGeomGetX_r(ctx, pt2, &x2);
+  GEOSGeomGetY_r(ctx, pt2, &y2);
 
   /* Code taken from ptarray_distance_spheroid function in lwgeodetic.c */
 
@@ -3257,22 +3258,23 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 {
+  GEOSContextHandle_t ctx = geos_get_context();
   double result = 0.0;
-  int numGeoms = GEOSGetNumGeometries(geom);
+  int numGeoms = GEOSGetNumGeometries_r(ctx, geom);
   if (numGeoms == 2)
   {
-    const GEOSGeometry *pt1 = GEOSGetGeometryN(geom, 0);
-    const GEOSGeometry *pt2 = GEOSGetGeometryN(geom, 1);
+    const GEOSGeometry *pt1 = GEOSGetGeometryN_r(ctx, geom, 0);
+    const GEOSGeometry *pt2 = GEOSGetGeometryN_r(ctx, geom, 1);
     if (geodetic)
       result = geog_distance_geos(pt1, pt2);
     else
-      GEOSDistance(pt1, pt2, &result);
+      GEOSDistance_r(ctx, pt1, pt2, &result);
   }
   else if (numGeoms > 2)
   {
-    GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
+    GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle_r(ctx, geom);
     GEOSGeometry *pt1, *pt2;
-    switch (GEOSGeomTypeId(mrr_geom))
+    switch (GEOSGeomTypeId_r(ctx, mrr_geom))
     {
       case GEOS_POINT:
         result = 0;
@@ -3280,24 +3282,24 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
       case GEOS_LINESTRING: /* compute length of linestring */
         if (geodetic)
         {
-          pt1 = GEOSGeomGetStartPoint(mrr_geom);
-          pt2 = GEOSGeomGetEndPoint(mrr_geom);
+          pt1 = GEOSGeomGetStartPoint_r(ctx, mrr_geom);
+          pt2 = GEOSGeomGetEndPoint_r(ctx, mrr_geom);
           result = geog_distance_geos(pt1, pt2);
-          GEOSGeom_destroy(pt1);
-          GEOSGeom_destroy(pt2);
+          GEOSGeom_destroy_r(ctx, pt1);
+          GEOSGeom_destroy_r(ctx, pt2);
         }
         else
-          GEOSGeomGetLength(mrr_geom, &result);
+          GEOSGeomGetLength_r(ctx, mrr_geom, &result);
         break;
       case GEOS_POLYGON: /* compute length of diagonal */
-        pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
-        pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
+        pt1 = GEOSGeomGetPointN_r(ctx, GEOSGetExteriorRing_r(ctx, mrr_geom), 0);
+        pt2 = GEOSGeomGetPointN_r(ctx, GEOSGetExteriorRing_r(ctx, mrr_geom), 2);
         if (geodetic)
           result = geog_distance_geos(pt1, pt2);
         else
-          GEOSDistance(pt1, pt2, &result);
-        GEOSGeom_destroy(pt1);
-        GEOSGeom_destroy(pt2);
+          GEOSDistance_r(ctx, pt1, pt2, &result);
+        GEOSGeom_destroy_r(ctx, pt1);
+        GEOSGeom_destroy_r(ctx, pt2);
         break;
       default:
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -3315,6 +3317,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
 {
+  GEOSContextHandle_t ctx = geos_get_context();
   GSERIALIZED *gs = NULL; /* make compiler quiet */
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
   for (int i = 0; i < end - start + 1; ++i)
@@ -3339,9 +3342,9 @@ multipoint_make(const TSequence *seq, int start, int end)
       return NULL;
     }
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
-    geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
+    geoms[i] = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
   }
-  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, end - start + 1);
+  GEOSGeometry *result = GEOSGeom_createCollection_r(ctx, GEOS_MULTIPOINT, geoms, end - start + 1);
   pfree(geoms);
   return result;
 }
@@ -3353,6 +3356,7 @@ multipoint_make(const TSequence *seq, int start, int end)
 static GEOSGeometry *
 multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
+  GEOSContextHandle_t ctx = geos_get_context();
   GSERIALIZED *gs = NULL; /* make compiler quiet */
   if (tpoint_type(inst->temptype))
     gs = DatumGetGserializedP(tinstant_value_p(inst));
@@ -3372,9 +3376,9 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
     return NULL;
   }
   const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
-  GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
-  GEOSGeometry *result = GEOSUnion(geom, geom1);
-  GEOSGeom_destroy(geom1); GEOSGeom_destroy(geom);
+  GEOSGeometry *geom1 = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
+  GEOSGeometry *result = GEOSUnion_r(ctx, geom, geom1);
+  GEOSGeom_destroy_r(ctx, geom1); GEOSGeom_destroy_r(ctx, geom);
   if (inst->temptype == T_TNPOINT)
     pfree(gs);
   return result;
@@ -3405,8 +3409,8 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   /* Use GEOS only for non-scalar input */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   GEOSGeometry *geom = NULL;
-  initGEOS(lwnotice, lwgeom_geos_error);
-  geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
+  GEOSContextHandle_t ctx = geos_get_context();
+  geom = GEOSGeom_createEmptyCollection_r(ctx, GEOS_MULTIPOINT);
 
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
@@ -3426,7 +3430,7 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 
     if (rebuild_geom)
     {
-      GEOSGeom_destroy(geom);
+      GEOSGeom_destroy_r(ctx, geom);
       geom = multipoint_make(seq, start, end);
       rebuild_geom = false;
     }
@@ -3451,7 +3455,7 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     }
     previously_stopped = is_stopped;
   }
-  GEOSGeom_destroy(geom);
+  GEOSGeom_destroy_r(ctx, geom);
 
   inst2 = TSEQUENCE_INST_N(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
@@ -3462,7 +3466,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
-  finishGEOS();
   return nseqs;
 }
 
