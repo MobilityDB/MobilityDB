@@ -104,5 +104,5 @@ jobs:
             -o meos-install/temporal_test.exe \
             meos/test/temporal_test.c \
             -lmeos
-          PATH="$PWD/meos-install/bin:$PWD/build-meos:$PATH" ./meos-install/temporal_test.exe \
+          PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PATH" ./meos-install/temporal_test.exe \
             || (echo "temporal_test.exe failed at runtime"; exit 1)
