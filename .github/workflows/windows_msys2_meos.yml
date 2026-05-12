@@ -95,7 +95,7 @@ jobs:
           ls -la meos-install/bin meos-install/lib meos-install/include 2>/dev/null || true
           # CMake on MSYS2/MinGW puts the .dll in the install bin/ dir and
           # the .dll.a import lib in lib/. Confirm both exist.
-          test -f build-meos/libmeos.dll || (echo "libmeos.dll not produced"; exit 1)
+          test -f build-meos/meos/libmeos.dll || (echo "libmeos.dll not produced"; exit 1)
 
       - name: Smoke test (build temporal_test against installed libmeos)
         run: |
