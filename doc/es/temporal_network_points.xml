@@ -399,6 +399,25 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>Entrada y Salida MF-JSON</title>
+		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
+				<para>Genera un punto de red temporal como MF-JSON y lo lee de vuelta; el ciclo de ida y vuelta es sin pérdida. La salida toma los argumentos de opciones, banderas y dígitos decimales compartidos con los demás tipos temporales.</para>
+				<para><varname>asMFJSON(tnpoint,integer,integer,integer) → text</varname></para>
+				<para><varname>tnpointFromMFJSON(text) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
+  = tnpoint 'NPoint(1, 0.5)@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tnpoint_accessors">
 		<title>Accessores</title>
 		<itemizedlist>

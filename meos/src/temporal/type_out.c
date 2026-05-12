@@ -327,6 +327,26 @@ tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
   stringbuffer_append_len(sb, "]}", 2);
 }
 #endif /* POINTCLOUD */
+#if NPOINT
+/**
+ * @brief Write into the buffer a network point in the MF-JSON representation
+ *
+ * The payload shape is @code {"route":<route>,"position":<position>} @endcode,
+ * using the natural-language descriptors that match the SQL accessor surface
+ * (@c route(npoint) / @c getPosition(npoint)).  The position is a relative
+ * coordinate in [0, 1]; the route id is a 64-bit integer, so it is rendered
+ * with INT64_FORMAT to avoid loss of precision in the JSON payload.
+ */
+static void
+npoint_as_json_sb(stringbuffer_t *sb, const Npoint *np, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  stringbuffer_aprintf(sb, "{\"route\":" INT64_FORMAT ",\"position\":", np->rid);
+  stringbuffer_append_double(sb, np->pos, precision);
+  stringbuffer_append_char(sb, '}');
+  return;
+}
+#endif /* NPOINT */
 
 #if POSE || RGEO
 /**
@@ -603,6 +623,9 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
     case T_TPOSE:
     case T_TRGEOMETRY:
     case T_TCBUFFER:
+#if NPOINT
+    case T_TNPOINT:
+#endif
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
 #if POINTCLOUD
@@ -676,6 +699,11 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
       break;
     case T_TPCPATCH:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPCPatch\",", 24);
+      break;
+#endif
+#if NPOINT
+    case T_TNPOINT:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingNetworkPoint\",", 29);
       break;
 #endif
     default: /* Error! */
@@ -762,6 +790,13 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     tpcpatch_as_mfjson_sb(sb, inst, precision);
   }
 #endif /* POINTCLOUD */
+#if NPOINT
+  else if (inst->temptype == T_TNPOINT)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+  }
+#endif /* NPOINT */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -857,6 +892,12 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     else if (inst->temptype == T_TPCPATCH)
       tpcpatch_as_mfjson_sb(sb, inst, precision);
 #endif /* POINTCLOUD */
+#if NPOINT
+    else if (inst->temptype == T_TNPOINT)
+    {
+      npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+    }
+#endif /* NPOINT */
     else
     {
       success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
@@ -969,6 +1010,12 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
       else if (inst->temptype == T_TPCPATCH)
         tpcpatch_as_mfjson_sb(sb, inst, precision);
 #endif /* POINTCLOUD */
+#if NPOINT
+      else if (inst->temptype == T_TNPOINT)
+      {
+        npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+      }
+#endif /* NPOINT */
       else
       {
         success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
