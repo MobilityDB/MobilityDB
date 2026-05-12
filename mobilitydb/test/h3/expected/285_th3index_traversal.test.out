@@ -1,0 +1,47 @@
+SELECT h3_grid_distance(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986753269759@2001-01-01');
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT h3_grid_distance(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986761658367@2001-01-01');
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT h3_grid_distance(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01')
+  = h3_grid_distance(
+    th3index '612544986761658367@2001-01-01',
+    th3index '612544986753269759@2001-01-01');
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT h3_grid_distance(
+  th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
+  th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]')
+  IS NOT NULL;
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT (th3index '612544986753269759@2001-01-01')
+  <-> (th3index '612544986761658367@2001-01-01');
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT (th3index '612544986753269759@2001-01-01'
+        <-> th3index '612544986761658367@2001-01-01')
+  = h3_grid_distance(
+      th3index '612544986753269759@2001-01-01',
+      th3index '612544986761658367@2001-01-01');
+ERROR:  h3_grid_distance_meos: adapter not yet implemented
+SELECT h3_cell_to_local_ij(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986753269759@2001-01-01') IS NOT NULL;
+ERROR:  h3_cell_to_local_ij_meos: adapter not yet implemented
+SELECT h3_cell_to_local_ij(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986761658367@2001-01-01') IS NOT NULL;
+ERROR:  h3_cell_to_local_ij_meos: adapter not yet implemented
+SELECT h3_local_ij_to_cell(
+    th3index '612544986753269759@2001-01-01',
+    h3_cell_to_local_ij(
+      th3index '612544986753269759@2001-01-01',
+      th3index '612544986761658367@2001-01-01'))
+  = th3index '612544986761658367@2001-01-01';
+ERROR:  operator does not exist: th3index = th3index
+LINE 6:   = th3index '612544986761658367@2001-01-01';
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.

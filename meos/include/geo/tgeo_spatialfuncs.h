@@ -76,7 +76,7 @@ extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 /* Generic functions */
 
 extern datum_func2 geo_distance_fn(int16 flags);
-extern datum_func2 pt_distance_fn(int16 flags);
+extern datum_func2 point_distance_fn(int16 flags);
 extern Datum datum_geom_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2);

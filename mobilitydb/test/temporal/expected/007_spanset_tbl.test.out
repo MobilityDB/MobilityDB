@@ -24,7 +24,7 @@ CREATE TABLE tbl_bigintspanset_tmp AS TABLE tbl_bigintspanset WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_bigintspanset_tmp FROM '/tmp/tbl_bigintspanset' (FORMAT BINARY);
 COPY 100
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
      0
@@ -89,7 +89,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(i)) <> i;
  count 
 -------
      0
@@ -119,7 +119,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(i)) <> i
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(b)) <> b;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(i)) <> i;
  count 
 -------
      0
@@ -149,7 +149,7 @@ SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
   99
 (1 row)
 
-SELECT MAX(lower(spanset(b))) FROM tbl_bigintspan;
+SELECT MAX(lower(spanset(i))) FROM tbl_bigintspan;
  max 
 -----
   90
@@ -179,7 +179,7 @@ SELECT MAX(lower(span(i))) FROM tbl_intspanset;
   55
 (1 row)
 
-SELECT MAX(lower(span(b))) FROM tbl_bigintspanset;
+SELECT MAX(lower(span(i))) FROM tbl_bigintspanset;
  max 
 -----
   49
@@ -233,7 +233,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset WHERE b <> (b::int8multirange)::bigintspanset;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE i <> (i::int8multirange)::bigintspanset;
  count 
 -------
      0
@@ -511,7 +511,7 @@ SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
   60
 (1 row)
 
-SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(shift(i, 5))) FROM tbl_bigintspanset;
  max 
 -----
   54
@@ -535,7 +535,7 @@ SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
   55
 (1 row)
 
-SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(scale(i, 5))) FROM tbl_bigintspanset;
  max 
 -----
   49
@@ -559,7 +559,7 @@ SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
   60
 (1 row)
 
-SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
+SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_bigintspanset;
  max 
 -----
   54
@@ -649,43 +649,43 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >= t2.i;
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE spanset_cmp(t1.b, t2.b) = -1;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b = t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i = t2.i;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i <> t2.i;
  count 
 -------
   9702
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b < t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i < t2.i;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <= t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i <= t2.i;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b > t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i > t2.i;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b >= t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.i >= t2.i;
  count 
 -------
   4950

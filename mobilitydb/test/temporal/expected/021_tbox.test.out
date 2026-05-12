@@ -4,6 +4,12 @@ SELECT tbox 'TBOXINT XT([1, 1],[2000-01-01,2000-01-02])';
  TBOXINT XT([1, 2),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+SELECT tbox 'TBOXBIGINT XT([1, 1],[2000-01-01,2000-01-02])';
+                                        tbox                                        
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 2),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
 SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2000-01-01,2000-01-02])';
                                        tbox                                        
 -----------------------------------------------------------------------------------
@@ -14,6 +20,12 @@ SELECT tbox 'TBOXINT X([1, 1])';
        tbox        
 -------------------
  TBOXINT X([1, 2))
+(1 row)
+
+SELECT tbox 'TBOXBIGINT X([1, 1])';
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 2))
 (1 row)
 
 SELECT tbox 'TBOXFLOAT X([1.0, 1.0])';
@@ -32,6 +44,12 @@ SELECT tbox 'TBOXINT XT([1,2][2000-01-01,2000-01-02])';
                                       tbox                                       
 ---------------------------------------------------------------------------------
  TBOXINT XT([1, 3),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2][2000-01-01,2000-01-02])';
+                                        tbox                                        
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 3),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
 /* Errors */
@@ -288,7 +306,31 @@ SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
  [1, 2)
 (1 row)
 
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
+ [1, 2)
+(1 row)
+
 SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+ floatspan 
+-----------
+ [1, 1]
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+ intspan 
+---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
  floatspan 
 -----------
  [1, 1]
@@ -297,6 +339,12 @@ SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
  intspan 
 ---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
  [1, 2)
 (1 row)
 
@@ -309,9 +357,17 @@ SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 /* Errors */
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
 ERROR:  The tbox must have X dimension
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::bigintspan;
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
 ERROR:  The tbox must have X dimension
 SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
+ min 
+-----
+   1
+(1 row)
+
+SELECT MIN(Xmin(temp::tbox)) FROM tbl_tbigint;
  min 
 -----
    1
@@ -330,6 +386,12 @@ SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxflo
 (1 row)
 
 SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxint;
+   max    
+----------
+ 00:10:00
+(1 row)
+
+SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxbigint;
    max    
 ----------
  00:10:00
@@ -515,6 +577,30 @@ SELECT MAX(tmax(b)) FROM tbl_tboxint;
  Sun Dec 30 06:00:00 2001 PST
 (1 row)
 
+SELECT MIN(xmin(b)) FROM tbl_tboxbigint;
+ min 
+-----
+   1
+(1 row)
+
+SELECT MAX(xmax(b)) FROM tbl_tboxbigint;
+ max 
+-----
+  93
+(1 row)
+
+SELECT MIN(tmin(b)) FROM tbl_tboxbigint;
+             min              
+------------------------------
+ Sun Jan 07 07:55:00 2001 PST
+(1 row)
+
+SELECT MAX(tmax(b)) FROM tbl_tboxbigint;
+             max              
+------------------------------
+ Fri Dec 28 10:14:00 2001 PST
+(1 row)
+
 SELECT MIN(xmin(b)) FROM tbl_tboxfloat;
     min     
 ------------
@@ -626,6 +712,8 @@ SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
  TBOXINT XT([-1, 5),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', 2);
+ERROR:  The span must be of type floatspan
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
                                     expandvalue                                     
 ------------------------------------------------------------------------------------
@@ -650,6 +738,8 @@ SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1);
  
 (1 row)
 
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1);
+ERROR:  The span must be of type floatspan
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
  expandvalue 
 -------------
@@ -685,6 +775,8 @@ SELECT round(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1);
 ERROR:  The value cannot be negative: -1
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
 ERROR:  Invalid value to expand box: -1.000000
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1.0);
+ERROR:  The span must be of type floatspan
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 ERROR:  The tbox must have X dimension
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
@@ -769,6 +861,36 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b -|- t2.b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b ~= t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b && t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b @> t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <@ t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b -|- t2.b;
+ count 
+-------
+   216
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b ~= t2.b;
  count 
 -------
     99
@@ -912,6 +1034,54 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b #>> t2.b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b #&> t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b << t2.b;
+ count 
+-------
+  4294
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &< t2.b;
+ count 
+-------
+  5002
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b >> t2.b;
+ count 
+-------
+  4294
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &> t2.b;
+ count 
+-------
+  5002
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <<# t2.b;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b &<# t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b #>> t2.b;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b #&> t2.b;
  count 
 -------
   4950
@@ -1084,6 +1254,18 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxint t1, tbl_tboxint t2;
   90
 (1 row)
 
+SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b && t2.b;
+ max 
+-----
+  93
+(1 row)
+
+SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tboxbigint t1, tbl_tboxbigint t2;
+ max 
+-----
+  93
+(1 row)
+
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b && t2.b;
     max    
 -----------
@@ -1239,6 +1421,51 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b > t2.b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b >= t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
+ tbox_cmp | count 
+----------+-------
+       -1 |  4851
+        0 |    99
+        1 |  4851
+          |   199
+(4 rows)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b = t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <> t2.b;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b < t2.b;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b <= t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b > t2.b;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b >= t2.b;
  count 
 -------
   4950
