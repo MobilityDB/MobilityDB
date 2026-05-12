@@ -2374,3 +2374,13 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)
  t
 (1 row)
 
+SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
+  tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01',
+  tcbuffer 'Cbuffer(Point(2 2), 0.5)@2000-01-02',
+  tcbuffer 'Cbuffer(Point(3 3), 0.5)@2000-01-03'
+]::tcbuffer[], '5 minutes'::interval));
+ numsequences 
+--------------
+            3
+(1 row)
+
