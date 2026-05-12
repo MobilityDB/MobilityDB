@@ -198,6 +198,22 @@ SELECT MAX(numSequences) FROM temp;
 
 DROP TABLE tbl_ttextinst_test;
 DROP TABLE
+DROP TABLE IF EXISTS tbl_tboolinst_test;
+NOTICE:  table "tbl_tboolinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tboolinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tbool_seq;
+SELECT 451
+WITH temp AS (
+  SELECT numSequences(tboolSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval))
+  FROM tbl_tboolinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   7
+(1 row)
+
+DROP TABLE tbl_tboolinst_test;
+DROP TABLE
 SELECT DISTINCT tempSubtype(tboolInst(inst)) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
