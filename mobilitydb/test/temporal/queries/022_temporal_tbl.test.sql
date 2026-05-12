@@ -111,6 +111,14 @@ WITH temp AS (
 SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_ttextinst_test;
 
+DROP TABLE IF EXISTS tbl_tboolinst_test;
+CREATE TABLE tbl_tboolinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tbool_seq;
+WITH temp AS (
+  SELECT numSequences(tboolSeqSetGaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval))
+  FROM tbl_tboolinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tboolinst_test;
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
