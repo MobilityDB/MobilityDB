@@ -174,7 +174,7 @@ ensure_one_true(bool hasshift, bool haswidth)
 bool
 ensure_valid_interp(MeosType temptype, interpType interp)
 {
-  if (interp == LINEAR && ! temptype_continuous(temptype))
+  if (interp == LINEAR && ! temptype_supports_linear(temptype))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal type cannot have linear interpolation");
@@ -900,7 +900,7 @@ tsequence_from_base_temp(Datum value, MeosType temptype, const TSequence *seq)
   return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? 
     tdiscseq_from_base_temp(value, temptype, seq) :
     tsequence_from_base_tstzspan(value, temptype, &seq->period,
-      temptype_continuous(temptype) ? LINEAR : STEP);
+      temptype_supports_linear(temptype) ? LINEAR : STEP);
 }
 
 /**
@@ -917,7 +917,7 @@ tsequenceset_from_base_temp(Datum value, MeosType temptype,
   const TSequenceSet *ss)
 {
   assert(ss);
-  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
