@@ -823,13 +823,13 @@ SELECT 5.5 &> floatspan '[3.5, 5.5]';
 SELECT floatspan '[3.5, 5.5]' -|- 5.5;
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT 5.5 -|- floatspan '[3.5, 5.5]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT datespan '[2000-01-03,2000-01-05)' <<# date '2000-01-05';
