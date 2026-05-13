@@ -1136,9 +1136,9 @@ sudo cmake --install build]]></programlisting>
 			<para>The writer emits periodic <code>Info</code>-level progress lines via PDAL's logger and a final summary in <function>done()</function>: total points / patches written, destination column, pcid, compression, and mode. Visible at <code>pdal pipeline -v 5</code>.</para>
 		</sect2>
 
-		<sect2 xml:id="tpointcloud_pdal_status">
-			<title>Status</title>
-			<para>All three pgPointCloud compression types — <varname>PC_NONE</varname>, <varname>PC_DIMENSIONAL</varname>, <varname>PC_LAZPERF</varname> — are live-tested end to end. The <varname>PC_LAZPERF</varname> regression at <filename>contrib/pdal/examples/test_lazperf.sql</filename> requires the running pgPointCloud install to be built with <option>--with-lazperf=DIR</option>; the SQL fixture aborts with a clear message otherwise. The plugins are kept under <filename>contrib/pdal/</filename> rather than in the main MobilityDB build tree so they can be built and updated independently.</para>
+		<sect2 xml:id="tpointcloud_pdal_compression">
+			<title>Supported compression schemes</title>
+			<para>The reader and writer support all three pgPointCloud compression types: <varname>PC_NONE</varname>, <varname>PC_DIMENSIONAL</varname>, and <varname>PC_LAZPERF</varname>. The <varname>PC_LAZPERF</varname> regression at <filename>contrib/pdal/examples/test_lazperf.sql</filename> requires the running pgPointCloud install to be built with <option>--with-lazperf=DIR</option>; the SQL fixture aborts with a clear message otherwise. The plugins are kept under <filename>contrib/pdal/</filename> rather than in the main MobilityDB build tree so they can be built and updated independently.</para>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_pdal_limitations">
