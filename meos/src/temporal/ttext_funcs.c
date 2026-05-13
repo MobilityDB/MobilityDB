@@ -62,7 +62,6 @@ textfunc_ttext(const Temporal *temp, datum_func1 func)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TTEXT;
   lfinfo.restype = T_TTEXT;
   return tfunc_temporal(temp, &lfinfo);
@@ -82,11 +81,9 @@ textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TTEXT;
   lfinfo.argtype[1] = T_TEXT;
   lfinfo.restype = T_TTEXT;
-  lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, value, &lfinfo);
@@ -107,10 +104,8 @@ textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = T_TTEXT;
   lfinfo.restype = T_TTEXT;
-  lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
