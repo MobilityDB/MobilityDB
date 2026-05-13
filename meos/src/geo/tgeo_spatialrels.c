@@ -510,7 +510,6 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
   lfinfo.invert = INVERT_NO;

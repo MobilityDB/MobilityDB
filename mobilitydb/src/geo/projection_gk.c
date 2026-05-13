@@ -272,7 +272,6 @@ tgeompoint_transform_gk(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
   Temporal *result = tfunc_temporal(temp, &lfinfo);

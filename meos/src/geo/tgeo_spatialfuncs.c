@@ -1648,7 +1648,6 @@ tgeo_centroid(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) 
     (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
   return tfunc_temporal(temp, &lfinfo);

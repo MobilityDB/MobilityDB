@@ -91,7 +91,6 @@ tnot_tbool(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_not;
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TBOOL;
   lfinfo.invert = INVERT_NO;
