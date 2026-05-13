@@ -1220,6 +1220,10 @@ temporal_round(const Temporal *temp, int maxdd)
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
+  /* Rounding to a precision finer than the segment's variation is effectively
+   * affine; the chord-of-f deviation is bounded by 0.5*10^-maxdd which is below
+   * the user-requested precision.  Treat as affine and inherit interpolation. */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1402,6 +1406,8 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
+  /* Scale by 180/pi is affine: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1422,6 +1428,8 @@ tfloat_radians(const Temporal *temp)
   lfinfo.func = (varfunc) &datum_radians;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
+  /* Scale by pi/180 is affine: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 

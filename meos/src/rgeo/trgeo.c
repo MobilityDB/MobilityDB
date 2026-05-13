@@ -282,6 +282,8 @@ trgeo_to_tpoint(const Temporal *temp)
   lfinfo.func = (varfunc) &datum_pose_point;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
+  /* Extracting the anchor point of a rigid geometry is affine */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
