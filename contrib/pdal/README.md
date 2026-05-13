@@ -1,43 +1,30 @@
 # PDAL `tpcpatch` reader / writer plugin
 
 Native PDAL plugins that read and write MobilityDB `tpcpatch` (temporal
-point-cloud patch) values without going through the existing
+point-cloud patch) values without going through the
 `readers.pgpointcloud` / `writers.pgpointcloud` plugins.
 
-**Status:**
-- **PC_NONE**: full roundtrip live-verified end-to-end (PostgreSQL
-  17.8 + pointcloud-review MobilityDB build + pgPointCloud 1.2.5 +
-  PostGIS 3.6.3). A 2-row × {2, 3} point fixture flows: `pcpatch`
-  table → `readers.tpcpatch` → `writers.tpcpatch` (creates a tpcpatch
-  row) → `readers.tpcpatch` (via `timestampN` / `valueN` SRF) →
-  `writers.text` and emerges with bit-exact X/Y/Z and correct
-  microsecond-since-epoch `time_t`.
-- **PC_DIMENSIONAL**: live-verified end-to-end (5 points across 2
-  dimensionally-compressed pcpatch rows decoded with bit-exact X/Y/Z).
-- **PC_LAZPERF**: live-verified end-to-end. Test fixture and PDAL
-  pipeline shipped under `examples/test_lazperf.sql` +
-  `examples/test_lazperf.json`. Requires pgPointCloud built
-  `--with-lazperf=DIR`; the SQL fixture aborts with a clear error
-  otherwise.
-
-**PDAL ↔ MobilityDB is functional today for PC_NONE + PC_DIMENSIONAL,
-covering essentially every pgPointCloud install in the wild.**
+Three pgPointCloud compression schemes are supported: `PC_NONE`,
+`PC_DIMENSIONAL`, and `PC_LAZPERF`. The `PC_LAZPERF` path requires
+pgPointCloud built with `--with-lazperf=DIR`; the SQL test fixture
+aborts with a clear error otherwise. Test fixtures and PDAL pipelines
+for each compression live under `examples/`.
 
 The plugin links against pgPointCloud's vendored `libpc.a` (under
-`pointcloud-pg/lib/`) rather than re-implementing the WKB decoders —
-all three compression types are handled by `pc_patch_from_wkb`,
+`pointcloud-pg/lib/`) rather than re-implementing the WKB decoders. All
+three compression types are handled by `pc_patch_from_wkb`,
 `pc_patch_pointn`, and `pc_double_from_ptr` from libpc.
 
 ## Drone workflows: LiDAR and photogrammetry
 
-The plugin is source-format-agnostic — anything PDAL can read becomes
+The plugin is source-format-agnostic. Anything PDAL can read becomes
 a `tpcpatch` candidate. Two ingest templates ship side-by-side under
 `examples/`:
 
 | Workflow | pcid template | Source | Pipeline |
 |---|---|---|---|
-| **Drone LiDAR** (UAV laser scanner) | `drone_lidar_ingest.sql` — pcid 500, X/Y/Z + Intensity + Classification | `.las` / `.laz` from the scanner's flight-planning toolchain | `drone_lidar_ingest.json` |
-| **Drone photogrammetry** (Pix4D, RealityCapture, Metashape, ODM) | `drone_photogrammetry_ingest.sql` — pcid 700, X/Y/Z + R/G/B | `.las` / `.laz` / `.copc` / `.ply` from the SfM/MVS export | `drone_photogrammetry_ingest.json` |
+| **Drone LiDAR** (UAV laser scanner) | `drone_lidar_ingest.sql`, pcid 500, X/Y/Z + Intensity + Classification | `.las` / `.laz` from the scanner's flight-planning toolchain | `drone_lidar_ingest.json` |
+| **Drone photogrammetry** (Pix4D, RealityCapture, Metashape, ODM) | `drone_photogrammetry_ingest.sql`, pcid 700, X/Y/Z + R/G/B | `.las` / `.laz` / `.copc` / `.ply` from the SfM/MVS export | `drone_photogrammetry_ingest.json` |
 
 Both pipelines target the same `tpcpatch` machinery downstream: GiST/SP-GiST
 index, `atGeometry` clipping, `pcpatch_voxel_grid` / `pcpatch_sor`
@@ -47,14 +34,14 @@ sensor; everything past `writers.tpcpatch` is identical.
 
 ## Why a native plugin instead of just `readers.pgpointcloud`?
 
-You can already get LAS/LAZ ↔ MobilityDB round-trips today by:
+An existing LAS/LAZ to MobilityDB round-trip is possible by:
 1. `SELECT (asPatches(traj)).t, (asPatches(traj)).pcp FROM table` to
    unpack a `tpcpatch` into per-timestamp `pcpatch` rows;
-2. Feed that query to PDAL's `readers.pgpointcloud`;
-3. Write back via `writers.pgpointcloud` and re-aggregate with
+2. Feeding that query to PDAL's `readers.pgpointcloud`;
+3. Writing back via `writers.pgpointcloud` and re-aggregating with
    `tpcpatchSeq()` in SQL.
 
-That works but loses the temporal semantics across the boundary —
+That works but loses the temporal semantics across the boundary.
 `time_t` becomes "just another dimension" and the writer has no way to
 group points back into per-timestamp patches without a follow-up SQL
 step. This plugin makes the temporal grouping a first-class part of the
@@ -73,14 +60,14 @@ Requires:
 - PDAL ≥ 2.6 (CMake config exposed at `/usr/local/lib/cmake/PDAL/`)
 - libpq + libxml2
 - A target database with the `mobilitydb` and `pointcloud` extensions
-  loaded (a single `CREATE EXTENSION mobilitydb CASCADE` against a
-  `POINTCLOUD=ON` install is enough — `pointcloud` is pulled in by the
-  control file's `requires =` clause).
+  loaded. A single `CREATE EXTENSION mobilitydb CASCADE` against a
+  `POINTCLOUD=ON` install is enough; `pointcloud` is pulled in by the
+  control file's `requires =` clause.
 
 ### Pre-flight check before a real ingest
 
 Before kicking off a multi-GB drone LAS ingest, run the pre-flight
-script — it catches the common first-flight failure modes (missing
+script. It catches the common first-flight failure modes (missing
 extension, missing pcid, wrong column type, missing id column for
 append/upsert) in under a second:
 
@@ -130,7 +117,7 @@ inserted by the SQL fixture.
 The shipped JSON pipelines use `"connection": "dbname=mobility"` as the
 default DSN. Edit it to match your install (libpq connection-string
 parameters take precedence over PG\* environment variables, so the JSON
-must name the right database). Standard libpq keywords work — e.g.
+must name the right database). Standard libpq keywords work, for example
 `"dbname=brussels_lidar host=db.internal port=5433 user=tpcpatch_writer"`.
 
 ### Read
@@ -184,8 +171,8 @@ timestamp, packed into a single `tpcpatch` row.
 | value | meaning |
 |---|---|
 | `unix_microseconds` (default) | already μs since Unix epoch |
-| `unix_seconds` | seconds since Unix epoch — multiplied by 1e6 internally |
-| `gps_adjusted` | LAS-1.4 Adjusted GPS Standard Time — the writer adds 10⁹ + 315964782 − 18 leap seconds before scaling, no `filters.assign` needed |
+| `unix_seconds` | seconds since Unix epoch, multiplied by 1e6 internally |
+| `gps_adjusted` | LAS-1.4 Adjusted GPS Standard Time. The writer adds 10⁹ + 315964782 − 18 leap seconds before scaling, no `filters.assign` needed |
 
 Pointing `time_dim` directly at the LAS `GpsTime` field with
 `time_format: "gps_adjusted"` lets a typical drone pipeline omit the
@@ -198,7 +185,7 @@ Pointing `time_dim` directly at the LAS `GpsTime` field with
 | `insert` (default) | one new `tpcpatch` row per pipeline run |
 | `update` | overwrite the row identified by `id_column = id_value`, fail if missing |
 | `append` | concatenate via `merge()` onto the existing row's `tpcpatch` (multi-flight survey) |
-| `upsert` | `INSERT … ON CONFLICT DO UPDATE` — first run lands the row, every subsequent run appends |
+| `upsert` | `INSERT … ON CONFLICT DO UPDATE`. First run lands the row, every subsequent run appends |
 
 `append` / `update` raise a clear "matched no row" error if `id_value`
 is not found, so silent zero-row writes can't happen.
@@ -223,7 +210,7 @@ and a final summary in `done()`. Visible at `pdal pipeline -v 5`.
 The writer is a PDAL `Streamable` stage, so a `readers.las` →
 `writers.tpcpatch` pipeline runs in PDAL's streaming mode automatically
 (the reader-side plugin is also `Streamable`). This is the path that
-makes multi-GB LAS ingest tractable — PDAL never holds the
+makes multi-GB LAS ingest tractable. PDAL never holds the
 full point cloud in memory. `flush_threshold` (default 1024) caps the
 in-memory queue of completed-but-not-yet-INSERTed patches; once that
 many patches accumulate, an INSERT or append SQL batch is sent. For
@@ -241,22 +228,32 @@ project, which runs Potree-style multi-resolution octree rendering
 inside Unity and benefits from MobilityDB's temporal indexing for the
 "data within window [t_lo, t_hi]" query.
 
-## Implementation roadmap
+## Capabilities
 
-| Step | Where | Status |
-|---|---|---|
-| 1. Hex-decode pcpatch WKB for `PC_NONE` | `TpcpatchReader::advanceRow` + `decodeNextPointFromCurrentPatch` | **done & live-tested** |
-| 2. `PC_DIMENSIONAL` decode | reader (via libpc) | **done & live-tested** |
-| 3. `PC_LAZPERF` decode | reader (via libpc) | **done & live-tested** with a `--with-lazperf` rebuild of pgPointCloud — see `examples/test_lazperf.sql`/`.json` |
-| 4. Encode patch (WKB) for any compression | `TpcpatchWriter::encodePatch` | **done & live-tested** — routes through libpc's `pc_patch_to_wkb` so PC_NONE / PC_DIMENSIONAL / PC_LAZPERF all work |
-| 5. Build tpcpatch literal & INSERT | `TpcpatchWriter::insertTpcpatch` | **done & live-tested** — uses `tpcpatch(...)` / `tpcpatchSeq(ARRAY[...])` constructors |
-| 6. Streaming write path | writer | **done & live-tested** — `writers.tpcpatch` implements `Streamable::processOne`, encodes one bucket at a time, and chunks pending patches into INSERT/append batches via the `flush_threshold` option (default 1024). Multi-GB LAS ingests no longer hold the full PointView in memory. |
-| 7. Per-pcid schema cache invalidation | reader | minor; cache is per-instance, sufficient for most pipelines |
-| 8. Live integration test against MobilityDB instance | `examples/test_xform.{sql,json}` | **done & live-tested** — round-trips a typical scaled-int32 + per-dim-offset schema bit-exactly |
-| 9. Apply XForm (scale/offset) on read & write | reader + writer | **done & live-tested** — symmetric: reader emits `raw * scale + offset`, writer applies the inverse before packing |
-| 10. Write modes (insert / update / append / upsert) | writer | **done & live-tested** — `mode=upsert` accumulates one flight per pipeline run; `append` / `update` fail loudly on missing id |
-| 11. Time-format conversion (LAS GpsTime → Unix μs) | writer | **done & live-tested** — `time_format=gps_adjusted` handles ASGT internally; no `filters.assign` step needed |
-| 12. Progress logging | reader + writer | **done & live-tested** — reader logs `N patches / M points decoded so far` every 1000 patches plus a final summary; writer logs per-batch `Info` lines + a final summary in `done()` |
+- Read and write `PC_NONE`, `PC_DIMENSIONAL`, and `PC_LAZPERF`
+  compression. The reader uses libpc's `pc_patch_from_wkb`; the writer
+  routes through `pc_patch_to_wkb`. `PC_LAZPERF` requires pgPointCloud
+  built with `--with-lazperf`.
+- `tpcpatch` construction via the `tpcpatch(...)` and
+  `tpcpatchSeq(ARRAY[...])` constructors at INSERT time.
+- Streaming write path via `Streamable::processOne`. The writer
+  encodes one bucket at a time and chunks pending patches into
+  INSERT/append batches using the `flush_threshold` option
+  (default 1024 patches). Per-bucket memory footprint is bounded to
+  one timestamp's worth of points.
+- Per-instance pcid schema cache.
+- Symmetric XForm (scale/offset) on read and write. The reader emits
+  `raw * scale + offset`; the writer applies the inverse before
+  packing. Round-trips a scaled-int32 + per-dim-offset schema
+  bit-exactly; covered by `examples/test_xform.{sql,json}`.
+- Write modes `insert`, `update`, `append`, and `upsert`. `upsert`
+  accumulates one flight per pipeline run; `append` / `update` fail
+  loudly when the destination row is missing.
+- Time-format conversion for LAS GpsTime. `time_format=gps_adjusted`
+  handles ASGT internally; no separate `filters.assign` step needed.
+- Progress logging. The reader logs `N patches / M points decoded so
+  far` every 1000 patches plus a final summary; the writer logs
+  per-batch `Info` lines and a summary in `done()`.
 
 ## Linkage
 
