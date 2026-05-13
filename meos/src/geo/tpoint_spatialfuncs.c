@@ -182,6 +182,8 @@ tpoint_get_coord(const Temporal *temp, int coord)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TFLOAT;
+  /* Coordinate projection is affine: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 

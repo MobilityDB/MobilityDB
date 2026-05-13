@@ -410,6 +410,8 @@ tpose_to_tpoint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
+  /* Position projection is affine: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -437,6 +439,8 @@ tpose_rotation(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TPOSE;
   lfinfo.restype = T_TFLOAT;
+  /* Rotation projection is affine: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }

@@ -1651,6 +1651,8 @@ tgeo_centroid(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  /* Centroid is affine in vertex positions: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
