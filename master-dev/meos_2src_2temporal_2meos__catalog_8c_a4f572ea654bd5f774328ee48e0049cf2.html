@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temptype_continuous</title>
+<title>MobilityDB: temptype_supports_linear</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -145,9 +145,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a3d9630b6ce367921be910bcb78a2f64d.html#a3d9630b6ce367921be910bcb78a2f64d">tempsubtype_name</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a2e93249b756132d985fa5d1bb8ccd7d3.html#a2e93249b756132d985fa5d1bb8ccd7d3">TEMPSUBTYPE_STR_MAXLEN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a8959fd45d195606780ecd0e018c07b88.html#a8959fd45d195606780ecd0e018c07b88">temptype_basetype</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_af163a09be25a6d5bbe10c4b90d9ffc58.html#af163a09be25a6d5bbe10c4b90d9ffc58">temptype_continuous</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_ad446e9f056329e1e558f26c96d76b10d.html#ad446e9f056329e1e558f26c96d76b10d">temptype_subtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a12627ec8f368b6ccc08063c83856d2a6.html#a12627ec8f368b6ccc08063c83856d2a6">temptype_subtype_all</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a4f572ea654bd5f774328ee48e0049cf2.html#a4f572ea654bd5f774328ee48e0049cf2">temptype_supports_linear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a757aea4602302759953c088105d663e7.html#a757aea4602302759953c088105d663e7">tgeo_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a15f5c8c9865fd9742e3b98bac5e25c9f.html#a15f5c8c9865fd9742e3b98bac5e25c9f">tgeo_type_all</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_af549b484360518d10a1f56bca265725b.html#af549b484360518d10a1f56bca265725b">tgeodetic_type</a></td></tr>
@@ -167,8 +167,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af163a09be25a6d5bbe10c4b90d9ffc58" name="af163a09be25a6d5bbe10c4b90d9ffc58"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af163a09be25a6d5bbe10c4b90d9ffc58">&#9670;&#160;</a></span>temptype_continuous()</h2>
+<a id="a4f572ea654bd5f774328ee48e0049cf2" name="a4f572ea654bd5f774328ee48e0049cf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f572ea654bd5f774328ee48e0049cf2">&#9670;&#160;</a></span>temptype_supports_linear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -177,7 +177,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool temptype_continuous </td>
+          <td class="memname">bool temptype_supports_linear </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
           <td class="paramname"><em>type</em></td><td>)</td>
@@ -191,7 +191,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if the type is a temporal continuous type. </p>
+<p>Return true if the temporal type supports LINEAR interpolation between samples. </p>
+<dl class="section note"><dt>Note</dt><dd>Every MEOS temporal type is continuous in the sense that it has a value at every instant in its domain; this predicate identifies the subset whose values can vary linearly between samples (as opposed to STEP-only types like tbool, tint, ttext, tgeometry, tgeography, th3index). </dd></dl>
 
 </div>
 </div>
