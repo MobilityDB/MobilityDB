@@ -1,4 +1,4 @@
-# `mobilitydb_pcl` — PCL bridge for pgPointCloud + MobilityDB
+# `mobilitydb_pcl`: PCL bridge for pgPointCloud + MobilityDB
 
 Optional PostgreSQL extension that exposes round-trip conversion between
 pgPointCloud `pcpatch` values and the [Point Cloud
@@ -6,10 +6,10 @@ Library](https://pointclouds.org/)'s native PCD format. Hands `pcpatch`
 points off as a PCL-readable bytea so external PCL pipelines (filtering,
 registration, segmentation) can ingest them directly.
 
-## Status
+## Surface
 
-- `pcpatch_to_pcd(pcpatch) → bytea` — live-tested.
-- `pcpatch_from_pcd(bytea, pcid int) → pcpatch` — live-tested.
+- `pcpatch_to_pcd(pcpatch) → bytea`.
+- `pcpatch_from_pcd(bytea, pcid int) → pcpatch`.
 - Schema-aware point-type selection: XYZ-only schemas use
   `pcl::PointXYZ`, XYZ+Intensity uses `pcl::PointXYZI`, XYZ+RGB uses
   `pcl::PointXYZRGB` (RGB takes precedence when both are present).
@@ -77,16 +77,14 @@ SELECT tpcpatch_from_pcd_array(
 FROM trajectories WHERE id = 42;
 ```
 
-## Roadmap
+## Filter and registration surface
 
-| Step | Status |
+| Function | Description |
 |---|---|
-| `pcpatch_to_pcd` (X/Y/Z, +Intensity, +RGB) | **done & live-tested** |
-| `pcpatch_from_pcd` (X/Y/Z, +Intensity, +RGB) | **done & live-tested** |
-| `pcpatch_voxel_grid(pcpatch, leaf double precision) → pcpatch` | **done & live-tested** — preserves Intensity / RGB |
-| `pcpatch_sor(pcpatch, k int, stddev_mul double precision) → pcpatch` | **done & live-tested** — preserves Intensity / RGB |
-| `pcpatch_icp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | **done & live-tested** — returns `[tx, ty, tz, qw, qx, qy, qz, fitness]` |
-| `pcpatch_gicp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | **done & live-tested** — same return shape; PCL Generalized ICP (Mahalanobis cost over per-point local covariances) — robust on non-planar / noisy surfaces |
-| `pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]` | **done & live-tested** — PCL `NormalEstimation<PointXYZ, Normal>`. Returns flat `[nx_0, ny_0, nz_0, curv_0, …]` of length 4 × npoints. Planar fixture round-trips to `(0,0,1)` with zero curvature. |
-| PCD round-trip without temp file | future — PCL's PCD I/O is filesystem-only |
-| `tpcpatch_icp(tpcpatch, tpcpatch) → tpose` (per-instant ICP registration) | future, ambitious |
+| `pcpatch_to_pcd` (X/Y/Z, +Intensity, +RGB) | PCD encode |
+| `pcpatch_from_pcd` (X/Y/Z, +Intensity, +RGB) | PCD decode |
+| `pcpatch_voxel_grid(pcpatch, leaf double precision) → pcpatch` | Voxel-grid downsample. Preserves Intensity / RGB |
+| `pcpatch_sor(pcpatch, k int, stddev_mul double precision) → pcpatch` | Statistical outlier removal. Preserves Intensity / RGB |
+| `pcpatch_icp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | ICP registration. Returns `[tx, ty, tz, qw, qx, qy, qz, fitness]` |
+| `pcpatch_gicp(source pcpatch, target pcpatch, max_iter int, max_corr double) → double[]` | PCL Generalized ICP (Mahalanobis cost over per-point local covariances). Robust on non-planar / noisy surfaces. Same return shape as `pcpatch_icp` |
+| `pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]` | PCL `NormalEstimation<PointXYZ, Normal>`. Returns flat `[nx_0, ny_0, nz_0, curv_0, …]` of length 4 × npoints. A planar fixture round-trips to `(0,0,1)` with zero curvature |
