@@ -1147,6 +1147,36 @@ SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),(Poi
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST)}
 (1 row)
 
+SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint 'Point(5 5)@2000-01-01', 1);
+            tdwithin            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]', 5);
+                                                                      tdwithin                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 15:50:03.691024 2000 PST], (f@Sat Jan 01 15:50:03.691024 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(geometry 'MultiPolygon(((0 0, 10 0, 10 10, 0 10, 0 0)),((20 20, 25 20, 25 25, 20 25, 20 20)))', tgeompoint '[Point(5 5)@2000-01-01, Point(22 22)@2000-01-02]', 1);
+                                                                                         tdwithin                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:03:25.530934 2000 PST], (f@Sat Jan 01 08:03:25.530934 2000 PST, t@Sat Jan 01 20:10:41.527888 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
 /* Errors */
 SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID
@@ -1154,10 +1184,6 @@ SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 
 ERROR:  Operation on mixed SRID
 SELECT tDwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID
-SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
-ERROR:  Only point geometries accepted
-SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
-ERROR:  Only point geometries accepted
 SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(0 0)', -1);
 ERROR:  The value cannot be negative: -1.000000
 SELECT tDwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(0 0 0)', -1);

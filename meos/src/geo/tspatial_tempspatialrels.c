@@ -1440,10 +1440,21 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      (tpoint_type(temp->temptype) &&
-        (! ensure_point_type(gs) || ! ensure_not_geodetic_geo(gs))) ||
+      (tpoint_type(temp->temptype) && ! ensure_not_geodetic_geo(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
+
+  /* For a temporal point against a non-point geometry, route through
+   * tIntersects on a polygonal d-expanded buffer of gs. This mirrors the
+   * polygonal approximation that the always-quantifier branch of
+   * ea_dwithin_tgeo_geo already uses internally via geom_buffer. */
+  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE)
+  {
+    GSERIALIZED *buffer = geom_buffer(gs, dist, "");
+    Temporal *result = tinterrel_tgeo_geo(temp, buffer, TINTERSECTS);
+    pfree(buffer);
+    return result;
+  }
 
   /* Determine the distance and the turning point functions to be applied */
   datum_func3 func =

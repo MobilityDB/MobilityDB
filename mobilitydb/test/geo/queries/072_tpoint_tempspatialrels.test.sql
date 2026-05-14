@@ -322,12 +322,17 @@ SELECT tDwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@200
 SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(5 5)@2000-01-05, Point(7 7)@2000-01-07]}', tgeompoint '{Point(3 3)@2000-01-03, Point(4 4)@2000-01-04}', 1);
 SELECT tDwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)}', tgeomPoint '{[Point(2.5 2.5)@2000-01-01, Point(2.5 2.5)@2000-01-02], [Point(2.5 2.5)@2000-01-03,Point(2.5 2.5)@2000-01-04]}', 1);
 
+-- Non-point geometry: routed through tIntersects on a d-buffer of the geometry
+SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+SELECT tDwithin(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint 'Point(5 5)@2000-01-01', 1);
+SELECT tDwithin(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]', 5);
+SELECT tDwithin(geometry 'MultiPolygon(((0 0, 10 0, 10 10, 0 10, 0 0)),((20 20, 25 20, 25 25, 20 25, 20 20)))', tgeompoint '[Point(5 5)@2000-01-01, Point(22 22)@2000-01-02]', 1);
+
 /* Errors */
 SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
 SELECT tDwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
-SELECT tDwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
-SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
 SELECT tDwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(0 0)', -1);
 SELECT tDwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(0 0 0)', -1);
 
