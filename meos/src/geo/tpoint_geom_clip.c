@@ -51,6 +51,7 @@
 #include "temporal/temporal_restrict.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tpoint_geom_clip.h"
 
 /* Minimum number of edges to use an R-tree index in order to compensate the
  * overhead of the tree construction and destruction */
@@ -66,29 +67,10 @@ static MeosArray *intervals = NULL;
 static MeosArray *periods = NULL;
 static int *rtree_results = NULL;
 
-/**
- * @brief Enumeration defining the edge types 
- */
-typedef enum
-{
-  EDGE_POINT = 0,
-  EDGE_LINE,
-  EDGE_POLY
-} EdgeType;
+/* The Edge struct and EdgeType enum are in geo/tpoint_geom_clip.h */
 
 /**
- * @brief Structure keeping a geometry edge
- */
-typedef struct
-{
-  double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
-  double xmin, ymin, xmax, ymax; /**< Precomputed bounding box of the edge */
-  double dx, dy, length;         /**< Precomputed dx, dy, and length */
-  EdgeType etype;                /**< Edge type */
-} Edge;
-
-/**
- * @brief Enumeration defining the intersection types 
+ * @brief Enumeration defining the intersection types
  */
 typedef enum
 {
@@ -245,9 +227,9 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
 }
 
 /**
- * @brief Return true if a point is located in a polygon 
+ * @brief Return true if a point is located in a polygon
  */
-static inline int
+int
 point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
   int inside = 0;
@@ -938,9 +920,9 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
 }
 
 /**
- * @brief Return the edges of a geometry in a dynamic array 
+ * @brief Return the edges of a geometry in a dynamic array
  */
-static MeosArray *
+MeosArray *
 geom_extract_edges(const LWGEOM *geom)
 {
   MeosArray *edges = meos_array_create(sizeof(Edge));
@@ -951,7 +933,7 @@ geom_extract_edges(const LWGEOM *geom)
 /**
  * @brief Build an R-tree from edges
  */
-static RTree *
+RTree *
 build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
 {
   RTree *rtree = rtree_create_stbox();
