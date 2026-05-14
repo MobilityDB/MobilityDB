@@ -54,6 +54,7 @@
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer.h"
+#include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 #include <meos_cbuffer.h>
 
@@ -1572,6 +1573,20 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+  /* Bbox prefilter: short-circuit the expensive geom_buffer call when
+   * temp's bbox is clearly outside the static cbuffer's d-expanded
+   * bbox. Mirrors the sibling tgeo prefilter pattern. tcbuffer is
+   * planar by construction (cbuffer_make rejects geodetic input
+   * points and tcbuffer_make requires tgeompoint, not tgeogpoint),
+   * so no geodetic branch is needed here. */
+  STBox box_temp, box_cb;
+  tspatial_set_stbox(temp, &box_temp);
+  cbuffer_set_stbox(cb, &box_cb);
+  STBox *box_cb_exp = stbox_expand_space(&box_cb, dist);
+  bool pass = overlaps_stbox_stbox(&box_temp, box_cb_exp);
+  pfree(box_cb_exp);
+  if (! pass)
+    return 0;
   GSERIALIZED *trav = cbuffer_to_geom(cb);
   GSERIALIZED *buffer = geom_buffer(trav, dist, "");
   int result = ea_spatialrel_tcbuffer_geo(temp, buffer, (Datum) NULL,
