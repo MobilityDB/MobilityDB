@@ -784,7 +784,7 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   {
     /* Set default interpolation according to the base type */
     MeosType temptype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
-    interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
+    interp = temptype_continuous(temptype) ? LINEAR : STEP;
   }
   else
   {

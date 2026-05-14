@@ -181,8 +181,6 @@ tpoint_force2d(const Temporal *temp)
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
-  /* Dropping the Z dimension is affine: linear input -> linear output */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 

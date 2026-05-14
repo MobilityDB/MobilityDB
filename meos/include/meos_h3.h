@@ -147,6 +147,12 @@ extern Temporal *th3index_to_tgeogpoint(const Temporal *temp);
 extern Temporal *th3index_to_tgeompoint(const Temporal *temp);
 extern Temporal *th3index_cell_to_boundary(const Temporal *temp);
 
+/* Static geometry → H3 cell / cell set.  See meos/src/h3/h3_geo.c. */
+extern H3Index h3_gs_point_to_cell(const GSERIALIZED *point, int32 resolution);
+extern Set    *geo_to_h3index_set(const GSERIALIZED *gs,    int32 resolution);
+extern int     ever_eq_anyof_h3indexset_th3index(const Set *cells,
+                                                  const Temporal *th3idx);
+
 /*****************************************************************************
  * Directed edges
  *****************************************************************************/

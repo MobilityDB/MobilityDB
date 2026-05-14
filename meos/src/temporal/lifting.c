@@ -181,11 +181,34 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/meos_catalog.h"
 #include "temporal/temporal_restrict.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+
+/*****************************************************************************
+ * Local helpers
+ *****************************************************************************/
+
+/**
+ * @brief Return the output interpolation for a lift operation
+ *
+ * The output sequence's interpolation matches the input's, demoted to
+ * STEP when the result type does not support LINEAR
+ * (`temptype_continuous(restype)` is false).  Using the catalog
+ * predicate keeps the interpolation contract enforceable at the lift
+ * level for every result type.
+ */
+static interpType
+lift_result_interp(const TSequence *seq, MeosType restype)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == LINEAR && ! temptype_continuous(restype))
+    interp = STEP;
+  return interp;
+}
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.
@@ -229,62 +252,6 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * @brief Apply a unary lifted function to a temporal sequence with
- * turning-point densification
- * @details For each consecutive non-constant pair of input instants, the
- * supplied @p tpfn_unary locates up to two intermediate timestamps where the
- * lifted function's chord-error is maximal; the lifted value at each of those
- * timestamps is inserted into the result sequence.  Mirrors the binary
- * #tfunc_tlinearseq_base_turnpt path that already exists for #tfunc_temporal_base.
- * @param[in] seq Temporal sequence with LINEAR interpolation
- * @param[in] lfinfo Information about the lifted function (tpfn_unary set)
- */
-static TSequence *
-tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
-{
-  MeosType basetype    = temptype_basetype(seq->temptype);
-  MeosType resbasetype = temptype_basetype(lfinfo->restype);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
-  int ninsts = 0;
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value_p(inst1);
-  for (int i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value_p(inst2);
-    instants[ninsts++] = tfunc_tinstant(inst1, lfinfo);
-    /* Skip densification on constant segments */
-    if (! datum_eq(value1, value2, basetype))
-    {
-      TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfn_unary(value1, value2, inst1->t, inst2->t,
-        &tpt1, &tpt2);
-      if (found)
-      {
-        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
-          inst1->temptype, inst1->t, inst2->t, tpt1);
-        Datum res = tfunc_base(tpvalue, lfinfo);
-        instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
-        DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
-        if (found > 1)
-        {
-          tpvalue = tsegment_value_at_timestamptz(value1, value2,
-            inst1->temptype, inst1->t, inst2->t, tpt2);
-          res = tfunc_base(tpvalue, lfinfo);
-          instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt2);
-          DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
-        }
-      }
-    }
-    inst1 = inst2;
-    value1 = value2;
-  }
-  instants[ninsts++] = tfunc_tinstant(inst1, lfinfo);
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, LINEAR, NORMALIZE);
-}
-
-/**
  * @brief Apply a lifted function to a temporal sequence
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -292,30 +259,12 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 TSequence *
 tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* Densified LINEAR output via turning-point insertion */
-  if (lfinfo->tpfn_unary && interp == LINEAR)
-    return tfunc_tlinearseq_turnpt(seq, lfinfo);
-
-  /* Plain per-instant lift */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tfunc_tinstant(TSEQUENCE_INST_N(seq, i), lfinfo);
-  /* Honor reslinear when the input is LINEAR and the producer declared the
-   * result is not.  Same idiom as tfunc_tsequence_base. */
-  if (interp == LINEAR && ! lfinfo->reslinear)
-    interp = STEP;
-  /* The last two values of sequences with step interpolation and exclusive
-   * upper bound must be equal */
-  if (! seq->period.upper_inc && interp == STEP && seq->count >= 2)
-  {
-    TInstant *inst = instants[seq->count - 1];
-    Datum value = tinstant_value_p(instants[seq->count - 2]);
-    instants[seq->count - 1] = tinstant_make(value, lfinfo->restype, inst->t);
-    pfree(inst);
-  }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+    seq->period.upper_inc, lift_result_interp(seq, lfinfo->restype),
+    NORMALIZE);
 }
 
 /**
@@ -410,11 +359,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tfunc_tinstant_base(TSEQUENCE_INST_N(seq, i), value, lfinfo);
-  /* Set the interpolation depending on the one of the sequence and the result
-   * as stated in the `lfinfo` structure */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (interp == LINEAR && ! lfinfo->reslinear)
-    interp = STEP;
+  interpType interp = lift_result_interp(seq, lfinfo->restype);
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
   if (! seq->period.upper_inc && interp == STEP)

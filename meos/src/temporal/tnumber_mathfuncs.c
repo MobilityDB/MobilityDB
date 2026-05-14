@@ -743,37 +743,6 @@ datum_exp(Datum d)
 }
 
 /**
- * @brief Return 1 if the chord-error maximum of exp lies strictly inside
- * (@p lower, @p upper) on the linear segment [start@lower, end@upper],
- * 0 otherwise
- * @details Solves the slope-matching equation
- * @p e^(x*) = (e^@p end - e^@p start) / (@p end - @p start)
- * for @p x*, the unique point where the slope of @p exp equals the chord
- * slope.  Inserting one instant there reduces the piecewise-linear
- * approximation error from first- to second-order in the segment width.
- * @pre The segment is not constant.
- * @post As there is a single turning point, @p t2 is set to @p t1.
- */
-static int
-tfloat_exp_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  double a = DatumGetFloat8(start);
-  double b = DatumGetFloat8(end);
-  if (a == b) return 0;
-  long double duration = (long double) (upper - lower);
-  long double slope = (expl((long double) b) - expl((long double) a))
-                    / ((long double) b - (long double) a);
-  long double fraction = (logl(slope) - (long double) a)
-                       / ((long double) b - (long double) a);
-  if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
-    return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
-  return 1;
-}
-
-/**
  * @ingroup meos_temporal_math
  * @brief Return the exponential of a double
  * @param[in] temp Temporal value
@@ -784,14 +753,13 @@ tfloat_exp(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-
+  
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_exp;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloat_exp_turnpt : NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -842,36 +810,6 @@ datum_ln(Datum d)
 }
 
 /**
- * @brief Return 1 if the chord-error maximum of ln lies strictly inside
- * (@p lower, @p upper) on the linear segment [start@lower, end@upper],
- * 0 otherwise
- * @details The slope-matching point is the logarithmic mean
- * @p x* = (@p end - @p start) / ln(@p end / @p start), which always lies
- * strictly between @p start and @p end for unequal positive values; the
- * in-range guard is defensive against floating-point rounding.
- * @pre The segment is not constant; both endpoints are strictly positive.
- * @post As there is a single turning point, @p t2 is set to @p t1.
- */
-static int
-tfloat_ln_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  double a = DatumGetFloat8(start);
-  double b = DatumGetFloat8(end);
-  if (a == b) return 0;
-  long double duration = (long double) (upper - lower);
-  long double xstar = ((long double) b - (long double) a)
-                    / (logl((long double) b) - logl((long double) a));
-  long double fraction = (xstar - (long double) a)
-                       / ((long double) b - (long double) a);
-  if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
-    return 0;
-  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
-  return 1;
-}
-
-/**
  * @ingroup meos_temporal_math
  * @brief Return the natural logarithm of a double
  * @param[in] temp Temporal value
@@ -889,14 +827,13 @@ tfloat_ln(const Temporal *temp)
       "Cannot take logarithm of zero or a negative number");
     return NULL;
   }
-
+  
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_ln;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloat_ln_turnpt : NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -946,20 +883,6 @@ datum_log10(Datum d)
 }
 
 /**
- * @brief Return 1 if the chord-error maximum of log10 lies strictly inside
- * (@p lower, @p upper), 0 otherwise
- * @details log10(x) = ln(x)/ln(10); the constant factor cancels in the
- * slope-matching condition, so the turning-point fraction is identical to
- * #tfloat_ln_turnpt.
- */
-static int
-tfloat_log10_turnpt(Datum start, Datum end,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  return tfloat_ln_turnpt(start, end, lower, upper, t1, t2);
-}
-
-/**
  * @ingroup meos_temporal_math
  * @brief Return the natural logarithm of a double
  * @param[in] temp Temporal value
@@ -977,14 +900,13 @@ tfloat_log10(const Temporal *temp)
       "Cannot take logarithm of zero or a negative number");
     return NULL;
   }
-
+  
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_log10;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfn_unary = lfinfo.reslinear ? &tfloat_log10_turnpt : NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 

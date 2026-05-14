@@ -296,7 +296,7 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
   char str1[18];
   /* Determine whether an interpolation prefix must follow the SRID prefix */
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
-  bool interp_prefix = temptype_supports_linear(temp->temptype) && interp == STEP;
+  bool interp_prefix = temptype_continuous(temp->temptype) && interp == STEP;
   if (srid > 0)
     /* SRID_MAXIMUM is defined by PostGIS as 999999 */
     snprintf(str1, sizeof(str1), "SRID=%d%c", srid, interp_prefix ? ',' : ';');

@@ -283,7 +283,7 @@ extern bool temporal_type(MeosType type);
 #ifndef NDEBUG
 extern bool temporal_basetype(MeosType type);
 #endif
-extern bool temptype_supports_linear(MeosType type);
+extern bool temptype_continuous(MeosType type);
 extern bool basetype_byvalue(MeosType type);
 extern bool basetype_varlength(MeosType type);
 extern int16 meostype_length(MeosType type);

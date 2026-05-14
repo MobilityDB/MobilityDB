@@ -575,7 +575,7 @@ tspatial_parse(const char **str, MeosType temptype)
   int temp_srid = SRID_UNKNOWN;
   srid_parse(str, &temp_srid);
 
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */
   if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
   {

@@ -64,7 +64,6 @@ typedef struct
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
   bool ever;                  /**< True/false when computing the ever/always semantics */
-  tpfunc_unary tpfn_unary;    /**< Turning point function for unary lifts */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;

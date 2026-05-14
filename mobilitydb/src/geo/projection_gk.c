@@ -272,10 +272,9 @@ tgeompoint_transform_gk(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
-  /* Gauss-Krueger is a smooth coordinate transform; treat as affine */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }

@@ -3,6 +3,7 @@ SET(LOCAL_FILES
   251_h3indexset
   254_h3indexset_ops
   260_h3index_sets
+  289_h3_geo
   270_th3index
   271_th3index_ops
   272_th3index_gist

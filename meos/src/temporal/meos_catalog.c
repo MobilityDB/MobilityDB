@@ -775,6 +775,9 @@ set_basetype(MeosType type)
 #if POSE || RGEO
     || type == T_POSE
 #endif
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 #endif
@@ -1147,15 +1150,10 @@ temporal_basetype(MeosType type)
 #endif
 
 /**
- * @brief Return true if the temporal type supports LINEAR interpolation
- * between samples
- * @note Every MEOS temporal type is continuous in the sense that it has a
- * value at every instant in its domain; this predicate identifies the
- * subset whose values can vary linearly between samples (as opposed to
- * STEP-only types like tbool, tint, ttext, tgeometry, tgeography, th3index).
+ * @brief Return true if the type is a temporal continuous type
  */
 inline bool
-temptype_supports_linear(MeosType type)
+temptype_continuous(MeosType type)
 {
   return (type == T_TFLOAT || type == T_TDOUBLE2 || type == T_TDOUBLE3 ||
       type == T_TDOUBLE4 || type == T_TGEOMPOINT || type == T_TGEOGPOINT

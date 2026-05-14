@@ -355,6 +355,7 @@ tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_cbuffer_distance;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
@@ -403,6 +404,7 @@ tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_cbuffer_distance;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp1->temptype;
   lfinfo.argtype[1] = temp2->temptype;
   lfinfo.restype = T_TFLOAT;
