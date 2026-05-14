@@ -160,7 +160,7 @@ h3_buf_to_set(h3_buf *buf)
  * is in degrees per single sample.
  *****************************************************************************/
 
-static double
+double
 h3_sample_step_deg(int32 resolution)
 {
   double edge_m;
@@ -170,7 +170,7 @@ h3_sample_step_deg(int32 resolution)
   return (edge_m / 2.0) / 111320.0;
 }
 
-static inline H3Index
+H3Index
 h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 {
   LatLng ll = { .lat = degsToRads(lat_deg), .lng = degsToRads(lng_deg) };

@@ -93,6 +93,15 @@ extern GSERIALIZED *h3_cell_to_gs_boundary(H3Index cell);
  * th3index_latlng.c; also called from th3index_edges.c. */
 extern GSERIALIZED *cell_boundary_to_gs(const CellBoundary *bnd);
 
+/* Cell-sampling helpers shared between the static-geo walker
+ * (h3_geo.c::linestring_to_cells_into) and the temporal densifier
+ * (th3index_latlng.c::tpointseq_densify_to_th3index). Nyquist step
+ * = (edge_m / 2) / 111320 m-per-degree; cell lookup is a thin
+ * latLngToCell wrapper that returns 0 on libh3 error. */
+extern double h3_sample_step_deg(int32 resolution);
+extern H3Index h3_latlng_deg_to_cell(double lat_deg, double lng_deg,
+  int32 resolution);
+
 /* Hierarchy — next-resolution conveniences. Bodies in
  * th3index_hierarchy.c. */
 extern H3Index h3_cell_to_parent_next_meos(H3Index cell);

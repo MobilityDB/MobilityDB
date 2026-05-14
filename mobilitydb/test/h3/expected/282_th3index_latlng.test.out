@@ -46,12 +46,18 @@ SELECT h3_get_resolution(h3_latlng_to_cell(
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_get_resolution(h3_latlng_to_cell(
-  tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
-  9));
-                        h3_get_resolution                         
-------------------------------------------------------------------
- [9@Mon Jan 01 00:00:00 2001 PST, 9@Tue Jan 02 00:00:00 2001 PST]
+WITH densified AS (
+  SELECT h3_latlng_to_cell(
+    tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
+    9) AS t
+)
+SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) AS start_cell_preserved,
+       endValue(t)   = geoToH3Cell(geometry 'SRID=4326;POINT(2.35 48.86)', 9)   AS end_cell_preserved,
+       numValues(getValues(t)) > 1000 AS path_densified
+FROM densified;
+ start_cell_preserved | end_cell_preserved | path_densified 
+----------------------+--------------------+----------------
+ t                    | t                  | t
 (1 row)
 
 SELECT h3_get_resolution(h3_latlng_to_cell(

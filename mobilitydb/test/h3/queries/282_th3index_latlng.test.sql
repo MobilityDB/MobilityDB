@@ -53,10 +53,21 @@ SELECT h3_cell_to_latlng_tgeompoint(th3index
 SELECT h3_get_resolution(h3_latlng_to_cell(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 
--- Sequence form
-SELECT h3_get_resolution(h3_latlng_to_cell(
-  tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
-  9));
+-- Sequence form. The densifying conversion resamples the trajectory into the
+-- H3 cells its great-circle path crosses. The cell-crossing timestamps are
+-- floating-point geometry whose low digits vary across build configurations,
+-- so the test asserts the build-stable invariants: the densified sequence
+-- preserves the endpoint cells (equal to the direct per-point conversion) and
+-- inserts the intermediate cells the path traverses.
+WITH densified AS (
+  SELECT h3_latlng_to_cell(
+    tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
+    9) AS t
+)
+SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) AS start_cell_preserved,
+       endValue(t)   = geoToH3Cell(geometry 'SRID=4326;POINT(2.35 48.86)', 9)   AS end_cell_preserved,
+       numValues(getValues(t)) > 1000 AS path_densified
+FROM densified;
 
 -------------------------------------------------------------------------------
 -- h3_latlng_to_cell(tgeompoint, integer)
