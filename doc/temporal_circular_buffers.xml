@@ -735,6 +735,19 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
    Cbuffer(Point(2 2),0.7)@2001-01-03 00:00:00+01]} */
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tcbuffer_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restrict a temporal circular buffer to (the complement of) a spatiotemporal box</para>
+				<para><varname>atStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
+				<para><varname>minusStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
+  Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
+-- {[Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.5)@2000-01-02 00:00:00+01)}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

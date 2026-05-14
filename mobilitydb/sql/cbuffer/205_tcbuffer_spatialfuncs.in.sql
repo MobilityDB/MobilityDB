@@ -108,15 +108,15 @@ CREATE FUNCTION minusGeometry(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
