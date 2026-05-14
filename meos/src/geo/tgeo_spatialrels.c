@@ -295,21 +295,24 @@ geo_dwithin_fn_geo(int16 flags1, uint8_t flags2)
  * @brief Generic spatial relationship for the trajectory or traversed area
  * of a temporal geo and a geometry
  * @details The function computes the function passed as parameter with the
- * trajectory or the traversed area of the temporal geometry and the geometry
+ * trajectory or the traversed area of the temporal geometry and the geometry.
+ * When the traversed area is a geometry collection the function iterates over
+ * each composing geometry; the ever flag selects whether the iteration
+ * short-circuits on the first true element (EVER) or on the first false
+ * element (ALWAYS).
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] param Parameter
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
+ * @param[in] ever True for the ever semantics (any element satisfies),
+ *  false for the always semantics (every element satisfies)
  * @return On error return -1
- * @note Since some GEOS versions do not support geometry collections, the
- * function iterates for each geometry of the collection and returns when the
- * function is true for one of them.
  */
 static int
 spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
-  varfunc func, int numparam, bool invert)
+  varfunc func, int numparam, bool invert, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
@@ -318,7 +321,7 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
   GSERIALIZED *trav = tpoint_type(temp->temptype) ?
-    tpoint_trajectory(temp, UNARY_UNION_NO) : 
+    tpoint_trajectory(temp, UNARY_UNION_NO) :
     tgeo_traversed_area(temp, UNARY_UNION_NO);
   Datum dtrav, result;
 
@@ -340,8 +343,10 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
     return result ? 1 : 0;
   }
 
-  /* Call the GEOS function for each element in the collection */
+  /* Iterate over the composing geometries; the empty collection case is
+   * caught by the vacuous default (false for EVER, true for ALWAYS). */
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(trav));
+  result = ever ? (Datum) 0 : (Datum) 1;
   for (uint32_t i = 0; i < coll->ngeoms; i++)
   {
     const LWGEOM *elem = lwcollection_getsubgeom((LWCOLLECTION *) coll, i);
@@ -358,7 +363,7 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
     }
     /* We cannot lwgeom_free((LWGEOM *) coll); */
     pfree(DatumGetPointer(dtrav));
-    if (result)
+    if ((ever && result) || (! ever && ! result))
       break;
   }
   lwcollection_free(coll);
@@ -591,9 +596,9 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
   char p[10] = "T********";
   int result = ever ?
     spatialrel_tgeo_geo(temp, gs, PointerGetDatum(&p),
-      (varfunc) &datum_geom_relate_pattern, 3, invert) :
+      (varfunc) &datum_geom_relate_pattern, 3, invert, EVER) :
     spatialrel_tgeo_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, invert);
+      (varfunc) &datum_geom_contains, 2, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -769,7 +774,7 @@ ea_covers_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
     ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_covers, EVER, invert) :
     /* Compute the result from the traversed area and the geometry */
     spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geom_covers,
-      2, invert);
+      2, invert, ALWAYS);
   return result ? 1 : 0;
 }
 
@@ -945,12 +950,12 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 
   /* EVER */
 
-  /* Temporal point case */
+  /* Temporal point case: "ever disjoint" reduces to "not always covered". */
   if (tpoint_type(temp->temptype))
   {
     datum_func2 func = &datum_geom_covers;
     result = spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-      INVERT);
+      INVERT, ALWAYS);
     return INVERT_RESULT(result);
   }
 
@@ -1096,7 +1101,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* EVER */
   datum_func2 func = geo_intersects_fn_geo(temp->flags, gs->gflags);
   return spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-    INVERT_NO);
+    INVERT_NO, EVER);
 }
 
 /**
@@ -1467,13 +1472,13 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     datum_func3 func = geo_dwithin_fn_geo(temp->flags, gs->gflags);
     return spatialrel_tgeo_geo(temp, gs, Float8GetDatum(dist),
-      (varfunc) func, 3, INVERT_NO);
+      (varfunc) func, 3, INVERT_NO, EVER);
   }
 
   /* ALWAYS */
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
   int result = spatialrel_tgeo_geo(temp, buffer, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, INVERT);
+    (varfunc) &datum_geom_covers, 2, INVERT, ALWAYS);
   pfree(buffer);
   return result;
 }
