@@ -1467,6 +1467,24 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* Bounding box prefilter (planar only): for EVER the boxes must overlap;
+   * for ALWAYS temp's box must be contained in the geom box expanded by
+   * dist. The sibling ea_intersects_tpoint_geo and ea_touches_tgeo_geo use
+   * the same pattern (without the dist expansion). Skipped for geodetic
+   * inputs since the bbox is in degrees while dist is in metres. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  {
+    STBox *box_temp = tspatial_to_stbox(temp);
+    STBox *box_geom = geo_stbox(gs);
+    STBox *box_geom_exp = stbox_expand_space(box_geom, dist);
+    bool pass = ever
+      ? overlaps_stbox_stbox(box_geom_exp, box_temp)
+      : contains_stbox_stbox(box_geom_exp, box_temp);
+    pfree(box_temp); pfree(box_geom); pfree(box_geom_exp);
+    if (! pass)
+      return 0;
+  }
+
   /* EVER */
   if (ever)
   {
