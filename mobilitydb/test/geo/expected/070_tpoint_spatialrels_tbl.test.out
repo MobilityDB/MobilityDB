@@ -130,6 +130,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1
     14
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eCovers(g, temp);
+ count 
+-------
+  3280
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aCovers(g, temp);
+ count 
+-------
+   173
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eIntersects(g, temp);
  count 
 -------

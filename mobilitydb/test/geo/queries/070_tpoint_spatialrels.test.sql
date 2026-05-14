@@ -116,6 +116,25 @@ SELECT eDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01
 SELECT eDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 
 -------------------------------------------------------------------------------
+-- eCovers, aCovers
+-------------------------------------------------------------------------------
+
+------------------------
+-- Geo x Temporal
+------------------------
+-- 2D
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+SELECT aCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+SELECT aCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+-- Empty
+SELECT eCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT aCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+-- Geography
+SELECT eCovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT aCovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+
+-------------------------------------------------------------------------------
 -- eIntersects
 -------------------------------------------------------------------------------
 

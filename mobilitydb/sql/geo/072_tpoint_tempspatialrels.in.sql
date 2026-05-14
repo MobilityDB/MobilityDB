@@ -64,6 +64,19 @@ CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * tCovers
+ *
+ * For a temporal point the value at every instant is a point; ST_Covers and
+ * ST_Intersects are equivalent on a (polygon, point) pair, so the tCovers
+ * overload on tgeompoint dispatches to the same C kernel as tIntersects.
+ *****************************************************************************/
+
+CREATE FUNCTION tCovers(geometry, tgeompoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * tIntersects
  *****************************************************************************/
 

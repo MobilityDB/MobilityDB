@@ -252,6 +252,24 @@ SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01
 ERROR:  Operation on mixed SRID
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
+SELECT tCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint 'Point(1 1)@2000-01-01');
+            tcovers             
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+                                                                      tcovers                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 11:22:06.315789 2000 PST], (f@Sat Jan 01 11:22:06.315789 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Polygon empty', tgeompoint 'Point(1 1)@2000-01-01');
+ tcovers 
+---------
+ 
+(1 row)
+
 SELECT tIntersects(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
  tintersects 
 -------------

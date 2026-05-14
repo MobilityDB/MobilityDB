@@ -342,6 +342,54 @@ CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
 CONTEXT:  SQL function "edisjoint" statement 1
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-02]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ 
+(1 row)
+
+SELECT aCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ acovers 
+---------
+ 
+(1 row)
+
+SELECT eCovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ acovers 
+---------
+ t
+(1 row)
+
 SELECT eIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  eintersects 
 -------------

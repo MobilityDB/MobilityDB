@@ -100,6 +100,14 @@ SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 
 -------------------------------------------------------------------------------
+-- tCovers
+-------------------------------------------------------------------------------
+
+SELECT tCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tCovers(geometry 'Polygon((0 0, 10 0, 10 10, 0 10, 0 0))', tgeompoint '[Point(1 1)@2000-01-01, Point(20 20)@2000-01-02]');
+SELECT tCovers(geometry 'Polygon empty', tgeompoint 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
 -- tIntersects
 -------------------------------------------------------------------------------
 

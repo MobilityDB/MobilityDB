@@ -111,6 +111,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE tCovers(g, temp) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------

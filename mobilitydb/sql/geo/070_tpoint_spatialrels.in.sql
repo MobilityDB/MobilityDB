@@ -178,6 +178,37 @@ CREATE FUNCTION aDisjoint(tgeogpoint, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * eCovers, aCovers
+ *
+ * For a temporal point the value at every instant is a point; ST_Covers and
+ * ST_Intersects are equivalent on a (polygon, point) pair, so the Covers
+ * overloads on tgeompoint / tgeogpoint dispatch to the same C kernels as the
+ * Intersects overloads.
+ *****************************************************************************/
+
+CREATE FUNCTION eCovers(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eCovers(geography, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aCovers(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aCovers(geography, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * eIntersects, aIntersects
  *****************************************************************************/
 

@@ -88,6 +88,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
   WHERE tDisjoint(t1.temp, t2.temp) ?= true <> eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
+-- tCovers
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE tCovers(g, temp) IS NOT NULL;
+
+-------------------------------------------------------------------------------
 -- tIntersects
 -------------------------------------------------------------------------------
 

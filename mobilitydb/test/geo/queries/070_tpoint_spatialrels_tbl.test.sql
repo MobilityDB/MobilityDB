@@ -77,6 +77,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
+-- eCovers, aCovers
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eCovers(g, temp);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aCovers(g, temp);
+
+-------------------------------------------------------------------------------
 -- eIntersects, aIntersects
 -- aIntersects is not provided for geography
 -------------------------------------------------------------------------------
