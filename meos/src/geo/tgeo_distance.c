@@ -1210,6 +1210,21 @@ mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return DBL_MAX;
+  /* Outer STBox prune: every pair of points on the two trajectories is
+   * contained in the respective STBoxes, so the minimum spatial distance
+   * is bounded below by the spatial distance between the STBoxes. If
+   * that lower bound already meets or exceeds the running threshold the
+   * caller cannot improve, so short-circuit without entering the
+   * segment kernel. Critical for cross-join aggregations where most
+   * pairs are far apart relative to the running min. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+  {
+    const STBox *bbox1 = (const STBox *) temporal_bbox_ptr(temp1);
+    const STBox *bbox2 = (const STBox *) temporal_bbox_ptr(temp2);
+    double bbox_dist = stbox_spatial_distance(bbox1, bbox2);
+    if (bbox_dist >= threshold)
+      return threshold;
+  }
   bool inline_eligible =
     ! MEOS_FLAGS_GET_Z(temp1->flags) &&
     ! MEOS_FLAGS_GET_GEODETIC(temp1->flags) &&
