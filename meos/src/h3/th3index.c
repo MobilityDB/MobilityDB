@@ -4,27 +4,6 @@
  * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
- * MobilityDB includes portions of PostGIS version 3 source code released
- * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2025, PostGIS contributors
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written
- * agreement is hereby granted, provided that the above copyright notice and
- * this paragraph and the following two paragraphs appear in all copies.
- *
- * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
- * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
- * OF SUCH DAMAGE.
- *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
  *****************************************************************************/
 
 /**
@@ -62,7 +41,6 @@
 #include <meos_h3.h>
 
 #include "temporal/temporal.h"
-#include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -367,23 +345,20 @@ th3index_value_at_timestamptz(const Temporal *temp, TimestampTz t,
 /*****************************************************************************
  * MEOS-level conversions between th3index and tbigint
  *
- * The int64 payload is identical between tbigint and h3index basetypes,
- * but the embedded bounding box differs: tbigint sequences carry a TBox
- * while th3index sequences carry an STBox. The conversion is therefore
- * implemented by lifting an identity Datum function with the target
- * restype so that tinstant/tsequence/tsequenceset are rebuilt at the
- * correct shape and the bbox is recomputed from the new basetype.
+ * The SQL surface exposes these as ASSIGNMENT casts (`270_th3index.in.sql`),
+ * which require an explicit `::`. At the MEOS API level we provide
+ * the same round trip without the SQL cast machinery, which is
+ * useful for callers writing code against libmeos directly.
+ *
+ * Since the on-disk payload is bit-identical, both functions are
+ * shallow MeosType relabels — no Datum rewriting is needed. We
+ * copy the Temporal header and rewrite the temptype field.
  *****************************************************************************/
-
-static Datum
-datum_h3index_identity(Datum d)
-{
-  return d;
-}
 
 /**
  * @ingroup meos_h3_conversion
- * @brief Convert a `tbigint` to a `th3index`. Caller owns the result.
+ * @brief Convert a `tbigint` to a `th3index`. Shallow copy — no
+ * payload rewrite. Caller owns the result.
  */
 Temporal *
 tbigint_to_th3index(const Temporal *temp)
@@ -391,30 +366,23 @@ tbigint_to_th3index(const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type((Temporal *) temp, T_TBIGINT))
     return NULL;
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) datum_h3index_identity;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TBIGINT;
-  lfinfo.restype = T_TH3INDEX;
-  return tfunc_temporal(temp, &lfinfo);
+  Temporal *result = temporal_copy(temp);
+  result->temptype = T_TH3INDEX;
+  return result;
 }
 
 /**
  * @ingroup meos_h3_conversion
- * @brief Convert a `th3index` to a `tbigint`. Caller owns the result.
+ * @brief Convert a `th3index` to a `tbigint`. Shallow copy — no
+ * payload rewrite. Caller owns the result.
  */
 Temporal *
 th3index_to_tbigint(const Temporal *temp)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) datum_h3index_identity;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TBIGINT;
-  return tfunc_temporal(temp, &lfinfo);
+  Temporal *result = temporal_copy(temp);
+  result->temptype = T_TBIGINT;
+  return result;
 }
 
 /*****************************************************************************

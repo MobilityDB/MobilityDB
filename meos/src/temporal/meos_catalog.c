@@ -1150,10 +1150,15 @@ temporal_basetype(MeosType type)
 #endif
 
 /**
- * @brief Return true if the type is a temporal continuous type
+ * @brief Return true if the temporal type supports LINEAR interpolation
+ * between samples
+ * @note Every MEOS temporal type is continuous in the sense that it has a
+ * value at every instant in its domain; this predicate identifies the
+ * subset whose values can vary linearly between samples (as opposed to
+ * STEP-only types like tbool, tint, ttext, tgeometry, tgeography, th3index).
  */
 inline bool
-temptype_continuous(MeosType type)
+temptype_supports_linear(MeosType type)
 {
   return (type == T_TFLOAT || type == T_TDOUBLE2 || type == T_TDOUBLE3 ||
       type == T_TDOUBLE4 || type == T_TGEOMPOINT || type == T_TGEOGPOINT

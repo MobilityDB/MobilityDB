@@ -4,27 +4,6 @@
  * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
- * MobilityDB includes portions of PostGIS version 3 source code released
- * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2025, PostGIS contributors
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written
- * agreement is hereby granted, provided that the above copyright notice and
- * this paragraph and the following two paragraphs appear in all copies.
- *
- * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
- * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
- * OF SUCH DAMAGE.
- *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
  *****************************************************************************/
 
 /**
@@ -103,28 +82,17 @@ CREATE CAST (th3index AS th3index) WITH FUNCTION th3index(th3index, integer)
 /******************************************************************************
  * Explicit assignment casts to / from tbigint
  *
- * The int64 payload is shared, but th3index sequences carry a geodetic
- * STBox bbox while tbigint sequences carry a TBox; a binary coercion
- * would leave the wrong bbox shape in place and the wrong temptype byte
- * inside the Temporal header. The cast therefore goes through a real
- * function that lifts an identity Datum function so the result is
- * rebuilt at the correct shape. The cast is declared `AS ASSIGNMENT`
- * so the user must spell out `::th3index` or `::tbigint` — mistakes
- * surface as a clear binder error rather than silently reinterpreting
- * an arbitrary int64 trajectory as a stream of H3 cells.
+ * th3index and tbigint share the same on-disk representation (both are
+ * temporal carriers over an int64 payload). A binary-coercion cast is
+ * therefore both correct and zero-cost; it is declared `AS ASSIGNMENT`
+ * (not IMPLICIT) so the user has to spell out `::th3index` or
+ * `::tbigint` — mistakes surface as a clear "function
+ * h3_get_resolution(tbigint) does not exist" binder error rather than
+ * silently reinterpreting arbitrary int64 trajectories as H3 cells.
  ******************************************************************************/
 
-CREATE FUNCTION th3index(tbigint)
-  RETURNS th3index
-  AS 'MODULE_PATHNAME', 'Tbigint_to_th3index'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbigint(th3index)
-  RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Th3index_to_tbigint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tbigint AS th3index) WITH FUNCTION th3index(tbigint) AS ASSIGNMENT;
-CREATE CAST (th3index AS tbigint) WITH FUNCTION tbigint(th3index) AS ASSIGNMENT;
+CREATE CAST (tbigint AS th3index) WITHOUT FUNCTION AS ASSIGNMENT;
+CREATE CAST (th3index AS tbigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************
  * Comparison functions and B-tree / hash indexing

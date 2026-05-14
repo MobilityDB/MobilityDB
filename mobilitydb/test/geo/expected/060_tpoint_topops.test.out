@@ -3353,7 +3353,7 @@ ERROR:  Operation on mixed SRID
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
@@ -3377,7 +3377,7 @@ SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1)@2000-01-0
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
@@ -3401,7 +3401,7 @@ SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1.5 1.5)@2000-
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -3425,7 +3425,7 @@ SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1 1)@2000-01
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -3545,7 +3545,7 @@ SELECT stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))' -|- tgeogpoint '{[Point(
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
@@ -3569,7 +3569,7 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
@@ -3593,7 +3593,7 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
@@ -3617,7 +3617,7 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';

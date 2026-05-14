@@ -1,7 +1,6 @@
 add_library(pg_h3 OBJECT
   h3index.c
   h3index_sets.c
-  th3index.c
   th3index_inspection.c
   th3index_hierarchy.c
   th3index_latlng.c

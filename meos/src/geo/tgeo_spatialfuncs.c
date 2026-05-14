@@ -417,7 +417,7 @@ npoint_flags(void)
 }
 #endif /* NPOINT */ 
 
-#if POSE || RGEO
+#if POSE || RGEO 
 /**
  * @brief Get the MEOS flags from a pose
  */
@@ -433,12 +433,14 @@ pose_flags(Pose *pose)
 
 #if H3
 /**
- * @brief Get the MEOS flags from an H3 cell index
+ * @brief Get the MEOS flags from an H3 cell index. H3 cells are by
+ * construction on the WGS84 sphere (2-D geodetic): X = true, GEODETIC
+ * = true; Z and T are not set at the basetype level.
  */
 static int16
 h3index_flags(void)
 {
-  int16 result = 0; /* Set all flags to false */
+  int16 result = 0;
   MEOS_FLAGS_SET_X(result, true);
   MEOS_FLAGS_SET_GEODETIC(result, true);
   return result;
@@ -1667,9 +1669,10 @@ tgeo_centroid(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) 
     (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
-  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  /* Centroid is affine in vertex positions: linear input -> linear output */
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
