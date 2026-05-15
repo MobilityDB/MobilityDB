@@ -1,0 +1,202 @@
+// statement list
+start: custom_md_statement (";" custom_md_statement)* ";"?
+
+// markdown or statement
+custom_md_statement: (custom_markdown)* custom_decorated_statement
+
+custom_decorated_statement: [custom_decorators] statement
+
+// statement
+?statement: create_type_stmt
+          | create_cast_stmt
+          | create_opcl_stmt
+          | create_oper_stmt
+          | create_func_stmt
+          | create_agg_stmt
+          | comment_on_stmt
+
+custom_decorators: ("--@" /([^\n])+/)+
+
+custom_markdown: /--\|[ \t]?([^\n])+/
+    | "--|\n"
+
+// -----------------------------------------------------------------------------
+// --------------- Basic SQL below ---------------------------------------------
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// CREATE TYPE name ...
+create_type_stmt: "CREATE" "TYPE" CNAME "AS"? ("(" /([^\)])+/ ")")?
+
+// -----------------------------------------------------------------------------
+// CREATE CAST ...
+create_cast_stmt: "CREATE" "CAST" "(" DATATYPE "AS" DATATYPE ")" "WITH" "FUNCTION" CNAME "(" /([^\)])+/ ")"
+
+// -----------------------------------------------------------------------------
+// CREATE OPERATOR CLASS name [ DEFAULT ] FOR TYPE data_type
+//   USING index_method [ FAMILY family_name ] AS
+//   {  OPERATOR strategy_number operator_name [ ( op_type, op_type ) ] [ FOR SEARCH | FOR ORDER BY sort_family_name ]
+//    | FUNCTION support_number [ ( op_type [ , op_type ] ) ] function_name ( argument_type [, ...] )
+//    | STORAGE storage_type
+//   } [, ... ]
+create_opcl_stmt: "CREATE" "OPERATOR" "CLASS" CNAME "DEFAULT"? "FOR" "TYPE" CNAME "USING" CNAME "AS" create_opcl_list
+create_opcl_opts: "OPERATOR" SIGNED_NUMBER OPERATOR
+| "FUNCTION" SIGNED_NUMBER fun_name "(" [argument_list] ")"
+create_opcl_list: create_opcl_opts ("," create_opcl_opts)*
+
+// -----------------------------------------------------------------------------
+// CREATE OPERATOR name (
+//     PROCEDURE = function_name
+//     [, LEFTARG = left_type ] [, RIGHTARG = right_type ]
+//     [, COMMUTATOR = com_op ] [, NEGATOR = neg_op ]
+//     [, RESTRICT = res_proc ] [, JOIN = join_proc ]
+//     [, HASHES ] [, MERGES ]
+// )
+create_oper_stmt: "CREATE" "OPERATOR" OPERATOR "(" create_oper_opts ")"
+create_oper_opt: /PROCEDURE/ "=" CNAME
+               | /LEFTARG/ "=" DATATYPE
+               | /RIGHTARG/ "=" DATATYPE
+               | /COMMUTATOR/ "=" OPERATOR
+               | /NEGATOR/ "=" OPERATOR
+               | /RESTRICT/ "=" CNAME
+               | /JOIN/ "=" CNAME
+               | /HASHES/
+               | /MERGES/
+create_oper_opts: create_oper_opt ("," create_oper_opt)*
+
+// -----------------------------------------------------------------------------
+// CREATE [ OR REPLACE ] FUNCTION
+//     name ( [ [ argmode ] [ argname ] argtype [ { DEFAULT | = } default_expr ] [, ...] ] )
+//     [ RETURNS rettype
+//       | RETURNS TABLE ( column_name column_type [, ...] ) ]
+//   { LANGUAGE lang_name
+//     | TRANSFORM { FOR TYPE type_name } [, ... ]
+//     | WINDOW
+//     | IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF
+//     | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
+//     | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+//     | COST execution_cost
+//     | ROWS result_rows
+//     | SET configuration_parameter { TO value | = value | FROM CURRENT }
+//     | AS 'definition'
+//     | AS 'obj_file', 'link_symbol'
+//   } ...
+//     [ WITH ( attribute [, ...] ) ]
+create_func_stmt: "CREATE" ("OR" "REPLACE")? "FUNCTION" fun_name "(" [argument_list] ")" [create_fun_rets] create_fun_opts*
+?create_fun_rets: ("RETURNS" "TABLE" "(" create_fun_ret_table_columns ")")
+                  | ("RETURNS" create_fun_rettype)
+create_fun_opts: "LANGUAGE" (CNAME|"'" CNAME "'")
+              | ("IMMUTABLE" | "STABLE" | "VOLATILE" | ("NOT"? "LEAKPROOF"))
+              | (("CALLED" "ON" "NULL" "INPUT") | ("RETURNS" "NULL" "ON" "NULL" "INPUT") | "STRICT")
+              | ("PARALLEL" ("UNSAFE" | "RESTRICTED" | "SAFE"))
+              | "AS" string ("," string)?
+create_fun_ret_table_columns: column_list
+column_list: column ("," column)*
+argument_list: argument ("," argument)*
+!create_fun_rettype: ["SETOF"] DATATYPE
+
+// -----------------------------------------------------------------------------
+// CREATE [ OR REPLACE ] AGGREGATE name ( [ argmode ] [ argname ] arg_data_type [ , ... ] ) (
+//     SFUNC = sfunc,
+//     STYPE = state_data_type
+//     [ , SSPACE = state_data_size ]
+//     [ , FINALFUNC = ffunc ]
+//     [ , FINALFUNC_EXTRA ]
+//     [ , FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
+//     [ , COMBINEFUNC = combinefunc ]
+//     [ , SERIALFUNC = serialfunc ]
+//     [ , DESERIALFUNC = deserialfunc ]
+//     [ , INITCOND = initial_condition ]
+//     [ , MSFUNC = msfunc ]
+//     [ , MINVFUNC = minvfunc ]
+//     [ , MSTYPE = mstate_data_type ]
+//     [ , MSSPACE = mstate_data_size ]
+//     [ , MFINALFUNC = mffunc ]
+//     [ , MFINALFUNC_EXTRA ]
+//     [ , MFINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
+//     [ , MINITCOND = minitial_condition ]
+//     [ , SORTOP = sort_operator ]
+//     [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
+// )
+// create_agg_stmt: "CREATE" ("OR" "REPLACE")? "AGGREGATE" fun_name "(" [argument_list] ")" "(" agg_param_list ")"
+create_agg_stmt: "CREATE" ("OR" "REPLACE")? "AGGREGATE" fun_name "(" [argument_list] ")" "(" agg_param_list ")"
+agg_param_list: agg_param ("," agg_param)*
+agg_param: "sfunc" "=" fun_name
+         | "stype" "=" DATATYPE
+         | "finalfunc" "=" fun_name
+         | "parallel" "=" ("safe"|"restricted"|"unsafe")
+
+// -----------------------------------------------------------------------------
+// COMMENT ON
+// {
+//   ...
+//   CAST (source_type AS target_type) |
+//   ...
+//   FUNCTION function_name ( [ [ argmode ] [ argname ] argtype [, ...] ] ) |
+//   ...
+//   OPERATOR operator_name (left_type, right_type) |
+//   ...
+// } IS 'text'
+comment_on_stmt: "COMMENT" "ON" comment_on_type "IS" string
+comment_on_type: "CAST" "(" DATATYPE "AS" DATATYPE ")" -> comment_on_cast
+               | "FUNCTION" fun_name "(" [argument_list] ")" -> comment_on_function
+               | "OPERATOR" OPERATOR "(" argument "," argument ")" -> comment_on_operator
+
+// -----------------------------------------------------------------------------
+// SIMPLE RULES
+column: CNAME DATATYPE
+argument: [ARGMODE] [CNAME] DATATYPE ("DEFAULT" expr)?
+ARGMODE.2: "IN" | "OUT" | "INOUT"
+DATATYPE_SCALAR: "h3index"
+        | "raster"
+        | "summarystats"
+        | "h3_raster_summary_stats"
+        | "h3_raster_class_summary_item"
+        | "jsonb"
+        | "bigint"
+        | "boolean"
+        | "cstring"
+        | "double" WS "precision"
+        | "float"
+        | "geography"
+        | "geometry"
+        | "bytea"
+        | "int32"
+        | "int8"
+        | "integer"
+        | "internal"
+        | "int"
+        | "point"
+        | "polygon"
+        | "record"
+        | "text"
+        | "void"
+DATATYPE: DATATYPE_SCALAR "[]"?
+fun_name: [CNAME "."] CNAME
+?expr: atom | string
+atom: SIGNED_NUMBER -> number
+    | "TRUE" -> true
+    | "FALSE" -> false
+string: STRING
+
+// -----------------------------------------------------------------------------
+// TERMINALS
+// Terminals are used to match text into symbols.
+// They can be defined as a combination of literals and other terminals.
+LITERAL: SIGNED_NUMBER | ESCAPED_STRING
+OPERATOR: ("+"|"-"|"*"|"/"|"<"|">"|"="|"~"|"!"|"@"|"#"|"%"|"^"|"&"|"|"|"`"|"?")+
+STRING: "'" /([^'])+/ "'"
+      | "$$" /(.|\n)*?/ "$$"
+
+MULTI_COMMENT : "/*" /(.|\n)+/ "*/"
+SINGLE_COMMENT: "--" /[^\|@]/ /([^\n])*/
+
+COMMAND: "\\" /([^\n])+/
+
+// -----------------------------------------------------------------------------
+
+%import common (CNAME, INT, ESCAPED_STRING, _STRING_ESC_INNER, SIGNED_NUMBER, WS, NEWLINE)
+%ignore COMMAND
+%ignore MULTI_COMMENT
+%ignore SINGLE_COMMENT
+%ignore WS

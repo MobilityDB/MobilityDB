@@ -1,0 +1,91 @@
+# Token / macro substitutions applied by extract.py when transforming
+# h3-pg's `Fname(PG_FUNCTION_ARGS)` bodies into MEOS-compatible C.
+#
+# Three sections:
+#   arg_readers : match a line like "TYPE name = PG_GETARG_...(idx);"
+#                 and emit (c_type, arg_name) for the generated signature.
+#   returns     : map PG_RETURN_X(x) → a plain "return x;" with an inferred
+#                 C return type for the whole function.
+#   rewrites    : simple literal substitutions applied line-by-line to
+#                 the body after arg-readers and returns are consumed.
+#
+# When an h3-pg line matches none of the rules, extract.py emits a
+# "needs opt-out" diagnostic for that function. Moving it into
+# opt-out.yaml is the standard resolution.
+
+arg_readers:
+  # PG_GETARG_INT32(n)  →  int32 arg (plain)
+  - pattern: '^\s*(?:int|int32|int32_t)\s+(\w+)\s*=\s*PG_GETARG_INT32\(\d+\)\s*;\s*$'
+    c_type:  "int32"
+    emit:    "{arg}"
+
+  # PG_GETARG_INT64 (bigint)
+  - pattern: '^\s*(?:int64|int64_t)\s+(\w+)\s*=\s*PG_GETARG_INT64\(\d+\)\s*;\s*$'
+    c_type:  "int64"
+    emit:    "{arg}"
+
+  # PG_GETARG_BOOL
+  - pattern: '^\s*bool\s+(\w+)\s*=\s*PG_GETARG_BOOL\(\d+\)\s*;\s*$'
+    c_type:  "bool"
+    emit:    "{arg}"
+
+  # PG_GETARG_FLOAT8
+  - pattern: '^\s*(?:double|float8)\s+(\w+)\s*=\s*PG_GETARG_FLOAT8\(\d+\)\s*;\s*$'
+    c_type:  "double"
+    emit:    "{arg}"
+
+  # PG_GETARG_H3INDEX — h3-pg's own macro; returns H3Index (uint64)
+  - pattern: '^\s*H3Index\s+(\w+)\s*=\s*PG_GETARG_H3INDEX\(\d+\)\s*;\s*$'
+    c_type:  "H3Index"
+    emit:    "{arg}"
+
+  # PG_GETARG_OPTIONAL_RES(idx, cell, delta) — h3-pg's macro for
+  # "resolution arg with a default derived from the cell". MEOS
+  # callers always pass an explicit resolution, so we collapse it to
+  # a plain required int32 arg.
+  - pattern: '^\s*(?:int|int32|int32_t)\s+(\w+)\s*=\s*PG_GETARG_OPTIONAL_RES\([^)]*\)\s*;\s*$'
+    c_type:  "int32"
+    emit:    "{arg}"
+
+  # PG_GETARG_TEXT_PP — text arg, converted to C string
+  - pattern: '^\s*text\s*\*\s*(\w+)\s*=\s*PG_GETARG_TEXT_PP\(\d+\)\s*;\s*$'
+    c_type:  "const char *"
+    emit:    "{arg}"
+    post_emit: "/* MEOS: caller passes a C string; h3-pg converts text→cstring inline */"
+
+returns:
+  - pattern: '^\s*PG_RETURN_INT32\(([^)]*)\)\s*;\s*$'
+    c_type:  "int32"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_INT64\(([^)]*)\)\s*;\s*$'
+    c_type:  "int64"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_BOOL\(([^)]*)\)\s*;\s*$'
+    c_type:  "bool"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_FLOAT8\(([^)]*)\)\s*;\s*$'
+    c_type:  "double"
+    emit:    "return {expr};"
+  - pattern: '^\s*PG_RETURN_H3INDEX\(([^)]*)\)\s*;\s*$'
+    c_type:  "H3Index"
+    emit:    "return {expr};"
+
+rewrites:
+  # `PG_FREE_IF_COPY(x, n);`  → dropped (MEOS args aren't toasted)
+  - pattern: '^\s*PG_FREE_IF_COPY\([^)]*\)\s*;\s*$'
+    replace: ""
+
+  # `h3_assert(expr);`
+  #   → two-line guard:
+  #       `if ((expr) != E_SUCCESS)`
+  #       `  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");`
+  # The two-space continuation prefix is preserved by render_c's
+  # tab-only lstrip so the generated code stays under 80 columns.
+  - pattern: '^(\s*)h3_assert\(([^;]+)\)\s*;\s*$'
+    replace: "if ((\\2) != E_SUCCESS)\n  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, \"h3 library error\");"
+
+# Any function whose body contains tokens listed in the `opt-out`
+# section of opt-out.yaml is skipped by the extractor and must be
+# implemented by hand in `meos/src/h3/h3_adapter.c`. This keeps
+# complex PG-varlena adaptation (POLYGON, GSERIALIZED, text with
+# ereport, GUC reads) out of the generated path.
