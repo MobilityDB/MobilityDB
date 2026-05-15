@@ -1,0 +1,520 @@
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+VALUES (5, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>3</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Z coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>Z</pc:name>
+    <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>4</pc:position>
+    <pc:size>2</pc:size>
+    <pc:description>The intensity value is the integer representation of the pulse return magnitude. This value is optional and system specific. However, it should always be included if available.</pc:description>
+    <pc:name>Intensity</pc:name>
+    <pc:interpretation>uint16_t</pc:interpretation>
+    <pc:scale>1</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="compression">laz</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>'
+)
+,(10, 0, -- All (signed) interpretations, uncompressed
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension> <pc:position>1</pc:position> <pc:name>x</pc:name>
+    <pc:size>1</pc:size> <pc:interpretation>int8_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>2</pc:position> <pc:name>y</pc:name>
+    <pc:size>2</pc:size> <pc:interpretation>int8_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>3</pc:position> <pc:name>i2</pc:name>
+    <pc:size>2</pc:size> <pc:interpretation>int16_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>4</pc:position> <pc:name>i4</pc:name>
+    <pc:size>4</pc:size> <pc:interpretation>int32_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>5</pc:position> <pc:name>i8</pc:name>
+    <pc:size>8</pc:size> <pc:interpretation>int64_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>6</pc:position> <pc:name>f4</pc:name>
+    <pc:size>4</pc:size> <pc:interpretation>float</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension> <pc:position>7</pc:position> <pc:name>f8</pc:name>
+    <pc:size>8</pc:size> <pc:interpretation>double</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+</pc:PointCloudSchema>'
+);
+CREATE TABLE IF NOT EXISTS pa_test_laz (
+	id SERIAL,
+    pa PCPATCH(5)
+);
+\d pa_test_laz
+                              Table "public.pa_test_laz"
+ Column |    Type    | Collation | Nullable |                 Default                 
+--------+------------+-----------+----------+-----------------------------------------
+ id     | integer    |           | not null | nextval('pa_test_laz_id_seq'::regclass)
+ pa     | pcpatch(5) |           |          | 
+
+INSERT INTO pa_test_laz (pa) VALUES ('0000000005000000000000000200000002000000030000000500060000000200000003000000050008');
+INSERT INTO pa_test_laz (pa) VALUES ('000000000500000000000000020000000600000007000000050006000000090000000A00000005000A');
+INSERT INTO pa_test_laz (pa) VALUES ('0000000005000000000000000200000002000000030000000500060000000200000003000000050003');
+INSERT INTO pa_test_laz (pa) VALUES ('0000000005000000000000000200000002000000030000000500060000000200000003000000050001');
+SELECT pc_explode(pa) FROM pa_test_laz;
+               pc_explode               
+----------------------------------------
+ 01050000000200000003000000050000000600
+ 01050000000200000003000000050000000800
+ 01050000000600000007000000050000000600
+ 0105000000090000000A000000050000000A00
+ 01050000000200000003000000050000000600
+ 01050000000200000003000000050000000300
+ 01050000000200000003000000050000000600
+ 01050000000200000003000000050000000100
+(8 rows)
+
+SELECT pc_astext(pc_explode(pa)) FROM pa_test_laz;
+             pc_astext              
+------------------------------------
+ {"pcid":5,"pt":[0.02,0.03,0.05,6]}
+ {"pcid":5,"pt":[0.02,0.03,0.05,8]}
+ {"pcid":5,"pt":[0.06,0.07,0.05,6]}
+ {"pcid":5,"pt":[0.09,0.1,0.05,10]}
+ {"pcid":5,"pt":[0.02,0.03,0.05,6]}
+ {"pcid":5,"pt":[0.02,0.03,0.05,3]}
+ {"pcid":5,"pt":[0.02,0.03,0.05,6]}
+ {"pcid":5,"pt":[0.02,0.03,0.05,1]}
+(8 rows)
+
+SELECT * FROM pa_test_laz;
+ id |                                      pa                                      
+----+------------------------------------------------------------------------------
+  1 | 01050000000200000002000000140000000200000003000000050000000600000005A10000
+  2 | 0105000000020000000200000015000000060000000700000005000000060013884A3A000000
+  3 | 01050000000200000002000000150000000200000003000000050000000600000006D8000000
+  4 | 0105000000020000000200000015000000020000000300000005000000060000000B1E000000
+(4 rows)
+
+SELECT Sum(PC_NumPoints(pa)) FROM pa_test_laz;
+ sum 
+-----
+   8
+(1 row)
+
+SELECT Sum(PC_MemSize(pa)) FROM pa_test_laz;
+ sum 
+-----
+ 519
+(1 row)
+
+SELECT Sum(PC_PatchMax(pa,'x')) FROM pa_test_laz;
+ sum  
+------
+ 0.15
+(1 row)
+
+SELECT Sum(PC_PatchMin(pa,'x')) FROM pa_test_laz;
+ sum  
+------
+ 0.12
+(1 row)
+
+SELECT PC_Uncompress(pa) FROM pa_test_laz WHERE id=1;
+                                   pc_uncompress                                    
+------------------------------------------------------------------------------------
+ 0105000000000000000200000002000000030000000500000006000200000003000000050000000800
+(1 row)
+
+DELETE FROM pa_test_laz;
+INSERT INTO pa_test_laz (pa)
+SELECT PC_Patch(PC_MakePoint(5, ARRAY[x,y,z,intensity]))
+FROM (
+ SELECT
+ -127+a/100.0 AS x,
+   45+a/100.0 AS y,
+        1.0*a AS z,
+         a/10 AS intensity,
+         a/400 AS gid
+  FROM generate_series(1,1600) AS a
+) AS values GROUP BY gid;
+SELECT pc_explode(pa) FROM pa_test_laz LIMIT 20;
+               pc_explode               
+----------------------------------------
+ 010500000014D3FFFF44160000C0D401007800
+ 010500000015D3FFFF4516000024D501007800
+ 010500000016D3FFFF4616000088D501007800
+ 010500000017D3FFFF47160000ECD501007800
+ 010500000018D3FFFF4816000050D601007800
+ 010500000019D3FFFF49160000B4D601007800
+ 01050000001AD3FFFF4A16000018D701007800
+ 01050000001BD3FFFF4B1600007CD701007800
+ 01050000001CD3FFFF4C160000E0D701007800
+ 01050000001DD3FFFF4D16000044D801007800
+ 01050000001ED3FFFF4E160000A8D801007900
+ 01050000001FD3FFFF4F1600000CD901007900
+ 010500000020D3FFFF5016000070D901007900
+ 010500000021D3FFFF51160000D4D901007900
+ 010500000022D3FFFF5216000038DA01007900
+ 010500000023D3FFFF531600009CDA01007900
+ 010500000024D3FFFF5416000000DB01007900
+ 010500000025D3FFFF5516000064DB01007900
+ 010500000026D3FFFF56160000C8DB01007900
+ 010500000027D3FFFF571600002CDC01007900
+(20 rows)
+
+SELECT pc_astext(pc_explode(pa)) FROM pa_test_laz LIMIT 20;
+                pc_astext                 
+------------------------------------------
+ {"pcid":5,"pt":[-115,57,1200,120]}
+ {"pcid":5,"pt":[-114.99,57.01,1201,120]}
+ {"pcid":5,"pt":[-114.98,57.02,1202,120]}
+ {"pcid":5,"pt":[-114.97,57.03,1203,120]}
+ {"pcid":5,"pt":[-114.96,57.04,1204,120]}
+ {"pcid":5,"pt":[-114.95,57.05,1205,120]}
+ {"pcid":5,"pt":[-114.94,57.06,1206,120]}
+ {"pcid":5,"pt":[-114.93,57.07,1207,120]}
+ {"pcid":5,"pt":[-114.92,57.08,1208,120]}
+ {"pcid":5,"pt":[-114.91,57.09,1209,120]}
+ {"pcid":5,"pt":[-114.9,57.1,1210,121]}
+ {"pcid":5,"pt":[-114.89,57.11,1211,121]}
+ {"pcid":5,"pt":[-114.88,57.12,1212,121]}
+ {"pcid":5,"pt":[-114.87,57.13,1213,121]}
+ {"pcid":5,"pt":[-114.86,57.14,1214,121]}
+ {"pcid":5,"pt":[-114.85,57.15,1215,121]}
+ {"pcid":5,"pt":[-114.84,57.16,1216,121]}
+ {"pcid":5,"pt":[-114.83,57.17,1217,121]}
+ {"pcid":5,"pt":[-114.82,57.18,1218,121]}
+ {"pcid":5,"pt":[-114.81,57.19,1219,121]}
+(20 rows)
+
+SELECT * FROM pa_test_laz LIMIT 20;
+ id |                                                                                                                                                                                                                                                                     pa                                                                                                                                                                                                                                                                     
+----+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  5 | 01050000000200000090010000F400000014D3FFFF44160000C0D40100780003F27D65F909E1B4FF163125F3217D67B1A6E9728B7246DB622DAD94954405C57B953BE39649652F560A1AC414A371CE3967FBC090345EE0B9E0B3E7B024BBE31373EAA273E1696F7D46E70DCAB367103ECFDA0DF36E4F77901A2C8CE2F4718BDF6680076FFB02B320FA9ED30DFF79A17102E4E48D349A3098EC43031CE4E6B294D0A4442354A6626BCDEF20DF2C154144DA5FD99CE0DADBF4C7153ED51B4D43A3A5A0DBF1FBA5CA5C6C9630C1CA7662A002A217E22CF7357FA19EFCBA6F6C7E91035176B2DF753BD5954A923FA6A95C848053BCE36381D7EA15D928A88612B1E49BD6000000
+  6 | 0105000000020000000100000012000000A4D4FFFFD417000000710200A00001000000
+  7 | 0105000000020000008F010000F400000065CEFFFF9511000064000000000003F27D65F909E1B4FF163125F3217D67B1A6E9728B7246DB622DAD94954405D5CF50EBF47F3F94647B9C1238B6EFFF7200D0A51A36EC28ABD9AAAB0C6351B91042FA4DFB9A4C97A00E088A4033DAF7FC2FC798FFDEF31FC02D5C881C2A92086291FDC6832A9E966831DC62112CFBE18094BF4B398D29C9A29EB9868F208DBB735025F1EAA03FD8D064FB7B012CD72D8E6CC5E82B221E17B55000071A6B70136AAB145FB0F48BE8ADB1D33E88E13D7DE876B582245BC78DB10A9CB31673C349380CF301873FF20D65406448D9889258A582908A6D2E85B58918B4B98E50BC5ADB5B11DB000000
+  8 | 01050000000200000090010000F400000084D1FFFFB414000080380100500003F27D65F909E1B4FF163125F3217D67B1A6E9728B7246DB622DAD94954405C57B953BE39649652F560A1AC414A371CE3967FBC090345EE0B9E0B3E7B024BBE31373EAA273E1696F7D46E70DCAB367103ECFDA0DF36E4F77901A2C8CE2F4718BDF6680076FFB02B320FA9ED30DFF79A17102E4E48D349A3098EC43031CE4E6B294D0A4442354A6626BCDEF20DF2C154144DA5FD99CE0DADBF4C7153ED51B4D43A3A5A0DBF1FBA5CA5C6C9630C1CA7662A002A217E22CF7357FA19EFCBA6F6C7E91035176B2DF753BD5954A923FA6A95C848053BCE36381D7EA15D928A88612B1E49BD6000000
+  9 | 01050000000200000090010000F4000000F4CFFFFF24130000409C0000280003F27D65F909E1B4FF163125F3217D67B1A6E9728B7246DB622DAD94954405C57B953BE39649652F560A1AC414A371CE3967FBC090345EE0B9E0B3E7B024BBE31373EAA273E1696F7D46E70DCAB367103ECFDA0DF36E4F77901A2C8CE2F4718BDF6680076FFB02B320FA9ED30DFF79A17102E4E48D349A3098EC43031CE4E6B294D0A4442354A6626BCDEF20DF2C154144DA5FD99CE0DADBF4C7153ED51B4D43A3A5A0DBF1FBA5CA5C6C9630C1CA7662A002A217E22CF7357FA19EFCBA6F6C7E91035176B2DF753BD5954A923FA6A95C848053BCE36381D7EA15D928A88612B1E49BD6000000
+(5 rows)
+
+SELECT Sum(PC_NumPoints(pa)) FROM pa_test_laz;
+ sum  
+------
+ 1600
+(1 row)
+
+SELECT Sum(PC_MemSize(pa)) FROM pa_test_laz;
+ sum  
+------
+ 1539
+(1 row)
+
+SELECT Max(PC_PatchMax(pa,'x')) FROM pa_test_laz;
+ max  
+------
+ -111
+(1 row)
+
+SELECT Min(PC_PatchMin(pa,'x')) FROM pa_test_laz;
+   min   
+---------
+ -126.99
+(1 row)
+
+SELECT Min(PC_PatchMin(pa,'z')) FROM pa_test_laz;
+ min 
+-----
+   1
+(1 row)
+
+SELECT pc_astext(PC_FilterLessThan(pa, 'z', 5)) FROM pa_test_laz;
+                                             pc_astext                                              
+----------------------------------------------------------------------------------------------------
+ 
+ 
+ {"pcid":5,"pts":[[-126.99,45.01,1,0],[-126.98,45.02,2,0],[-126.97,45.03,3,0],[-126.96,45.04,4,0]]}
+ 
+ 
+(5 rows)
+
+SELECT pc_astext(PC_FilterGreaterThan(pa, 'z', 1595)) FROM pa_test_laz;
+                                                       pc_astext                                                        
+------------------------------------------------------------------------------------------------------------------------
+ {"pcid":5,"pts":[[-111.04,60.96,1596,159],[-111.03,60.97,1597,159],[-111.02,60.98,1598,159],[-111.01,60.99,1599,159]]}
+ {"pcid":5,"pts":[[-111,61,1600,160]]}
+ 
+ 
+ 
+(5 rows)
+
+SELECT pc_astext(PC_FilterEquals(pa, 'z', 500)) FROM pa_test_laz;
+              pc_astext              
+-------------------------------------
+ 
+ 
+ 
+ 
+ {"pcid":5,"pts":[[-122,50,500,50]]}
+(5 rows)
+
+SELECT pc_astext(PC_FilterBetween(pa, 'z', 500, 505)) FROM pa_test_laz;
+                                                   pc_astext                                                    
+----------------------------------------------------------------------------------------------------------------
+ 
+ 
+ 
+ 
+ {"pcid":5,"pts":[[-121.99,50.01,501,50],[-121.98,50.02,502,50],[-121.97,50.03,503,50],[-121.96,50.04,504,50]]}
+(5 rows)
+
+DELETE FROM pa_test_laz;
+INSERT INTO pa_test_laz( pa ) VALUES ('01050000000200000004000000210000000000000000000000000000000a004417593a34c1c5f74f83179fc2448960000000');
+SELECT pc_explode(pa) FROM pa_test_laz;
+               pc_explode               
+----------------------------------------
+ 01050000000000000000000000000000000A00
+ 0105000000C8000000BE000000220000000A00
+ 0105000000900100007C010000440000000A00
+ 0105000000580200003A020000660000000A00
+(4 rows)
+
+SELECT pc_astext(pc_explode(pa)) FROM pa_test_laz;
+            pc_astext            
+---------------------------------
+ {"pcid":5,"pt":[0,0,0,10]}
+ {"pcid":5,"pt":[2,1.9,0.34,10]}
+ {"pcid":5,"pt":[4,3.8,0.68,10]}
+ {"pcid":5,"pt":[6,5.7,1.02,10]}
+(4 rows)
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+VALUES (6, 0,
+'<?xml version="1.0" encoding="UTF-8"?>
+<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <pc:dimension>
+    <pc:position>1</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>X coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>X</pc:name>
+    <pc:interpretation>int64_t</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>2</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Y coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>Y</pc:name>
+    <pc:interpretation>double</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>3</pc:position>
+    <pc:size>4</pc:size>
+    <pc:description>Z coordinate as a long integer. You must use the scale and offset information of the header to determine the double value.</pc:description>
+    <pc:name>Z</pc:name>
+    <pc:interpretation>float</pc:interpretation>
+    <pc:scale>0.01</pc:scale>
+  </pc:dimension>
+  <pc:dimension>
+    <pc:position>4</pc:position>
+    <pc:size>2</pc:size>
+    <pc:description>The intensity value is the integer representation of the pulse return magnitude. This value is optional and system specific. However, it should always be included if available.</pc:description>
+    <pc:name>Intensity</pc:name>
+    <pc:interpretation>uint64_t</pc:interpretation>
+    <pc:scale>1</pc:scale>
+  </pc:dimension>
+  <pc:metadata>
+    <Metadata name="compression">laz</Metadata>
+  </pc:metadata>
+</pc:PointCloudSchema>'
+);
+CREATE TABLE IF NOT EXISTS pa_test_laz_multiple_dim (
+    pa PCPATCH(6)
+);
+\d pa_test_laz_multiple_dim
+       Table "public.pa_test_laz_multiple_dim"
+ Column |    Type    | Collation | Nullable | Default 
+--------+------------+-----------+----------+---------
+ pa     | pcpatch(6) |           |          | 
+
+INSERT INTO pa_test_laz_multiple_dim (pa)
+SELECT PC_Patch(PC_MakePoint(6, ARRAY[x,y,z,intensity]))
+FROM (
+ SELECT
+    a*2 AS x,
+    a*1.9 AS y,
+    a*0.34 AS z,
+    10 AS intensity,
+    a/400 AS gid
+  FROM generate_series(1,1600) AS a
+) AS values GROUP BY gid;
+SELECT pc_astext(pc_explode(pa)) FROM pa_test_laz_multiple_dim LIMIT 20;
+                pc_astext                
+-----------------------------------------
+ {"pcid":6,"pt":[2400,2280,408,10]}
+ {"pcid":6,"pt":[2402,2281.9,408.34,10]}
+ {"pcid":6,"pt":[2404,2283.8,408.68,10]}
+ {"pcid":6,"pt":[2406,2285.7,409.02,10]}
+ {"pcid":6,"pt":[2408,2287.6,409.36,10]}
+ {"pcid":6,"pt":[2410,2289.5,409.7,10]}
+ {"pcid":6,"pt":[2412,2291.4,410.04,10]}
+ {"pcid":6,"pt":[2414,2293.3,410.38,10]}
+ {"pcid":6,"pt":[2416,2295.2,410.72,10]}
+ {"pcid":6,"pt":[2418,2297.1,411.06,10]}
+ {"pcid":6,"pt":[2420,2299,411.4,10]}
+ {"pcid":6,"pt":[2422,2300.9,411.74,10]}
+ {"pcid":6,"pt":[2424,2302.8,412.08,10]}
+ {"pcid":6,"pt":[2426,2304.7,412.42,10]}
+ {"pcid":6,"pt":[2428,2306.6,412.76,10]}
+ {"pcid":6,"pt":[2430,2308.5,413.1,10]}
+ {"pcid":6,"pt":[2432,2310.4,413.44,10]}
+ {"pcid":6,"pt":[2434,2312.3,413.78,10]}
+ {"pcid":6,"pt":[2436,2314.2,414.12,10]}
+ {"pcid":6,"pt":[2438,2316.1,414.46,10]}
+(20 rows)
+
+SELECT pc_astext(PC_PointN(pa, 2)) FROM pa_test_laz;
+            pc_astext            
+---------------------------------
+ {"pcid":5,"pt":[2,1.9,0.34,10]}
+(1 row)
+
+WITH points AS (
+  SELECT ARRAY[
+    (2^08/256.0*v)*0.01,  -- int8_t
+   -(2^08/256.0*v)*0.01,  -- int8_t
+    (2^16/256.0*v)*0.01,  -- int16_t
+    (2^32/256.0*v)*0.01,  -- int32_t
+    (2^64/256.0*v)*0.01,  -- int64_t
+    (2^32/256.0*v)*0.01,  -- float
+    (2^64/256.0*v)*0.01   -- double
+  ] a, v/16 v
+  FROM generate_series(-127,127,4) v
+), p1 AS (
+  SELECT v, PC_Patch(PC_MakePoint(10, a)) p from points -- uncompressed
+  GROUP BY v
+)
+SELECT 'compr' test,
+  p1.v, compr, sc,
+  PC_AsText(p1.p) =
+  PC_AsText(PC_Compress(p1.p, compr,
+      array_to_string(
+        array_fill(sc,ARRAY[7]),
+        ','
+      )
+    )) ok
+FROM p1, ( values
+  ('dimensional','rle'),
+  ('dimensional','zlib'),
+  ('dimensional','sigbits'),
+  ('dimensional','auto'),
+  ('laz', 'null')
+) dimcompr(compr,sc)
+ORDER BY compr,sc,v;
+ test  | v  |    compr    |   sc    | ok 
+-------+----+-------------+---------+----
+ compr | -7 | dimensional | auto    | t
+ compr | -6 | dimensional | auto    | t
+ compr | -5 | dimensional | auto    | t
+ compr | -4 | dimensional | auto    | t
+ compr | -3 | dimensional | auto    | t
+ compr | -2 | dimensional | auto    | t
+ compr | -1 | dimensional | auto    | t
+ compr |  0 | dimensional | auto    | t
+ compr |  1 | dimensional | auto    | t
+ compr |  2 | dimensional | auto    | t
+ compr |  3 | dimensional | auto    | t
+ compr |  4 | dimensional | auto    | t
+ compr |  5 | dimensional | auto    | t
+ compr |  6 | dimensional | auto    | t
+ compr |  7 | dimensional | auto    | t
+ compr | -7 | dimensional | rle     | t
+ compr | -6 | dimensional | rle     | t
+ compr | -5 | dimensional | rle     | t
+ compr | -4 | dimensional | rle     | t
+ compr | -3 | dimensional | rle     | t
+ compr | -2 | dimensional | rle     | t
+ compr | -1 | dimensional | rle     | t
+ compr |  0 | dimensional | rle     | t
+ compr |  1 | dimensional | rle     | t
+ compr |  2 | dimensional | rle     | t
+ compr |  3 | dimensional | rle     | t
+ compr |  4 | dimensional | rle     | t
+ compr |  5 | dimensional | rle     | t
+ compr |  6 | dimensional | rle     | t
+ compr |  7 | dimensional | rle     | t
+ compr | -7 | dimensional | sigbits | t
+ compr | -6 | dimensional | sigbits | t
+ compr | -5 | dimensional | sigbits | t
+ compr | -4 | dimensional | sigbits | t
+ compr | -3 | dimensional | sigbits | t
+ compr | -2 | dimensional | sigbits | t
+ compr | -1 | dimensional | sigbits | t
+ compr |  0 | dimensional | sigbits | t
+ compr |  1 | dimensional | sigbits | t
+ compr |  2 | dimensional | sigbits | t
+ compr |  3 | dimensional | sigbits | t
+ compr |  4 | dimensional | sigbits | t
+ compr |  5 | dimensional | sigbits | t
+ compr |  6 | dimensional | sigbits | t
+ compr |  7 | dimensional | sigbits | t
+ compr | -7 | dimensional | zlib    | t
+ compr | -6 | dimensional | zlib    | t
+ compr | -5 | dimensional | zlib    | t
+ compr | -4 | dimensional | zlib    | t
+ compr | -3 | dimensional | zlib    | t
+ compr | -2 | dimensional | zlib    | t
+ compr | -1 | dimensional | zlib    | t
+ compr |  0 | dimensional | zlib    | t
+ compr |  1 | dimensional | zlib    | t
+ compr |  2 | dimensional | zlib    | t
+ compr |  3 | dimensional | zlib    | t
+ compr |  4 | dimensional | zlib    | t
+ compr |  5 | dimensional | zlib    | t
+ compr |  6 | dimensional | zlib    | t
+ compr |  7 | dimensional | zlib    | t
+ compr | -7 | laz         | null    | t
+ compr | -6 | laz         | null    | t
+ compr | -5 | laz         | null    | t
+ compr | -4 | laz         | null    | t
+ compr | -3 | laz         | null    | t
+ compr | -2 | laz         | null    | t
+ compr | -1 | laz         | null    | t
+ compr |  0 | laz         | null    | t
+ compr |  1 | laz         | null    | t
+ compr |  2 | laz         | null    | t
+ compr |  3 | laz         | null    | t
+ compr |  4 | laz         | null    | t
+ compr |  5 | laz         | null    | t
+ compr |  6 | laz         | null    | t
+ compr |  7 | laz         | null    | t
+(75 rows)
+
+TRUNCATE pointcloud_formats;
