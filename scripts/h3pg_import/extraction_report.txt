@@ -1,0 +1,51 @@
+Extracted 18 functions, skipped 26 (opt-out), failed 0 (unsupported patterns).
+
+== Extracted ==
+  h3-pg/h3/src/binding/edge.c::h3_are_neighbor_cells  ->  bool h3_are_neighbor_cells_meos(H3Index origin, H3Index destination)
+  h3-pg/h3/src/binding/edge.c::h3_cells_to_directed_edge  ->  H3Index h3_cells_to_directed_edge_meos(H3Index origin, H3Index destination)
+  h3-pg/h3/src/binding/edge.c::h3_is_valid_directed_edge  ->  bool h3_is_valid_directed_edge_meos(H3Index edge)
+  h3-pg/h3/src/binding/edge.c::h3_get_directed_edge_origin  ->  H3Index h3_get_directed_edge_origin_meos(H3Index edge)
+  h3-pg/h3/src/binding/edge.c::h3_get_directed_edge_destination  ->  H3Index h3_get_directed_edge_destination_meos(H3Index edge)
+  h3-pg/h3/src/binding/hierarchy.c::h3_cell_to_parent  ->  H3Index h3_cell_to_parent_meos(H3Index origin, int32 resolution)
+  h3-pg/h3/src/binding/hierarchy.c::h3_cell_to_center_child  ->  H3Index h3_cell_to_center_child_meos(H3Index origin, int32 resolution)
+  h3-pg/h3/src/binding/hierarchy.c::h3_cell_to_child_pos  ->  int64 h3_cell_to_child_pos_meos(H3Index child, int32 parentRes)
+  h3-pg/h3/src/binding/hierarchy.c::h3_child_pos_to_cell  ->  H3Index h3_child_pos_to_cell_meos(int64 childPos, H3Index parent, int32 childRes)
+  h3-pg/h3/src/binding/inspection.c::h3_get_resolution  ->  int32 h3_get_resolution_meos(H3Index hex)
+  h3-pg/h3/src/binding/inspection.c::h3_get_base_cell_number  ->  int32 h3_get_base_cell_number_meos(H3Index hex)
+  h3-pg/h3/src/binding/inspection.c::h3_is_valid_cell  ->  bool h3_is_valid_cell_meos(H3Index hex)
+  h3-pg/h3/src/binding/inspection.c::h3_is_res_class_iii  ->  bool h3_is_res_class_iii_meos(H3Index hex)
+  h3-pg/h3/src/binding/inspection.c::h3_is_pentagon  ->  bool h3_is_pentagon_meos(H3Index hex)
+  h3-pg/h3/src/binding/miscellaneous.c::h3_get_num_cells  ->  int64 h3_get_num_cells_meos(int32 resolution)
+  h3-pg/h3/src/binding/traversal.c::h3_grid_distance  ->  int64 h3_grid_distance_meos(H3Index originIndex, H3Index h3Index)
+  h3-pg/h3/src/binding/vertex.c::h3_cell_to_vertex  ->  H3Index h3_cell_to_vertex_meos(H3Index cell, int32 vertexNum)
+  h3-pg/h3/src/binding/vertex.c::h3_is_valid_vertex  ->  bool h3_is_valid_vertex_meos(H3Index vertex)
+
+== Skipped (opt-out) ==
+  h3-pg/h3/src/binding/edge.c::h3_directed_edge_to_cells  [opt-out.yaml]
+  h3-pg/h3/src/binding/edge.c::h3_origin_to_directed_edges  [opt-out.yaml]
+  h3-pg/h3/src/binding/edge.c::h3_directed_edge_to_boundary  [opt-out.yaml]
+  h3-pg/h3/src/binding/hierarchy.c::h3_cell_to_children  [opt-out.yaml]
+  h3-pg/h3/src/binding/hierarchy.c::h3_compact_cells  [opt-out.yaml]
+  h3-pg/h3/src/binding/hierarchy.c::h3_uncompact_cells  [opt-out.yaml]
+  h3-pg/h3/src/binding/indexing.c::h3_latlng_to_cell  [opt-out.yaml]
+  h3-pg/h3/src/binding/indexing.c::h3_cell_to_latlng  [opt-out.yaml]
+  h3-pg/h3/src/binding/indexing.c::h3_cell_to_boundary  [opt-out.yaml]
+  h3-pg/h3/src/binding/inspection.c::h3_get_icosahedron_faces  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_get_hexagon_area_avg  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_cell_area  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_get_hexagon_edge_length_avg  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_edge_length  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_get_res_0_cells  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_get_pentagons  [opt-out.yaml]
+  h3-pg/h3/src/binding/miscellaneous.c::h3_great_circle_distance  [opt-out.yaml]
+  h3-pg/h3/src/binding/regions.c::*  [polygon → set-of-cells; v2 scope]
+  h3-pg/h3/src/binding/traversal.c::h3_grid_disk  [opt-out.yaml]
+  h3-pg/h3/src/binding/traversal.c::h3_grid_disk_distances  [opt-out.yaml]
+  h3-pg/h3/src/binding/traversal.c::h3_grid_ring_unsafe  [opt-out.yaml]
+  h3-pg/h3/src/binding/traversal.c::h3_grid_path_cells  [opt-out.yaml]
+  h3-pg/h3/src/binding/traversal.c::h3_cell_to_local_ij  [opt-out.yaml]
+  h3-pg/h3/src/binding/traversal.c::h3_local_ij_to_cell  [opt-out.yaml]
+  h3-pg/h3/src/binding/vertex.c::h3_cell_to_vertexes  [opt-out.yaml]
+  h3-pg/h3/src/binding/vertex.c::h3_vertex_to_latlng  [opt-out.yaml]
+
+== Failed (need a new rule or an opt-out entry) ==
