@@ -44,7 +44,20 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
     Point(2 2 2)@2001-01-06)'::geometry));
 -- 2001-01-03 12:00:00+00
-</pre></li><li class="listitem"><a name="tgeo_shortestLine"></a><a class="indexterm" name="id6276"></a><p>Return the line connecting the nearest approach point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_minDistance"></a><a class="indexterm" name="id6276"></a><p>Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</p><p><code class="varname">minDistance({tgeo,geo},{tgeo,geo}) → float</code></p><p><code class="varname">minDistance(tgeo[],tgeo[]) → float</code></p><p><code class="varname">minDistance(tgeo,tgeo) → float</code> (aggregate)</p><p>The scalar form returns the minimum distance reached between the two arguments over the intersection of their temporal extents, equivalent to the minimum value of the temporal distance <code class="varname">&lt;-&gt;</code>. The array form generalises this to two sets of temporal geometries and returns the minimum across all pairs. The aggregate form, used with <code class="varname">GROUP BY</code>, returns the minimum distance reached over all aggregated pairs in the group.</p><pre class="programlisting">
+SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
+  geometry 'Point(0 1)');
+-- 0.707106781186548
+SELECT minDistance(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
+        tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
+  ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
+-- 0
+SELECT g, minDistance(t1.Trip, t2.Trip)
+FROM Trips t1, Trips t2, Groups g
+WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId
+GROUP BY g;
+</pre><p>The aggregate form is well suited to BerlinMOD-style queries that compute the minimum approach distance between trip pairs grouped by license or vehicle class. On a single-row group the aggregate degenerates to the scalar minimum distance between the pair.</p></li><li class="listitem"><a name="tgeo_shortestLine"></a><a class="indexterm" name="id6292"></a><p>Return the line connecting the nearest approach point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">shortestLine({geo,tgeo},{geo,tgeo}) → geo</code></p><p>The function will only return the first line that it finds if there are more than one.</p><pre class="programlisting">
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01,
@@ -70,7 +83,7 @@ SELECT ST_CPAWithin(
   tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
     Point(2 2 2)@2001-01-06)'::geometry, 0.5);
 -- true
-</pre></li></ul></div><p>The temporal distance operator, denoted <code class="varname">&lt;-&gt;</code>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</p><p>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tdistance"></a><a class="indexterm" name="id6307"></a><p>Return the temporal distance <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li></ul></div><p>The temporal distance operator, denoted <code class="varname">&lt;-&gt;</code>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</p><p>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_tdistance"></a><a class="indexterm" name="id6323"></a><p>Return the temporal distance <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">{geo,tgeo} &lt;-&gt; {geo,tgeo} → tfloat</code></p><pre class="programlisting">
 SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)' &lt;-&gt;
