@@ -34,6 +34,7 @@
 
 /* C */
 #include <float.h>
+#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -43,6 +44,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer.h"
+#include "cbuffer/tcbuffer_spatialfuncs.h"
 
 /*****************************************************************************
  * Turning point functions
@@ -538,6 +540,164 @@ nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * @param[in] gs Geometry
  * @csqlfn #NAD_tcbuffer_geo()
  */
+/**
+ * @brief Return the 2D distance between two axis-aligned bounding boxes,
+ * 0 when they overlap. This is a lower bound for the distance between any
+ * geometries the boxes contain.
+ */
+static double
+box2d_distance(double axmin, double aymin, double axmax, double aymax,
+  double bxmin, double bymin, double bxmax, double bymax)
+{
+  double dx = fmax(fmax(axmin - bxmax, bxmin - axmax), 0.0);
+  double dy = fmax(fmax(aymin - bymax, bymin - aymax), 0.0);
+  return sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * @brief Set the 2D bounding box of the circular buffer value of a temporal
+ * instant (the buffer centre expanded by its radius)
+ */
+static void
+tcbufferinst_xybox(const TInstant *inst, double *xmin, double *ymin,
+  double *xmax, double *ymax)
+{
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  double r = cb->radius;
+  *xmin = p->x - r; *xmax = p->x + r;
+  *ymin = p->y - r; *ymax = p->y + r;
+}
+
+/**
+ * @brief Accumulate one traversed-area unit into the running nearest
+ * approach. Takes ownership of @p unit: keeps it as the best geometry when
+ * @p line is requested, otherwise frees it.
+ */
+static void
+tcbuffer_geo_nad_accum(GSERIALIZED *unit, const GSERIALIZED *gs,
+  bool want_line, double *best, GSERIALIZED **best_geom)
+{
+  double d = geom_distance2d(unit, gs);
+  if (d < *best)
+  {
+    *best = d;
+    if (want_line)
+    {
+      if (*best_geom)
+        pfree(*best_geom);
+      *best_geom = unit;
+      return;
+    }
+  }
+  pfree(unit);
+}
+
+/**
+ * @brief Update the running nearest approach between the segments of a
+ * temporal circular buffer sequence and a geometry, skipping segments whose
+ * bounding box is provably farther than the current best
+ */
+static void
+tcbufferseq_geo_nad(const TSequence *seq, const GSERIALIZED *gs,
+  double gxmin, double gymin, double gxmax, double gymax, bool want_line,
+  double *best, GSERIALIZED **best_geom)
+{
+  /* Instantaneous sequence or non-linear interpolation: one circle per
+   * instant (this is exactly the traversed area of those cases) */
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      double uxmin, uymin, uxmax, uymax;
+      tcbufferinst_xybox(inst, &uxmin, &uymin, &uxmax, &uymax);
+      if (box2d_distance(uxmin, uymin, uxmax, uymax, gxmin, gymin, gxmax,
+          gymax) >= *best)
+        continue;
+      tcbuffer_geo_nad_accum(tcbufferinst_trav_area(inst), gs, want_line,
+        best, best_geom);
+      if (*best == 0.0)
+        return;
+    }
+    return;
+  }
+
+  /* Linear interpolation: one swept capsule per segment */
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  double b1xmin, b1ymin, b1xmax, b1ymax;
+  tcbufferinst_xybox(inst1, &b1xmin, &b1ymin, &b1xmax, &b1ymax);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    double b2xmin, b2ymin, b2xmax, b2ymax;
+    tcbufferinst_xybox(inst2, &b2xmin, &b2ymin, &b2xmax, &b2ymax);
+    /* The swept capsule of a linearly moving, linearly resized disk is
+     * contained in the union of the two endpoint disk boxes */
+    double uxmin = fmin(b1xmin, b2xmin), uymin = fmin(b1ymin, b2ymin);
+    double uxmax = fmax(b1xmax, b2xmax), uymax = fmax(b1ymax, b2ymax);
+    if (box2d_distance(uxmin, uymin, uxmax, uymax, gxmin, gymin, gxmax,
+        gymax) < *best)
+    {
+      tcbuffer_geo_nad_accum(tcbuffersegm_trav_area(inst1, inst2), gs,
+        want_line, best, best_geom);
+      if (*best == 0.0)
+        return;
+    }
+    inst1 = inst2;
+    b1xmin = b2xmin; b1ymin = b2ymin; b1xmax = b2xmax; b1ymax = b2ymax;
+  }
+}
+
+/**
+ * @brief Return the nearest approach distance between a temporal circular
+ * buffer and a geometry and, when requested, the shortest line
+ * @details The traversed area is a collection of per-segment swept capsules,
+ * so the distance to it equals the minimum of the per-segment distances and
+ * the shortest line is the one to the nearest segment. Segments whose
+ * bounding box is farther than the running best are skipped without building
+ * their geometry, which avoids materialising the whole traversed area.
+ */
+static double
+tcbuffer_geo_nad(const Temporal *temp, const GSERIALIZED *gs,
+  bool want_line, GSERIALIZED **line)
+{
+  STBox gbox;
+  geo_set_stbox(gs, &gbox);
+  double best = DBL_MAX;
+  GSERIALIZED *best_geom = NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    double uxmin, uymin, uxmax, uymax;
+    tcbufferinst_xybox((TInstant *) temp, &uxmin, &uymin, &uxmax, &uymax);
+    if (box2d_distance(uxmin, uymin, uxmax, uymax, gbox.xmin, gbox.ymin,
+        gbox.xmax, gbox.ymax) < best)
+      tcbuffer_geo_nad_accum(tcbufferinst_trav_area((TInstant *) temp), gs,
+        want_line, &best, &best_geom);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tcbufferseq_geo_nad((TSequence *) temp, gs, gbox.xmin, gbox.ymin,
+      gbox.xmax, gbox.ymax, want_line, &best, &best_geom);
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && best > 0.0; i++)
+      tcbufferseq_geo_nad(TSEQUENCESET_SEQ_N(ss, i), gs, gbox.xmin,
+        gbox.ymin, gbox.xmax, gbox.ymax, want_line, &best, &best_geom);
+  }
+
+  if (want_line)
+  {
+    *line = best_geom ? geom_shortestline2d(best_geom, gs) : NULL;
+    if (best_geom)
+      pfree(best_geom);
+  }
+  return best;
+}
+
 double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
@@ -545,10 +705,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
-  double result = geom_distance2d(trav, gs);
-  pfree(trav);
-  return result;
+  return tcbuffer_geo_nad(temp, gs, false, NULL);
 }
 
 /**
@@ -566,10 +723,9 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
   GSERIALIZED *geo = stbox_geo(box);
-  double result = geom_distance2d(trav, geo);
-  pfree(trav); pfree(geo);
+  double result = tcbuffer_geo_nad(temp, geo, false, NULL);
+  pfree(geo);
   return result;
 }
 
@@ -589,9 +745,8 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return DBL_MAX;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
-  double result = geom_distance2d(trav, geom);
-  pfree(trav); pfree(geom);
+  double result = tcbuffer_geo_nad(temp, geom, false, NULL);
+  pfree(geom);
   return result;
 }
 
@@ -635,9 +790,8 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
-  GSERIALIZED *result = geom_shortestline2d(trav, gs);
-  pfree(trav);
+  GSERIALIZED *result = NULL;
+  tcbuffer_geo_nad(temp, gs, true, &result);
   return result;
 }
 
@@ -657,9 +811,9 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return NULL;
 
   GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_trav_area(temp, false);
-  GSERIALIZED *result = geom_shortestline2d(trav, geom);
-  pfree(geom); pfree(trav);
+  GSERIALIZED *result = NULL;
+  tcbuffer_geo_nad(temp, geom, true, &result);
+  pfree(geom);
   return result;
 }
 
