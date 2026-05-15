@@ -1,0 +1,41 @@
+name: pgxn
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pgxn:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PGXN Client
+        run: sudo pip install pgxnclient
+
+      - name: Install PostgreSQL server dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install postgresql-server-dev-14 postgis
+
+      - name: Prepare PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres -i createuser --superuser runner
+          sudo -u postgres -i createdb runner
+          psql -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_raster;"
+
+      - name: Bundle
+        run: scripts/bundle
+
+      - name: Install
+        run: sudo pgxn install ./h3-*.zip
+
+      - name: Load
+        run: pgxn load h3
+
+      - name: Check
+        run: pgxn check h3

@@ -1,0 +1,37 @@
+{
+  "name": "h3",
+  "abstract": "PostgreSQL bindings for H3",
+  "description": "PostgreSQL bindings for H3, a hierarchical hexagonal geospatial indexing system.",
+  "version": "@PROJECT_VERSION@",
+  "maintainer": "Zacharias Knudsen <z@chari.as>",
+  "license": "apache_2_0",
+  "provides": {
+    "h3": {
+      "abstract": "PostgreSQL bindings for H3",
+      "file": "h3--@PROJECT_VERSION@.sql",
+      "docfile": "README.md",
+      "version": "@PROJECT_VERSION@"
+    },
+    "h3_postgis": {
+      "abstract": "H3 PostGIS integration",
+      "file": "h3_postgis--@PROJECT_VERSION@.sql",
+      "docfile": "README.md",
+      "version": "@PROJECT_VERSION@"
+    }
+  },
+  "resources": {
+    "homepage": "https://github.com/zachasme/h3-pg",
+    "bugtracker": {
+      "web": "https://github.com/zachasme/h3-pg/issues"
+    },
+    "repository": {
+      "url": "https://github.com/zachasme/h3-pg.git",
+      "web": "https://github.com/zachasme/h3-pg",
+      "type": "git"
+    }
+  },
+  "meta-spec": {
+    "version": "1.0.0",
+    "url": "http://pgxn.org/meta/spec.txt"
+  }
+}
