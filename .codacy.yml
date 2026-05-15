@@ -5,7 +5,16 @@
 # MobilityDB runs its own cppcheck in .github/workflows/cppcheck.yml
 # instead: it feeds cppcheck the real compile_commands.json (so include
 # resolution works) and publishes SARIF to GitHub Code Scanning (inline
-# PR annotations, Security tab). Turn Codacy's copy off.
+# PR annotations, Security tab).
+#
+# Note: modern Codacy ignores the `engines:` block below for tool
+# enablement (see https://docs.codacy.com/repositories-configure/) —
+# Cppcheck and TSQLLint are also disabled at the repository level via
+# the Codacy UI / Account API. This YAML keeps the legacy directives
+# as documentation; the UI/API settings are the load-bearing ones.
+# TSQLLint targets Microsoft SQL Server T-SQL and is irrelevant for
+# PostgreSQL — disabled to silence ~25 spurious findings on the
+# project's `.sql` test files.
 engines:
   cppcheck:
     # Belt-and-braces: `enabled: false` is the documented kill switch
@@ -14,12 +23,15 @@ engines:
     enabled: false
     exclude_paths:
       - "**"
+  tsqllint:
+    enabled: false
   duplication:
     exclude_paths:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
       - "h3-pg/**"
+      - "pointcloud-pg/**"
     config:
       languages:
         - "c"
@@ -40,5 +52,6 @@ exclude_paths:
   - "pgtypes/**"
   - "h3-pg/**"
   - "scripts/h3pg_import/**"
+  - "pointcloud-pg/**"
   - "meos/test/**"
   - "meos/examples/**"
