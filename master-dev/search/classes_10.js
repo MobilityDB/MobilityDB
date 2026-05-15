@@ -10,8 +10,9 @@ var searchData=
   ['temptype_5fcatalog_5fstruct_7',['temptype_catalog_struct',['../structtemptype__catalog__struct.html',1,'']]],
   ['tempunneststate_8',['TempUnnestState',['../structTempUnnestState.html',1,'']]],
   ['textset_5frecord_9',['textset_record',['../structtextset__record.html',1,'']]],
-  ['tinstant_10',['TInstant',['../structTInstant.html',1,'']]],
-  ['trip_5frecord_11',['trip_record',['../structtrip__record.html',1,'']]],
-  ['tsequence_12',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_13',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
+  ['tgeoarrpair_10',['TgeoarrPair',['../structTgeoarrPair.html',1,'']]],
+  ['tinstant_11',['TInstant',['../structTInstant.html',1,'']]],
+  ['trip_5frecord_12',['trip_record',['../structtrip__record.html',1,'']]],
+  ['tsequence_13',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_14',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];

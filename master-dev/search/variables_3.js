@@ -10,13 +10,14 @@ var searchData=
   ['bbox_5foverlaps_7',['bbox_overlaps',['../structRTree_ae0444e84fa4a52b188b7460922a1a0f7.html#ae0444e84fa4a52b188b7460922a1a0f7',1,'RTree']]],
   ['bboxsize_8',['bboxsize',['../structSet_acfadda45ae9a023f24a99d4fd0bf174d.html#acfadda45ae9a023f24a99d4fd0bf174d',1,'Set::bboxsize()'],['../structTSequence_af54e7f67e1787e2240fd08e5efa49be1.html#af54e7f67e1787e2240fd08e5efa49be1',1,'TSequence::bboxsize()'],['../structTSequenceSet_ac4d845cf1918b7cf6d654defec6fabfa.html#ac4d845cf1918b7cf6d654defec6fabfa',1,'TSequenceSet::bboxsize()'],['../structRTreeNode_a55646d85e3699c29fd4d73ddd752fc00.html#a55646d85e3699c29fd4d73ddd752fc00',1,'RTreeNode::bboxsize()'],['../structRTree_a562f74d23eed838587cde5e0d376c74b.html#a562f74d23eed838587cde5e0d376c74b',1,'RTree::bboxsize()']]],
   ['bboxtype_9',['bboxtype',['../structRTree_a3f8de7435c5eb49456dfb5e02c4acc62.html#a3f8de7435c5eb49456dfb5e02c4acc62',1,'RTree']]],
-  ['bfac_10',['bfac',['../structAFFINE_a57ad0d85a7707e8209ad2f96c37269ee.html#a57ad0d85a7707e8209ad2f96c37269ee',1,'AFFINE']]],
-  ['bm_11',['bm',['../structSTboxGridState_a28bff399f8d06e682b52b3fed83c6ea3.html#a28bff399f8d06e682b52b3fed83c6ea3',1,'STboxGridState']]],
-  ['bottom_12',['BOTTOM',['../tgeo__restrict_8c_a95369c5b8afe2eec95c1dd3e1bdb9f58.html#a95369c5b8afe2eec95c1dd3e1bdb9f58',1,'tgeo_restrict.c']]],
-  ['boundingbox_13',['boundingBox',['../structConsiderSplitContext_a767857a96a981f955ecaa94ba581fbe5.html#a767857a96a981f955ecaa94ba581fbe5',1,'ConsiderSplitContext']]],
-  ['box_14',['box',['../structSTboxGridState_a3a3eb1787d37276a04fb6dcec0c83157.html#a3a3eb1787d37276a04fb6dcec0c83157',1,'STboxGridState::box()'],['../structRTree_a26f062b73bea07093c04fc1bc970d211.html#a26f062b73bea07093c04fc1bc970d211',1,'RTree::box()'],['../structTboxGridState_ae18f2e92f8a52507fa59c71e615e8dee.html#ae18f2e92f8a52507fa59c71e615e8dee',1,'TboxGridState::box()'],['../structSortedSTbox_a659af5ab69fb25d2f5fc9a3410ba4d44.html#a659af5ab69fb25d2f5fc9a3410ba4d44',1,'SortedSTbox::box()'],['../structSortedTbox_aab643b6d1e0e36161b739368bbf40496.html#aab643b6d1e0e36161b739368bbf40496',1,'SortedTbox::box()']]],
-  ['boxes_15',['boxes',['../structRTreeNode_ab54c4691081a5cfa8b25bb33fe5cd941.html#ab54c4691081a5cfa8b25bb33fe5cd941',1,'RTreeNode']]],
-  ['brussels_5fregion_16',['brussels_region',['../06__berlinmod__clip_8c_aff80fddce3de8a49e422b11dd089808e.html#aff80fddce3de8a49e422b11dd089808e',1,'06_berlinmod_clip.c']]],
-  ['bwgs_17',['bwgs',['../projection__gk_8c_af88b207bfe586e48b65d500fe28c84e8.html#af88b207bfe586e48b65d500fe28c84e8',1,'projection_gk.c']]],
-  ['byte_18',['byte',['../structBitMatrix_ab0835fc1d6cc612f1cfe07e138ec15c1.html#ab0835fc1d6cc612f1cfe07e138ec15c1',1,'BitMatrix']]]
+  ['bd_10',['bd',['../structTgeoarrPair_a1fee3c3a71562837a64145a613e64e4d.html#a1fee3c3a71562837a64145a613e64e4d',1,'TgeoarrPair']]],
+  ['bfac_11',['bfac',['../structAFFINE_a57ad0d85a7707e8209ad2f96c37269ee.html#a57ad0d85a7707e8209ad2f96c37269ee',1,'AFFINE']]],
+  ['bm_12',['bm',['../structSTboxGridState_a28bff399f8d06e682b52b3fed83c6ea3.html#a28bff399f8d06e682b52b3fed83c6ea3',1,'STboxGridState']]],
+  ['bottom_13',['BOTTOM',['../tgeo__restrict_8c_a95369c5b8afe2eec95c1dd3e1bdb9f58.html#a95369c5b8afe2eec95c1dd3e1bdb9f58',1,'tgeo_restrict.c']]],
+  ['boundingbox_14',['boundingBox',['../structConsiderSplitContext_a767857a96a981f955ecaa94ba581fbe5.html#a767857a96a981f955ecaa94ba581fbe5',1,'ConsiderSplitContext']]],
+  ['box_15',['box',['../structSTboxGridState_a3a3eb1787d37276a04fb6dcec0c83157.html#a3a3eb1787d37276a04fb6dcec0c83157',1,'STboxGridState::box()'],['../structRTree_a26f062b73bea07093c04fc1bc970d211.html#a26f062b73bea07093c04fc1bc970d211',1,'RTree::box()'],['../structTboxGridState_ae18f2e92f8a52507fa59c71e615e8dee.html#ae18f2e92f8a52507fa59c71e615e8dee',1,'TboxGridState::box()'],['../structSortedSTbox_a659af5ab69fb25d2f5fc9a3410ba4d44.html#a659af5ab69fb25d2f5fc9a3410ba4d44',1,'SortedSTbox::box()'],['../structSortedTbox_aab643b6d1e0e36161b739368bbf40496.html#aab643b6d1e0e36161b739368bbf40496',1,'SortedTbox::box()']]],
+  ['boxes_16',['boxes',['../structRTreeNode_ab54c4691081a5cfa8b25bb33fe5cd941.html#ab54c4691081a5cfa8b25bb33fe5cd941',1,'RTreeNode']]],
+  ['brussels_5fregion_17',['brussels_region',['../06__berlinmod__clip_8c_aff80fddce3de8a49e422b11dd089808e.html#aff80fddce3de8a49e422b11dd089808e',1,'06_berlinmod_clip.c']]],
+  ['bwgs_18',['bwgs',['../projection__gk_8c_af88b207bfe586e48b65d500fe28c84e8.html#af88b207bfe586e48b65d500fe28c84e8',1,'projection_gk.c']]],
+  ['byte_19',['byte',['../structBitMatrix_ab0835fc1d6cc612f1cfe07e138ec15c1.html#ab0835fc1d6cc612f1cfe07e138ec15c1',1,'BitMatrix']]]
 ];
