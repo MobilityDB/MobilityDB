@@ -46,4 +46,19 @@ SELECT arrowRoundtrip(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1@2000-01-03)') =
 SELECT arrowRoundtrip(tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}') = tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}';
 SELECT arrowRoundtrip(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02], [5@2000-01-03, 9@2000-01-04]}') = tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02], [5@2000-01-03, 9@2000-01-04]}';
 
+-- Temporal integer: every subtype round-trips through the Int32 value leaf
+
+SELECT arrowRoundtrip(tint '42@2000-01-01');
+SELECT arrowRoundtrip(tint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)');
+SELECT arrowRoundtrip(tint '[0@2000-01-01, -3@2000-01-02, 7@2000-01-03]');
+SELECT arrowRoundtrip(tint '[42@2000-01-01]');
+SELECT arrowRoundtrip(tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}');
+SELECT arrowRoundtrip(tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]');
+SELECT arrowRoundtrip(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}');
+
+SELECT arrowRoundtrip(tint '42@2000-01-01') = tint '42@2000-01-01';
+SELECT arrowRoundtrip(tint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)') = tint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)';
+SELECT arrowRoundtrip(tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}') = tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}';
+SELECT arrowRoundtrip(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}') = tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}';
+
 -------------------------------------------------------------------------------
