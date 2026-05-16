@@ -34,6 +34,11 @@ SELECT th3index(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT th3index(Sequence) '831c02fffffffff@2001-01-01';
 </programlisting>
+		<para>The function <varname>arrowRoundtrip</varname> converts a temporal H3 index to the Arrow C Data Interface and reconstructs it, returning a value equal to the input. The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. An H3 cell index is a 64-bit value, so it uses the unsigned 64-bit value leaf, distinct from the signed 64-bit leaf of temporal big integer.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(th3index '831c02fffffffff@2001-01-01');
+-- 831c02fffffffff@2001-01-01
+</programlisting>
 	</sect1>
 
 	<sect1 xml:id="th3index_conversions">

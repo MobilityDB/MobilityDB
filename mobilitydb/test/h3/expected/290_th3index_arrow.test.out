@@ -1,0 +1,72 @@
+SELECT arrowRoundtrip(th3index '831c02fffffffff@2001-01-01');
+                arrowroundtrip                
+----------------------------------------------
+ 831c02fffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT arrowRoundtrip(th3index '590464338553208831@2001-01-01');
+                arrowroundtrip                
+----------------------------------------------
+ 831c02fffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT arrowRoundtrip(th3index '[831c02fffffffff@2001-01-01]');
+                 arrowroundtrip                 
+------------------------------------------------
+ [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT arrowRoundtrip(th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03}');
+                                                               arrowroundtrip                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 880326b885fffff@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT arrowRoundtrip(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]');
+                                                               arrowroundtrip                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------
+ [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 880326b885fffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT arrowRoundtrip(th3index 'Interp=Step;[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]');
+                                                               arrowroundtrip                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------
+ [831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST, 880326b885fffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT arrowRoundtrip(th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}');
+                                                                                        arrowroundtrip                                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[831c02fffffffff@Mon Jan 01 00:00:00 2001 PST, 831c00fffffffff@Tue Jan 02 00:00:00 2001 PST], [880326b885fffff@Wed Jan 03 00:00:00 2001 PST, 880326b88dfffff@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT arrowRoundtrip(th3index '831c02fffffffff@2001-01-01') = th3index '831c02fffffffff@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(th3index '590464338553208831@2001-01-01') = th3index '590464338553208831@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]') = th3index '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(th3index 'Interp=Step;[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]') = th3index 'Interp=Step;[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}') = th3index '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}';
+ ?column? 
+----------
+ t
+(1 row)
+
