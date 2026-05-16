@@ -68,6 +68,9 @@
   #include "rgeo/trgeo_inst.h"
   #include "rgeo/trgeo_boxops.h"
 #endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 
 /*****************************************************************************
  * Input/output functions
@@ -447,6 +450,10 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
       else if (temp->temptype == T_TRGEOMETRY)
         trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
           (TInstant *) temp, box);
+#endif
+#if H3
+      else if (temp->temptype == T_TH3INDEX)
+        th3indexinst_set_stbox((TInstant *) temp, box);
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,

@@ -1175,10 +1175,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
 				</listitem>
 

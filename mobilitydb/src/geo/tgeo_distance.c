@@ -37,16 +37,13 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
 #include "temporal/temporal.h"
 #include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
-#include "pg_temporal/type_util.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -423,59 +420,6 @@ Shortestline_tgeo_tgeo(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
-}
-
-/*****************************************************************************
- * Set-set spatial minimum distance
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tgeoarr_tgeoarr_mindist(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeoarr_tgeoarr_mindist);
-/**
- * @ingroup mobilitydb_geo_dist
- * @brief Return the exact minimum spatial distance between two arrays of
- * temporal geos
- * @sqlfn minDistance()
- */
-Datum
-Tgeoarr_tgeoarr_mindist(PG_FUNCTION_ARGS)
-{
-  ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
-  ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
-  int count1, count2;
-  Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
-  Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
-  double result = tgeoarr_tgeoarr_mindist((const Temporal **) arr1, count1,
-    (const Temporal **) arr2, count2);
-  pfree(arr1); pfree(arr2);
-  PG_FREE_IF_COPY(array1, 0);
-  PG_FREE_IF_COPY(array2, 1);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PGDLLEXPORT Datum Mindistance_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Mindistance_transfn);
-/**
- * @ingroup mobilitydb_geo_dist
- * @brief Aggregate transition function for the 2-ary `minDistance`
- * aggregate: threads the running min as the threshold into the
- * per-pair plane-sweep kernel
- * @sqlfn minDistance()
- */
-Datum
-Mindistance_transfn(PG_FUNCTION_ARGS)
-{
-  double state = PG_ARGISNULL(0) ? DBL_MAX : PG_GETARG_FLOAT8(0);
-  if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_FLOAT8(state);
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(2);
-  double d = mindistance_tgeo_tgeo(temp1, temp2, state);
-  PG_FREE_IF_COPY(temp1, 1);
-  PG_FREE_IF_COPY(temp2, 2);
-  PG_RETURN_FLOAT8(d);
 }
 
 /*****************************************************************************/

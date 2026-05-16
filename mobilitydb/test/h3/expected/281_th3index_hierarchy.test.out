@@ -1,0 +1,68 @@
+SELECT h3_get_resolution(
+  h3_cell_to_parent(th3index '590464338553208831@2001-01-01', 2));
+ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+SELECT h3_get_resolution(
+  h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 5));
+ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+SELECT h3_get_resolution(h3_cell_to_parent(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]', 1));
+ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+/* Errors */
+SELECT h3_cell_to_parent(th3index '590464338553208831@2001-01-01', 5);
+ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+SELECT h3_get_resolution(
+  h3_cell_to_parent(th3index '590464338553208831@2001-01-01'));
+ERROR:  h3_cell_to_parent_next_meos: adapter not yet implemented
+SELECT h3_get_resolution(
+  h3_cell_to_parent(th3index '622236750694711295@2001-01-01'));
+ERROR:  h3_cell_to_parent_next_meos: adapter not yet implemented
+SELECT h3_cell_to_parent(h3_cell_to_parent(
+    th3index '622236750694711295@2001-01-01'))
+  = h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 8);
+ERROR:  operator does not exist: th3index = th3index
+LINE 3:   = h3_cell_to_parent(th3index '622236750694711295@2001-01-0...
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT h3_get_resolution(
+  h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 5));
+ERROR:  h3_cell_to_center_child_meos: adapter not yet implemented
+SELECT h3_get_resolution(
+  h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 10));
+ERROR:  h3_cell_to_center_child_meos: adapter not yet implemented
+SELECT h3_cell_to_parent(
+  h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 7), 3)
+  = th3index '590464338553208831@2001-01-01';
+ERROR:  operator does not exist: th3index = th3index
+LINE 3:   = th3index '590464338553208831@2001-01-01';
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT h3_get_resolution(
+  h3_cell_to_center_child(th3index '590464338553208831@2001-01-01'));
+ERROR:  h3_cell_to_center_child_next_meos: adapter not yet implemented
+SELECT h3_cell_to_child_pos(th3index '622236750694711295@2001-01-01', 9);
+      h3_cell_to_child_pos      
+--------------------------------
+ 3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_cell_to_child_pos(th3index '622236750694711295@2001-01-01', 3) >= 0;
+ERROR:  operator does not exist: tbigint >= integer
+LINE 1: ...child_pos(th3index '622236750694711295@2001-01-01', 3) >= 0;
+                                                                  ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT h3_cell_to_child_pos(th3index
+  '[622236750694711295@2001-01-01, 622236750694711295@2001-01-02]', 9);
+                       h3_cell_to_child_pos                       
+------------------------------------------------------------------
+ [3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT h3_child_pos_to_cell(
+    h3_cell_to_child_pos(th3index '622236750694711295@2001-01-01', 9),
+    h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 9),
+    10)
+  = th3index '622236750694711295@2001-01-01';
+ERROR:  operator does not exist: th3index = th3index
+LINE 5:   = th3index '622236750694711295@2001-01-01';
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.

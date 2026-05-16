@@ -274,14 +274,17 @@ adjacent_span_span(const Span *s1, const Span *s2)
     return false;
 
   /*
-   * Two spans A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
+   * Set-theoretic share-a-boundary adjacency: two closed spans are
+   * adjacent iff their closures meet at a single boundary value
+   * (s1->upper == s2->lower or s2->upper == s1->lower). The
+   * inclusive/exclusive bits are not consulted because the bbox
+   * dispatch path (which uses the same predicate via TBox / STBox
+   * indexes) has no inc/exc information to carry; aligning the heap
+   * predicate to that simpler set-theoretic shape lets adjacency on
+   * any bounding-box family share one definition.
    */
-  return (
-    (datum_eq(s1->upper, s2->lower, s1->basetype) &&
-      s1->upper_inc != s2->lower_inc) ||
-    (datum_eq(s2->upper, s1->lower, s1->basetype) &&
-      s2->upper_inc != s1->lower_inc) );
+  return (datum_eq(s1->upper, s2->lower, s1->basetype) ||
+          datum_eq(s2->upper, s1->lower, s1->basetype));
 }
 
 /*****************************************************************************

@@ -125,6 +125,9 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TGEOGRAPHY] = "tgeography",
   [T_TRGEOMETRY] = "trgeometry",
   [T_TBIGINT] = "tbigint",
+  [T_TH3INDEX] = "th3index",
+  [T_H3INDEX] = "h3index",
+  [T_H3INDEXSET] = "h3indexset",
 };
 
 /**
@@ -227,6 +230,7 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_POSESET,       T_POSE},
   {T_NPOINTSET,     T_NPOINT},
   {T_CBUFFERSET,    T_CBUFFER},
+  {T_H3INDEXSET,    T_H3INDEX},
 };
 
 /**
@@ -269,6 +273,7 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TDOUBLE4,   T_DOUBLE4},
   {T_TBOOL,      T_BOOL},
   {T_TBIGINT,    T_INT8},
+  {T_TH3INDEX,   T_H3INDEX},
   {T_TINT,       T_INT4},
   {T_TFLOAT,     T_FLOAT8},
   {T_TTEXT,      T_TEXT},
@@ -601,6 +606,9 @@ meos_basetype(MeosType type)
 #if POSE || RGEO
     || type == T_POSE
 #endif
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 #endif
@@ -613,6 +621,9 @@ basetype_byvalue(MeosType type)
 {
   return (type == T_BOOL || type == T_INT4 || type == T_INT8 ||
     type == T_FLOAT8 || type == T_DATE || type == T_TIMESTAMPTZ
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 
@@ -680,6 +691,9 @@ alphanum_basetype(MeosType type)
   return (type == T_BOOL || type == T_INT4 || type == T_INT8 ||
     type == T_FLOAT8 || type == T_TEXT || type == T_DATE ||
     type == T_TIMESTAMPTZ
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 
@@ -691,7 +705,7 @@ inline bool
 alphanum_temptype(MeosType type)
 {
   return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
-    type == T_TFLOAT || type == T_TTEXT);
+    type == T_TH3INDEX || type == T_TFLOAT || type == T_TTEXT);
 }
 #endif
 
@@ -719,6 +733,9 @@ spatial_basetype(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if H3
+    || type == T_H3INDEX
 #endif
     );
 }
@@ -779,6 +796,9 @@ set_type(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSESET
+#endif
+#if H3
+    || type == T_H3INDEXSET
 #endif
     );
 }
@@ -849,6 +869,9 @@ alphanumset_type(MeosType type)
 {
   return (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
     type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET
+#if H3
+    || type == T_H3INDEXSET
+#endif
     );
 }
 
@@ -1091,6 +1114,9 @@ temporal_type(MeosType type)
 #if RGEO
     || type == T_TRGEOMETRY
 #endif
+#if H3
+    || type == T_TH3INDEX
+#endif
     );
 }
 
@@ -1126,7 +1152,7 @@ temporal_basetype(MeosType type)
  * @note Every MEOS temporal type is continuous in the sense that it has a
  * value at every instant in its domain; this predicate identifies the
  * subset whose values can vary linearly between samples (as opposed to
- * STEP-only types like tbool, tint, ttext, tgeometry, tgeography).
+ * STEP-only types like tbool, tint, ttext, tgeometry, tgeography, th3index).
  */
 inline bool
 temptype_supports_linear(MeosType type)
@@ -1254,6 +1280,9 @@ tspatial_type(MeosType type)
 #if RGEO
     || type == T_TRGEOMETRY
 #endif
+#if H3
+    || type == T_TH3INDEX
+#endif
     );
 }
 
@@ -1374,6 +1403,9 @@ inline bool
 tgeodetic_type(MeosType type)
 {
   return (type == T_TGEOGPOINT || type == T_TGEOGRAPHY
+#if H3
+    || type == T_TH3INDEX
+#endif
     );
 }
 

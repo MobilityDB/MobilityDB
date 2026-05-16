@@ -431,6 +431,19 @@ pose_flags(Pose *pose)
 }
 #endif /* POSE || RGEO */
 
+#if H3
+/**
+ * @brief Get the MEOS flags from an H3 cell index
+ */
+static int16
+h3index_flags(void)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  MEOS_FLAGS_SET_GEODETIC(result, true);
+  return result;
+}
+#endif /* H3 */
 
 /**
  * @brief Get the MEOS flags from a spatial value
@@ -455,6 +468,11 @@ spatial_flags(Datum d, MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
+#endif
+#if H3
+    case T_H3INDEX:
+      (void) d;
+      return h3index_flags();
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

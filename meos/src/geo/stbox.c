@@ -1875,32 +1875,47 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
-  STBox inter;
-  if (! inter_stbox_stbox(box1, box2, &inter))
-    return false;
+  /* Set-theoretic share-a-boundary adjacency: the boxes are adjacent iff
+   * no axis is fully disjoint AND at least one axis touches at a shared
+   * boundary value (box1.max == box2.min or box2.max == box1.min on that
+   * axis). The previous formula used "intersection has any degenerate
+   * axis", which over-reported adjacency when one input was already
+   * degenerate on an axis whose value happened to land inside the other
+   * box's interior (e.g. a TInstant key inside a tstzspan query). */
+  bool boundary_touch = false;
 
-  /* Boxes are adjacent if they share n dimensions and their intersection is
-   * at most of n-1 dimensions */
-  if (! hasx && hast)
-    return (inter.period.lower == inter.period.upper);
-  if (hasx && ! hast)
+  if (hasx)
   {
+    if (box1->xmax < box2->xmin || box2->xmax < box1->xmin)
+      return false;
+    if (box1->xmax == box2->xmin || box2->xmax == box1->xmin)
+      boundary_touch = true;
+    if (box1->ymax < box2->ymin || box2->ymax < box1->ymin)
+      return false;
+    if (box1->ymax == box2->ymin || box2->ymax == box1->ymin)
+      boundary_touch = true;
     if (hasz)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax);
-    else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax);
+    {
+      if (box1->zmax < box2->zmin || box2->zmax < box1->zmin)
+        return false;
+      if (box1->zmax == box2->zmin || box2->zmax == box1->zmin)
+        boundary_touch = true;
+    }
   }
-  else
+
+  if (hast)
   {
-    if (hasz)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax ||
-           inter.period.lower == inter.period.upper);
-    else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.period.lower == inter.period.upper);
+    TimestampTz t1lo = DatumGetTimestampTz(box1->period.lower);
+    TimestampTz t1hi = DatumGetTimestampTz(box1->period.upper);
+    TimestampTz t2lo = DatumGetTimestampTz(box2->period.lower);
+    TimestampTz t2hi = DatumGetTimestampTz(box2->period.upper);
+    if (t1hi < t2lo || t2hi < t1lo)
+      return false;
+    if (t1hi == t2lo || t2hi == t1lo)
+      boundary_touch = true;
   }
+
+  return boundary_touch;
 }
 
 /*****************************************************************************

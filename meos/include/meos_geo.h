@@ -866,8 +866,6 @@ extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern double tgeoarr_tgeoarr_mindist(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
-extern double mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double threshold);
 
 /* Aggregates */
 

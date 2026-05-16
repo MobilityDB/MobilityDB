@@ -1181,10 +1181,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal point at which the two arguments are at the nearest distance</para>
 				</listitem>
 

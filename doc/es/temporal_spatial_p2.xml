@@ -238,30 +238,6 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeo_minDistance">
-				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
-				<para>Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</para>
-				<para><varname>minDistance({tgeo,geo},{tgeo,geo}) → float</varname></para>
-				<para><varname>minDistance(tgeo[],tgeo[]) → float</varname></para>
-				<para><varname>minDistance(tgeo,tgeo) → float</varname> (agregado)</para>
-				<para>La forma escalar devuelve la distancia mínima alcanzada entre los dos argumentos sobre la intersección de sus extensiones temporales, equivalente al valor mínimo de la distancia temporal <varname>&lt;-&gt;</varname>. La forma de arreglo generaliza esto a dos conjuntos de geometrías temporales y devuelve el mínimo sobre todos los pares. La forma de agregado, utilizada con <varname>GROUP BY</varname>, devuelve la distancia mínima alcanzada sobre todos los pares agregados en el grupo.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-  geometry 'Point(0 1)');
--- 0.707106781186548
-SELECT minDistance(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-        tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
-  ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
--- 0
-SELECT g, minDistance(t1.Trip, t2.Trip)
-FROM Trips t1, Trips t2, Groups g
-WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId
-GROUP BY g;
-</programlisting>
-				<para>La forma de agregado se adapta bien a las consultas tipo BerlinMOD que calculan la distancia mínima de aproximación entre pares de trayectorias agrupados por licencia o tipo de vehículo. En un grupo de una sola fila, el agregado se reduce a la distancia mínima escalar entre el par.</para>
-			</listitem>
-
 			<listitem xml:id="tgeo_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Devuelve la línea que conecta el punto de aproximación más cercano &Z_support; &geography_support;</para>

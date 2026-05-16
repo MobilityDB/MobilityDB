@@ -1,0 +1,80 @@
+SELECT h3_are_neighbor_cells(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986761658367@2001-01-01');
+     h3_are_neighbor_cells      
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_are_neighbor_cells(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986753269759@2001-01-01');
+     h3_are_neighbor_cells      
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_are_neighbor_cells(
+  th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
+  th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]');
+                      h3_are_neighbor_cells                       
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'))
+  = th3index '612544986753269759@2001-01-01';
+ERROR:  operator does not exist: th3index = th3index
+LINE 4:   = th3index '612544986753269759@2001-01-01';
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT h3_get_directed_edge_destination(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'))
+  = th3index '612544986761658367@2001-01-01';
+ERROR:  operator does not exist: th3index = th3index
+LINE 4:   = th3index '612544986761658367@2001-01-01';
+          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT h3_is_valid_directed_edge(h3_cells_to_directed_edge(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986761658367@2001-01-01'));
+   h3_is_valid_directed_edge    
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_directed_edge(th3index '612544986753269759@2001-01-01');
+   h3_is_valid_directed_edge    
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_directed_edge(th3index '0@2001-01-01');
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 1: SELECT h3_is_valid_directed_edge(th3index '0@2001-01-01');
+                                                  ^
+SELECT h3_is_valid_cell(h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+  th3index '612544986753269759@2001-01-01',
+  th3index '612544986761658367@2001-01-01')));
+        h3_is_valid_cell        
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_cell(h3_get_directed_edge_destination(
+  h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01')));
+        h3_is_valid_cell        
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_directed_edge_to_boundary(
+  h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01')) IS NOT NULL;
+ERROR:  h3_directed_edge_to_gs_boundary: adapter not yet implemented
