@@ -91,6 +91,10 @@
   #include <meos_npoint.h>
   #include "npoint/tnpoint.h"
 #endif
+#if RGEO
+  #include <meos_rgeo.h>
+  #include "rgeo/trgeo_all.h"
+#endif
 
 /*****************************************************************************
  * Arena ownership: every allocation for one converted value lives in a
@@ -445,9 +449,9 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
  * @return True on success; on an unsupported input raises
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
  * @note All temporal float, integer, boolean, text, point (geometry or
- * geography), circular buffer, pose, network point and general geometry or
- * geography subtypes and interpolations are wired; other base types are not
- * yet. The Arrow schema is the full contract.
+ * geography), circular buffer, pose, network point, general geometry or
+ * geography and rigid geometry subtypes and interpolations are wired; other
+ * base types are not yet. The Arrow schema is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -472,15 +476,19 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
 #endif
   bool is_geo = (temp->temptype == T_TGEOMETRY ||
     temp->temptype == T_TGEOGRAPHY);
+  bool is_trgeo = false;
+#if RGEO
+  is_trgeo = (temp->temptype == T_TRGEOMETRY);
+#endif
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
       temp->temptype != T_TBOOL && temp->temptype != T_TTEXT &&
       temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT &&
-      ! is_cbuffer && ! is_pose && ! is_npoint && ! is_geo)
+      ! is_cbuffer && ! is_pose && ! is_npoint && ! is_geo && ! is_trgeo)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_to_arrow: only temporal float, integer, boolean, text, "
-      "point, circular buffer, pose, network point and general geometry or "
-      "geography are wired");
+      "point, circular buffer, pose, network point, general geometry or "
+      "geography and rigid geometry are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
@@ -488,16 +496,20 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   bool is_ttext = (temp->temptype == T_TTEXT);
   bool is_point = (temp->temptype == T_TGEOMPOINT ||
     temp->temptype == T_TGEOGPOINT);
-  /* Z applies to a point or a 3D pose (a 3D pose carries a quaternion). */
-  bool has_z = (is_point || is_pose) && MEOS_FLAGS_GET_Z(temp->flags);
+  /* Z applies to a point or a 3D pose/rigid geometry (3D carries a
+   * quaternion). A rigid geometry's per-instant value is a pose. */
+  bool has_z = (is_point || is_pose || is_trgeo) &&
+    MEOS_FLAGS_GET_Z(temp->flags);
   bool is_pose3d = is_pose && has_z;
+  bool is_trgeo3d = is_trgeo && has_z;
   /* Point → Struct{x,y,z?}, circular buffer → Struct{x,y,r}, pose →
    * Struct{x,y,theta} (2D) or Struct{x,y,z,W,X,Y,Z} (3D), network point →
-   * Struct{rid,pos}, all the "+s" value leaf; a general geometry or
-   * geography → an opaque LargeBinary "Z" leaf of its EWKB; the scalar tier
-   * uses a single primitive leaf. */
-  const char *vfmt = (is_point || is_cbuffer || is_pose || is_npoint) ?
-    "+s" : (is_geo ? "Z" : (is_ttext ? "u" :
+   * Struct{rid,pos}, rigid geometry → Struct{ref (LargeBinary EWKB of the
+   * shared reference geometry), then the pose fields}, all the "+s" value
+   * leaf; a general geometry or geography → an opaque LargeBinary "Z" leaf
+   * of its EWKB; the scalar tier uses a single primitive leaf. */
+  const char *vfmt = (is_point || is_cbuffer || is_pose || is_npoint ||
+    is_trgeo) ? "+s" : (is_geo ? "Z" : (is_ttext ? "u" :
     (is_tbool ? "b" : (is_tint ? "i" : "g"))));
 
   /* Separate arenas: the schema and the array are independently released
@@ -556,6 +568,28 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     rp[1] = aw_schema_leaf(arena_s, "g", "pos");
     inst_kids[1] = aw_schema_struct(arena_s, "v", rp, 2);
   }
+  else if (is_trgeo)
+  {
+    /* Rigid geometry → Struct{ref:LargeBinary, then the pose fields}; the
+     * leading child name "ref" discriminates it on read. */
+    int nrg = is_trgeo3d ? 8 : 4;
+    struct ArrowSchema **rg =
+      arena_alloc(arena_s, sizeof(struct ArrowSchema *) * nrg);
+    rg[0] = aw_schema_leaf(arena_s, "Z", "ref");
+    rg[1] = aw_schema_leaf(arena_s, "g", "x");
+    rg[2] = aw_schema_leaf(arena_s, "g", "y");
+    if (is_trgeo3d)
+    {
+      rg[3] = aw_schema_leaf(arena_s, "g", "z");
+      rg[4] = aw_schema_leaf(arena_s, "g", "W");
+      rg[5] = aw_schema_leaf(arena_s, "g", "X");
+      rg[6] = aw_schema_leaf(arena_s, "g", "Y");
+      rg[7] = aw_schema_leaf(arena_s, "g", "Z");
+    }
+    else
+      rg[3] = aw_schema_leaf(arena_s, "g", "theta");
+    inst_kids[1] = aw_schema_struct(arena_s, "v", rg, nrg);
+  }
   else
     inst_kids[1] = aw_schema_leaf(arena_s, vfmt, "v");
   struct ArrowSchema *inst_st =
@@ -595,7 +629,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   subtype_b[0] = (int8_t) temp->subtype;
   interp_b[0] = (int8_t) MEOS_FLAGS_GET_INTERP(temp->flags);
   flags_b[0] = (int16_t) temp->flags;
-  srid_b[0] = (is_point || is_cbuffer || is_pose) ?
+  srid_b[0] = (is_point || is_cbuffer || is_pose || is_trgeo) ?
     (int32_t) tspatial_srid(temp) : 0;
 
   /* Decompose into component sequences. The skeleton is uniform: an instant
@@ -639,8 +673,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   insts_off[0] = 0;
   int64_t *tvals = arena_alloc(arena_a, sizeof(int64_t) * (total ? total : 1));
   int vn = total ? total : 1;
-  size_t vsz = (is_ttext || is_point || is_cbuffer || is_pose || is_geo) ?
-    1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
+  size_t vsz = (is_ttext || is_point || is_cbuffer || is_pose || is_geo ||
+    is_trgeo) ? 1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
     (is_tint ? sizeof(int32_t) : sizeof(double)) * (size_t) vn);
   void *vvals = arena_alloc(arena_a, vsz);
   /* Temporal text decomposes to a variable-length utf8 column: collect the
@@ -648,28 +682,44 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   char **svals = is_ttext ? palloc(sizeof(char *) * vn) : NULL;
   /* Point → x,y,z? columns; circular buffer → x,y (2D centre) and r;
    * pose → x,y and theta (2D), or x,y,z and quaternion W,X,Y,Z (3D). */
-  bool xy = (is_point || is_cbuffer || is_pose);
+  bool xy = (is_point || is_cbuffer || is_pose || is_trgeo);
+  bool any3d = is_pose3d || is_trgeo3d;
+  bool any2dpose = (is_pose && ! is_pose3d) || (is_trgeo && ! is_trgeo3d);
   double *px = xy ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *py = xy ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pz = ((is_point && has_z) || is_pose3d) ?
+  double *pz = ((is_point && has_z) || any3d) ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pr = is_cbuffer ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pth = (is_pose && ! is_pose3d) ?
+  double *pth = any2dpose ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pqw = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pqx = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pqy = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *pqz = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *pqw = any3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *pqx = any3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *pqy = any3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *pqz = any3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   /* Network point → parallel Int64 rid and Float64 pos columns. */
   int64_t *prid = is_npoint ?
     arena_alloc(arena_a, sizeof(int64_t) * vn) : NULL;
   double *ppos = is_npoint ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  /* General geometry or geography → per-instant EWKB collected during the
-   * walk, then assembled into an int64-offset LargeBinary column. */
-  uint8_t **gbufs = is_geo ? palloc(sizeof(uint8_t *) * vn) : NULL;
-  size_t *glens = is_geo ? palloc(sizeof(size_t) * vn) : NULL;
+  /* General geometry or geography → per-instant EWKB; rigid geometry → the
+   * shared reference geometry's EWKB replicated per instant (the leaf is
+   * per-instant uniform). Collected during the walk, then assembled into an
+   * int64-offset LargeBinary column. */
+  uint8_t **gbufs = (is_geo || is_trgeo) ?
+    palloc(sizeof(uint8_t *) * vn) : NULL;
+  size_t *glens = (is_geo || is_trgeo) ?
+    palloc(sizeof(size_t) * vn) : NULL;
+  /* The rigid-geometry reference is constant across the value: serialize it
+   * once and replicate the bytes per instant. */
+  uint8_t *refwkb = NULL;
+  size_t reflen = 0;
+#if RGEO
+  if (is_trgeo)
+    refwkb = aw_geo_to_wkb(PointerGetDatum(trgeo_geom_p(temp)), &reflen);
+#else
+  (void) refwkb; (void) reflen;
+#endif
   int k = 0;
   for (int j = 0; j < nseqs; j++)
   {
@@ -724,6 +774,24 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       }
       else if (is_geo)
         gbufs[k] = aw_geo_to_wkb(tinstant_value_p(single), &glens[k]);
+      else if (is_trgeo)
+      {
+#if RGEO
+        const Pose *po = DatumGetPoseP(tinstant_value_p(single));
+        px[k] = po->data[0]; py[k] = po->data[1];
+        if (is_trgeo3d)
+        {
+          pz[k] = po->data[2]; pqw[k] = po->data[3];
+          pqx[k] = po->data[4]; pqy[k] = po->data[5]; pqz[k] = po->data[6];
+        }
+        else
+          pth[k] = po->data[2];
+        gbufs[k] = palloc(reflen ? reflen : 1);
+        if (reflen)
+          memcpy(gbufs[k], refwkb, reflen);
+        glens[k] = reflen;
+#endif
+      }
       else if (is_ttext)
         svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(single)));
       else if (is_tbool)
@@ -793,6 +861,25 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
         }
         else if (is_geo)
           gbufs[k] = aw_geo_to_wkb(tinstant_value_p(inst), &glens[k]);
+        else if (is_trgeo)
+        {
+#if RGEO
+          const Pose *po = DatumGetPoseP(tinstant_value_p(inst));
+          px[k] = po->data[0]; py[k] = po->data[1];
+          if (is_trgeo3d)
+          {
+            pz[k] = po->data[2]; pqw[k] = po->data[3];
+            pqx[k] = po->data[4]; pqy[k] = po->data[5];
+            pqz[k] = po->data[6];
+          }
+          else
+            pth[k] = po->data[2];
+          gbufs[k] = palloc(reflen ? reflen : 1);
+          if (reflen)
+            memcpy(gbufs[k], refwkb, reflen);
+          glens[k] = reflen;
+#endif
+        }
         else if (is_ttext)
           svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(inst)));
         else if (is_tbool)
@@ -837,10 +924,11 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   }
 
   /* Assemble the LargeBinary column: int64 offsets (total + 1) then the
-   * concatenated per-instant EWKB bytes */
+   * concatenated per-instant EWKB bytes. For a rigid geometry this is the
+   * reference-geometry "ref" child of the value struct. */
   int64_t *geo_off = NULL;
   char *geo_data = NULL;
-  if (is_geo)
+  if (is_geo || is_trgeo)
   {
     geo_off = arena_alloc(arena_a, sizeof(int64_t) * (total + 1));
     int64_t acc = 0;
@@ -859,6 +947,10 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     }
     pfree(gbufs);
     pfree(glens);
+#if RGEO
+    if (refwkb)
+      pfree(refwkb);
+#endif
   }
 
   /* Array tree mirroring the schema */
@@ -911,6 +1003,26 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     rp[0] = aw_array_prim(arena_a, total, prid);
     rp[1] = aw_array_prim(arena_a, total, ppos);
     inst_a_kids[1] = aw_array_struct(arena_a, total, rp, 2);
+  }
+  else if (is_trgeo)
+  {
+    int nrg = is_trgeo3d ? 8 : 4;
+    struct ArrowArray **rg =
+      arena_alloc(arena_a, sizeof(struct ArrowArray *) * nrg);
+    rg[0] = aw_array_largebin(arena_a, total, geo_off, geo_data);
+    rg[1] = aw_array_prim(arena_a, total, px);
+    rg[2] = aw_array_prim(arena_a, total, py);
+    if (is_trgeo3d)
+    {
+      rg[3] = aw_array_prim(arena_a, total, pz);
+      rg[4] = aw_array_prim(arena_a, total, pqw);
+      rg[5] = aw_array_prim(arena_a, total, pqx);
+      rg[6] = aw_array_prim(arena_a, total, pqy);
+      rg[7] = aw_array_prim(arena_a, total, pqz);
+    }
+    else
+      rg[3] = aw_array_prim(arena_a, total, pth);
+    inst_a_kids[1] = aw_array_struct(arena_a, total, rg, nrg);
   }
   else
     inst_a_kids[1] = is_geo ?
@@ -980,13 +1092,14 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
    * "u" is temporal text, Struct "+s" is a temporal point ({x,y,z?}, geom
    * or geog from the carried flags word), a temporal circular buffer
    * ({x,y,r}), a temporal pose ({x,y,theta} 2D or {x,y,z,W,X,Y,Z} 3D) or a
-   * temporal network point ({rid,pos}), LargeBinary "Z" is a general
-   * temporal geometry or geography carrying each instant's EWKB verbatim
-   * (geometry or geography from the carried flags word); the first child
-   * name ("rid") and the third child name ("r"/"theta"/"z") with the child
-   * count disambiguate; the srid slot is the spatial SRID, non-zero allowed
-   * only for a struct leaf (network point and the LargeBinary geometry leaf
-   * keep it zero, the SRID travelling inside the EWKB). */
+   * temporal network point ({rid,pos}) or a temporal rigid geometry
+   * ({ref,...pose}), LargeBinary "Z" is a general temporal geometry or
+   * geography carrying each instant's EWKB verbatim (geometry or geography
+   * from the carried flags word); the first child name ("rid"/"ref") and
+   * the third child name ("r"/"theta"/"z") with the child count
+   * disambiguate; the srid slot is the spatial SRID, non-zero allowed only
+   * for a struct leaf (network point and the LargeBinary geometry leaf keep
+   * it zero, the SRID travelling inside the EWKB). */
   const struct ArrowSchema *v_sc = schema->children[4]    /* seqs list */
     ->children[0]                                          /* seq struct */
     ->children[2]                                          /* insts list */
@@ -1013,8 +1126,14 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     ((v_sc->n_children == 3 && strcmp(c2, "theta") == 0) ||
      v_sc->n_children == 7);
   bool v_is_pose3d = v_is_pose && v_sc->n_children == 7;
+  /* Rigid geometry: a struct whose leading child is the "ref" LargeBinary
+   * of the shared reference geometry, followed by the pose fields (4
+   * children = 2D, 8 = 3D). */
+  bool v_is_trgeo = v_is_struct && v_sc->n_children >= 4 &&
+    strcmp(c0, "ref") == 0;
+  bool v_is_trgeo3d = v_is_trgeo && v_sc->n_children == 8;
   bool v_is_point = v_is_struct && ! v_is_cbuffer && ! v_is_pose &&
-    ! v_is_npoint;
+    ! v_is_npoint && ! v_is_trgeo;
   if (! v_sc->format ||
       (! v_is_struct && strcmp(v_sc->format, "g") != 0 &&
        strcmp(v_sc->format, "i") != 0 && strcmp(v_sc->format, "b") != 0 &&
@@ -1025,8 +1144,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_from_arrow: only temporal float, integer, boolean, text, "
-      "point, circular buffer, pose, network point and general geometry or "
-      "geography are wired");
+      "point, circular buffer, pose, network point, general geometry or "
+      "geography and rigid geometry are wired");
     return NULL;
   }
 #if ! CBUFFER
@@ -1053,11 +1172,21 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     return NULL;
   }
 #endif
-  MeosType vt = v_is_geo ?
+#if ! RGEO
+  if (v_is_trgeo)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_temporal_from_arrow: rigid geometry support is not built");
+    return NULL;
+  }
+#endif
+  /* A rigid geometry reconstructs as a temporal pose, then wraps it with
+   * the shared reference geometry; the inner build uses the pose path. */
+  MeosType vt = v_is_trgeo ? T_TPOSE : (v_is_geo ?
     (MEOS_FLAGS_GET_GEODETIC(flags) ? T_TGEOGRAPHY : T_TGEOMETRY) :
     ((v_sc->format[0] == 'u') ? T_TTEXT :
     ((v_sc->format[0] == 'b') ? T_TBOOL :
-    ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT)));
+    ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT))));
   bool geodetic = v_is_point && MEOS_FLAGS_GET_GEODETIC(flags);
 
   const struct ArrowArray *seq_st_a = array->children[4]->children[0];
@@ -1079,7 +1208,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   const char *gdata = v_is_geo ?
     (const char *) inst_st_a->children[1]->buffers[2] : NULL;
   const struct ArrowArray *vstruct = inst_st_a->children[1];
-  bool v_xy = v_is_struct && ! v_is_npoint;
+  bool v_xy = v_is_struct && ! v_is_npoint && ! v_is_trgeo;
   const double *px = v_xy ?
     (const double *) vstruct->children[0]->buffers[1] : NULL;
   const double *py = v_xy ?
@@ -1103,6 +1232,29 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     (const double *) vstruct->children[5]->buffers[1] : NULL;
   const double *pqz = v_is_pose3d ?
     (const double *) vstruct->children[6]->buffers[1] : NULL;
+  /* Rigid geometry: child[0] is the "ref" LargeBinary (constant across the
+   * value); the pose fields follow at children[1..], so the pose pointers
+   * are shifted by one. The inner build is a temporal pose; the reference
+   * geometry wraps it afterwards. */
+  const int64_t *roff = v_is_trgeo ?
+    (const int64_t *) vstruct->children[0]->buffers[1] : NULL;
+  const char *rdata = v_is_trgeo ?
+    (const char *) vstruct->children[0]->buffers[2] : NULL;
+  if (v_is_trgeo)
+  {
+    px = (const double *) vstruct->children[1]->buffers[1];
+    py = (const double *) vstruct->children[2]->buffers[1];
+    if (v_is_trgeo3d)
+    {
+      pz = (const double *) vstruct->children[3]->buffers[1];
+      pqw = (const double *) vstruct->children[4]->buffers[1];
+      pqx = (const double *) vstruct->children[5]->buffers[1];
+      pqy = (const double *) vstruct->children[6]->buffers[1];
+      pqz = (const double *) vstruct->children[7]->buffers[1];
+    }
+    else
+      pth = (const double *) vstruct->children[3]->buffers[1];
+  }
   int nseqs = (int) seq_st_a->length;
   int total = nseqs > 0 ? insts_off[nseqs] - insts_off[0] : 0;
   if (nseqs <= 0 || total <= 0)
@@ -1112,10 +1264,33 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     return NULL;
   }
 
+  /* The rigid-geometry reference is constant; rebuild it once from the
+   * first instant's "ref" child and wrap the reconstructed temporal pose. */
+  GSERIALIZED *trgeo_ref = NULL;
+#if RGEO
+  if (v_is_trgeo)
+    trgeo_ref = aw_geo_from_wkb((const uint8_t *) (rdata + roff[0]),
+      (size_t) (roff[1] - roff[0]), false);
+#else
+  (void) roff; (void) rdata; (void) trgeo_ref; (void) v_is_trgeo3d;
+#endif
+
   if (subtype == TINSTANT)
-    return (Temporal *) aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
+  {
+    TInstant *ti = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
       goff, gdata, px, py, pz, pr, pth, pqw, pqx, pqy, pqz, prid, ppos, srid,
       geodetic, 0, (TimestampTz) tvals[0]);
+#if RGEO
+    if (v_is_trgeo)
+    {
+      Temporal *r = (Temporal *) geo_tposeinst_to_trgeo(trgeo_ref, ti);
+      pfree(ti);
+      pfree(trgeo_ref);
+      return r;
+    }
+#endif
+    return (Temporal *) ti;
+  }
 
   interpType ip = (interpType) interp;
   if (subtype == TSEQUENCE)
@@ -1132,6 +1307,15 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     for (int i = 0; i < n; i++)
       pfree(instants[i]);
     pfree(instants);
+#if RGEO
+    if (v_is_trgeo)
+    {
+      Temporal *r = (Temporal *) geo_tposeseq_to_trgeo(trgeo_ref, result);
+      pfree(result);
+      pfree(trgeo_ref);
+      return r;
+    }
+#endif
     return (Temporal *) result;
   }
 
@@ -1157,6 +1341,15 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   for (int j = 0; j < nseqs; j++)
     pfree(seqs[j]);
   pfree(seqs);
+#if RGEO
+  if (v_is_trgeo)
+  {
+    Temporal *r = (Temporal *) geo_tposeseqset_to_trgeo(trgeo_ref, result);
+    pfree(result);
+    pfree(trgeo_ref);
+    return r;
+  }
+#endif
   return (Temporal *) result;
 }
 
