@@ -76,6 +76,10 @@
 #include "temporal/tsequenceset.h"
 #include "temporal/tinstant.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+  #include "cbuffer/cbuffer.h"
+#endif
 
 /*****************************************************************************
  * Arena ownership: every allocation for one converted value lives in a
@@ -275,10 +279,26 @@ aw_leaf_datum(const char *vfmt, const void *vvals, int idx)
 static TInstant *
 aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
   const int32_t *soff, const char *sdata, const double *px, const double *py,
-  const double *pz, int32_t srid, bool geodetic, int idx, TimestampTz t)
+  const double *pz, const double *pr, int32_t srid, bool geodetic, int idx,
+  TimestampTz t)
 {
+#if ! CBUFFER
+  (void) pr;   /* the circular-buffer branch is compiled out */
+#endif
   if (vfmt[0] == '+')
   {
+#if CBUFFER
+    if (pr)
+    {
+      GSERIALIZED *cgs =
+        geopoint_make(px[idx], py[idx], 0.0, false, false, srid);
+      Cbuffer *cb = cbuffer_make(cgs, pr[idx]);
+      TInstant *r = tinstant_make(CbufferPGetDatum(cb), T_TCBUFFER, t);
+      pfree(cgs);
+      pfree(cb);
+      return r;
+    }
+#endif
     bool hz = (pz != NULL);
     GSERIALIZED *gs = geopoint_make(px[idx], py[idx], hz ? pz[idx] : 0.0,
       hz, geodetic, srid);
@@ -315,9 +335,9 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
  * by the producer; release with their @p release callbacks
  * @return True on success; on an unsupported input raises
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
- * @note All temporal float, integer, boolean, text and point (geometry or
- * geography) subtypes and interpolations are wired; other base types are
- * not yet. The Arrow schema is the full contract.
+ * @note All temporal float, integer, boolean, text, point (geometry or
+ * geography) and circular buffer subtypes and interpolations are wired;
+ * other base types are not yet. The Arrow schema is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -328,13 +348,18 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to to_arrow");
     return false;
   }
+  bool is_cbuffer = false;
+#if CBUFFER
+  is_cbuffer = (temp->temptype == T_TCBUFFER);
+#endif
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
       temp->temptype != T_TBOOL && temp->temptype != T_TTEXT &&
-      temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT)
+      temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT &&
+      ! is_cbuffer)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_to_arrow: only temporal float, integer, boolean, text "
-      "and point are wired");
+      "meos_temporal_to_arrow: only temporal float, integer, boolean, text, "
+      "point and circular buffer are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
@@ -343,9 +368,10 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   bool is_point = (temp->temptype == T_TGEOMPOINT ||
     temp->temptype == T_TGEOGPOINT);
   bool has_z = is_point && MEOS_FLAGS_GET_Z(temp->flags);
-  /* Point decomposes to a Struct{x,y,z?} value leaf ("+s"); the scalar
-   * tier uses a single primitive leaf. */
-  const char *vfmt = is_point ? "+s" : (is_ttext ? "u" :
+  /* Point decomposes to a Struct{x,y,z?} and a circular buffer to a
+   * Struct{x,y,r} value leaf ("+s"); the scalar tier uses a single
+   * primitive leaf. */
+  const char *vfmt = (is_point || is_cbuffer) ? "+s" : (is_ttext ? "u" :
     (is_tbool ? "b" : (is_tint ? "i" : "g")));
 
   /* Separate arenas: the schema and the array are independently released
@@ -367,6 +393,15 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     if (has_z)
       xyz[2] = aw_schema_leaf(arena_s, "g", "z");
     inst_kids[1] = aw_schema_struct(arena_s, "v", xyz, nxyz);
+  }
+  else if (is_cbuffer)
+  {
+    struct ArrowSchema **xyr =
+      arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 3);
+    xyr[0] = aw_schema_leaf(arena_s, "g", "x");
+    xyr[1] = aw_schema_leaf(arena_s, "g", "y");
+    xyr[2] = aw_schema_leaf(arena_s, "g", "r");
+    inst_kids[1] = aw_schema_struct(arena_s, "v", xyr, 3);
   }
   else
     inst_kids[1] = aw_schema_leaf(arena_s, vfmt, "v");
@@ -407,7 +442,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   subtype_b[0] = (int8_t) temp->subtype;
   interp_b[0] = (int8_t) MEOS_FLAGS_GET_INTERP(temp->flags);
   flags_b[0] = (int16_t) temp->flags;
-  srid_b[0] = is_point ? (int32_t) tspatial_srid(temp) : 0;
+  srid_b[0] = (is_point || is_cbuffer) ? (int32_t) tspatial_srid(temp) : 0;
 
   /* Decompose into component sequences. The skeleton is uniform: an instant
    * is one pseudo-sequence of one instant; a sequence is one sequence; a
@@ -450,17 +485,22 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   insts_off[0] = 0;
   int64_t *tvals = arena_alloc(arena_a, sizeof(int64_t) * (total ? total : 1));
   int vn = total ? total : 1;
-  size_t vsz = (is_ttext || is_point) ? 1 :
+  size_t vsz = (is_ttext || is_point || is_cbuffer) ? 1 :
     (is_tbool ? (size_t) ((vn + 7) / 8) :
     (is_tint ? sizeof(int32_t) : sizeof(double)) * (size_t) vn);
   void *vvals = arena_alloc(arena_a, vsz);
   /* Temporal text decomposes to a variable-length utf8 column: collect the
    * instant strings during the walk, assemble offsets and bytes afterwards. */
   char **svals = is_ttext ? palloc(sizeof(char *) * vn) : NULL;
-  /* Temporal point decomposes to parallel x,y,z? Float64 columns. */
-  double *px = is_point ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  double *py = is_point ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  /* Temporal point decomposes to parallel x,y,z? Float64 columns; a temporal
+   * circular buffer to parallel x,y (2D centre) and r (radius) columns. */
+  double *px = (is_point || is_cbuffer) ?
+    arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *py = (is_point || is_cbuffer) ?
+    arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pz = (is_point && has_z) ?
+    arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  double *pr = is_cbuffer ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   int k = 0;
   for (int j = 0; j < nseqs; j++)
@@ -483,6 +523,15 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
           const POINT2D *p = DATUM_POINT2D_P(pd);
           px[k] = p->x; py[k] = p->y;
         }
+      }
+      else if (is_cbuffer)
+      {
+#if CBUFFER
+        Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(single));
+        const POINT2D *cp =
+          (const POINT2D *) GS_POINT_PTR(cbuffer_point_p(cb));
+        px[k] = cp->x; py[k] = cp->y; pr[k] = cbuffer_radius(cb);
+#endif
       }
       else if (is_ttext)
         svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(single)));
@@ -519,6 +568,15 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
             const POINT2D *p = DATUM_POINT2D_P(pd);
             px[k] = p->x; py[k] = p->y;
           }
+        }
+        else if (is_cbuffer)
+        {
+#if CBUFFER
+          Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+          const POINT2D *cp =
+            (const POINT2D *) GS_POINT_PTR(cbuffer_point_p(cb));
+          px[k] = cp->x; py[k] = cp->y; pr[k] = cbuffer_radius(cb);
+#endif
         }
         else if (is_ttext)
           svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(inst)));
@@ -577,6 +635,15 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     if (has_z)
       xyz[2] = aw_array_prim(arena_a, total, pz);
     inst_a_kids[1] = aw_array_struct(arena_a, total, xyz, nxyz);
+  }
+  else if (is_cbuffer)
+  {
+    struct ArrowArray **xyr =
+      arena_alloc(arena_a, sizeof(struct ArrowArray *) * 3);
+    xyr[0] = aw_array_prim(arena_a, total, px);
+    xyr[1] = aw_array_prim(arena_a, total, py);
+    xyr[2] = aw_array_prim(arena_a, total, pr);
+    inst_a_kids[1] = aw_array_struct(arena_a, total, xyr, 3);
   }
   else
     inst_a_kids[1] = is_ttext ?
@@ -642,9 +709,10 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   /* The base-type leaf gates this: an unrecognised value column routes to
    * NOT_SUPPORTED rather than being misread. Float64 "g" is temporal float,
    * Int32 "i" is temporal integer, Boolean "b" is temporal boolean, Utf8
-   * "u" is temporal text, Struct "+s" is a temporal point (geom or geog and
-   * the Z dimension recovered from the carried flags word and child count;
-   * the srid slot is the point SRID, non-zero allowed only here). */
+   * "u" is temporal text, Struct "+s" is a temporal point ({x,y,z?}, geom
+   * or geog from the carried flags word) or a temporal circular buffer
+   * ({x,y,r}, third child named "r"); the srid slot is the spatial SRID,
+   * non-zero allowed only for a struct leaf. */
   const struct ArrowSchema *v_sc = schema->children[4]    /* seqs list */
     ->children[0]                                          /* seq struct */
     ->children[2]                                          /* insts list */
@@ -654,20 +722,32 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int8_t interp = ((const int8_t *) array->children[1]->buffers[1])[0];
   int16_t flags = ((const int16_t *) array->children[2]->buffers[1])[0];
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
-  bool v_is_point = v_sc->format && strcmp(v_sc->format, "+s") == 0;
+  bool v_is_struct = v_sc->format && strcmp(v_sc->format, "+s") == 0;
+  bool v_is_cbuffer = v_is_struct && v_sc->n_children == 3 &&
+    v_sc->children[2]->name &&
+    strcmp(v_sc->children[2]->name, "r") == 0;
+  bool v_is_point = v_is_struct && ! v_is_cbuffer;
   if (! v_sc->format ||
-      (! v_is_point && strcmp(v_sc->format, "g") != 0 &&
+      (! v_is_struct && strcmp(v_sc->format, "g") != 0 &&
        strcmp(v_sc->format, "i") != 0 && strcmp(v_sc->format, "b") != 0 &&
        strcmp(v_sc->format, "u") != 0) ||
-      (! v_is_point && srid != 0) ||
+      (! v_is_struct && srid != 0) ||
       (subtype != TINSTANT && subtype != TSEQUENCE &&
        subtype != TSEQUENCESET))
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_from_arrow: only temporal float, integer, boolean, text "
-      "and point are wired");
+      "meos_temporal_from_arrow: only temporal float, integer, boolean, text, "
+      "point and circular buffer are wired");
     return NULL;
   }
+#if ! CBUFFER
+  if (v_is_cbuffer)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_temporal_from_arrow: circular buffer support is not built");
+    return NULL;
+  }
+#endif
   MeosType vt = (v_sc->format[0] == 'u') ? T_TTEXT :
     ((v_sc->format[0] == 'b') ? T_TBOOL :
     ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT));
@@ -688,11 +768,13 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   const char *sdata = (v_sc->format[0] == 'u') ?
     (const char *) inst_st_a->children[1]->buffers[2] : NULL;
   const struct ArrowArray *vstruct = inst_st_a->children[1];
-  const double *px = v_is_point ?
+  const double *px = v_is_struct ?
     (const double *) vstruct->children[0]->buffers[1] : NULL;
-  const double *py = v_is_point ?
+  const double *py = v_is_struct ?
     (const double *) vstruct->children[1]->buffers[1] : NULL;
   const double *pz = (v_is_point && vstruct->n_children == 3) ?
+    (const double *) vstruct->children[2]->buffers[1] : NULL;
+  const double *pr = v_is_cbuffer ?
     (const double *) vstruct->children[2]->buffers[1] : NULL;
   int nseqs = (int) seq_st_a->length;
   int total = nseqs > 0 ? insts_off[nseqs] - insts_off[0] : 0;
@@ -705,7 +787,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
 
   if (subtype == TINSTANT)
     return (Temporal *) aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-      px, py, pz, srid, geodetic, 0, (TimestampTz) tvals[0]);
+      px, py, pz, pr, srid, geodetic, 0, (TimestampTz) tvals[0]);
 
   interpType ip = (interpType) interp;
   if (subtype == TSEQUENCE)
@@ -716,7 +798,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     TInstant **instants = palloc(sizeof(TInstant *) * n);
     for (int i = 0; i < n; i++)
       instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-        px, py, pz, srid, geodetic, i, (TimestampTz) tvals[i]);
+        px, py, pz, pr, srid, geodetic, i, (TimestampTz) tvals[i]);
     TSequence *result = tsequence_make(instants, n, lo, up, ip, true);
     for (int i = 0; i < n; i++)
       pfree(instants[i]);
@@ -734,7 +816,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     TInstant **instants = palloc(sizeof(TInstant *) * cnt);
     for (int i = 0; i < cnt; i++)
       instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-        px, py, pz, srid, geodetic, lo_off + i,
+        px, py, pz, pr, srid, geodetic, lo_off + i,
         (TimestampTz) tvals[lo_off + i]);
     seqs[j] = tsequence_make(instants, cnt, lo, up, ip, true);
     for (int i = 0; i < cnt; i++)
