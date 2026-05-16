@@ -76,4 +76,20 @@ SELECT arrowRoundtrip(tbool '[t@2000-01-01, f@2000-01-02, f@2000-01-03)') = tboo
 SELECT arrowRoundtrip(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}') = tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}';
 SELECT arrowRoundtrip(tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@2000-01-04]}') = tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@2000-01-04]}';
 
+-- Temporal text: every subtype round-trips through the variable-length
+-- utf8 value leaf; values of differing length exercise the offsets
+
+SELECT arrowRoundtrip(ttext 'a@2000-01-01');
+SELECT arrowRoundtrip(ttext '[xx@2000-01-01, yyy@2000-01-02, yyy@2000-01-03)');
+SELECT arrowRoundtrip(ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]');
+SELECT arrowRoundtrip(ttext '[solo@2000-01-01]');
+SELECT arrowRoundtrip(ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}');
+SELECT arrowRoundtrip(ttext 'Interp=Step;[one@2000-01-01, two@2000-01-02, three@2000-01-03]');
+SELECT arrowRoundtrip(ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}');
+
+SELECT arrowRoundtrip(ttext 'a@2000-01-01') = ttext 'a@2000-01-01';
+SELECT arrowRoundtrip(ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]') = ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]';
+SELECT arrowRoundtrip(ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}') = ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}';
+SELECT arrowRoundtrip(ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}') = ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}';
+
 -------------------------------------------------------------------------------

@@ -210,6 +210,18 @@ aw_array_prim(ArrowArena *arena, int64_t length, const void *data)
   return a;
 }
 
+/* Arrow utf8 leaf: validity, int32 offsets (length + 1), and the byte data */
+static struct ArrowArray *
+aw_array_utf8(ArrowArena *arena, int64_t length, const int32_t *offsets,
+  const void *data)
+{
+  struct ArrowArray *a = aw_array_node(arena, length, 3, 0);
+  a->buffers[0] = NULL;
+  a->buffers[1] = offsets;
+  a->buffers[2] = data;
+  return a;
+}
+
 static struct ArrowArray *
 aw_array_list(ArrowArena *arena, int64_t length, const int32_t *offsets,
   struct ArrowArray *item)
@@ -251,6 +263,31 @@ aw_leaf_datum(const char *vfmt, const void *vvals, int idx)
   return Float8GetDatum(((const double *) vvals)[idx]);
 }
 
+/**
+ * @brief Build the @p idx-th temporal instant from the decomposed Arrow
+ * value column, dispatching the variable-length utf8 leaf ("u", offsets +
+ * bytes) from the fixed-width scalar leaves
+ */
+static TInstant *
+aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
+  const int32_t *soff, const char *sdata, int idx, TimestampTz t)
+{
+  if (vfmt[0] == 'u')
+  {
+    int32_t len = soff[idx + 1] - soff[idx];
+    char *cs = palloc((size_t) len + 1);
+    if (len)
+      memcpy(cs, sdata + soff[idx], (size_t) len);
+    cs[len] = '\0';
+    text *txt = cstring2text(cs);
+    TInstant *r = tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
+    pfree(cs);
+    pfree(txt);
+    return r;
+  }
+  return tinstant_make(aw_leaf_datum(vfmt, vvals, idx), vt, t);
+}
+
 /*****************************************************************************
  * Public conversion functions
  *****************************************************************************/
@@ -263,9 +300,9 @@ aw_leaf_datum(const char *vfmt, const void *vvals, int idx)
  * by the producer; release with their @p release callbacks
  * @return True on success; on an unsupported input raises
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
- * @note All temporal float, temporal integer and temporal boolean subtypes
- * and interpolations are wired; other base types are not yet. The Arrow
- * schema is the full contract.
+ * @note All temporal float, integer, boolean and text subtypes and
+ * interpolations are wired; other base types are not yet. The Arrow schema
+ * is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -277,16 +314,18 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     return false;
   }
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
-      temp->temptype != T_TBOOL)
+      temp->temptype != T_TBOOL && temp->temptype != T_TTEXT)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_to_arrow: only temporal float, integer and boolean "
-      "are wired");
+      "meos_temporal_to_arrow: only temporal float, integer, boolean and "
+      "text are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
   bool is_tbool = (temp->temptype == T_TBOOL);
-  const char *vfmt = is_tbool ? "b" : (is_tint ? "i" : "g");
+  bool is_ttext = (temp->temptype == T_TTEXT);
+  const char *vfmt = is_ttext ? "u" :
+    (is_tbool ? "b" : (is_tint ? "i" : "g"));
 
   /* Separate arenas: the schema and the array are independently released
    * by the consumer, so each must own (and free) its own allocations. */
@@ -378,9 +417,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   insts_off[0] = 0;
   int64_t *tvals = arena_alloc(arena_a, sizeof(int64_t) * (total ? total : 1));
   int vn = total ? total : 1;
-  size_t vsz = is_tbool ? (size_t) ((vn + 7) / 8) :
-    (is_tint ? sizeof(int32_t) : sizeof(double)) * (size_t) vn;
+  size_t vsz = is_ttext ? 1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
+    (is_tint ? sizeof(int32_t) : sizeof(double)) * (size_t) vn);
   void *vvals = arena_alloc(arena_a, vsz);
+  /* Temporal text decomposes to a variable-length utf8 column: collect the
+   * instant strings during the walk, assemble offsets and bytes afterwards. */
+  char **svals = is_ttext ? palloc(sizeof(char *) * vn) : NULL;
   int k = 0;
   for (int j = 0; j < nseqs; j++)
   {
@@ -389,7 +431,9 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     {
       lo = up = true;
       tvals[k] = (int64_t) single->t;
-      if (is_tbool)
+      if (is_ttext)
+        svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(single)));
+      else if (is_tbool)
       {
         if (DatumGetBool(tinstant_value_p(single)))
           ((uint8_t *) vvals)[k >> 3] |= (uint8_t) (1 << (k & 7));
@@ -409,7 +453,9 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, i);
         tvals[k] = (int64_t) inst->t;
-        if (is_tbool)
+        if (is_ttext)
+          svals[k] = text2cstring(DatumGetTextP(tinstant_value_p(inst)));
+        else if (is_tbool)
         {
           if (DatumGetBool(tinstant_value_p(inst)))
             ((uint8_t *) vvals)[k >> 3] |= (uint8_t) (1 << (k & 7));
@@ -426,11 +472,37 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     insts_off[j + 1] = k;
   }
 
+  /* Assemble the utf8 column: int32 offsets (total + 1) then the byte data */
+  int32_t *str_off = NULL;
+  char *str_data = NULL;
+  if (is_ttext)
+  {
+    str_off = arena_alloc(arena_a, sizeof(int32_t) * (total + 1));
+    int32_t acc = 0;
+    for (int i = 0; i < total; i++)
+    {
+      str_off[i] = acc;
+      acc += (int32_t) strlen(svals[i]);
+    }
+    str_off[total] = acc;
+    str_data = arena_alloc(arena_a, acc ? (size_t) acc : 1);
+    for (int i = 0; i < total; i++)
+    {
+      int32_t len = str_off[i + 1] - str_off[i];
+      if (len)
+        memcpy(str_data + str_off[i], svals[i], (size_t) len);
+      pfree(svals[i]);
+    }
+    pfree(svals);
+  }
+
   /* Array tree mirroring the schema */
   struct ArrowArray **inst_a_kids =
     arena_alloc(arena_a, sizeof(struct ArrowArray *) * 2);
   inst_a_kids[0] = aw_array_prim(arena_a, total, tvals);
-  inst_a_kids[1] = aw_array_prim(arena_a, total, vvals);
+  inst_a_kids[1] = is_ttext ?
+    aw_array_utf8(arena_a, total, str_off, str_data) :
+    aw_array_prim(arena_a, total, vvals);
   struct ArrowArray *inst_st_a =
     aw_array_struct(arena_a, total, inst_a_kids, 2);
   struct ArrowArray *insts_list_a =
@@ -490,7 +562,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
 
   /* The base-type leaf gates this: an unrecognised value column routes to
    * NOT_SUPPORTED rather than being misread. Float64 "g" is temporal float,
-   * Int32 "i" is temporal integer, Boolean "b" is temporal boolean. */
+   * Int32 "i" is temporal integer, Boolean "b" is temporal boolean, Utf8
+   * "u" is temporal text. */
   const struct ArrowSchema *v_sc = schema->children[4]    /* seqs list */
     ->children[0]                                          /* seq struct */
     ->children[2]                                          /* insts list */
@@ -501,18 +574,19 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
   if (! v_sc->format ||
       (strcmp(v_sc->format, "g") != 0 && strcmp(v_sc->format, "i") != 0 &&
-       strcmp(v_sc->format, "b") != 0) ||
+       strcmp(v_sc->format, "b") != 0 && strcmp(v_sc->format, "u") != 0) ||
       srid != 0 ||
       (subtype != TINSTANT && subtype != TSEQUENCE &&
        subtype != TSEQUENCESET))
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_from_arrow: only temporal float, integer and boolean "
-      "are wired");
+      "meos_temporal_from_arrow: only temporal float, integer, boolean and "
+      "text are wired");
     return NULL;
   }
-  MeosType vt = (v_sc->format[0] == 'b') ? T_TBOOL :
-    ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT);
+  MeosType vt = (v_sc->format[0] == 'u') ? T_TTEXT :
+    ((v_sc->format[0] == 'b') ? T_TBOOL :
+    ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT));
 
   const struct ArrowArray *seq_st_a = array->children[4]->children[0];
   const uint8_t *lower_bm =
@@ -524,6 +598,10 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   const struct ArrowArray *inst_st_a = insts_a->children[0];
   const int64_t *tvals = (const int64_t *) inst_st_a->children[0]->buffers[1];
   const void *vvals = inst_st_a->children[1]->buffers[1];
+  const int32_t *soff = (v_sc->format[0] == 'u') ?
+    (const int32_t *) inst_st_a->children[1]->buffers[1] : NULL;
+  const char *sdata = (v_sc->format[0] == 'u') ?
+    (const char *) inst_st_a->children[1]->buffers[2] : NULL;
   int nseqs = (int) seq_st_a->length;
   int total = nseqs > 0 ? insts_off[nseqs] - insts_off[0] : 0;
   if (nseqs <= 0 || total <= 0)
@@ -534,8 +612,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   }
 
   if (subtype == TINSTANT)
-    return (Temporal *) tinstant_make(aw_leaf_datum(v_sc->format, vvals, 0),
-      vt, (TimestampTz) tvals[0]);
+    return (Temporal *) aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
+      0, (TimestampTz) tvals[0]);
 
   interpType ip = (interpType) interp;
   if (subtype == TSEQUENCE)
@@ -545,8 +623,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     bool up = (upper_bm[0] & 0x01) != 0;
     TInstant **instants = palloc(sizeof(TInstant *) * n);
     for (int i = 0; i < n; i++)
-      instants[i] = tinstant_make(aw_leaf_datum(v_sc->format, vvals, i),
-        vt, (TimestampTz) tvals[i]);
+      instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata, i,
+        (TimestampTz) tvals[i]);
     TSequence *result = tsequence_make(instants, n, lo, up, ip, true);
     for (int i = 0; i < n; i++)
       pfree(instants[i]);
@@ -563,8 +641,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     bool up = ((upper_bm[j >> 3] >> (j & 7)) & 1) != 0;
     TInstant **instants = palloc(sizeof(TInstant *) * cnt);
     for (int i = 0; i < cnt; i++)
-      instants[i] = tinstant_make(aw_leaf_datum(v_sc->format, vvals, lo_off + i),
-        vt, (TimestampTz) tvals[lo_off + i]);
+      instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
+        lo_off + i, (TimestampTz) tvals[lo_off + i]);
     seqs[j] = tsequence_make(instants, cnt, lo, up, ip, true);
     for (int i = 0; i < cnt; i++)
       pfree(instants[i]);

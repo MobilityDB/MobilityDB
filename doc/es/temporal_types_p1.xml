@@ -634,6 +634,7 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 				<para><varname>arrowRoundtrip(tbool) → tbool</varname></para>
 				<para><varname>arrowRoundtrip(tint) → tint</varname></para>
 				<para><varname>arrowRoundtrip(tfloat) → tfloat</varname></para>
+				<para><varname>arrowRoundtrip(ttext) → ttext</varname></para>
 				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT arrowRoundtrip(tint '1@2001-01-01');
