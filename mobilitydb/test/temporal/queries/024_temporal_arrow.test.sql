@@ -112,4 +112,27 @@ SELECT arrowRoundtrip(tgeompoint 'Point(1 2 3)@2000-01-01') = tgeompoint 'Point(
 SELECT arrowRoundtrip(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}') = tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}';
 SELECT arrowRoundtrip(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]') = tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]';
 
+-- General temporal geometry and geography: the value leaf is an opaque
+-- LargeBinary of each instant's EWKB, so arbitrary geometries (not only
+-- points) round-trip, the SRID and the Z dimension travelling in the EWKB
+
+SELECT arrowRoundtrip(tgeometry 'Linestring(1 1,2 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeometry 'Polygon((1 1,4 4,7 1,1 1))@2000-01-01');
+SELECT arrowRoundtrip(tgeometry 'SRID=3812;Polygon((1 1,4 4,7 1,1 1))@2000-01-01');
+SELECT arrowRoundtrip(tgeometry 'Linestring(1 1 1,2 2 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeometry '{Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03}');
+SELECT arrowRoundtrip(tgeometry 'Interp=Step;[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT arrowRoundtrip(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03]');
+SELECT arrowRoundtrip(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}');
+SELECT arrowRoundtrip(tgeography 'Point(1 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]');
+
+SELECT arrowRoundtrip(tgeometry 'Polygon((1 1,4 4,7 1,1 1))@2000-01-01') = tgeometry 'Polygon((1 1,4 4,7 1,1 1))@2000-01-01';
+SELECT arrowRoundtrip(tgeometry 'SRID=3812;Polygon((1 1,4 4,7 1,1 1))@2000-01-01') = tgeometry 'SRID=3812;Polygon((1 1,4 4,7 1,1 1))@2000-01-01';
+SELECT arrowRoundtrip(tgeometry 'Linestring(1 1 1,2 2 2)@2000-01-01') = tgeometry 'Linestring(1 1 1,2 2 2)@2000-01-01';
+SELECT arrowRoundtrip(tgeometry '{Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03}') = tgeometry '{Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03}';
+SELECT arrowRoundtrip(tgeometry 'Interp=Step;[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]') = tgeometry 'Interp=Step;[Linestring(1 1,2 2)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT arrowRoundtrip(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}') = tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}';
+SELECT arrowRoundtrip(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]') = tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]';
+
 -------------------------------------------------------------------------------

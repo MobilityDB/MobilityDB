@@ -628,7 +628,9 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 				<para><varname>arrowRoundtrip(ttext) → ttext</varname></para>
 				<para><varname>arrowRoundtrip(tgeompoint) → tgeompoint</varname></para>
 				<para><varname>arrowRoundtrip(tgeogpoint) → tgeogpoint</varname></para>
-				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. The result is equal to the input. Temporal points decompose to parallel x, y and (when present) z coordinate columns, and the spatial reference identifier is preserved.</para>
+				<para><varname>arrowRoundtrip(tgeometry) → tgeometry</varname></para>
+				<para><varname>arrowRoundtrip(tgeography) → tgeography</varname></para>
+				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. The result is equal to the input. Temporal points decompose to parallel x, y and (when present) z coordinate columns, and the spatial reference identifier is preserved. A general temporal geometry or geography uses an opaque large binary value column carrying each instant's extended well-known binary, so arbitrary geometries round-trip with their spatial reference identifier and dimensionality.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(tint '1@2001-01-01');
 -- 1@2001-01-01
