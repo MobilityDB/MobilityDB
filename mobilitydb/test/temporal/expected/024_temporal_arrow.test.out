@@ -208,3 +208,69 @@ SELECT arrowRoundtrip(tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@200
  t
 (1 row)
 
+SELECT arrowRoundtrip(ttext 'a@2000-01-01');
+          arrowroundtrip          
+----------------------------------
+ "a"@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT arrowRoundtrip(ttext '[xx@2000-01-01, yyy@2000-01-02, yyy@2000-01-03)');
+                                               arrowroundtrip                                                
+-------------------------------------------------------------------------------------------------------------
+ ["xx"@Sat Jan 01 00:00:00 2000 PST, "yyy"@Sun Jan 02 00:00:00 2000 PST, "yyy"@Mon Jan 03 00:00:00 2000 PST)
+(1 row)
+
+SELECT arrowRoundtrip(ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]');
+                                              arrowroundtrip                                               
+-----------------------------------------------------------------------------------------------------------
+ ["p"@Sat Jan 01 00:00:00 2000 PST, "qqqq"@Sun Jan 02 00:00:00 2000 PST, "r"@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT arrowRoundtrip(ttext '[solo@2000-01-01]');
+            arrowroundtrip             
+---------------------------------------
+ ["solo"@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT arrowRoundtrip(ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}');
+                                              arrowroundtrip                                               
+-----------------------------------------------------------------------------------------------------------
+ {"a"@Sat Jan 01 00:00:00 2000 PST, "bb"@Sun Jan 02 00:00:00 2000 PST, "ccc"@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT arrowRoundtrip(ttext 'Interp=Step;[one@2000-01-01, two@2000-01-02, three@2000-01-03]');
+                                                 arrowroundtrip                                                 
+----------------------------------------------------------------------------------------------------------------
+ ["one"@Sat Jan 01 00:00:00 2000 PST, "two"@Sun Jan 02 00:00:00 2000 PST, "three"@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT arrowRoundtrip(ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}');
+                                                                  arrowroundtrip                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {["aa"@Sat Jan 01 00:00:00 2000 PST, "b"@Sun Jan 02 00:00:00 2000 PST], ["cccc"@Mon Jan 03 00:00:00 2000 PST, "dd"@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT arrowRoundtrip(ttext 'a@2000-01-01') = ttext 'a@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]') = ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}') = ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}') = ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}';
+ ?column? 
+----------
+ t
+(1 row)
+
