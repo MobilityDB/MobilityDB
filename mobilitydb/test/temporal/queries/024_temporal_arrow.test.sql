@@ -61,6 +61,24 @@ SELECT arrowRoundtrip(tint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)') = tint 
 SELECT arrowRoundtrip(tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}') = tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}';
 SELECT arrowRoundtrip(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}') = tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}';
 
+-- Temporal big integer: every subtype round-trips through the Int64 value
+-- leaf; a 64-bit value exercises the full width
+
+SELECT arrowRoundtrip(tbigint '42@2000-01-01');
+SELECT arrowRoundtrip(tbigint '9000000000000000000@2000-01-01');
+SELECT arrowRoundtrip(tbigint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)');
+SELECT arrowRoundtrip(tbigint '[0@2000-01-01, -3@2000-01-02, 7@2000-01-03]');
+SELECT arrowRoundtrip(tbigint '[42@2000-01-01]');
+SELECT arrowRoundtrip(tbigint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}');
+SELECT arrowRoundtrip(tbigint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]');
+SELECT arrowRoundtrip(tbigint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}');
+
+SELECT arrowRoundtrip(tbigint '42@2000-01-01') = tbigint '42@2000-01-01';
+SELECT arrowRoundtrip(tbigint '9000000000000000000@2000-01-01') = tbigint '9000000000000000000@2000-01-01';
+SELECT arrowRoundtrip(tbigint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)') = tbigint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)';
+SELECT arrowRoundtrip(tbigint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}') = tbigint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}';
+SELECT arrowRoundtrip(tbigint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}') = tbigint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}';
+
 -- Temporal boolean: every subtype round-trips through the bit-packed leaf
 
 SELECT arrowRoundtrip(tbool 't@2000-01-01');
