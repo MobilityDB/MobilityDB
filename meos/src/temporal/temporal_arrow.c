@@ -280,8 +280,8 @@ aw_array_struct(ArrowArena *arena, int64_t length, struct ArrowArray **kids,
 /*****************************************************************************
  * Value-leaf dispatch (the only part of the schema that varies by base type:
  * temporal float decomposes to Float64 "g", temporal integer to Int32 "i",
- * temporal big integer to Int64 "l", temporal boolean to a bit-packed
- * Boolean "b")
+ * temporal big integer to Int64 "l", temporal H3 index to UInt64 "L",
+ * temporal boolean to a bit-packed Boolean "b")
  *****************************************************************************/
 
 /**
@@ -295,7 +295,10 @@ aw_leaf_datum(const char *vfmt, const void *vvals, int idx)
     return BoolGetDatum((((const uint8_t *) vvals)[idx >> 3] >> (idx & 7)) & 1);
   if (vfmt[0] == 'i')
     return Int32GetDatum(((const int32_t *) vvals)[idx]);
-  if (vfmt[0] == 'l')
+  /* Int64 "l" (big integer) and UInt64 "L" (H3 cell index, binary-identical
+   * to int8 in a Datum) share the 64-bit value buffer; only the carried
+   * format and the reconstructed temporal type differ. */
+  if (vfmt[0] == 'l' || vfmt[0] == 'L')
     return Int64GetDatum(((const int64_t *) vvals)[idx]);
   return Float8GetDatum(((const double *) vvals)[idx]);
 }
@@ -453,9 +456,9 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
  * @note All temporal float, integer, big integer, boolean, text, point
  * (geometry or geography), circular buffer, pose, network point, general
- * geometry or geography and rigid geometry subtypes and interpolations are
- * wired; other base types are not yet. The Arrow schema is the full
- * contract.
+ * geometry or geography, rigid geometry and H3 index subtypes and
+ * interpolations are wired; other base types are not yet. The Arrow schema
+ * is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -484,16 +487,21 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
 #if RGEO
   is_trgeo = (temp->temptype == T_TRGEOMETRY);
 #endif
+  bool is_th3index = false;
+#if H3
+  is_th3index = (temp->temptype == T_TH3INDEX);
+#endif
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
       temp->temptype != T_TBIGINT &&
       temp->temptype != T_TBOOL && temp->temptype != T_TTEXT &&
       temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT &&
-      ! is_cbuffer && ! is_pose && ! is_npoint && ! is_geo && ! is_trgeo)
+      ! is_cbuffer && ! is_pose && ! is_npoint && ! is_geo && ! is_trgeo &&
+      ! is_th3index)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_to_arrow: only temporal float, integer, big integer, "
       "boolean, text, point, circular buffer, pose, network point, general "
-      "geometry or geography and rigid geometry are wired");
+      "geometry or geography, rigid geometry and H3 index are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
@@ -516,7 +524,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
    * of its EWKB; the scalar tier uses a single primitive leaf. */
   const char *vfmt = (is_point || is_cbuffer || is_pose || is_npoint ||
     is_trgeo) ? "+s" : (is_geo ? "Z" : (is_ttext ? "u" :
-    (is_tbool ? "b" : (is_tint ? "i" : (is_tbigint ? "l" : "g")))));
+    (is_tbool ? "b" : (is_tint ? "i" : (is_tbigint ? "l" :
+    (is_th3index ? "L" : "g"))))));
 
   /* Separate arenas: the schema and the array are independently released
    * by the consumer, so each must own (and free) its own allocations. */
@@ -681,8 +690,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   int vn = total ? total : 1;
   size_t vsz = (is_ttext || is_point || is_cbuffer || is_pose || is_geo ||
     is_trgeo) ? 1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
-    (is_tint ? sizeof(int32_t) : (is_tbigint ? sizeof(int64_t) :
-    sizeof(double))) * (size_t) vn);
+    (is_tint ? sizeof(int32_t) : ((is_tbigint || is_th3index) ?
+    sizeof(int64_t) : sizeof(double))) * (size_t) vn);
   void *vvals = arena_alloc(arena_a, vsz);
   /* Temporal text decomposes to a variable-length utf8 column: collect the
    * instant strings during the walk, assemble offsets and bytes afterwards. */
@@ -808,7 +817,9 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       }
       else if (is_tint)
         ((int32_t *) vvals)[k] = DatumGetInt32(tinstant_value_p(single));
-      else if (is_tbigint)
+      else if (is_tbigint || is_th3index)
+        /* The H3 cell index is a uint64 binary-identical to int8, so the
+         * raw 64 bits move through the same path as a big integer. */
         ((int64_t *) vvals)[k] = DatumGetInt64(tinstant_value_p(single));
       else
         ((double *) vvals)[k] = DatumGetFloat8(tinstant_value_p(single));
@@ -898,7 +909,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
         }
         else if (is_tint)
           ((int32_t *) vvals)[k] = DatumGetInt32(tinstant_value_p(inst));
-        else if (is_tbigint)
+        else if (is_tbigint || is_th3index)
           ((int64_t *) vvals)[k] = DatumGetInt64(tinstant_value_p(inst));
         else
           ((double *) vvals)[k] = DatumGetFloat8(tinstant_value_p(inst));
@@ -1100,7 +1111,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   /* The base-type leaf gates this: an unrecognised value column routes to
    * NOT_SUPPORTED rather than being misread. Float64 "g" is temporal float,
    * Int32 "i" is temporal integer, Int64 "l" is temporal big integer,
-   * Boolean "b" is temporal boolean, Utf8
+   * UInt64 "L" is temporal H3 index, Boolean "b" is temporal boolean, Utf8
    * "u" is temporal text, Struct "+s" is a temporal point ({x,y,z?}, geom
    * or geog from the carried flags word), a temporal circular buffer
    * ({x,y,r}), a temporal pose ({x,y,theta} 2D or {x,y,z,W,X,Y,Z} 3D) or a
@@ -1123,6 +1134,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
   bool v_is_struct = v_sc->format && strcmp(v_sc->format, "+s") == 0;
   bool v_is_geo = v_sc->format && strcmp(v_sc->format, "Z") == 0;
+  bool v_is_th3index = v_sc->format && strcmp(v_sc->format, "L") == 0;
   /* Among struct value leaves: first child "rid" → network point; third
    * child "r" → circular buffer, "theta" → 2D pose, "z" → 3D point; a
    * 7-child struct → 3D pose; otherwise a point. */
@@ -1149,7 +1161,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   if (! v_sc->format ||
       (! v_is_struct && strcmp(v_sc->format, "g") != 0 &&
        strcmp(v_sc->format, "i") != 0 && strcmp(v_sc->format, "l") != 0 &&
-       strcmp(v_sc->format, "b") != 0 &&
+       strcmp(v_sc->format, "L") != 0 && strcmp(v_sc->format, "b") != 0 &&
        strcmp(v_sc->format, "u") != 0 && strcmp(v_sc->format, "Z") != 0) ||
       (! v_is_struct && ! v_is_geo && srid != 0) ||
       (subtype != TINSTANT && subtype != TSEQUENCE &&
@@ -1158,7 +1170,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_from_arrow: only temporal float, integer, big integer, "
       "boolean, text, point, circular buffer, pose, network point, general "
-      "geometry or geography and rigid geometry are wired");
+      "geometry or geography, rigid geometry and H3 index are wired");
     return NULL;
   }
 #if ! CBUFFER
@@ -1193,6 +1205,14 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     return NULL;
   }
 #endif
+#if ! H3
+  if (v_is_th3index)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_temporal_from_arrow: H3 index support is not built");
+    return NULL;
+  }
+#endif
   /* A rigid geometry reconstructs as a temporal pose, then wraps it with
    * the shared reference geometry; the inner build uses the pose path. */
   MeosType vt = v_is_trgeo ? T_TPOSE : (v_is_geo ?
@@ -1200,7 +1220,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     ((v_sc->format[0] == 'u') ? T_TTEXT :
     ((v_sc->format[0] == 'b') ? T_TBOOL :
     ((v_sc->format[0] == 'i') ? T_TINT :
-    ((v_sc->format[0] == 'l') ? T_TBIGINT : T_TFLOAT)))));
+    ((v_sc->format[0] == 'l') ? T_TBIGINT :
+    ((v_sc->format[0] == 'L') ? T_TH3INDEX : T_TFLOAT))))));
   bool geodetic = v_is_point && MEOS_FLAGS_GET_GEODETIC(flags);
 
   const struct ArrowArray *seq_st_a = array->children[4]->children[0];
