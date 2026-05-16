@@ -1,0 +1,76 @@
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01', 'km2')
+  IS NOT NULL;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01', 'm2')
+  IS NOT NULL;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01', 'rads2')
+  IS NOT NULL;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT h3_cell_area(th3index
+  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]', 'km2')
+  IS NOT NULL;
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+/* Errors */
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01', 'km');
+ERROR:  h3_cell_area_meos: adapter not yet implemented
+SELECT h3_cell_area(th3index '590464338553208831@2001-01-01', 'lightyears');
+ERROR:  invalid h3 unit "lightyears" (expected one of km, m, rads, km2, m2, rads2)
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01')) IS NOT NULL;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'), 'km') IS NOT NULL;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'), 'm') IS NOT NULL;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'), 'rads') IS NOT NULL;
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+/* Errors */
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'), 'km2');
+ERROR:  h3_edge_length_meos: adapter not yet implemented
+SELECT h3_edge_length(h3_cells_to_directed_edge(
+    th3index '612544986753269759@2001-01-01',
+    th3index '612544986761658367@2001-01-01'), 'parsec');
+ERROR:  invalid h3 unit "parsec" (expected one of km, m, rads, km2, m2, rads2)
+SELECT h3_great_circle_distance(
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  'km');
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT h3_great_circle_distance(
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
+  'km') IS NOT NULL;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT h3_great_circle_distance(
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
+  'm') IS NOT NULL;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT h3_great_circle_distance(
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
+  'rads') IS NOT NULL;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+SELECT h3_great_circle_distance(
+  tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
+  tgeogpoint '[POINT(2.35 48.86)@2001-01-01, POINT(-73.96 40.78)@2001-01-02]',
+  'km') IS NOT NULL;
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented
+/* Errors */
+SELECT h3_great_circle_distance(
+  tgeogpoint 'POINT(-73.96 40.78)@2001-01-01',
+  tgeogpoint 'POINT(2.35 48.86)@2001-01-01',
+  'km2');
+ERROR:  h3_gs_great_circle_distance_meos: adapter not yet implemented

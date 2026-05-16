@@ -1,0 +1,46 @@
+SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint IS NOT NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT (th3index
+  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeogpoint
+  IS NOT NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint
+  ~= h3_cell_to_latlng(th3index '590464338553208831@2001-01-01');
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+/* Errors */
+DROP TABLE IF EXISTS tbl_th3index_cast_test;
+NOTICE:  table "tbl_th3index_cast_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_cast_test(k int, p tgeogpoint);
+CREATE TABLE
+INSERT INTO tbl_th3index_cast_test VALUES
+  (1, th3index '590464338553208831@2001-01-01');
+ERROR:  column "p" is of type tgeogpoint but expression is of type th3index
+LINE 2:   (1, th3index '590464338553208831@2001-01-01');
+                       ^
+HINT:  You will need to rewrite or cast the expression.
+DROP TABLE IF EXISTS tbl_th3index_cast_test;
+DROP TABLE
+SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint IS NOT NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT (th3index
+  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeompoint
+  IS NOT NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint
+  ~= h3_cell_to_latlng_tgeompoint(th3index '590464338553208831@2001-01-01');
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+/* Errors */
+DROP TABLE IF EXISTS tbl_th3index_cast_test;
+NOTICE:  table "tbl_th3index_cast_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_cast_test(k int, p tgeompoint);
+CREATE TABLE
+INSERT INTO tbl_th3index_cast_test VALUES
+  (1, th3index '590464338553208831@2001-01-01');
+ERROR:  column "p" is of type tgeompoint but expression is of type th3index
+LINE 2:   (1, th3index '590464338553208831@2001-01-01');
+                       ^
+HINT:  You will need to rewrite or cast the expression.
+DROP TABLE IF EXISTS tbl_th3index_cast_test;
+DROP TABLE
