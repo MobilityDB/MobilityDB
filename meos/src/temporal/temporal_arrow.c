@@ -233,18 +233,22 @@ aw_array_struct(ArrowArena *arena, int64_t length, struct ArrowArray **kids,
 
 /*****************************************************************************
  * Value-leaf dispatch (the only part of the schema that varies by base type:
- * temporal float decomposes to Float64 "g", temporal integer to Int32 "i")
+ * temporal float decomposes to Float64 "g", temporal integer to Int32 "i",
+ * temporal boolean to a bit-packed Boolean "b")
  *****************************************************************************/
 
 /**
  * @brief Return the @p idx-th decomposed scalar value from an Arrow value
- * buffer as a Datum, dispatching on the base type
+ * buffer as a Datum, dispatching on the value-leaf format
  */
 static Datum
-aw_leaf_datum(bool is_tint, const void *vvals, int idx)
+aw_leaf_datum(const char *vfmt, const void *vvals, int idx)
 {
-  return is_tint ? Int32GetDatum(((const int32_t *) vvals)[idx]) :
-    Float8GetDatum(((const double *) vvals)[idx]);
+  if (vfmt[0] == 'b')
+    return BoolGetDatum((((const uint8_t *) vvals)[idx >> 3] >> (idx & 7)) & 1);
+  if (vfmt[0] == 'i')
+    return Int32GetDatum(((const int32_t *) vvals)[idx]);
+  return Float8GetDatum(((const double *) vvals)[idx]);
 }
 
 /*****************************************************************************
@@ -259,9 +263,9 @@ aw_leaf_datum(bool is_tint, const void *vvals, int idx)
  * by the producer; release with their @p release callbacks
  * @return True on success; on an unsupported input raises
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
- * @note All temporal float and temporal integer subtypes and interpolations
- * are wired; other base types are not yet. The Arrow schema is the full
- * contract.
+ * @note All temporal float, temporal integer and temporal boolean subtypes
+ * and interpolations are wired; other base types are not yet. The Arrow
+ * schema is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -272,13 +276,17 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to to_arrow");
     return false;
   }
-  if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT)
+  if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
+      temp->temptype != T_TBOOL)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_to_arrow: only temporal float and integer are wired");
+      "meos_temporal_to_arrow: only temporal float, integer and boolean "
+      "are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
+  bool is_tbool = (temp->temptype == T_TBOOL);
+  const char *vfmt = is_tbool ? "b" : (is_tint ? "i" : "g");
 
   /* Separate arenas: the schema and the array are independently released
    * by the consumer, so each must own (and free) its own allocations. */
@@ -289,7 +297,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
    * that varies by base type; everything else is fixed structure. */
   struct ArrowSchema *inst_kids[2];
   inst_kids[0] = aw_schema_leaf(arena_s, "tsu:UTC", "t");
-  inst_kids[1] = aw_schema_leaf(arena_s, is_tint ? "i" : "g", "v");
+  inst_kids[1] = aw_schema_leaf(arena_s, vfmt, "v");
   struct ArrowSchema *inst_st =
     aw_schema_struct(arena_s, "item", inst_kids, 2);
   struct ArrowSchema *insts_list = aw_schema_list(arena_s, "insts", inst_st);
@@ -369,8 +377,10 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   int32_t *insts_off = arena_alloc(arena_a, sizeof(int32_t) * (nseqs + 1));
   insts_off[0] = 0;
   int64_t *tvals = arena_alloc(arena_a, sizeof(int64_t) * (total ? total : 1));
-  size_t velt = is_tint ? sizeof(int32_t) : sizeof(double);
-  void *vvals = arena_alloc(arena_a, velt * (total ? total : 1));
+  int vn = total ? total : 1;
+  size_t vsz = is_tbool ? (size_t) ((vn + 7) / 8) :
+    (is_tint ? sizeof(int32_t) : sizeof(double)) * (size_t) vn;
+  void *vvals = arena_alloc(arena_a, vsz);
   int k = 0;
   for (int j = 0; j < nseqs; j++)
   {
@@ -379,7 +389,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     {
       lo = up = true;
       tvals[k] = (int64_t) single->t;
-      if (is_tint)
+      if (is_tbool)
+      {
+        if (DatumGetBool(tinstant_value_p(single)))
+          ((uint8_t *) vvals)[k >> 3] |= (uint8_t) (1 << (k & 7));
+      }
+      else if (is_tint)
         ((int32_t *) vvals)[k] = DatumGetInt32(tinstant_value_p(single));
       else
         ((double *) vvals)[k] = DatumGetFloat8(tinstant_value_p(single));
@@ -394,7 +409,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, i);
         tvals[k] = (int64_t) inst->t;
-        if (is_tint)
+        if (is_tbool)
+        {
+          if (DatumGetBool(tinstant_value_p(inst)))
+            ((uint8_t *) vvals)[k >> 3] |= (uint8_t) (1 << (k & 7));
+        }
+        else if (is_tint)
           ((int32_t *) vvals)[k] = DatumGetInt32(tinstant_value_p(inst));
         else
           ((double *) vvals)[k] = DatumGetFloat8(tinstant_value_p(inst));
@@ -470,7 +490,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
 
   /* The base-type leaf gates this: an unrecognised value column routes to
    * NOT_SUPPORTED rather than being misread. Float64 "g" is temporal float,
-   * Int32 "i" is temporal integer. */
+   * Int32 "i" is temporal integer, Boolean "b" is temporal boolean. */
   const struct ArrowSchema *v_sc = schema->children[4]    /* seqs list */
     ->children[0]                                          /* seq struct */
     ->children[2]                                          /* insts list */
@@ -479,17 +499,20 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int8_t subtype = ((const int8_t *) array->children[0]->buffers[1])[0];
   int8_t interp = ((const int8_t *) array->children[1]->buffers[1])[0];
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
-  bool is_tint = v_sc->format && strcmp(v_sc->format, "i") == 0;
   if (! v_sc->format ||
-      (strcmp(v_sc->format, "g") != 0 && strcmp(v_sc->format, "i") != 0) ||
+      (strcmp(v_sc->format, "g") != 0 && strcmp(v_sc->format, "i") != 0 &&
+       strcmp(v_sc->format, "b") != 0) ||
       srid != 0 ||
       (subtype != TINSTANT && subtype != TSEQUENCE &&
        subtype != TSEQUENCESET))
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "meos_temporal_from_arrow: only temporal float and integer are wired");
+      "meos_temporal_from_arrow: only temporal float, integer and boolean "
+      "are wired");
     return NULL;
   }
+  MeosType vt = (v_sc->format[0] == 'b') ? T_TBOOL :
+    ((v_sc->format[0] == 'i') ? T_TINT : T_TFLOAT);
 
   const struct ArrowArray *seq_st_a = array->children[4]->children[0];
   const uint8_t *lower_bm =
@@ -511,8 +534,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   }
 
   if (subtype == TINSTANT)
-    return (Temporal *) tinstant_make(aw_leaf_datum(is_tint, vvals, 0),
-      is_tint ? T_TINT : T_TFLOAT, (TimestampTz) tvals[0]);
+    return (Temporal *) tinstant_make(aw_leaf_datum(v_sc->format, vvals, 0),
+      vt, (TimestampTz) tvals[0]);
 
   interpType ip = (interpType) interp;
   if (subtype == TSEQUENCE)
@@ -522,8 +545,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     bool up = (upper_bm[0] & 0x01) != 0;
     TInstant **instants = palloc(sizeof(TInstant *) * n);
     for (int i = 0; i < n; i++)
-      instants[i] = tinstant_make(aw_leaf_datum(is_tint, vvals, i),
-        is_tint ? T_TINT : T_TFLOAT, (TimestampTz) tvals[i]);
+      instants[i] = tinstant_make(aw_leaf_datum(v_sc->format, vvals, i),
+        vt, (TimestampTz) tvals[i]);
     TSequence *result = tsequence_make(instants, n, lo, up, ip, true);
     for (int i = 0; i < n; i++)
       pfree(instants[i]);
@@ -540,8 +563,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     bool up = ((upper_bm[j >> 3] >> (j & 7)) & 1) != 0;
     TInstant **instants = palloc(sizeof(TInstant *) * cnt);
     for (int i = 0; i < cnt; i++)
-      instants[i] = tinstant_make(aw_leaf_datum(is_tint, vvals, lo_off + i),
-        is_tint ? T_TINT : T_TFLOAT, (TimestampTz) tvals[lo_off + i]);
+      instants[i] = tinstant_make(aw_leaf_datum(v_sc->format, vvals, lo_off + i),
+        vt, (TimestampTz) tvals[lo_off + i]);
     seqs[j] = tsequence_make(instants, cnt, lo, up, ip, true);
     for (int i = 0; i < cnt; i++)
       pfree(instants[i]);
