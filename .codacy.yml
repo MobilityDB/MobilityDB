@@ -19,12 +19,18 @@ engines:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "arrow/**"
     config:
       languages:
         - "c"
+# Vendored third-party trees are provenance-reviewed, not style-reviewed:
+# postgis/postgres/pgtypes are verbatim upstream source; arrow/ is the
+# vendored Apache-2.0 Arrow C Data Interface ABI header. We do not own
+# their style guidelines.
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "arrow/**"
   - "meos/test/**"
   - "meos/examples/**"
