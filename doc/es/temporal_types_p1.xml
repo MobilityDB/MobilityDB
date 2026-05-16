@@ -630,7 +630,8 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 
 			<listitem xml:id="ttype_arrowRoundtrip">
 				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-				<para>Convierte un número temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para>Convierte un valor temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tbool) → tbool</varname></para>
 				<para><varname>arrowRoundtrip(tint) → tint</varname></para>
 				<para><varname>arrowRoundtrip(tfloat) → tfloat</varname></para>
 				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada.</para>
