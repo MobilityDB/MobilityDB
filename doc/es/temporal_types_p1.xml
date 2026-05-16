@@ -633,6 +633,7 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 				<para>Convierte un valor temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
 				<para><varname>arrowRoundtrip(tbool) → tbool</varname></para>
 				<para><varname>arrowRoundtrip(tint) → tint</varname></para>
+				<para><varname>arrowRoundtrip(tbigint) → tbigint</varname></para>
 				<para><varname>arrowRoundtrip(tfloat) → tfloat</varname></para>
 				<para><varname>arrowRoundtrip(ttext) → ttext</varname></para>
 				<para><varname>arrowRoundtrip(tgeompoint) → tgeompoint</varname></para>
