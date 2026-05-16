@@ -1082,6 +1082,193 @@ rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
   return rtree_search(rtree, op, &buf, result);
 }
 
+/*****************************************************************************
+ * Multi-entry (MEST) temporal functions
+ *
+ * These functions implement a multi-entry-per-id indexing pattern: a single
+ * temporal value is decomposed into several tight per-segment bounding boxes
+ * that are all inserted under the same id. The tree, split and search
+ * algorithms are unchanged; only the build-side decomposition and a
+ * search-time deduplication of repeated ids are added. They are strictly
+ * additive: #rtree_insert, #rtree_insert_temporal, #rtree_search and
+ * #rtree_search_temporal keep their exact semantics.
+ *****************************************************************************/
+
+/**
+ * @brief Decompose a temporal value into an array of tight per-segment
+ * bounding boxes whose element type matches the RTree's bounding box type
+ * @details The decomposition reuses the same per-segment bounding box
+ * machinery as the single-box path: temporal alphas are split with
+ * #temporal_split_n_spans, temporal numbers with #tnumber_split_n_tboxes, and
+ * temporal geos with #tgeo_split_n_stboxes. These already handle the TINSTANT,
+ * TSEQUENCE and TSEQUENCESET subtypes, the discrete, step and linear
+ * interpolations, and the Z, geodetic and SRID flags through the same
+ * `tspatialinst_set_stbox` / `tnumberinst_set_tbox` / span machinery used by
+ * #temporal_set_bbox, and coarsen by merging adjacent segment boxes
+ * (deterministic chunking) down to at most `maxboxes` boxes. When
+ * `maxboxes <= 1`, the temporal value is an instant, or the spatial type is
+ * not a temporal geo (e.g. tcbuffer, tnpoint, tpose), the function degenerates
+ * to the single minimum bounding box, byte-identical to the result of
+ * #temporal_set_bbox used by #rtree_insert_temporal.
+ * @param[in] rtree The RTree whose bounding box type drives the element type
+ * @param[in] temp The temporal value to decompose
+ * @param[in] maxboxes Maximum number of boxes produced for `temp`
+ * @param[out] count Number of boxes in the returned array
+ * @return Newly allocated array of `*count` bounding boxes, each of
+ * `rtree->bboxsize` bytes, or @p NULL on error
+ * @pre `temp` is compatible with `rtree` (verified by the callers)
+ */
+static void *
+rtree_temporal_split_boxes(const RTree *rtree, const Temporal *temp,
+  int maxboxes, int *count)
+{
+  assert(rtree); assert(temp); assert(count);
+
+  /* Degenerate single minimum bounding box: identical to the behaviour of
+   * rtree_insert_temporal / rtree_search_temporal */
+  if (maxboxes <= 1 || temp->subtype == TINSTANT)
+  {
+    void *result = palloc0(rtree->bboxsize);
+    temporal_set_bbox(temp, result);
+    *count = 1;
+    return result;
+  }
+
+  /* Multi-box decomposition reusing the existing per-type splitters */
+  MeosType temptype = temp->temptype;
+  if (talpha_type(temptype))
+    return temporal_split_n_spans(temp, maxboxes, count);
+  if (tnumber_type(temptype))
+    return tnumber_split_n_tboxes(temp, maxboxes, count);
+  if (tgeo_type_all(temptype))
+    return tgeo_split_n_stboxes(temp, maxboxes, count);
+
+  /* Spatial types without a per-segment STBox splitter (e.g. tcbuffer,
+   * tnpoint, tpose): fall back to the single minimum bounding box */
+  void *result = palloc0(rtree->bboxsize);
+  temporal_set_bbox(temp, result);
+  *count = 1;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Insert a temporal value into the RTree index as several tight
+ * per-segment bounding boxes sharing the same id (multi-entry indexing)
+ * @details The temporal value is decomposed into at most `maxboxes` tight
+ * per-segment bounding boxes, all inserted under `id`. This yields a more
+ * selective index than #rtree_insert_temporal for wiggly or high-extent
+ * temporal values, at the cost of more leaf entries. The temporal type must
+ * be compatible with the RTree's bounding box type: temporal alphas (tbool,
+ * ttext) require a span-based RTree, temporal numbers (tint, tfloat) require a
+ * TBox-based RTree, and spatiotemporal types (tgeompoint, tgeogpoint) require
+ * an STBox-based RTree. When `maxboxes <= 1`, the temporal value is an
+ * instant, or the spatial type has no per-segment STBox decomposition, the
+ * behaviour is identical to #rtree_insert_temporal (a single minimum bounding
+ * box). The tree, split and insertion algorithms are unchanged; this only
+ * inserts several boxes under the same id, which the parallel ids/boxes leaf
+ * layout already supports. Search results may contain the same id several
+ * times; use #rtree_search_temporal_dedup to collapse them.
+ * @param[in] rtree The RTree previously initialized
+ * @param[in] temp The temporal value to be inserted
+ * @param[in] id The id of the temporal value being inserted, shared by every
+ * box produced for `temp`
+ * @param[in] maxboxes Maximum number of bounding boxes produced for `temp`;
+ * values `<= 1` degenerate to the single minimum bounding box
+ * @see rtree_insert_temporal
+ */
+void
+rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int id,
+  int maxboxes)
+{
+  if (! ensure_rtree_temporal_compatible(rtree, temp))
+    return;
+  int count;
+  void *boxes = rtree_temporal_split_boxes(rtree, temp, maxboxes, &count);
+  if (! boxes)
+    return;
+  for (int i = 0; i < count; i++)
+    rtree_insert(rtree, (char *) boxes + (size_t) i * rtree->bboxsize, id);
+  pfree(boxes);
+  return;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Search an RTree built with #rtree_insert_temporal_split using a
+ * temporal value, returning each matching id exactly once
+ * @details The query temporal value is decomposed into the same tight
+ * per-segment bounding boxes as #rtree_insert_temporal_split, the existing
+ * #rtree_search is run for every query box, and the union of matching ids is
+ * deduplicated so that each surviving id appears exactly once. This is the
+ * search counterpart of #rtree_insert_temporal_split; it never produces false
+ * negatives with respect to a single-box search and is typically more
+ * selective. The result array is reset before the search. The underlying
+ * #rtree_search and #rtree_search_temporal semantics are unchanged.
+ * @param[in] rtree The RTree to query
+ * @param[in] op The search operation
+ * @param[in] temp The temporal value whose per-segment bounding boxes serve as
+ * queries
+ * @param[in] maxboxes Maximum number of query boxes derived from `temp`;
+ * values `<= 1` degenerate to a single minimum bounding box query
+ * @param[out] result MeosArray of int to collect the deduplicated matching ids
+ * @return Number of distinct matching ids
+ * @see rtree_search_temporal
+ */
+int
+rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op,
+  const Temporal *temp, int maxboxes, MeosArray *result)
+{
+  meos_array_reset(result);
+  if (! ensure_rtree_temporal_compatible(rtree, temp))
+    return 0;
+
+  int count;
+  void *boxes = rtree_temporal_split_boxes(rtree, temp, maxboxes, &count);
+  if (! boxes)
+    return 0;
+
+  /* Accumulate the raw (possibly duplicated) candidate ids of every query
+   * box, tracking the maximum id seen to size the dedup bitset */
+  MeosArray *raw = meos_array_create(sizeof(int));
+  MeosArray *hits = meos_array_create(sizeof(int));
+  int maxid = -1;
+  for (int i = 0; i < count; i++)
+  {
+    int nhits = rtree_search(rtree, op,
+      (char *) boxes + (size_t) i * rtree->bboxsize, hits);
+    for (int j = 0; j < nhits; j++)
+    {
+      int id = *(int *) meos_array_get(hits, j);
+      if (id > maxid)
+        maxid = id;
+      meos_array_add(raw, &id);
+    }
+  }
+  pfree(boxes);
+  meos_array_destroy(hits);
+
+  /* Collapse duplicates with a seen-set sized to the maximum id, mirroring
+   * the bool indexed[] idiom of the rtree example */
+  int nraw = meos_array_count(raw);
+  if (maxid >= 0 && nraw > 0)
+  {
+    bool *seen = palloc0((size_t) (maxid + 1) * sizeof(bool));
+    for (int i = 0; i < nraw; i++)
+    {
+      int id = *(int *) meos_array_get(raw, i);
+      if (! seen[id])
+      {
+        seen[id] = true;
+        meos_array_add(result, &id);
+      }
+    }
+    pfree(seen);
+  }
+  meos_array_destroy(raw);
+  return meos_array_count(result);
+}
+
 /**
  * @brief Frees the memory allocated for an RTree node
  * @details The function recursively frees the memory of an RTree node.
