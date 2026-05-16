@@ -286,9 +286,33 @@ SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(0 0),1)', 'Cbuffer(Point(1 1),2)']);
 SELECT asEWKT(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
   Cbuffer(Point(1 1),2)@2001-01-02)');
 -- SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
-SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)', 
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
   'Cbuffer(SRID=5676;Point(1 1),2)']);
 -- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Return the Moving Features JSON (MF-JSON) representation</para>
+				<para><varname>asMFJSON(tcbuffer) → text</varname></para>
+				<para>A circular buffer is always planar 2D. Each value is an object with a <varname>point</varname> member, an <varname>[x, y]</varname> coordinate array, and a numeric <varname>radius</varname> member, mirroring the <varname>point</varname> and <varname>radius</varname> accessors.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),0.5)@2001-01-01', 3);
+/* {"type":"MovingCircularBuffer","bbox":[[0.5,1.5],[1.5,2.5]],
+  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "lower_inc":true,"upper_inc":true},
+  "values":[{"point":[1,2],"radius":0.5}],
+  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
+  Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
+/* {"type":"MovingCircularBuffer","crs":{"type":"Name",
+  "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
+  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-02T00:00:00+01",
+  "lower_inc":true,"upper_inc":false},
+  "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
+  "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+  "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
 </programlisting>
 			</listitem>
 
@@ -324,6 +348,20 @@ SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01,
 SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
   Cbuffer(Point(3 4),2)@2001-01-02]'));
 -- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbufferFromMFJSON">
+				<indexterm significance="normal"><primary><varname>tcbufferFromMFJSON</varname></primary></indexterm>
+				<para>Input from the Moving Features JSON (MF-JSON) representation</para>
+				<para><varname>tcbufferFromMFJSON(text) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
+  'SRID=3812;Cbuffer(Point(1 2),0.5)@2001-01-01', 3)));
+-- SRID=3812;Cbuffer(POINT(1 2),0.5)@2001-01-01
+SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
+  'SRID=5676;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]', 3)));
+-- SRID=5676;[Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
 </programlisting>
 			</listitem>
 
