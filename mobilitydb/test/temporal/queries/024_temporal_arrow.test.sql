@@ -61,4 +61,19 @@ SELECT arrowRoundtrip(tint '[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)') = tint 
 SELECT arrowRoundtrip(tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}') = tint '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}';
 SELECT arrowRoundtrip(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}') = tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}';
 
+-- Temporal boolean: every subtype round-trips through the bit-packed leaf
+
+SELECT arrowRoundtrip(tbool 't@2000-01-01');
+SELECT arrowRoundtrip(tbool '[t@2000-01-01, f@2000-01-02, f@2000-01-03)');
+SELECT arrowRoundtrip(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT arrowRoundtrip(tbool '[t@2000-01-01]');
+SELECT arrowRoundtrip(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT arrowRoundtrip(tbool 'Interp=Step;[f@2000-01-01, t@2000-01-02, f@2000-01-03]');
+SELECT arrowRoundtrip(tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@2000-01-04]}');
+
+SELECT arrowRoundtrip(tbool 't@2000-01-01') = tbool 't@2000-01-01';
+SELECT arrowRoundtrip(tbool '[t@2000-01-01, f@2000-01-02, f@2000-01-03)') = tbool '[t@2000-01-01, f@2000-01-02, f@2000-01-03)';
+SELECT arrowRoundtrip(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}') = tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}';
+SELECT arrowRoundtrip(tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@2000-01-04]}') = tbool '{[t@2000-01-01, f@2000-01-02], [t@2000-01-03, f@2000-01-04]}';
+
 -------------------------------------------------------------------------------
