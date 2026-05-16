@@ -270,7 +270,6 @@ ensure_common_dimension(int16 flags1, int16 flags2)
   return false;
 }
 
-#if MEOS
 /**
  * @brief Ensure that a temporal value has a given base type
  * @param[in] temp Temporal value
@@ -299,7 +298,6 @@ ensure_temporal_isof_type(const Temporal *temp, MeosType temptype)
     "The temporal value must be of type %s", meostype_name(temptype));
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Ensure that two temporal values have the same temporal type

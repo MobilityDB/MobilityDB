@@ -1,0 +1,25 @@
+DROP TABLE IF EXISTS tbl_th3index_known;
+NOTICE:  table "tbl_th3index_known" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_known(k int PRIMARY KEY, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_known VALUES
+  (1, th3index '590464338553208831@2001-01-01'),
+  (2, th3index '590464201114255359@2001-01-01'),
+  (3, th3index '595812165542215679@2001-01-01'),
+  (4, th3index '612544986753269759@2001-01-01'),
+  (5, th3index '612544986761658367@2001-01-01'),
+  (6, th3index '622236750694711295@2001-01-01');
+INSERT 0 6
+SELECT COUNT(*) FROM tbl_th3index_known WHERE temp::tgeogpoint IS NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE NOT (temp::tgeogpoint ~= h3_cell_to_latlng(temp));
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_th3index_known WHERE temp::tgeompoint IS NULL;
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+SELECT COUNT(*) FROM tbl_th3index_known
+  WHERE NOT (temp::tgeompoint ~= h3_cell_to_latlng_tgeompoint(temp));
+ERROR:  h3_cell_to_gs_point: adapter not yet implemented
+DROP TABLE tbl_th3index_known;
+DROP TABLE
