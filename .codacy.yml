@@ -22,6 +22,7 @@ engines:
       - "h3-pg/**"
       - "contrib/**"
       - "clipper2/**"
+      - "arrow/**"
     config:
       languages:
         - "c"
@@ -30,6 +31,7 @@ exclude_paths:
   - "postgres/**"
   - "pgtypes/**"
   - "clipper2/**"
+  - "arrow/**"
   - "meos/test/**"
   - "meos/examples/**"
   # h3-pg is a vendored copy of the Apache-2.0 h3-pg project; its
