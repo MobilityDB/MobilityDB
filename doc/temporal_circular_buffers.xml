@@ -311,6 +311,17 @@ SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcbuffer_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convert a temporal circular buffer to the Arrow C Data Interface and back, returning the reconstructed value</para>
+				<para><varname>arrowRoundtrip(tcbuffer) → tcbuffer</varname></para>
+				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. The circular buffer decomposes to a Struct of the centre x, y and the radius r, and the spatial reference identifier is preserved. The result is equal to the input.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
+-- Cbuffer(POINT(1 2),1)@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbufferFromText">
 				<indexterm significance="normal"><primary><varname>tcbufferFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromEWKT</varname></primary></indexterm>
