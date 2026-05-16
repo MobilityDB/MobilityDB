@@ -479,6 +479,17 @@ SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tpose_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convert a temporal pose to the Arrow C Data Interface and back, returning the reconstructed value</para>
+				<para><varname>arrowRoundtrip(tpose) → tpose</varname></para>
+				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. A 2D pose decomposes to a Struct of the position x, y and the rotation theta; a 3D pose to a Struct of x, y, z and the unit quaternion W, X, Y, Z. The spatial reference identifier is preserved and the result is equal to the input.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- Pose(POINT(1 2),1)@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tposeFromText">
 				<indexterm significance="normal"><primary><varname>tposeFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tposeFromEWKT</varname></primary></indexterm>
