@@ -84,6 +84,10 @@
   #include <meos_pose.h>
   #include "pose/pose.h"
 #endif
+#if NPOINT
+  #include <meos_npoint.h>
+  #include "npoint/tnpoint.h"
+#endif
 
 /*****************************************************************************
  * Arena ownership: every allocation for one converted value lives in a
@@ -284,8 +288,9 @@ static TInstant *
 aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
   const int32_t *soff, const char *sdata, const double *px, const double *py,
   const double *pz, const double *pr, const double *pth, const double *pqw,
-  const double *pqx, const double *pqy, const double *pqz, int32_t srid,
-  bool geodetic, int idx, TimestampTz t)
+  const double *pqx, const double *pqy, const double *pqz,
+  const int64_t *prid, const double *ppos, int32_t srid, bool geodetic,
+  int idx, TimestampTz t)
 {
 #if ! CBUFFER
   (void) pr;   /* the circular-buffer branch is compiled out */
@@ -293,8 +298,20 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
 #if ! POSE
   (void) pth; (void) pqw; (void) pqx; (void) pqy; (void) pqz;
 #endif
+#if ! NPOINT
+  (void) prid; (void) ppos;
+#endif
   if (vfmt[0] == '+')
   {
+#if NPOINT
+    if (prid)
+    {
+      Npoint *np = npoint_make(prid[idx], ppos[idx]);
+      TInstant *r = tinstant_make(NpointPGetDatum(np), T_TNPOINT, t);
+      pfree(np);
+      return r;
+    }
+#endif
 #if CBUFFER
     if (pr)
     {
@@ -356,9 +373,9 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
  * @return True on success; on an unsupported input raises
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
  * @note All temporal float, integer, boolean, text, point (geometry or
- * geography), circular buffer and pose subtypes and interpolations are
- * wired; other base types are not yet. The Arrow schema is the full
- * contract.
+ * geography), circular buffer, pose and network point subtypes and
+ * interpolations are wired; other base types are not yet. The Arrow
+ * schema is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -377,14 +394,18 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
 #if POSE
   is_pose = (temp->temptype == T_TPOSE);
 #endif
+  bool is_npoint = false;
+#if NPOINT
+  is_npoint = (temp->temptype == T_TNPOINT);
+#endif
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
       temp->temptype != T_TBOOL && temp->temptype != T_TTEXT &&
       temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT &&
-      ! is_cbuffer && ! is_pose)
+      ! is_cbuffer && ! is_pose && ! is_npoint)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_to_arrow: only temporal float, integer, boolean, text, "
-      "point, circular buffer and pose are wired");
+      "point, circular buffer, pose and network point are wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
@@ -396,10 +417,11 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   bool has_z = (is_point || is_pose) && MEOS_FLAGS_GET_Z(temp->flags);
   bool is_pose3d = is_pose && has_z;
   /* Point → Struct{x,y,z?}, circular buffer → Struct{x,y,r}, pose →
-   * Struct{x,y,theta} (2D) or Struct{x,y,z,W,X,Y,Z} (3D), all the "+s"
-   * value leaf; the scalar tier uses a single primitive leaf. */
-  const char *vfmt = (is_point || is_cbuffer || is_pose) ? "+s" :
-    (is_ttext ? "u" : (is_tbool ? "b" : (is_tint ? "i" : "g")));
+   * Struct{x,y,theta} (2D) or Struct{x,y,z,W,X,Y,Z} (3D), network point →
+   * Struct{rid,pos}, all the "+s" value leaf; the scalar tier uses a
+   * single primitive leaf. */
+  const char *vfmt = (is_point || is_cbuffer || is_pose || is_npoint) ?
+    "+s" : (is_ttext ? "u" : (is_tbool ? "b" : (is_tint ? "i" : "g")));
 
   /* Separate arenas: the schema and the array are independently released
    * by the consumer, so each must own (and free) its own allocations. */
@@ -448,6 +470,14 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     else
       pp[2] = aw_schema_leaf(arena_s, "g", "theta");
     inst_kids[1] = aw_schema_struct(arena_s, "v", pp, npose);
+  }
+  else if (is_npoint)
+  {
+    struct ArrowSchema **rp =
+      arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 2);
+    rp[0] = aw_schema_leaf(arena_s, "l", "rid");
+    rp[1] = aw_schema_leaf(arena_s, "g", "pos");
+    inst_kids[1] = aw_schema_struct(arena_s, "v", rp, 2);
   }
   else
     inst_kids[1] = aw_schema_leaf(arena_s, vfmt, "v");
@@ -554,6 +584,11 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   double *pqx = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pqy = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pqz = is_pose3d ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  /* Network point → parallel Int64 rid and Float64 pos columns. */
+  int64_t *prid = is_npoint ?
+    arena_alloc(arena_a, sizeof(int64_t) * vn) : NULL;
+  double *ppos = is_npoint ?
+    arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   int k = 0;
   for (int j = 0; j < nseqs; j++)
   {
@@ -597,6 +632,13 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
         }
         else
           pth[k] = po->data[2];
+#endif
+      }
+      else if (is_npoint)
+      {
+#if NPOINT
+        const Npoint *np = DatumGetNpointP(tinstant_value_p(single));
+        prid[k] = npoint_route(np); ppos[k] = npoint_position(np);
 #endif
       }
       else if (is_ttext)
@@ -657,6 +699,13 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
           }
           else
             pth[k] = po->data[2];
+#endif
+        }
+        else if (is_npoint)
+        {
+#if NPOINT
+          const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+          prid[k] = npoint_route(np); ppos[k] = npoint_position(np);
 #endif
         }
         else if (is_ttext)
@@ -745,6 +794,14 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       pp[2] = aw_array_prim(arena_a, total, pth);
     inst_a_kids[1] = aw_array_struct(arena_a, total, pp, npose);
   }
+  else if (is_npoint)
+  {
+    struct ArrowArray **rp =
+      arena_alloc(arena_a, sizeof(struct ArrowArray *) * 2);
+    rp[0] = aw_array_prim(arena_a, total, prid);
+    rp[1] = aw_array_prim(arena_a, total, ppos);
+    inst_a_kids[1] = aw_array_struct(arena_a, total, rp, 2);
+  }
   else
     inst_a_kids[1] = is_ttext ?
       aw_array_utf8(arena_a, total, str_off, str_data) :
@@ -811,10 +868,11 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
    * Int32 "i" is temporal integer, Boolean "b" is temporal boolean, Utf8
    * "u" is temporal text, Struct "+s" is a temporal point ({x,y,z?}, geom
    * or geog from the carried flags word), a temporal circular buffer
-   * ({x,y,r}) or a temporal pose ({x,y,theta} 2D or {x,y,z,W,X,Y,Z} 3D);
-   * the third child name ("r"/"theta"/"z") and the child count
+   * ({x,y,r}), a temporal pose ({x,y,theta} 2D or {x,y,z,W,X,Y,Z} 3D) or a
+   * temporal network point ({rid,pos}); the first child name ("rid") and
+   * the third child name ("r"/"theta"/"z") with the child count
    * disambiguate; the srid slot is the spatial SRID, non-zero allowed
-   * only for a struct leaf. */
+   * only for a struct leaf (network point keeps it zero). */
   const struct ArrowSchema *v_sc = schema->children[4]    /* seqs list */
     ->children[0]                                          /* seq struct */
     ->children[2]                                          /* insts list */
@@ -825,18 +883,23 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int16_t flags = ((const int16_t *) array->children[2]->buffers[1])[0];
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
   bool v_is_struct = v_sc->format && strcmp(v_sc->format, "+s") == 0;
-  /* Among struct value leaves the third child name disambiguates the
-   * decomposed extended types: "r" circular buffer, "theta" 2D pose, "z"
-   * 3D point; a 7-child struct is a 3D pose; otherwise a point. */
+  /* Among struct value leaves: first child "rid" → network point; third
+   * child "r" → circular buffer, "theta" → 2D pose, "z" → 3D point; a
+   * 7-child struct → 3D pose; otherwise a point. */
+  const char *c0 = (v_is_struct && v_sc->n_children >= 1 &&
+    v_sc->children[0]->name) ? v_sc->children[0]->name : "";
   const char *c2 = (v_is_struct && v_sc->n_children >= 3 &&
     v_sc->children[2]->name) ? v_sc->children[2]->name : "";
+  bool v_is_npoint = v_is_struct && v_sc->n_children == 2 &&
+    strcmp(c0, "rid") == 0;
   bool v_is_cbuffer = v_is_struct && v_sc->n_children == 3 &&
     strcmp(c2, "r") == 0;
   bool v_is_pose = v_is_struct &&
     ((v_sc->n_children == 3 && strcmp(c2, "theta") == 0) ||
      v_sc->n_children == 7);
   bool v_is_pose3d = v_is_pose && v_sc->n_children == 7;
-  bool v_is_point = v_is_struct && ! v_is_cbuffer && ! v_is_pose;
+  bool v_is_point = v_is_struct && ! v_is_cbuffer && ! v_is_pose &&
+    ! v_is_npoint;
   if (! v_sc->format ||
       (! v_is_struct && strcmp(v_sc->format, "g") != 0 &&
        strcmp(v_sc->format, "i") != 0 && strcmp(v_sc->format, "b") != 0 &&
@@ -847,7 +910,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_from_arrow: only temporal float, integer, boolean, text, "
-      "point, circular buffer and pose are wired");
+      "point, circular buffer, pose and network point are wired");
     return NULL;
   }
 #if ! CBUFFER
@@ -863,6 +926,14 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_from_arrow: pose support is not built");
+    return NULL;
+  }
+#endif
+#if ! NPOINT
+  if (v_is_npoint)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_temporal_from_arrow: network point support is not built");
     return NULL;
   }
 #endif
@@ -886,9 +957,14 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   const char *sdata = (v_sc->format[0] == 'u') ?
     (const char *) inst_st_a->children[1]->buffers[2] : NULL;
   const struct ArrowArray *vstruct = inst_st_a->children[1];
-  const double *px = v_is_struct ?
+  bool v_xy = v_is_struct && ! v_is_npoint;
+  const double *px = v_xy ?
     (const double *) vstruct->children[0]->buffers[1] : NULL;
-  const double *py = v_is_struct ?
+  const double *py = v_xy ?
+    (const double *) vstruct->children[1]->buffers[1] : NULL;
+  const int64_t *prid = v_is_npoint ?
+    (const int64_t *) vstruct->children[0]->buffers[1] : NULL;
+  const double *ppos = v_is_npoint ?
     (const double *) vstruct->children[1]->buffers[1] : NULL;
   const double *pz = ((v_is_point && vstruct->n_children == 3) ||
     v_is_pose3d) ?
@@ -916,7 +992,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
 
   if (subtype == TINSTANT)
     return (Temporal *) aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-      px, py, pz, pr, pth, pqw, pqx, pqy, pqz, srid, geodetic, 0,
+      px, py, pz, pr, pth, pqw, pqx, pqy, pqz, prid, ppos, srid, geodetic, 0,
       (TimestampTz) tvals[0]);
 
   interpType ip = (interpType) interp;
@@ -928,7 +1004,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     TInstant **instants = palloc(sizeof(TInstant *) * n);
     for (int i = 0; i < n; i++)
       instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-        px, py, pz, pr, pth, pqw, pqx, pqy, pqz, srid, geodetic, i,
+        px, py, pz, pr, pth, pqw, pqx, pqy, pqz, prid, ppos, srid, geodetic, i,
         (TimestampTz) tvals[i]);
     TSequence *result = tsequence_make(instants, n, lo, up, ip, true);
     for (int i = 0; i < n; i++)
@@ -947,7 +1023,8 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     TInstant **instants = palloc(sizeof(TInstant *) * cnt);
     for (int i = 0; i < cnt; i++)
       instants[i] = aw_make_instant(v_sc->format, vt, vvals, soff, sdata,
-        px, py, pz, pr, pth, pqw, pqx, pqy, pqz, srid, geodetic, lo_off + i,
+        px, py, pz, pr, pth, pqw, pqx, pqy, pqz, prid, ppos, srid, geodetic,
+        lo_off + i,
         (TimestampTz) tvals[lo_off + i]);
     seqs[j] = tsequence_make(instants, cnt, lo, up, ip, true);
     for (int i = 0; i < cnt; i++)
