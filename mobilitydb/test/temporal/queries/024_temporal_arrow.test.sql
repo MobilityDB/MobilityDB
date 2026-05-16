@@ -92,4 +92,24 @@ SELECT arrowRoundtrip(ttext '[p@2000-01-01, qqqq@2000-01-02, r@2000-01-03]') = t
 SELECT arrowRoundtrip(ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}') = ttext '{a@2000-01-01, bb@2000-01-02, ccc@2000-01-03}';
 SELECT arrowRoundtrip(ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}') = ttext '{[aa@2000-01-01, b@2000-01-02], [cccc@2000-01-03, dd@2000-01-04]}';
 
+-- Temporal point: x,y,z? Struct value leaf + the SRID slot. Covers 2D/3D,
+-- a non-zero SRID, geometry and geography, and every subtype
+
+SELECT arrowRoundtrip(tgeompoint 'Point(1 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeompoint 'SRID=3812;Point(1 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeompoint 'Point(1 2 3)@2000-01-01');
+SELECT arrowRoundtrip(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03)');
+SELECT arrowRoundtrip(tgeompoint 'SRID=3812;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02]');
+SELECT arrowRoundtrip(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03}');
+SELECT arrowRoundtrip(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}');
+SELECT arrowRoundtrip(tgeogpoint 'Point(1 2)@2000-01-01');
+SELECT arrowRoundtrip(tgeogpoint 'Point(1 2 3)@2000-01-01');
+SELECT arrowRoundtrip(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]');
+
+SELECT arrowRoundtrip(tgeompoint 'Point(1 2)@2000-01-01') = tgeompoint 'Point(1 2)@2000-01-01';
+SELECT arrowRoundtrip(tgeompoint 'SRID=3812;Point(1 2)@2000-01-01') = tgeompoint 'SRID=3812;Point(1 2)@2000-01-01';
+SELECT arrowRoundtrip(tgeompoint 'Point(1 2 3)@2000-01-01') = tgeompoint 'Point(1 2 3)@2000-01-01';
+SELECT arrowRoundtrip(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}') = tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}';
+SELECT arrowRoundtrip(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]') = tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]';
+
 -------------------------------------------------------------------------------

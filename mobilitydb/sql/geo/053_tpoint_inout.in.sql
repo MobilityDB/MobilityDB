@@ -187,4 +187,13 @@ CREATE FUNCTION asHexEWKB(tgeogpoint, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION arrowRoundtrip(tgeompoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
