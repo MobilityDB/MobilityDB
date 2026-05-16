@@ -455,6 +455,26 @@
 #endif /* MEOS */
 
 /**
+ * @brief Macro for ensuring that the temporal value is a temporal big integer
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TBIGINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TBIGINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TBIGINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TBIGINT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
  * @brief Macro for ensuring that the temporal value is a temporal float
  * @note The macro works for the Temporal type and its subtypes TInstant,
  * TSequence, and TSequenceSet
@@ -835,8 +855,12 @@ extern Datum spanset_upper(const SpanSet *ss);
 
 /* Transformation functions for set and span types */
 
+extern void bigintspan_set_floatspan(const Span *s1, Span *s2);
+extern void bigintspan_set_intspan(const Span *s1, Span *s2);
 extern void datespan_set_tstzspan(const Span *s1, Span *s2);
+extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
+extern void intspan_set_bigintspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Span *numspan_expand(const Span *s, Datum value);
@@ -1317,11 +1341,13 @@ extern TSequenceSet *tnumberseqset_delta_value(const TSequenceSet *ss);
 
 /* Distance functions for temporal types */
 
-extern Temporal *tdistance_tnumber_number(const Temporal *temp, Datum value);
+extern double distance_span_span_double(const Span *s1, const Span *s2);
 extern double nad_tbox_tbox(const TBox *box1, const TBox *box2);
 extern double nad_tnumber_number(const Temporal *temp, Datum value);
 extern double nad_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern double nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdistance_tnumber_number(const Temporal *temp, Datum value);
+extern double tnumberinst_distance(const TInstant *inst1, const TInstant *inst2);
 
 /*****************************************************************************/
 

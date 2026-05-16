@@ -67,7 +67,7 @@
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_inst.h"
   #include "rgeo/trgeo_boxops.h"
-#endif 
+#endif
 
 /*****************************************************************************
  * Input/output functions

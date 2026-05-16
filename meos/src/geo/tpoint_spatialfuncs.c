@@ -2435,7 +2435,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  datum_func2 func = pt_distance_fn(seq->flags);
+  datum_func2 func = point_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   double length = prevlength;

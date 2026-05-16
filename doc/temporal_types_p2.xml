@@ -87,8 +87,8 @@
 SELECT insert(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
   tint '{3@2001-01-03, 7@2001-01-07}');
 -- {1@2001-01-01, 3@2001-01-03, 5@2001-01-05, 7@2001-01-07}
-SELECT insert(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
-  tint '{5@2001-01-03, 7@2001-01-07}');
+SELECT insert(tbigint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
+  tbigint '{5@2001-01-03, 7@2001-01-07}');
 -- ERROR: The temporal values have different value at their overlapping instant 2001-01-03
 SELECT insert(tfloat '[1@2001-01-01, 2@2001-01-02]',
   tfloat '[1@2001-01-03, 1@2001-01-05]');
@@ -135,7 +135,7 @@ SELECT asText(update(
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02', false);
 -- {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03]}
-SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-04');
+SELECT deleteTime(tbigint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-04');
 -- [1@2001-01-01, 1@2001-01-03]
 SELECT deleteTime(tfloat '[1@2001-01-01, 4@2001-01-02, 2@2001-01-04, 5@2001-01-05]',
   tstzspan '[2001-01-02, 2001-01-04]');
@@ -158,7 +158,7 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT appendInstant(tint '1@2001-01-01', tint '1@2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02]
-SELECT appendInstant(tint '1@2001-01-01', tint '1@2001-01-02', 'discrete');
+SELECT appendInstant(tbigint '1@2001-01-01', tbigint '1@2001-01-02', 'discrete');
 -- {1@2001-01-01, 1@2001-01-02}
 SELECT appendInstant(tint '[1@2001-01-01]', tint '1@2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02]
@@ -227,8 +227,8 @@ SELECT asText(appendInstant(inst, NULL, sqrt(2), '1 day' ORDER BY inst)) FROM te
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT appendSequence(tint '1@2001-01-01', tint '{2@2001-01-02, 3@2001-01-03}');
 -- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03}
-SELECT appendSequence(tint '[1@2001-01-01, 2@2001-01-02]',
-  tint '[2@2001-01-02, 3@2001-01-03]');
+SELECT appendSequence(tbigint '[1@2001-01-01, 2@2001-01-02]',
+  tbigint '[2@2001-01-02, 3@2001-01-03]');
 -- [1@2001-01-01, 2@2001-01-02, 3@2001-01-03]
 SELECT asText(appendSequence(tgeompoint '{[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
@@ -255,7 +255,7 @@ SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT merge(tint '1@2001-01-01', tint '1@2001-01-02');
 -- {1@2001-01-01, 1@2001-01-02}
-SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[2@2001-01-02, 1@2001-01-03]');
+SELECT merge(tbigint '[1@2001-01-01, 2@2001-01-02]', tbigint '[2@2001-01-02, 1@2001-01-03]');
 -- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
 SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[3@2001-01-03, 1@2001-01-04]');
 -- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 1@2001-01-04]}
@@ -278,9 +278,9 @@ SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{2@2001-01-02, 3@2001-0
 -- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03}
 SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{3@2001-01-03, 4@2001-01-04}']);
 -- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04}
-SELECT merge(ARRAY[tint '[1@2001-01-01, 2@2001-01-02]', '[2@2001-01-02, 1@2001-01-03]']);
+SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]', '[2@2001-01-02, 1@2001-01-03]']);
 -- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
-SELECT merge(ARRAY[tint '[1@2001-01-01, 2@2001-01-02]', '[3@2001-01-03, 4@2001-01-04]']);
+SELECT merge(ARRAY[tbigint '[1@2001-01-01, 2@2001-01-02]', '[3@2001-01-03, 4@2001-01-04]']);
 -- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}
 SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
   [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}', '{[Point(4 4)@2001-01-04,
@@ -373,7 +373,7 @@ SELECT asText(minusValues(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(tfloat '[1@2001-01-01, 5@2001-01-05)', timestamptz '2001-01-02');
 -- 2@2001-01-02
-SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
+SELECT atTime(tbigint '[1@2001-01-01, 1@2001-01-15)',
   tstzset '{2001-01-01, 2001-01-03}');
 -- {1@2001-01-01, 1@2001-01-03}
 SELECT atTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
@@ -411,7 +411,7 @@ SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01
 -- [1@2001-01-01, 1@2001-01-02)
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01');
 -- NULL
-SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01',
+SELECT beforeTimestamp(tbigint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01',
   false);
 -- [1@2001-01-01]
 SELECT afterTimestamp(tfloat '[1@2001-01-01, 3@2001-01-03]', timestamptz '2001-01-02]',
@@ -429,11 +429,11 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 	<sect1 xml:id="ttype_bbox">
 		<title>Bounding Box Operators</title>
 
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="ttype_p1"/>, the bounding box associated to a temporal type depends on the base type: It is the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="box_conversions"/>, many PostgreSQL, PostGIS, or MobilityDB types can be converted to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be converted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be converted to type <varname>stbox</varname>, and time types and temporal types can be converted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="ttype_p1"/>, the bounding box associated to a temporal type depends on the base type: It is the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="box_conversions"/>, many PostgreSQL, PostGIS, or MobilityDB types can be converted to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be converted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be converted to type <varname>stbox</varname>, and time types and temporal types can be converted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
 		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
-		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
+		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
 
 		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
 
@@ -487,11 +487,11 @@ SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt; tint '[2@2001-01-03, 2@2001-01-0
 -- true
 SELECT ttfloat '[1@2001-01-01, 1@2001-01-04)' &gt; ttfloat '[2@2001-01-03, 2@2001-01-05)';
 -- false
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;= tint '[2@2001-01-03, 2@2001-01-05)';
+SELECT tbigint '[1@2001-01-01, 1@2001-01-04)' &lt;= tbigint '[2@2001-01-03, 2@2001-01-05)';
 -- true
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-05)';
+SELECT tbigint '[1@2001-01-01, 1@2001-01-04)' &gt;= tbigint '[2@2001-01-03, 2@2001-01-05)';
 -- false
-SELECT temporal_cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)');
+SELECT temporal_cmp(tfloat '[1@2001-01-01, 1@2001-01-04)','[2@2001-01-03, 2@2001-01-05)');
 -- -1
 </programlisting>
 				</listitem>

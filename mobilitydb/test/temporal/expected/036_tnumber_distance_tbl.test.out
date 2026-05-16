@@ -16,6 +16,24 @@ SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <-> t2.temp IS NOT N
    124
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i <-> temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp <-> i IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp <-> t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f <-> temp IS NOT NULL;
  count 
 -------
@@ -64,6 +82,36 @@ SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp |=| t2.temp IS NOT N
    124
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE i |=| temp IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_bigint WHERE temp |=| i IS NOT NULL;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE b |=| temp IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint, tbl_tboxbigint WHERE temp |=| b IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tbigint t2 WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+   124
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE f |=| temp IS NOT NULL;
  count 
 -------
@@ -101,6 +149,18 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b |=| t2.b IS NOT N
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tboxint t2 WHERE t1.temp |=| t2.b IS NOT NULL;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tboxbigint t1, tbl_tboxbigint t2 WHERE t1.b |=| t2.b IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint t1, tbl_tboxbigint t2 WHERE t1.temp |=| t2.b IS NOT NULL;
  count 
 -------
      1

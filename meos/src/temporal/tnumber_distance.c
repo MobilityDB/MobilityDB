@@ -56,7 +56,7 @@
  * @brief Return the distance between two temporal instants
  * @param[in] inst1,inst2 Temporal instants
  */
-double
+inline double
 tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
   return fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
@@ -130,8 +130,8 @@ tdistance_tnumber_number(const Temporal *temp, Datum value)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_base = (! lfinfo.reslinear || basetype == T_INT4) ? NULL :
-    &tfloat_base_distance_turnpt;
+  lfinfo.tpfn_base = (lfinfo.reslinear && basetype == T_FLOAT8) ?
+    &tfloat_base_distance_turnpt : NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -190,6 +190,16 @@ nad_tnumber_number(const Temporal *temp, Datum value)
 }
 
 /**
+ * @brief Helper function for span distance that always returns double
+ */
+inline double
+distance_span_span_double(const Span *s1, const Span *s2)
+{
+  Datum d = distance_span_span(s1, s2);
+  return datum_double(d, spantype_basetype(s1->spantype));
+}
+
+/**
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes
  * @param[in] box1,box2 Temporal boxes
@@ -218,8 +228,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
-  Datum res = distance_span_span(&box1->span, &box2->span);
-  return datum_double(res, spantype_basetype(box1->span.spantype));
+  return distance_span_span_double(&box1->span, &box2->span);
 }
 
 /**

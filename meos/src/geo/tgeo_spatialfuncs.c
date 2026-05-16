@@ -314,7 +314,7 @@ geo_distance_fn(int16 flags)
  * @brief Select the appropriate distance function
  */
 datum_func2
-pt_distance_fn(int16 flags)
+point_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
     return &datum_geog_distance;
@@ -417,7 +417,7 @@ npoint_flags(void)
 }
 #endif /* NPOINT */ 
 
-#if POSE || RGEO 
+#if POSE || RGEO
 /**
  * @brief Get the MEOS flags from a pose
  */
@@ -429,7 +429,8 @@ pose_flags(Pose *pose)
   MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
   return result;
 }
-#endif /* POSE || RGEO */ 
+#endif /* POSE || RGEO */
+
 
 /**
  * @brief Get the MEOS flags from a spatial value

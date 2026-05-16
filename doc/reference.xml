@@ -59,11 +59,11 @@
 					<entry><varname>tint</varname></entry>
 				</row>
 				<row>
-						<entry><emphasis role="bold"><varname>bigint</varname></emphasis></entry>
-						<entry><varname>bigintset</varname></entry>
-						<entry><varname>bigintspan</varname></entry>
-						<entry><varname>bigintspanset</varname></entry>
-						<entry><varname/></entry>
+					<entry><emphasis role="bold"><varname>bigint</varname></emphasis></entry>
+					<entry><varname>bigintset</varname></entry>
+					<entry><varname>bigintspan</varname></entry>
+					<entry><varname>bigintspanset</varname></entry>
+					<entry><varname>tbigint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
@@ -120,6 +120,13 @@
 					<entry><varname/></entry>
 					<entry><varname/></entry>
 					<entry><varname>tcbuffer</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>h3index</varname></emphasis></entry>
+					<entry><varname>h3indexset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>th3index</varname></entry>
 				</row>
 			</tbody>
 			</tgroup>
@@ -868,7 +875,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname>, <varname>tfloat(tint)</varname>, <varname>tint(tfloat)</varname></link>: Convert between a temporal integer and a temporal float</para>
+					<para><link linkend="tint_tfloat"><varname>tnumber::tnumber</varname>, <varname>tnumber(tnumber)</varname></link>: Convert between temporal integers, temporal big integers, and temporal floats</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2255,6 +2262,239 @@
 
 					<listitem>
 						<para><link linkend="tcbuffer_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal H3 Cell Indices</title>
+
+		<sect2>
+			<title>Temporal H3 Cell Indices</title>
+
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_inout"><varname>th3index</varname></link>: Literal input syntax for the four temporal subtypes (instant, discrete sequence, sequence, sequence set) and the typmod-restricted column variants</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_tbigint"><varname>th3index::tbigint</varname>, <varname>tbigint::th3index</varname></link>: Convert between a temporal H3 cell and a temporal big integer (explicit, zero-cost binary coercion)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_tgeogpoint"><varname>th3index::tgeogpoint</varname>, <varname>th3index::tgeompoint</varname></link>: Cast a temporal H3 cell to its centroid trajectory in the geodetic or planar (SRID 4326) form</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Return the first or last H3 cell identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_valueN"><varname>valueN</varname></link>: Return the n-th distinct H3 cell identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_getValues"><varname>getValues</varname></link>: Return the set of distinct H3 cell identifiers</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the H3 cell identifier at a timestamp</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Index Inspection</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_get_resolution"><varname>h3_get_resolution</varname></link>: Return the temporal resolution level (0–15)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_get_base_cell_number"><varname>h3_get_base_cell_number</varname></link>: Return the temporal base-cell number (0–121)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_is_valid_cell"><varname>h3_is_valid_cell</varname></link>: Return true at each instant when the underlying payload encodes a valid H3 cell</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_is_res_class_iii"><varname>h3_is_res_class_iii</varname></link>: Return true at each instant when the cell has Class-III orientation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_is_pentagon"><varname>h3_is_pentagon</varname></link>: Return true at each instant when the cell is a pentagon</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Hierarchy</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_parent"><varname>h3_cell_to_parent</varname></link>: Return the temporal parent cell at the given resolution (or the next-coarser resolution)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_center_child"><varname>h3_cell_to_center_child</varname></link>: Return the temporal center-child cell at the given resolution (or the next-finer resolution)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_child_pos"><varname>h3_cell_to_child_pos</varname></link>: Return the ordinal position of each cell among the children of its parent</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_child_pos_to_cell"><varname>h3_child_pos_to_cell</varname></link>: Return the temporal child cell at a given ordinal position (two synchronised temporal operands)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Lat/Lng Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_latlng_to_cell"><varname>h3_latlng_to_cell</varname></link>: Return the temporal H3 cell at the given resolution that contains each point in a temporal point trajectory</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_latlng"><varname>h3_cell_to_latlng</varname>, <varname>h3_cell_to_latlng_tgeompoint</varname></link>: Return the temporal centroid trajectory of a temporal H3 cell</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_boundary"><varname>h3_cell_to_boundary</varname></link>: Return the temporal polygon boundary of a temporal H3 cell as a temporal geography</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Directed Edges</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_are_neighbor_cells"><varname>h3_are_neighbor_cells</varname></link>: Return true at each shared instant when two temporal cells are grid neighbours</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cells_to_directed_edge"><varname>h3_cells_to_directed_edge</varname></link>: Return the temporal directed-edge identifier from an origin/destination pair</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_is_valid_directed_edge"><varname>h3_is_valid_directed_edge</varname></link>: Return true at each instant when the payload encodes a valid directed edge</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_get_directed_edge_origin"><varname>h3_get_directed_edge_origin</varname>, <varname>h3_get_directed_edge_destination</varname></link>: Return the temporal origin or destination cell of a temporal directed edge</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_directed_edge_to_boundary"><varname>h3_directed_edge_to_boundary</varname></link>: Return the temporal polygon boundary of each directed edge as a temporal geography</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Vertices</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_vertex"><varname>h3_cell_to_vertex</varname></link>: Return the temporal H3 vertex at the given vertex number</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_vertex_to_latlng"><varname>h3_vertex_to_latlng</varname></link>: Return the temporal geodetic coordinates of each vertex</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_is_valid_vertex"><varname>h3_is_valid_vertex</varname></link>: Return true at each instant when the payload encodes a valid H3 vertex</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Grid Traversal</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_grid_distance"><varname>h3_grid_distance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal grid-hop distance between two temporal cells</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_cell_to_local_ij"><varname>h3_cell_to_local_ij</varname>, <varname>h3_local_ij_to_cell</varname></link>: Convert between a temporal cell and a temporal local (I, J) coordinate pair</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Metrics</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_h3_cell_area"><varname>h3_cell_area</varname></link>: Return the temporal area of each cell in the requested unit (km², m², or rads²)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_edge_length"><varname>h3_edge_length</varname></link>: Return the temporal length of each directed edge in the requested unit (km, m, or rads)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_h3_great_circle_distance"><varname>h3_great_circle_distance</varname></link>: Return the temporal great-circle distance between two temporal geodetic points</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_ever_eq"><varname>?=</varname>, <varname>?&lt;&gt;</varname></link>: Ever-equal and ever-not-equal comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_always_eq"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Always-equal and always-not-equal comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_temporal_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Temporal equality and inequality returning a tbool</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Topological operators (note: <varname>@&gt;</varname> tests bounding-box containment, not H3 hierarchical containment — use <varname>h3_cell_to_parent</varname> for the latter)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_relative_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname></link>: Position operators on the underlying int64 value axis</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_time_position"><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Position operators on the time axis</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Indexing</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="th3index_rtree_ops"><varname>th3index_rtree_ops</varname></link>: GiST operator class (default)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="th3index_quadtree_ops"><varname>th3index_quadtree_ops</varname>, <varname>th3index_kdtree_ops</varname></link>: SP-GiST operator classes (quadtree default + k-d tree variant)</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

@@ -65,6 +65,9 @@ endif()
 if(RGEO)
   add_subdirectory(rgeo)
 endif()
+if(H3)
+  add_subdirectory(h3)
+endif()
 
 list(SORT PROJECT_SQL_FILES)
 
