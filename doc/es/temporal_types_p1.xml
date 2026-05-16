@@ -628,6 +628,19 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un flotante temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tfloat) → tfloat</varname></para>
+				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT arrowRoundtrip(tfloat '1.5@2001-01-01');
+-- 1.5@2001-01-01
+SELECT arrowRoundtrip(tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}');
+-- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttypeFromMFJSON">
 				<indexterm significance="normal"><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
 				<para>Entrar a partir de la representación Moving Features JSON (MF-JSON)</para>

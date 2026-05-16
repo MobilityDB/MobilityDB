@@ -1276,6 +1276,13 @@ extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
+/* Arrow C Data Interface conversion (structs forward-declared to keep this
+ * header free of an Arrow dependency; see temporal/arrow_c_data_interface.h) */
+struct ArrowSchema;
+struct ArrowArray;
+extern bool meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern Temporal *meos_temporal_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern Temporal *meos_temporal_arrow_roundtrip(const Temporal *temp);
 extern Temporal *tfloat_from_mfjson(const char *str);
 extern Temporal *tfloat_in(const char *str);
 extern char *tfloat_out(const Temporal *temp, int maxdd);
