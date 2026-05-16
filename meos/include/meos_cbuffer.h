@@ -218,6 +218,7 @@ extern Set *union_set_cbuffer(const Set *s, const Cbuffer *cb);
  *****************************************************************************/
 
 extern Temporal *tcbuffer_in(const char *str);
+extern Temporal *tcbuffer_from_mfjson(const char *mfjson);
 
 /*****************************************************************************
  * Constructor functions

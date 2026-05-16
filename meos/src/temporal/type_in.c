@@ -688,6 +688,82 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
 
 /*****************************************************************************/
 
+#if CBUFFER
+/**
+ * @brief Return a circular buffer from its MF-JSON representation
+ * @details A circular buffer value is a JSON object with a `point` member
+ * (a planar 2D `[x, y]` coordinate array, as for a temporal point) and a
+ * numeric `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member
+ * names mirror the @p point and @p radius accessors. Circular buffers are
+ * always planar 2D, so there is no Z/geodetic handling as for poses.
+ */
+static Cbuffer *
+parse_mfjson_cbuffer(json_object *mfjson, int32_t srid)
+{
+  assert(mfjson);
+  json_object *point = findMemberByName(mfjson, "point");
+  if (point == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'point' in MFJSON string");
+    return NULL;
+  }
+  json_object *radius = findMemberByName(mfjson, "radius");
+  if (radius == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'radius' in MFJSON string");
+    return NULL;
+  }
+  Datum ptdatum = parse_mfjson_coord(point, srid, false);
+  if (! ptdatum)
+    return NULL;
+  GSERIALIZED *gs = DatumGetGserializedP(ptdatum);
+  Cbuffer *result = cbuffer_make(gs, json_object_get_double(radius));
+  pfree(gs);
+  return result;
+}
+
+/**
+ * @brief Return an array of circular buffers from its MF-JSON values
+ */
+static Datum *
+parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *values_json = findMemberByName(mfjsonTmp, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  int nvalues = (int) json_object_array_length(values_json);
+  if (nvalues < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+  Datum *values = palloc(sizeof(Datum) * nvalues);
+  for (int i = 0; i < nvalues; ++i)
+  {
+    json_object *cb = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_cbuffer(cb, srid));
+  }
+  *count = nvalues;
+  return values;
+}
+#endif /* CBUFFER */
+
+/*****************************************************************************/
+
 /**
  * @brief Return an array of timestamps from their MF-JSON datetimes values
  */
@@ -768,6 +844,10 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
+#if CBUFFER
+    else if (temptype == T_TCBUFFER)
+      values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
+#endif /* CBUFFER */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -815,6 +895,10 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* RGEO */
+#if CBUFFER
+    else if (temptype == T_TCBUFFER)
+      values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
+#endif /* CBUFFER */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -952,7 +1036,8 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
       strcmp(typestr, "MovingPose") != 0 &&
-      strcmp(typestr, "MovingRigidGeometry") != 0 )
+      strcmp(typestr, "MovingRigidGeometry") != 0 &&
+      strcmp(typestr, "MovingCircularBuffer") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string: %s", typestr);
@@ -1036,6 +1121,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TPOSE;
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;
+#if CBUFFER
+  else if (strcmp(typestr, "MovingCircularBuffer") == 0)
+    jtemptype = T_TCBUFFER;
+#endif /* CBUFFER */
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
