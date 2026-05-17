@@ -120,6 +120,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Mirror pgversion.yml: prefer apt.postgresql.org over the runner's
+      # preinstalled PostgreSQL so the postgresql-server-dev package
+      # resolves cleanly (the runner ships a conflicting
+      # postgresql-common). Only pg_config is needed here — pgPointCloud
+      # produces a static libpc.a, no running server.
+      - name: Remove existing PostgreSQL installations [prefer apt.postgresql.org]
+        run: |
+          sudo service postgresql stop || true
+          sudo apt-get --purge remove postgresql* -y || true
+          sudo rm -rf /var/lib/postgresql/ /etc/postgresql/ \
+            /var/log/postgresql/ || true
+
+      - name: Add PostgreSQL APT repository
+        run: |
+          sudo apt-get install -y curl ca-certificates gnupg
+          curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo apt-key add -
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ \
+            $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -128,7 +148,8 @@ jobs:
             libproj-dev \
             libjson-c-dev \
             libgsl-dev \
-            autoconf automake libtool libxml2-dev pkg-config
+            autoconf automake libtool libxml2-dev pkg-config \
+            postgresql-17 postgresql-server-dev-17
 
       # MEOS's POINTCLOUD=ON build links against pgPointCloud's static
       # libpc.a, produced as a side-effect of the upstream autotools
@@ -137,11 +158,10 @@ jobs:
       # as the pgversion.yml coverage axis does.
       - name: Build pgPointCloud from source (for libpc.a)
         run: |
-          sudo apt-get install -y postgresql-server-dev-all
-          PG_CONFIG=$(ls /usr/lib/postgresql/*/bin/pg_config | head -1)
           cd pointcloud-pg
           ./autogen.sh
-          ./configure --with-pgconfig="$PG_CONFIG"
+          ./configure \
+            --with-pgconfig=/usr/lib/postgresql/17/bin/pg_config
           make -j $(nproc)
           ls -la lib/libpc.a
 
