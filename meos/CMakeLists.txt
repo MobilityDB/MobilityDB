@@ -312,6 +312,14 @@ if(POINTCLOUD)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pointcloud.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  # The pgPointCloud serialization shim header is part of the public
+  # point-cloud surface a standalone consumer needs to build a patch
+  # value (meos_pc_patch_serialize, SERIALIZED_PATCH); install it under
+  # pointcloud/ so it is reached as <pointcloud/pgsql_compat.h> from the
+  # install prefix without adding the source tree to the include path.
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/pointcloud/pgsql_compat.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
 endif()
 
 install(

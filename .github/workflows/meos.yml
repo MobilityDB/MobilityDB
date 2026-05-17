@@ -185,16 +185,17 @@ jobs:
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree, proving the
       # opaque, rigid geometry and point cloud exports are consumable by an
-      # external Arrow engine. The point-cloud cases build values via the
-      # vendored pgPointCloud headers exactly as meos/examples/
-      # tpcbox_rtree.c and meos/test/pointcloud_valgrind.c do, so the
-      # source-tree pointcloud include paths are added on the gcc line.
+      # external Arrow engine. meos.h, meos_pointcloud.h and
+      # pointcloud/pgsql_compat.h are picked up from the install prefix;
+      # the vendored pgPointCloud pc_api.h / pc_api_internal.h come from
+      # pointcloud-pg/lib, exactly as meos/examples/tpcbox_rtree.c builds.
+      # The source meos/include is intentionally not on the path so the
+      # generated install meos.h is used, not the un-preprocessed source.
       - name: Validate the Arrow export with nanoarrow
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -g -I/usr/local/include -I"$GITHUB_WORKSPACE" \
-            -I"$GITHUB_WORKSPACE/meos/include" \
             -I"$GITHUB_WORKSPACE/pointcloud-pg/lib" \
             -o temporal_arrow_validate temporal_arrow_validate.c \
             "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
