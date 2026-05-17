@@ -68,6 +68,9 @@ endif()
 if(H3)
   add_subdirectory(h3)
 endif()
+if(POINTCLOUD)
+  add_subdirectory(pointcloud)
+endif()
 
 list(SORT PROJECT_SQL_FILES)
 

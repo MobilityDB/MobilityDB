@@ -1,0 +1,20 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (EXTRACT(EPOCH FROM t)*1000000)::bigint AS t, pcp, PC_PCId(pcp) AS pcid FROM test_patches_in ORDER BY id",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.tpcpatch",
+      "connection": "dbname=mobility",
+      "table": "test_patches_out",
+      "column": "traj",
+      "pcid": 100,
+      "compression": "none"
+    }
+  ]
+}

@@ -116,7 +116,13 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
-  /* 63..69 reserved for pgPointCloud temporal types (PR #818) */
+  T_PCPOINT        = 63,  /**< pgpointcloud point type */
+  T_PCPOINTSET     = 64,  /**< pgpointcloud point set type */
+  T_TPCPOINT       = 65,  /**< temporal pgpointcloud point type */
+  T_PCPATCH        = 66,  /**< pgpointcloud patch type */
+  T_PCPATCHSET     = 67,  /**< pgpointcloud patch set type */
+  T_TPCPATCH       = 68,  /**< temporal pgpointcloud patch type */
+  T_TPCBOX         = 69,  /**< temporal pgpointcloud bounding box type */
   T_TBIGINT        = 70,  /**< temporal big integer type */
   T_H3INDEX        = 71,  /**< static H3 cell index type (uint64) */
   T_H3INDEXSET     = 72,  /**< h3index set type */
@@ -262,6 +268,11 @@ extern bool geoset_type(MeosType type);
 extern bool ensure_geoset_type(MeosType type);
 extern bool spatialset_type(MeosType type);
 extern bool ensure_spatialset_type(MeosType type);
+#if POINTCLOUD
+extern bool pointcloud_basetype(MeosType type);
+extern bool pointcloudset_type(MeosType type);
+extern bool tpointcloud_temptype(MeosType type);
+#endif
 
 extern bool span_basetype(MeosType type);
 extern bool span_canon_basetype(MeosType type);

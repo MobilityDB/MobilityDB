@@ -1,0 +1,42 @@
+{
+  "_comment": [
+    "Export a time window of MobilityDB tpcpatch data to a single LAS file",
+    "suitable for ingestion by PotreeConverter (or FastPoints for Unity).",
+    "",
+    "The query in 'query' below assumes a table 'trajectories(id int, traj tpcpatch)'",
+    "and emits all points whose timestamp falls in the [t_lo, t_hi] window via",
+    "MobilityDB's atTime + tstzspan accessors. Replace the bounds, the table",
+    "name, and the WHERE clause for your own schema.",
+    "",
+    "PotreeConverter command after this pipeline writes /tmp/window.las:",
+    "  PotreeConverter /tmp/window.las -o /var/www/potree/<scene_id> --overwrite",
+    "Then point Potree's web viewer (or FastPoints in Unity) at the resulting",
+    "<scene_id>/metadata.json."
+  ],
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "WITH win AS ( SELECT tstzspan('[2024-01-01 12:00:00+00, 2024-01-01 12:00:10+00]') AS w ) SELECT (EXTRACT(EPOCH FROM timestampN(t.traj, n)) * 1000000)::bigint AS t, valueN(t.traj, n) AS pcp, PC_PCId(valueN(t.traj, n)) AS pcid FROM trajectories t, generate_series(1, numInstants(t.traj)) n, win WHERE timestampN(t.traj, n) <@ win.w ORDER BY t",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "filters.assign",
+      "value": [
+        "GpsTime = time_t / 1000000.0"
+      ]
+    },
+    {
+      "type": "writers.las",
+      "filename": "/tmp/window.las",
+      "extra_dims": "all",
+      "minor_version": "4",
+      "dataformat_id": "6",
+      "scale_x": "0.001",
+      "scale_y": "0.001",
+      "scale_z": "0.001"
+    }
+  ]
+}

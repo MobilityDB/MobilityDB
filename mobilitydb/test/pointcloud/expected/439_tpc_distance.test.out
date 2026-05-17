@@ -1,0 +1,46 @@
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[3.0, 4.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT (tpcbox_zt(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0)) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0, tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
+                 '2024-01-01'::timestamptz)) |=|
+       (tpcbox_zt(0, 0, 0, 0, 0, 0,
+                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) > 1e10;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,
+  tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
+ ?column? 
+----------
+ t
+(1 row)
+

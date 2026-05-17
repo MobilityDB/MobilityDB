@@ -27,6 +27,12 @@ endif()
 if(RGEO)
   list(APPEND DATAGEN_FILES rgeo/random_trgeo.sql)
 endif()
+if(H3)
+  list(APPEND DATAGEN_FILES h3/random_th3index.sql)
+endif()
+if(POINTCLOUD)
+  list(APPEND DATAGEN_FILES pointcloud/random_tpcpoint.sql)
+endif()
 
 # Truncate first so that a re-configure in an existing build directory
 # rebuilds this .sql from scratch instead of appending a second copy of

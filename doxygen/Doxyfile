@@ -936,7 +936,8 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = @CMAKE_SOURCE_DIR@/meos \
-                         @CMAKE_SOURCE_DIR@/mobilitydb
+                         @CMAKE_SOURCE_DIR@/mobilitydb \
+                         @CMAKE_SOURCE_DIR@/contrib/pdal
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1052,8 +1053,14 @@ EXCLUDE_SYMLINKS       = NO
 #
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
+#
+# Skip scratch / WIP files (tbox_master.c, load_test.sql) that
+# occasionally land in the working tree during local development. They
+# are untracked, not part of the CMake build, and otherwise produce
+# spurious "explicit link request could not be resolved" warnings.
 
-EXCLUDE_PATTERNS       =
+EXCLUDE_PATTERNS       = */src/*/tbox_master.c \
+                         */data/load_test.sql
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -2432,7 +2439,8 @@ PREDEFINED             = __attribute__(x)= \
 # definition found in the source code.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_AS_DEFINED      =
+EXPAND_AS_DEFINED      = TPCBOX_PRED_2 \
+                         TPCBOX_ACCESSOR_DOUBLE_BODY
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have

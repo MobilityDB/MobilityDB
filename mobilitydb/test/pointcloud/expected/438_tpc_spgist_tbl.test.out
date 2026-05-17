@@ -1,0 +1,96 @@
+CREATE INDEX tbl_tpcpoint_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_count FROM tbl_tpcpoint
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ seq_count 
+-----------
+        26
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_count FROM tbl_tpcpoint
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ idx_count 
+-----------
+        26
+(1 row)
+
+DROP INDEX tbl_tpcpoint_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpoint_kdtree_idx ON tbl_tpcpoint
+  USING spgist(temp tpcpoint_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpoint
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ kdtree_count 
+--------------
+           26
+(1 row)
+
+DROP INDEX tbl_tpcpoint_kdtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpatch_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_count FROM tbl_tpcpatch
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ seq_count 
+-----------
+        46
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_count FROM tbl_tpcpatch
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ idx_count 
+-----------
+        46
+(1 row)
+
+DROP INDEX tbl_tpcpatch_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpatch_kdtree_idx ON tbl_tpcpatch
+  USING spgist(temp tpcpatch_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) AS kdtree_count FROM tbl_tpcpatch
+WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
+ kdtree_count 
+--------------
+           46
+(1 row)
+
+DROP INDEX tbl_tpcpatch_kdtree_idx;
+DROP INDEX
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET

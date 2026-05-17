@@ -311,6 +311,9 @@ extern RTree *rtree_create_datespan();
 extern RTree *rtree_create_tstzspan();
 extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
+#if POINTCLOUD
+extern RTree *rtree_create_tpcbox();
+#endif
 extern void rtree_free(RTree *rtree);
 extern void rtree_insert(RTree *rtree, void *box, int id);
 extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id);
