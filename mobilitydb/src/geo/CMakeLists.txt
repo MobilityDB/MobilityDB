@@ -19,3 +19,10 @@ add_library(pg_geo OBJECT
   tspatial_spgist.c
   tspatial_tempspatialrels.c
   )
+
+# pg_geo's tgeo.c calls pc_set_handlers() under `#if POINTCLOUD`.
+# Give the target visibility into the pgpointcloud subtree headers.
+if(POINTCLOUD)
+  target_include_directories(pg_geo PRIVATE
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)
+endif()

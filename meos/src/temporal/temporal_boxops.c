@@ -58,6 +58,10 @@
 #include "temporal/type_util.h"
 #include "temporal/type_util.h"
 #include "geo/tspatial_boxops.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/tpc_boxops.h"
+#endif
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
@@ -71,6 +75,10 @@ bbox_type(MeosType bboxtype)
 {
   if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return true;
+#endif
   return false;
 }
 
@@ -85,8 +93,12 @@ bbox_get_size(MeosType bboxtype)
     return sizeof(Span);
   if (bboxtype == T_TBOX)
     return sizeof(TBox);
-  else /* bboxtype == T_STBOX */
-    return sizeof(STBox);
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return sizeof(TPCBox);
+#endif
+  /* bboxtype == T_STBOX */
+  return sizeof(STBox);
 }
 
 /**
@@ -100,8 +112,8 @@ bbox_max_dims(MeosType bboxtype)
     return 1;
   if (bboxtype == T_TBOX)
     return 2;
-  else /* bboxtype == T_STBOX */
-    return 4;
+  /* T_STBOX or T_TPCBOX: 3 spatial dims + 1 time dim */
+  return 4;
 }
 
 /**
@@ -113,11 +125,19 @@ bool
 temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype));
+    tspatial_type(temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(temptype)
+#endif
+    );
   if (talpha_type(temptype))
     return span_eq((Span *) box1, (Span *) box2);
   else if (tnumber_type(temptype))
     return tbox_eq((TBox *) box1, (TBox *) box2);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(temptype))
+    return tpcbox_eq((TPCBox *) box1, (TPCBox *) box2);
+#endif
   else /* tspatial_type(temptype) */
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
@@ -138,11 +158,19 @@ int
 temporal_bbox_cmp(const void *box1, const void *box2, MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype));
+    tspatial_type(temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(temptype)
+#endif
+    );
   if (talpha_type(temptype))
     return span_cmp((Span *) box1, (Span *) box2);
   else if (tnumber_type(temptype))
     return tbox_cmp((TBox *) box1, (TBox *) box2);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(temptype))
+    return tpcbox_cmp((TPCBox *) box1, (TPCBox *) box2);
+#endif
   else /* tspatial_type(temptype) */
     return stbox_cmp((STBox *) box1, (STBox *) box2);
 }
@@ -158,11 +186,19 @@ size_t
 temporal_bbox_size(MeosType temptype)
 {
   assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype));
+    tspatial_type(temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(temptype)
+#endif
+    );
   if (talpha_type(temptype))
     return sizeof(Span);
   else if (tnumber_type(temptype))
     return sizeof(TBox);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(temptype))
+    return sizeof(TPCBox);
+#endif
   else /* tspatial_type(temptype) */
     return sizeof(STBox);
 }
@@ -203,12 +239,20 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 {
   assert(inst); assert(box);
   assert(talpha_type(inst->temptype) || tnumber_type(inst->temptype) ||
-    tspatial_type(inst->temptype));
+    tspatial_type(inst->temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(inst->temptype)
+#endif
+    );
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
   else if (tnumber_type(inst->temptype))
     tnumberinst_set_tbox(inst, (TBox *) box);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(inst->temptype))
+    tpointcloudinst_set_tpcbox(inst, (TPCBox *) box);
+#endif
   else /* tspatial_type(inst->temptype) */
     tspatialinst_set_stbox(inst, (STBox *) box);
   return;
@@ -381,7 +425,11 @@ tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
   assert(instants); assert(box);
   assert(talpha_type(instants[0]->temptype) ||
     tnumber_type(instants[0]->temptype) ||
-    tspatial_type(instants[0]->temptype));
+    tspatial_type(instants[0]->temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(instants[0]->temptype)
+#endif
+    );
   if (talpha_type(instants[0]->temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
@@ -389,6 +437,11 @@ tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
   else if (tnumber_type(instants[0]->temptype))
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(instants[0]->temptype))
+    tpointcloudinstarr_set_tpcbox(instants, count, lower_inc, upper_inc,
+      interp, (TPCBox *) box);
+#endif
   else /* tspatial_type(instants[0]->temptype) */
     tspatialinstarr_set_stbox(instants, count, lower_inc, upper_inc,
       interp, (STBox *) box);
@@ -425,13 +478,21 @@ void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
   assert(talpha_type(seq->temptype) || tnumber_type(seq->temptype) ||
-    tspatial_type(seq->temptype));
+    tspatial_type(seq->temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(seq->temptype)
+#endif
+    );
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum(TSEQUENCE_INST_N(seq, 0)->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       T_TSTZSPAN, (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(seq->temptype))
+    tpointcloudseq_expand_tpcbox(seq, inst);
+#endif
   else /* tspatial_type(seq->temptype) */
     tspatialseq_expand_stbox(seq, inst);
   return;
@@ -449,12 +510,21 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 {
   assert(ss); assert(seq);
   assert(talpha_type(ss->temptype) || tnumber_type(ss->temptype) ||
-    tspatial_type(ss->temptype));
+    tspatial_type(ss->temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(ss->temptype)
+#endif
+    );
   if (talpha_type(ss->temptype))
     span_expand(&seq->period, &ss->period);
   else if (tnumber_type(ss->temptype))
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
+#if POINTCLOUD
+  else if (tpointcloud_temptype(ss->temptype))
+    tpcbox_expand((TPCBox *) TSEQUENCE_BBOX_PTR(seq),
+      (TPCBox *) TSEQUENCESET_BBOX_PTR(ss));
+#endif
   // TODO Generalize as for tgeogpointseq_expand_stbox
   else /* tspatial_type(ss->temptype) */
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
@@ -505,13 +575,21 @@ tnumberseqarr_set_tbox(TSequence **sequences, int count, TBox *box)
 void
 tseqarr_compute_bbox(TSequence **sequences, int count, void *box)
 {
-  assert(talpha_type(sequences[0]->temptype) || 
+  assert(talpha_type(sequences[0]->temptype) ||
     tnumber_type(sequences[0]->temptype) ||
-    tspatial_type(sequences[0]->temptype));
+    tspatial_type(sequences[0]->temptype)
+#if POINTCLOUD
+    || tpointcloud_temptype(sequences[0]->temptype)
+#endif
+    );
   if (talpha_type(sequences[0]->temptype))
     tseqarr_set_tstzspan(sequences, count, (Span *) box);
   else if (tnumber_type(sequences[0]->temptype))
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(sequences[0]->temptype))
+    tpointcloudseqarr_set_tpcbox(sequences, count, (TPCBox *) box);
+#endif
   else /* tspatial_type(sequences[0]->temptype) */
     tspatialseqarr_set_stbox(sequences, count, (STBox *) box);
   return;

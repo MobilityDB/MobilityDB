@@ -195,17 +195,18 @@ git checkout v1.3
 		<sect2 xml:id="enabling_database">
 			<title>Enabling the Database</title>
 			<para>
-				MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before enabling MobilityDB in the database can be done as follows
-			</para>
-			<programlisting language="sql" xml:space="preserve" format="linespecific">
-CREATE EXTENSION postgis;
-CREATE EXTENSION mobilitydb;
-</programlisting>
-			<para>
-				Alternatively, this can be done in a single command by using <varname>CASCADE</varname>, which installs the required PostGIS extension before installing the MobilityDB extension
+				MobilityDB is an extension whose required companions are determined by the CMake flags it was built with. <varname>postgis</varname> is always required; <varname>pointcloud</varname> is also required when the build was configured with <varname>-DPOINTCLOUD=ON</varname> (the build that ships the temporal pgPointCloud types <varname>tpcpoint</varname> / <varname>tpcpatch</varname>). The generated <filename>mobilitydb.control</filename> file's <varname>requires =</varname> clause is computed from these flags so a single <varname>CASCADE</varname> command resolves the right set:
 			</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE EXTENSION mobilitydb CASCADE;
+</programlisting>
+			<para>
+				On a <varname>POINTCLOUD=ON</varname> install this emits <emphasis>"installing required extension postgis"</emphasis> followed by <emphasis>"installing required extension pointcloud"</emphasis>; on a <varname>POINTCLOUD=OFF</varname> install only PostGIS is pulled in. The optional companion extensions — <varname>pointcloud_postgis</varname>, <varname>mobilitydb_pcl</varname>, <varname>h3</varname>, <varname>h3_postgis</varname> — each declare their own <varname>requires =</varname> clauses, so <varname>CREATE EXTENSION ... CASCADE</varname> on any of them finishes the chain:
+			</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE EXTENSION mobilitydb CASCADE;     -- pulls postgis (+ pointcloud if POINTCLOUD=ON)
+CREATE EXTENSION mobilitydb_pcl;          -- optional: PCL bridge, requires pointcloud + mobilitydb
+CREATE EXTENSION h3_postgis CASCADE;      -- optional: H3 + PostGIS-raster integration
 </programlisting>
 		</sect2>
 		<sect2 xml:id="dependencies">
@@ -477,10 +478,10 @@ SET client_min_messages TO notice;
 	<sect1 xml:id="migrating_1.3">
 		<title>Migrating from Version 1.2 to Version 1.3</title>
 		<para>
-			MobilityDB 1.3 is a major revision with respect to version 1.2. The most important change in version 1.3 was to enable new spatiotemporal types. While version 1.2 defined the spatiotemporal types <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), and <varname>tnpoint</varname> (temporal network point), version 1.3 added the new types <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tpose</varname> (temporal pose), and <varname>trgeometry</varname> (temporal rigid geometry). At a conceptual level, all the spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.
+			MobilityDB 1.3 is a major revision with respect to version 1.2. The most important change in version 1.3 was to enable new spatiotemporal types. While version 1.2 defined the spatiotemporal types <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), and <varname>tnpoint</varname> (temporal network point), version 1.3 added the new types <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tpose</varname> (temporal pose), <varname>trgeometry</varname> (temporal rigid geometry), and the temporal pgPointCloud types <varname>tpcpoint</varname> (a moving LIDAR/GPS sensor over the static <varname>pcpoint</varname> base type) and <varname>tpcpatch</varname> (a time series of compressed point-cluster patches over <varname>pcpatch</varname>). At a conceptual level, all the spatiotemporal types are organized in the hierarchy depicted in <xref linkend="tspatial_fig" />.
 		</para>
 		<para>
-			In order to enable the above, a refactoring of the code base was necessary. All the types provided by version 1.2 in addition to the new types <varname>tgeometry</varname> and <varname>tgeography</varname> are defined as core types and thus, are always included in the building process. Each one of the other spatiotemporal types can be included in the building process by setting its corresponding compilation flag. For example, when adding <varname>-DCBUFFER=1</varname> the types built upon the <varname>cbuffer</varname> base type, that is <varname>cbuffer</varname>, <varname>cbufferset</varname>, and <varname>tcbuffer</varname>, will be included in the building process. The possibility to select the types to be included in the executable program is important in particular for stream processing, due to the limited capability of the edge devices. Please notice that the new types <varname>tcbuffer</varname>, <varname>tpose</varname>, and <varname>trgeometry</varname> are still in development and will be finalized in a forthcoming release.
+			In order to enable the above, a refactoring of the code base was necessary. All the types provided by version 1.2 in addition to the new types <varname>tgeometry</varname> and <varname>tgeography</varname> are defined as core types and thus, are always included in the building process. Each one of the other spatiotemporal types can be included in the building process by setting its corresponding compilation flag. For example, when adding <varname>-DCBUFFER=1</varname> the types built upon the <varname>cbuffer</varname> base type, that is <varname>cbuffer</varname>, <varname>cbufferset</varname>, and <varname>tcbuffer</varname>, will be included in the building process. Similarly, <varname>-DPOINTCLOUD=ON</varname> enables the temporal pgPointCloud types <varname>tpcpoint</varname> and <varname>tpcpatch</varname> together with their set type analogues <varname>pcpointset</varname> / <varname>pcpatchset</varname> and the bounding-box type <varname>tpcbox</varname>; this requires the upstream <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud</ulink> extension to be installed in the database. The possibility to select the types to be included in the executable program is important in particular for stream processing, due to the limited capability of the edge devices. Please notice that the new types <varname>tcbuffer</varname>, <varname>tpose</varname>, <varname>trgeometry</varname>, <varname>tpcpoint</varname>, and <varname>tpcpatch</varname> are still in development and will be finalized in a forthcoming release.
 		</para>
 		<para>
 			In addition, the API of MobilityDB and MEOS was extended with new functionality and streamlined to improve usability. Finally, version 1.3 also enables the latest versions PostgreSQL 18 and PostGIS 3.6.0. For all these reasons, the binary format of the temporal types have changed from version 1.2 to 1.3 and thus a backup and restore is needed for migrating to the newer version 1.3 of MobilityDB.

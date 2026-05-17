@@ -57,6 +57,12 @@
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/meos_schema_hook.h"
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_parser.h"
@@ -198,6 +204,24 @@ basetype_in(const char *str, MeosType type,
       *result = PointerGetDatum(gs);
       return true;
     }
+#if POINTCLOUD
+    case T_PCPOINT:
+    {
+      Pcpoint *pt = pcpoint_parse(&str, end);
+      if (! pt)
+        return false;
+      *result = PointerGetDatum(pt);
+      return true;
+    }
+    case T_PCPATCH:
+    {
+      Pcpatch *pa = pcpatch_parse(&str, end);
+      if (! pa)
+        return false;
+      *result = PointerGetDatum(pa);
+      return true;
+    }
+#endif
 #if CBUFFER
     case T_CBUFFER:
     {
@@ -977,7 +1001,9 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
       strcmp(typestr, "MovingPose") != 0 &&
-      strcmp(typestr, "MovingRigidGeometry") != 0 )
+      strcmp(typestr, "MovingRigidGeometry") != 0 &&
+      strcmp(typestr, "MovingPCPoint") != 0 &&
+      strcmp(typestr, "MovingPCPatch") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string: %s", typestr);
@@ -1065,6 +1091,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TPOSE;
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;
+  else if (strcmp(typestr, "MovingPCPoint") == 0)
+    jtemptype = T_TPCPOINT;
+  else if (strcmp(typestr, "MovingPCPatch") == 0)
+    jtemptype = T_TPCPATCH;
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
@@ -1332,6 +1362,28 @@ text_from_wkb_state(meos_wkb_parse_state *s)
   return result;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Read a pgPointCloud pcpoint or pcpatch varlena and advance the
+ * parse state. The encoding is int32 body length + body bytes; we wrap
+ * the body in a varlena header.
+ */
+static void *
+pcvarlena_from_wkb_state(meos_wkb_parse_state *s)
+{
+  int32_t body_len = int32_from_wkb_state(s);
+  assert(body_len >= (int32_t) sizeof(uint32_t));  /* must include pcid */
+  wkb_parse_state_check(s, (size_t) body_len);
+  /* Allocate a varlena: header + body. */
+  size_t total = VARHDRSZ + (size_t) body_len;
+  void *vl = palloc(total);
+  SET_VARSIZE(vl, total);
+  memcpy(VARDATA(vl), s->pos, (size_t) body_len);
+  s->pos += body_len;
+  return vl;
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************/
 
 /**
@@ -1582,6 +1634,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       /* h3index is a uint64 cell id, wire-format identical to int8. */
       return Int64GetDatum(int64_from_wkb_state(s));
 #endif /* H3 */
+#if POINTCLOUD
+    case T_PCPOINT:
+    case T_PCPATCH:
+      return PointerGetDatum(pcvarlena_from_wkb_state(s));
+#endif /* POINTCLOUD */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));
@@ -2017,6 +2074,50 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
     s->temptype = T_TPOSE;
   }
 #endif /* RGEO */
+
+#if POINTCLOUD
+  /* Absorb an embedded pgPointCloud schema (option-b WKB blobs).
+   * Layout: pcid (int32) + xml_len (int32) + xml_bytes.  When the
+   * receiving backend doesn't already know this pcid, register the
+   * parsed schema + XML so subsequent meos_pc_schema(pcid) lookups
+   * succeed without needing the pointcloud_formats catalog row. */
+  if ((s->temptype == T_TPCPOINT || s->temptype == T_TPCPATCH) &&
+      (wkb_flags & MEOS_WKB_PCSCHEMAFLAG))
+  {
+    int32_t pcid_in = int32_from_wkb_state(s);
+    int32_t xml_len = int32_from_wkb_state(s);
+    assert(xml_len >= 0);
+    wkb_parse_state_check(s, (size_t) xml_len);
+    /* Only parse + register if we don't already have it cached. */
+    if (meos_pc_schema((uint32_t) pcid_in) == NULL)
+    {
+      char *xml = palloc((size_t) xml_len + 1);
+      memcpy(xml, s->pos, (size_t) xml_len);
+      xml[xml_len] = '\0';
+      if (meos_pc_parse_xml_fn == NULL)
+      {
+        pfree(xml);
+        meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+          "WKB blob carries an embedded pgPointCloud schema for pcid=%u "
+          "but no XML-parse hook is installed (call mobilitydb_init)",
+          (uint32_t) pcid_in);
+        return NULL;
+      }
+      PCSCHEMA *parsed = meos_pc_parse_xml_fn((uint32_t) pcid_in, xml);
+      if (! parsed)
+      {
+        pfree(xml);
+        meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+          "Failed to parse embedded pgPointCloud schema XML for pcid=%u",
+          (uint32_t) pcid_in);
+        return NULL;
+      }
+      meos_pc_schema_register_xml((uint32_t) pcid_in, parsed, xml);
+      pfree(xml);
+    }
+    s->pos += xml_len;
+  }
+#endif /* POINTCLOUD */
 
   /* Read the temporal value */
   Temporal *res;

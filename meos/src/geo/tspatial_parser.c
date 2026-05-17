@@ -368,6 +368,7 @@ spatial_parse_elem(const char **str, MeosType temptype, char delim,
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the sequence
  * @param[in,out] temp_srid SRID of the spatiotemporal value
+ * @return Newly-allocated TInstant on success, NULL on parse error
  */
 TInstant *
 tspatialinst_parse(const char **str, MeosType temptype, bool end,
@@ -446,11 +447,12 @@ error:
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
- * no moreinput after the sequence
+ * no more input after the sequence
  * @param[in,out] temp_srid SRID of the spatiotemporal value
+ * @return Newly-allocated TSequence on success, NULL on parse error
  */
 TSequence *
-tspatialseq_cont_parse(const char **str, MeosType temptype, interpType interp, 
+tspatialseq_cont_parse(const char **str, MeosType temptype, interpType interp,
   bool end, int *temp_srid)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));

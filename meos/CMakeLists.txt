@@ -191,6 +191,10 @@ if(H3)
   message(STATUS "Including temporal H3 index objects")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:h3>")
 endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud temporal types")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 
 # PostgreSQL
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")
