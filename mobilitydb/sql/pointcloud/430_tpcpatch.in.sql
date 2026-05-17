@@ -493,3 +493,10 @@ CREATE OPERATOR CLASS tpcpatch_hash_ops
     FUNCTION    1   temporal_hash(tpcpatch);
 
 /*****************************************************************************/
+
+CREATE FUNCTION arrowRoundtrip(tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
