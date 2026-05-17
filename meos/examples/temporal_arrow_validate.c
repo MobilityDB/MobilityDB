@@ -46,8 +46,11 @@
  * Two value-leaf tiers are exercised:
  *
  * - The fully decomposed nested-Struct leaf, represented by the temporal
- *   circular buffer (`Struct{x,y,r}`). This is the tier discharged by the
- *   first conformance probe and is kept here as a control.
+ *   circular buffer (`Struct{x,y,r}`) and the temporal network point
+ *   (`Struct{rid,pos}`, a mixed Int64 + Float64 leaf). The circular buffer
+ *   is the tier discharged by the first conformance probe and is kept here
+ *   as a control; the network point decomposed leaf is validated here for
+ *   the first time.
  * - The opaque LargeBinary leaf and the rigid-geometry struct leaf:
  *   temporal geometry and geography carry their per-instant value as an
  *   opaque int64-offset LargeBinary "Z" leaf; a temporal rigid geometry
@@ -80,6 +83,7 @@
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
 #include <meos_geo.h>
+#include <meos_npoint.h>
 #include <meos_pose.h>
 #include <meos_rgeo.h>
 
@@ -239,6 +243,23 @@ validate_cbuffer(const char *label, const char *in)
 }
 
 /**
+ * @brief Validate one temporal network point value (the fully decomposed
+ * mixed `Struct{rid:Int64, pos:Float64}` value leaf)
+ *
+ * @details The route identifiers used by the literals must exist in the
+ * ways network the standalone MEOS build reads from the installed
+ * `ways1000.csv` (route identifiers 0 to 1000); the relative positions are
+ * fractions in [0, 1]. This exercises a decomposed value leaf whose two
+ * children differ in width and format (Int64 "l" and Float64 "g"), unlike
+ * the homogeneous Float64 children of the circular buffer leaf.
+ */
+static int
+validate_tnpoint(const char *label, const char *in)
+{
+  return validate_temp(label, tnpoint_in(in));
+}
+
+/**
  * @brief Validate one temporal geometry value (opaque int64-offset
  * LargeBinary "Z" value leaf)
  */
@@ -312,6 +333,53 @@ main(void)
     "Cbuffer(Point(2 2),1)@2000-01-02], "
     "[Cbuffer(Point(3 3),1.5)@2000-01-03, "
     "Cbuffer(Point(4 4),2)@2000-01-04]}");
+
+  /* ---- Decomposed tier: temporal network point ----
+   * The value leaf is a mixed Struct{rid:Int64 "l", pos:Float64 "g"}; the
+   * two children differ in width and format, so this independently
+   * exercises the decomposed-Struct value-leaf path for a heterogeneous
+   * leaf (the circular buffer above is a homogeneous Float64 leaf). The
+   * literals mirror the canonical 084_tnpoint_arrow pg_regress coverage:
+   * route identifiers 1, 2, 3 exist in the ways network the standalone
+   * build reads from the installed ways1000.csv, and the positions are
+   * fractions in [0, 1]. A temporal network point supports LINEAR
+   * interpolation (default) and STEP; an exclusive upper bound with STEP
+   * needs the last value repeated, exactly like the circular buffer and
+   * geometry cases. */
+  /* Instant: one pseudo-sequence of one instant. */
+  rc |= validate_tnpoint("tnpoint-instant",
+    "Npoint(1, 0.5)@2000-01-01");
+  /* Single-instant sequence. */
+  rc |= validate_tnpoint("tnpoint-single-instant-seq",
+    "[Npoint(1, 0.5)@2000-01-01]");
+  /* Discrete sequence over distinct routes. */
+  rc |= validate_tnpoint("tnpoint-discrete",
+    "{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02, "
+    "Npoint(3, 0.6)@2000-01-03}");
+  /* Linear sequence with inclusive bounds along one route. */
+  rc |= validate_tnpoint("tnpoint-sequence-linear-inclusive",
+    "[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, "
+    "Npoint(1, 0.5)@2000-01-03]");
+  /* Linear sequence with exclusive bounds (no value repeat needed for
+   * linear interpolation), boundary positions 0 and 1. */
+  rc |= validate_tnpoint("tnpoint-sequence-linear-exclusive",
+    "(Npoint(2, 0.0)@2000-01-01, Npoint(2, 0.5)@2000-01-02, "
+    "Npoint(2, 1.0)@2000-01-03)");
+  /* Step sequence with inclusive bounds (mirrors the canonical 084
+   * coverage; the step rule needs no value repeat for an inclusive upper
+   * bound). */
+  rc |= validate_tnpoint("tnpoint-step-sequence",
+    "Interp=Step;[Npoint(2, 0.2)@2000-01-01, Npoint(2, 0.4)@2000-01-02, "
+    "Npoint(2, 0.7)@2000-01-03]");
+  /* Step sequence with an exclusive upper bound (the step rule needs the
+   * last value repeated). */
+  rc |= validate_tnpoint("tnpoint-step-sequence-exclusive",
+    "Interp=Step;[Npoint(3, 0.2)@2000-01-01, Npoint(3, 0.5)@2000-01-02, "
+    "Npoint(3, 0.5)@2000-01-03)");
+  /* Sequence set. */
+  rc |= validate_tnpoint("tnpoint-sequence-set",
+    "{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02], "
+    "[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.7)@2000-01-05]}");
 
   /* ---- Opaque tier: temporal geometry (LargeBinary "Z" leaf) ----
    * The literals mirror the canonical 024_temporal_arrow pg_regress

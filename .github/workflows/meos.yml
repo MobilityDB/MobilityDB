@@ -114,7 +114,7 @@ jobs:
           ./threaded_test 8 5000
 
   arrow_conformance:
-    name: Arrow C Data Interface conformance (opaque and rigid geometry types)
+    name: Arrow C Data Interface conformance (opaque, rigid geometry and network point types)
     runs-on: ubuntu-latest
 
     steps:
@@ -129,17 +129,20 @@ jobs:
             libjson-c-dev \
             libgsl-dev
 
-      # Build MEOS with the circular buffer, pose and rigid geometry
-      # subsystems so the opaque LargeBinary value leaf (temporal
-      # geometry and geography, both core) and the rigid geometry
-      # Struct{ref:LargeBinary, pose} value leaf are exercised. The
-      # decomposed circular buffer cases are kept as a regression guard.
-      - name: Build MEOS with circular buffers, poses and rigid geometries
+      # Build MEOS with the circular buffer, network point, pose and rigid
+      # geometry subsystems so the opaque LargeBinary value leaf (temporal
+      # geometry and geography, both core), the rigid geometry
+      # Struct{ref:LargeBinary, pose} value leaf and the decomposed network
+      # point Struct{rid,pos} value leaf are exercised. The decomposed
+      # circular buffer cases are kept as a regression guard. The network
+      # point subsystem defaults on but is requested explicitly so the
+      # ways1000.csv route data the standalone build reads is installed.
+      - name: Build MEOS with circular buffers, network points, poses and rigid geometries
         run: |
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
-            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+            -DCBUFFER=on -DNPOINT=on -DPOSE=on -DRGEO=on ..
           make -j $(nproc)
           sudo make install
 
@@ -147,8 +150,8 @@ jobs:
       # amalgamation and run it. nanoarrow imports the MEOS-produced
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree, proving the
-      # opaque and rigid geometry exports are consumable by an external
-      # Arrow engine.
+      # opaque, rigid geometry and network point exports are consumable by
+      # an external Arrow engine.
       - name: Validate the Arrow export with nanoarrow
         run: |
           cd meos/examples
