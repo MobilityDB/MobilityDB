@@ -95,6 +95,11 @@
   #include <meos_rgeo.h>
   #include "rgeo/trgeo_all.h"
 #endif
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 
 /*****************************************************************************
  * Arena ownership: every allocation for one converted value lives in a
@@ -349,6 +354,49 @@ aw_geo_from_wkb(const uint8_t *wkb, size_t wkb_size, bool geodetic)
   return result;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Return the serialized body of a pgPointCloud @p pcpoint or
+ * @p pcpatch value
+ * @details Mirrors @p pcpoint_to_wkb_buf / @p pcpatch_to_wkb_buf: the
+ * canonical encoding is the raw varlena body carried verbatim. The schema
+ * id (@c pcid) is resolved out-of-band against pgPointCloud's
+ * @c pointcloud_formats catalog, so it is not embedded here. Build-portable:
+ * the body is reached with the @c VARSIZE / @c VARDATA varlena macros
+ * available in both the MEOS and the MobilityDB extension builds, with no
+ * libpc dependency in the serialization itself.
+ */
+static uint8_t *
+aw_pc_to_bytes(Datum value, size_t *size)
+{
+  const void *vl = DatumGetPointer(value);
+  size_t body_len = VARSIZE(vl) - VARHDRSZ;
+  uint8_t *result = palloc(body_len ? body_len : 1);
+  if (body_len)
+    memcpy(result, VARDATA(vl), body_len);
+  *size = body_len;
+  return result;
+}
+
+/**
+ * @brief Reconstruct a pgPointCloud @p pcpoint or @p pcpatch varlena from
+ * its serialized body
+ * @details Mirrors @p pcvarlena_from_wkb_state: wrap the carried body bytes
+ * in a fresh varlena header. The receiver resolves @c pcid against the same
+ * @c pointcloud_formats catalog.
+ */
+static void *
+aw_pc_from_bytes(const uint8_t *body, size_t body_len)
+{
+  size_t total = VARHDRSZ + body_len;
+  void *vl = palloc(total);
+  SET_VARSIZE(vl, total);
+  if (body_len)
+    memcpy(VARDATA(vl), body, body_len);
+  return vl;
+}
+#endif /* POINTCLOUD */
+
 /**
  * @brief Build the @p idx-th temporal instant from the decomposed Arrow
  * value column, dispatching the point / circular buffer / pose Struct leaf
@@ -377,6 +425,15 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
   if (vfmt[0] == 'Z')
   {
     size_t len = (size_t) (goff[idx + 1] - goff[idx]);
+#if POINTCLOUD
+    if (vt == T_TPCPOINT || vt == T_TPCPATCH)
+    {
+      void *vl = aw_pc_from_bytes((const uint8_t *) (gdata + goff[idx]), len);
+      TInstant *r = tinstant_make(PointerGetDatum(vl), vt, t);
+      pfree(vl);
+      return r;
+    }
+#endif
     GSERIALIZED *gs = aw_geo_from_wkb((const uint8_t *) (gdata + goff[idx]),
       len, vt == T_TGEOGRAPHY);
     TInstant *r = tinstant_make(PointerGetDatum(gs), vt, t);
@@ -456,9 +513,9 @@ aw_make_instant(const char *vfmt, MeosType vt, const void *vvals,
  * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
  * @note All temporal float, integer, big integer, boolean, text, point
  * (geometry or geography), circular buffer, pose, network point, general
- * geometry or geography, rigid geometry and H3 index subtypes and
- * interpolations are wired; other base types are not yet. The Arrow schema
- * is the full contract.
+ * geometry or geography, rigid geometry, H3 index and point cloud subtypes
+ * and interpolations are wired; other base types are not yet. The Arrow
+ * schema is the full contract.
  */
 bool
 meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
@@ -491,17 +548,24 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
 #if H3
   is_th3index = (temp->temptype == T_TH3INDEX);
 #endif
+  bool is_pcpoint = false, is_pcpatch = false;
+#if POINTCLOUD
+  is_pcpoint = (temp->temptype == T_TPCPOINT);
+  is_pcpatch = (temp->temptype == T_TPCPATCH);
+#endif
+  bool is_pc = is_pcpoint || is_pcpatch;
   if (temp->temptype != T_TFLOAT && temp->temptype != T_TINT &&
       temp->temptype != T_TBIGINT &&
       temp->temptype != T_TBOOL && temp->temptype != T_TTEXT &&
       temp->temptype != T_TGEOMPOINT && temp->temptype != T_TGEOGPOINT &&
       ! is_cbuffer && ! is_pose && ! is_npoint && ! is_geo && ! is_trgeo &&
-      ! is_th3index)
+      ! is_th3index && ! is_pc)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_to_arrow: only temporal float, integer, big integer, "
       "boolean, text, point, circular buffer, pose, network point, general "
-      "geometry or geography, rigid geometry and H3 index are wired");
+      "geometry or geography, rigid geometry, H3 index and point cloud are "
+      "wired");
     return false;
   }
   bool is_tint = (temp->temptype == T_TINT);
@@ -521,9 +585,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
    * Struct{rid,pos}, rigid geometry → Struct{ref (LargeBinary EWKB of the
    * shared reference geometry), then the pose fields}, all the "+s" value
    * leaf; a general geometry or geography → an opaque LargeBinary "Z" leaf
-   * of its EWKB; the scalar tier uses a single primitive leaf. */
+   * of its EWKB; a point cloud point or patch → an opaque LargeBinary "Z"
+   * leaf of its serialized varlena body (named "pcpoint"/"pcpatch" to
+   * discriminate it from the geometry "Z" leaf); the scalar tier uses a
+   * single primitive leaf. */
   const char *vfmt = (is_point || is_cbuffer || is_pose || is_npoint ||
-    is_trgeo) ? "+s" : (is_geo ? "Z" : (is_ttext ? "u" :
+    is_trgeo) ? "+s" : ((is_geo || is_pc) ? "Z" : (is_ttext ? "u" :
     (is_tbool ? "b" : (is_tint ? "i" : (is_tbigint ? "l" :
     (is_th3index ? "L" : "g"))))));
 
@@ -606,7 +673,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     inst_kids[1] = aw_schema_struct(arena_s, "v", rg, nrg);
   }
   else
-    inst_kids[1] = aw_schema_leaf(arena_s, vfmt, "v");
+    inst_kids[1] = aw_schema_leaf(arena_s, vfmt,
+      is_pcpoint ? "pcpoint" : (is_pcpatch ? "pcpatch" : "v"));
   struct ArrowSchema *inst_st =
     aw_schema_struct(arena_s, "item", inst_kids, 2);
   struct ArrowSchema *insts_list = aw_schema_list(arena_s, "insts", inst_st);
@@ -689,7 +757,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   int64_t *tvals = arena_alloc(arena_a, sizeof(int64_t) * (total ? total : 1));
   int vn = total ? total : 1;
   size_t vsz = (is_ttext || is_point || is_cbuffer || is_pose || is_geo ||
-    is_trgeo) ? 1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
+    is_trgeo || is_pc) ? 1 : (is_tbool ? (size_t) ((vn + 7) / 8) :
     (is_tint ? sizeof(int32_t) : ((is_tbigint || is_th3index) ?
     sizeof(int64_t) : sizeof(double))) * (size_t) vn);
   void *vvals = arena_alloc(arena_a, vsz);
@@ -718,13 +786,14 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     arena_alloc(arena_a, sizeof(int64_t) * vn) : NULL;
   double *ppos = is_npoint ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
-  /* General geometry or geography → per-instant EWKB; rigid geometry → the
+  /* General geometry or geography → per-instant EWKB; point cloud point or
+   * patch → the per-instant serialized varlena body; rigid geometry → the
    * shared reference geometry's EWKB replicated per instant (the leaf is
    * per-instant uniform). Collected during the walk, then assembled into an
    * int64-offset LargeBinary column. */
-  uint8_t **gbufs = (is_geo || is_trgeo) ?
+  uint8_t **gbufs = (is_geo || is_trgeo || is_pc) ?
     palloc(sizeof(uint8_t *) * vn) : NULL;
-  size_t *glens = (is_geo || is_trgeo) ?
+  size_t *glens = (is_geo || is_trgeo || is_pc) ?
     palloc(sizeof(size_t) * vn) : NULL;
   /* The rigid-geometry reference is constant across the value: serialize it
    * once and replicate the bytes per instant. */
@@ -790,6 +859,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
       }
       else if (is_geo)
         gbufs[k] = aw_geo_to_wkb(tinstant_value_p(single), &glens[k]);
+      else if (is_pc)
+      {
+#if POINTCLOUD
+        gbufs[k] = aw_pc_to_bytes(tinstant_value_p(single), &glens[k]);
+#endif
+      }
       else if (is_trgeo)
       {
 #if RGEO
@@ -881,6 +956,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
         }
         else if (is_geo)
           gbufs[k] = aw_geo_to_wkb(tinstant_value_p(inst), &glens[k]);
+        else if (is_pc)
+        {
+#if POINTCLOUD
+          gbufs[k] = aw_pc_to_bytes(tinstant_value_p(inst), &glens[k]);
+#endif
+        }
         else if (is_trgeo)
         {
 #if RGEO
@@ -946,11 +1027,12 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   }
 
   /* Assemble the LargeBinary column: int64 offsets (total + 1) then the
-   * concatenated per-instant EWKB bytes. For a rigid geometry this is the
+   * concatenated per-instant bytes (EWKB for a geometry, the serialized
+   * varlena body for a point cloud value). For a rigid geometry this is the
    * reference-geometry "ref" child of the value struct. */
   int64_t *geo_off = NULL;
   char *geo_data = NULL;
-  if (is_geo || is_trgeo)
+  if (is_geo || is_trgeo || is_pc)
   {
     geo_off = arena_alloc(arena_a, sizeof(int64_t) * (total + 1));
     int64_t acc = 0;
@@ -1047,7 +1129,7 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     inst_a_kids[1] = aw_array_struct(arena_a, total, rg, nrg);
   }
   else
-    inst_a_kids[1] = is_geo ?
+    inst_a_kids[1] = (is_geo || is_pc) ?
       aw_array_largebin(arena_a, total, geo_off, geo_data) :
       (is_ttext ? aw_array_utf8(arena_a, total, str_off, str_data) :
       aw_array_prim(arena_a, total, vvals));
@@ -1133,8 +1215,16 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   int16_t flags = ((const int16_t *) array->children[2]->buffers[1])[0];
   int32_t srid = ((const int32_t *) array->children[3]->buffers[1])[0];
   bool v_is_struct = v_sc->format && strcmp(v_sc->format, "+s") == 0;
-  bool v_is_geo = v_sc->format && strcmp(v_sc->format, "Z") == 0;
+  bool v_is_largebin = v_sc->format && strcmp(v_sc->format, "Z") == 0;
   bool v_is_th3index = v_sc->format && strcmp(v_sc->format, "L") == 0;
+  /* A "Z" LargeBinary leaf is a point cloud value when its leaf name is
+   * "pcpoint"/"pcpatch" (the discriminator, symmetric with the struct
+   * child-name discriminators), otherwise a general geometry or geography. */
+  const char *vname = (v_is_largebin && v_sc->name) ? v_sc->name : "";
+  bool v_is_pcpoint = v_is_largebin && strcmp(vname, "pcpoint") == 0;
+  bool v_is_pcpatch = v_is_largebin && strcmp(vname, "pcpatch") == 0;
+  bool v_is_pc = v_is_pcpoint || v_is_pcpatch;
+  bool v_is_geo = v_is_largebin && ! v_is_pc;
   /* Among struct value leaves: first child "rid" → network point; third
    * child "r" → circular buffer, "theta" → 2D pose, "z" → 3D point; a
    * 7-child struct → 3D pose; otherwise a point. */
@@ -1163,16 +1253,25 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
        strcmp(v_sc->format, "i") != 0 && strcmp(v_sc->format, "l") != 0 &&
        strcmp(v_sc->format, "L") != 0 && strcmp(v_sc->format, "b") != 0 &&
        strcmp(v_sc->format, "u") != 0 && strcmp(v_sc->format, "Z") != 0) ||
-      (! v_is_struct && ! v_is_geo && srid != 0) ||
+      (! v_is_struct && ! v_is_largebin && srid != 0) ||
       (subtype != TINSTANT && subtype != TSEQUENCE &&
        subtype != TSEQUENCESET))
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "meos_temporal_from_arrow: only temporal float, integer, big integer, "
       "boolean, text, point, circular buffer, pose, network point, general "
-      "geometry or geography, rigid geometry and H3 index are wired");
+      "geometry or geography, rigid geometry, H3 index and point cloud are "
+      "wired");
     return NULL;
   }
+#if ! POINTCLOUD
+  if (v_is_pc)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_temporal_from_arrow: point cloud support is not built");
+    return NULL;
+  }
+#endif
 #if ! CBUFFER
   if (v_is_cbuffer)
   {
@@ -1214,14 +1313,18 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   }
 #endif
   /* A rigid geometry reconstructs as a temporal pose, then wraps it with
-   * the shared reference geometry; the inner build uses the pose path. */
-  MeosType vt = v_is_trgeo ? T_TPOSE : (v_is_geo ?
+   * the shared reference geometry; the inner build uses the pose path. A
+   * point cloud value reconstructs directly from its serialized varlena
+   * body, the leaf name selecting the temporal point cloud type. */
+  MeosType vt = v_is_trgeo ? T_TPOSE :
+    (v_is_pcpoint ? T_TPCPOINT : (v_is_pcpatch ? T_TPCPATCH :
+    (v_is_geo ?
     (MEOS_FLAGS_GET_GEODETIC(flags) ? T_TGEOGRAPHY : T_TGEOMETRY) :
     ((v_sc->format[0] == 'u') ? T_TTEXT :
     ((v_sc->format[0] == 'b') ? T_TBOOL :
     ((v_sc->format[0] == 'i') ? T_TINT :
     ((v_sc->format[0] == 'l') ? T_TBIGINT :
-    ((v_sc->format[0] == 'L') ? T_TH3INDEX : T_TFLOAT))))));
+    ((v_sc->format[0] == 'L') ? T_TH3INDEX : T_TFLOAT))))))));
   bool geodetic = v_is_point && MEOS_FLAGS_GET_GEODETIC(flags);
 
   const struct ArrowArray *seq_st_a = array->children[4]->children[0];
@@ -1238,9 +1341,9 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     (const int32_t *) inst_st_a->children[1]->buffers[1] : NULL;
   const char *sdata = (v_sc->format[0] == 'u') ?
     (const char *) inst_st_a->children[1]->buffers[2] : NULL;
-  const int64_t *goff = v_is_geo ?
+  const int64_t *goff = v_is_largebin ?
     (const int64_t *) inst_st_a->children[1]->buffers[1] : NULL;
-  const char *gdata = v_is_geo ?
+  const char *gdata = v_is_largebin ?
     (const char *) inst_st_a->children[1]->buffers[2] : NULL;
   const struct ArrowArray *vstruct = inst_st_a->children[1];
   bool v_xy = v_is_struct && ! v_is_npoint && ! v_is_trgeo;
