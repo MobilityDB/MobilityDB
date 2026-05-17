@@ -74,7 +74,9 @@
  * Input/output functions
  *****************************************************************************/
 
-extern char *trgeo_out(const Temporal *temp);
+extern Temporal *trgeometry_in(const char *str);
+extern Temporal *trgeometry_from_mfjson(const char *mfjson);
+extern char *trgeometry_out(const Temporal *temp);
 
 /*****************************************************************************
  * Constructor functions

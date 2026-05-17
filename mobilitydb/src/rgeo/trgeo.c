@@ -111,7 +111,7 @@ Datum
 Trgeometry_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = trgeo_out(temp);
+  char *result = trgeometry_out(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

@@ -137,8 +137,8 @@ ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * representation
  * @param[in] str String
  */
-inline Temporal *
-trgeo_in(const char *str)
+Temporal *
+trgeometry_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
@@ -152,8 +152,8 @@ trgeo_in(const char *str)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
-trgeo_from_mfjson(const char *mfjson)
+Temporal *
+trgeometry_from_mfjson(const char *mfjson)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(mfjson, NULL);
@@ -168,7 +168,7 @@ trgeo_from_mfjson(const char *mfjson)
  * @param[in] temp Temporal rigid geometry
  */
 char *
-trgeo_out(const Temporal *temp)
+trgeometry_out(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
