@@ -112,3 +112,49 @@ jobs:
           export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
           export TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
           ./threaded_test 8 5000
+
+  arrow_conformance:
+    name: Arrow C Data Interface conformance (opaque and rigid geometry types)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+
+      # Build MEOS with the circular buffer, pose and rigid geometry
+      # subsystems so the opaque LargeBinary value leaf (temporal
+      # geometry and geography, both core) and the rigid geometry
+      # Struct{ref:LargeBinary, pose} value leaf are exercised. The
+      # decomposed circular buffer cases are kept as a regression guard.
+      - name: Build MEOS with circular buffers, poses and rigid geometries
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
+            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+          make -j $(nproc)
+          sudo make install
+
+      # Compile the validator with the vendored dependency-free nanoarrow
+      # amalgamation and run it. nanoarrow imports the MEOS-produced
+      # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
+      # C Data Interface validation over the whole nested tree, proving the
+      # opaque and rigid geometry exports are consumable by an external
+      # Arrow engine.
+      - name: Validate the Arrow export with nanoarrow
+        run: |
+          cd meos/examples
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+          gcc -Wall -g -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+            -o temporal_arrow_validate temporal_arrow_validate.c \
+            "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
+            -L/usr/local/lib -lmeos
+          ./temporal_arrow_validate

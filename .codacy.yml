@@ -20,9 +20,10 @@ engines:
       - "postgres/**"
       - "pgtypes/**"
       - "h3-pg/**"
+      - "arrow/**"
+      - "nanoarrow/**"
       - "pointcloud-pg/**"
       - "contrib/**"
-      - "arrow/**"
     config:
       languages:
         - "c"
@@ -35,13 +36,20 @@ engines:
 #                                           generated files.
 #   * arrow/**                            - vendored Apache-2.0 Arrow C
 #                                           Data Interface ABI header.
+#   * nanoarrow/**                        - vendored Apache-2.0 nanoarrow
+#                                           amalgamation used only by the
+#                                           standalone Arrow conformance
+#                                           validator.
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "h3-pg/**"
+  - "scripts/h3pg_import/**"
+  - "arrow/**"
+  - "nanoarrow/**"
   - "pointcloud-pg/**"
   - "contrib/**"
-  - "arrow/**"
   - "meos/test/**"
   - "meos/examples/**"
   # h3-pg is a vendored copy of the Apache-2.0 h3-pg project; its
