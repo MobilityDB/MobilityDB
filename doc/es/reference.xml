@@ -107,6 +107,13 @@
 					<entry><varname></varname></entry>
 					<entry><varname>tnpoint</varname></entry>
 				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
+					<entry><varname>cbufferset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tcbuffer</varname></entry>
+				</row>
 			</tbody>
 			</tgroup>
 		</table>
@@ -1676,6 +1683,292 @@
 
 					<listitem>
 						<para><link linkend="tnpoint_tCentroid"><varname>tCentroid</varname></link>: Centroide temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Operaciones para búferes circulares temporales</title>
+
+		<sect2>
+			<title>Búferes circulares estáticos</title>
+
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer"><varname>cbuffer</varname></link>: Constructor para búferes circulares</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversión de tipos</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_geometry"><varname>cbuffer::geometry</varname>, <varname>geometry::cbuffer</varname></link>: Convertir entre un búfer circular y un punto de geometría</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_stbox"><varname>stbox</varname></link>: Convertir un búfer circular y, opcionalmente, una marca de tiempo o un período, a un cuadro espaciotemporal</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accesores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_point"><varname>point</varname></link>: Devuelve el punto</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_radius"><varname>radius</varname></link>: Devuelve el radio</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_round"><varname>round</varname></link>: Redondear el punto y el radio del búfer circular en el número de lugares decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones espaciales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Búferes circulares temporales</title>
+
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+						<listitem>
+						<para><link linkend="tcbuffer_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname></link>: Devuelve la representación binaria conocida (WKB), la representación extendida binaria conocida (EWKB), o la representación hexadecimal extendida binaria conocida (HexEWKB) como texto</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferFromText"><varname>tcbufferFromText</varname>, <varname>tcbufferFromEWKT</varname></link>: Entrar a partir de la representación de texto conocido (WKT) o de la representación extendida de texto conocido (EWKT)</para>
+					</listitem>
+
+						<listitem>
+						<para><link linkend="tcbufferFromMFJSON"><varname>tcbufferFromMFJSON</varname></link>: Entrar a partir de la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Entrar a partir de la representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_const"><varname>tcbuffer</varname></link>: Constructor para búferes circulares temporales con valor constante</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferSeq"><varname>tcbufferSeq</varname></link>: Constructores para búferes circulares temporales de subtipo secuencia</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferSeqSet"><varname>tcbufferSeqSet</varname>, <varname>tcbufferSeqSetGaps</varname></link>: Constructor para búferes circulares temporales de subtipo conjunto de secuencias</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tfloat_tcbuffer"><varname>tcbuffer</varname></link>: Construir un búfer circular temporal a partir de un punto de geometría temporal y un flotante temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversión de tipos</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_tgeompoint"><varname>tcbuffer::tgeompoint</varname></link>: Convertir un búfer circular temporal a un punto de geometría temporal</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_tfloat"><varname>tcbuffer::tfloat</varname></link>: Convertir un búfer circular temporal a un flotante temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accesores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_getValues"><varname>getValues</varname></link>: Devuelve los valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_points"><varname>points</varname>, <varname>radius</varname></link>: Devuelve los puntos o los radios</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_subtype"><varname>tcbufferInst</varname>, <varname>tcbufferSeq</varname>, <varname>tcbufferSeqSet</varname></link>: Transformar un búfer circular temporal en otro subtipo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_setInterp"><varname>setInterp</varname></link>: Transformar un búfer circular temporal en otra interpolación</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_round"><varname>round</varname></link>: Redondear los puntos y los radios del búfer circular temporal en el número de lugares decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restricciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restringir al (complemento de) un conjunto de valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir al (complemento de) una geometría</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de distancia</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia más cercana entre los dos argumentos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer búfer circular temporal en el que los dos argumentos están a la distancia más cercana</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones espaciales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_traversedArea"><varname>traversedArea</varname></link>: Devuelve el área atravesada por el búfer circular temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de cuadro delimitador</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Operadores topológicos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Relaciones espaciales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_espatialrels"><varname>eContains, eDisjoint, eIntersects, eTouches, eDwithin</varname></link>: Posibles relaciones espaciales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Relaciones espaciotemporales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Comparaciones tradicionales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_ever_always"><varname>?=, &amp;=</varname></link>: Comparaciones alguna vez y siempre</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Comparaciones temporales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Agregaciones</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tCentroid"><varname>tCentroid</varname></link>: Centroide temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
