@@ -43,18 +43,22 @@
  * The export is also self-checked through #meos_temporal_arrow_roundtrip as
  * a control.
  *
- * Two value-leaf tiers are exercised:
+ * Three value-leaf tiers are exercised:
  *
  * - The fully decomposed nested-Struct leaf, represented by the temporal
- *   circular buffer (`Struct{x,y,r}`). This is the tier discharged by the
- *   first conformance probe and is kept here as a control.
+ *   circular buffer (`Struct{x,y,r}`) and the temporal pose. A 2D pose
+ *   decomposes to `Struct{x,y,theta}` (three Float64 children); a 3D pose
+ *   to `Struct{x,y,z,W,X,Y,Z}` (seven Float64 children, the trailing four
+ *   being the orientation quaternion). The circular buffer is kept as the
+ *   control discharged by the first conformance probe; the pose is
+ *   validated here independently for both its 2D and its 3D field set.
  * - The opaque LargeBinary leaf and the rigid-geometry struct leaf:
  *   temporal geometry and geography carry their per-instant value as an
  *   opaque int64-offset LargeBinary "Z" leaf; a temporal rigid geometry
  *   carries a `Struct{ref:LargeBinary, ...pose fields}` whose leading
  *   "ref" child is the shared reference geometry as EWKB. These use a
  *   different value-leaf encoding (LargeBinary + int64 offsets) than the
- *   decomposed tier and are validated here for the first time.
+ *   decomposed tier.
  *
  * @code
  * gcc -Wall -g -I/usr/local/include -Inanoarrow -o temporal_arrow_validate \
@@ -158,6 +162,7 @@ validate_temp(const char *label, Temporal *temp)
   {
     struct ArrowArrayView *v = &view;            /* top struct */
     const char *leafdesc = NULL;
+    char leafbuf[96];
     if (v->n_children == 5)
     {
       struct ArrowArrayView *seqs = v->children[4];        /* seqs list */
@@ -181,7 +186,16 @@ validate_temp(const char *label, Temporal *temp)
                   NANOARROW_TYPE_LARGE_BINARY)
                 leafdesc = "Struct value leaf with LargeBinary ref child";
               else if (vleaf->storage_type == NANOARROW_TYPE_STRUCT)
-                leafdesc = "decomposed Struct value leaf";
+              {
+                /* Report the resolved child count so the pose 2D
+                 * Struct{x,y,theta} (3) and 3D Struct{x,y,z,W,X,Y,Z}
+                 * (7) field sets are visible in the verdict, distinct
+                 * from the circular buffer Struct{x,y,r} (3). */
+                snprintf(leafbuf, sizeof(leafbuf),
+                  "decomposed Struct value leaf (%d children)",
+                  (int) vleaf->n_children);
+                leafdesc = leafbuf;
+              }
             }
           }
         }
@@ -236,6 +250,25 @@ static int
 validate_cbuffer(const char *label, const char *in)
 {
   return validate_temp(label, tcbuffer_in(in));
+}
+
+/**
+ * @brief Validate one temporal pose value (the fully decomposed
+ * nested-Struct value leaf: a 2D pose is `Struct{x,y,theta}`, a 3D pose is
+ * `Struct{x,y,z,W,X,Y,Z}`)
+ *
+ * @details A temporal pose is built the canonical way through its string
+ * input function #tpose_in; the 2D form is `Pose(Point(x y),theta)` and the
+ * 3D form is `Pose(Point Z(x y z),W,X,Y,Z)` with a unit orientation
+ * quaternion. nanoarrow walks into the value-leaf Struct and FULL-validates
+ * its three (2D) or seven (3D) Float64 children, distinct from the circular
+ * buffer `Struct{x,y,r}` representative; the pose field set is exercised
+ * here on its own evidence.
+ */
+static int
+validate_tpose(const char *label, const char *in)
+{
+  return validate_temp(label, tpose_in(in));
 }
 
 /**
@@ -312,6 +345,53 @@ main(void)
     "Cbuffer(Point(2 2),1)@2000-01-02], "
     "[Cbuffer(Point(3 3),1.5)@2000-01-03, "
     "Cbuffer(Point(4 4),2)@2000-01-04]}");
+
+  /* ---- Decomposed tier: temporal pose ----
+   * Validated independently of the circular buffer representative. A 2D
+   * pose decomposes to a Struct{x,y,theta} (three Float64 children); a 3D
+   * pose to a Struct{x,y,z,W,X,Y,Z} (seven Float64 children, the trailing
+   * four being the orientation quaternion). Both field sets are exercised
+   * across instant, sequence (inclusive and exclusive bounds, single
+   * instant, negative theta) and sequence set. The literals mirror the
+   * canonical 103_tpose_arrow pg_regress coverage; a pose is linearly
+   * interpolated, so an exclusive upper bound needs no value repeat. */
+  /* 2D poses: Struct{x,y,theta}. */
+  rc |= validate_tpose("tpose-2d-instant",
+    "Pose(Point(1 1),0.5)@2000-01-01");
+  rc |= validate_tpose("tpose-2d-instant-srid",
+    "SRID=3812;Pose(Point(1 2),1)@2000-01-01");
+  rc |= validate_tpose("tpose-2d-single-instant-seq",
+    "[Pose(Point(1 1),0.2)@2000-01-01]");
+  rc |= validate_tpose("tpose-2d-sequence-inclusive",
+    "[Pose(Point(1 1),0.2)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, "
+    "Pose(Point(3 3),0.9)@2000-01-03]");
+  rc |= validate_tpose("tpose-2d-sequence-exclusive-negatives",
+    "(Pose(Point(-1 -2),-0.5)@2000-01-01, "
+    "Pose(Point(0 0),0)@2000-01-02, "
+    "Pose(Point(3 1),-1.25)@2000-01-03)");
+  rc |= validate_tpose("tpose-2d-discrete",
+    "{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),1)@2000-01-02, "
+    "Pose(Point(1 1),-0.5)@2000-01-03}");
+  rc |= validate_tpose("tpose-2d-sequence-set",
+    "{[Pose(Point(1 1),0.2)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02], "
+    "[Pose(Point(3 3),0.6)@2000-01-04, Pose(Point(4 4),0.8)@2000-01-05]}");
+  /* 3D poses: Struct{x,y,z,W,X,Y,Z} with a unit orientation quaternion. */
+  rc |= validate_tpose("tpose-3d-instant",
+    "Pose(Point Z(1 1 1),0.5,0.5,0.5,0.5)@2000-01-01");
+  rc |= validate_tpose("tpose-3d-instant-srid",
+    "SRID=3812;Pose(Point Z(1 2 3),1,0,0,0)@2000-01-01");
+  rc |= validate_tpose("tpose-3d-single-instant-seq",
+    "[Pose(Point Z(1 1 1),1,0,0,0)@2000-01-01]");
+  rc |= validate_tpose("tpose-3d-sequence-inclusive",
+    "[Pose(Point Z(1 1 1),0.5,0.5,0.5,0.5)@2000-01-01, "
+    "Pose(Point Z(2 2 2),1,0,0,0)@2000-01-02]");
+  rc |= validate_tpose("tpose-3d-discrete",
+    "{Pose(Point Z(1 1 1),1,0,0,0)@2000-01-01, "
+    "Pose(Point Z(2 2 2),0,1,0,0)@2000-01-02}");
+  rc |= validate_tpose("tpose-3d-sequence-set",
+    "{[Pose(Point Z(1 1 1),1,0,0,0)@2000-01-01, "
+    "Pose(Point Z(2 2 2),0,0,0,1)@2000-01-02], "
+    "[Pose(Point Z(3 3 3),0,1,0,0)@2000-01-04]}");
 
   /* ---- Opaque tier: temporal geometry (LargeBinary "Z" leaf) ----
    * The literals mirror the canonical 024_temporal_arrow pg_regress

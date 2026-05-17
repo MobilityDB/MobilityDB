@@ -114,7 +114,7 @@ jobs:
           ./threaded_test 8 5000
 
   arrow_conformance:
-    name: Arrow C Data Interface conformance (opaque and rigid geometry types)
+    name: Arrow C Data Interface conformance (pose, opaque and rigid geometry types)
     runs-on: ubuntu-latest
 
     steps:
@@ -130,10 +130,12 @@ jobs:
             libgsl-dev
 
       # Build MEOS with the circular buffer, pose and rigid geometry
-      # subsystems so the opaque LargeBinary value leaf (temporal
-      # geometry and geography, both core) and the rigid geometry
-      # Struct{ref:LargeBinary, pose} value leaf are exercised. The
-      # decomposed circular buffer cases are kept as a regression guard.
+      # subsystems so the decomposed pose Struct{x,y,theta} (2D) and
+      # Struct{x,y,z,W,X,Y,Z} (3D) value leaf, the opaque LargeBinary
+      # value leaf (temporal geometry and geography, both core) and the
+      # rigid geometry Struct{ref:LargeBinary, pose} value leaf are all
+      # exercised. The decomposed circular buffer cases are kept as a
+      # regression guard.
       - name: Build MEOS with circular buffers, poses and rigid geometries
         run: |
           mkdir build
@@ -147,8 +149,8 @@ jobs:
       # amalgamation and run it. nanoarrow imports the MEOS-produced
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree, proving the
-      # opaque and rigid geometry exports are consumable by an external
-      # Arrow engine.
+      # pose, opaque and rigid geometry exports are consumable by an
+      # external Arrow engine.
       - name: Validate the Arrow export with nanoarrow
         run: |
           cd meos/examples
