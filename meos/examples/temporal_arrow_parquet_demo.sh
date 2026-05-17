@@ -115,10 +115,13 @@ $(ldd -r "$PREFIX/lib/libmeos.so" 2>&1 | grep -c 'undefined symbol' || true) \
 (expected 0)"
 
 # ---- 3. the MEOS-linked Arrow producer (install prefix only)
+# The installed meos_h3.h includes <h3api.h>, so the pinned H3 include
+# directory is added to the compile line, exactly as the #1065
+# conformance recipe adds it to the nanoarrow validator compile line.
 echo "=== building the MEOS-linked Arrow producer ==="
 gcc -Wall -Wextra -fPIC -shared \
   -DCBUFFER=1 -DNPOINT=1 -DPOSE=1 -DRGEO=1 -DH3=1 -DPOINTCLOUD=1 \
-  -I"$PREFIX/include" -I"$REPO_ROOT/pointcloud-pg/lib" \
+  -I"$PREFIX/include" -I"$H3_INC_DIR" -I"$REPO_ROOT/pointcloud-pg/lib" \
   -o "$WORK/libtemporal_arrow_parquet_producer.so" \
   "$EXAMPLES/temporal_arrow_parquet_producer.c" \
   -L"$PREFIX/lib" -lmeos

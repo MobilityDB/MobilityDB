@@ -271,14 +271,17 @@ jobs:
       # #1062 conformance validator builds. The zero-MEOS Python bridge
       # loads it with ctypes so the producer can fill caller-owned
       # ArrowSchema/ArrowArray structs through the conformance-proven
-      # meos_temporal_to_arrow kernel.
+      # meos_temporal_to_arrow kernel. The installed meos_h3.h includes
+      # <h3api.h>, so the pinned H3 include directory is added to the
+      # compile line, exactly as the #1065 conformance recipe adds it to
+      # the nanoarrow validator compile line.
       - name: Build the MEOS-linked Arrow producer
         run: |
           cd meos/examples
           gcc -Wall -Wextra -fPIC -shared \
             -DCBUFFER=1 -DNPOINT=1 -DPOSE=1 -DRGEO=1 -DH3=1 \
             -DPOINTCLOUD=1 \
-            -I/usr/local/include \
+            -I/usr/local/include -I"$H3_INCLUDE_DIR" \
             -I"$GITHUB_WORKSPACE/pointcloud-pg/lib" \
             -o libtemporal_arrow_parquet_producer.so \
             temporal_arrow_parquet_producer.c \
