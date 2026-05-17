@@ -101,6 +101,13 @@
 					<entry><varname>tgeogpoint</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>pose</varname></emphasis></entry>
+					<entry><varname>poseset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tpose</varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
 					<entry><varname>npointset</varname></entry>
 					<entry><varname></varname></entry>
@@ -1421,6 +1428,314 @@
 				</listitem>
 
 			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Operaciones para poses temporales</title>
+
+		<sect2>
+			<title>Poses estáticas</title>
+
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+
+					<listitem>
+						<para><link linkend="pose_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="poseFromText"><varname>poseFromText</varname>, <varname>poseFromEWKT</varname></link>: Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="poseFromBinary"><varname>poseFromBinary</varname>, <varname>poseFromEWKB</varname>, <varname>poseFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose"><varname>pose</varname></link>: Constructores para poses</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversión de tipos</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_stbox"><varname>pose::stbox</varname>, <varname>stbox(pose)</varname></link>: Convertir una pose y, opcionalmente, una marca de tiempo o un período, en una caja espaciotemporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_geometry"><varname>pose::geometry</varname></link>: Convertir una pose en un punto geométrico</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accesores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_point"><varname>point</varname></link>: Devuelve el punto</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_rotation"><varname>rotation</varname></link>: Devuelve la rotación</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_orientation"><varname>orientation</varname></link>: Devuelve la orientación</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_round"><varname>round</varname></link>: Redondear el punto y la orientación de la pose al número de posiciones decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Sistema de referencia espacial</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a un identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_same"><varname>same</varname></link>: Similitud espacial</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Poses temporales</title>
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname></link>: Entrada desde la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB </varname>, <varname>tposeFromHexEWKB</varname></link>: Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_const"><varname>tpose</varname></link>: Constructor para poses temporales a partir de un valor base y un valor de tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeSeq"><varname>tposeSeq</varname></link>: Constructores para poses temporales de subtipo secuencia</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeSeqSet"><varname>tposeSeqSet</varname>, <varname>tposeSeqSetGaps</varname></link>: Constructor para poses temporales de subtipo conjunto de secuencias</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tfloat_tpose"><varname>tpose</varname></link>: Construir una pose temporal 2D a partir de un punto geométrico temporal y un flotante temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversión de tipos</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_tgeompoint"><varname>tpose::tgeompoint</varname></link>: Convertir una pose temporal en un punto geométrico temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accesores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_getValues"><varname>getValues</varname></link>: Devuelve los valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_points"><varname>points</varname></link>: Devuelve los puntos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_rotation"><varname>rotation</varname></link>: Devuelve la rotación</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_subtype"><varname>tposeInst</varname>, <varname>tposeSeq </varname>, <varname>tposeSeqSet</varname></link>: Transformar a otro subtipo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_setInterp"><varname>setInterp</varname></link>: Transformar a otra interpolación</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_round"><varname>round</varname></link>: Redondear los puntos y las orientaciones de la pose temporal al número de posiciones decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Modificaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agregar un instante temporal o una secuencia temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_merge"><varname>merge</varname></link>: Fusionar las poses temporales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restricciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir al (complemento de) un conjunto de valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir al (complemento de) una geometría</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Sistema de referencia espacial</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a un identificador de referencia espacial</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de cuadro delimitador</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Operadores topológicos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de distancia</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_nearestApproachDistance"><varname>|=|</varname></link>: Devuelve la distancia más pequeña alguna vez</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante de la primera pose temporal en el que los dos argumentos están a la distancia más cercana</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_tdistance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Comparaciones tradicionales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_ever_always"><varname>?=, &amp;=</varname></link>: Comparaciones alguna vez y siempre</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Comparaciones temporales</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Agregaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 

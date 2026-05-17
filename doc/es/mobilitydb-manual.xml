@@ -22,6 +22,7 @@
 <!ENTITY temporal_spatial_p2 SYSTEM "temporal_spatial_p2.xml">
 <!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_types_aggregation SYSTEM "temporal_types_aggregation.xml">
+<!ENTITY temporal_poses SYSTEM "temporal_poses.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
@@ -122,6 +123,7 @@
 	&temporal_spatial_p2;
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
+	&temporal_poses;
 	&temporal_network_points;
 	&reference;
 	&data_generator;
