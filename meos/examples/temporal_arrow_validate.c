@@ -43,7 +43,7 @@
  * The export is also self-checked through #meos_temporal_arrow_roundtrip as
  * a control.
  *
- * Two value-leaf tiers are exercised:
+ * Three value-leaf tiers are exercised:
  *
  * - The fully decomposed nested-Struct leaf, represented by the temporal
  *   circular buffer (`Struct{x,y,r}`). This is the tier discharged by the
@@ -54,7 +54,14 @@
  *   carries a `Struct{ref:LargeBinary, ...pose fields}` whose leading
  *   "ref" child is the shared reference geometry as EWKB. These use a
  *   different value-leaf encoding (LargeBinary + int64 offsets) than the
- *   decomposed tier and are validated here for the first time.
+ *   decomposed tier.
+ * - The scalar fixed-width Int64 leaf, represented by the temporal big
+ *   integer (`Int64 "l"`, 8-byte buffer plus validity). This leaf was
+ *   never independently validated by the earlier probes, which predate
+ *   the big integer type, so it is validated here for the first time on
+ *   its own evidence. Only non-sentinel int64 values are used: the type
+ *   maximum is a documented backend-crashing value, exactly as the
+ *   canonical big integer pg_regress coverage deliberately avoids it.
  *
  * @code
  * gcc -Wall -g -I/usr/local/include -Inanoarrow -o temporal_arrow_validate \
@@ -182,6 +189,8 @@ validate_temp(const char *label, Temporal *temp)
                 leafdesc = "Struct value leaf with LargeBinary ref child";
               else if (vleaf->storage_type == NANOARROW_TYPE_STRUCT)
                 leafdesc = "decomposed Struct value leaf";
+              else if (vleaf->storage_type == NANOARROW_TYPE_INT64)
+                leafdesc = "scalar Int64 value leaf";
             }
           }
         }
@@ -236,6 +245,21 @@ static int
 validate_cbuffer(const char *label, const char *in)
 {
   return validate_temp(label, tcbuffer_in(in));
+}
+
+/**
+ * @brief Validate one temporal big integer value (the scalar fixed-width
+ * Int64 "l" value leaf)
+ *
+ * @details The caller passes only non-sentinel int64 values. The type
+ * maximum (`9223372036854775807`, `INT64_MAX`) is a documented
+ * backend-crashing value and is never used here, exactly as the canonical
+ * big integer pg_regress coverage deliberately avoids it.
+ */
+static int
+validate_tbigint(const char *label, const char *in)
+{
+  return validate_temp(label, tbigint_in(in));
 }
 
 /**
@@ -312,6 +336,58 @@ main(void)
     "Cbuffer(Point(2 2),1)@2000-01-02], "
     "[Cbuffer(Point(3 3),1.5)@2000-01-03, "
     "Cbuffer(Point(4 4),2)@2000-01-04]}");
+
+  /* ---- Scalar Int64 tier: temporal big integer ("l" leaf) ----
+   * The big integer value leaf is a scalar fixed-width Int64 buffer plus
+   * validity. The earlier conformance probes predate the big integer type
+   * and never exercised this leaf, so it is validated here on its own
+   * evidence. The literals mirror the canonical 024_temporal_arrow
+   * pg_regress coverage (instant including a large non-sentinel value,
+   * exclusive-bound step sequence repeating the last value, negative
+   * values, single-instant sequence, discrete set, step sequence,
+   * sequence set) and additionally exercise the larger non-sentinel
+   * magnitudes the canonical coverage establishes as safe. The type
+   * maximum 9223372036854775807 (INT64_MAX) is a documented
+   * backend-crashing value and is deliberately never used, exactly as the
+   * canonical pg_regress coverage avoids it; the largest value here is
+   * 9000000000000000000. */
+  /* Instant: one pseudo-sequence of one instant. */
+  rc |= validate_tbigint("tbigint-instant",
+    "42@2000-01-01");
+  /* Instant with a large non-sentinel value (one short of the canonical
+   * large literal; INT64_MAX itself is the backend-crashing sentinel and
+   * is never used). */
+  rc |= validate_tbigint("tbigint-instant-large",
+    "9000000000000000000@2000-01-01");
+  /* Instant with the additional non-sentinel magnitudes. */
+  rc |= validate_tbigint("tbigint-instant-5e9",
+    "5000000000@2000-01-01");
+  rc |= validate_tbigint("tbigint-instant-negative",
+    "-3000000000@2000-01-01");
+  /* Single-instant sequence. */
+  rc |= validate_tbigint("tbigint-single-instant-seq",
+    "[42@2000-01-01]");
+  /* Step sequence with an exclusive upper bound. The big integer type is
+   * discrete and defaults to step interpolation, so an exclusive upper
+   * bound requires the last value to repeat. */
+  rc |= validate_tbigint("tbigint-sequence-exclusive-step",
+    "[1@2000-01-01, 2@2000-01-02, 2@2000-01-03)");
+  /* Closed sequence mixing zero, a negative and a positive value. */
+  rc |= validate_tbigint("tbigint-sequence-negatives",
+    "[0@2000-01-01, -3000000000@2000-01-02, 9000000000000000000@2000-01-03]");
+  /* Discrete sequence (set of instants). */
+  rc |= validate_tbigint("tbigint-discrete",
+    "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}");
+  /* Step sequence. */
+  rc |= validate_tbigint("tbigint-step-sequence",
+    "Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]");
+  /* Sequence set. */
+  rc |= validate_tbigint("tbigint-sequence-set",
+    "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}");
+  /* Sequence set spanning large non-sentinel magnitudes. */
+  rc |= validate_tbigint("tbigint-sequence-set-large",
+    "{[5000000000@2000-01-01, 5000000000@2000-01-02], "
+    "[9000000000000000000@2000-01-03, 9000000000000000000@2000-01-04]}");
 
   /* ---- Opaque tier: temporal geometry (LargeBinary "Z" leaf) ----
    * The literals mirror the canonical 024_temporal_arrow pg_regress
