@@ -112,3 +112,45 @@ jobs:
           export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
           export TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
           ./threaded_test 8 5000
+
+  arrow_conformance:
+    name: Arrow C Data Interface conformance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+
+      # Build MEOS with the circular buffer subsystem so the temporal
+      # circular buffer Arrow export (the fully decomposed nested-Struct
+      # value leaf) is exercised.
+      - name: Build MEOS with circular buffers
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on ..
+          make -j $(nproc)
+          sudo make install
+
+      # Compile the validator with the vendored dependency-free nanoarrow
+      # amalgamation and run it. nanoarrow imports the MEOS-produced
+      # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
+      # C Data Interface validation over the whole nested tree, proving the
+      # export is consumable by an external Arrow engine.
+      - name: Validate the Arrow export with nanoarrow
+        run: |
+          cd meos/examples
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+          gcc -Wall -g -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+            -o temporal_arrow_validate temporal_arrow_validate.c \
+            "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
+            -L/usr/local/lib -lmeos
+          ./temporal_arrow_validate

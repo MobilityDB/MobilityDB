@@ -380,8 +380,13 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
 
   /* Schema: the full nested contract. The value leaf "g" is the only part
-   * that varies by base type; everything else is fixed structure. */
-  struct ArrowSchema *inst_kids[2];
+   * that varies by base type; everything else is fixed structure. The
+   * struct children arrays are arena-allocated (not stack arrays): the
+   * consumer walks the schema after this function returns, so a struct
+   * node's children pointer must outlive the call (mirrors the array-side
+   * inst_a_kids/seq_a_kids and the schema-side top_sc below). */
+  struct ArrowSchema **inst_kids =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 2);
   inst_kids[0] = aw_schema_leaf(arena_s, "tsu:UTC", "t");
   if (is_point)
   {
@@ -409,7 +414,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     aw_schema_struct(arena_s, "item", inst_kids, 2);
   struct ArrowSchema *insts_list = aw_schema_list(arena_s, "insts", inst_st);
 
-  struct ArrowSchema *seq_kids[3];
+  struct ArrowSchema **seq_kids =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 3);
   seq_kids[0] = aw_schema_leaf(arena_s, "b", "lower_inc");
   seq_kids[1] = aw_schema_leaf(arena_s, "b", "upper_inc");
   seq_kids[2] = insts_list;
