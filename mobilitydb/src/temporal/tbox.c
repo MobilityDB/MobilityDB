@@ -1237,3 +1237,21 @@ Tbox_hash_extended(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Round-trip a temporal box through the Arrow C Data Interface,
+ * returning the reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Tbox_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  TBox *result = meos_tbox_arrow_roundtrip(box);
+  PG_RETURN_TBOX_P(result);
+}
+
+/*****************************************************************************/

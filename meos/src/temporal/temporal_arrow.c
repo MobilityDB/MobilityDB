@@ -2456,4 +2456,415 @@ meos_spanset_arrow_roundtrip(const SpanSet *ss)
   return result;
 }
 
+/*****************************************************************************
+ * Conversion of the product-domain finite-subset closure types (tbox, stbox)
+ * into the Arrow C Data Interface
+ *
+ * @details A box is a finite rectangular subset of a product (multi
+ * dimensional) domain: a temporal box of the time x value domain, a
+ * spatiotemporal box of the space x time domain. A box is literally a
+ * product of spans, so the Arrow encoding composes the SAME span Struct used
+ * by #meos_span_to_arrow and #meos_spanset_to_arrow (the @p aw_span_struct /
+ * @p aw_span_from_struct pair): there is exactly one span schema, shared
+ * between a span as a value and a span as a box component. The skeletons
+ * mirror the canonical @c TBox / @c STBox C structs verbatim:
+ * @code
+ * tbox  Struct{ flags:int16,
+ *               period: span-Struct(tstz)   -- present iff the T flag,
+ *               span:   span-Struct(value)  -- present iff the X flag }
+ * stbox Struct{ flags:int16, srid:int32,
+ *               period: span-Struct(tstz)              -- iff the T flag,
+ *               x: Struct{ xmin:float64, xmax:float64 } -- iff the X flag,
+ *               y: Struct{ ymin:float64, ymax:float64 } -- iff the X flag,
+ *               z: Struct{ zmin:float64, zmax:float64 } -- iff the Z flag }
+ * @endcode
+ * The int16 MEOS flags word is carried verbatim, exactly as the temporal and
+ * the set encodings do; it is the authoritative discriminator on read (the
+ * geometry-vs-geography / geodetic distinction of an stbox is recovered from
+ * it). Dimension presence is flag driven: an absent flag-gated dimension is
+ * an OMITTED child (the @p n_children varies), the same canonical optionality
+ * pattern the temporal point leaf uses to encode 2D versus 3D by child count
+ * rather than an Arrow-level null. The spatial extent of an stbox is the raw
+ * minimum and maximum doubles of the canonical struct with no per-axis
+ * inclusivity, so it is mirrored as a plain @c Struct{min,max} and is NOT
+ * forced through the span Struct (an stbox carries no spatial inclusivity).
+ * Every children array is arena allocated so the schema outlives the call.
+ *****************************************************************************/
+
+/**
+ * @brief Build a plain @c Struct{min:float64, max:float64} schema/array pair
+ * for one spatial axis of an stbox (the raw extremal doubles of the
+ * canonical @c STBox struct, with no inclusivity)
+ */
+static void
+aw_axis_struct(ArrowArena *arena_s, ArrowArena *arena_a, const char *name,
+  double mn, double mx, struct ArrowSchema **sc_out,
+  struct ArrowArray **a_out)
+{
+  struct ArrowSchema **kids =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 2);
+  kids[0] = aw_schema_leaf(arena_s, "g", "min");
+  kids[1] = aw_schema_leaf(arena_s, "g", "max");
+  *sc_out = aw_schema_struct(arena_s, name, kids, 2);
+  double *mn_b = arena_alloc(arena_a, sizeof(double));
+  double *mx_b = arena_alloc(arena_a, sizeof(double));
+  mn_b[0] = mn;
+  mx_b[0] = mx;
+  struct ArrowArray **akids =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 2);
+  akids[0] = aw_array_prim(arena_a, 1, mn_b);
+  akids[1] = aw_array_prim(arena_a, 1, mx_b);
+  *a_out = aw_array_struct(arena_a, 1, akids, 2);
+}
+
+/**
+ * @brief Read back the @c min and @c max doubles of one stbox spatial axis
+ * (the inverse of #aw_axis_struct)
+ */
+static void
+aw_axis_read(const struct ArrowArray *a, double *mn, double *mx)
+{
+  *mn = ((const double *) a->children[0]->buffers[1])[0];
+  *mx = ((const double *) a->children[1]->buffers[1])[0];
+}
+
+/**
+ * @brief Assemble one span as a named child Struct, reusing the canonical
+ * #aw_span_struct shared builder verbatim (the single span schema used by
+ * #meos_span_to_arrow and #meos_spanset_to_arrow)
+ */
+static void
+aw_span_child(ArrowArena *arena_s, ArrowArena *arena_a, const char *name,
+  const Span *sp, struct ArrowSchema **sc_out, struct ArrowArray **a_out)
+{
+  MeosType basetype = spantype_basetype((MeosType) sp->spantype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  struct ArrowSchema **sp_sc;
+  struct ArrowArray **sp_a;
+  int64_t nsp, nspa;
+  aw_span_struct(arena_s, arena_a, sp, vfmt, &sp_sc, &nsp, &sp_a, &nspa);
+  *sc_out = aw_schema_struct(arena_s, name, sp_sc, nsp);
+  *a_out = aw_array_struct(arena_a, 1, sp_a, nspa);
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a temporal box into Arrow C Data Interface structures
+ * @param[in] box Temporal box
+ * @param[out] out_schema,out_array Caller-allocated Arrow structures filled
+ * by the producer; release with their @p release callbacks
+ * @return True on success; on a null argument raises
+ * @p MEOS_ERR_INVALID_ARG and returns false
+ */
+bool
+meos_tbox_to_arrow(const TBox *box, struct ArrowSchema *out_schema,
+  struct ArrowArray *out_array)
+{
+  if (! box || ! out_schema || ! out_array)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to tbox_to_arrow");
+    return false;
+  }
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  ArrowArena *arena_s = palloc0(sizeof(ArrowArena));
+  ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
+
+  /* The flags word is carried verbatim and is the authoritative
+   * discriminator on read, exactly as the temporal and set encodings do. */
+  struct ArrowSchema **top_sc =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 3);
+  struct ArrowArray **top_a =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 3);
+  int64_t nc = 0;
+  top_sc[nc] = aw_schema_leaf(arena_s, "s", "flags");
+  int16_t *flags_b = arena_alloc(arena_a, sizeof(int16_t));
+  flags_b[0] = (int16_t) box->flags;
+  top_a[nc] = aw_array_prim(arena_a, 1, flags_b);
+  nc++;
+  /* period (a tstz Span) present iff the T flag, span (a number Span)
+   * present iff the X flag: the canonical flag-driven optionality. Each
+   * reuses the shared span Struct builder verbatim. */
+  if (hast)
+  {
+    aw_span_child(arena_s, arena_a, "period", &box->period,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+  }
+  if (hasx)
+  {
+    aw_span_child(arena_s, arena_a, "span", &box->span,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+  }
+  out_schema->format = "+s";
+  out_schema->name = NULL;
+  out_schema->metadata = NULL;
+  out_schema->flags = 0;
+  out_schema->n_children = nc;
+  out_schema->children = top_sc;
+  out_schema->dictionary = NULL;
+  out_schema->private_data = arena_s;
+  out_schema->release = root_schema_release;
+  out_array->length = 1;
+  out_array->null_count = 0;
+  out_array->offset = 0;
+  out_array->n_buffers = 1;
+  out_array->n_children = nc;
+  out_array->buffers = arena_alloc(arena_a, sizeof(void *) * 1);
+  out_array->buffers[0] = NULL;
+  out_array->children = top_a;
+  out_array->dictionary = NULL;
+  out_array->private_data = arena_a;
+  out_array->release = root_array_release;
+  return true;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Reconstruct a temporal box from Arrow C Data Interface structures
+ * @param[in] schema,array Arrow structures produced by #meos_tbox_to_arrow
+ * @return New temporal box, or NULL on an unsupported layout (raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED)
+ */
+TBox *
+meos_tbox_from_arrow(const struct ArrowSchema *schema,
+  const struct ArrowArray *array)
+{
+  if (! schema || ! array || ! schema->format ||
+      strcmp(schema->format, "+s") != 0 || schema->n_children < 1 ||
+      array->n_children != schema->n_children || array->length != 1 ||
+      ! schema->children[0]->name ||
+      strcmp(schema->children[0]->name, "flags") != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_tbox_from_arrow: unsupported Arrow layout");
+    return NULL;
+  }
+  int16_t flags = ((const int16_t *) array->children[0]->buffers[1])[0];
+  bool hast = MEOS_FLAGS_GET_T(flags);
+  bool hasx = MEOS_FLAGS_GET_X(flags);
+  Span period, span;
+  int idx = 1;
+  if (hast)
+  {
+    Span *p = aw_span_from_struct(schema->children[idx], array->children[idx]);
+    if (! p)
+      return NULL;
+    period = *p;
+    pfree(p);
+    idx++;
+  }
+  if (hasx)
+  {
+    Span *s = aw_span_from_struct(schema->children[idx], array->children[idx]);
+    if (! s)
+      return NULL;
+    span = *s;
+    pfree(s);
+    idx++;
+  }
+  /* tbox_make is the canonical constructor; a null component is the
+   * canonical way to express an absent dimension. */
+  return tbox_make(hasx ? &span : NULL, hast ? &period : NULL);
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Round-trip a temporal box through the Arrow C Data Interface
+ * @param[in] box Temporal box
+ * @return New temporal box equal to @p box, or @p NULL on failure
+ */
+TBox *
+meos_tbox_arrow_roundtrip(const TBox *box)
+{
+  struct ArrowSchema schema = {0};
+  struct ArrowArray array = {0};
+  if (! meos_tbox_to_arrow(box, &schema, &array))
+    return NULL;
+  TBox *result = meos_tbox_from_arrow(&schema, &array);
+  if (schema.release)
+    schema.release(&schema);
+  if (array.release)
+    array.release(&array);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a spatiotemporal box into Arrow C Data Interface structures
+ * @param[in] box Spatiotemporal box
+ * @param[out] out_schema,out_array Caller-allocated Arrow structures filled
+ * by the producer; release with their @p release callbacks
+ * @return True on success; on a null argument raises
+ * @p MEOS_ERR_INVALID_ARG and returns false
+ */
+bool
+meos_stbox_to_arrow(const STBox *box, struct ArrowSchema *out_schema,
+  struct ArrowArray *out_array)
+{
+  if (! box || ! out_schema || ! out_array)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to stbox_to_arrow");
+    return false;
+  }
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  ArrowArena *arena_s = palloc0(sizeof(ArrowArena));
+  ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
+
+  /* flags and srid are always present, mirroring the canonical STBox struct
+   * (the int16 flags word carried verbatim, the int32 srid slot exactly as
+   * the temporal encoding's srid slot). The geodetic / geometry distinction
+   * is recovered from the verbatim flags word on read. */
+  struct ArrowSchema **top_sc =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 6);
+  struct ArrowArray **top_a =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 6);
+  int64_t nc = 0;
+  top_sc[nc] = aw_schema_leaf(arena_s, "s", "flags");
+  int16_t *flags_b = arena_alloc(arena_a, sizeof(int16_t));
+  flags_b[0] = (int16_t) box->flags;
+  top_a[nc] = aw_array_prim(arena_a, 1, flags_b);
+  nc++;
+  top_sc[nc] = aw_schema_leaf(arena_s, "i", "srid");
+  int32_t *srid_b = arena_alloc(arena_a, sizeof(int32_t));
+  srid_b[0] = (int32_t) box->srid;
+  top_a[nc] = aw_array_prim(arena_a, 1, srid_b);
+  nc++;
+  /* period present iff the T flag; the x and y axes iff the X flag; the z
+   * axis iff the Z flag (the canonical STBox flag-driven optionality). The
+   * period reuses the shared span Struct builder verbatim; the spatial axes
+   * are the raw extremal doubles with no inclusivity. */
+  if (hast)
+  {
+    aw_span_child(arena_s, arena_a, "period", &box->period,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+  }
+  if (hasx)
+  {
+    aw_axis_struct(arena_s, arena_a, "x", box->xmin, box->xmax,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+    aw_axis_struct(arena_s, arena_a, "y", box->ymin, box->ymax,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+  }
+  if (hasz)
+  {
+    aw_axis_struct(arena_s, arena_a, "z", box->zmin, box->zmax,
+      &top_sc[nc], &top_a[nc]);
+    nc++;
+  }
+  out_schema->format = "+s";
+  out_schema->name = NULL;
+  out_schema->metadata = NULL;
+  out_schema->flags = 0;
+  out_schema->n_children = nc;
+  out_schema->children = top_sc;
+  out_schema->dictionary = NULL;
+  out_schema->private_data = arena_s;
+  out_schema->release = root_schema_release;
+  out_array->length = 1;
+  out_array->null_count = 0;
+  out_array->offset = 0;
+  out_array->n_buffers = 1;
+  out_array->n_children = nc;
+  out_array->buffers = arena_alloc(arena_a, sizeof(void *) * 1);
+  out_array->buffers[0] = NULL;
+  out_array->children = top_a;
+  out_array->dictionary = NULL;
+  out_array->private_data = arena_a;
+  out_array->release = root_array_release;
+  return true;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Reconstruct a spatiotemporal box from Arrow C Data Interface
+ * structures
+ * @param[in] schema,array Arrow structures produced by #meos_stbox_to_arrow
+ * @return New spatiotemporal box, or NULL on an unsupported layout (raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED)
+ */
+STBox *
+meos_stbox_from_arrow(const struct ArrowSchema *schema,
+  const struct ArrowArray *array)
+{
+  if (! schema || ! array || ! schema->format ||
+      strcmp(schema->format, "+s") != 0 || schema->n_children < 2 ||
+      array->n_children != schema->n_children || array->length != 1 ||
+      ! schema->children[0]->name ||
+      strcmp(schema->children[0]->name, "flags") != 0 ||
+      ! schema->children[1]->name ||
+      strcmp(schema->children[1]->name, "srid") != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_stbox_from_arrow: unsupported Arrow layout");
+    return NULL;
+  }
+  int16_t flags = ((const int16_t *) array->children[0]->buffers[1])[0];
+  int32_t srid = ((const int32_t *) array->children[1]->buffers[1])[0];
+  bool hast = MEOS_FLAGS_GET_T(flags);
+  bool hasx = MEOS_FLAGS_GET_X(flags);
+  bool hasz = MEOS_FLAGS_GET_Z(flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(flags);
+  Span period;
+  bool have_period = false;
+  double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
+  int idx = 2;
+  if (hast)
+  {
+    Span *p = aw_span_from_struct(schema->children[idx], array->children[idx]);
+    if (! p)
+      return NULL;
+    period = *p;
+    pfree(p);
+    have_period = true;
+    idx++;
+  }
+  if (hasx)
+  {
+    aw_axis_read(array->children[idx], &xmin, &xmax);
+    idx++;
+    aw_axis_read(array->children[idx], &ymin, &ymax);
+    idx++;
+  }
+  if (hasz)
+  {
+    aw_axis_read(array->children[idx], &zmin, &zmax);
+    idx++;
+  }
+  /* stbox_make is the canonical constructor: the verbatim flags word drives
+   * hasx / hasz / geodetic and the raw spatial extent and srid are passed
+   * through unchanged. */
+  return stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, have_period ? &period : NULL);
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Round-trip a spatiotemporal box through the Arrow C Data Interface
+ * @param[in] box Spatiotemporal box
+ * @return New spatiotemporal box equal to @p box, or @p NULL on failure
+ */
+STBox *
+meos_stbox_arrow_roundtrip(const STBox *box)
+{
+  struct ArrowSchema schema = {0};
+  struct ArrowArray array = {0};
+  if (! meos_stbox_to_arrow(box, &schema, &array))
+    return NULL;
+  STBox *result = meos_stbox_from_arrow(&schema, &array);
+  if (schema.release)
+    schema.release(&schema);
+  if (array.release)
+    array.release(&array);
+  return result;
+}
+
 /*****************************************************************************/

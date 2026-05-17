@@ -1791,3 +1791,21 @@ Stbox_hash_extended(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_geo_box_conversion
+ * @brief Round-trip a spatiotemporal box through the Arrow C Data Interface,
+ * returning the reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Stbox_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  STBox *result = meos_stbox_arrow_roundtrip(box);
+  PG_RETURN_STBOX_P(result);
+}
+
+/*****************************************************************************/

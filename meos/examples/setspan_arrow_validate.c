@@ -29,13 +29,16 @@
 
 /**
  * @file
- * @brief Validate the MEOS set, span and span set Arrow C Data Interface
- * export against a canonical external Arrow consumer
+ * @brief Validate the MEOS closure-type Arrow C Data Interface export
+ * against a canonical external Arrow consumer
  *
- * @details set, span and spanset are the MEOS closure types (finite subsets
- * of an infinite base domain). This builds one value of every set, span and
- * span set base type, converts each through #meos_set_to_arrow /
- * #meos_span_to_arrow / #meos_spanset_to_arrow, and hands the produced
+ * @details set, span and spanset are the MEOS closure types over a single
+ * infinite base domain; tbox and stbox are the closure types over a product
+ * (multi dimensional) domain (a box is literally a product of spans). This
+ * builds one value of every set, span, span set, temporal box and
+ * spatiotemporal box variant, converts each through #meos_set_to_arrow /
+ * #meos_span_to_arrow / #meos_spanset_to_arrow / #meos_tbox_to_arrow /
+ * #meos_stbox_to_arrow, and hands the produced
  * `ArrowSchema`/`ArrowArray` to nanoarrow, a small dependency-free
  * implementation of the Arrow C Data Interface. nanoarrow imports the schema
  * and array with no MEOS knowledge and runs full specification validation
@@ -190,6 +193,62 @@ validate_ss(const char *label, SpanSet *s,
   free(s);
 }
 
+static void
+validate_tbox(const char *label, TBox *box)
+{
+  if (! box) { printf("[%s] FAIL: input NULL\n", label); g_rc = 1; return; }
+  struct ArrowSchema schema;
+  struct ArrowArray array;
+  if (! meos_tbox_to_arrow(box, &schema, &array))
+  { printf("[%s] FAIL: meos_tbox_to_arrow\n", label); g_rc = 1;
+    free(box); return; }
+  int rc = nano_validate(label, &schema, &array);
+  TBox *back = meos_tbox_arrow_roundtrip(box);
+  if (! back) { printf("[%s] FAIL: roundtrip NULL\n", label); rc = 1; }
+  else
+  {
+    char *a = tbox_out(box, 15); char *b = tbox_out(back, 15);
+    if (strcmp(a, b) != 0)
+    { printf("[%s] FAIL: self round-trip mismatch\n  in : %s\n  out: %s\n",
+        label, a, b); rc = 1; }
+    free(a); free(b); free(back);
+  }
+  if (rc == 0)
+    printf("[%s] PASS: nanoarrow FULL-validate + self round-trip\n", label);
+  g_rc |= rc;
+  schema.release(&schema);
+  array.release(&array);
+  free(box);
+}
+
+static void
+validate_stbox(const char *label, STBox *box)
+{
+  if (! box) { printf("[%s] FAIL: input NULL\n", label); g_rc = 1; return; }
+  struct ArrowSchema schema;
+  struct ArrowArray array;
+  if (! meos_stbox_to_arrow(box, &schema, &array))
+  { printf("[%s] FAIL: meos_stbox_to_arrow\n", label); g_rc = 1;
+    free(box); return; }
+  int rc = nano_validate(label, &schema, &array);
+  STBox *back = meos_stbox_arrow_roundtrip(box);
+  if (! back) { printf("[%s] FAIL: roundtrip NULL\n", label); rc = 1; }
+  else
+  {
+    char *a = stbox_out(box, 15); char *b = stbox_out(back, 15);
+    if (strcmp(a, b) != 0)
+    { printf("[%s] FAIL: self round-trip mismatch\n  in : %s\n  out: %s\n",
+        label, a, b); rc = 1; }
+    free(a); free(b); free(back);
+  }
+  if (rc == 0)
+    printf("[%s] PASS: nanoarrow FULL-validate + self round-trip\n", label);
+  g_rc |= rc;
+  schema.release(&schema);
+  array.release(&array);
+  free(box);
+}
+
 static char *p_fset(const Set *s)     { return floatset_out(s, 15); }
 static char *p_fspan(const Span *s)   { return floatspan_out(s, 15); }
 static char *p_fss(const SpanSet *s)  { return floatspanset_out(s, 15); }
@@ -246,6 +305,35 @@ main(void)
     tstzspanset_in("{[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00), "
       "[2000-03-01 00:00:00+00, 2000-04-01 00:00:00+00)}"),
     tstzspanset_out);
+
+  /* Temporal boxes: time x value product domain, flag-gated dimensions
+   * (X int, X float, T only, XT int, XT float) */
+  validate_tbox("tbox-int-xt",
+    tbox_in("TBOXINT XT([1,10),[2000-01-01,2000-01-05])"));
+  validate_tbox("tbox-float-xt",
+    tbox_in("TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))"));
+  validate_tbox("tbox-int-x", tbox_in("TBOXINT X([1,10))"));
+  validate_tbox("tbox-float-x", tbox_in("TBOXFLOAT X([1.5,9.75])"));
+  validate_tbox("tbox-t", tbox_in("TBOX T([2000-01-01,2000-01-05])"));
+
+  /* Spatiotemporal boxes: space x time product domain, flag-gated
+   * dimensions (X 2D, Z 3D, T only, XT, ZT, SRID, geodetic) */
+  validate_stbox("stbox-x", stbox_in("STBOX X((1,1),(2,2))"));
+  validate_stbox("stbox-z", stbox_in("STBOX Z((1,1,1),(2,2,2))"));
+  validate_stbox("stbox-t", stbox_in("STBOX T([2000-01-01,2000-01-05])"));
+  validate_stbox("stbox-xt",
+    stbox_in("STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])"));
+  validate_stbox("stbox-zt",
+    stbox_in("STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])"));
+  validate_stbox("stbox-srid",
+    stbox_in("SRID=5676;STBOX X((1,1),(2,2))"));
+  validate_stbox("stbox-geod-t",
+    stbox_in("GEODSTBOX T([2000-01-01,2000-01-02])"));
+  validate_stbox("stbox-geod-x",
+    stbox_in("GEODSTBOX X((1,1),(1,1))"));
+  validate_stbox("stbox-geod-srid-xt",
+    stbox_in("SRID=4326;GEODSTBOX XT(((1,1),(5,5)),"
+      "[2000-01-01,2000-01-05])"));
 
   meos_finalize();
   printf("\n%s\n", g_rc == 0 ? "OVERALL PASS" : "OVERALL FAIL");

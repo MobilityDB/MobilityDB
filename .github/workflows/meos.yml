@@ -114,7 +114,7 @@ jobs:
           ./threaded_test 8 5000
 
   setspan_arrow_conformance:
-    name: Set span spanset Arrow C Data Interface conformance
+    name: Closure-type Arrow C Data Interface conformance
     runs-on: ubuntu-latest
 
     steps:
@@ -129,9 +129,9 @@ jobs:
             libjson-c-dev \
             libgsl-dev
 
-      # The set, span and span set Arrow export needs only the always-built
-      # core; the geometry and geography set base types use the geo
-      # subsystem, which is always compiled.
+      # The set, span, span set, tbox and stbox Arrow export needs only the
+      # always-built core; the geometry and geography set base types and the
+      # spatiotemporal box use the geo subsystem, which is always compiled.
       - name: Build MEOS
         run: |
           mkdir build
@@ -144,9 +144,9 @@ jobs:
       # amalgamation and run it. nanoarrow imports the MEOS-produced
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree of every set,
-      # span and span set base type, proving the closure-type export is
-      # consumable by an external Arrow engine.
-      - name: Validate the set span spanset Arrow export with nanoarrow
+      # span, span set, temporal box and spatiotemporal box variant, proving
+      # the closure-type export is consumable by an external Arrow engine.
+      - name: Validate the closure-type Arrow export with nanoarrow
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib

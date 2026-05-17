@@ -91,6 +91,11 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Stbox_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION arrowRoundtrip(stbox)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/
