@@ -77,7 +77,7 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
-  Datum trav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
+  Datum trav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
   Datum result;
   if (numparam == 2)
   {
@@ -116,7 +116,7 @@ spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum dgeo = PointerGetDatum(gs);
-  Datum dtrav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
+  Datum dtrav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
   Datum result;
   if (numparam == 2)
   {
@@ -154,7 +154,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
     geom_contains(gs, trav);
   pfree(trav);
@@ -208,8 +208,8 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeo_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeo_traversed_area(temp2, UNARY_UNION_NO);
+  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
+  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(trav1, trav2, "T********") :
     geom_contains(trav1, trav2);
   pfree(trav1); pfree(trav2);
@@ -229,7 +229,7 @@ ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
     geom_contains(trav, gs);
   pfree(trav);
@@ -259,7 +259,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
     geom_covers(gs, trav);
   pfree(trav);
@@ -323,7 +323,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
     geom_covers(trav, gs);
   pfree(trav);
@@ -377,8 +377,8 @@ ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeo_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeo_traversed_area(temp2, UNARY_UNION_NO);
+  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
+  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(trav1, trav2, "T********") :
     geom_covers(trav1, trav2);
   pfree(trav1); pfree(trav2);
@@ -673,8 +673,8 @@ ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeo_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeo_traversed_area(temp2, UNARY_UNION_NO);
+  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
+  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
   bool result = geom_touches(trav1, trav2);
   (void) ever;
   pfree(trav1); pfree(trav2);

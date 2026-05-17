@@ -64,7 +64,7 @@
  * @csqlfn #Trgeometry_traversed_area()
  */
 GSERIALIZED *
-trgeo_traversed_area(const Temporal *temp, bool unary_union)
+trgeometry_traversed_area(const Temporal *temp, bool unary_union)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -109,7 +109,7 @@ datum_pose_geom_centroid(Datum pose_datum, Datum geom_datum)
  * @csqlfn #Trgeometry_centroid()
  */
 Temporal *
-trgeo_centroid(const Temporal *temp)
+trgeometry_centroid(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -132,12 +132,12 @@ trgeo_centroid(const Temporal *temp)
  * @csqlfn #Trgeometry_convex_hull()
  */
 GSERIALIZED *
-trgeo_convex_hull(const Temporal *temp)
+trgeometry_convex_hull(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   if (! trav)
     return NULL;
   GSERIALIZED *result = geom_convex_hull(trav);
@@ -170,7 +170,7 @@ datum_pose_apply_to_geom(Datum pose_datum, Datum geom_datum)
  * @csqlfn #Trgeometry_body_point_trajectory()
  */
 Temporal *
-trgeo_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
+trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -210,7 +210,7 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = trgeo_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
   Temporal *res = tgeo_restrict_geom(tpoint, gs, atfunc);
   Temporal *result = NULL;
   if (res)
@@ -271,7 +271,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   if (! ensure_valid_trgeo_stbox(temp, box))
     return NULL;
 
-  Temporal *tpoint = trgeo_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
   Temporal *tpointres = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
   Temporal *result = NULL;
   if (tpointres)
@@ -330,8 +330,8 @@ trgeo_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   double result = temporal_hausdorff_distance(tp1, tp2);
   pfree(tp1); pfree(tp2);
   return result;
@@ -350,8 +350,8 @@ trgeo_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   double result = temporal_similarity(tp1, tp2, FRECHET);
   pfree(tp1); pfree(tp2);
   return result;
@@ -369,8 +369,8 @@ trgeo_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   double result = temporal_similarity(tp1, tp2, DYNTIMEWARP);
   pfree(tp1); pfree(tp2);
   return result;
@@ -389,8 +389,8 @@ trgeo_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   Match *result = temporal_similarity_path(tp1, tp2, count, FRECHET);
   pfree(tp1); pfree(tp2);
   return result;
@@ -409,8 +409,8 @@ trgeo_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   Match *result = temporal_similarity_path(tp1, tp2, count, DYNTIMEWARP);
   pfree(tp1); pfree(tp2);
   return result;

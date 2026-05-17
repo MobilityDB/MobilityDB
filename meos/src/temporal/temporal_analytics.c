@@ -346,7 +346,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         if (seq->temptype == T_TRGEOMETRY)
         {
           value = trgeoSeq_tprecision_pose(seq1);
-          outinsts[l++] = trgeoinst_make(trgeo_ref_geom,
+          outinsts[l++] = trgeometryinst_make(trgeo_ref_geom,
             DatumGetPoseP(value), lower);
           pfree(seq1);
           pfree(DatumGetPointer(value));
@@ -410,7 +410,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     if (seq->temptype == T_TRGEOMETRY)
     {
       value = trgeoSeq_tprecision_pose(seq1);
-      outinsts[l++] = trgeoinst_make(trgeo_ref_geom,
+      outinsts[l++] = trgeometryinst_make(trgeo_ref_geom,
         DatumGetPoseP(value), lower);
       pfree(DatumGetPointer(value));
     }
@@ -699,7 +699,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
     for (int j = 0; j < ninsts; j++)
     {
       TInstant *broken = instants[j];
-      instants[j] = trgeoinst_make(geom,
+      instants[j] = trgeometryinst_make(geom,
         DatumGetPoseP(tinstant_value_p(broken)), broken->t);
       pfree(broken);
     }

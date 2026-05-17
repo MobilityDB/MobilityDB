@@ -66,7 +66,7 @@ Trgeometry_traversed_area(PG_FUNCTION_ARGS)
   bool unary_union = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     unary_union = PG_GETARG_BOOL(1);
-  GSERIALIZED *result = trgeo_traversed_area(temp, unary_union);
+  GSERIALIZED *result = trgeometry_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -88,7 +88,7 @@ Datum
 Trgeometry_centroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeo_centroid(temp);
+  Temporal *result = trgeometry_centroid(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -106,7 +106,7 @@ Datum
 Trgeometry_convex_hull(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = trgeo_convex_hull(temp);
+  GSERIALIZED *result = trgeometry_convex_hull(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -130,7 +130,7 @@ Trgeometry_body_point_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = trgeo_body_point_trajectory(temp, gs);
+  Temporal *result = trgeometry_body_point_trajectory(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -249,8 +249,8 @@ Trgeometry_similarity_distance(FunctionCallInfo fcinfo, SimFunc simfunc)
     PG_FREE_IF_COPY(temp2, 1);
     PG_RETURN_NULL();
   }
-  Temporal *tp1 = trgeo_to_tpoint(temp1);
-  Temporal *tp2 = trgeo_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
   double result = (simfunc == HAUSDORFF) ?
     temporal_hausdorff_distance(tp1, tp2) :
     temporal_similarity(tp1, tp2, simfunc);
@@ -342,8 +342,8 @@ Trgeometry_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-    Temporal *tp1 = trgeo_to_tpoint(temp1);
-    Temporal *tp2 = trgeo_to_tpoint(temp2);
+    Temporal *tp1 = trgeometry_to_tpoint(temp1);
+    Temporal *tp2 = trgeometry_to_tpoint(temp2);
     int count;
     Match *path = temporal_similarity_path(tp1, tp2, &count, simfunc);
     pfree(tp1); pfree(tp2);

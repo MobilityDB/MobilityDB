@@ -32,7 +32,7 @@
  * @brief Swept-edge-polygon clip primitive for trgeometry (M1 + M2)
  *
  * Internal helper exposed for testing the kernel from SQL.
- * Builds on top will wire `trgeo_at_geom`, `trgeo_traversed_area`,
+ * Builds on top will wire `trgeo_at_geom`, `trgeometry_traversed_area`,
  * and `tgeo_restrict_stbox` through this primitive once M2
  * (rotational case) lands.
  */
