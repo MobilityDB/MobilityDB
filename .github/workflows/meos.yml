@@ -158,3 +158,80 @@ jobs:
             "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
             -L/usr/local/lib -lmeos
           ./temporal_arrow_validate
+
+  arrow_parquet_endtoend:
+    name: Zero-MEOS Arrow and Parquet consumption end to end
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+
+      # pyarrow and duckdb are the strictly-required canonical-mirror
+      # enablement for this verification: the zero-MEOS consumer and the
+      # cross-check engine. They are the documented Arrow C Data Interface
+      # and Parquet tooling the demo verifies against; the demo cannot run
+      # without them. The MEOS export kernel is untouched.
+      - name: Install the zero-MEOS Arrow and Parquet tooling
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pyarrow duckdb
+
+      # Same MEOS build as the conformance job: the producer exercises the
+      # decomposed Struct value leaf (temporal geometry point) and the
+      # scalar value leaf (temporal float).
+      - name: Build MEOS with circular buffers, poses and rigid geometries
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
+            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+          make -j $(nproc)
+          sudo make install
+
+      # The producer is the only MEOS-linked half. It is built as a shared
+      # library; the zero-MEOS Python bridge loads it with ctypes so the
+      # producer can fill caller-owned ArrowSchema/ArrowArray structs
+      # through the conformance-proven meos_temporal_to_arrow kernel.
+      - name: Build the MEOS-linked Arrow producer
+        run: |
+          cd meos/examples
+          gcc -Wall -Wextra -fPIC -shared \
+            -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+            -o libtemporal_arrow_parquet_producer.so \
+            temporal_arrow_parquet_producer.c \
+            -L/usr/local/lib -lmeos
+
+      # Process 1: the bridge imports every MEOS-produced array purely
+      # through pyarrow._import_from_c (the exact path that std::bad_alloc-ed
+      # before the #1057 stack-dangling schema-children fix) and writes real
+      # multi-row-group Parquet with zero-MEOS parquet-cpp.
+      - name: Produce Arrow and write Parquet (pyarrow _import_from_c)
+        run: |
+          cd meos/examples
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+          python3 temporal_arrow_parquet_bridge.py \
+            ./libtemporal_arrow_parquet_producer.so \
+            "$RUNNER_TEMP/demo.parquet" \
+            "$RUNNER_TEMP/demo_ground_truth.txt"
+
+      # Process 2: a fully separate process with NO libmeos on its library
+      # path. It only opens the Parquet files and the MEOS-emitted
+      # decomposed ground truth, measures the real row-group pruning on the
+      # flat top-level columns, verifies every row value-exact against the
+      # MEOS oracle, and cross-checks the prune with duckdb.
+      - name: Consume, prune and verify (zero-MEOS process)
+        run: |
+          cd meos/examples
+          unset LD_LIBRARY_PATH
+          python3 temporal_arrow_parquet_consumer.py \
+            "$RUNNER_TEMP/demo" \
+            "$RUNNER_TEMP/demo_ground_truth.txt.decomposed"
