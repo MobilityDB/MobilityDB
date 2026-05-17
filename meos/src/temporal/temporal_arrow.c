@@ -64,6 +64,7 @@
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/date.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* PostGIS */
@@ -1510,6 +1511,944 @@ meos_temporal_arrow_roundtrip(const Temporal *temp)
   if (! meos_temporal_to_arrow(temp, &schema, &array))
     return NULL;
   Temporal *result = meos_temporal_from_arrow(&schema, &array);
+  if (schema.release)
+    schema.release(&schema);
+  if (array.release)
+    array.release(&array);
+  return result;
+}
+
+/*****************************************************************************
+ * Conversion of the finite-subset closure types (set, span, spanset) into
+ * the Arrow C Data Interface
+ *
+ * @details set, span and spanset are the MEOS types that represent finite
+ * subsets of an (otherwise infinite) base domain; they close the MEOS type
+ * algebra. The Arrow encoding mirrors the temporal VALUE_SCHEMA above
+ * verbatim: every per-base-type value leaf reuses the exact same machinery
+ * (the @p aw_* node builders, the @p aw_leaf_datum / @p aw_geo_to_wkb /
+ * @p aw_geo_from_wkb seam, the @c "i"/"l"/"g"/"u"/"Z" leaf formats, the
+ * @c "tsu:UTC" raw-value timestamp convention, the int16 raw-MEOS-flags
+ * word, the int32 SRID slot non-zero only for a geometry value, and the
+ * Boolean @c "lower_inc"/"upper_inc" convention). The skeletons are:
+ * @code
+ * set     Struct{ settype:int16, flags:int16, srid:int32,
+ *                 elems: List< VALUE_LEAF(B) > }       -- sorted, as stored
+ * span    Struct{ spantype:int16,
+ *                 lower: VALUE_LEAF(B), upper: VALUE_LEAF(B),
+ *                 lower_inc:bool, upper_inc:bool }
+ * spanset Struct{ spansettype:int16,
+ *                 spans: List< span-Struct(B) > }
+ * @endcode
+ * The base type drives the value leaf exactly as for the temporal types:
+ * int4 -> Int32 "i", int8 -> Int64 "l", float8 -> Float64 "g", text ->
+ * Utf8 "u", timestamptz -> "tsu:UTC" (the raw MEOS value carried verbatim,
+ * as the temporal @c t leaf does), date -> "tdD" (the raw DateADT int32
+ * carried verbatim under the Arrow date32 logical type, the same
+ * raw-value-under-an-Arrow-logical-format convention as the timestamp
+ * leaf, lossless by round-trip), geometry or geography -> the opaque
+ * LargeBinary "Z" leaf of the value's extended WKB. Every struct children
+ * array is arena-allocated so the schema outlives the call (the canonical
+ * pattern). Any base type not in this surface raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED rather than producing a silent or
+ * approximate result.
+ *****************************************************************************/
+
+/**
+ * @brief Classify a set/span/spanset base type into its Arrow value-leaf
+ * format string, mirroring the temporal VALUE_SCHEMA leaf mapping
+ * @return The Arrow format string, or NULL when the base type has no wired
+ * value leaf
+ */
+static const char *
+aw_base_vfmt(MeosType basetype)
+{
+  switch (basetype)
+  {
+    case T_INT4:        return "i";
+    case T_INT8:        return "l";
+    case T_FLOAT8:      return "g";
+    case T_TEXT:        return "u";
+    case T_DATE:        return "tdD";
+    case T_TIMESTAMPTZ: return "tsu:UTC";
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:   return "Z";
+    default:            return NULL;
+  }
+}
+
+/**
+ * @brief Append the @p idx-th element to the per-base-type value column
+ * being assembled, dispatching on the value-leaf format. Fixed-width
+ * leaves write straight into @p vvals; the variable-length text and
+ * geometry leaves collect into the scratch arrays assembled afterwards.
+ */
+static void
+aw_put_value(const char *vfmt, MeosType basetype, Datum value, int idx,
+  void *vvals, char **svals, uint8_t **gbufs, size_t *glens)
+{
+  /* The value-leaf format alone drives the write; basetype is kept in the
+   * signature for symmetry with aw_get_value (which needs it for the
+   * geometry/geography distinction). */
+  (void) basetype;
+  if (vfmt[0] == 'i')
+    ((int32_t *) vvals)[idx] = DatumGetInt32(value);
+  else if (vfmt[0] == 'l')
+    ((int64_t *) vvals)[idx] = (int64_t) DatumGetInt64(value);
+  else if (vfmt[0] == 'g')
+    ((double *) vvals)[idx] = DatumGetFloat8(value);
+  else if (vfmt[0] == 't' && vfmt[1] == 'd')
+    /* date32 leaf: the raw DateADT int32, carried verbatim (the PostgreSQL
+     * epoch travels with it, recovered losslessly on read, mirroring the
+     * timestamp leaf's raw-value convention) */
+    ((int32_t *) vvals)[idx] = (int32_t) DatumGetDateADT(value);
+  else if (vfmt[0] == 't' && vfmt[1] == 's')
+    /* timestamp[us,UTC] leaf: the raw TimestampTz int64, carried verbatim
+     * exactly as the temporal t leaf does */
+    ((int64_t *) vvals)[idx] = (int64_t) DatumGetTimestampTz(value);
+  else if (vfmt[0] == 'u')
+    svals[idx] = text2cstring(DatumGetTextP(value));
+  else /* 'Z' : a geometry or geography, carried as extended WKB */
+    gbufs[idx] = aw_geo_to_wkb(value, &glens[idx]);
+}
+
+/**
+ * @brief Reconstruct the @p idx-th base value as a Datum from the decoded
+ * Arrow value column, dispatching on the value-leaf format. The caller
+ * owns the returned Datum for the by-reference (text, geometry) cases and
+ * frees it after the value is copied into the constructed set/span.
+ */
+static Datum
+aw_get_value(const char *vfmt, MeosType basetype, const void *vvals,
+  const int32_t *soff, const char *sdata, const int64_t *goff,
+  const char *gdata, int idx)
+{
+  if (vfmt[0] == 'i')
+    return Int32GetDatum(((const int32_t *) vvals)[idx]);
+  if (vfmt[0] == 'l')
+    return Int64GetDatum(((const int64_t *) vvals)[idx]);
+  if (vfmt[0] == 'g')
+    return Float8GetDatum(((const double *) vvals)[idx]);
+  if (vfmt[0] == 't' && vfmt[1] == 'd')
+    return DateADTGetDatum((DateADT) ((const int32_t *) vvals)[idx]);
+  if (vfmt[0] == 't' && vfmt[1] == 's')
+    return TimestampTzGetDatum((TimestampTz) ((const int64_t *) vvals)[idx]);
+  if (vfmt[0] == 'u')
+  {
+    int32_t len = soff[idx + 1] - soff[idx];
+    char *cs = palloc((size_t) len + 1);
+    if (len)
+      memcpy(cs, sdata + soff[idx], (size_t) len);
+    cs[len] = '\0';
+    text *txt = cstring2text(cs);
+    pfree(cs);
+    return PointerGetDatum(txt);
+  }
+  /* 'Z' : a geometry or geography reconstructed from its extended WKB */
+  size_t len = (size_t) (goff[idx + 1] - goff[idx]);
+  GSERIALIZED *gs = aw_geo_from_wkb((const uint8_t *) (gdata + goff[idx]),
+    len, basetype == T_GEOGRAPHY);
+  return PointerGetDatum(gs);
+}
+
+/**
+ * @brief Build the Arrow value-leaf schema node for a base type, reusing
+ * the temporal seam (a fixed-width or variable-length leaf, named @p name)
+ */
+static struct ArrowSchema *
+aw_value_schema(ArrowArena *arena, const char *vfmt, const char *name)
+{
+  return aw_schema_leaf(arena, vfmt, name);
+}
+
+/**
+ * @brief Assemble the Arrow value-leaf array node for a fully-walked
+ * per-base-type column, reusing the temporal array builders
+ */
+static struct ArrowArray *
+aw_value_array(ArrowArena *arena, const char *vfmt, int total,
+  const void *vvals, const int32_t *str_off, const char *str_data,
+  const int64_t *geo_off, const char *geo_data)
+{
+  if (vfmt[0] == 'u')
+    return aw_array_utf8(arena, total, str_off, str_data);
+  if (vfmt[0] == 'Z')
+    return aw_array_largebin(arena, total, geo_off, geo_data);
+  return aw_array_prim(arena, total, vvals);
+}
+
+/**
+ * @brief Size in bytes of the fixed-width value buffer for @p n elements
+ * of the given value-leaf format (0 for the variable-length leaves, which
+ * use the scratch-then-assemble path)
+ */
+static size_t
+aw_value_bufsize(const char *vfmt, int n)
+{
+  if (vfmt[0] == 'u' || vfmt[0] == 'Z')
+    return 1;
+  if (vfmt[0] == 'i' || (vfmt[0] == 't' && vfmt[1] == 'd'))
+    return sizeof(int32_t) * (size_t) n;
+  if (vfmt[0] == 'l' || (vfmt[0] == 't' && vfmt[1] == 's'))
+    return sizeof(int64_t) * (size_t) n;
+  return sizeof(double) * (size_t) n;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a set into Arrow C Data Interface structures
+ * @param[in] s Set
+ * @param[out] out_schema,out_array Caller-allocated Arrow structures filled
+ * by the producer; release with their @p release callbacks
+ * @return True on success; on an unsupported base type raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
+ */
+bool
+meos_set_to_arrow(const Set *s, struct ArrowSchema *out_schema,
+  struct ArrowArray *out_array)
+{
+  if (! s || ! out_schema || ! out_array)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to set_to_arrow");
+    return false;
+  }
+  MeosType basetype = (MeosType) s->basetype;
+  const char *vfmt = aw_base_vfmt(basetype);
+  if (! vfmt)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_set_to_arrow: unsupported set base type");
+    return false;
+  }
+  bool is_geo = (vfmt[0] == 'Z');
+  ArrowArena *arena_s = palloc0(sizeof(ArrowArena));
+  ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
+
+  /* Schema: Struct{settype, flags, srid, elems:List<value-leaf>} */
+  struct ArrowSchema *elem_leaf = aw_value_schema(arena_s, vfmt, "item");
+  struct ArrowSchema *elems_list =
+    aw_schema_list(arena_s, "elems", elem_leaf);
+  struct ArrowSchema **top_sc =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 4);
+  top_sc[0] = aw_schema_leaf(arena_s, "s", "settype");
+  top_sc[1] = aw_schema_leaf(arena_s, "s", "flags");
+  top_sc[2] = aw_schema_leaf(arena_s, "i", "srid");
+  top_sc[3] = elems_list;
+  out_schema->format = "+s";
+  out_schema->name = NULL;
+  out_schema->metadata = NULL;
+  out_schema->flags = 0;
+  out_schema->n_children = 4;
+  out_schema->children = top_sc;
+  out_schema->dictionary = NULL;
+  out_schema->private_data = arena_s;
+  out_schema->release = root_schema_release;
+
+  int16_t *settype_b = arena_alloc(arena_a, sizeof(int16_t));
+  int16_t *flags_b = arena_alloc(arena_a, sizeof(int16_t));
+  int32_t *srid_b = arena_alloc(arena_a, sizeof(int32_t));
+  settype_b[0] = (int16_t) s->settype;
+  flags_b[0] = (int16_t) s->flags;
+  srid_b[0] = is_geo ? (int32_t) spatialset_srid(s) : 0;
+
+  int total = s->count;
+  int vn = total ? total : 1;
+  void *vvals = arena_alloc(arena_a, aw_value_bufsize(vfmt, vn));
+  char **svals = (vfmt[0] == 'u') ? palloc(sizeof(char *) * vn) : NULL;
+  uint8_t **gbufs = is_geo ? palloc(sizeof(uint8_t *) * vn) : NULL;
+  size_t *glens = is_geo ? palloc(sizeof(size_t) * vn) : NULL;
+  for (int i = 0; i < total; i++)
+    aw_put_value(vfmt, basetype, SET_VAL_N(s, i), i, vvals, svals, gbufs,
+      glens);
+
+  int32_t *str_off = NULL;
+  char *str_data = NULL;
+  if (vfmt[0] == 'u')
+  {
+    str_off = arena_alloc(arena_a, sizeof(int32_t) * (total + 1));
+    int32_t acc = 0;
+    for (int i = 0; i < total; i++)
+    {
+      str_off[i] = acc;
+      acc += (int32_t) strlen(svals[i]);
+    }
+    str_off[total] = acc;
+    str_data = arena_alloc(arena_a, acc ? (size_t) acc : 1);
+    for (int i = 0; i < total; i++)
+    {
+      int32_t len = str_off[i + 1] - str_off[i];
+      if (len)
+        memcpy(str_data + str_off[i], svals[i], (size_t) len);
+      pfree(svals[i]);
+    }
+    pfree(svals);
+  }
+  int64_t *geo_off = NULL;
+  char *geo_data = NULL;
+  if (is_geo)
+  {
+    geo_off = arena_alloc(arena_a, sizeof(int64_t) * (total + 1));
+    int64_t acc = 0;
+    for (int i = 0; i < total; i++)
+    {
+      geo_off[i] = acc;
+      acc += (int64_t) glens[i];
+    }
+    geo_off[total] = acc;
+    geo_data = arena_alloc(arena_a, acc ? (size_t) acc : 1);
+    for (int i = 0; i < total; i++)
+    {
+      if (glens[i])
+        memcpy(geo_data + geo_off[i], gbufs[i], glens[i]);
+      pfree(gbufs[i]);
+    }
+    pfree(gbufs);
+    pfree(glens);
+  }
+
+  struct ArrowArray *elem_a = aw_value_array(arena_a, vfmt, total, vvals,
+    str_off, str_data, geo_off, geo_data);
+  int32_t *elems_off = arena_alloc(arena_a, sizeof(int32_t) * 2);
+  elems_off[0] = 0;
+  elems_off[1] = total;
+  struct ArrowArray *elems_list_a =
+    aw_array_list(arena_a, 1, elems_off, elem_a);
+  struct ArrowArray **top_a =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 4);
+  top_a[0] = aw_array_prim(arena_a, 1, settype_b);
+  top_a[1] = aw_array_prim(arena_a, 1, flags_b);
+  top_a[2] = aw_array_prim(arena_a, 1, srid_b);
+  top_a[3] = elems_list_a;
+  out_array->length = 1;
+  out_array->null_count = 0;
+  out_array->offset = 0;
+  out_array->n_buffers = 1;
+  out_array->n_children = 4;
+  out_array->buffers = arena_alloc(arena_a, sizeof(void *) * 1);
+  out_array->buffers[0] = NULL;
+  out_array->children = top_a;
+  out_array->dictionary = NULL;
+  out_array->private_data = arena_a;
+  out_array->release = root_array_release;
+  return true;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Reconstruct a set from Arrow C Data Interface structures
+ * @param[in] schema,array Arrow structures produced by #meos_set_to_arrow
+ * @return New set, or NULL on an unsupported layout (raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED)
+ */
+Set *
+meos_set_from_arrow(const struct ArrowSchema *schema,
+  const struct ArrowArray *array)
+{
+  if (! schema || ! array || ! schema->format ||
+      strcmp(schema->format, "+s") != 0 || schema->n_children != 4 ||
+      array->n_children != 4 || array->length != 1)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_set_from_arrow: unsupported Arrow layout");
+    return NULL;
+  }
+  int16_t settype = ((const int16_t *) array->children[0]->buffers[1])[0];
+  MeosType basetype = settype_basetype((MeosType) settype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  const struct ArrowSchema *v_sc = schema->children[3]->children[0];
+  if (! vfmt || ! v_sc->format || ! aw_base_vfmt(basetype) ||
+      strcmp(v_sc->format, vfmt) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_set_from_arrow: unsupported set base type");
+    return NULL;
+  }
+  const struct ArrowArray *elems_a = array->children[3];
+  const int32_t *elems_off = (const int32_t *) elems_a->buffers[1];
+  const struct ArrowArray *vleaf = elems_a->children[0];
+  int total = elems_off[1] - elems_off[0];
+  if (total <= 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_set_from_arrow: empty set unsupported");
+    return NULL;
+  }
+  const void *vvals = vleaf->buffers[1];
+  const int32_t *soff = (vfmt[0] == 'u') ?
+    (const int32_t *) vleaf->buffers[1] : NULL;
+  const char *sdata = (vfmt[0] == 'u') ?
+    (const char *) vleaf->buffers[2] : NULL;
+  const int64_t *goff = (vfmt[0] == 'Z') ?
+    (const int64_t *) vleaf->buffers[1] : NULL;
+  const char *gdata = (vfmt[0] == 'Z') ?
+    (const char *) vleaf->buffers[2] : NULL;
+  Datum *values = palloc(sizeof(Datum) * total);
+  bool byref = (vfmt[0] == 'u' || vfmt[0] == 'Z');
+  for (int i = 0; i < total; i++)
+    values[i] = aw_get_value(vfmt, basetype, vvals, soff, sdata, goff,
+      gdata, i);
+  /* The Arrow elements are stored in the set's own sorted order; pass
+   * order = false so the canonical order is preserved exactly. */
+  Set *result = set_make(values, total, basetype, false);
+  if (byref)
+    for (int i = 0; i < total; i++)
+      pfree(DatumGetPointer(values[i]));
+  pfree(values);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Round-trip a set through the Arrow C Data Interface
+ * @param[in] s Set
+ * @return New set equal to @p s, or @p NULL on an unsupported base type
+ */
+Set *
+meos_set_arrow_roundtrip(const Set *s)
+{
+  struct ArrowSchema schema = {0};
+  struct ArrowArray array = {0};
+  if (! meos_set_to_arrow(s, &schema, &array))
+    return NULL;
+  Set *result = meos_set_from_arrow(&schema, &array);
+  if (schema.release)
+    schema.release(&schema);
+  if (array.release)
+    array.release(&array);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Fill an arena-allocated value-leaf array node for a single
+ * scalar/text/geometry base value (used for the span lower and upper
+ * bounds, which are single elements rather than a column)
+ */
+static struct ArrowArray *
+aw_one_value_array(ArrowArena *arena, const char *vfmt, MeosType basetype,
+  Datum value)
+{
+  if (vfmt[0] == 'u')
+  {
+    char *cs = text2cstring(DatumGetTextP(value));
+    int32_t n = (int32_t) strlen(cs);
+    int32_t *off = arena_alloc(arena, sizeof(int32_t) * 2);
+    off[0] = 0; off[1] = n;
+    char *data = arena_alloc(arena, n ? (size_t) n : 1);
+    if (n)
+      memcpy(data, cs, (size_t) n);
+    pfree(cs);
+    return aw_array_utf8(arena, 1, off, data);
+  }
+  if (vfmt[0] == 'Z')
+  {
+    size_t len = 0;
+    uint8_t *wkb = aw_geo_to_wkb(value, &len);
+    int64_t *off = arena_alloc(arena, sizeof(int64_t) * 2);
+    off[0] = 0; off[1] = (int64_t) len;
+    char *data = arena_alloc(arena, len ? len : 1);
+    if (len)
+      memcpy(data, wkb, len);
+    pfree(wkb);
+    return aw_array_largebin(arena, 1, off, data);
+  }
+  void *buf = arena_alloc(arena, aw_value_bufsize(vfmt, 1));
+  aw_put_value(vfmt, basetype, value, 0, buf, NULL, NULL, NULL);
+  return aw_array_prim(arena, 1, buf);
+}
+
+/**
+ * @brief Read back the single base value of a span bound from its decoded
+ * Arrow leaf array (the inverse of #aw_one_value_array)
+ */
+static Datum
+aw_one_value_read(const char *vfmt, MeosType basetype,
+  const struct ArrowArray *leaf)
+{
+  const void *vvals = leaf->buffers[1];
+  const int32_t *soff = (vfmt[0] == 'u') ?
+    (const int32_t *) leaf->buffers[1] : NULL;
+  const char *sdata = (vfmt[0] == 'u') ?
+    (const char *) leaf->buffers[2] : NULL;
+  const int64_t *goff = (vfmt[0] == 'Z') ?
+    (const int64_t *) leaf->buffers[1] : NULL;
+  const char *gdata = (vfmt[0] == 'Z') ?
+    (const char *) leaf->buffers[2] : NULL;
+  return aw_get_value(vfmt, basetype, vvals, soff, sdata, goff, gdata, 0);
+}
+
+/**
+ * @brief Build the Arrow schema and array for one span as the children of
+ * a caller-supplied struct level (shared by #meos_span_to_arrow and the
+ * spanset element list)
+ */
+static void
+aw_span_struct(ArrowArena *arena_s, ArrowArena *arena_a, const Span *sp,
+  const char *vfmt, struct ArrowSchema ***sc_out, int64_t *nsc_out,
+  struct ArrowArray ***a_out, int64_t *na_out)
+{
+  struct ArrowSchema **sc =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 5);
+  sc[0] = aw_schema_leaf(arena_s, "s", "spantype");
+  sc[1] = aw_value_schema(arena_s, vfmt, "lower");
+  sc[2] = aw_value_schema(arena_s, vfmt, "upper");
+  sc[3] = aw_schema_leaf(arena_s, "b", "lower_inc");
+  sc[4] = aw_schema_leaf(arena_s, "b", "upper_inc");
+  MeosType basetype = spantype_basetype((MeosType) sp->spantype);
+  int16_t *spantype_b = arena_alloc(arena_a, sizeof(int16_t));
+  spantype_b[0] = (int16_t) sp->spantype;
+  uint8_t *lo_bm = arena_alloc(arena_a, 1);
+  uint8_t *up_bm = arena_alloc(arena_a, 1);
+  if (sp->lower_inc) lo_bm[0] |= 1;
+  if (sp->upper_inc) up_bm[0] |= 1;
+  struct ArrowArray **a =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 5);
+  a[0] = aw_array_prim(arena_a, 1, spantype_b);
+  a[1] = aw_one_value_array(arena_a, vfmt, basetype, sp->lower);
+  a[2] = aw_one_value_array(arena_a, vfmt, basetype, sp->upper);
+  a[3] = aw_array_prim(arena_a, 1, lo_bm);
+  a[4] = aw_array_prim(arena_a, 1, up_bm);
+  *sc_out = sc; *nsc_out = 5;
+  *a_out = a; *na_out = 5;
+}
+
+/**
+ * @brief Reconstruct a span from a decoded span-struct schema/array pair
+ */
+static Span *
+aw_span_from_struct(const struct ArrowSchema *sc,
+  const struct ArrowArray *a)
+{
+  if (sc->n_children != 5 || a->n_children != 5)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_span_from_arrow: unsupported span layout");
+    return NULL;
+  }
+  int16_t spantype = ((const int16_t *) a->children[0]->buffers[1])[0];
+  MeosType basetype = spantype_basetype((MeosType) spantype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  if (! vfmt || ! sc->children[1]->format ||
+      strcmp(sc->children[1]->format, vfmt) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_span_from_arrow: unsupported span base type");
+    return NULL;
+  }
+  Datum lower = aw_one_value_read(vfmt, basetype, a->children[1]);
+  Datum upper = aw_one_value_read(vfmt, basetype, a->children[2]);
+  bool lo = (((const uint8_t *) a->children[3]->buffers[1])[0] & 1) != 0;
+  bool up = (((const uint8_t *) a->children[4]->buffers[1])[0] & 1) != 0;
+  Span *result = span_make(lower, upper, lo, up, basetype);
+  if (vfmt[0] == 'u' || vfmt[0] == 'Z')
+  {
+    pfree(DatumGetPointer(lower));
+    pfree(DatumGetPointer(upper));
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a span into Arrow C Data Interface structures
+ * @param[in] s Span
+ * @param[out] out_schema,out_array Caller-allocated Arrow structures filled
+ * by the producer; release with their @p release callbacks
+ * @return True on success; on an unsupported base type raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
+ */
+bool
+meos_span_to_arrow(const Span *s, struct ArrowSchema *out_schema,
+  struct ArrowArray *out_array)
+{
+  if (! s || ! out_schema || ! out_array)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null argument to span_to_arrow");
+    return false;
+  }
+  MeosType basetype = spantype_basetype((MeosType) s->spantype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  if (! vfmt)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_span_to_arrow: unsupported span base type");
+    return false;
+  }
+  ArrowArena *arena_s = palloc0(sizeof(ArrowArena));
+  ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
+  struct ArrowSchema **sc;
+  struct ArrowArray **a;
+  int64_t nsc, na;
+  aw_span_struct(arena_s, arena_a, s, vfmt, &sc, &nsc, &a, &na);
+  out_schema->format = "+s";
+  out_schema->name = NULL;
+  out_schema->metadata = NULL;
+  out_schema->flags = 0;
+  out_schema->n_children = nsc;
+  out_schema->children = sc;
+  out_schema->dictionary = NULL;
+  out_schema->private_data = arena_s;
+  out_schema->release = root_schema_release;
+  out_array->length = 1;
+  out_array->null_count = 0;
+  out_array->offset = 0;
+  out_array->n_buffers = 1;
+  out_array->n_children = na;
+  out_array->buffers = arena_alloc(arena_a, sizeof(void *) * 1);
+  out_array->buffers[0] = NULL;
+  out_array->children = a;
+  out_array->dictionary = NULL;
+  out_array->private_data = arena_a;
+  out_array->release = root_array_release;
+  return true;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Reconstruct a span from Arrow C Data Interface structures
+ * @param[in] schema,array Arrow structures produced by #meos_span_to_arrow
+ * @return New span, or NULL on an unsupported layout (raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED)
+ */
+Span *
+meos_span_from_arrow(const struct ArrowSchema *schema,
+  const struct ArrowArray *array)
+{
+  if (! schema || ! array || ! schema->format ||
+      strcmp(schema->format, "+s") != 0 || schema->n_children != 5 ||
+      array->n_children != 5 || array->length != 1)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_span_from_arrow: unsupported Arrow layout");
+    return NULL;
+  }
+  return aw_span_from_struct(schema, array);
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Round-trip a span through the Arrow C Data Interface
+ * @param[in] s Span
+ * @return New span equal to @p s, or @p NULL on an unsupported base type
+ */
+Span *
+meos_span_arrow_roundtrip(const Span *s)
+{
+  struct ArrowSchema schema = {0};
+  struct ArrowArray array = {0};
+  if (! meos_span_to_arrow(s, &schema, &array))
+    return NULL;
+  Span *result = meos_span_from_arrow(&schema, &array);
+  if (schema.release)
+    schema.release(&schema);
+  if (array.release)
+    array.release(&array);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a span set into Arrow C Data Interface structures
+ * @param[in] ss Span set
+ * @param[out] out_schema,out_array Caller-allocated Arrow structures filled
+ * by the producer; release with their @p release callbacks
+ * @return True on success; on an unsupported base type raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED and returns false
+ */
+bool
+meos_spanset_to_arrow(const SpanSet *ss, struct ArrowSchema *out_schema,
+  struct ArrowArray *out_array)
+{
+  if (! ss || ! out_schema || ! out_array)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+      "Null argument to spanset_to_arrow");
+    return false;
+  }
+  MeosType basetype = spantype_basetype((MeosType) ss->spantype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  if (! vfmt)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_spanset_to_arrow: unsupported span set base type");
+    return false;
+  }
+  int n = ss->count;
+  ArrowArena *arena_s = palloc0(sizeof(ArrowArena));
+  ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
+
+  /* Schema: Struct{spansettype, spans:List<span-struct>}. The span-struct
+   * children schema is the same for every element, so it is built once
+   * from the first span. */
+  struct ArrowSchema **sp_sc;
+  struct ArrowArray **dummy_a;
+  int64_t nsp_sc, ndummy;
+  /* Build the per-element schema once (array side rebuilt per element). */
+  {
+    struct ArrowSchema **s0sc;
+    int64_t ns0;
+    struct ArrowArray **a0;
+    int64_t na0;
+    aw_span_struct(arena_s, arena_a, SPANSET_SP_N(ss, 0), vfmt, &s0sc, &ns0,
+      &a0, &na0);
+    sp_sc = s0sc; nsp_sc = ns0; dummy_a = a0; ndummy = na0;
+    (void) dummy_a; (void) ndummy;
+  }
+  struct ArrowSchema *sp_st =
+    aw_schema_struct(arena_s, "item", sp_sc, nsp_sc);
+  struct ArrowSchema *spans_list =
+    aw_schema_list(arena_s, "spans", sp_st);
+  struct ArrowSchema **top_sc =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 2);
+  top_sc[0] = aw_schema_leaf(arena_s, "s", "spansettype");
+  top_sc[1] = spans_list;
+  out_schema->format = "+s";
+  out_schema->name = NULL;
+  out_schema->metadata = NULL;
+  out_schema->flags = 0;
+  out_schema->n_children = 2;
+  out_schema->children = top_sc;
+  out_schema->dictionary = NULL;
+  out_schema->private_data = arena_s;
+  out_schema->release = root_schema_release;
+
+  int16_t *sstype_b = arena_alloc(arena_a, sizeof(int16_t));
+  sstype_b[0] = (int16_t) ss->spansettype;
+
+  /* The span-struct is a struct of 5 parallel one-element columns; across
+   * the n spans each column has n entries. Build the n columns directly so
+   * the list child is a single struct array of length n (the canonical
+   * List<Struct> shape, matching the temporal seqs/insts encoding). */
+  int16_t *col_spantype = arena_alloc(arena_a, sizeof(int16_t) * (n ? n : 1));
+  uint8_t *col_lo = arena_alloc(arena_a, (n + 7) / 8 ? (n + 7) / 8 : 1);
+  uint8_t *col_up = arena_alloc(arena_a, (n + 7) / 8 ? (n + 7) / 8 : 1);
+  void *col_lower = NULL;
+  void *col_upper = NULL;
+  char **lo_sv = NULL, **up_sv = NULL;
+  uint8_t **lo_gb = NULL, **up_gb = NULL;
+  size_t *lo_gl = NULL, *up_gl = NULL;
+  int vn = n ? n : 1;
+  if (vfmt[0] == 'u')
+  {
+    lo_sv = palloc(sizeof(char *) * vn);
+    up_sv = palloc(sizeof(char *) * vn);
+  }
+  else if (vfmt[0] == 'Z')
+  {
+    lo_gb = palloc(sizeof(uint8_t *) * vn);
+    up_gb = palloc(sizeof(uint8_t *) * vn);
+    lo_gl = palloc(sizeof(size_t) * vn);
+    up_gl = palloc(sizeof(size_t) * vn);
+  }
+  else
+  {
+    col_lower = arena_alloc(arena_a, aw_value_bufsize(vfmt, vn));
+    col_upper = arena_alloc(arena_a, aw_value_bufsize(vfmt, vn));
+  }
+  for (int i = 0; i < n; i++)
+  {
+    const Span *sp = SPANSET_SP_N(ss, i);
+    col_spantype[i] = (int16_t) sp->spantype;
+    if (sp->lower_inc) col_lo[i >> 3] |= (uint8_t) (1 << (i & 7));
+    if (sp->upper_inc) col_up[i >> 3] |= (uint8_t) (1 << (i & 7));
+    aw_put_value(vfmt, basetype, sp->lower, i, col_lower, lo_sv, lo_gb,
+      lo_gl);
+    aw_put_value(vfmt, basetype, sp->upper, i, col_upper, up_sv, up_gb,
+      up_gl);
+  }
+
+  /* Assemble the variable-length lower/upper columns when needed. */
+  int32_t *lo_soff = NULL, *up_soff = NULL;
+  char *lo_sdata = NULL, *up_sdata = NULL;
+  int64_t *lo_goff = NULL, *up_goff = NULL;
+  char *lo_gdata = NULL, *up_gdata = NULL;
+  if (vfmt[0] == 'u')
+  {
+    lo_soff = arena_alloc(arena_a, sizeof(int32_t) * (n + 1));
+    up_soff = arena_alloc(arena_a, sizeof(int32_t) * (n + 1));
+    int32_t la = 0, ua = 0;
+    for (int i = 0; i < n; i++)
+    {
+      lo_soff[i] = la; la += (int32_t) strlen(lo_sv[i]);
+      up_soff[i] = ua; ua += (int32_t) strlen(up_sv[i]);
+    }
+    lo_soff[n] = la; up_soff[n] = ua;
+    lo_sdata = arena_alloc(arena_a, la ? (size_t) la : 1);
+    up_sdata = arena_alloc(arena_a, ua ? (size_t) ua : 1);
+    for (int i = 0; i < n; i++)
+    {
+      int32_t l = lo_soff[i + 1] - lo_soff[i];
+      int32_t u = up_soff[i + 1] - up_soff[i];
+      if (l) memcpy(lo_sdata + lo_soff[i], lo_sv[i], (size_t) l);
+      if (u) memcpy(up_sdata + up_soff[i], up_sv[i], (size_t) u);
+      pfree(lo_sv[i]); pfree(up_sv[i]);
+    }
+    pfree(lo_sv); pfree(up_sv);
+  }
+  else if (vfmt[0] == 'Z')
+  {
+    lo_goff = arena_alloc(arena_a, sizeof(int64_t) * (n + 1));
+    up_goff = arena_alloc(arena_a, sizeof(int64_t) * (n + 1));
+    int64_t la = 0, ua = 0;
+    for (int i = 0; i < n; i++)
+    {
+      lo_goff[i] = la; la += (int64_t) lo_gl[i];
+      up_goff[i] = ua; ua += (int64_t) up_gl[i];
+    }
+    lo_goff[n] = la; up_goff[n] = ua;
+    lo_gdata = arena_alloc(arena_a, la ? (size_t) la : 1);
+    up_gdata = arena_alloc(arena_a, ua ? (size_t) ua : 1);
+    for (int i = 0; i < n; i++)
+    {
+      if (lo_gl[i]) memcpy(lo_gdata + lo_goff[i], lo_gb[i], lo_gl[i]);
+      if (up_gl[i]) memcpy(up_gdata + up_goff[i], up_gb[i], up_gl[i]);
+      pfree(lo_gb[i]); pfree(up_gb[i]);
+    }
+    pfree(lo_gb); pfree(up_gb); pfree(lo_gl); pfree(up_gl);
+  }
+
+  struct ArrowArray **sp_a_kids =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 5);
+  sp_a_kids[0] = aw_array_prim(arena_a, n, col_spantype);
+  sp_a_kids[1] = aw_value_array(arena_a, vfmt, n, col_lower, lo_soff,
+    lo_sdata, lo_goff, lo_gdata);
+  sp_a_kids[2] = aw_value_array(arena_a, vfmt, n, col_upper, up_soff,
+    up_sdata, up_goff, up_gdata);
+  sp_a_kids[3] = aw_array_prim(arena_a, n, col_lo);
+  sp_a_kids[4] = aw_array_prim(arena_a, n, col_up);
+  struct ArrowArray *sp_st_a = aw_array_struct(arena_a, n, sp_a_kids, 5);
+  int32_t *spans_off = arena_alloc(arena_a, sizeof(int32_t) * 2);
+  spans_off[0] = 0;
+  spans_off[1] = n;
+  struct ArrowArray *spans_list_a =
+    aw_array_list(arena_a, 1, spans_off, sp_st_a);
+  struct ArrowArray **top_a =
+    arena_alloc(arena_a, sizeof(struct ArrowArray *) * 2);
+  top_a[0] = aw_array_prim(arena_a, 1, sstype_b);
+  top_a[1] = spans_list_a;
+  out_array->length = 1;
+  out_array->null_count = 0;
+  out_array->offset = 0;
+  out_array->n_buffers = 1;
+  out_array->n_children = 2;
+  out_array->buffers = arena_alloc(arena_a, sizeof(void *) * 1);
+  out_array->buffers[0] = NULL;
+  out_array->children = top_a;
+  out_array->dictionary = NULL;
+  out_array->private_data = arena_a;
+  out_array->release = root_array_release;
+  return true;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Reconstruct a span set from Arrow C Data Interface structures
+ * @param[in] schema,array Arrow structures produced by
+ * #meos_spanset_to_arrow
+ * @return New span set, or NULL on an unsupported layout (raises
+ * @p MEOS_ERR_FEATURE_NOT_SUPPORTED)
+ */
+SpanSet *
+meos_spanset_from_arrow(const struct ArrowSchema *schema,
+  const struct ArrowArray *array)
+{
+  if (! schema || ! array || ! schema->format ||
+      strcmp(schema->format, "+s") != 0 || schema->n_children != 2 ||
+      array->n_children != 2 || array->length != 1)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_spanset_from_arrow: unsupported Arrow layout");
+    return NULL;
+  }
+  int16_t sstype = ((const int16_t *) array->children[0]->buffers[1])[0];
+  MeosType spantype = spansettype_spantype((MeosType) sstype);
+  MeosType basetype = spantype_basetype(spantype);
+  const char *vfmt = aw_base_vfmt(basetype);
+  const struct ArrowSchema *sp_st_sc = schema->children[1]->children[0];
+  if (! vfmt || sp_st_sc->n_children != 5 ||
+      ! sp_st_sc->children[1]->format ||
+      strcmp(sp_st_sc->children[1]->format, vfmt) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_spanset_from_arrow: unsupported span set base type");
+    return NULL;
+  }
+  const struct ArrowArray *spans_a = array->children[1];
+  const int32_t *spans_off = (const int32_t *) spans_a->buffers[1];
+  const struct ArrowArray *sp_st_a = spans_a->children[0];
+  int n = spans_off[1] - spans_off[0];
+  if (n <= 0)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "meos_spanset_from_arrow: empty span set unsupported");
+    return NULL;
+  }
+  const void *lo_v = sp_st_a->children[1]->buffers[1];
+  const void *up_v = sp_st_a->children[2]->buffers[1];
+  const int32_t *lo_soff = (vfmt[0] == 'u') ?
+    (const int32_t *) sp_st_a->children[1]->buffers[1] : NULL;
+  const char *lo_sdata = (vfmt[0] == 'u') ?
+    (const char *) sp_st_a->children[1]->buffers[2] : NULL;
+  const int32_t *up_soff = (vfmt[0] == 'u') ?
+    (const int32_t *) sp_st_a->children[2]->buffers[1] : NULL;
+  const char *up_sdata = (vfmt[0] == 'u') ?
+    (const char *) sp_st_a->children[2]->buffers[2] : NULL;
+  const int64_t *lo_goff = (vfmt[0] == 'Z') ?
+    (const int64_t *) sp_st_a->children[1]->buffers[1] : NULL;
+  const char *lo_gdata = (vfmt[0] == 'Z') ?
+    (const char *) sp_st_a->children[1]->buffers[2] : NULL;
+  const int64_t *up_goff = (vfmt[0] == 'Z') ?
+    (const int64_t *) sp_st_a->children[2]->buffers[1] : NULL;
+  const char *up_gdata = (vfmt[0] == 'Z') ?
+    (const char *) sp_st_a->children[2]->buffers[2] : NULL;
+  const uint8_t *lo_bm =
+    (const uint8_t *) sp_st_a->children[3]->buffers[1];
+  const uint8_t *up_bm =
+    (const uint8_t *) sp_st_a->children[4]->buffers[1];
+  bool byref = (vfmt[0] == 'u' || vfmt[0] == 'Z');
+  Span *spans = palloc(sizeof(Span) * n);
+  for (int i = 0; i < n; i++)
+  {
+    Datum lower = aw_get_value(vfmt, basetype, lo_v, lo_soff, lo_sdata,
+      lo_goff, lo_gdata, i);
+    Datum upper = aw_get_value(vfmt, basetype, up_v, up_soff, up_sdata,
+      up_goff, up_gdata, i);
+    bool lo = ((lo_bm[i >> 3] >> (i & 7)) & 1) != 0;
+    bool up = ((up_bm[i >> 3] >> (i & 7)) & 1) != 0;
+    Span *one = span_make(lower, upper, lo, up, basetype);
+    spans[i] = *one;
+    pfree(one);
+    if (byref)
+    {
+      pfree(DatumGetPointer(lower));
+      pfree(DatumGetPointer(upper));
+    }
+  }
+  /* The Arrow spans are in the span set's own normalized order; pass
+   * normalize = false and order = false to preserve it exactly. */
+  SpanSet *result = spanset_make_exp(spans, n, n, false, false);
+  pfree(spans);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Round-trip a span set through the Arrow C Data Interface
+ * @param[in] ss Span set
+ * @return New span set equal to @p ss, or @p NULL on an unsupported base
+ * type
+ */
+SpanSet *
+meos_spanset_arrow_roundtrip(const SpanSet *ss)
+{
+  struct ArrowSchema schema = {0};
+  struct ArrowArray array = {0};
+  if (! meos_spanset_to_arrow(ss, &schema, &array))
+    return NULL;
+  SpanSet *result = meos_spanset_from_arrow(&schema, &array);
   if (schema.release)
     schema.release(&schema);
   if (array.release)

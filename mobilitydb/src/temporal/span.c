@@ -981,3 +981,21 @@ Span_hash_extended(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+PGDLLEXPORT Datum Span_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Round-trip a span through the Arrow C Data Interface, returning
+ * the reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Span_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Span *result = meos_span_arrow_roundtrip(s);
+  PG_RETURN_SPAN_P(result);
+}
+
+/******************************************************************************/

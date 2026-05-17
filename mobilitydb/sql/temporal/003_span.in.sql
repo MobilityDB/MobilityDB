@@ -1231,3 +1231,26 @@ CREATE OPERATOR CLASS tstzspan_hash_ops
     FUNCTION    2   span_hash_extended(tstzspan, bigint);
 
 /******************************************************************************/
+
+CREATE FUNCTION arrowRoundtrip(intspan)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(bigintspan)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Span_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(datespan)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Span_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(tstzspan)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Span_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/

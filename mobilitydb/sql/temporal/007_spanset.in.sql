@@ -1362,3 +1362,26 @@ CREATE OPERATOR CLASS tstzspanset_hash_ops
 
 
 /******************************************************************************/
+
+CREATE FUNCTION arrowRoundtrip(intspanset)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Spanset_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(bigintspanset)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Spanset_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(floatspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Spanset_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(datespanset)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(tstzspanset)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Spanset_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/

@@ -942,3 +942,14 @@ CREATE OPERATOR <-> (
 );
 
 /*****************************************************************************/
+
+CREATE FUNCTION arrowRoundtrip(geomset)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION arrowRoundtrip(geogset)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/

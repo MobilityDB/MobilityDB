@@ -1,0 +1,210 @@
+SELECT arrowRoundtrip(intset '{1, 2, 3, 5, 8}');
+ arrowroundtrip  
+-----------------
+ {1, 2, 3, 5, 8}
+(1 row)
+
+SELECT arrowRoundtrip(bigintset '{10000000000, 20000000000}');
+       arrowroundtrip       
+----------------------------
+ {10000000000, 20000000000}
+(1 row)
+
+SELECT arrowRoundtrip(floatset '{1.5, -3.25, 7, 42.125}');
+     arrowroundtrip      
+-------------------------
+ {-3.25, 1.5, 7, 42.125}
+(1 row)
+
+SELECT arrowRoundtrip(textset '{"alpha", "beta", "gamma"}');
+       arrowroundtrip       
+----------------------------
+ {"alpha", "beta", "gamma"}
+(1 row)
+
+SELECT arrowRoundtrip(dateset '{2000-01-01, 2000-06-15, 2001-12-31}');
+            arrowroundtrip            
+--------------------------------------
+ {01-01-2000, 06-15-2000, 12-31-2001}
+(1 row)
+
+SELECT arrowRoundtrip(tstzset '{2000-01-01 08:00:00+00, 2000-01-02 09:30:00+00}');
+                          arrowroundtrip                          
+------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST", "Sun Jan 02 01:30:00 2000 PST"}
+(1 row)
+
+SELECT arrowRoundtrip(geomset '{Point(1 1), Point(2 3), Point(4 5)}');
+                                                               arrowroundtrip                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {"0101000000000000000000F03F000000000000F03F", "010100000000000000000000400000000000000840", "010100000000000000000010400000000000001440"}
+(1 row)
+
+SELECT arrowRoundtrip(geomset 'SRID=4326;{Point(1 1), Point(2 3)}');
+                                                arrowroundtrip                                                
+--------------------------------------------------------------------------------------------------------------
+ {"0101000020E6100000000000000000F03F000000000000F03F", "0101000020E610000000000000000000400000000000000840"}
+(1 row)
+
+SELECT arrowRoundtrip(geogset '{Point(1 1), Point(2 3)}');
+                                                arrowroundtrip                                                
+--------------------------------------------------------------------------------------------------------------
+ {"0101000020E6100000000000000000F03F000000000000F03F", "0101000020E610000000000000000000400000000000000840"}
+(1 row)
+
+SELECT arrowRoundtrip(intspan '[1, 10)');
+ arrowroundtrip 
+----------------
+ [1, 10)
+(1 row)
+
+SELECT arrowRoundtrip(bigintspan '[100000000000, 200000000000]');
+        arrowroundtrip        
+------------------------------
+ [100000000000, 200000000001)
+(1 row)
+
+SELECT arrowRoundtrip(floatspan '[1.5, 9.75)');
+ arrowroundtrip 
+----------------
+ [1.5, 9.75)
+(1 row)
+
+SELECT arrowRoundtrip(datespan '(2000-01-01, 2001-01-01]');
+      arrowroundtrip      
+--------------------------
+ [01-02-2000, 01-02-2001)
+(1 row)
+
+SELECT arrowRoundtrip(tstzspan '[2000-01-01 00:00:00+00, 2000-12-31 23:59:59+00)');
+                        arrowroundtrip                        
+--------------------------------------------------------------
+ [Fri Dec 31 16:00:00 1999 PST, Sun Dec 31 15:59:59 2000 PST)
+(1 row)
+
+SELECT arrowRoundtrip(intspanset '{[1, 3), [5, 8), [10, 12)}');
+       arrowroundtrip       
+----------------------------
+ {[1, 3), [5, 8), [10, 12)}
+(1 row)
+
+SELECT arrowRoundtrip(bigintspanset '{[1000000000, 2000000000], [9000000000, 9999999999]}');
+                    arrowroundtrip                     
+-------------------------------------------------------
+ {[1000000000, 2000000001), [9000000000, 10000000000)}
+(1 row)
+
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4], [10.25, 11.75)}');
+            arrowroundtrip            
+--------------------------------------
+ {[1.5, 2.5), (3, 4], [10.25, 11.75)}
+(1 row)
+
+SELECT arrowRoundtrip(datespanset '{[2000-01-01, 2000-02-01), [2000-06-01, 2000-07-01)}');
+                    arrowroundtrip                    
+------------------------------------------------------
+ {[01-01-2000, 02-01-2000), [06-01-2000, 07-01-2000)}
+(1 row)
+
+SELECT arrowRoundtrip(tstzspanset '{[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00), [2000-03-01 00:00:00+00, 2000-04-01 00:00:00+00)}');
+                                                        arrowroundtrip                                                        
+------------------------------------------------------------------------------------------------------------------------------
+ {[Fri Dec 31 16:00:00 1999 PST, Sat Jan 01 16:00:00 2000 PST), [Tue Feb 29 16:00:00 2000 PST, Fri Mar 31 16:00:00 2000 PST)}
+(1 row)
+
+SELECT arrowRoundtrip(intset '{1, 2, 3}') = intset '{1, 2, 3}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(bigintset '{10000000000, 20000000000}') = bigintset '{10000000000, 20000000000}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(floatset '{1.5, -3.25, 7}') = floatset '{1.5, -3.25, 7}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(textset '{"a", "bb", "ccc"}') = textset '{"a", "bb", "ccc"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(dateset '{2000-01-01, 2001-06-15}') = dateset '{2000-01-01, 2001-06-15}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tstzset '{2000-01-01 08:00:00+00, 2000-01-02 09:30:00+00}') = tstzset '{2000-01-01 08:00:00+00, 2000-01-02 09:30:00+00}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(geomset 'SRID=4326;{Point(1 1), Point(2 3)}') = geomset 'SRID=4326;{Point(1 1), Point(2 3)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(geogset '{Point(1 1), Point(2 3)}') = geogset '{Point(1 1), Point(2 3)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(intspan '[1, 10)') = intspan '[1, 10)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(floatspan '[1.5, 9.75)') = floatspan '[1.5, 9.75)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(datespan '(2000-01-01, 2001-01-01]') = datespan '(2000-01-01, 2001-01-01]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tstzspan '[2000-01-01 00:00:00+00, 2000-12-31 23:59:59+00)') = tstzspan '[2000-01-01 00:00:00+00, 2000-12-31 23:59:59+00)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(intspanset '{[1, 3), [5, 8)}') = intspanset '{[1, 3), [5, 8)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}') = floatspanset '{[1.5, 2.5), (3, 4]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(datespanset '{[2000-01-01, 2000-02-01)}') = datespanset '{[2000-01-01, 2000-02-01)}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tstzspanset '{[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00)}') = tstzspanset '{[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00)}';
+ ?column? 
+----------
+ t
+(1 row)
+
