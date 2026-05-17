@@ -506,6 +506,9 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pz = (is_point && has_z) ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  /* pr[] is written via pr[k] = cbuffer_radius(...) inside #if CBUFFER; the
+   * cppcheck CI build defines CBUFFER=0 so it cannot see the write. */
+  /* cppcheck-suppress constVariablePointer */
   double *pr = is_cbuffer ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   int k = 0;
@@ -780,6 +783,10 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
     (const double *) vstruct->children[1]->buffers[1] : NULL;
   const double *pz = (v_is_point && vstruct->n_children == 3) ?
     (const double *) vstruct->children[2]->buffers[1] : NULL;
+  /* In the cppcheck CI build (CBUFFER=0) the earlier #if ! CBUFFER guard
+   * returns before this point when v_is_cbuffer, so cppcheck deduces the
+   * condition is always false; with CBUFFER=1 it is a live runtime test. */
+  /* cppcheck-suppress knownConditionTrueFalse */
   const double *pr = v_is_cbuffer ?
     (const double *) vstruct->children[2]->buffers[1] : NULL;
   int nseqs = (int) seq_st_a->length;
