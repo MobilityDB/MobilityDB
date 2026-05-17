@@ -82,6 +82,18 @@
 #include <meos_geo.h>
 #include <meos_pose.h>
 #include <meos_rgeo.h>
+#include <meos_pointcloud.h>
+/* A standalone MEOS program builds and registers a point-cloud value
+ * exactly as meos/examples/tpcbox_rtree.c and
+ * meos/test/pointcloud_valgrind.c do (in a PG backend mobilitydb_init
+ * registers the schema lazily from the pointcloud_formats catalog and
+ * PC_Patch builds the patch). pc_api.h / pc_api_internal.h are
+ * pgPointCloud's vendored headers (PCSCHEMA, pc_schema_from_xml, the
+ * PCPOINTLIST / PCPATCH builders); pointcloud/pgsql_compat.h is the MEOS
+ * serialization shim (meos_pc_patch_serialize, SERIALIZED_PATCH). */
+#include <pointcloud/pgsql_compat.h>
+#include "pc_api.h"
+#include "pc_api_internal.h"
 
 /**
  * @brief Hand one already-built temporal value's Arrow export to the
@@ -290,10 +302,138 @@ validate_trgeo(const char *label, const char *geo_wkt, const char *tpose_in_str)
   return validate_temp(label, trgeo);
 }
 
+/* Canonical pcid = 1 schema (three int32_t X/Y/Z dimensions scaled by
+ * 0.01), byte-identical to the one
+ * mobilitydb/datagen/pointcloud/random_tpcpoint.sql installs in
+ * pointcloud_formats and the one tpc_wkb_roundtrip.c's
+ * PCPOINT_HEX_PCID1_111 layout matches. The point-cloud value leaf is
+ * serialized with its pcid only; the schema is resolved out-of-band, so
+ * registering it once lets meos_temporal_to_arrow compute the bbox and
+ * the round-trip rebuild every tpcpoint/tpcpatch value. */
+#define PCID1_SCHEMA_XML \
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" \
+  "<pc:PointCloudSchema xmlns:pc=\"http://pointcloud.org/schemas/PC/1.1\"" \
+  " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" \
+  "<pc:dimension><pc:position>1</pc:position><pc:size>4</pc:size>" \
+  "<pc:description>X coordinate</pc:description><pc:name>X</pc:name>" \
+  "<pc:interpretation>int32_t</pc:interpretation><pc:scale>0.01</pc:scale>" \
+  "</pc:dimension>" \
+  "<pc:dimension><pc:position>2</pc:position><pc:size>4</pc:size>" \
+  "<pc:description>Y coordinate</pc:description><pc:name>Y</pc:name>" \
+  "<pc:interpretation>int32_t</pc:interpretation><pc:scale>0.01</pc:scale>" \
+  "</pc:dimension>" \
+  "<pc:dimension><pc:position>3</pc:position><pc:size>4</pc:size>" \
+  "<pc:description>Z coordinate</pc:description><pc:name>Z</pc:name>" \
+  "<pc:interpretation>int32_t</pc:interpretation><pc:scale>0.01</pc:scale>" \
+  "</pc:dimension>" \
+  "<pc:metadata><Metadata name=\"srid\">0</Metadata></pc:metadata>" \
+  "</pc:PointCloudSchema>"
+
+/* A pcid = 1 SERIALIZED_POINT in hex: [4-byte vl_len_ slot][4-byte pcid
+ * little-endian = 1][3 x 4-byte int32 dimensions]. The layout and the
+ * (1,1,1) seed are the ones documented and exercised by the canonical
+ * meos/examples/tpc_wkb_roundtrip.c; distinct points only change the
+ * three trailing int32 little-endian dimension words. The hex-WKB body
+ * is parsed schema-free so no schema is needed to build a tpcpoint. */
+#define PCPOINT_HEX_111 "0000000001000000010000000100000001000000"
+#define PCPOINT_HEX_222 "0000000001000000020000000200000002000000"
+#define PCPOINT_HEX_333 "0000000001000000030000000300000003000000"
+
+/* The MEOS schema cache, populated by main(). */
+static PCSCHEMA *pcid1_schema = NULL;
+
+/**
+ * @brief Build a tpcpoint instant from a serialized hex point body
+ * @details @p hexbody is parsed schema-free by pcpoint_hex_in (mirroring
+ * tpc_wkb_roundtrip.c). The value Datum is the varlena pointer; MEOS's
+ * Datum is uintptr_t so the (Datum) cast is the portable equivalent of
+ * PostgreSQL's PointerGetDatum.
+ */
+static TInstant *
+tpcpoint_inst(const char *hexbody, const char *ts)
+{
+  Pcpoint *pt = pcpoint_hex_in(hexbody);
+  if (! pt)
+    return NULL;
+  return tinstant_make((Datum) pt, T_TPCPOINT, pg_timestamptz_in(ts, -1));
+}
+
+/**
+ * @brief Build a tpcpatch instant from an explicit list of X/Y/Z points
+ * @details Mirrors meos/test/pointcloud_valgrind.c: assemble a
+ * PCPOINTLIST against the registered pcid = 1 PCSCHEMA, form an
+ * uncompressed PCPATCH and serialize it to the SERIALIZED_PATCH varlena
+ * that is the tpcpatch instant value. This is the canonical way a
+ * standalone MEOS program builds a patch (in a PG backend PC_Patch does
+ * it). The bytes are built fresh in-process, not hand-encoded.
+ */
+static TInstant *
+tpcpatch_inst(const double (*pts)[3], int npts, const char *ts)
+{
+  PCPOINTLIST *pl = pc_pointlist_make(npts);
+  PCDIMENSION *xd = pc_schema_get_dimension(pcid1_schema, 0);
+  PCDIMENSION *yd = pc_schema_get_dimension(pcid1_schema, 1);
+  PCDIMENSION *zd = pc_schema_get_dimension(pcid1_schema, 2);
+  for (int i = 0; i < npts; i++)
+  {
+    PCPOINT *pt = pc_point_make(pcid1_schema);
+    pc_double_to_ptr(pt->data + xd->byteoffset, xd->interpretation,
+      pts[i][0]);
+    pc_double_to_ptr(pt->data + yd->byteoffset, yd->interpretation,
+      pts[i][1]);
+    pc_double_to_ptr(pt->data + zd->byteoffset, zd->interpretation,
+      pts[i][2]);
+    pc_pointlist_add_point(pl, pt);
+  }
+  PCPATCH *patch = (PCPATCH *) pc_patch_uncompressed_from_pointlist(pl);
+  SERIALIZED_PATCH *ser = meos_pc_patch_serialize(patch, NULL);
+  if (! ser)
+    return NULL;
+  return tinstant_make((Datum) ser, T_TPCPATCH,
+    pg_timestamptz_in(ts, -1));
+}
+
+/**
+ * @brief Validate one already-built temporal point-cloud point value
+ * (the per-instant value is an opaque int64-offset LargeBinary "Z" leaf
+ * whose name "pcpoint" discriminates it from the general-geometry leaf)
+ */
+static int
+validate_tpcpoint(const char *label, Temporal *temp)
+{
+  return validate_temp(label, temp);
+}
+
+/**
+ * @brief Validate one already-built temporal point-cloud patch value
+ * (same opaque LargeBinary "Z" leaf encoding as tpcpoint, leaf name
+ * "pcpatch")
+ */
+static int
+validate_tpcpatch(const char *label, Temporal *temp)
+{
+  return validate_temp(label, temp);
+}
+
 int
 main(void)
 {
   meos_initialize();
+
+  /* Pre-populate the MEOS schema cache for pcid = 1 the canonical
+   * standalone way (meos/examples/tpcbox_rtree.c). The point-cloud
+   * value leaf serializes the pcid only; meos_temporal_to_arrow and the
+   * round-trip resolve the schema out-of-band from this cache, exactly
+   * as the PG backend resolves it from the pointcloud_formats catalog. */
+  pcid1_schema = pc_schema_from_xml(PCID1_SCHEMA_XML);
+  if (! pcid1_schema)
+  {
+    printf("[setup] FAIL: pc_schema_from_xml(pcid 1)\n");
+    meos_finalize();
+    return 1;
+  }
+  pcid1_schema->pcid = 1;
+  meos_pc_schema_register(1, pcid1_schema);
 
   int rc = 0;
 
@@ -395,6 +535,82 @@ main(void)
     "Interp=Step;{[Pose(Point(1 1),0.2)@2000-01-01, "
     "Pose(Point(1 1),0.4)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03], "
     "[Pose(Point(2 2),0.6)@2000-01-04, Pose(Point(2 2),0.6)@2000-01-05]}");
+
+  /* ---- Opaque tier: temporal point cloud point (LargeBinary "Z" leaf
+   * named "pcpoint") ----
+   * tpcpoint defaults to step interpolation, so sequences use closed
+   * bounds; the shapes mirror the canonical 450_tpc_arrow pg_regress
+   * coverage (instant, discrete sequence, step sequence, sequence set)
+   * plus a single-instant sequence consistent with the other tiers. */
+  rc |= validate_tpcpoint("tpcpoint-instant",
+    (Temporal *) tpcpoint_inst(PCPOINT_HEX_111, "2024-01-01"));
+  rc |= validate_tpcpoint("tpcpoint-single-instant-seq",
+    (Temporal *) tsequence_make(
+      (TInstant *[]){ tpcpoint_inst(PCPOINT_HEX_111, "2024-01-01") },
+      1, true, true, STEP, true));
+  rc |= validate_tpcpoint("tpcpoint-discrete-sequence",
+    (Temporal *) tsequence_make(
+      (TInstant *[]){ tpcpoint_inst(PCPOINT_HEX_111, "2024-01-01"),
+        tpcpoint_inst(PCPOINT_HEX_222, "2024-01-02"),
+        tpcpoint_inst(PCPOINT_HEX_333, "2024-01-03") },
+      3, true, true, DISCRETE, true));
+  rc |= validate_tpcpoint("tpcpoint-step-sequence",
+    (Temporal *) tsequence_make(
+      (TInstant *[]){ tpcpoint_inst(PCPOINT_HEX_111, "2024-01-01"),
+        tpcpoint_inst(PCPOINT_HEX_222, "2024-01-02"),
+        tpcpoint_inst(PCPOINT_HEX_333, "2024-01-03") },
+      3, true, true, STEP, true));
+  rc |= validate_tpcpoint("tpcpoint-sequence-set",
+    (Temporal *) tsequenceset_make(
+      (TSequence *[]){
+        tsequence_make(
+          (TInstant *[]){ tpcpoint_inst(PCPOINT_HEX_111, "2024-01-01"),
+            tpcpoint_inst(PCPOINT_HEX_222, "2024-01-02") },
+          2, true, true, STEP, true),
+        tsequence_make(
+          (TInstant *[]){ tpcpoint_inst(PCPOINT_HEX_333, "2024-01-03") },
+          1, true, true, STEP, true) },
+      2, true));
+
+  /* ---- Opaque tier: temporal point cloud patch (LargeBinary "Z" leaf
+   * named "pcpatch") ----
+   * Patches are built fresh in-process from explicit X/Y/Z point lists
+   * against the registered pcid = 1 schema, mirroring the canonical
+   * 450_tpc_arrow PC_Patch(ARRAY[PC_MakePoint(1, ...)]) coverage. */
+  {
+    static const double s12[][3] = { {1, 1, 1}, {2, 2, 2} };
+    static const double s56[][3] = { {5, 5, 5}, {6, 6, 6} };
+    static const double s3[][3]  = { {3, 3, 3} };
+    rc |= validate_tpcpatch("tpcpatch-instant",
+      (Temporal *) tpcpatch_inst(s12, 2, "2024-01-01"));
+    rc |= validate_tpcpatch("tpcpatch-single-instant-seq",
+      (Temporal *) tsequence_make(
+        (TInstant *[]){ tpcpatch_inst(s12, 2, "2024-01-01") },
+        1, true, true, STEP, true));
+    rc |= validate_tpcpatch("tpcpatch-discrete-sequence",
+      (Temporal *) tsequence_make(
+        (TInstant *[]){ tpcpatch_inst(s12, 2, "2024-01-01"),
+          tpcpatch_inst(s56, 2, "2024-01-02"),
+          tpcpatch_inst(s3, 1, "2024-01-03") },
+        3, true, true, DISCRETE, true));
+    rc |= validate_tpcpatch("tpcpatch-step-sequence",
+      (Temporal *) tsequence_make(
+        (TInstant *[]){ tpcpatch_inst(s12, 2, "2024-01-01"),
+          tpcpatch_inst(s56, 2, "2024-01-02"),
+          tpcpatch_inst(s3, 1, "2024-01-03") },
+        3, true, true, STEP, true));
+    rc |= validate_tpcpatch("tpcpatch-sequence-set",
+      (Temporal *) tsequenceset_make(
+        (TSequence *[]){
+          tsequence_make(
+            (TInstant *[]){ tpcpatch_inst(s12, 2, "2024-01-01"),
+              tpcpatch_inst(s56, 2, "2024-01-02") },
+            2, true, true, STEP, true),
+          tsequence_make(
+            (TInstant *[]){ tpcpatch_inst(s3, 1, "2024-01-03") },
+            1, true, true, STEP, true) },
+        2, true));
+  }
 
   meos_finalize();
   printf("==== %s ====\n", rc ? "OVERALL FAIL" : "OVERALL PASS");

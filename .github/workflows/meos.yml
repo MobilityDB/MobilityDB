@@ -114,7 +114,7 @@ jobs:
           ./threaded_test 8 5000
 
   arrow_conformance:
-    name: Arrow C Data Interface conformance (opaque and rigid geometry types)
+    name: Arrow C Data Interface conformance (opaque, rigid geometry and point cloud types)
     runs-on: ubuntu-latest
 
     steps:
@@ -127,19 +127,36 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev
+            libgsl-dev \
+            autoconf automake libtool libxml2-dev pkg-config
 
-      # Build MEOS with the circular buffer, pose and rigid geometry
-      # subsystems so the opaque LargeBinary value leaf (temporal
-      # geometry and geography, both core) and the rigid geometry
+      # MEOS's POINTCLOUD=ON build links against pgPointCloud's static
+      # libpc.a, produced as a side-effect of the upstream autotools
+      # build. The pgPointCloud source is vendored at pointcloud-pg/;
+      # run its autotools build here just to harvest libpc.a, exactly
+      # as the pgversion.yml coverage axis does.
+      - name: Build pgPointCloud from source (for libpc.a)
+        run: |
+          sudo apt-get install -y postgresql-server-dev-all
+          PG_CONFIG=$(ls /usr/lib/postgresql/*/bin/pg_config | head -1)
+          cd pointcloud-pg
+          ./autogen.sh
+          ./configure --with-pgconfig="$PG_CONFIG"
+          make -j $(nproc)
+          ls -la lib/libpc.a
+
+      # Build MEOS with the circular buffer, pose, rigid geometry and
+      # pgpointcloud subsystems so the opaque LargeBinary value leaf
+      # (temporal geometry and geography, both core; temporal point
+      # cloud point and patch) and the rigid geometry
       # Struct{ref:LargeBinary, pose} value leaf are exercised. The
       # decomposed circular buffer cases are kept as a regression guard.
-      - name: Build MEOS with circular buffers, poses and rigid geometries
+      - name: Build MEOS with circular buffers, poses, rigid geometries and point clouds
         run: |
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
-            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+            -DCBUFFER=on -DPOSE=on -DRGEO=on -DPOINTCLOUD=on ..
           make -j $(nproc)
           sudo make install
 
@@ -147,13 +164,18 @@ jobs:
       # amalgamation and run it. nanoarrow imports the MEOS-produced
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree, proving the
-      # opaque and rigid geometry exports are consumable by an external
-      # Arrow engine.
+      # opaque, rigid geometry and point cloud exports are consumable by an
+      # external Arrow engine. The point-cloud cases build values via the
+      # vendored pgPointCloud headers exactly as meos/examples/
+      # tpcbox_rtree.c and meos/test/pointcloud_valgrind.c do, so the
+      # source-tree pointcloud include paths are added on the gcc line.
       - name: Validate the Arrow export with nanoarrow
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -g -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+            -I"$GITHUB_WORKSPACE/meos/include" \
+            -I"$GITHUB_WORKSPACE/pointcloud-pg/lib" \
             -o temporal_arrow_validate temporal_arrow_validate.c \
             "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
             -L/usr/local/lib -lmeos

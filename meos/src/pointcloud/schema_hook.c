@@ -19,6 +19,8 @@
 #endif
 #include <meos.h>
 #include "pointcloud/meos_schema_hook.h"
+/* pgpointcloud — pc_install_default_handlers */
+#include "pc_api.h"
 
 /*****************************************************************************
  * Cache state
@@ -197,4 +199,23 @@ meos_pc_schema(uint32_t pcid)
     "installed — pre-populate via meos_pc_schema_register, or "
     "(in a PG backend) ensure mobilitydb_init has run", pcid);
   return NULL;
+}
+
+/**
+ * @ingroup meos_pointcloud_schema_cache
+ * @brief Install the pgPointCloud library handlers for standalone MEOS.
+ * @details The bundled libpc.a leaves its allocator, deallocator and
+ *   message handlers as NULL function pointers until a host installs
+ *   them. The PG backend does this in @c mobilitydb_init via
+ *   @c pc_set_handlers (palloc-based). A standalone MEOS program has no
+ *   such entry point, so the first libpc call that allocates or reports
+ *   (@c pc_schema_from_xml, @c pc_point_get_x, …) dereferences a NULL
+ *   handler and crashes. Installing the default system allocator/message
+ *   handlers here makes a standalone MEOS process symmetric with the PG
+ *   backend. Called from @c meos_initialize under @c #if POINTCLOUD.
+ */
+void
+meos_initialize_pointcloud(void)
+{
+  pc_install_default_handlers();
 }
