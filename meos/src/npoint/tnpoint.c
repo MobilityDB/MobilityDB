@@ -224,6 +224,20 @@ tnpoint_in(const char *str)
 
 /**
  * @ingroup meos_npoint_inout
+ * @brief Return a temporal network point from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tnpoint_from_mfjson(const char *mfjson)
+{
+  VALIDATE_NOT_NULL(mfjson, NULL);
+  return temporal_from_mfjson(mfjson, T_TNPOINT);
+}
+
+/**
+ * @ingroup meos_npoint_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * network point
  * @param[in] temp Temporal network point

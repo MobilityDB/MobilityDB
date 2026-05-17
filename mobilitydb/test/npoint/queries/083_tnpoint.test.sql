@@ -106,6 +106,44 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-0
 SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', 'XDR'));
 
 -------------------------------------------------------------------------------
+-- Input/output in MF-JSON format
+-------------------------------------------------------------------------------
+
+SELECT asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT asMFJSON(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02, Npoint(1, 0.3)@2000-01-03}');
+SELECT asMFJSON(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT asMFJSON(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT asMFJSON(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.2)@2000-01-03],[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+
+SELECT asMFJSON(tnpoint 'Npoint(1, 0.123456789)@2000-01-01', 0, 0, 6);
+SELECT asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01', 0, 0, 20);
+SELECT asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01', 0, 0, -1);
+SELECT asMFJSON(tnpoint 'SRID=4326;Npoint(1, 0.5)@2019-01-01 18:00:00.15+02', 1, 0, 2);
+SELECT asMFJSON(tnpoint 'SRID=4326;Npoint(1, 0.5)@2019-01-01 18:00:00.15+02', 2, 0, 2);
+SELECT asMFJSON(tnpoint 'SRID=4326;Npoint(1, 0.5)@2019-01-01 18:00:00.15+02', 3, 0, 2);
+SELECT asMFJSON(tnpoint 'SRID=4326;Npoint(1, 0.5)@2019-01-01 18:00:00.15+02', 4, 0, 2);
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01')));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02}')));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]')));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02)')));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]')));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02],[Npoint(2, 0.6)@2000-01-03, Npoint(2, 0.6)@2000-01-04]}')));
+
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint 'Npoint(1, 0.5)@2000-01-01', 3)));
+SELECT asText(tnpointFromMFJSON(asMFJSON(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', 3)));
+
+-- Errors
+SELECT tnpointFromMFJSON('ABC');
+SELECT tnpointFromMFJSON('{"type":"XXX","values":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","valuesxxx":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"routexxx":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"positionxxx":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimess":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["XXXX"],"interpolation":"None"}');
+SELECT tnpointFromMFJSON('{"type":"MovingNetworkPoint","values":[{"route":1,"position":0.5}],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"XXX"}');
+
+-------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 

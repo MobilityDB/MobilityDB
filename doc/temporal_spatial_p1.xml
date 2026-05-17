@@ -131,7 +131,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
 					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
 				</itemizedlist>
-				<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+				<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15). A temporal network point is encoded with the type name <varname>MovingNetworkPoint</varname>; since a network point references a location on a route rather than a coordinate, each value is an object with an integer <varname>route</varname> member and a numeric <varname>position</varname> member, mirroring the <varname>route</varname> and <varname>getPosition</varname> accessors.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
 /* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15+01"],
@@ -148,6 +148,11 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
     "period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
     "coordinates":[[50.81,4.38]],"datetimes":["2019-01-01T17:00:00.15+01"],
     "interpolations":"None"} */
+SELECT asMFJSON(tnpoint 'Npoint(1, 0.5)@2019-01-01 18:00:00.15+02');
+/* {"type":"MovingNetworkPoint",
+    "crs":{"type":"Name","properties":{"name":"EPSG:5676"}},
+    "values":[{"route":1,"position":0.5}],
+    "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"} */
 </programlisting>
 			</listitem>
 

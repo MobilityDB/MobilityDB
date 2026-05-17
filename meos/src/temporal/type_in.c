@@ -688,6 +688,78 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
 
 /*****************************************************************************/
 
+#if NPOINT
+/**
+ * @brief Return a network point from its MF-JSON representation
+ * @details A network point value is a JSON object with an integer `route`
+ * member (the route identifier) and a numeric `position` member (the
+ * relative position along the route), e.g. `{"route":1,"position":0.5}`.
+ * The member names mirror the @p route and @p getPosition accessors. A
+ * network point is a network-relative reference, so there is no coordinate
+ * or Z/geodetic handling as for points or poses.
+ */
+static Npoint *
+parse_mfjson_npoint(json_object *mfjson, int32_t srid UNUSED)
+{
+  assert(mfjson);
+  json_object *route = findMemberByName(mfjson, "route");
+  if (route == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'route' in MFJSON string");
+    return NULL;
+  }
+  json_object *position = findMemberByName(mfjson, "position");
+  if (position == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'position' in MFJSON string");
+    return NULL;
+  }
+  return npoint_make((int64) json_object_get_int64(route),
+    json_object_get_double(position));
+}
+
+/**
+ * @brief Return an array of network points from its MF-JSON values
+ */
+static Datum *
+parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *values_json = findMemberByName(mfjsonTmp, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  int nvalues = (int) json_object_array_length(values_json);
+  if (nvalues < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+  Datum *values = palloc(sizeof(Datum) * nvalues);
+  for (int i = 0; i < nvalues; ++i)
+  {
+    json_object *np = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
+  }
+  *count = nvalues;
+  return values;
+}
+#endif /* NPOINT */
+
+/*****************************************************************************/
+
 /**
  * @brief Return an array of timestamps from their MF-JSON datetimes values
  */
@@ -768,6 +840,10 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -815,6 +891,10 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* RGEO */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -952,7 +1032,8 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
       strcmp(typestr, "MovingPose") != 0 &&
-      strcmp(typestr, "MovingRigidGeometry") != 0 )
+      strcmp(typestr, "MovingRigidGeometry") != 0 &&
+      strcmp(typestr, "MovingNetworkPoint") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string: %s", typestr);
@@ -1036,6 +1117,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TPOSE;
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;
+#if NPOINT
+  else if (strcmp(typestr, "MovingNetworkPoint") == 0)
+    jtemptype = T_TNPOINT;
+#endif /* NPOINT */
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {

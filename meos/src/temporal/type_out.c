@@ -287,6 +287,31 @@ stringbuffer_append_char(sb, '}');
 }
 #endif /* POSE */
 
+#if NPOINT
+/**
+ * @brief Write into the buffer a network point in the MF-JSON representation
+ * @details A network point is a network-relative reference: an integer
+ * `route` member (the route identifier) and a numeric `position` member
+ * (the relative position along the route), e.g.
+ * `{"route":1,"position":0.5}`. The member names mirror the @p route and
+ * @p getPosition accessors. There is no coordinate or Z/geodetic handling
+ * as for points or poses.
+ */
+static void
+npoint_as_json_sb(stringbuffer_t *sb, const Npoint *np, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  char *rid = int8_out(npoint_route(np));
+  stringbuffer_append_len(sb, "{\"route\":", 9);
+  stringbuffer_aprintf(sb, "%s", rid);
+  stringbuffer_append_len(sb, ",\"position\":", 12);
+  stringbuffer_append_double(sb, npoint_position(np), precision);
+  stringbuffer_append_char(sb, '}');
+  pfree(rid);
+  return;
+}
+#endif /* NPOINT */
+
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
@@ -448,6 +473,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
     case T_TGEOGRAPHY:
     case T_TPOSE:
     case T_TRGEOMETRY:
+    case T_TNPOINT:
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
     default: /* Error! */
@@ -496,6 +522,11 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if RGEO
     case T_TRGEOMETRY:
       stringbuffer_append_len(sb, "{\"type\":\"MovingRigidGeometry\",", 30);
+      break;
+#endif
+#if NPOINT
+    case T_TNPOINT:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingNetworkPoint\",", 29);
       break;
 #endif
     default: /* Error! */
@@ -563,6 +594,13 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
   }
 #endif /* RGEO */
+#if NPOINT
+  else if (inst->temptype == T_TNPOINT)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+  }
+#endif /* NPOINT */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -642,9 +680,15 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
     }
 #endif /* RGEO */
+#if NPOINT
+    else if (inst->temptype == T_TNPOINT)
+    {
+      npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+    }
+#endif /* NPOINT */
     else
     {
-      success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst), 
+      success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
         inst->temptype, precision);
       /* Propagate errors up */
       if (! success)
@@ -738,6 +782,12 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
         pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
       }
 #endif /* RGEO */
+#if NPOINT
+      else if (inst->temptype == T_TNPOINT)
+      {
+        npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+      }
+#endif /* NPOINT */
       else
       {
         success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
