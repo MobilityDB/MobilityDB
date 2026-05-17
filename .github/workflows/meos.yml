@@ -114,7 +114,7 @@ jobs:
           ./threaded_test 8 5000
 
   arrow_conformance:
-    name: Arrow C Data Interface conformance (opaque and rigid geometry types)
+    name: Arrow C Data Interface conformance (opaque, rigid geometry and H3 index types)
     runs-on: ubuntu-latest
 
     steps:
@@ -127,19 +127,47 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev
+            libgsl-dev \
+            libh3-dev
 
-      # Build MEOS with the circular buffer, pose and rigid geometry
-      # subsystems so the opaque LargeBinary value leaf (temporal
-      # geometry and geography, both core) and the rigid geometry
-      # Struct{ref:LargeBinary, pose} value leaf are exercised. The
-      # decomposed circular buffer cases are kept as a regression guard.
-      - name: Build MEOS with circular buffers, poses and rigid geometries
+      # The pgdg libh3-dev package's layout differs between releases —
+      # h3api.h has been seen at /usr/include/h3api.h,
+      # /usr/include/h3/h3api.h, and (rarely) /usr/include/h3-3/h3api.h.
+      # Find both the header and the library at runtime and export them so
+      # the cmake step can pin -DH3_INCLUDE_DIR / -DH3_LIBRARY explicitly,
+      # sidestepping CMake's find_path / find_library defaults entirely.
+      # This mirrors the canonical recipe in pgversion.yml's coverage leg.
+      - name: Locate libh3 on disk and pin its paths
+        run: |
+          dpkg -L libh3-dev || true
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null
+            find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"
+            exit 1
+          fi
+          H3_INC_DIR=$(dirname "$H3_INC")
+          echo "H3_INCLUDE_DIR=$H3_INC_DIR" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+          echo "Found libh3 headers at: $H3_INC_DIR"
+          echo "Found libh3 library at: $H3_LIB"
+
+      # Build MEOS with the circular buffer, pose, rigid geometry and H3
+      # index subsystems so the opaque LargeBinary value leaf (temporal
+      # geometry and geography, both core), the rigid geometry
+      # Struct{ref:LargeBinary, pose} value leaf, and the scalar UInt64
+      # "L" leaf (temporal H3 index) are exercised. The decomposed
+      # circular buffer cases are kept as a regression guard.
+      - name: Build MEOS with circular buffers, poses, rigid geometries and H3 indexes
         run: |
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
-            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+            -DCBUFFER=on -DPOSE=on -DRGEO=on \
+            -DH3=on -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" \
+            -DH3_LIBRARY="$H3_LIBRARY" ..
           make -j $(nproc)
           sudo make install
 
@@ -147,13 +175,15 @@ jobs:
       # amalgamation and run it. nanoarrow imports the MEOS-produced
       # ArrowSchema/ArrowArray with no MEOS knowledge and runs full Arrow
       # C Data Interface validation over the whole nested tree, proving the
-      # opaque and rigid geometry exports are consumable by an external
-      # Arrow engine.
+      # opaque, rigid geometry and H3 index exports are consumable by an
+      # external Arrow engine. The installed meos_h3.h includes <h3api.h>,
+      # so the pinned H3 include directory is added to the compile line.
       - name: Validate the Arrow export with nanoarrow
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          gcc -Wall -g -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+          gcc -Wall -g -I/usr/local/include -I"$H3_INCLUDE_DIR" \
+            -I"$GITHUB_WORKSPACE" \
             -o temporal_arrow_validate temporal_arrow_validate.c \
             "$GITHUB_WORKSPACE/nanoarrow/nanoarrow.c" \
             -L/usr/local/lib -lmeos

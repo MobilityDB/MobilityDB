@@ -43,7 +43,7 @@
  * The export is also self-checked through #meos_temporal_arrow_roundtrip as
  * a control.
  *
- * Two value-leaf tiers are exercised:
+ * Three value-leaf tiers are exercised:
  *
  * - The fully decomposed nested-Struct leaf, represented by the temporal
  *   circular buffer (`Struct{x,y,r}`). This is the tier discharged by the
@@ -55,6 +55,12 @@
  *   "ref" child is the shared reference geometry as EWKB. These use a
  *   different value-leaf encoding (LargeBinary + int64 offsets) than the
  *   decomposed tier and are validated here for the first time.
+ * - The scalar UInt64 "L" leaf, represented by the temporal H3 index. An
+ *   H3 cell index is a 64-bit value carried as an unsigned 64-bit Arrow
+ *   leaf, distinct from a temporal big integer's signed "l" leaf. It is a
+ *   discrete-valued type (step interpolation, no linear). This leaf was
+ *   never exercised by the earlier probes and is validated here on its
+ *   own evidence.
  *
  * @code
  * gcc -Wall -g -I/usr/local/include -Inanoarrow -o temporal_arrow_validate \
@@ -80,6 +86,7 @@
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
 #include <meos_geo.h>
+#include <meos_h3.h>
 #include <meos_pose.h>
 #include <meos_rgeo.h>
 
@@ -175,6 +182,8 @@ validate_temp(const char *label, Temporal *temp)
               struct ArrowArrayView *vleaf = inst->children[1];
               if (vleaf->storage_type == NANOARROW_TYPE_LARGE_BINARY)
                 leafdesc = "LargeBinary value leaf";
+              else if (vleaf->storage_type == NANOARROW_TYPE_UINT64)
+                leafdesc = "UInt64 value leaf";
               else if (vleaf->storage_type == NANOARROW_TYPE_STRUCT &&
                 vleaf->n_children >= 1 &&
                 vleaf->children[0]->storage_type ==
@@ -290,6 +299,25 @@ validate_trgeo(const char *label, const char *geo_wkt, const char *tpose_in_str)
   return validate_temp(label, trgeo);
 }
 
+/**
+ * @brief Validate one temporal H3 index value (the scalar UInt64 "L" value
+ * leaf, an H3 cell index carried as an unsigned 64-bit integer)
+ *
+ * @details An H3 cell index is a 64-bit value binary-identical to a signed
+ * int64 but exported as the Arrow unsigned 64-bit "L" leaf, distinct from
+ * the Int64 "l" leaf of a temporal big integer. A temporal H3 index is a
+ * discrete-valued type: a sequence uses step interpolation (there is no
+ * linear interpolation for cell indices), so the value leaf is a plain
+ * contiguous UInt64 buffer with no per-instant offsets. The cell indices
+ * used here are real valid H3 cells mirroring the canonical
+ * 290_th3index_arrow pg_regress coverage.
+ */
+static int
+validate_th3index(const char *label, const char *in)
+{
+  return validate_temp(label, th3index_in(in));
+}
+
 int
 main(void)
 {
@@ -395,6 +423,41 @@ main(void)
     "Interp=Step;{[Pose(Point(1 1),0.2)@2000-01-01, "
     "Pose(Point(1 1),0.4)@2000-01-02, Pose(Point(1 1),0.5)@2000-01-03], "
     "[Pose(Point(2 2),0.6)@2000-01-04, Pose(Point(2 2),0.6)@2000-01-05]}");
+
+  /* ---- Scalar tier: temporal H3 index (UInt64 "L" leaf) ----
+   * An H3 cell index is a 64-bit value exported as the unsigned 64-bit
+   * "L" value leaf, distinct from a temporal big integer's signed "l"
+   * leaf. The cell indices are real valid H3 cells mirroring the
+   * canonical 290_th3index_arrow pg_regress coverage. A temporal H3
+   * index is discrete: a sequence is step interpolated (no linear). The
+   * step rule allows an exclusive upper bound only when the last value
+   * repeats, so the exclusive-bound case repeats its final cell. */
+  /* Instant from a hexadecimal H3 cell index. */
+  rc |= validate_th3index("th3index-instant-hex",
+    "831c02fffffffff@2001-01-01");
+  /* Instant from the decimal form of the same value class. */
+  rc |= validate_th3index("th3index-instant-decimal",
+    "590464338553208831@2001-01-01");
+  /* Single-instant sequence. */
+  rc |= validate_th3index("th3index-single-instant-seq",
+    "[831c02fffffffff@2001-01-01]");
+  /* Discrete sequence. */
+  rc |= validate_th3index("th3index-discrete",
+    "{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02, "
+    "880326b885fffff@2001-01-03}");
+  /* Step sequence with closed bounds. */
+  rc |= validate_th3index("th3index-step-sequence",
+    "Interp=Step;[831c02fffffffff@2001-01-01, "
+    "831c00fffffffff@2001-01-02, 880326b885fffff@2001-01-03]");
+  /* Step sequence with an exclusive upper bound (the step rule requires
+   * the last value to repeat). */
+  rc |= validate_th3index("th3index-step-sequence-exclusive",
+    "Interp=Step;(831c02fffffffff@2001-01-01, "
+    "880326b885fffff@2001-01-02, 880326b885fffff@2001-01-03)");
+  /* Sequence set. */
+  rc |= validate_th3index("th3index-sequence-set",
+    "{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02], "
+    "[880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}");
 
   meos_finalize();
   printf("==== %s ====\n", rc ? "OVERALL FAIL" : "OVERALL PASS");
