@@ -24,24 +24,29 @@
 # ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS
 # TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-"""Zero-MEOS Arrow bridge and Parquet writer for the end-to-end demo.
+"""Zero-MEOS Arrow bridge and Parquet writer for the full-surface demo.
 
 This is the zero-MEOS half of the bridge. It uses ctypes only to invoke the
 MEOS-linked producer shared library so that the producer can fill caller-
 owned ``ArrowSchema``/``ArrowArray`` C structs through the conformance-proven
-``meos_temporal_to_arrow`` kernel. The Arrow consumer here is pyarrow, which
-imports each array purely through the documented Arrow C Data Interface ABI
-(``pyarrow.Array._import_from_c``) -- exactly the path that ``std::bad_alloc``-ed
-before the #1057 stack-dangling schema-children fix; re-running it green is
-the end-to-end vindication of that fix. pyarrow links no MEOS symbol; it only
-reads the ABI memory the producer filled.
+``meos_temporal_to_arrow`` kernel, over the FULL temporal base type surface
+the per-type Arrow conformance covers. The Arrow consumer here is pyarrow,
+which imports each array purely through the documented Arrow C Data Interface
+ABI (``pyarrow.Array._import_from_c``) -- exactly the path that
+``std::bad_alloc``-ed before the #1057 stack-dangling schema-children fix;
+re-running it green over every base type is the end-to-end vindication of
+that fix. pyarrow links no MEOS symbol; it only reads the ABI memory the
+producer filled.
 
-The imported length-1 struct arrays are concatenated into one Arrow table and
-written to a real Parquet file with a small row-group size, so the file forms
-several row groups with per-row-group column statistics, all written by
-zero-MEOS Apache tooling (pyarrow / parquet-cpp). The Parquet file plus the
-producer-emitted ground-truth text file are the only artifacts the separate
-zero-MEOS consumer process touches.
+The MEOS-ARROW value leaf is type-specific (a scalar Int32/Float64/Bool/
+Int64/UInt64, a LargeUtf8, a decomposed Struct{...}, or an opaque
+LargeBinary), so the imported length-1 struct arrays are bucketed by their
+base type and each homogeneous bucket is written to its own real multi-row-
+group Parquet file with per-row-group column statistics, all written by
+zero-MEOS Apache tooling (pyarrow / parquet-cpp). A temporal column in a
+data lake is per-type homogeneous anyway. The Parquet files plus the
+producer-emitted decomposed ground-truth text are the only artifacts the
+separate zero-MEOS consumer process touches.
 """
 
 import ctypes
@@ -55,18 +60,20 @@ import pyarrow.parquet as pq
 ARROW_SCHEMA_SIZE = 72
 ARROW_ARRAY_SIZE = 80
 
-ROW_GROUP_SIZE = 512  # small, so the few-thousand-row file is multi-group
+# Small, so each per-type few-hundred-row file is multi-row-group.
+ROW_GROUP_SIZE = 128
 
 
-def main(producer_so, parquet_path, ground_truth_path):
+def main(producer_so, parquet_base, ground_truth_path):
     lib = ctypes.CDLL(producer_so)
     lib.producer_init.restype = ctypes.c_int
     lib.producer_count.restype = ctypes.c_int
     lib.producer_export.restype = ctypes.c_int
     lib.producer_export.argtypes = [ctypes.c_int, ctypes.c_void_p,
                                     ctypes.c_void_p]
-    lib.producer_write_ground_truth.restype = ctypes.c_int
-    lib.producer_write_ground_truth.argtypes = [ctypes.c_char_p]
+    lib.producer_kind_tag.restype = ctypes.c_char_p
+    lib.producer_kind_tag.argtypes = [ctypes.c_int]
+    lib.producer_built_surface.restype = ctypes.c_char_p
     lib.producer_write_decomposed.restype = ctypes.c_int
     lib.producer_write_decomposed.argtypes = [ctypes.c_char_p]
     lib.producer_selfcheck.restype = ctypes.c_int
@@ -77,39 +84,36 @@ def main(producer_so, parquet_path, ground_truth_path):
     if n <= 0:
         print("FAIL: producer_init returned %d" % n)
         return 1
-    print("producer built %d temporal values "
-          "(interleaved tgeompoint decomposed-Struct + tfloat scalar)" % n)
+    surface = lib.producer_built_surface().decode()
+    print("producer built %d temporal values over the full surface" % n)
+    print("built base types (flag-gated, honest): %s" % surface)
 
-    if not lib.producer_write_ground_truth(ground_truth_path.encode()):
-        print("FAIL: producer_write_ground_truth")
-        return 1
     decomposed_path = ground_truth_path + ".decomposed"
     if not lib.producer_write_decomposed(decomposed_path.encode()):
         print("FAIL: producer_write_decomposed")
         return 1
-    print("wrote MEOS canonical and decomposed ground truth")
+    print("wrote MEOS decomposed ground truth (MEOS accessors on the "
+          "original Temporal*, no Arrow export, no encoding re-implemented)")
 
-    # MEOS-side control: a representative self round-trip sample. This is
-    # only a control; the authoritative check is the separate zero-MEOS
-    # Parquet comparison against the ground-truth file.
-    for i in (0, 1, n // 2, n // 2 + 1, n - 2, n - 1):
+    # MEOS-side control: a representative self round-trip sample spread
+    # across the population. Only a control; the authoritative check is
+    # the separate zero-MEOS Parquet comparison.
+    sample = sorted(set([0, 1, n // 7, n // 3, n // 2,
+                         2 * n // 3, n - 2, n - 1]))
+    for i in sample:
         if not lib.producer_selfcheck(i):
-            print("FAIL: producer self round-trip mismatch at %d" % i)
+            print("FAIL: producer self round-trip mismatch at %d (%s)" %
+                  (i, lib.producer_kind_tag(i).decode()))
             return 1
     print("MEOS-side self round-trip control: bit-exact on the sample")
 
     # Import every length-1 struct array purely through the Arrow C Data
     # Interface. This is the exact pyarrow._import_from_c path that
-    # std::bad_alloc-ed pre-#1057. The MEOS-ARROW value leaf "v" is
-    # type-specific (tgeompoint -> Struct{x,y}, tfloat -> Float64), so the
-    # per-row Arrow struct type differs by base type. A Parquet column is
-    # homogeneously typed, so the arrays are bucketed by their imported
-    # Arrow type and each homogeneous bucket becomes its own Parquet file
-    # (a temporal column in a data lake is per-type homogeneous anyway).
+    # std::bad_alloc-ed pre-#1057. Bucket by base-type tag (a temporal
+    # column in a data lake is per-type homogeneous).
     schema_buf = ctypes.create_string_buffer(ARROW_SCHEMA_SIZE)
-    buckets = {}        # str(type) -> list[Array]
-    bucket_type = {}    # str(type) -> pa.DataType
-    bucket_idx = {}     # str(type) -> list[int]  (original population index)
+    buckets = {}        # tag -> list[Array]
+    bucket_idx = {}     # tag -> list[int] (original population index)
     for i in range(n):
         array_buf = ctypes.create_string_buffer(ARROW_ARRAY_SIZE)
         ctypes.memset(schema_buf, 0, ARROW_SCHEMA_SIZE)
@@ -122,49 +126,35 @@ def main(producer_so, parquet_path, ground_truth_path):
         # _import_from_c consumes (moves) both C structs through their
         # release callbacks. pyarrow touches only the documented ABI.
         arr = pa.Array._import_from_c(aa, sa)
-        key = str(arr.type)
-        buckets.setdefault(key, []).append(arr)
-        bucket_type.setdefault(key, arr.type)
-        bucket_idx.setdefault(key, []).append(i)
+        tag = lib.producer_kind_tag(i).decode()
+        buckets.setdefault(tag, []).append(arr)
+        bucket_idx.setdefault(tag, []).append(i)
         if (i + 1) % 2000 == 0:
             print("  imported %d / %d via pyarrow._import_from_c" %
                   (i + 1, n))
 
     print("pyarrow._import_from_c: imported all %d arrays with NO "
-          "std::bad_alloc (post-#1057 vindication)" % n)
-    print("distinct imported Arrow types (value leaf is per base type): %d" %
-          len(buckets))
-
-    # Map each homogeneous bucket to a stable Parquet file name by its
-    # value-leaf shape.
-    def leaf_tag(t):
-        v = t.field("seqs").type.value_type.field("insts").type \
-             .value_type.field("v").type
-        if pa.types.is_struct(v):
-            return "tgeompoint_" + "_".join(f.name for f in v)
-        return "tfloat_" + str(v)
-
-    base = parquet_path
-    if base.endswith(".parquet"):
-        base = base[:-len(".parquet")]
+          "std::bad_alloc across the full surface (post-#1057 "
+          "vindication)" % n)
+    print("distinct base-type buckets: %d (%s)" %
+          (len(buckets), ",".join(sorted(buckets))))
 
     written = []
-    for key, arrs in buckets.items():
-        tag = leaf_tag(bucket_type[key])
-        path = "%s.%s.parquet" % (base, tag)
+    for tag in sorted(buckets):
+        arrs = buckets[tag]
+        path = "%s.%s.parquet" % (parquet_base, tag)
         big = pa.concat_arrays(arrs)
-        # Carry the original population index so the zero-MEOS verifier can
-        # line each Parquet row up with the correct ground-truth line.
-        idx = pa.array(bucket_idx[key], type=pa.int32())
+        idx = pa.array(bucket_idx[tag], type=pa.int32())
         table = pa.table({"row_id": idx, "temporal": big})
         # Real Parquet with a small row-group size and column statistics,
         # written by zero-MEOS Apache parquet-cpp via pyarrow.
         pq.write_table(table, path, row_group_size=ROW_GROUP_SIZE,
                        write_statistics=True, compression="snappy")
         pf = pq.ParquetFile(path)
-        print("wrote Parquet: %s -- %d rows, %d row groups, value leaf %s" %
-              (path, pf.metadata.num_rows, pf.metadata.num_row_groups, tag))
-        written.append(path)
+        print("wrote Parquet: %-12s %5d rows, %2d row groups -> %s" %
+              (tag, pf.metadata.num_rows, pf.metadata.num_row_groups,
+               path))
+        written.append(tag)
 
     lib.producer_finalize()
     return 0
@@ -173,6 +163,6 @@ def main(producer_so, parquet_path, ground_truth_path):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("usage: temporal_arrow_parquet_bridge.py "
-              "<producer.so> <out.parquet> <ground_truth.txt>")
+              "<producer.so> <parquet_base> <ground_truth.txt>")
         sys.exit(2)
     sys.exit(main(sys.argv[1], sys.argv[2], sys.argv[3]))

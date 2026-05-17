@@ -316,6 +316,11 @@ if(RGEO)
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
+if(H3)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
 if(POINTCLOUD)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pointcloud.h"

@@ -159,12 +159,32 @@ jobs:
             -L/usr/local/lib -lmeos
           ./temporal_arrow_validate
 
+
   arrow_parquet_endtoend:
     name: Zero-MEOS Arrow and Parquet consumption end to end
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      # Mirror pgversion.yml / the #1062 conformance recipe: prefer
+      # apt.postgresql.org over the runner's preinstalled PostgreSQL so
+      # the postgresql-server-dev package resolves cleanly. Only pg_config
+      # is needed here — pgPointCloud produces a static libpc.a, no server.
+      - name: Remove existing PostgreSQL installations [prefer apt.postgresql.org]
+        run: |
+          sudo service postgresql stop || true
+          sudo apt-get --purge remove postgresql* -y || true
+          sudo rm -rf /var/lib/postgresql/ /etc/postgresql/ \
+            /var/log/postgresql/ || true
+
+      - name: Add PostgreSQL APT repository
+        run: |
+          sudo apt-get install -y curl ca-certificates gnupg
+          curl https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo apt-key add -
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ \
+            $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 
       - name: Install dependencies
         run: |
@@ -173,60 +193,116 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev
+            libgsl-dev \
+            libh3-dev \
+            autoconf automake libtool libxml2-dev pkg-config \
+            postgresql-17 postgresql-server-dev-17
+
+      # The pgdg libh3-dev package's layout differs between releases.
+      # Find both the header and the library at runtime and export them
+      # so the cmake step can pin -DH3_INCLUDE_DIR / -DH3_LIBRARY
+      # explicitly. Canonical mirror of the #1065 conformance recipe.
+      - name: Locate libh3 on disk and pin its paths
+        run: |
+          dpkg -L libh3-dev || true
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null
+            find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"
+            exit 1
+          fi
+          H3_INC_DIR=$(dirname "$H3_INC")
+          echo "H3_INCLUDE_DIR=$H3_INC_DIR" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+          echo "Found libh3 headers at: $H3_INC_DIR"
+          echo "Found libh3 library at: $H3_LIB"
 
       # pyarrow and duckdb are the strictly-required canonical-mirror
       # enablement for this verification: the zero-MEOS consumer and the
-      # cross-check engine. They are the documented Arrow C Data Interface
-      # and Parquet tooling the demo verifies against; the demo cannot run
-      # without them. The MEOS export kernel is untouched.
+      # independent cross-check engine. They are the documented Arrow C
+      # Data Interface and Parquet tooling the demo verifies against; the
+      # demo cannot run without them. The MEOS export kernel is untouched.
       - name: Install the zero-MEOS Arrow and Parquet tooling
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install pyarrow duckdb
 
-      # Same MEOS build as the conformance job: the producer exercises the
-      # decomposed Struct value leaf (temporal geometry point) and the
-      # scalar value leaf (temporal float).
-      - name: Build MEOS with circular buffers, poses and rigid geometries
+      # MEOS's POINTCLOUD=ON build links pgPointCloud's static libpc.a,
+      # produced as a side-effect of the upstream autotools build. The
+      # source is vendored at pointcloud-pg/; run its autotools build to
+      # harvest libpc.a, exactly as the #1062 conformance recipe and the
+      # pgversion.yml coverage axis do.
+      - name: Build pgPointCloud from source (for libpc.a)
+        run: |
+          cd pointcloud-pg
+          ./autogen.sh
+          ./configure \
+            --with-pgconfig=/usr/lib/postgresql/17/bin/pg_config
+          make -j $(nproc)
+          ls -la lib/libpc.a
+
+      # Build MEOS over the FULL temporal base type surface the per-type
+      # Arrow conformance covers: scalars + geo points are always on;
+      # -DCBUFFER -DPOSE -DRGEO -DNPOINT add the decomposed extended
+      # tier; -DH3 adds the H3 index; -DPOINTCLOUD adds the point cloud
+      # types. The libpc.a link, the meos_pointcloud.h / pgsql_compat.h
+      # / meos_h3.h installs and the standalone pgPointCloud handler
+      # init are the strictly-required canonical-mirror enablement
+      # (mirrors #1062 / #1065) without which the full-surface producer
+      # cannot link or run; temporal_arrow.c is untouched.
+      - name: Build MEOS over the full base type surface
         run: |
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
-            -DCBUFFER=on -DPOSE=on -DRGEO=on ..
+            -DCBUFFER=on -DPOSE=on -DRGEO=on -DNPOINT=on \
+            -DH3=on -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" \
+            -DH3_LIBRARY="$H3_LIBRARY" \
+            -DPOINTCLOUD=on ..
           make -j $(nproc)
           sudo make install
 
-      # The producer is the only MEOS-linked half. It is built as a shared
-      # library; the zero-MEOS Python bridge loads it with ctypes so the
-      # producer can fill caller-owned ArrowSchema/ArrowArray structs
-      # through the conformance-proven meos_temporal_to_arrow kernel.
+      # The producer is the only MEOS-linked half. It is built as a
+      # shared library from the install prefix (no source include path,
+      # so the generated install meos.h is used); the vendored
+      # pgPointCloud headers come from pointcloud-pg/lib exactly as the
+      # #1062 conformance validator builds. The zero-MEOS Python bridge
+      # loads it with ctypes so the producer can fill caller-owned
+      # ArrowSchema/ArrowArray structs through the conformance-proven
+      # meos_temporal_to_arrow kernel.
       - name: Build the MEOS-linked Arrow producer
         run: |
           cd meos/examples
           gcc -Wall -Wextra -fPIC -shared \
-            -I/usr/local/include -I"$GITHUB_WORKSPACE" \
+            -DCBUFFER=1 -DNPOINT=1 -DPOSE=1 -DRGEO=1 -DH3=1 \
+            -DPOINTCLOUD=1 \
+            -I/usr/local/include \
+            -I"$GITHUB_WORKSPACE/pointcloud-pg/lib" \
             -o libtemporal_arrow_parquet_producer.so \
             temporal_arrow_parquet_producer.c \
             -L/usr/local/lib -lmeos
 
-      # Process 1: the bridge imports every MEOS-produced array purely
-      # through pyarrow._import_from_c (the exact path that std::bad_alloc-ed
-      # before the #1057 stack-dangling schema-children fix) and writes real
-      # multi-row-group Parquet with zero-MEOS parquet-cpp.
+      # Process 1: the bridge imports every MEOS-produced array (over the
+      # full type surface) purely through pyarrow._import_from_c (the
+      # exact path that std::bad_alloc-ed before the #1057 stack-dangling
+      # schema-children fix) and writes real per-type multi-row-group
+      # Parquet with zero-MEOS parquet-cpp.
       - name: Produce Arrow and write Parquet (pyarrow _import_from_c)
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           python3 temporal_arrow_parquet_bridge.py \
             ./libtemporal_arrow_parquet_producer.so \
-            "$RUNNER_TEMP/demo.parquet" \
+            "$RUNNER_TEMP/demo" \
             "$RUNNER_TEMP/demo_ground_truth.txt"
 
-      # Process 2: a fully separate process with NO libmeos on its library
-      # path. It only opens the Parquet files and the MEOS-emitted
-      # decomposed ground truth, measures the real row-group pruning on the
-      # flat top-level columns, verifies every row value-exact against the
+      # Process 2: a fully separate process with NO libmeos on its
+      # library path (self-proven via /proc/self/maps). It only opens
+      # the Parquet files and the MEOS-emitted decomposed ground truth,
+      # measures the honest per-type row-group pruning on the flat
+      # top-level columns, verifies every row field-exact against the
       # MEOS oracle, and cross-checks the prune with duckdb.
       - name: Consume, prune and verify (zero-MEOS process)
         run: |
