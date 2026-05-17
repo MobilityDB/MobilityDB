@@ -49,8 +49,12 @@ engines:
 #                                           a non-issue for a dev script
 #                                           that runs once).
 #   * pointcloud-pg/**                    - vendored pgPointCloud project.
-#   * arrow/**, nanoarrow/**              - vendored Apache-2.0 Arrow C Data
-#                                           Interface ABI header and nanoarrow.
+#   * arrow/**                            - vendored Apache-2.0 Arrow C
+#                                           Data Interface ABI header.
+#   * nanoarrow/**                        - vendored Apache-2.0 nanoarrow
+#                                           amalgamation used only by the
+#                                           standalone Arrow conformance
+#                                           validator.
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
