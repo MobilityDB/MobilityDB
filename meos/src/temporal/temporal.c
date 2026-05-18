@@ -1065,23 +1065,23 @@ tfloat_to_tint(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the time span of a temporal value
  * @param[in] temp Temporal value
- * @param[out] s Span
+ * @param[out] result Span
  */
 void
-temporal_set_tstzspan(const Temporal *temp, Span *s)
+temporal_set_tstzspan(const Temporal *temp, Span *result)
 {
-  assert(temp); assert(s);
+  assert(temp); assert(result);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      tinstant_set_tstzspan((TInstant *) temp, s);
+      tinstant_set_tstzspan((TInstant *) temp, result);
       break;
     case TSEQUENCE:
-      tsequence_set_tstzspan((TSequence *) temp, s);
+      tsequence_set_tstzspan((TSequence *) temp, result);
       break;
     default: /* TSEQUENCESET */
-      tsequenceset_set_tstzspan((TSequenceSet *) temp, s);
+      tsequenceset_set_tstzspan((TSequenceSet *) temp, result);
   }
   return;
 }
@@ -1107,12 +1107,12 @@ temporal_to_tstzspan(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the value span of a temporal number
  * @param[in] temp Temporal value
- * @param[out] s Span
+ * @param[out] result Span
  */
 void
-tnumber_set_span(const Temporal *temp, Span *s)
+tnumber_set_span(const Temporal *temp, Span *result)
 {
-  assert(temp); assert(s); assert(tnumber_type(temp->temptype));
+  assert(temp); assert(result); assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
 
   MeosType basetype = temptype_basetype(temp->temptype);
@@ -1120,12 +1120,12 @@ tnumber_set_span(const Temporal *temp, Span *s)
   if (temp->subtype == TINSTANT)
   {
     Datum value = tinstant_value_p((TInstant *) temp);
-    span_set(value, value, true, true, basetype, spantype, s);
+    span_set(value, value, true, true, basetype, spantype, result);
   }
   else
   {
     TBox *box = (TBox *) temporal_bbox_ptr(temp);
-    memcpy(s, &box->span, sizeof(Span));
+    memcpy(result, &box->span, sizeof(Span));
   }
   return;
 }
@@ -1820,25 +1820,25 @@ temporal_interp(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the bounding box of a temporal value
  * @param[in] temp Temporal value
- * @param[out] box Boundind box
+ * @param[out] result Boundind box
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
  */
 void
-temporal_set_bbox(const Temporal *temp, void *box)
+temporal_set_bbox(const Temporal *temp, void *result)
 {
-  assert(temp); assert(box);
+  assert(temp); assert(result);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      tinstant_set_bbox((TInstant *) temp, box);
+      tinstant_set_bbox((TInstant *) temp, result);
       return;
     case TSEQUENCE:
-      tsequence_set_bbox((TSequence *) temp, box);
+      tsequence_set_bbox((TSequence *) temp, result);
       return;
     default: /* TSEQUENCESET */
-      tsequenceset_set_bbox((TSequenceSet *) temp, box);
+      tsequenceset_set_bbox((TSequenceSet *) temp, result);
       return;
   }
 }

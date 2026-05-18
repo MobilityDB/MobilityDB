@@ -1892,13 +1892,13 @@ tsequence_duration(const TSequence *seq)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the time span of a temporal sequence
  * @param[in] seq Temporal sequence
- * @param[out] s Span
+ * @param[out] result Span
  */
 void
-tsequence_set_tstzspan(const TSequence *seq, Span *s)
+tsequence_set_tstzspan(const TSequence *seq, Span *result)
 {
-  assert(seq); assert(s);
-  memcpy(s, &seq->period, sizeof(Span));
+  assert(seq); assert(result);
+  memcpy(result, &seq->period, sizeof(Span));
   return;
 }
 

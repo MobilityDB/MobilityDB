@@ -982,13 +982,13 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the time span of a temporal sequence set
  * @param[in] ss Temporal sequence set
- * @param[out] s Span
+ * @param[out] result Span
  */
 void
-tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s)
+tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *result)
 {
-  assert(ss); assert(s);
-  memcpy(s, &ss->period, sizeof(Span));
+  assert(ss); assert(result);
+  memcpy(result, &ss->period, sizeof(Span));
   return;
 }
 

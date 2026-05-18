@@ -347,14 +347,14 @@ tinstant_time(const TInstant *inst)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the time span of a temporal instant
  * @param[in] inst Temporal instant
- * @param[out] s Result
+ * @param[out] result Result
  */
 void
-tinstant_set_tstzspan(const TInstant *inst, Span *s)
+tinstant_set_tstzspan(const TInstant *inst, Span *result)
 {
-  assert(inst); assert(s);
+  assert(inst); assert(result);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, s);
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, result);
   return;
 }
 

@@ -181,25 +181,25 @@ tbox_make(const Span *s, const Span *p)
  * span and a timestamptz span
  * @param[in] s Value span
  * @param[in] p Time span
- * @param[out] box Result
+ * @param[out] result Result
  * @note This function is equivalent to #tbox_make without memory allocation
  */
 void
-tbox_set(const Span *s, const Span *p, TBox *box)
+tbox_set(const Span *s, const Span *p, TBox *result)
 {
   /* At least on of the X or T dimensions should be given */
-  assert(s || p); assert(box);
+  assert(s || p); assert(result);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
+  memset(result, 0, sizeof(TBox));
   if (s)
   {
-    memcpy(&box->span, s, sizeof(Span));
-    MEOS_FLAGS_SET_X(box->flags, true);
+    memcpy(&result->span, s, sizeof(Span));
+    MEOS_FLAGS_SET_X(result->flags, true);
   }
   if (p)
   {
-    memcpy(&box->period, p, sizeof(Span));
-    MEOS_FLAGS_SET_T(box->flags, true);
+    memcpy(&result->period, p, sizeof(Span));
+    MEOS_FLAGS_SET_T(result->flags, true);
   }
   return;
 }
@@ -363,16 +363,16 @@ numspan_tstzspan_to_tbox(const Span *s, const Span *p)
  * @brief Return in the last argument a temporal box constructed from a number
  * @param[in] value Value
  * @param[in] basetype Type of the value
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-number_set_tbox(Datum value, MeosType basetype, TBox *box)
+number_set_tbox(Datum value, MeosType basetype, TBox *result)
 {
-  assert(box); assert(tnumber_basetype(basetype));
+  assert(result); assert(tnumber_basetype(basetype));
   Span s;
   MeosType spantype = basetype_spantype(basetype);
   span_set(value, value, true, true, basetype, spantype, &s);
-  tbox_set(&s, NULL, box);
+  tbox_set(&s, NULL, result);
   return;
 }
 
@@ -399,13 +399,13 @@ number_tbox(Datum value, MeosType basetype)
  * @brief Return in the last argument a temporal box constructed from an
  * integer
  * @param[in] i Value
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-int_set_tbox(int i, TBox *box)
+int_set_tbox(int i, TBox *result)
 {
-  assert(box);
-  number_set_tbox(Int32GetDatum(i), T_INT4, box);
+  assert(result);
+  number_set_tbox(Int32GetDatum(i), T_INT4, result);
   return;
 }
 
@@ -427,13 +427,13 @@ int_to_tbox(int i)
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a temporal box constructed from a float
  * @param[in] d Value
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-float_set_tbox(double d, TBox *box)
+float_set_tbox(double d, TBox *result)
 {
-  assert(box);
-  number_set_tbox(Float8GetDatum(d), T_FLOAT8, box);
+  assert(result);
+  number_set_tbox(Float8GetDatum(d), T_FLOAT8, result);
   return;
 }
 
@@ -457,16 +457,16 @@ float_to_tbox(double d)
  * @brief Return in the last argument a temporal box constructed from a
  * timestamptz
  * @param[in] t Timestamp
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-timestamptz_set_tbox(TimestampTz t, TBox *box)
+timestamptz_set_tbox(TimestampTz t, TBox *result)
 {
-  assert(box);
+  assert(result);
   Span p;
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
-  tbox_set(NULL, &p, box);
+  tbox_set(NULL, &p, result);
   return;
 }
 
@@ -489,15 +489,15 @@ timestamptz_to_tbox(TimestampTz t)
  * @brief Return in the last argument a temporal box constructed from a number
  * set
  * @param[in] s Set
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-numset_set_tbox(const Set *s, TBox *box)
+numset_set_tbox(const Set *s, TBox *result)
 {
-  assert(s); assert(box); assert(numset_type(s->settype));
+  assert(s); assert(result); assert(numset_type(s->settype));
   Span span;
   set_set_span(s, &span);
-  tbox_set(&span, NULL, box);
+  tbox_set(&span, NULL, result);
   return;
 }
 
@@ -506,15 +506,15 @@ numset_set_tbox(const Set *s, TBox *box)
  * @brief Return in the last argument a temporal box constructed from a
  * timestamptz set
  * @param[in] s Set
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-tstzset_set_tbox(const Set *s, TBox *box)
+tstzset_set_tbox(const Set *s, TBox *result)
 {
-  assert(s); assert(box); assert(s->settype == T_TSTZSET);
+  assert(s); assert(result); assert(s->settype == T_TSTZSET);
   Span p;
   set_set_span(s, &p);
-  tbox_set(NULL, &p, box);
+  tbox_set(NULL, &p, result);
   return;
 }
 
@@ -562,13 +562,13 @@ set_to_tbox(const Set *s)
  * @brief Return in the last argument a temporal box constructed from a number
  * span
  * @param[in] s Span
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-numspan_set_tbox(const Span *s, TBox *box)
+numspan_set_tbox(const Span *s, TBox *result)
 {
-  assert(s); assert(box); assert(numspan_type(s->spantype));
-  tbox_set(s, NULL, box);
+  assert(s); assert(result); assert(numspan_type(s->spantype));
+  tbox_set(s, NULL, result);
   return;
 }
 
@@ -577,13 +577,13 @@ numspan_set_tbox(const Span *s, TBox *box)
  * @brief Return in the last argument a temporal box constructed from a
  * timestamptz span
  * @param[in] s Span
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-tstzspan_set_tbox(const Span *s, TBox *box)
+tstzspan_set_tbox(const Span *s, TBox *result)
 {
-  assert(s); assert(box); assert(s->spantype == T_TSTZSPAN);
-  tbox_set(NULL, s, box);
+  assert(s); assert(result); assert(s->spantype == T_TSTZSPAN);
+  tbox_set(NULL, s, result);
   return;
 }
 

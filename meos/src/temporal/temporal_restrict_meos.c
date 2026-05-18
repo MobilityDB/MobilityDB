@@ -212,19 +212,19 @@ temporal_minus_values(const Temporal *temp, const Set *s)
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  bool *value)
+  bool *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TBOOL(temp, false); VALIDATE_NOT_NULL(value, false);
+  VALIDATE_TBOOL(temp, false); VALIDATE_NOT_NULL(result, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetBool(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetBool(res);
+  return found;
 }
 
 /**
@@ -234,19 +234,19 @@ tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  int *value)
+  int *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, false); VALIDATE_NOT_NULL(value, false);
+  VALIDATE_TINT(temp, false); VALIDATE_NOT_NULL(result, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetInt32(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetInt32(res);
+  return found;
 }
 
 /**
@@ -256,19 +256,19 @@ tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  double *value)
+  double *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, false); VALIDATE_NOT_NULL(value, false);
+  VALIDATE_TFLOAT(temp, false); VALIDATE_NOT_NULL(result, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetFloat8(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetFloat8(res);
+  return found;
 }
 
 /**
@@ -278,19 +278,19 @@ tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  text **value)
+  text **result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TTEXT(temp, false); VALIDATE_NOT_NULL(value, false);
+  VALIDATE_TTEXT(temp, false); VALIDATE_NOT_NULL(result, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetTextP(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetTextP(res);
+  return found;
 }
 
 /*****************************************************************************/
