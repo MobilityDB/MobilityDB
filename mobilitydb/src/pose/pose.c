@@ -485,7 +485,8 @@ Pose_orientation(PG_FUNCTION_ARGS)
   /* Get input pose */
   Pose *pose = PG_GETARG_POSE_P(0);
   /* Get the array of doubles representing the orientation */
-  double *quaternion = pose_orientation(pose);
+  int count;
+  double *quaternion = pose_orientation(pose, &count);
   /* Create values for the tuple */
   values[0] = Float8GetDatum(quaternion[0]);
   values[1] = Float8GetDatum(quaternion[1]);

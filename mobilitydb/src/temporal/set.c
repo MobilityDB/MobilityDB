@@ -438,8 +438,9 @@ Datum
 Set_values(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Datum *values = set_vals(s);
-  ArrayType *result = datumarr_to_array(values, s->count, s->basetype);
+  int count;
+  Datum *values = set_vals(s, &count);
+  ArrayType *result = datumarr_to_array(values, count, s->basetype);
   pfree(values);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);

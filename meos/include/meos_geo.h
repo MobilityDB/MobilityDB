@@ -467,7 +467,7 @@ extern Set *geo_to_set(const GSERIALIZED *gs);
 extern GSERIALIZED *geoset_end_value(const Set *s);
 extern GSERIALIZED *geoset_start_value(const Set *s);
 extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
-extern GSERIALIZED **geoset_values(const Set *s);
+extern GSERIALIZED **geoset_values(const Set *s, int *count);
 
 /* Set operations */
 
@@ -888,7 +888,7 @@ extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, doub
 
 /* Clustering functions */
 
-extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k, int *count);
 extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints, int *count);
 extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
 extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);

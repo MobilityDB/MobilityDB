@@ -1375,11 +1375,12 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from the values of a set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_spans()
  */
 Span *
-set_spans(const Set *s)
+set_spans(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL);
@@ -1387,6 +1388,7 @@ set_spans(const Set *s)
   Span *result = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
     set_set_subspan(s, i, i, &result[i]);
+  *count = s->count;
   return result;
 }
 
