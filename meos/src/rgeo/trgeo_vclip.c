@@ -213,7 +213,7 @@ vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
   }
 
   /* We found the closest feature */
-  if (s_prev > 1 || s_next < 0)
+  if (s_prev > 1 - MEOS_EPSILON || s_next < MEOS_EPSILON)
     return MEOS_DISJOINT;
   /* Point is on the vertex */
   return MEOS_INTERSECT;
@@ -324,6 +324,9 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
       "V-clip: Cycle detected, current feature: %d", *poly_feature);
 
+  if (dist)
+    /* A point inside the polygon has distance zero; overwritten below when disjoint */
+    *dist = 0;
   if (dist && result == MEOS_DISJOINT)
   {
     /* compute the distance */
@@ -422,8 +425,8 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   }
 
   /* We found the closest feature */
-  if ((s1_prev > 1 || s1_next < 0)
-    && (s2_prev > 1 || s2_next < 0))
+  if ((s1_prev > 1 - MEOS_EPSILON || s1_next < MEOS_EPSILON)
+    && (s2_prev > 1 - MEOS_EPSILON || s2_next < MEOS_EPSILON))
     return MEOS_DISJOINT;
   /* Point is on the vertex */
   return MEOS_INTERSECT;
@@ -628,6 +631,9 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "V-clip: Cycle detected, current features: (%d, %d)", *poly1_feature, *poly2_feature);
     // return result;
 
+  if (dist)
+    /* Intersecting polygons have distance zero; overwritten below when disjoint */
+    *dist = 0;
   if (dist && result == MEOS_DISJOINT)
   {
     /* compute the distance */
