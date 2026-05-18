@@ -1365,7 +1365,14 @@ extern Span *span_bins(const Span *s, Datum size, Datum origin, int *count);
 extern Span *spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count);
 extern Span *tnumber_value_bins(const Temporal *temp, Datum size, Datum origin, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, int *count);
-extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, Datum **bins, int *count);
+typedef struct
+{
+  Temporal **fragments;   /**< Array of count temporal fragments */
+  Datum      *bins;       /**< Parallel array of count value bins */
+  int         count;      /**< Number of fragments */
+} DatumSplit;
+
+extern DatumSplit tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin);
 extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, MeosType basetype, MeosType spantype);
 extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *duration, Datum vorigin, TimestampTz torigin, Datum **value_bins, TimestampTz **time_bins, int *count);
 

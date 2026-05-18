@@ -492,8 +492,8 @@ int main(void)
   printf("npointset_value_n(%s, %s): %c\n", npointset1_out, char_result, bool_result ? 't' : 'n');
   free(npoint_result); free(char_result);
 
-  /* Npoint **npointset_values(const Set *s); */
-  npointarray_result = npointset_values(npointset1);
+  /* Npoint **npointset_values(const Set *s, int *count); */
+  npointarray_result = npointset_values(npointset1, &count);
   printf("npointset_values(%s): {", npointset1_out);
   for (int i = 0; i < npointset1->count; i++)
   {

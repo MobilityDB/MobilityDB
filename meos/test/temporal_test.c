@@ -3537,7 +3537,7 @@ int main(void)
   free(tstzspanarray_result);
 
   /* Temporal **temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, TimestampTz **time_bins, int *count); */
-  tfloatarray_result = temporal_time_split(tfloat1, interv3, tstz1, &tstzarray_result, &count);
+  { TimeSplit _s = temporal_time_split(tfloat1, interv3, tstz1); tfloatarray_result = _s.fragments; tstzarray_result = _s.bins; count = _s.count; }
   printf("temporal_time_split(%s, %s, %s, &tstzarray_result, %d): {", tfloat1_out, interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
@@ -3601,7 +3601,7 @@ int main(void)
   free(tboxarray_result);
 
   /* Temporal **tfloat_value_split(const Temporal *temp, double size, double origin, double **bins, int *count); */
-  tfloatarray_result = tfloat_value_split(tfloat1, float8_in1, float8_in2, &float8array_result, &count);
+  { FloatSplit _s = tfloat_value_split(tfloat1, float8_in1, float8_in2); tfloatarray_result = _s.fragments; float8array_result = _s.bins; count = _s.count; }
   printf("tfloat_value_split(%s, %lf, %lf, %s, &float8array_result, %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
@@ -3635,7 +3635,7 @@ int main(void)
   free(tboxarray_result);
 
   /* Temporal **tfloat_value_time_split(const Temporal *temp, double vsize, const Interval *duration, double vorigin, TimestampTz torigin, double **value_bins, TimestampTz **time_bins, int *count); */
-  tfloatarray_result = tfloat_value_time_split(tfloat1, float8_in1, interv3, float8_in2, tstz1, &float8array_result, &tstzarray_result, &count);
+  { FloatTimeSplit _s = tfloat_value_time_split(tfloat1, float8_in1, interv3, float8_in2, tstz1); tfloatarray_result = _s.fragments; float8array_result = _s.value_bins; tstzarray_result = _s.time_bins; count = _s.count; }
   printf("tfloat_value_time_split(%s, %lf, %s, %lf, %s, &float8array_result, %d): {", tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
@@ -3748,7 +3748,7 @@ int main(void)
   free(tboxarray_result);
 
   /* Temporal **tint_value_split(const Temporal *temp, int vsize, int vorigin, int **bins, int *count); */
-  tintarray_result = tint_value_split(tint1, int32_in1, int32_in2, &int32array_result, &count);
+  { IntSplit _s = tint_value_split(tint1, int32_in1, int32_in2); tintarray_result = _s.fragments; int32array_result = _s.bins; count = _s.count; }
   printf("tint_value_split(%s, %d, %d, &ispanarray_result, %d): {", tfloat1_out, int32_in1, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
@@ -3780,7 +3780,7 @@ int main(void)
   free(tboxarray_result);
 
   /* Temporal **tint_value_time_split(const Temporal *temp, int size, const Interval *duration, int vorigin, TimestampTz torigin, int **value_bins, TimestampTz **time_bins, int *count); */
-  tintarray_result = tint_value_time_split(tint1, int32_in1, interv3, int32_in2, tstz1, &int32array_result, &tstzarray_result, &count);
+  { IntTimeSplit _s = tint_value_time_split(tint1, int32_in1, interv3, int32_in2, tstz1); tintarray_result = _s.fragments; int32array_result = _s.value_bins; tstzarray_result = _s.time_bins; count = _s.count; }
   printf("tint_value_time_split(%s, %d, %s, %d, &ispanarray_result, &tstzspanarray_result, %d): {", tint1_out, int32_in1, interv3_out, int32_in2, count);
   for (int i = 0; i < count; i++)
   {

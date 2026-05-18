@@ -625,7 +625,11 @@ tgeominst_tcbufferinst(const TInstant *inst)
   double radius = 0.0;
   uint32_t geotype = gserialized_get_type(value);
   if (geotype != POINTTYPE)
-    value = geom_min_bounding_radius(value, &radius);
+  {
+    MinBoundingCircle mbc = geom_min_bounding_radius(value);
+    value = mbc.center;
+    radius = mbc.radius;
+  }
   Cbuffer *cb = cbuffer_make(value, radius);
   if (geotype != POINTTYPE)
     pfree(value);

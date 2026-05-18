@@ -4260,7 +4260,8 @@ lwgeom_mec_supported_type(const LWGEOM *geom)
  * @brief Return the center point and radius of the smallest circle that
  * contains a geometry
  * @param[in] geom Geometry
- * @param[out] radius Radius
+ * @return Structure with the center point and the radius of the smallest
+ * circle that contains the geometry
  * @note The corresponding PostGIS function ST_MinimumBoundingCircle is much
  * slower despite it uses the same algorithm
  *
@@ -4269,25 +4270,26 @@ lwgeom_mec_supported_type(const LWGEOM *geom)
  *   in Computer Science, 555 (1991) 359-370.
  *
  */
-GSERIALIZED *
-geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
+MinBoundingCircle
+geom_min_bounding_radius(const GSERIALIZED *geom)
 {
   if (! geom)
-    return NULL;
+    return (MinBoundingCircle) {NULL, 0};
 
   LWGEOM *input = lwgeom_from_gserialized(geom);
   LWGEOM *center;
-  
+  double radius = 0;
+
   if (lwgeom_is_empty(input))
   {
     center = (LWGEOM *) lwpoint_construct_empty(input->srid, LW_FALSE, LW_FALSE);
-    *radius = 0;
+    radius = 0;
   }
   else if (lwgeom_mec_supported_type(input))
   {
     Circle c = lwgeom_mec(input);
     center = (LWGEOM *) lwpoint_make2d(input->srid, c.center.x, c.center.y);
-    *radius = c.radius;
+    radius = c.radius;
   }
   else
   {
@@ -4297,18 +4299,18 @@ geom_min_bounding_radius(const GSERIALIZED *geom, double *radius)
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "Error calculating minimum bounding circle");
       lwgeom_free(input);
-      return NULL;
+      return (MinBoundingCircle) {NULL, 0};
     }
     center = (LWGEOM *) lwpoint_make2d(input->srid, mbc->center->x,
       mbc->center->y);
-    *radius = mbc->radius;
+    radius = mbc->radius;
     lwboundingcircle_destroy(mbc);
   }
 
   GSERIALIZED *result = geo_serialize(center);
-  lwgeom_free(center);    
+  lwgeom_free(center);
   lwgeom_free(input);
-  return result;
+  return (MinBoundingCircle) {result, radius};
 }
 
 /*****************************************************************************
