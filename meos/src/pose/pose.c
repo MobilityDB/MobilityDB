@@ -946,10 +946,11 @@ datum_pose_rotation(Datum pose)
  * @ingroup meos_pose_base_accessor
  * @brief Return the orientation of a 3D pose
  * @param[in] pose Pose
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  */
 double *
-pose_orientation(const Pose *pose)
+pose_orientation(const Pose *pose, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
@@ -961,6 +962,7 @@ pose_orientation(const Pose *pose)
   result[1] = pose->data[4];
   result[2] = pose->data[5];
   result[3] = pose->data[6];
+  *count = 4;
   return result;
 }
 

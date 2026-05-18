@@ -2010,16 +2010,18 @@ tsequence_segments(const TSequence *seq, int *count)
  * @brief Return the array of pointers to distinct instants of a temporal
  * sequence
  * @param[in] seq Temporal sequence
+ * @param[out] count Number of elements in the output array
  * @note By definition, all instants of a sequence are distinct. This not the
  * case for temporal sequence sets (see #tsequenceset_insts_p).
  */
 const TInstant **
-tsequence_insts_p(const TSequence *seq)
+tsequence_insts_p(const TSequence *seq, int *count)
 {
   assert(seq);
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     result[i] = TSEQUENCE_INST_N(seq, i);
+  *count = seq->count;
   return result;
 }
 

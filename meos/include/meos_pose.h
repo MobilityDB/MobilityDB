@@ -125,7 +125,7 @@ extern STBox *pose_to_stbox(const Pose *pose);
 
 extern uint32 pose_hash(const Pose *pose);
 extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
-extern double *pose_orientation(const Pose *pose);
+extern double *pose_orientation(const Pose *pose, int *count);
 extern double pose_rotation(const Pose *pose);
 
 /* Transformation functions */
@@ -185,7 +185,7 @@ extern Set *pose_to_set(const Pose *pose);
 extern Pose *poseset_end_value(const Set *s);
 extern Pose *poseset_start_value(const Set *s);
 extern bool poseset_value_n(const Set *s, int n, Pose **result);
-extern Pose **poseset_values(const Set *s);
+extern Pose **poseset_values(const Set *s, int *count);
 
 /* Set operations */
 

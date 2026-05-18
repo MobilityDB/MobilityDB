@@ -1146,7 +1146,8 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     result += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
-  const TInstant **instants = tsequence_insts_p(seq);
+  int ninsts;
+  const TInstant **instants = tsequence_insts_p(seq, &ninsts);
   /* Include the TInstant array */
   result += tinstarr_to_wkb_size((TInstant **) instants, seq->count, variant);
   pfree(instants);
@@ -1171,7 +1172,8 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   result += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
-  const TInstant **instants = tsequenceset_insts_p(ss);
+  int ninsts;
+  const TInstant **instants = tsequenceset_insts_p(ss, &ninsts);
   result += tinstarr_to_wkb_size((TInstant **) instants, ss->totalcount,
     variant);
   pfree(instants);

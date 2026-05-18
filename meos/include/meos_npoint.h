@@ -212,7 +212,7 @@ extern Npoint *npointset_end_value(const Set *s);
 extern Set *npointset_routes(const Set *s);
 extern Npoint *npointset_start_value(const Set *s);
 extern bool npointset_value_n(const Set *s, int n, Npoint **result);
-extern Npoint **npointset_values(const Set *s);
+extern Npoint **npointset_values(const Set *s, int *count);
 
 /* Set operations */
 

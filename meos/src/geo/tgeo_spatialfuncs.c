@@ -1666,10 +1666,11 @@ tgeo_centroid(const Temporal *temp)
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
+ * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
  */
 int *
-geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
+geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geoms, NULL);
@@ -1696,6 +1697,7 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
     if (lwgeoms[i])
       lwgeom_free(lwgeoms[i]);
   pfree(lwgeoms);
+  *count = (int) n;
   return result;
 }
 

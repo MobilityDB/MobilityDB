@@ -195,7 +195,7 @@ extern Set *cbuffer_to_set(const Cbuffer *cb);
 extern Cbuffer *cbufferset_end_value(const Set *s);
 extern Cbuffer *cbufferset_start_value(const Set *s);
 extern bool cbufferset_value_n(const Set *s, int n, Cbuffer **result);
-extern Cbuffer **cbufferset_values(const Set *s);
+extern Cbuffer **cbufferset_values(const Set *s, int *count);
 
 /* Set operations */
 

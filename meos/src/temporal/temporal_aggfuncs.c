@@ -746,7 +746,8 @@ SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
-  const TInstant **instants = tsequence_insts_p(seq);
+  int ninsts;
+  const TInstant **instants = tsequence_insts_p(seq, &ninsts);
   if (! state)
     state = temporal_skiplist_make();
   temporal_skiplist_splice(state, (void **) instants, seq->count, func, false);
@@ -787,7 +788,8 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   datum_func2 func, bool crossings)
 {
   assert(ss);
-  const TSequence **sequences = tsequenceset_sequences_p(ss);
+  int nseqs;
+  const TSequence **sequences = tsequenceset_sequences_p(ss, &nseqs);
   if (! state)
     state = temporal_skiplist_make();
   temporal_skiplist_splice(state, (void **) sequences, ss->count, func,

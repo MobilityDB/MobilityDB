@@ -686,15 +686,17 @@ set_value_n(const Set *s, int n, Datum *result)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the array of (pointers to the) values of a set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Set_values()
  */
 Datum *
-set_vals(const Set *s)
+set_vals(const Set *s, int *count)
 {
   assert(s);
   Datum *result = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = SET_VAL_N(s, i);
+  *count = s->count;
   return result;
 }
 
@@ -702,10 +704,11 @@ set_vals(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the array of (copies of) values of a set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Set_values()
  */
 Datum *
-set_values(const Set *s)
+set_values(const Set *s, int *count)
 {
   assert(s);
   Datum *result = palloc(sizeof(Datum) * s->count);
@@ -713,6 +716,7 @@ set_values(const Set *s)
   for (int i = 0; i < s->count; i++)
     result[i] = byval ? SET_VAL_N(s, i) : datum_copy(SET_VAL_N(s, i),
       s->basetype);
+  *count = s->count;
   return result;
 }
 
@@ -1031,7 +1035,8 @@ set_unnest_state_make(const Set *set)
   state->done = false;
   state->i = 0;
   state->count = set->count;
-  state->values = set_values(set);
+  int nvalues;
+  state->values = set_values(set, &nvalues);
   state->set = set_copy(set);
   return state;
 }
