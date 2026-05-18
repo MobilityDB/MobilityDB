@@ -601,20 +601,20 @@ tpose_points(const Temporal *temp)
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  Pose **value)
+  Pose **result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(value, false); VALIDATE_TPOSE(temp, false);
+  VALIDATE_NOT_NULL(result, false); VALIDATE_TPOSE(temp, false);
 
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetPoseP(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetPoseP(res);
+  return found;
 }
 #endif /* MEOS */
 

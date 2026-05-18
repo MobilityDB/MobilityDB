@@ -172,18 +172,18 @@ temporal_bbox_size(MeosType temptype)
  * @brief Return in the last argument the temporal box of a temporal number
  * instant
  * @param[in] inst Temporal value
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-tnumberinst_set_tbox(const TInstant *inst, TBox *box)
+tnumberinst_set_tbox(const TInstant *inst, TBox *result)
 {
-  assert(inst); assert(temporal_type(inst->temptype)); assert(box);
+  assert(inst); assert(temporal_type(inst->temptype)); assert(result);
   assert(tnumber_type(inst->temptype));
   MeosType basetype = temptype_basetype(inst->temptype);
   MeosType spantype = basetype_spantype(basetype);
   Datum value = tinstant_value_p(inst);
   Datum time = TimestampTzGetDatum(inst->t);
-  TBox *tbox = (TBox *) box;
+  TBox *tbox = (TBox *) result;
   memset(tbox, 0, sizeof(TBox));
   span_set(value, value, true, true, basetype, spantype, &tbox->span);
   span_set(time, time, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &tbox->period);
@@ -196,21 +196,21 @@ tnumberinst_set_tbox(const TInstant *inst, TBox *box)
  * @ingroup meos_internal_temporal_bbox
  * @brief Return in the last argument the bounding box of a temporal instant
  * @param[in] inst Temporal value
- * @param[out] box Result
+ * @param[out] result Result
  */
 void
-tinstant_set_bbox(const TInstant *inst, void *box)
+tinstant_set_bbox(const TInstant *inst, void *result)
 {
-  assert(inst); assert(box);
+  assert(inst); assert(result);
   assert(talpha_type(inst->temptype) || tnumber_type(inst->temptype) ||
     tspatial_type(inst->temptype));
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) result);
   else if (tnumber_type(inst->temptype))
-    tnumberinst_set_tbox(inst, (TBox *) box);
+    tnumberinst_set_tbox(inst, (TBox *) result);
   else /* tspatial_type(inst->temptype) */
-    tspatialinst_set_stbox(inst, (STBox *) box);
+    tspatialinst_set_stbox(inst, (STBox *) result);
   return;
 }
 
@@ -219,13 +219,13 @@ tinstant_set_bbox(const TInstant *inst, void *box)
  * @brief Return int the last argument the temporal box of a temporal number
  * sequence
  * @param[in] seq Temporal sequence
- * @param[out] box Temporal box
+ * @param[out] result Temporal box
  */
 void
-tnumberseq_set_tbox(const TSequence *seq, TBox *box)
+tnumberseq_set_tbox(const TSequence *seq, TBox *result)
 {
-  assert(seq); assert(box); assert(tnumber_type(seq->temptype));
-  memcpy(box, TSEQUENCE_BBOX_PTR(seq), sizeof(TBox));
+  assert(seq); assert(result); assert(tnumber_type(seq->temptype));
+  memcpy(result, TSEQUENCE_BBOX_PTR(seq), sizeof(TBox));
   return;
 }
 
@@ -233,14 +233,14 @@ tnumberseq_set_tbox(const TSequence *seq, TBox *box)
  * @ingroup meos_internal_temporal_bbox
  * @brief Return in the last argument the bounding box of a temporal sequence
  * @param[in] seq Temporal sequence
- * @param[out] box Bounding box
+ * @param[out] result Bounding box
  */
 void
-tsequence_set_bbox(const TSequence *seq, void *box)
+tsequence_set_bbox(const TSequence *seq, void *result)
 {
-  assert(seq); assert(box);
-  memset(box, 0, seq->bboxsize);
-  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
+  assert(seq); assert(result);
+  memset(result, 0, seq->bboxsize);
+  memcpy(result, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
   return;
 }
 
@@ -249,13 +249,13 @@ tsequence_set_bbox(const TSequence *seq, void *box)
  * @brief Return in the last argument the temporal box of a temporal number
  * sequence
  * @param[in] ss Temporal sequence set
- * @param[out] box Temporal box
+ * @param[out] result Temporal box
  */
 void
-tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box)
+tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *result)
 {
-  assert(ss); assert(box); assert(tnumber_type(ss->temptype));
-  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), sizeof(TBox));
+  assert(ss); assert(result); assert(tnumber_type(ss->temptype));
+  memcpy(result, TSEQUENCESET_BBOX_PTR(ss), sizeof(TBox));
   return;
 }
 
@@ -264,14 +264,14 @@ tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box)
  * @brief Return in the last argument the bounding box of a temporal sequence
  * set
  * @param[in] ss Temporal sequence set
- * @param[out] box Bounding box
+ * @param[out] result Bounding box
  */
 void
-tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
+tsequenceset_set_bbox(const TSequenceSet *ss, void *result)
 {
-  assert(ss); assert(box);
-  memset(box, 0, ss->bboxsize);
-  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  assert(ss); assert(result);
+  memset(result, 0, ss->bboxsize);
+  memcpy(result, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
   return;
 }
 
@@ -279,23 +279,23 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
  * @ingroup meos_internal_temporal_bbox
  * @brief Return in the last argument the temporal box of a temporal number
  * @param[in] temp Temporal number
- * @param[out] box Temporal box
+ * @param[out] result Temporal box
  */
 void
-tnumber_set_tbox(const Temporal *temp, TBox *box)
+tnumber_set_tbox(const Temporal *temp, TBox *result)
 {
-  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
+  assert(temp); assert(result); assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      tnumberinst_set_tbox((TInstant *) temp, box);
+      tnumberinst_set_tbox((TInstant *) temp, result);
       break;
     case TSEQUENCE:
-      tnumberseq_set_tbox((TSequence *) temp, box);
+      tnumberseq_set_tbox((TSequence *) temp, result);
       break;
     default: /* TSEQUENCESET */
-      tnumberseqset_set_tbox((TSequenceSet *) temp, box);
+      tnumberseqset_set_tbox((TSequenceSet *) temp, result);
   }
   return;
 }
