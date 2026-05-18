@@ -9,6 +9,7 @@ SET(LOCAL_FILES
   111_tpose_aggfuncs
   113_tpose_distance
   114_tpose_indexes
+  115_portable_aliases
   )
 
 foreach (f ${LOCAL_FILES})
