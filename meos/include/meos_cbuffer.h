@@ -223,6 +223,7 @@ extern Temporal *tcbuffer_in(const char *str);
  * Constructor functions
  *****************************************************************************/
 
+extern TInstant *tcbufferinst_make(const Cbuffer *cb, TimestampTz t);
 extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 
 /*****************************************************************************

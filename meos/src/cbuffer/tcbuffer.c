@@ -385,7 +385,7 @@ tcbufferseqset_in(const char *str)
  * #tcbuffer_make
  */
 TInstant *
-tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
+tpointfloat_to_tcbufferinst(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
@@ -409,7 +409,7 @@ tcbufferseq_make(const TSequence *seq1, const TSequence *seq2)
   assert(seq1->count == seq2->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
   for (int i = 0; i < seq1->count; i++)
-    instants[i] = tcbufferinst_make(TSEQUENCE_INST_N(seq1, i),
+    instants[i] = tpointfloat_to_tcbufferinst(TSEQUENCE_INST_N(seq1, i),
       TSEQUENCE_INST_N(seq2, i));
   return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc,
     seq1->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
@@ -458,7 +458,7 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tcbufferinst_make((TInstant *) sync1,
+      result = (Temporal *) tpointfloat_to_tcbufferinst((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
@@ -471,6 +471,22 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
   }
   pfree(sync1); pfree(sync2);
   return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_constructor
+ * @brief Return a temporal circular buffer instant from a circular buffer and
+ * a timestamptz
+ * @param[in] cb Value
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tcbufferinst_make(const Cbuffer *cb, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL);
+  return tinstant_make(PointerGetDatum(cb), T_TCBUFFER, t);
 }
 
 /*****************************************************************************

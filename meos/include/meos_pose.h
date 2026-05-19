@@ -213,6 +213,7 @@ Temporal *tpose_in(const char *str);
  * Constructor functions
  *****************************************************************************/
 
+extern TInstant *tposeinst_make(const Pose *pose, TimestampTz t);
 
 /*****************************************************************************
  * Conversion functions
