@@ -225,6 +225,10 @@ extern Temporal *tcbuffer_in(const char *str);
 
 extern TInstant *tcbufferinst_make(const Cbuffer *cb, TimestampTz t);
 extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
+extern Temporal *tcbuffer_from_base_temp(const Cbuffer *cb, const Temporal *temp);
+extern TSequence *tcbufferseq_from_base_tstzset(const Cbuffer *cb, const Set *s);
+extern TSequence *tcbufferseq_from_base_tstzspan(const Cbuffer *cb, const Span *s, interpType interp);
+extern TSequenceSet *tcbufferseqset_from_base_tstzspanset(const Cbuffer *cb, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************
  * Accessor functions

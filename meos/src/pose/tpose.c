@@ -404,6 +404,70 @@ tposeinst_make(const Pose *pose, TimestampTz t)
   return tinstant_make(PointerGetDatum(pose), T_TPOSE, t);
 }
 
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose from a pose and the time frame of another
+ * temporal value
+ * @param[in] pose Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tpose_from_base_temp(const Pose *pose, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(pose), T_TPOSE, temp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose discrete sequence from a pose and a
+ * timestamptz set
+ * @param[in] pose Value
+ * @param[in] s Set
+ */
+TSequence *
+tposeseq_from_base_tstzset(const Pose *pose, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(pose), T_TPOSE, s);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence from a pose and a timestamptz span
+ * @param[in] pose Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(pose), T_TPOSE, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence set from a pose and a timestamptz
+ * span set
+ * @param[in] pose Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(pose), T_TPOSE,
+    ss, interp);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
