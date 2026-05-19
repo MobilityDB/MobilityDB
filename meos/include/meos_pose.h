@@ -207,6 +207,7 @@ extern Set *union_set_pose(const Set *s, const Pose *pose);
  * Input/output functions
  *****************************************************************************/
 
+extern Temporal *tpose_from_mfjson(const char *str);
 Temporal *tpose_in(const char *str);
 
 /*****************************************************************************
