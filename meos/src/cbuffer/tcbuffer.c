@@ -489,6 +489,72 @@ tcbufferinst_make(const Cbuffer *cb, TimestampTz t)
   return tinstant_make(PointerGetDatum(cb), T_TCBUFFER, t);
 }
 
+/**
+ * @ingroup meos_cbuffer_constructor
+ * @brief Return a temporal circular buffer from a circular buffer and the time
+ * frame of another temporal value
+ * @param[in] cb Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tcbuffer_from_base_temp(const Cbuffer *cb, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(cb), T_TCBUFFER, temp);
+}
+
+/**
+ * @ingroup meos_cbuffer_constructor
+ * @brief Return a temporal circular buffer discrete sequence from a circular
+ * buffer and a timestamptz set
+ * @param[in] cb Value
+ * @param[in] s Set
+ */
+TSequence *
+tcbufferseq_from_base_tstzset(const Cbuffer *cb, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(cb), T_TCBUFFER, s);
+}
+
+/**
+ * @ingroup meos_cbuffer_constructor
+ * @brief Return a temporal circular buffer sequence from a circular buffer and
+ * a timestamptz span
+ * @param[in] cb Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tcbufferseq_from_base_tstzspan(const Cbuffer *cb, const Span *s,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(cb), T_TCBUFFER, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_cbuffer_constructor
+ * @brief Return a temporal circular buffer sequence set from a circular buffer
+ * and a timestamptz span set
+ * @param[in] cb Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tcbufferseqset_from_base_tstzspanset(const Cbuffer *cb, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(cb), T_TCBUFFER,
+    ss, interp);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
