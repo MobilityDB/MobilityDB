@@ -1299,8 +1299,12 @@ geo_geo_n(const GSERIALIZED *gs, int n)
 
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom);
   if (! coll)
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Unable to handle type %d in ST_GeometryN", lwgeom->type);
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
 
   /* Handle out-of-range index value */
   n -= 1;
@@ -3300,9 +3304,20 @@ geo_from_text(const char *wkt, int32_t srid)
 
   if (lwgeom_parse_wkt(&lwg_parser_result, (char *) wkt,
       LW_PARSER_CHECK_ALL) == LW_FAILURE )
+  {
     PG_PARSER_ERROR(lwg_parser_result);
+    return NULL;
+  }
 
   lwgeom = lwg_parser_result.geom;
+  /* Same defensive guard as in geog_in: handle the case where a
+   * non-exiting MEOS_ERROR_HANDLER lets execution fall through. */
+  if (! lwgeom)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "parse error - invalid geometry");
+    return NULL;
+  }
 
   if ( lwgeom->srid != SRID_UNKNOWN )
   {
@@ -3730,10 +3745,26 @@ geog_in(const char *str, int32 typmod)
   /* WKT then. */
   else
   {
-    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str, 
+    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str,
         LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    {
       PG_PARSER_ERROR(lwg_parser_result);
-      lwgeom = lwg_parser_result.geom;
+      return NULL;
+    }
+    lwgeom = lwg_parser_result.geom;
+    /* Defensive: even on LW_SUCCESS a malformed input can leave geom
+     * unset. Without this check the lwgeom->srid dereference below
+     * crashes when the parser reports success but produces no
+     * geometry (observed in long-lived embedders -- e.g. the
+     * MobilityDuck DuckDB extension -- where meos_error's default
+     * exit() path is replaced by a handler that returns, exposing
+     * the fall-through). */
+    if (! lwgeom)
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "parse error - invalid geography");
+      return NULL;
+    }
   }
 
   GSERIALIZED *result = NULL;
