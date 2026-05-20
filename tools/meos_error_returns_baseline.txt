@@ -1,0 +1,19 @@
+# meos_error(ERROR, ...) -> non-control-transfer follow-up baseline.
+# Tab-separated <relative path> <enclosing function> <next statement>,
+# keyed by function rather than line number so it survives unrelated
+# edits that shift line numbers in the same file.
+# Regenerate with: python3 tools/check_meos_error_returns.py --rebaseline
+# See the meos_error doc-comment in meos/include/meos.h.
+meos/src/geo/postgis_funcs.c	geo_from_text	lwgeom = lwg_parser_result.geom;
+meos/src/geo/postgis_funcs.c	geo_geo_n	n -= 1;
+meos/src/geo/postgis_funcs.c	geog_in	lwgeom = lwg_parser_result.geom;
+meos/src/geo/tpoint_datagen.c	create_trip	noInstants += (int) ceil(segLength / P_EVENT_LENGTH) * 2;
+meos/src/json/tjsonb_jsonfuncs.c	jsonb_to_alphanum	if (null_handle == NULL_ERROR || null_handle == NULL_RETURN ||
+meos/src/json/tjsonb_jsonfuncs.c	jsonb_to_alphanum	if (resbasetype == T_INT4)
+meos/src/rgeo/trgeo_utils.c	ensure_same_geoms_lwpsurface	for (int i = 0; i < (int) psurface1->ngeoms; ++i)
+meos/src/rgeo/trgeo_utils.c	ensure_same_rings_lwpoly	for (int i = 0; i < (int) poly1->nrings; ++i)
+meos/src/rgeo/trgeo_vclip.c	v_clip_tpoly_tpoly	if (dist && result == MEOS_DISJOINT)
+meos/src/temporal/lifting.c	lfunc_null_tcontseq_iter	if (lfinfo->resnull == NULL_ERROR || lfinfo->resnull == NULL_RETURN)
+meos/src/temporal/lifting.c	lfunc_null_tsequenceset	if (lfinfo->resnull == NULL_ERROR || lfinfo->resnull == NULL_RETURN)
+meos/src/temporal/temporal_aggfuncs.c	tsequence_tagg_iter	for (int j = 0; j < i; j++)
+meos/src/temporal/type_in.c	span_from_wkb_state	memset(&result, 0, sizeof(Span));
