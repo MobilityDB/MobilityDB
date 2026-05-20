@@ -1,0 +1,47 @@
+name: meos_error return-or-not contract
+
+# Ratchet that enforces the meos_error(ERROR, ...) return-or-not
+# contract documented in meos/include/meos.h and tracked in
+# MobilityDB#1091 / #1093. Fails the build if a new meos_error(ERROR,
+# ...) callsite is introduced whose next statement is not a control
+# transfer (return / goto / break / exit / continue / `}` / sentinel
+# idiom). Pre-existing sites are listed in
+# tools/meos_error_returns_baseline.txt and grandfathered in; the
+# baseline shrinks naturally as fall-through bugs are fixed (Waves
+# 3-4 of #1091).
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/meos-error-returns.yml'
+      - 'tools/check_meos_error_returns.py'
+      - 'tools/meos_error_returns_baseline.txt'
+      - 'meos/src/**.c'
+      - 'meos/include/meos.h'
+  pull_request:
+    paths:
+      - '.github/workflows/meos-error-returns.yml'
+      - 'tools/check_meos_error_returns.py'
+      - 'tools/meos_error_returns_baseline.txt'
+      - 'meos/src/**.c'
+      - 'meos/include/meos.h'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: meos_error return-or-not contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run static-analysis ratchet
+        run: |
+          python3 tools/check_meos_error_returns.py
