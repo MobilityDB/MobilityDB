@@ -427,8 +427,17 @@ GetProjStrings(int32_t srid)
       else if (yzone == 0 || yzone == 5)
         lon_0 = 90.0 * (xzone - 2) + 45.0;
       else
+      {
+        /* See doc-comment on meos_error in meos/include/meos.h: handler is
+         * not guaranteed to abort. Bail explicitly so we don't silently
+         * emit a wrong-but-syntactically-valid projstring with lon_0=0
+         * for an unknown yzone. */
+        pfree(strs.proj4text);
+        strs.proj4text = NULL;
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown yzone encountered!");
+        return strs;
+      }
 
       snprintf(strs.proj4text, MAX_PROJ_LEN,
         "+proj=laea +ellps=WGS84 +datum=WGS84 +lat_0=%g +lon_0=%g +units=m +no_defs",
@@ -554,12 +563,24 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
    * or instantiating a magical value from a negative srid */
   PjStrs from_strs = GetProjStrings(srid_from);
   if (! pjstrs_has_entry(&from_strs))
+  {
+    /* See doc-comment on meos_error in meos/include/meos.h: handler is
+     * not guaranteed to abort. Free and return so we don't fall through
+     * to a downstream lwproj_from_str with empty PjStrs. */
+    pjstrs_pfree(&from_strs);
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_from);
+    return NULL;
+  }
   PjStrs to_strs = GetProjStrings(srid_to);
   if (! pjstrs_has_entry(&to_strs))
+  {
+    pjstrs_pfree(&from_strs);
+    pjstrs_pfree(&to_strs);
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_to);
+    return NULL;
+  }
 
   LWPROJ *projection = NULL;
   /* Try combinations of AUTH_NAME:AUTH_SRID/SRTEXT/PROJ4TEXT until we find
