@@ -564,8 +564,12 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The temporal values have different value at their common timestamp %s",
           t1);
+        pfree(t1);
+        /* Typo: the loop was freeing instants[i] (same pointer) every
+         * iteration -- a double-free on the second iteration and a leak
+         * of instants[0..i-1].  Use the loop index. */
         for (int j = 0; j < i; j++)
-          pfree(instants[i]);
+          pfree(instants[j]);
         pfree(instants);
         return -1;
       }
