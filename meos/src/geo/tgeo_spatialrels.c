@@ -107,12 +107,18 @@ datum_geom_disjoint3d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geographies are disjoint
+ *
+ * The geographic intersects predicate uses a `0.0` distance ε to match
+ * PostGIS's `geography_intersects` semantics and MEOS's own static
+ * `geog_intersects` wrapper. lwgeom's internal convergence epsilon
+ * (`PGIS_FP_TOLERANCE`, 1e-12) remains the implementation detail of
+ * `geog_dwithin` and is unchanged. See #1091.
  */
 Datum
 datum_geog_disjoint(Datum geog1, Datum geog2)
 {
   return BoolGetDatum(! geog_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), 0.00001, true));
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
@@ -137,12 +143,18 @@ datum_geom_intersects3d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geographies intersect
+ *
+ * Uses a `0.0` distance ε to match PostGIS's `geography_intersects`
+ * semantics and MEOS's own static `geog_intersects` wrapper. lwgeom's
+ * internal convergence epsilon (`PGIS_FP_TOLERANCE`, 1e-12) remains
+ * the implementation detail of `geog_dwithin` and is unchanged.
+ * See #1091.
  */
 Datum
 datum_geog_intersects(Datum geog1, Datum geog2)
 {
   return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), 0.00001, true));
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
