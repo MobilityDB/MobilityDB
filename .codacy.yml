@@ -28,3 +28,4 @@ exclude_paths:
   - "pgtypes/**"
   - "meos/test/**"
   - "meos/examples/**"
+  - "tools/parity_audit/**"
