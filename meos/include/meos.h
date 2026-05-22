@@ -390,6 +390,7 @@ extern char *meos_get_datestyle(void);
 extern char *meos_get_intervalstyle(void);
 
 extern void meos_set_spatial_ref_sys_csv(const char* path);
+extern void meos_set_ways_csv(const char* path);
 
 extern void meos_initialize(void);
 extern void meos_finalize(void);
