@@ -1832,7 +1832,7 @@ dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
@@ -2015,7 +2015,7 @@ dist2d_trgeoseq_tpointseq(const Temporal *full1,
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
@@ -2093,7 +2093,7 @@ tdistance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
@@ -2175,7 +2175,7 @@ tdistance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @sqlfn nearestApproachInstant()
  */
 TInstant *
-nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
@@ -2187,7 +2187,7 @@ nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     result = tinstant_copy((TInstant *) temp);
   else
   {
-    Temporal *dist = tdistance_trgeo_geo(temp, gs);
+    Temporal *dist = tdistance_trgeometry_geo(temp, gs);
     if (dist != NULL)
     {
       const TInstant *min = temporal_min_instant(dist);
@@ -2209,14 +2209,14 @@ nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfn nearestApproachInstant()
  */
 TInstant *
-nai_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
   TInstant *result = NULL;
-  Temporal *dist = tdistance_trgeo_tpoint(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
@@ -2237,14 +2237,14 @@ nai_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @sqlfn nearestApproachInstant()
  */
 TInstant *
-nai_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
 
   TInstant *result = NULL;
-  Temporal *dist = tdistance_trgeo_trgeo(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
@@ -2269,13 +2269,13 @@ nai_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p |=|
  */
 double
-nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  Temporal *dist = tdistance_trgeo_geo(temp, gs);
+  Temporal *dist = tdistance_trgeometry_geo(temp, gs);
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
@@ -2288,7 +2288,7 @@ nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlop @p |=|
  */
 double
-nad_trgeo_stbox(const Temporal *temp, const STBox *box)
+nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_stbox(temp, box))
@@ -2309,7 +2309,7 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
     temporal_restrict_tstzspan(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
-  Temporal *dist = tdistance_trgeo_geo(temp, geo);
+  Temporal *dist = tdistance_trgeometry_geo(temp, geo);
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(geo);
   if (hast)
@@ -2324,13 +2324,13 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
  * @sqlop @p |=|
  */
 double
-nad_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp2, temp2))
     return DBL_MAX;
 
-  Temporal *dist = tdistance_trgeo_tpoint(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
 
@@ -2346,13 +2346,13 @@ nad_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @sqlop @p |=|
  */
 double
-nad_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp2, temp2))
     return DBL_MAX;
 
-  Temporal *dist = tdistance_trgeo_trgeo(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
 
@@ -2372,13 +2372,13 @@ nad_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @sqlfn shortestLine()
  */
 GSERIALIZED *
-shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   
-  Temporal *dist = tdistance_trgeo_geo(temp, gs);
+  Temporal *dist = tdistance_trgeometry_geo(temp, gs);
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value;
@@ -2396,13 +2396,13 @@ shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfn shortestLine()
  */
 GSERIALIZED *
-shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
-  Temporal *dist = tdistance_trgeo_tpoint(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);
@@ -2423,13 +2423,13 @@ shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @sqlfn shortestLine()
  */
 GSERIALIZED *
-shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
 
-  Temporal *dist = tdistance_trgeo_trgeo(temp1, temp2);
+  Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);

@@ -38,23 +38,23 @@
 
 CREATE FUNCTION tdistance(trgeometry, geometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdistance(geometry, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdistance(trgeometry, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_tpoint'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeometry_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdistance(tgeompoint, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_tpoint_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_tpoint_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdistance(trgeometry, trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdistance_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tdistance_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -89,55 +89,55 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION nearestApproachInstant(trgeometry, geometry)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'NAI_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'NAI_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(geometry, trgeometry)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'NAI_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'NAI_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(trgeometry, tgeompoint)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'NAI_trgeo_tpoint'
+  AS 'MODULE_PATHNAME', 'NAI_trgeometry_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 /* TODO: Maybe change output type here.
  * Currently we return a trgeometry instant
  * even if the left argument is a tgeompoint */
 CREATE FUNCTION nearestApproachInstant(tgeompoint, trgeometry)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'NAI_tpoint_trgeo'
+  AS 'MODULE_PATHNAME', 'NAI_tpoint_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(trgeometry, trgeometry)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'NAI_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'NAI_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION nearestApproachDistance(trgeometry, geometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'NAD_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(geometry, trgeometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'NAD_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(trgeometry, stbox)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_trgeo_stbox'
+  AS 'MODULE_PATHNAME', 'NAD_trgeometry_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(stbox, trgeometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_stbox_trgeo'
+  AS 'MODULE_PATHNAME', 'NAD_stbox_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(trgeometry, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_trgeo_tpoint'
+  AS 'MODULE_PATHNAME', 'NAD_trgeometry_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tgeompoint, trgeometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tpoint_trgeo'
+  AS 'MODULE_PATHNAME', 'NAD_tpoint_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(trgeometry, trgeometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'NAD_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR |=| (
@@ -178,23 +178,23 @@ CREATE OPERATOR |=| (
 
 CREATE FUNCTION shortestLine(trgeometry, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Shortestline_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Shortestline_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(geometry, trgeometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Shortestline_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(trgeometry, tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Shortestline_trgeo_tpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_trgeometry_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tgeompoint, trgeometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_trgeo'
+  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(trgeometry, trgeometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Shortestline_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Shortestline_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

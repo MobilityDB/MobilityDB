@@ -41,30 +41,30 @@
 
 CREATE FUNCTION eContains(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Econtains_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Econtains_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eContains(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Econtains_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Econtains_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eContains(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Econtains_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Econtains_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aContains(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acontains_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Acontains_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aContains(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acontains_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Acontains_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aContains(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acontains_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Acontains_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -73,30 +73,30 @@ CREATE FUNCTION aContains(trgeometry, trgeometry)
 
 CREATE FUNCTION eCovers(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ecovers_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ecovers_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eCovers(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ecovers_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Ecovers_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eCovers(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ecovers_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ecovers_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aCovers(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Acovers_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aCovers(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Acovers_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aCovers(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Acovers_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -105,30 +105,30 @@ CREATE FUNCTION aCovers(trgeometry, trgeometry)
 
 CREATE FUNCTION eDisjoint(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aDisjoint(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adisjoint_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Adisjoint_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adisjoint_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Adisjoint_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adisjoint_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Adisjoint_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -137,30 +137,30 @@ CREATE FUNCTION aDisjoint(trgeometry, trgeometry)
 
 CREATE FUNCTION eIntersects(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Eintersects_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Eintersects_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Eintersects_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Eintersects_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Eintersects_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aIntersects(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Aintersects_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Aintersects_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Aintersects_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Aintersects_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Aintersects_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Aintersects_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -169,30 +169,30 @@ CREATE FUNCTION aIntersects(trgeometry, trgeometry)
 
 CREATE FUNCTION eTouches(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Etouches_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Etouches_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Etouches_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aTouches(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Atouches_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aTouches(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Atouches_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aTouches(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Atouches_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -201,30 +201,30 @@ CREATE FUNCTION aTouches(trgeometry, trgeometry)
 
 CREATE FUNCTION eDwithin(geometry, trgeometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(trgeometry, geometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Edwithin_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(trgeometry, trgeometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Edwithin_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION aDwithin(geometry, trgeometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Adwithin_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(trgeometry, geometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Adwithin_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(trgeometry, trgeometry, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Adwithin_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
