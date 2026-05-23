@@ -152,12 +152,6 @@ Tpcpatch_tnpoints_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   MemoryContext ctx;
   INPUT_AGG_TRANS_STATE(fcinfo, state, ctx);
-  if (PG_ARGISNULL(1))
-  {
-    unset_aggregation_context(ctx);
-    if (state) PG_RETURN_POINTER(state);
-    PG_RETURN_NULL();
-  }
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   int n;
@@ -222,12 +216,6 @@ Tpcpatch_tdensity_transfn(PG_FUNCTION_ARGS)
   SkipList *state;
   MemoryContext ctx;
   INPUT_AGG_TRANS_STATE(fcinfo, state, ctx);
-  if (PG_ARGISNULL(1))
-  {
-    unset_aggregation_context(ctx);
-    if (state) PG_RETURN_POINTER(state);
-    PG_RETURN_NULL();
-  }
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   int n;
