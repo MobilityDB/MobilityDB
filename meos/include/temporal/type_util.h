@@ -91,7 +91,7 @@ extern int tinstarr_remove_duplicates(TInstant **instants, int count);
 
 extern Datum datum_add(Datum l, Datum r, MeosType type);
 extern Datum datum_sub(Datum l, Datum r, MeosType type);
-extern Datum datum_mult(Datum l, Datum r, MeosType type);
+extern Datum datum_mul(Datum l, Datum r, MeosType type);
 extern Datum datum_div(Datum l, Datum r, MeosType type);
 
 /* Comparison functions on datums */

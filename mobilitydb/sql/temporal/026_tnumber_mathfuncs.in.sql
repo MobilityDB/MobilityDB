@@ -190,13 +190,13 @@ CREATE OPERATOR - (
 
 /* integer * <TYPE> */
 
-CREATE FUNCTION tnumber_mult(integer, tint)
+CREATE FUNCTION tnumber_mul(integer, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Mult_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Mul_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = *
 );
@@ -204,22 +204,22 @@ CREATE OPERATOR * (
 /*****************************************************************************/
 /* tint * <TYPE> */
 
-CREATE FUNCTION tnumber_mult(tint, integer)
+CREATE FUNCTION tnumber_mul(tint, integer)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Mult_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Mul_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_mult(tint, tint)
+CREATE FUNCTION tnumber_mul(tint, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Mult_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Mul_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = tint, RIGHTARG = integer,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = tint, RIGHTARG = tint,
   COMMUTATOR = *
 );
@@ -228,13 +228,13 @@ CREATE OPERATOR * (
 
 /* float * <TYPE> */
 
-CREATE FUNCTION tnumber_mult(float, tfloat)
+CREATE FUNCTION tnumber_mul(float, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Mult_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Mul_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = float, RIGHTARG = tfloat,
   COMMUTATOR = *
 );
@@ -242,22 +242,22 @@ CREATE OPERATOR * (
 /*****************************************************************************/
 /* tfloat * <TYPE> */
 
-CREATE FUNCTION tnumber_mult(tfloat, float)
+CREATE FUNCTION tnumber_mul(tfloat, float)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Mult_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Mul_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_mult(tfloat, tfloat)
+CREATE FUNCTION tnumber_mul(tfloat, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Mult_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Mul_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = tfloat, RIGHTARG = float,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = tnumber_mult,
+  PROCEDURE = tnumber_mul,
   LEFTARG = tfloat, RIGHTARG = tfloat,
   COMMUTATOR = *
 );

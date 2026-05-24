@@ -217,14 +217,14 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * integer
  * @param[in] i Value
  * @param[in] temp Temporal value
- * @csqlfn #Mult_number_tnumber()
+ * @csqlfn #Mul_number_tnumber()
  */
 Temporal *
-mult_int_tint(int i, const Temporal *temp)
+mul_int_tint(int i, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
-  return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MUL, &datum_mul,
     INVERT);
 }
 
@@ -233,14 +233,14 @@ mult_int_tint(int i, const Temporal *temp)
  * @brief Return the temporal multiplication of a float and a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
- * @csqlfn #Mult_number_tnumber()
+ * @csqlfn #Mul_number_tnumber()
  */
 Temporal *
-mult_float_tfloat(double d, const Temporal *temp)
+mul_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT);
 }
 
@@ -250,14 +250,14 @@ mult_float_tfloat(double d, const Temporal *temp)
  * integer
  * @param[in] temp Temporal value
  * @param[in] i Value
- * @csqlfn #Mult_tnumber_number()
+ * @csqlfn #Mul_tnumber_number()
  */
 Temporal *
-mult_tint_int(const Temporal *temp, int i)
+mul_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
-  return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MUL, &datum_mul,
     INVERT_NO);
 }
 
@@ -266,14 +266,14 @@ mult_tint_int(const Temporal *temp, int i)
  * @brief Return the temporal multiplication of a temporal float and a float
  * @param[in] temp Temporal value
  * @param[in] d Value
- * @csqlfn #Mult_tnumber_number()
+ * @csqlfn #Mul_tnumber_number()
  */
 Temporal *
-mult_tfloat_float(const Temporal *temp, double d)
+mul_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT_NO);
 }
 
@@ -281,17 +281,17 @@ mult_tfloat_float(const Temporal *temp, double d)
  * @ingroup meos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
  * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Mult_tnumber_tnumber()
+ * @csqlfn #Mul_tnumber_tnumber()
  */
 Temporal *
-mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+mul_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   MeosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
-  return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
+  return arithop_tnumber_tnumber(temp1, temp2, MUL, &datum_mul,
     (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
 

@@ -368,7 +368,7 @@ datum_sub(Datum l, Datum r, MeosType type)
  * @brief Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, MeosType type)
+datum_mul(Datum l, Datum r, MeosType type)
 {
   switch (type)
   {
