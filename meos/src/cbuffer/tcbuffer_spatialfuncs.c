@@ -692,4 +692,20 @@ tcbuffer_traversed_area(const Temporal *temp, bool unary_union)
   }
 }
 
+/**
+ * @ingroup meos_cbuffer_accessor
+ * @brief Return the convex hull of a temporal circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Tcbuffer_convex_hull()
+ */
+GSERIALIZED *
+tcbuffer_convex_hull(const Temporal *temp)
+{
+  VALIDATE_TCBUFFER(temp, NULL);
+  GSERIALIZED *area = tcbuffer_traversed_area(temp, true);
+  GSERIALIZED *result = geom_convex_hull(area);
+  pfree(area);
+  return result;
+}
+
 /*****************************************************************************/

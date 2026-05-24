@@ -67,6 +67,24 @@ CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT true)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Centroid
+ *****************************************************************************/
+
+CREATE FUNCTION centroid(tcbuffer)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Convex hull
+ *****************************************************************************/
+
+CREATE FUNCTION convexHull(tcbuffer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tcbuffer_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 
