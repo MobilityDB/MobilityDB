@@ -109,6 +109,11 @@ CREATE FUNCTION timeTiles(tgeompoint, duration interval,
   RETURNS SETOF index_stbox
   AS 'SELECT @extschema@.timeTiles(@extschema@.stbox($1), $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeTiles(tgeogpoint, duration interval,
+  torigin timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'SELECT @extschema@.timeTiles(@extschema@.stbox($1), $2, $3, $4)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION spaceTimeTiles(tgeompoint, xsize float, ysize float,
   zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
