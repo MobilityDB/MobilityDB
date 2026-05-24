@@ -69,10 +69,10 @@ tfloat_arithop_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  double x1 = Float8GetDatum(start1);
-  double x2 = Float8GetDatum(end1);
-  double x3 = Float8GetDatum(start2);
-  double x4 = Float8GetDatum(end2);
+  double x1 = DatumGetFloat8(start1);
+  double x2 = DatumGetFloat8(end1);
+  double x3 = DatumGetFloat8(start2);
+  double x4 = DatumGetFloat8(end2);
   /* Compute the instants t1 and t2 at which the linear functions of the two
    * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
    * minimum/maximum exactly at the middle between t1 and t2.
