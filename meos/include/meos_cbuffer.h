@@ -232,6 +232,7 @@ extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 extern Set *tcbuffer_points(const Temporal *temp);
 extern Set *tcbuffer_radius(const Temporal *temp);
 extern GSERIALIZED *tcbuffer_traversed_area(const Temporal *temp, bool unary_union);
+extern GSERIALIZED *tcbuffer_convex_hull(const Temporal *temp);
 
 /*****************************************************************************
  * Conversion functions
