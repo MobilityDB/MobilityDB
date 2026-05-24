@@ -2924,34 +2924,34 @@ int main(void)
   printf("div_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* Temporal *mult_float_tfloat(double d, const Temporal *tnumber); */
-  tfloat_result = mult_float_tfloat(float8_in1, tfloat1);
+  /* Temporal *mul_float_tfloat(double d, const Temporal *tnumber); */
+  tfloat_result = mul_float_tfloat(float8_in1, tfloat1);
   char_result = tfloat_out(tfloat_result, 6);
-  printf("mult_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
+  printf("mul_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* Temporal *mult_int_tint(int i, const Temporal *tnumber); */
-  tint_result = mult_int_tint(int32_in1, tint1);
+  /* Temporal *mul_int_tint(int i, const Temporal *tnumber); */
+  tint_result = mul_int_tint(int32_in1, tint1);
   char_result = tint_out(tint_result);
-  printf("mult_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
+  printf("mul_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
-  /* Temporal *mult_tfloat_float(const Temporal *tnumber, double d); */
-  tfloat_result = mult_tfloat_float(tfloat1, float8_in1);
+  /* Temporal *mul_tfloat_float(const Temporal *tnumber, double d); */
+  tfloat_result = mul_tfloat_float(tfloat1, float8_in1);
   char_result = tfloat_out(tfloat_result, 6);
-  printf("mult_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
+  printf("mul_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
-  /* Temporal *mult_tint_int(const Temporal *tnumber, int i); */
-  tint_result = mult_tint_int(tint1, int32_in1);
+  /* Temporal *mul_tint_int(const Temporal *tnumber, int i); */
+  tint_result = mul_tint_int(tint1, int32_in1);
   char_result = tint_out(tint_result);
-  printf("mult_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
+  printf("mul_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
-  /* Temporal *mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
-  tfloat_result = mult_tnumber_tnumber(tfloat1, tfloat2);
+  /* Temporal *mul_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
+  tfloat_result = mul_tnumber_tnumber(tfloat1, tfloat2);
   char_result = tfloat_out(tfloat_result, 6);
-  printf("mult_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
+  printf("mul_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *sub_float_tfloat(double d, const Temporal *tnumber); */

@@ -238,7 +238,7 @@ int main(void)
           // Temporal *rest = tlt_temporal_temporal(temp1, temp2);
           // Temporal *rest = add_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = sub_tnumber_tnumber(temp1, temp2);
-          // Temporal *rest = mult_tnumber_tnumber(temp1, temp2);
+          // Temporal *rest = mul_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = div_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = tdistance_tnumber_tnumber(temp1, temp2);
           // Temporal *rest = textcat_ttext_ttext(temp1, temp2);

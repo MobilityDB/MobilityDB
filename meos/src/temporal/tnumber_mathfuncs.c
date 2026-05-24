@@ -200,7 +200,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_temp = (oper == MULT || oper == DIV) && linear1 && linear2 ?
+  lfinfo.tpfn_temp = (oper == MUL || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
