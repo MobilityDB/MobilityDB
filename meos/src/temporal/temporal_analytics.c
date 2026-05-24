@@ -56,6 +56,13 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if POSE
+#include <meos_pose.h>
+#include "pose/pose.h"
+#endif
+#if CBUFFER
+#include <meos_cbuffer.h>
+#endif
 
 /*****************************************************************************
  * Time precision functions for time values
@@ -190,6 +197,108 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
 
+#if POSE
+/**
+ * @brief Accumulate the duration-weighted position and circular-angle sums of
+ * a 2D pose-valued sequence into the running totals
+ */
+static void
+poseseq_tprecision_accum(const TSequence *seq, double *sum_x, double *sum_y,
+  double *sum_sin, double *sum_cos, double *total_dur)
+{
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const TInstant *next = TSEQUENCE_INST_N(seq, i + 1);
+    const Pose *p = DatumGetPoseP(tinstant_value_p(inst));
+    double dur = (double) (next->t - inst->t);
+    *sum_x += p->data[0] * dur;
+    *sum_y += p->data[1] * dur;
+    *sum_sin += sin(p->data[2]) * dur;
+    *sum_cos += cos(p->data[2]) * dur;
+    *total_dur += dur;
+  }
+}
+
+/**
+ * @brief Return the time-weighted average pose of a pose-valued temporal
+ * (tpose or trgeometry), over a sequence or a sequence set
+ * @details For a LINEAR (or any 3D) sequence the time-weighted average of both
+ * position and orientation equals the pose at the midpoint timestamp. For a 2D
+ * STEP sequence the position is the step-weighted average and the angle is a
+ * circular mean. A sequence set combines the step-weighted sums over its
+ * component sequences. 3D orientation averaging (quaternions) is deferred to
+ * the midpoint strategy.
+ */
+static Datum
+pose_tprecision_value(const Temporal *temp)
+{
+  assert(temp->temptype == T_TPOSE
+#if RGEO
+    || temp->temptype == T_TRGEOMETRY
+#endif
+    );
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    if (seq->count == 1)
+      return datum_copy(tinstant_value(TSEQUENCE_INST_N(seq, 0)), T_POSE);
+    const Pose *p0 = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
+    if (MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR ||
+        MEOS_FLAGS_GET_Z(p0->flags))
+    {
+      TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+      TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+      Datum value;
+      tsequence_value_at_timestamptz(seq, lower + (upper - lower) / 2, false,
+        &value);
+      return datum_copy(value, T_POSE);
+    }
+    int32_t srid = pose_srid(p0);
+    double sx = 0, sy = 0, ssin = 0, scos = 0, td = 0;
+    poseseq_tprecision_accum(seq, &sx, &sy, &ssin, &scos, &td);
+    if (td <= 0)
+      return datum_copy(tinstant_value(TSEQUENCE_INST_N(seq, 0)), T_POSE);
+    return PointerGetDatum(pose_make_2d(sx / td, sy / td,
+      atan2(ssin / td, scos / td), srid));
+  }
+  /* TSEQUENCESET: combine the step-weighted sums over component sequences */
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  const TInstant *first = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0);
+  int32_t srid = pose_srid(DatumGetPoseP(tinstant_value_p(first)));
+  double sx = 0, sy = 0, ssin = 0, scos = 0, td = 0;
+  for (int i = 0; i < ss->count; i++)
+    poseseq_tprecision_accum(TSEQUENCESET_SEQ_N(ss, i), &sx, &sy, &ssin, &scos,
+      &td);
+  if (td <= 0)
+    return datum_copy(tinstant_value(first), T_POSE);
+  return PointerGetDatum(pose_make_2d(sx / td, sy / td,
+    atan2(ssin / td, scos / td), srid));
+}
+#endif /* POSE */
+
+#if CBUFFER
+/**
+ * @brief Return the time-weighted average circular buffer of a tcbuffer
+ * temporal, over a sequence or a sequence set
+ * @details The center is the time-weighted centroid of the center trajectory
+ * and the radius is the time-weighted average of the radius; both reuse the
+ * number/point machinery on the decomposed parts.
+ */
+static Datum
+tcbuffer_tprecision_value(const Temporal *temp)
+{
+  assert(temp->temptype == T_TCBUFFER);
+  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+  Temporal *tfloat = tcbuffer_to_tfloat(temp);
+  GSERIALIZED *center = tpoint_twcentroid(tpoint);
+  double radius = tnumber_twavg(tfloat);
+  Cbuffer *result = cbuffer_make(center, radius);
+  pfree(tpoint); pfree(tfloat); pfree(center);
+  return PointerGetDatum(result);
+}
+#endif /* CBUFFER */
+
 /**
  * @brief Return a temporal sequence with the precision set to a time bin
  * @param[in] seq Temporal value
@@ -203,7 +312,14 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   assert(seq); assert(duration); assert(positive_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
-    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
+    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY
+#if POSE
+    || seq->temptype == T_TPOSE
+#endif
+#if CBUFFER
+    || seq->temptype == T_TCBUFFER
+#endif
+    );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -270,12 +386,34 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         seq1 = tsequence_make(ininsts, k, true, (k == 1) ? true : false,
           interp, NORMALIZE);
         /* Compute the twAvg/twCentroid for the bin */
-        value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
-          PointerGetDatum(tpointseq_twcentroid(seq1));
-        outinsts[l++] = tinstant_make(value, temptype_out, lower);
-        pfree(seq1);
-        if (! twavg)
+#if POSE
+        if (seq->temptype == T_TPOSE)
+        {
+          value = pose_tprecision_value((const Temporal *) seq1);
+          outinsts[l++] = tinstant_make(value, T_TPOSE, lower);
+          pfree(seq1);
           pfree(DatumGetPointer(value));
+        }
+        else
+#endif /* POSE */
+#if CBUFFER
+        if (seq->temptype == T_TCBUFFER)
+        {
+          value = tcbuffer_tprecision_value((const Temporal *) seq1);
+          outinsts[l++] = tinstant_make(value, T_TCBUFFER, lower);
+          pfree(seq1);
+          pfree(DatumGetPointer(value));
+        }
+        else
+#endif /* CBUFFER */
+        {
+          value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
+            PointerGetDatum(tpointseq_twcentroid(seq1));
+          outinsts[l++] = tinstant_make(value, temptype_out, lower);
+          pfree(seq1);
+          if (! twavg)
+            pfree(DatumGetPointer(value));
+        }
       }
       /* Free the instant at the beginning of the bin if it was generated */
       if (start)
@@ -321,11 +459,31 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   {
     seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
-    value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
-      PointerGetDatum(tpointseq_twcentroid(seq1));
-    outinsts[l++] = tinstant_make(value, temptype_out, lower);
-    if (! twavg)
+#if POSE
+    if (seq->temptype == T_TPOSE)
+    {
+      value = pose_tprecision_value((const Temporal *) seq1);
+      outinsts[l++] = tinstant_make(value, T_TPOSE, lower);
       pfree(DatumGetPointer(value));
+    }
+    else
+#endif /* POSE */
+#if CBUFFER
+    if (seq->temptype == T_TCBUFFER)
+    {
+      value = tcbuffer_tprecision_value((const Temporal *) seq1);
+      outinsts[l++] = tinstant_make(value, T_TCBUFFER, lower);
+      pfree(DatumGetPointer(value));
+    }
+    else
+#endif /* CBUFFER */
+    {
+      value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
+        PointerGetDatum(tpointseq_twcentroid(seq1));
+      outinsts[l++] = tinstant_make(value, temptype_out, lower);
+      if (! twavg)
+        pfree(DatumGetPointer(value));
+    }
     pfree(seq1);
   }
   /* The lower and upper bounds of the result are both true since the 
@@ -350,7 +508,15 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 {
   assert(ss); assert(duration); assert(positive_duration(duration));
   assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
-    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
+    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT ||
+    ss->temptype == T_TGEOMETRY || ss->temptype == T_TGEOGRAPHY
+#if POSE
+    || ss->temptype == T_TPOSE
+#endif
+#if CBUFFER
+    || ss->temptype == T_TCBUFFER
+#endif
+    );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
@@ -381,8 +547,19 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     TSequenceSet *proj = tsequenceset_restrict_tstzspan(ss, &p, REST_AT);
     if (proj)
     {
-      Datum value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
-        PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
+      Datum value;
+#if POSE
+      if (ss->temptype == T_TPOSE)
+        value = pose_tprecision_value((const Temporal *) proj);
+      else
+#endif
+#if CBUFFER
+      if (ss->temptype == T_TCBUFFER)
+        value = tcbuffer_tprecision_value((const Temporal *) proj);
+      else
+#endif
+        value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
+          PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
       /* We keep only the first instant since the tprecision operation amounts
        * to a granularity change */
       instants[ninsts++] = tinstant_make(value, temptype_out, lower);
