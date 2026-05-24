@@ -515,15 +515,25 @@ bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
  * @ingroup meos_internal_setspan_set
  * @brief Return the bounding union of two spans
  * @param[in] s1,s2 Spans
+ * @param[in] strict True when the spans must be contiguous (a gapped union then
+ * raises an error, mirroring #union_tbox_tbox and #union_stbox_stbox); when
+ * false the result is always a span, spanning any gap
  * @note The result of the function is always a span even if the spans do not
  * overlap
  * @note This function is similar to #bbox_union_span_span **with** memory
  * allocation
  */
 Span *
-super_union_span_span(const Span *s1, const Span *s2)
+super_union_span_span(const Span *s1, const Span *s2, bool strict)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+  /* The union of spans that are not contiguous cannot be a single span */
+  if (strict && ! ovadj_span_span(s1, s2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Result of span union would not be contiguous");
+    return NULL;
+  }
   Span *result = span_copy(s1);
   span_expand(s2, result);
   return result;

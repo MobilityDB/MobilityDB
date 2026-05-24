@@ -86,7 +86,7 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (s2 && ! s1)
     PG_RETURN_SPAN_P(s2);
   /* Non-strict union */
-  PG_RETURN_SPAN_P(super_union_span_span(s1, s2));
+  PG_RETURN_SPAN_P(super_union_span_span(s1, s2, false));
 }
 
 /*****************************************************************************/
