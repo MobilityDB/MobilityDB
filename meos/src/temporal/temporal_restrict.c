@@ -61,6 +61,10 @@
 #include "temporal/type_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
+#if RGEO
+  #include <meos_rgeo.h>
+  #include "rgeo/trgeo.h"
+#endif /* RGEO */
 
 /*****************************************************************************
  * Bounding box tests for the restriction functions
@@ -152,17 +156,24 @@ Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); 
+  VALIDATE_NOT_NULL(temp, NULL);
+#if RGEO
+  /* Temporal rigid geometries are restricted by pose: strip to the temporal
+   * pose, restrict, and re-attach the reference geometry */
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    Temporal *rest = temporal_restrict_value(tpose, value, atfunc);
+    Temporal *result = rest ?
+      geo_tpose_to_trgeometry(trgeo_geom_p(temp), rest) : NULL;
+    pfree(tpose);
+    if (rest) pfree(rest);
+    return result;
+  }
+#endif /* RGEO */
   if (tspatial_type(temp->temptype))
   {
-#if RGEO
-    /* Temporal rigid geometries have poses as base values but are restricted
-     * to geometries */
-    MeosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
-      temptype_basetype(temp->temptype);
-#else
     MeosType basetype = temptype_basetype(temp->temptype);
-#endif /* RGEO */
     if (! ensure_same_srid(tspatial_srid(temp),
             spatial_srid(value, basetype)) ||
         ! ensure_same_spatial_dimensionality(temp->flags,
@@ -243,10 +254,23 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_set(temp, s) ||
-     (tspatial_type(temp->temptype) && 
+     (tspatial_type(temp->temptype) &&
       (! ensure_same_srid(tspatial_srid(temp), spatialset_srid(s)) ||
        ! ensure_same_spatial_dimensionality(temp->flags, s->flags))))
     return NULL;
+
+#if RGEO
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    Temporal *rest = temporal_restrict_values(tpose, s, atfunc);
+    Temporal *result = rest ?
+      geo_tpose_to_trgeometry(trgeo_geom_p(temp), rest) : NULL;
+    pfree(tpose);
+    if (rest) pfree(rest);
+    return result;
+  }
+#endif /* RGEO */
 
   /* Singleton set */
   if (s->count == 1)

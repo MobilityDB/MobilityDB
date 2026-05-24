@@ -1066,13 +1066,12 @@ trgeometry_set_interp(const Temporal *temp, interpType interp)
 
 /**
  * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a geometry
+ * @brief Restrict a temporal rigid geometry to (the complement of) a pose
  * @param[in] temp Temporal rigid geometry
  * @param[in] value Value
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @note This function does a bounding box test for the temporal types
- * different from instant. The singleton tests are done in the functions for
- * the specific temporal types.
+ * @note A temporal rigid geometry is restricted by pose: strip to the temporal
+ * pose, restrict, and re-attach the reference geometry.
  * @csqlfn #Temporal_restrict_value()
  */
 Temporal *
@@ -1081,7 +1080,9 @@ trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *res = temporal_restrict_value(temp, value, atfunc);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res = temporal_restrict_value(tpose, value, atfunc);
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1120,7 +1121,7 @@ trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_internal_rgeo_restrict
  * @brief Restrict a temporal rigid geometry to (the complement of) a set of
- * geometries
+ * poses
  * @param[in] temp Temporal rigid geometry
  * @param[in] s Set of values
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
@@ -1130,8 +1131,10 @@ Temporal *
 trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_GEOMSET(s, NULL); 
-  Temporal *res = temporal_restrict_values(temp, s, atfunc);
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_POSESET(s, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res = temporal_restrict_values(tpose, s, atfunc);
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);

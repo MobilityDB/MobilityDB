@@ -476,25 +476,22 @@ CREATE FUNCTION tsample(trgeometry, duration interval,
  * Restriction Functions
  *****************************************************************************/
 
--- CREATE FUNCTION atValues(trgeometry, geometry)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Temporal_at_value'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION minusValues(trgeometry, geometry)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Temporal_minus_value'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION atValues(trgeometry, geomset)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Temporal_at_values'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION minusValues(trgeometry, geomset)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Temporal_minus_values'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atValues(trgeometry, pose)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusValues(trgeometry, pose)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atValues(trgeometry, poseset)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusValues(trgeometry, poseset)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(trgeometry, timestamptz)
   RETURNS trgeometry
