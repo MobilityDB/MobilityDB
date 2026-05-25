@@ -461,7 +461,6 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
  * @param[in] basetype Type of the values
  * @param[in] order True when the values should be ordered and duplicates
  * should be removed
- * @csqlfn #Set_constructor()
  */
 Set *
 set_make(const Datum *values, int count, MeosType basetype, bool order)
@@ -518,7 +517,6 @@ set_copy(const Set *s)
  * @brief Convert a value into a set
  * @param[in] value Value
  * @param[in] basetype Type of the value
- * @csqlfn #Value_to_set()
  */
 Set *
 value_set(Datum value, MeosType basetype)
@@ -669,7 +667,6 @@ set_end_value(const Set *s)
  * @param[in] n Number (1-based)
  * @param[out] result Value
  * @return Return true if the value is found
- * @csqlfn #Set_value_n()
  */
 bool
 set_value_n(const Set *s, int n, Datum *result)

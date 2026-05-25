@@ -249,7 +249,6 @@ ovadj_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a span and a value are adjacent
  * @param[in] s Span
  * @param[in] value Value
- * @csqlfn #Adjacent_span_value()
  */
 bool
 adjacent_span_value(const Span *s, Datum value)
@@ -534,7 +533,6 @@ super_union_span_span(const Span *s1, const Span *s2)
  * @brief Return the union of a span and a value
  * @param[in] s Span
  * @param[in] value Value
- * @csqlfn #Union_span_value()
  */
 SpanSet *
 union_span_value(const Span *s, Datum value)

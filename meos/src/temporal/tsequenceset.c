@@ -884,7 +884,6 @@ tnumberseqset_avg_val(const TSequenceSet *ss)
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
  * @param[out] result Value
- * @csqlfn #Temporal_value_n()
  */
 bool
 tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result)
@@ -1273,7 +1272,6 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
  * @param[out] result Base value
  * @return Return true if the timestamp is contained in the temporal sequence set
  * @pre A bounding box test has been done before by the calling function
- * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,

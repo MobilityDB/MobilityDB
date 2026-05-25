@@ -403,7 +403,6 @@ tinstant_insts(const TInstant *inst, int *count)
  * @param[out] result Result
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
- * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t,
@@ -503,7 +502,6 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
  * @brief Return a temporal instant whose value is shifted by a value
  * @param[in] inst Temporal instant
  * @param[in] shift Value to shift the instant
- * @csqlfn #Tnumber_shift_value()
  */
 TInstant *
 tnumberinst_shift_value(const TInstant *inst, Datum shift)
