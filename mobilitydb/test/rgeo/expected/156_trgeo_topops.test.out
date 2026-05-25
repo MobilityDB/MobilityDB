@@ -769,7 +769,7 @@ SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.4)@2
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tstzspan '[2000-01-01,2000-01-02]' -|- trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03}';
@@ -817,7 +817,7 @@ SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- trgeometry 'SRID=5676;
 SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02, Pose(Point(1 1),0.7)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';

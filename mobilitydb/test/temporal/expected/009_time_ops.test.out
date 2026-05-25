@@ -205,7 +205,7 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02), [2000-01-05, 2000-01-06]}' && tst
 SELECT timestamptz '2000-01-01' -|- tstzspan '[2000-01-01, 2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tstzspan '(2000-01-01, 2000-01-03]';
@@ -217,7 +217,7 @@ SELECT timestamptz '2000-01-01' -|- tstzspan '(2000-01-01, 2000-01-03]';
 SELECT timestamptz '2000-01-01' -|- tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tstzspanset '{(2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -229,7 +229,7 @@ SELECT timestamptz '2000-01-01' -|- tstzspanset '{(2000-01-01, 2000-01-03],[2000
 SELECT tstzspan '[2000-01-01, 2000-01-03]' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tstzspan '[2000-01-01, 2000-01-03]' -|- tstzspan '[2000-01-01, 2000-01-03]';
@@ -247,7 +247,7 @@ SELECT tstzspan '[2000-01-01, 2000-01-03]' -|- tstzspanset '{[2000-01-01, 2000-0
 SELECT tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' -|- tstzspan '[2000-01-01, 2000-01-03]';
