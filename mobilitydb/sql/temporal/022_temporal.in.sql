@@ -41,6 +41,7 @@ CREATE TYPE ttext;
  * Utility functions
  *****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION mobilitydb_version()
   RETURNS text
   AS 'MODULE_PATHNAME', 'Mobilitydb_version'

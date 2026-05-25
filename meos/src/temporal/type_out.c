@@ -773,7 +773,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * @param[in] flags Flags
  * @param[in] precision Number of decimal digits. It is only used when the base
  * type has floating point components, such as tfloat or tgeometry
- * @param[in] srs Spatial reference system
+ * @param[in] srs Spatial reference system, may be `NULL`
  * @return On error return @p NULL
  * @csqlfn #Temporal_as_mfjson()
  */

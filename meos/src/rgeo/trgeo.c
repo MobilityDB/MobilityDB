@@ -1299,7 +1299,7 @@ trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the temporal value passed as first argument has space for 

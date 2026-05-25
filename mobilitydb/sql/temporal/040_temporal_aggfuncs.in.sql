@@ -32,6 +32,7 @@
  * @brief Temporal aggregate functions
  */
 
+-- The function is not strict
 CREATE FUNCTION temporal_extent_transfn(tstzspan, tbool)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
@@ -58,6 +59,7 @@ CREATE AGGREGATE extent(ttext) (
   PARALLEL = safe
 );
 
+-- The function is not strict
 CREATE FUNCTION tnumber_extent_transfn(tbox, tint)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tnumber_extent_transfn'
@@ -98,6 +100,7 @@ CREATE FUNCTION taggstate_deserialize(bytea, internal)
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, timestamptz)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Timestamptz_tcount_transfn'
@@ -166,6 +169,7 @@ CREATE AGGREGATE tcount(tstzspanset) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -223,6 +227,7 @@ CREATE AGGREGATE tor(tbool) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -313,6 +318,7 @@ CREATE AGGREGATE tavg(tint) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -346,6 +352,7 @@ CREATE FUNCTION tfloat_tagg_finalfn(internal)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
 CREATE FUNCTION tavg_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
@@ -400,6 +407,7 @@ CREATE AGGREGATE tavg(tfloat) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -457,6 +465,7 @@ CREATE AGGREGATE tmax(ttext) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'

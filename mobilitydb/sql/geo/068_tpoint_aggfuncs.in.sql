@@ -32,6 +32,7 @@
  * @brief Aggregate functions for temporal points
  */
 
+-- The function is not strict
 CREATE FUNCTION tspatial_extent_transfn(stbox, tgeompoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
@@ -56,6 +57,7 @@ CREATE AGGREGATE extent(tgeogpoint) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -86,6 +88,7 @@ CREATE AGGREGATE tcount(tgeogpoint) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, tgeompoint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
@@ -114,6 +117,7 @@ CREATE AGGREGATE wcount(tgeogpoint, interval) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION tcentroid_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_transfn'
@@ -139,6 +143,7 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'

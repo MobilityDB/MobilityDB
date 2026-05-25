@@ -32,6 +32,7 @@
  * @brief Aggregate functions for temporal geometries/geographies
  */
 
+-- The function is not strict
 CREATE FUNCTION tspatial_extent_transfn(stbox, tgeometry)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
@@ -56,6 +57,7 @@ CREATE AGGREGATE extent(tgeography) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -86,6 +88,7 @@ CREATE AGGREGATE tcount(tgeography) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, tgeometry, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
@@ -116,6 +119,7 @@ CREATE AGGREGATE wcount(tgeography, interval) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'

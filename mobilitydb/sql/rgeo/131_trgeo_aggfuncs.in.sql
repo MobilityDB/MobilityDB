@@ -32,6 +32,7 @@
  * @brief Aggregate functions for temporal rigid geometries
  */
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, trgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -47,6 +48,7 @@ CREATE AGGREGATE tcount(trgeometry) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, trgeometry, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
@@ -64,6 +66,7 @@ CREATE AGGREGATE wcount(trgeometry, interval) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, trgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'

@@ -49,7 +49,7 @@
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of integers
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] i Value to aggregate
  */
 Span *
@@ -64,7 +64,7 @@ int_extent_transfn(Span *state, int i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of big integers
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] i Value to aggregate
  */
 Span *
@@ -79,7 +79,7 @@ bigint_extent_transfn(Span *state, int64 i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of floats
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] d Value to aggregate
  */
 Span *
@@ -94,7 +94,7 @@ float_extent_transfn(Span *state, double d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of dates
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] d Value to aggregate
  */
 Span *
@@ -109,7 +109,7 @@ date_extent_transfn(Span *state, DateADT d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of timestamptz
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] t Value to aggregate
  */
 Span *
@@ -214,7 +214,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Span to aggregate
  * @return When the state variable has space for adding the new span, the 
  * function returns the current state variable. Otherwise, a NEW state 
@@ -244,7 +244,7 @@ span_union_transfn(SpanSet *state, const Span *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] ss Span set to aggregate
  * @return When the state variable has space for adding the new span set, the 
  * function returns the current state variable. Otherwise, a NEW state 
@@ -278,7 +278,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set aggregate of values
- * @param[in] state Current aggregate state
+ * @param[in] state Current aggregate state, may be `NULL`
  */
 SpanSet *
 spanset_union_finalfn(SpanSet *state)

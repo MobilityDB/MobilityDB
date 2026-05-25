@@ -304,6 +304,7 @@ CREATE FUNCTION minDistance(geography, tgeography)
  * one-row group the aggregate degenerates to the per-pair value, so any
  * "scalar" use case is naturally covered.
  */
+-- The function is not strict
 CREATE FUNCTION minDistance_transfn(float, tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Mindistance_transfn'

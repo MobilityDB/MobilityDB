@@ -35,6 +35,7 @@
 /*****************************************************************************/
 -- span + span
 
+-- The function is not strict
 CREATE FUNCTION span_extent_transfn(intspan, intspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
@@ -112,6 +113,7 @@ CREATE AGGREGATE extent(tstzspan) (
 /*****************************************************************************/
 -- span + base
 
+-- The function is not strict
 CREATE FUNCTION span_extent_transfn(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
@@ -167,6 +169,7 @@ CREATE AGGREGATE extent(timestamptz) (
 /*****************************************************************************/
 -- span + <type>
 
+-- The function is not strict
 CREATE FUNCTION set_extent_transfn(intspan, intset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Set_extent_transfn'
@@ -219,6 +222,7 @@ CREATE AGGREGATE extent(tstzset) (
   PARALLEL = safe
 );
 
+-- The function is not strict
 CREATE FUNCTION spanset_extent_transfn(intspan, intspanset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
@@ -273,6 +277,7 @@ CREATE AGGREGATE extent(tstzspanset) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION intspan_union_finalfn(internal)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
@@ -352,6 +357,7 @@ CREATE AGGREGATE spanUnion(tstzspan) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION spanset_union_transfn(internal, intspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
