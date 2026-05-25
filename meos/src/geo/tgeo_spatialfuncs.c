@@ -1482,7 +1482,7 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
- * @param[in] sorigin Point geometry for the origin
+ * @param[in] sorigin Point geometry for the origin, may be `NULL`
  * @csqlfn #Tgeo_scale()
  */
 Temporal *

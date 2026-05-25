@@ -36,6 +36,7 @@
  * Distance functions
  *****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'

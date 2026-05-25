@@ -2076,7 +2076,6 @@ tnumber_avg_value(const Temporal *temp)
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
  * @return On error return false
- * @csqlfn #Temporal_value_n()
  */
 bool
 temporal_value_n(const Temporal *temp, int n, Datum *result)

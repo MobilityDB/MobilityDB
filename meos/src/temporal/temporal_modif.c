@@ -517,7 +517,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_temporal_modif
  * @brief Merge two temporal values
- * @param[in] temp1,temp2 Temporal values
+ * @param[in] temp1,temp2 Temporal values, may be `NULL`
  * @return Return @p NULL if both arguments are @p NULL.
  * If one argument is null, return the other argument.
  * @csqlfn #Temporal_merge()

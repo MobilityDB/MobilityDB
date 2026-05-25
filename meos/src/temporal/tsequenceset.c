@@ -446,7 +446,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
  * @param[in] maxdist Maximum distance to split the temporal sequence
- * @param[in] maxt Maximum time interval to split the temporal sequence
+ * @param[in] maxt Maximum time interval to split the temporal sequence, may be `NULL`
  * @param[out] nsplits Number of splits
  * @return Array of indices at which the temporal sequence is split
  */
@@ -524,7 +524,7 @@ tsequenceset_make_gaps_valid(TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @csqlfn #Tsequenceset_constructor_gaps()
  */
 TSequenceSet *
@@ -884,7 +884,6 @@ tnumberseqset_avg_val(const TSequenceSet *ss)
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
  * @param[out] result Value
- * @csqlfn #Temporal_value_n()
  */
 bool
 tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result)
@@ -1273,7 +1272,6 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
  * @param[out] result Base value
  * @return Return true if the timestamp is contained in the temporal sequence set
  * @pre A bounding box test has been done before by the calling function
- * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,

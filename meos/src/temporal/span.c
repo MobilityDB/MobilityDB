@@ -1303,7 +1303,6 @@ tstzspan_shift_scale1(Span *s, const Interval *shift, const Interval *duration,
  * @param[in] width Width of the result
  * @param[in] hasshift True when the shift argument is given
  * @param[in] haswidth True when the width argument is given
- * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,

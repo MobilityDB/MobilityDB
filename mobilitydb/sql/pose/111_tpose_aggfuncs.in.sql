@@ -32,6 +32,7 @@
  * @brief Aggregate functions for temporal poses
  */
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tpose)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -47,6 +48,7 @@ CREATE AGGREGATE tcount(tpose) (
   PARALLEL = SAFE
 );
 
+-- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, tpose, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
@@ -64,6 +66,7 @@ CREATE AGGREGATE wcount(tpose, interval) (
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tpose)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'

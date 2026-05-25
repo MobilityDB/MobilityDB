@@ -147,7 +147,6 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @brief Return true if a temporal value is ever equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_eq_temporal_base()
  */
 int
 ever_eq_temporal_base(const Temporal *temp, Datum value)
@@ -160,7 +159,6 @@ ever_eq_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is ever different from a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_ne_temporal_base()
  */
 int
 ever_ne_temporal_base(const Temporal *temp, Datum value)
@@ -173,7 +171,6 @@ ever_ne_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is ever less than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_lt_temporal_base()
  */
 int
 ever_lt_temporal_base(const Temporal *temp, Datum value)
@@ -187,7 +184,6 @@ ever_lt_temporal_base(const Temporal *temp, Datum value)
  * value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_le_temporal_base()
  */
 int
 ever_le_temporal_base(const Temporal *temp, Datum value)
@@ -200,7 +196,6 @@ ever_le_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is ever greater than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_gt_temporal_base()
  */
 int
 ever_gt_temporal_base(const Temporal *temp, Datum value)
@@ -214,7 +209,6 @@ ever_gt_temporal_base(const Temporal *temp, Datum value)
  * base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Ever_ge_temporal_base()
  */
 int
 ever_ge_temporal_base(const Temporal *temp, Datum value)
@@ -229,7 +223,6 @@ ever_ge_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is ever equal to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_eq_base_temporal()
  */
 int
 ever_eq_base_temporal(Datum value, const Temporal *temp)
@@ -242,7 +235,6 @@ ever_eq_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is ever different from a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_ne_base_temporal()
  */
 int
 ever_ne_base_temporal(Datum value, const Temporal *temp)
@@ -255,7 +247,6 @@ ever_ne_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is ever less than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_lt_base_temporal()
  */
 int
 ever_lt_base_temporal(Datum value, const Temporal *temp)
@@ -269,7 +260,6 @@ ever_lt_base_temporal(Datum value, const Temporal *temp)
  * value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_le_base_temporal()
  */
 int
 ever_le_base_temporal(Datum value, const Temporal *temp)
@@ -282,7 +272,6 @@ ever_le_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is ever greater than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_gt_base_temporal()
  */
 int
 ever_gt_base_temporal(Datum value, const Temporal *temp)
@@ -296,7 +285,6 @@ ever_gt_base_temporal(Datum value, const Temporal *temp)
  * base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Ever_ge_base_temporal()
  */
 int
 ever_ge_base_temporal(Datum value, const Temporal *temp)
@@ -311,7 +299,6 @@ ever_ge_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is always equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_eq_temporal_base()
  */
 int
 always_eq_temporal_base(const Temporal *temp, Datum value)
@@ -324,7 +311,6 @@ always_eq_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is always different from a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_ne_temporal_base()
  */
 int
 always_ne_temporal_base(const Temporal *temp, Datum value)
@@ -337,7 +323,6 @@ always_ne_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is always less than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_lt_temporal_base()
  */
 int
 always_lt_temporal_base(const Temporal *temp, Datum value)
@@ -351,7 +336,6 @@ always_lt_temporal_base(const Temporal *temp, Datum value)
  * base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_le_temporal_base()
  */
 int
 always_le_temporal_base(const Temporal *temp, Datum value)
@@ -364,7 +348,6 @@ always_le_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is always greater than a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_gt_temporal_base()
  */
 int
 always_gt_temporal_base(const Temporal *temp, Datum value)
@@ -378,7 +361,6 @@ always_gt_temporal_base(const Temporal *temp, Datum value)
  * base value
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @csqlfn #Always_ge_temporal_base()
  */
 int
 always_ge_temporal_base(const Temporal *temp, Datum value)
@@ -393,7 +375,6 @@ always_ge_temporal_base(const Temporal *temp, Datum value)
  * @brief Return true if a temporal value is always equal to a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_eq_base_temporal()
  */
 int
 always_eq_base_temporal(Datum value, const Temporal *temp)
@@ -406,7 +387,6 @@ always_eq_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is always different from a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_ne_base_temporal()
  */
 int
 always_ne_base_temporal(Datum value, const Temporal *temp)
@@ -419,7 +399,6 @@ always_ne_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is always less than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_lt_base_temporal()
  */
 int
 always_lt_base_temporal(Datum value, const Temporal *temp)
@@ -433,7 +412,6 @@ always_lt_base_temporal(Datum value, const Temporal *temp)
  * value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_le_base_temporal()
  */
 int
 always_le_base_temporal(Datum value, const Temporal *temp)
@@ -446,7 +424,6 @@ always_le_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if a temporal value is always greater than a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_gt_base_temporal()
  */
 int
 always_gt_base_temporal(Datum value, const Temporal *temp)
@@ -460,7 +437,6 @@ always_gt_base_temporal(Datum value, const Temporal *temp)
  * base value
  * @param[in] value Value
  * @param[in] temp Temporal value
- * @csqlfn #Always_ge_base_temporal()
  */
 int
 always_ge_base_temporal(Datum value, const Temporal *temp)

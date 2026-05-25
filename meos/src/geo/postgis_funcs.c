@@ -3556,7 +3556,7 @@ geo_from_geojson(const char *geojson)
  * @param[in] gs Geometry/geography
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
- * @param[in] srs Spatial reference system
+ * @param[in] srs Spatial reference system, may be `NULL`
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
 char *
