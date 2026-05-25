@@ -158,7 +158,7 @@ $(function() {
 <p>Transition function for aggregating temporal values that require a transformation to each composing instant/sequence. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Current state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Current state, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td>New temporal value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Aggregate function </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">crossings</td><td>True if turning points are added in the segments </td></tr>

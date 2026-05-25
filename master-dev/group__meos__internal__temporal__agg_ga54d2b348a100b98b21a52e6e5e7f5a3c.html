@@ -133,11 +133,11 @@ $(function() {
 <p>Transition function for append temporal instant aggregate. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">inst</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value to aggregate </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">interp</td><td>Interpolation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">maxdist</td><td>Maximum distance </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxt</td><td>Maximum duration @csqlfn <a class="el" href="group__mobilitydb__temporal__agg_gaf9427ed00f7c81aef1c3b158492714fc.html#gaf9427ed00f7c81aef1c3b158492714fc" title="Transition function for append temporal instant aggregate @sqlfn appendInstant()">Temporal_app_tinst_transfn()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">maxt</td><td>Maximum duration, may be <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__temporal__agg_gaf9427ed00f7c81aef1c3b158492714fc.html#gaf9427ed00f7c81aef1c3b158492714fc" title="Transition function for append temporal instant aggregate @sqlfn appendInstant()">Temporal_app_tinst_transfn()</a> </td></tr>
   </table>
   </dd>
 </dl>
