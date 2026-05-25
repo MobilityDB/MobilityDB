@@ -755,7 +755,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
-  bool upper_inc;
+  bool upper_inc = false;
   int ninsts = 0, nseqs = 0, nfree = 0;
   for (int i = 1; i < seq->count; i++)
   {
