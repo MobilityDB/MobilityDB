@@ -51,6 +51,16 @@ SELECT 1.0 -|- floatspan '(1, 3]';
 SELECT floatspan '[1, 3]' -|- 1.0;
 SELECT floatspan '[1, 3]' -|- floatspan '[1, 3]';
 
+-- Canonical adjacency edge cases (issue #821): the inc/exc bits are decisive.
+-- Continuous (float): a shared INCLUSIVE bound is an overlap, NOT adjacency.
+SELECT floatspan '[1, 5]' -|- floatspan '[5, 9]';
+SELECT floatspan '[1, 5)' -|- floatspan '[5, 9]';
+SELECT floatspan '[1, 5]' -|- floatspan '(5, 9]';
+SELECT floatspan '[1, 5)' -|- floatspan '(5, 9]';
+-- Discrete (int): canonicalized half-open, so consecutive values are adjacent.
+SELECT intspan '[1, 5]' -|- intspan '[6, 10]';
+SELECT intspan '[1, 5]' -|- intspan '[5, 10]';
+
 -------------------------------------------------------------------------------
 
 SELECT floatspan '[1, 2]' = floatspan '[1, 2]';
