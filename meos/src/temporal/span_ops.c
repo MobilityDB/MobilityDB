@@ -273,8 +273,27 @@ adjacent_span_span(const Span *s1, const Span *s2)
     return false;
 
   /*
-   * Two spans A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
+   * Canonical span-adjacency rule (issue #821). Two spans are adjacent iff
+   * they meet at a single boundary value that EXACTLY ONE of them contains;
+   * equal bounds that are both inclusive is an OVERLAP, not adjacency. The
+   * inclusive/exclusive bits are therefore decisive:
+   *
+   *   adjacent  <=>  (upper1 == lower2 && upper_inc1 != lower_inc2)
+   *              ||  (upper2 == lower1 && upper_inc2 != lower_inc1)
+   *
+   * This single predicate is correct for BOTH base-type families because the
+   * integer-vs-float difference lives in how the span is STORED, not here:
+   *   - Discrete (int, bigint, date): canonicalized at construction to
+   *     half-open [lower, upper+1) (see span_set), so consecutive values are
+   *     adjacent, e.g. intspan '[1,5]' -|- '[6,10]' = true.
+   *   - Continuous (float, timestamptz): bounds kept, so a shared inclusive
+   *     endpoint overlaps, e.g. floatspan '[1,5]' -|- '[5,9]' = false, while
+   *     '[1,5)' -|- '[5,9]' = true.
+   * Do NOT "simplify" this to a bare share-a-boundary test (upper == lower,
+   * ignoring the bits) to match the bounding-box dispatch: that regresses the
+   * continuous case (it makes floatspan '[1,5]' -|- '[5,9]' return true).
+   * Bounding-box adjacency is a conservative index pre-filter that THIS exact
+   * predicate re-checks, so the box side does not need this precision.
    */
   return (
     (datum_eq(s1->upper, s2->lower, s1->basetype) &&
