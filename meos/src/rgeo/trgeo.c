@@ -41,6 +41,8 @@
 #include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_pose.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
 #include "temporal/lifting.h"
@@ -434,6 +436,111 @@ geom_apply_pose(const GSERIALIZED *gs, const Pose *pose)
     lwgeom_refresh_bbox(result_geom);
   GSERIALIZED *result = geo_serialize(result_geom);
   lwgeom_free(geom); lwgeom_free(result_geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the set of distinct points seen along the antenna trajectory of
+ * a temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_points()
+ */
+Set *
+trgeo_points(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeo_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Set *result = tpose_points(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the rotation of a temporal rigid geometry as a temporal float
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_rotation()
+ */
+Temporal *
+trgeo_rotation(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeo_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Temporal *result = tpose_rotation(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the array of inter-instant segments of a temporal rigid
+ * geometry, one temporal rigid geometry sequence per pair of consecutive
+ * instants
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] count Number of resulting segments
+ * @csqlfn #Trgeometry_segments()
+ */
+TSequence **
+trgeo_segments(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_continuous(temp))
+    return NULL;
+  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  TSequence **segs = temporal_segments(tpose, count);
+  pfree(tpose);
+  if (! segs)
+    return NULL;
+  TSequence **result = palloc(sizeof(TSequence *) * (*count));
+  for (int i = 0; i < *count; i++)
+  {
+    result[i] = geo_tposeseq_to_trgeo(geo, segs[i]);
+    pfree(segs[i]);
+  }
+  pfree(segs);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the area traversed by a temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] unary_union True when the PostGIS ST_UnaryUnion function is
+ * applied to the result
+ * @csqlfn #Trgeometry_traversed_area()
+ */
+GSERIALIZED *
+trgeo_traversed_area(const Temporal *temp, bool unary_union)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  /* Apply each instant's pose to the reference geometry and collect them */
+  int count;
+  Datum *values = temporal_values_p(temp, &count);
+  const GSERIALIZED *refgeom = trgeo_geom_p(temp);
+  GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+    gsarr[i] = geom_apply_pose(refgeom, DatumGetPoseP(values[i]));
+  pfree(values);
+  GSERIALIZED *res = geo_collect_garray(gsarr, count);
+  for (int i = 0; i < count; i++)
+    pfree(gsarr[i]);
+  pfree(gsarr);
+  if (! unary_union)
+    return res;
+  GSERIALIZED *result = geom_unary_union(res, -1);
+  pfree(res);
   return result;
 }
 
