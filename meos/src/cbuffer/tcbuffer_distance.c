@@ -1071,36 +1071,200 @@ tcbuffer_geo_shortestline_analytic(const Temporal *temp,
 }
 
 /**
+ * @brief A spatially-local group of consecutive segments with its bounding box
+ */
+typedef struct
+{
+  int start, n;                  /**< Range [start, start+n) in the segments */
+  double xmin, ymin, xmax, ymax; /**< Bounding box of the bucket */
+} TcbBucket;
+
+/**
+ * @brief Geometry context for the nearest-approach kernel: the boundary
+ * segments (Morton-ordered), a bucket bounding-volume hierarchy over them, the
+ * overall bounding box, and whether any polygon ring is present
+ */
+typedef struct
+{
+  const TcbSeg *segs;
+  int n;
+  bool has_poly;
+  double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
+  const TcbBucket *bks;
+  int nbk;
+} TcbGeom;
+
+/** @brief A segment paired with its Morton (Z-order) key, for sorting */
+typedef struct
+{
+  uint32_t key;
+  TcbSeg seg;
+} TcbSortItem;
+
+/** @brief Spread the low 16 bits of @p v with one zero bit between each */
+static uint32_t
+tcb_morton_part(uint32_t v)
+{
+  v &= 0x0000ffff;
+  v = (v | (v << 8)) & 0x00ff00ff;
+  v = (v | (v << 4)) & 0x0f0f0f0f;
+  v = (v | (v << 2)) & 0x33333333;
+  v = (v | (v << 1)) & 0x55555555;
+  return v;
+}
+
+/** @brief Order TcbSortItem by Morton key */
+static int
+tcb_morton_cmp(const void *a, const void *b)
+{
+  uint32_t ka = ((const TcbSortItem *) a)->key;
+  uint32_t kb = ((const TcbSortItem *) b)->key;
+  return (ka > kb) - (ka < kb);
+}
+
+/**
+ * @brief Reorder the segments along a Morton (Z-order) curve and group them
+ * into ~sqrt(n) spatially-local buckets, each with its bounding box. The
+ * buckets let a swept-capsule unit skip whole groups of edges that are farther
+ * than the running minimum, turning the per-unit edge scan from O(edges) into
+ * roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too
+ * coarse for large coastal polygons, but the bucket boxes are tight.
+ */
+static TcbBucket *
+tcb_build_buckets(TcbSeg *segs, int n, double gxmin, double gymin,
+  double gxmax, double gymax, int *nbk_out)
+{
+  double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
+  double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
+  TcbSortItem *items = palloc(sizeof(TcbSortItem) * n);
+  for (int i = 0; i < n; i++)
+  {
+    double cx = 0.5 * (segs[i].xmin + segs[i].xmax);
+    double cy = 0.5 * (segs[i].ymin + segs[i].ymax);
+    uint32_t ix = (uint32_t) ((cx - gxmin) * sx);
+    uint32_t iy = (uint32_t) ((cy - gymin) * sy);
+    items[i].key = tcb_morton_part(ix) | (tcb_morton_part(iy) << 1);
+    items[i].seg = segs[i];
+  }
+  qsort(items, n, sizeof(TcbSortItem), tcb_morton_cmp);
+  for (int i = 0; i < n; i++)
+    segs[i] = items[i].seg;
+  pfree(items);
+
+  int bsize = (int) ceil(sqrt((double) n));
+  if (bsize < 1) bsize = 1;
+  int nbk = (n + bsize - 1) / bsize;
+  TcbBucket *bks = palloc(sizeof(TcbBucket) * nbk);
+  for (int b = 0; b < nbk; b++)
+  {
+    int s = b * bsize, e = s + bsize;
+    if (e > n) e = n;
+    double xmn = DBL_MAX, ymn = DBL_MAX, xmx = -DBL_MAX, ymx = -DBL_MAX;
+    for (int k = s; k < e; k++)
+    {
+      if (segs[k].xmin < xmn) xmn = segs[k].xmin;
+      if (segs[k].ymin < ymn) ymn = segs[k].ymin;
+      if (segs[k].xmax > xmx) xmx = segs[k].xmax;
+      if (segs[k].ymax > ymx) ymx = segs[k].ymax;
+    }
+    bks[b].start = s; bks[b].n = e - s;
+    bks[b].xmin = xmn; bks[b].ymin = ymn; bks[b].xmax = xmx; bks[b].ymax = ymx;
+  }
+  *nbk_out = nbk;
+  return bks;
+}
+
+/**
+ * @brief Ray-casting interior test over the bucket hierarchy: a bucket can hold
+ * an edge crossing the rightward horizontal ray from (x,y) only if y is inside
+ * its y-range and its xmax reaches x, so far buckets are skipped wholesale
+ */
+static bool
+tcb_pt_in_polys_g(double x, double y, const TcbGeom *g)
+{
+  bool inside = false;
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const TcbBucket *bk = &g->bks[b];
+    if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
+      continue;
+    int e = bk->start + bk->n;
+    for (int i = bk->start; i < e; i++)
+    {
+      const TcbSeg *s = &g->segs[i];
+      if (! s->is_poly)
+        continue;
+      double y1 = s->y1, y2 = s->y2;
+      if ((y1 > y) != (y2 > y))
+      {
+        double xint = s->x1 + (y - y1) / (y2 - y1) * (s->x2 - s->x1);
+        if (x < xint)
+          inside = ! inside;
+      }
+    }
+  }
+  return inside;
+}
+
+/**
  * @brief Update the running minimum with one swept-capsule unit (the centre
  * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
 static void
 tcb_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const TcbSeg *segs, int n, bool has_poly, double *best)
+  double r2, const TcbGeom *g, double *best)
 {
-  if (has_poly &&
-      (tcb_pt_in_polys(cx1, cy1, segs, n) ||
-       tcb_pt_in_polys(cx2, cy2, segs, n)))
-  {
-    *best = 0.0;
-    return;
-  }
   double sxmin = fmin(cx1 - r1, cx2 - r2);
   double sxmax = fmax(cx1 + r1, cx2 + r2);
   double symin = fmin(cy1 - r1, cy2 - r2);
   double symax = fmax(cy1 + r1, cy2 + r2);
-  for (int k = 0; k < n && *best > 0.0; k++)
+  /* Coarse branch-and-bound prune: the distance between this unit's swept
+   * bounding box and the geometry's overall bounding box is a lower bound on
+   * the unit's nearest approach (a box contains its geometry, so the box-to-box
+   * distance cannot exceed the geometry-to-capsule distance). If that lower
+   * bound already reaches the running minimum, no edge can improve it, so the
+   * point-in-polygon test and the whole per-edge loop are skipped. A segment
+   * whose centre is inside a polygon overlaps the geometry bounding box, giving
+   * a zero lower bound, so it is never wrongly pruned. */
+  if (*best != DBL_MAX)
   {
-    const TcbSeg *e = &segs[k];
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= (*best) * (*best))
+      return;
+  }
+  if (g->has_poly &&
+      (tcb_pt_in_polys_g(cx1, cy1, g) || tcb_pt_in_polys_g(cx2, cy2, g)))
+  {
+    *best = 0.0;
+    return;
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running minimum, then the per-edge prune within a bucket */
+  for (int b = 0; b < g->nbk && *best > 0.0; b++)
+  {
+    const TcbBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
-      double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
-      double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
       if (dx * dx + dy * dy >= (*best) * (*best))
         continue;
     }
-    double m = tcb_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, e);
-    if (m < *best) *best = m;
+    int e = bk->start + bk->n;
+    for (int k = bk->start; k < e && *best > 0.0; k++)
+    {
+      const TcbSeg *ed = &g->segs[k];
+      if (*best != DBL_MAX)
+      {
+        double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
+        double dy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
+        if (dx * dx + dy * dy >= (*best) * (*best))
+          continue;
+      }
+      double m = tcb_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+      if (m < *best) *best = m;
+    }
   }
 }
 
@@ -1110,8 +1274,7 @@ tcb_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
  * step interpolation treats each instant as a stationary disk)
  */
 static void
-tcb_seq_nad(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
-  double *best)
+tcb_seq_nad(const TSequence *seq, const TcbGeom *g, double *best)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -1121,8 +1284,7 @@ tcb_seq_nad(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
       const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-      tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
-        has_poly, best);
+      tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, best);
     }
     return;
   }
@@ -1134,8 +1296,7 @@ tcb_seq_nad(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
     const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
     const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
-    tcb_unit_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, segs,
-      n, has_poly, best);
+    tcb_unit_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, best);
     i1 = i2;
   }
 }
@@ -1165,24 +1326,40 @@ tcbuffer_geo_nad_analytic(const Temporal *temp, const GSERIALIZED *gs)
     return result;
   }
 
+  /* Overall bounding box of the geometry (union of the edge bounding boxes) */
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
+    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
+    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
+    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
+  }
+
+  /* Build the bucket bounding-volume hierarchy over the segments (reorders
+   * segs along a Morton curve) and assemble the geometry context */
+  int nbk = 0;
+  TcbBucket *bks = tcb_build_buckets(segs, n, gxmin, gymin, gxmax, gymax, &nbk);
+  TcbGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
+
   double best = DBL_MAX;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
     const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-    tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
-      has_poly, &best);
+    tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &best);
   }
   else if (temp->subtype == TSEQUENCE)
-    tcb_seq_nad((TSequence *) temp, segs, n, has_poly, &best);
+    tcb_seq_nad((TSequence *) temp, &g, &best);
   else /* TSEQUENCESET */
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
     for (int i = 0; i < ss->count && best > 0.0; i++)
-      tcb_seq_nad(TSEQUENCESET_SEQ_N(ss, i), segs, n, has_poly, &best);
+      tcb_seq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
   }
 
+  pfree(bks);
   pfree(segs);
   return best < 0.0 ? 0.0 : best;
 }
