@@ -231,12 +231,15 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
     if (step_deg <= 0.0)
       step_deg = 1e-5;   /* defensive */
 
-    /* Emit the first instant's cell. */
+    /* Emit the first instant's cell. Routing the first lookup through
+     * h3_gs_point_to_cell applies the lon/lat SRID guard once for the
+     * whole sequence: SRID is a type-level property uniform across every
+     * instant, so validating it here is sufficient and the interpolated
+     * per-sample lookups below can use the cheaper raw-coordinate path. */
     {
       const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
       const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value(inst0));
-      const POINT2D *p0 = GSERIALIZED_POINT2D_P(gs0);
-      H3Index cell0 = h3_latlng_deg_to_cell(p0->y, p0->x, resolution);
+      H3Index cell0 = h3_gs_point_to_cell(gs0, resolution);
       PUSH_INSTANT(cell0, inst0->t);
       last_cell = cell0;
       have_last = true;
@@ -320,6 +323,11 @@ tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
 /**
  * @brief Subtype-dispatching wrapper used by both tgeompoint and
  * tgeogpoint entrypoints.
+ *
+ * Every path validates the lon/lat SRID through `h3_gs_point_to_cell`
+ * (the instant adapter, the non-densify branch, and the first lookup of
+ * the densify walker), so non lon/lat input is rejected before any cell
+ * is produced and the dispatcher itself needs no separate guard.
  */
 static Temporal *
 tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)

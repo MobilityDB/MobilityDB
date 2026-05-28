@@ -79,10 +79,26 @@ FROM densified;
 SELECT h3_get_resolution(h3_latlng_to_cell(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 
+-- Sequence input on the planar (SRID 4326) overload exercises the densify
+-- walker through the SRID-guarded first lookup; assert the build-stable
+-- endpoint cells equal the direct per-point conversion.
+WITH d AS (
+  SELECT h3_latlng_to_cell(
+    tgeompoint 'SRID=4326;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7) AS t
+)
+SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
+       endValue(t)   = geoToH3Cell(geometry 'SRID=4326;POINT(-73.90 40.80)', 7) AS end_cell_preserved
+FROM d;
+
 -- Mismatched SRID — must error once the adapter validates
 /* Errors */
 SELECT h3_latlng_to_cell(
   tgeompoint 'SRID=3857;POINT(-73.96 40.78)@2001-01-01', 9);
+
+-- Mismatched SRID on the densify (sequence) path must error too
+/* Errors */
+SELECT h3_latlng_to_cell(
+  tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 
 -------------------------------------------------------------------------------
 -- h3_cell_to_boundary — per-instant polygon as tgeography
