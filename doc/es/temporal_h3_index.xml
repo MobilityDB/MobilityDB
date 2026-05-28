@@ -17,6 +17,8 @@
 
 	<para>Como con otros tipos temporales, <varname>th3index</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas H3 son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
 
+	<para>La guía operativa sobre cuándo elegir <varname>th3index</varname> en lugar de <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>; los peligros específicos de H3 que los consumidores deben anticipar (el orden int64 es arbitrario respecto a la geometría de la cuadrícula, la mezcla de resoluciones en las operaciones, las celdas pentagonales, la no preservación del orden de celdas en el ciclo de compactación, y el comportamiento en el antimeridiano y los polos a alta resolución); y las convenciones de durabilidad y almacenamiento se recogen en <xref linkend="h3index_operational_notes"/>.</para>
+
 	<sect1 xml:id="th3index_inout">
 		<title>Entrada y Salida</title>
 		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta tanto la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original) como el equivalente en decimal sin signo. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>831c02fffffffff</varname> empleado en los ejemplos corresponde al valor decimal <varname>590464338553208831</varname>.</para>
@@ -616,5 +618,55 @@ CREATE INDEX ON trips USING spgist(cells th3index_kdtree_ops);
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="h3index_operational_notes">
+		<title>Notas operativas</title>
+		<para>Esta sección recoge el conocimiento operativo que los consumidores necesitan además de la referencia de funciones: cuándo <varname>th3index</varname> es el tipo adecuado, las convenciones que asume la implementación y los peligros específicos de H3 que las cargas de trabajo reales deben tener en cuenta. La cuadrícula hexagonal jerárquica de H3 tiene algunas propiedades no evidentes que la codificación binaria <varname>int64</varname> oculta; esta sección las expone para que no sorprendan a los consumidores.</para>
+
+		<sect2 xml:id="h3index_when_to_use">
+			<title>Cuándo usar th3index</title>
+			<para>Use <varname>th3index</varname> cuando el identificador natural de una ubicación discreta a una resolución dada sea una celda H3 &#x2014; viajes de vehículos agrupados a la resolución H3 9, lecturas de sensores ambientales agrupadas por celda H3, eventos geo-cercados identificados por su celda contenedora. El tipo almacena una celda H3 por instante; la resolución puede variar entre los instantes de una misma trayectoria, pero la mayoría de las cargas de trabajo fijan una resolución por columna.</para>
+			<para>Elija <varname>tgeompoint</varname> / <varname>tgeogpoint</varname> en lugar de <varname>th3index</varname> cuando el valor de interés sea la posición geográfica real (precisión subcelular). Elija <varname>tbigint</varname> en lugar de <varname>th3index</varname> cuando los valores resulten ser enteros de 64 bits pero no tengan semántica H3 &#x2014; las representaciones binarias son idénticas (se convierten sin pérdida mediante <varname>th3index :: tbigint</varname> y viceversa) pero el sistema de tipos SQL usa la distinción para rechazar funciones agnósticas a H3 sobre trayectorias específicas de H3.</para>
+		</sect2>
+
+		<sect2 xml:id="h3index_hazards">
+			<title>Peligros específicos de H3</title>
+			<para>Cinco peligros afectan de forma fiable a las cargas de trabajo que usan celdas H3. Cada uno es una propiedad de la cuadrícula H3 en sí más que una decisión de implementación de MobilityDB; las mitigaciones siguientes explican cómo trabajar con ellos.</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>El orden int64 es arbitrario respecto a la geometría de la cuadrícula</emphasis>. Los identificadores de celda H3 son enteros sin signo de 64 bits cuyo patrón de bits codifica resolución, celda base y posición jerárquica. El orden binario de dos celdas no tiene significado geográfico &#x2014; dos celdas adyacentes en bits pueden estar en lados opuestos del planeta, y dos celdas espacialmente adyacentes pueden tener patrones de bits muy distintos.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>th3index</varname> deliberadamente no tiene tipos compañeros <varname>h3indexspan</varname> / <varname>h3indexspanset</varname> (precedente: <varname>geometry</varname> no tiene <varname>geometryspan</varname>), y los índices de caja envolvente son solo temporales (<varname>tstzspan</varname>). El filtrado por rango de valores debe pasar por funciones de inspección <varname>h3_*</varname> (resolución, celda base, comprobaciones de jerarquía) o la enumeración explícita de conjuntos mediante <varname>h3indexset</varname>. El código que asume que <varname>cell_a &lt; cell_b</varname> refleja proximidad espacial producirá resultados silenciosamente erróneos.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Mezcla de resoluciones en las operaciones</emphasis>. Las celdas H3 a distintas resoluciones (0&#x2013;15) representan áreas de cobertura diferentes. Mezclar resoluciones en una misma trayectoria es válido pero semánticamente requiere justificación explícita &#x2014; <varname>h3_cell_to_parent(cell, coarser_res)</varname> engrosa, <varname>h3_cell_to_children(parent, finer_res)</varname> refina, y <varname>h3_compact_cells</varname> / <varname>h3_uncompact_cells</varname> realizan el ciclo de ida y vuelta correctamente solo cuando las resoluciones de entrada son compatibles.</para>
+					<para><emphasis>Mitigación</emphasis>: los consumidores deberían documentar el invariante de resolución por trayectoria (p. ej. "todas las celdas son de resolución 9") y validar las entradas en el límite de ingesta. El accesor <varname>h3_get_resolution</varname> permite que una restricción CHECK lo imponga.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Celdas pentagonales</emphasis>. La cuadrícula H3 tiene 12 celdas pentagonales (en lugar de hexagonales) por resolución &#x2014; los duales de Eisenstein de los 12 vértices del icosaedro. <varname>h3_grid_ring</varname> puede fallar cerca de estos pentágonos; <varname>h3_grid_path_cells</varname> falla si el camino cruza uno. El error es explícito (libh3 lanza un fallo explícito), pero las cargas de trabajo que esperan que las operaciones de anillo / camino siempre tengan éxito necesitan una protección.</para>
+					<para><emphasis>Mitigación</emphasis>: el código defensivo debería envolver las llamadas sensibles a pentágonos y comprobar <varname>h3_is_pentagon_cell</varname> en las entradas y salidas clave. Para trayectorias que pasan cerca de un pentágono, recurra a <varname>h3_grid_disk</varname> (que es seguro ante pentágonos) o calcule los segmentos del camino por partes alrededor del pentágono.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Ciclo de compactación / descompactación</emphasis>. <varname>h3_compact_cells</varname> produce la representación mixta de resoluciones más compacta de un conjunto de celdas; <varname>h3_uncompact_cells</varname> la expande de nuevo. El ciclo es sin pérdida en extensión espacial, pero <emphasis>el orden de las celdas no se preserva</emphasis> &#x2014; libh3 no garantiza una salida ordenada. Las consultas que consumen la salida como si su orden fuera estable devolverán resultados distintos antes y después de la compactación aunque el conjunto espacial subyacente sea idéntico.</para>
+					<para><emphasis>Mitigación</emphasis>: reordene tras la compactación si el orden importa (p. ej. <varname>ORDER BY cell</varname> en SQL o <varname>ARRAY_AGG ... ORDER BY 1</varname> al materializar). Para conjuntos temporales, prefiera la semántica de igualdad de conjuntos de <varname>h3indexset</varname> sobre la de igualdad de arreglos.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Comportamiento en el antimeridiano y los polos</emphasis>. Las celdas base de H3 se posicionan sobre un icosaedro; a altas resoluciones algunas celdas cerca del antimeridiano o los polos pueden tener una geometría poco intuitiva. <varname>h3_cell_to_latlng</varname> / <varname>h3_latlng_to_cell</varname> realizan el ciclo de ida y vuelta correctamente, pero las coordenadas cerca de &#xb1;180&#xb0; de longitud o cerca de los polos pueden resolverse a celdas en grupos de celdas base inesperados.</para>
+					<para><emphasis>Mitigación</emphasis>: las cargas de trabajo en latitudes polares o que cruzan el antimeridiano deberían validar celdas representativas contra la implementación de referencia de libh3 directamente y añadir fixtures para los casos límite específicos que la carga de trabajo encuentre.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="h3index_durability">
+			<title>Durabilidad y almacenamiento</title>
+			<para>La representación en disco de <varname>th3index</varname> es byte a byte idéntica a la de <varname>tbigint</varname> (cada instante lleva un ID de celda H3 de 64 bits más una marca de tiempo). Consecuencias para la planificación del almacenamiento:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>WKT</emphasis> mediante <varname>th3index_in</varname> y <varname>th3index_out</varname>. Las celdas se representan como cadenas hexadecimales canónicas (p. ej. <varname>'8928308280fffff'</varname>); se aceptan tanto decimal como hexadecimal en la entrada. El ciclo de ida y vuelta es estable a nivel de bits.</para></listitem>
+				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> mediante el patrón estándar de PostGIS de bandera de endianidad seguida de la carga útil. Estable entre versiones mayores de PostgreSQL.</para></listitem>
+				<listitem><para><emphasis>MFJSON</emphasis> mediante <varname>asMFJSON(th3index)</varname> y <varname>th3indexFromMFJSON(text)</varname>. La carga útil de la celda se representa como la cadena hexadecimal canónica (no el valor int64) para que los consumidores externos que usan libh3 directamente puedan analizarla sin transformación.</para></listitem>
+				<listitem><para><emphasis>pg_dump</emphasis> usa WKT en modo plano y WKB bajo <varname>--binary-upgrade</varname>; ambos realizan el ciclo de ida y vuelta limpiamente.</para></listitem>
+				<listitem><para><emphasis>Conversión cruzada con <varname>tbigint</varname></emphasis>: las conversiones bidireccionales <varname>th3index :: tbigint</varname> son reinterpretaciones binarias sin coste. Úselas al trabajar con vistas tanto seguras por tipo (<varname>th3index</varname>) como aptas para aritmética (<varname>tbigint</varname>) de la misma trayectoria en una sola consulta.</para></listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 </chapter>
