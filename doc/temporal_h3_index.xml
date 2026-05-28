@@ -583,6 +583,64 @@ SELECT th3index
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="th3index_spatialrels">
+		<title>Spatial Relationships</title>
+
+		<para>The spatial relationships evaluate a <varname>th3index</varname> argument through its per-instant cell-boundary geometry — the hexagonal footprint of each cell, as returned by <varname>h3_cell_to_boundary</varname> — and then apply the corresponding relationship of the temporal geometry types. Each relationship has three quantified forms: the <varname>e</varname>-prefixed <emphasis>ever</emphasis> form returns <varname>true</varname> when the relationship holds at some instant, the <varname>a</varname>-prefixed <emphasis>always</emphasis> form when it holds at every instant, and the <varname>t</varname>-prefixed <emphasis>temporal</emphasis> form returns a <varname>tbool</varname> of the instant-by-instant result. Every form accepts the three argument orderings <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname>, and <varname>(th3index, th3index)</varname>.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_rel_contains">
+				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<para>Whether one footprint contains the other (interiors only)</para>
+				<para><varname>eContains, aContains, tContains</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_covers">
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+				<para>Whether one footprint covers the other (boundary included)</para>
+				<para><varname>eCovers, aCovers, tCovers</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_disjoint">
+				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+				<para>Whether the footprints share no point</para>
+				<para><varname>eDisjoint, aDisjoint, tDisjoint</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_intersects">
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<para>Whether the footprints share at least one point</para>
+				<para><varname>eIntersects, aIntersects, tIntersects</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_touches">
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>Whether the footprints share a boundary point but no interior point</para>
+				<para><varname>eTouches, aTouches, tTouches</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_dwithin">
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+				<para>Whether the footprints lie within a given distance, passed as the third argument</para>
+				<para><varname>eDwithin, aDwithin, tDwithin (…, dist float)</varname></para>
+			</listitem>
+		</itemizedlist>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(
+  geometry 'SRID=4326;Polygon((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))',
+  th3index '871fa44a8ffffff@2001-01-01');
+-- true
+</programlisting>
+	</sect1>
+
 	<sect1 xml:id="th3index_indexing">
 		<title>Indexing</title>
 		<para>GiST and SP-GiST operator classes are defined so the bounding-box operators of the previous section can be used with corresponding indexes.</para>

@@ -534,6 +534,64 @@ SELECT th3index '880326b885fffff@2001-01-01'
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="th3index_spatialrels">
+		<title>Relaciones Espaciales</title>
+
+		<para>Las relaciones espaciales evalúan un argumento <varname>th3index</varname> a través de la geometría de frontera de celda en cada instante —la huella hexagonal de cada celda, devuelta por <varname>h3_cell_to_boundary</varname>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con prefijo <varname>a</varname> cuando se cumple en todos los instantes, y la forma <emphasis>temporal</emphasis> con prefijo <varname>t</varname> devuelve un <varname>tbool</varname> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname> y <varname>(th3index, th3index)</varname>.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_rel_contains">
+				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<para>Si una huella contiene a la otra (solo interiores)</para>
+				<para><varname>eContains, aContains, tContains</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_covers">
+				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+				<para>Si una huella cubre a la otra (frontera incluida)</para>
+				<para><varname>eCovers, aCovers, tCovers</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_disjoint">
+				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+				<para>Si las huellas no comparten ningún punto</para>
+				<para><varname>eDisjoint, aDisjoint, tDisjoint</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_intersects">
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+				<para>Si las huellas comparten al menos un punto</para>
+				<para><varname>eIntersects, aIntersects, tIntersects</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_touches">
+				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+				<para>Si las huellas comparten un punto de frontera pero ningún punto interior</para>
+				<para><varname>eTouches, aTouches, tTouches</varname></para>
+			</listitem>
+			<listitem xml:id="th3index_rel_dwithin">
+				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+				<para>Si las huellas se encuentran dentro de una distancia dada, pasada como tercer argumento</para>
+				<para><varname>eDwithin, aDwithin, tDwithin (…, dist float)</varname></para>
+			</listitem>
+		</itemizedlist>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(
+  geometry 'SRID=4326;Polygon((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))',
+  th3index '871fa44a8ffffff@2001-01-01');
+-- true
+</programlisting>
+	</sect1>
+
 	<sect1 xml:id="th3index_indexing">
 		<title>Indexación</title>
 		<para>Las clases de operadores GiST y SP-GiST están definidas para que los operadores de caja envolvente de la sección anterior puedan ser utilizados con los índices correspondientes.</para>

@@ -1,0 +1,54 @@
+WITH t AS (
+  SELECT th3index '871fa44a8ffffff@2001-01-01' AS cell_inst,
+         th3index '[871fa44a8ffffff@2001-01-01, 871fa44b1ffffff@2001-01-02]' AS cell_seq,
+         geometry 'SRID=4326;POLYGON((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))' AS big_region,
+         geometry 'SRID=4326;POLYGON((10.00 50.00, 11.00 50.00, 11.00 51.00, 10.00 51.00, 10.00 50.00))' AS far_region,
+         geometry 'SRID=4326;POINT(4.297 50.804)' AS centre_point
+)
+SELECT
+  -- Ever variants: scalar boolean
+  eIntersects(big_region, cell_inst)  AS ei_geo_h3,
+  eIntersects(cell_inst, big_region)  AS ei_h3_geo,
+  eIntersects(cell_inst, cell_inst)   AS ei_h3_h3_self,
+  eDisjoint  (far_region, cell_inst)  AS edj_far_geo,
+  eContains  (big_region, cell_inst)  AS ec_big_contains_cell,
+  eCovers    (big_region, cell_inst)  AS ecv_big_covers_cell,
+  eDwithin   (centre_point, cell_inst, 1.0) AS edw_centre,
+  -- Temporal variants: tbool over the cell's time period
+  asText(tIntersects(big_region, cell_seq)) AS ti_seq,
+  asText(tDisjoint(far_region, cell_seq))   AS tdj_seq,
+  asText(tContains(big_region, cell_seq))   AS tc_seq
+FROM t;
+ ei_geo_h3 | ei_h3_geo | ei_h3_h3_self | edj_far_geo | ec_big_contains_cell | ecv_big_covers_cell | edw_centre |                              ti_seq                              |                             tdj_seq                              |                              tc_seq                              
+-----------+-----------+---------------+-------------+----------------------+---------------------+------------+------------------------------------------------------------------+------------------------------------------------------------------+------------------------------------------------------------------
+ t         | t         | t             | t           | t                    | t                   | t          | [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST] | [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST] | [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+WITH t AS (
+  SELECT th3index '[871fa44a8ffffff@2001-01-01, 871fa44b1ffffff@2001-01-02]' AS cell_seq,
+         geometry 'SRID=4326;POLYGON((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))' AS big_region,
+         geometry 'SRID=4326;POLYGON((10.00 50.00, 11.00 50.00, 11.00 51.00, 10.00 51.00, 10.00 50.00))' AS far_region
+)
+SELECT
+  aIntersects(big_region, cell_seq)  AS ai_big,
+  aDisjoint  (far_region, cell_seq)  AS adj_far,
+  aContains  (big_region, cell_seq)  AS ac_big,
+  aCovers    (big_region, cell_seq)  AS acv_big,
+  aDwithin   (big_region, cell_seq, 0.001) AS adw_close
+FROM t;
+ ai_big | adj_far | ac_big | acv_big | adw_close 
+--------+---------+--------+---------+-----------
+ t      | t       | f      | f       | f
+(1 row)
+
+WITH t AS (
+  SELECT th3index '[871fa44a8ffffff@2001-01-01, 871fa44b1ffffff@2001-01-02]' AS cell_seq,
+         geometry 'SRID=4326;POLYGON((4.20 50.70, 4.50 50.70, 4.50 50.90, 4.20 50.90, 4.20 50.70))' AS big_region
+)
+SELECT asText(tIntersects(big_region, cell_seq)) = asText(tIntersects(cell_seq, big_region)) AS symmetric
+FROM t;
+ symmetric 
+-----------
+ t
+(1 row)
+
