@@ -878,4 +878,18 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</itemizedlist>
 		<para>These operators work on bounding boxes, not the entire values.</para>
 	</sect1>
+
+	<sect1 xml:id="tnpoint_aggregation">
+		<title>Aggregation</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Return the spatiotemporal bounding box covering every materialised position in a set of network points. The aggregate is polymorphic with the <varname>extent</varname> aggregates on the other spatial temporal types, so one query can compute a single box across a heterogeneous set of <varname>tgeompoint</varname>, <varname>tgeometry</varname>, and <varname>tnpoint</varname> columns. Each instant's spatial extent is resolved through the ways registry, which dominates the cost over a large input.</para>
+				<para><varname>extent(tnpoint) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM tbl_tnpoint;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
 </chapter>

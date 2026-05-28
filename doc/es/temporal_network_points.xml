@@ -860,4 +860,18 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</itemizedlist>
 		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos.</para>
 	</sect1>
+
+	<sect1 xml:id="tnpoint_aggregation">
+		<title>Agregación</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Devuelve el cuadro delimitador espaciotemporal que cubre cada posición materializada en un conjunto de puntos de red. El agregado es polimórfico con los agregados <varname>extent</varname> de los demás tipos temporales espaciales, por lo que una sola consulta puede calcular un único cuadro a través de un conjunto heterogéneo de columnas <varname>tgeompoint</varname>, <varname>tgeometry</varname> y <varname>tnpoint</varname>. La extensión espacial de cada instante se resuelve a través del registro de ways, lo que domina el coste sobre una entrada grande.</para>
+				<para><varname>extent(tnpoint) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM tbl_tnpoint;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
 </chapter>
