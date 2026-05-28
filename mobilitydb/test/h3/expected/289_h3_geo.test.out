@@ -1,0 +1,159 @@
+SELECT geoToH3Cell(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
+   geotoh3cell   
+-----------------
+ 871fa4418ffffff
+(1 row)
+
+SELECT geoToH3Cell(geometry 'SRID=4326;POINT(4.35 50.85)', 0);
+   geotoh3cell   
+-----------------
+ 801ffffffffffff
+(1 row)
+
+SELECT geoToH3Cell(geometry 'SRID=4326;LINESTRING(4.35 50.85, 4.36 50.86)', 7);
+   geotoh3cell   
+-----------------
+ 871fa4418ffffff
+(1 row)
+
+SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7);
+   geotoh3indexset   
+---------------------
+ {"871fa4418ffffff"}
+(1 row)
+
+SELECT numvalues(geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 7));
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)', 7)) > 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;LINESTRING(4.30 50.80, 4.45 50.90)', 5)) >= 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;POLYGON((4.34 50.84, 4.36 50.84,
+                                  4.36 50.86, 4.34 50.86, 4.34 50.84))',
+    8)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;POLYGON((4.30 50.80, 4.40 50.80,
+                                  4.40 50.90, 4.30 50.90, 4.30 50.80),
+                                 (4.34 50.84, 4.36 50.84,
+                                  4.36 50.86, 4.34 50.86, 4.34 50.84))',
+    7)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;MULTIPOINT((4.35 50.85), (4.40 50.90))', 7));
+ numvalues 
+-----------
+         2
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;MULTIPOINT((4.35 50.85), (4.35 50.85))', 7));
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;MULTILINESTRING((4.30 50.80, 4.32 50.82),
+                                         (4.40 50.88, 4.42 50.90))', 7)) > 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;MULTIPOLYGON(((4.30 50.80, 4.32 50.80,
+                                        4.32 50.82, 4.30 50.82, 4.30 50.80)),
+                                      ((4.40 50.88, 4.42 50.88,
+                                        4.42 50.90, 4.40 50.90, 4.40 50.88)))',
+    7)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numvalues(
+  geoToH3IndexSet(
+    geometry 'SRID=4326;GEOMETRYCOLLECTION(
+                          POINT(4.35 50.85),
+                          LINESTRING(4.40 50.88, 4.42 50.90),
+                          POLYGON((4.30 50.80, 4.32 50.80,
+                                    4.32 50.82, 4.30 50.82, 4.30 50.80)))',
+    7)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT EMPTY', 7);
+ geotoh3indexset 
+-----------------
+ 
+(1 row)
+
+SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', -1);
+ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
+ERROR:  geo_to_h3index_set: resolution must be in [0..15]
+WITH t AS (
+  SELECT h3_latlng_to_cell(
+    tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
+                 POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
+)
+-- Set covering a polygon that contains both endpoints → prefilter true
+SELECT eIntersects(
+         geoToH3IndexSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
+                                                     4.45 50.95, 4.30 50.95,
+                                                     4.30 50.80))', 7),
+         t.th3idx) FROM t;
+ eintersects 
+-------------
+ t
+(1 row)
+
+WITH t AS (
+  SELECT h3_latlng_to_cell(
+    tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
+                 POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
+)
+SELECT eIntersects(
+         geoToH3IndexSet(geometry 'SRID=4326;POLYGON((10.0 50.0, 10.5 50.0,
+                                                     10.5 50.5, 10.0 50.5,
+                                                     10.0 50.0))', 7),
+         t.th3idx) FROM t;
+ eintersects 
+-------------
+ f
+(1 row)
+

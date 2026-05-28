@@ -1,44 +1,78 @@
 SELECT h3_get_resolution(
   h3_cell_to_parent(th3index '590464338553208831@2001-01-01', 2));
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 2@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_get_resolution(
   h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 5));
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 5@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_get_resolution(h3_cell_to_parent(th3index
   '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]', 1));
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+                        h3_get_resolution                         
+------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 /* Errors */
 SELECT h3_cell_to_parent(th3index '590464338553208831@2001-01-01', 5);
-ERROR:  h3_cell_to_parent_meos: adapter not yet implemented
+ERROR:  h3 library error
 SELECT h3_get_resolution(
   h3_cell_to_parent(th3index '590464338553208831@2001-01-01'));
-ERROR:  h3_cell_to_parent_next_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 2@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_get_resolution(
   h3_cell_to_parent(th3index '622236750694711295@2001-01-01'));
-ERROR:  h3_cell_to_parent_next_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 9@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_cell_to_parent(h3_cell_to_parent(
     th3index '622236750694711295@2001-01-01'))
   = h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 8);
-ERROR:  operator does not exist: th3index = th3index
-LINE 3:   = h3_cell_to_parent(th3index '622236750694711295@2001-01-0...
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT h3_get_resolution(
   h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 5));
-ERROR:  h3_cell_to_center_child_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 5@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_get_resolution(
   h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 10));
-ERROR:  h3_cell_to_center_child_meos: adapter not yet implemented
+        h3_get_resolution        
+---------------------------------
+ 10@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_cell_to_parent(
   h3_cell_to_center_child(th3index '590464338553208831@2001-01-01', 7), 3)
   = th3index '590464338553208831@2001-01-01';
-ERROR:  operator does not exist: th3index = th3index
-LINE 3:   = th3index '590464338553208831@2001-01-01';
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT h3_get_resolution(
   h3_cell_to_center_child(th3index '590464338553208831@2001-01-01'));
-ERROR:  h3_cell_to_center_child_next_meos: adapter not yet implemented
+       h3_get_resolution        
+--------------------------------
+ 4@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT h3_cell_to_child_pos(th3index '622236750694711295@2001-01-01', 9);
       h3_cell_to_child_pos      
 --------------------------------
@@ -62,7 +96,8 @@ SELECT h3_child_pos_to_cell(
     h3_cell_to_parent(th3index '622236750694711295@2001-01-01', 9),
     10)
   = th3index '622236750694711295@2001-01-01';
-ERROR:  operator does not exist: th3index = th3index
-LINE 5:   = th3index '622236750694711295@2001-01-01';
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+

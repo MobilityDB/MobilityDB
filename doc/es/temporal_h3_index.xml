@@ -69,6 +69,46 @@ SELECT (th3index '831c02fffffffff@2001-01-01')::tgeompoint;
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="th3index_geo_coverage">
+		<title>Cobertura de Geometrías Estáticas</title>
+
+		<para>Estas funciones convierten una geometría ordinaria (no temporal) en la celda o el conjunto de celdas H3 que la cubren a una resolución dada, y comprueban si una trayectoria H3 temporal entra alguna vez en ese conjunto de celdas. La salida de conjunto de celdas junto con el predicado de intersección «alguna vez» forman el prefiltro espacial multiplataforma usado por las consultas portables de BerlinMOD.</para>
+
+		<itemizedlist>
+			<listitem xml:id="th3index_geoToH3Cell">
+				<indexterm significance="normal"><primary><varname>geoToH3Cell</varname></primary></indexterm>
+				<para>Devuelve la celda H3 que contiene una geometría de punto a la resolución dada. La geometría debe ser un <varname>POINT</varname>.</para>
+				<para><varname>geoToH3Cell(geometry,integer) → h3index</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToH3Cell(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+-- 871fa4418ffffff
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_geoToH3IndexSet">
+				<indexterm significance="normal"><primary><varname>geoToH3IndexSet</varname></primary></indexterm>
+				<para>Devuelve el conjunto de celdas H3 que cubren una geometría a la resolución dada. Se admiten todos los tipos de geometría: un <varname>POINT</varname> produce una sola celda, una <varname>LINESTRING</varname> muestrea sus segmentos, un <varname>POLYGON</varname> rellena su interior, y los valores <varname>MULTI*</varname> / <varname>GEOMETRYCOLLECTION</varname> devuelven la unión de sus componentes.</para>
+				<para><varname>geoToH3IndexSet(geometry,integer) → h3indexset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
+-- {"871fa4418ffffff"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="th3index_eIntersects">
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+				<para>Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas. Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria.</para>
+				<para><varname>eIntersects(h3indexset,th3index) → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(
+  geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7),
+  th3index '871fa4418ffffff@2001-01-01');
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="th3index_accessors">
 		<title>Funciones de Acceso</title>
 		<itemizedlist>

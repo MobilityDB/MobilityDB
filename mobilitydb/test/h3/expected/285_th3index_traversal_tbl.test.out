@@ -17,29 +17,42 @@ CREATE TABLE tbl_th3index_pairs AS
 SELECT 9
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE k1 = k2 AND startValue(h3_grid_distance(a, b)) <> 0;
-ERROR:  h3_grid_distance_meos: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 SELECT startValue(h3_grid_distance(a, b))
   FROM tbl_th3index_pairs WHERE k1 = 1 AND k2 = 2;
-ERROR:  h3_grid_distance_meos: adapter not yet implemented
+ startvalue 
+------------
+          1
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_pairs p1, tbl_th3index_pairs p2
   WHERE p1.k1 = p2.k2 AND p1.k2 = p2.k1
     AND startValue(h3_grid_distance(p1.a, p1.b))
         <> startValue(h3_grid_distance(p2.a, p2.b));
-ERROR:  h3_grid_distance_meos: adapter not yet implemented
+ERROR:  h3 library error
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE startValue(a <-> b) <> startValue(h3_grid_distance(a, b));
-ERROR:  h3_grid_distance_meos: adapter not yet implemented
+ERROR:  h3 library error
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE k1 IN (1, 2) AND k2 IN (1, 2)
     AND h3_cell_to_local_ij(a, b) IS NULL;
-ERROR:  h3_cell_to_local_ij_meos: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_pairs
   WHERE k1 IN (1, 2) AND k2 IN (1, 2)
     AND h3_local_ij_to_cell(a, h3_cell_to_local_ij(a, b)) <> b;
-ERROR:  operator does not exist: th3index <> th3index
-LINE 3: ... AND h3_local_ij_to_cell(a, h3_cell_to_local_ij(a, b)) <> b;
-                                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_th3index_pairs;
 DROP TABLE
 DROP TABLE tbl_th3index_known;

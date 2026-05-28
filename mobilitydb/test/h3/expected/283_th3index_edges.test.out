@@ -26,18 +26,20 @@ SELECT h3_get_directed_edge_origin(h3_cells_to_directed_edge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986753269759@2001-01-01';
-ERROR:  operator does not exist: th3index = th3index
-LINE 4:   = th3index '612544986753269759@2001-01-01';
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT h3_get_directed_edge_destination(h3_cells_to_directed_edge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986761658367@2001-01-01';
-ERROR:  operator does not exist: th3index = th3index
-LINE 4:   = th3index '612544986761658367@2001-01-01';
-          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT h3_is_valid_directed_edge(h3_cells_to_directed_edge(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01'));
@@ -77,4 +79,8 @@ SELECT h3_directed_edge_to_boundary(
   h3_cells_to_directed_edge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')) IS NOT NULL;
-ERROR:  h3_directed_edge_to_gs_boundary: adapter not yet implemented
+ ?column? 
+----------
+ t
+(1 row)
+

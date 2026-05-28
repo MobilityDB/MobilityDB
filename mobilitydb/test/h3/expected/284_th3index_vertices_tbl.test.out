@@ -30,10 +30,11 @@ SELECT COUNT(*) FROM tbl_th3index_known
      OR h3_cell_to_vertex(temp, 1) = h3_cell_to_vertex(temp, 2)
      OR h3_cell_to_vertex(temp, 2) = h3_cell_to_vertex(temp, 3)
      OR h3_cell_to_vertex(temp, 3) = h3_cell_to_vertex(temp, 4);
-ERROR:  operator does not exist: th3index = th3index
-LINE 2:   WHERE h3_cell_to_vertex(temp, 0) = h3_cell_to_vertex(temp,...
-                                           ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE NOT startValue(h3_is_valid_vertex(h3_cell_to_vertex(temp, 0)));
  count 
@@ -50,6 +51,10 @@ SELECT COUNT(*) FROM tbl_th3index_known
 
 SELECT COUNT(*) FROM tbl_th3index_known
   WHERE h3_vertex_to_latlng(h3_cell_to_vertex(temp, 0)) IS NULL;
-ERROR:  h3_vertex_to_gs_point: adapter not yet implemented
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_th3index_known;
 DROP TABLE
