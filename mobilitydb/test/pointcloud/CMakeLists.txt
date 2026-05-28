@@ -27,7 +27,6 @@ list(SORT testfiles)
 # of the underlying functions. Re-enable once the expected output is
 # regenerated.
 set(SKIP_TESTS
-  437_tpc_gist_tbl  # GiST result-count drift (seq_count/idx_count agree but differ from expected)
 )
 
 foreach(file ${testfiles})

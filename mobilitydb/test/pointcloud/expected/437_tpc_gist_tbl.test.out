@@ -11,7 +11,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  seq_count 
 -----------
-        30
+        26
 (1 row)
 
 SET enable_seqscan = off;
@@ -25,7 +25,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  idx_count 
 -----------
-        30
+        26
 (1 row)
 
 DROP INDEX tbl_tpcpoint_gist_idx;
@@ -49,7 +49,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  seq_count 
 -----------
-        34
+        46
 (1 row)
 
 SET enable_seqscan = off;
@@ -63,7 +63,7 @@ WHERE temp && tpcbox_zt(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1, 0);
  idx_count 
 -----------
-        34
+        46
 (1 row)
 
 DROP INDEX tbl_tpcpatch_gist_idx;
@@ -115,7 +115,7 @@ WHERE temp <<# tpcbox_zt(0, 0, 0, 100, 100, 100,
   tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
  seq_before 
 ------------
-         97
+         95
 (1 row)
 
 SET enable_seqscan = off;
@@ -129,7 +129,7 @@ WHERE temp <<# tpcbox_zt(0, 0, 0, 100, 100, 100,
   tstzspan '[2001-12-15, 2002-01-01]', 1, 0);
  idx_before 
 ------------
-         97
+         95
 (1 row)
 
 SET enable_seqscan = on;
@@ -143,7 +143,7 @@ WHERE temp << tpcbox_zt(50, -1000, -1000, 1000, 1000, 1000,
   tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
  seq_left 
 ----------
-       10
+        9
 (1 row)
 
 SET enable_seqscan = off;
@@ -157,7 +157,7 @@ WHERE temp << tpcbox_zt(50, -1000, -1000, 1000, 1000, 1000,
   tstzspan '[2001-01-01, 2002-01-01]', 1, 0);
  idx_left 
 ----------
-       10
+        9
 (1 row)
 
 DROP INDEX tbl_tpcpatch_gist_idx;
