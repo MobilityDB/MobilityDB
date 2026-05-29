@@ -238,6 +238,137 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1)
  {[0@Sat Jan 01 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]', geometry 'Point(5 5)')::numeric, 6);
+  round   
+----------
+ 4.500000
+(1 row)
+
+SELECT round(minDistance(geometry 'Point(5 5)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]')::numeric, 6);
+  round   
+----------
+ 4.500000
+(1 row)
+
+SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', geometry 'Point(5 0)');
+ mindistance 
+-------------
+           0
+(1 row)
+
+SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(2 2), 0.5)@2000-01-02]', geometry 'POLYGON((10 10, 20 10, 20 20, 10 20, 10 10))')::numeric, 6);
+   round   
+-----------
+ 10.813708
+(1 row)
+
+SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)')::numeric, 6);
+  round   
+----------
+ 3.500000
+(1 row)
+
+SELECT round(minDistance(cbuffer 'Cbuffer(Point(5 5), 1)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]')::numeric, 6);
+  round   
+----------
+ 3.500000
+(1 row)
+
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
+  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]' AS t1,
+         tcbuffer '[Cbuffer(Point(0 5), 0.5)@2000-01-01, Cbuffer(Point(10 5), 0.5)@2000-01-02]' AS t2) v;
+  round   
+----------
+ 4.000000
+(1 row)
+
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
+  SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]' AS t1,
+         tcbuffer '[Cbuffer(Point(0 6), 1)@2000-01-01, Cbuffer(Point(10 6), 1)@2000-01-02]' AS t2) v;
+  round   
+----------
+ 4.000000
+(1 row)
+
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
+  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.2)@2000-01-01, Cbuffer(Point(10 10), 2.0)@2000-01-02]' AS t1,
+         tcbuffer '[Cbuffer(Point(0 10), 2.0)@2000-01-01, Cbuffer(Point(10 0), 0.2)@2000-01-02]' AS t2) v;
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT minDistance(t1, t2) FROM (
+  SELECT tcbuffer '[Cbuffer(Point(0 0), 2)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02]' AS t1,
+         tcbuffer '[Cbuffer(Point(5 0), 2)@2000-01-01, Cbuffer(Point(5 5), 2)@2000-01-02]' AS t2) v;
+ mindistance 
+-------------
+           0
+(1 row)
+
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
+  SELECT tcbuffer 'Cbuffer(Point(5 5), 0.5)@2000-01-01' AS t1,
+         tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]' AS t2) v;
+  round   
+----------
+ 4.000000
+(1 row)
+
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM (
+  SELECT tcbuffer '{[Cbuffer(Point(0 0), 0.3)@2000-01-01, Cbuffer(Point(2 0), 0.3)@2000-01-02], [Cbuffer(Point(20 20), 0.3)@2000-01-04, Cbuffer(Point(22 20), 0.3)@2000-01-05]}' AS t1,
+         tcbuffer '{[Cbuffer(Point(0 4), 0.3)@2000-01-01, Cbuffer(Point(2 4), 0.3)@2000-01-02], [Cbuffer(Point(40 40), 0.3)@2000-01-04, Cbuffer(Point(42 40), 0.3)@2000-01-05]}' AS t2) v;
+  round   
+----------
+ 3.400000
+(1 row)
+
+WITH pairs(t1, t2) AS (VALUES
+  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+   tcbuffer '[Cbuffer(Point(10 10), 0.5)@2000-01-01, Cbuffer(Point(11 11), 0.5)@2000-01-02]'),
+  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+   tcbuffer '[Cbuffer(Point(0 5), 0.5)@2000-01-01, Cbuffer(Point(1 5), 0.5)@2000-01-02]'),
+  (tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+   tcbuffer '[Cbuffer(Point(2 1), 0.5)@2000-01-01, Cbuffer(Point(2 2), 0.5)@2000-01-02]'))
+SELECT round(minDistance(t1, t2)::numeric, 6) FROM pairs;
+  round   
+----------
+ 0.000000
+(1 row)
+
+WITH src(g, t1, t2) AS (VALUES
+  (1, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+      tcbuffer '[Cbuffer(Point(0 10), 0.5)@2000-01-01, Cbuffer(Point(1 10), 0.5)@2000-01-02]'),
+  (1, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+      tcbuffer '[Cbuffer(Point(0 5), 0.5)@2000-01-01, Cbuffer(Point(1 5), 0.5)@2000-01-02]'),
+  (2, tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]',
+      tcbuffer '[Cbuffer(Point(0 2), 0.5)@2000-01-01, Cbuffer(Point(1 2), 0.5)@2000-01-02]'))
+SELECT g, round(minDistance(t1, t2)::numeric, 6) FROM src GROUP BY g ORDER BY g;
+ g |  round   
+---+----------
+ 1 | 3.000000
+ 2 | 0.000000
+(2 rows)
+
+SELECT minDistance(t1, t2) FROM (
+  SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]' AS t1,
+         tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02]' AS t2 WHERE false) v;
+ mindistance 
+-------------
+            
+(1 row)
+
+WITH d(a, b) AS (
+  SELECT minDistance(t1, t2),
+         min(ST_Distance(traversedArea(t1), traversedArea(t2)))
+  FROM (
+    SELECT tcbuffer '[Cbuffer(Point(0 0), 0.4)@2000-01-01, Cbuffer(Point(8 3), 0.7)@2000-01-02, Cbuffer(Point(12 1), 0.5)@2000-01-03]' AS t1,
+           tcbuffer '[Cbuffer(Point(2 9), 0.6)@2000-01-01, Cbuffer(Point(9 7), 0.3)@2000-01-02, Cbuffer(Point(13 8), 0.5)@2000-01-03]' AS t2) v)
+SELECT abs(a - b) < 1e-3 FROM d;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))', 6);
   round   
 ----------
