@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2025, PostGIS contributors
+ * Copyright (c) 2001-2026, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -23,26 +23,27 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
 /**
- * @file
- * @brief General functions for temporal rigid geometries
+ * @brief Spatial restriction functions for temporal rigid geometries.
  */
 
-#ifndef __TRGEO_ALL_H__
-#define __TRGEO_ALL_H__
+#ifndef __TRGEO_SPATIALFUNCS_H__
+#define __TRGEO_SPATIALFUNCS_H__
 
-/* MEOS */
-#include "rgeo/trgeo.h"
-#include "rgeo/trgeo_inst.h"
-#include "rgeo/trgeo_spatialfuncs.h"
-#include "rgeo/trgeo_spatialrels.h"
-#include "rgeo/trgeo_seq.h"
-#include "rgeo/trgeo_seqset.h"
+#include "temporal/temporal.h"
+#include "geo/stbox.h"
 
 /*****************************************************************************/
 
-#endif /* __TRGEO_ALL_H__ */
+extern Temporal *trgeo_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, bool atfunc);
+extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
+
+/*****************************************************************************/
+
+#endif /* __TRGEO_SPATIALFUNCS_H__ */

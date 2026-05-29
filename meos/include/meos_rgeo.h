@@ -140,12 +140,14 @@ extern Temporal *trgeometry_restrict_tstzset(const Temporal *temp, const Set *s,
 extern Temporal *trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc);
 extern Temporal *trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss, bool atfunc);
 
-// extern Temporal *trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
-// extern Temporal *trgeometry_at_elevation(const Temporal *temp, const Span *s);
-// extern Temporal *trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
-// extern Temporal *trgeometry_minus_elevation(const Temporal *temp, const Span *s);
+extern Temporal *trgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *trgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *trgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+extern Temporal *trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
+// extern Temporal *trgeo_at_geo(const Temporal *temp, const GSERIALIZED *gs);
+// extern Temporal *trgeo_at_elevation(const Temporal *temp, const Span *s);
+// extern Temporal *trgeo_minus_geo(const Temporal *temp, const GSERIALIZED *gs);
+// extern Temporal *trgeo_minus_elevation(const Temporal *temp, const Span *s);
 
 /*****************************************************************************
  * Distance functions
@@ -193,6 +195,50 @@ extern Temporal *tne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /* Ever and always spatial relationship functions */
 
+extern int econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int acontains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int econtains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int acontains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int econtains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int acontains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int ecovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int acovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int ecovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int acovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int ecovers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int acovers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int edisjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int adisjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int edisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int adisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int eintersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int aintersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int aintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int etouches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int atouches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int etouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int atouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int etouches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int atouches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int edwithin_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  double dist);
+extern int adwithin_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  double dist);
+extern int edwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist);
+extern int adwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist);
+extern int edisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int adisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
+extern int eintersects_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2);
+extern int aintersects_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2);
+extern int edwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist);
+extern int adwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist);
 
 /*****************************************************************************/
 
