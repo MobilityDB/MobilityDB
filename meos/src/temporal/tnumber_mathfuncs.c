@@ -762,11 +762,12 @@ tfloat_exp_turnpt(Datum start, Datum end,
   double a = DatumGetFloat8(start);
   double b = DatumGetFloat8(end);
   if (a == b) return 0;
-  long double duration = (long double) (upper - lower);
-  long double slope = (expl((long double) b) - expl((long double) a))
-                    / ((long double) b - (long double) a);
-  long double fraction = (logl(slope) - (long double) a)
-                       / ((long double) b - (long double) a);
+  /* Compute in IEEE-754 double (not long double): long double is 80-bit on
+   * x86 but 128-bit on aarch64, so it makes the turning point platform-
+   * dependent.  double is identical across platforms. */
+  double duration = (double) (upper - lower);
+  double slope = (exp(b) - exp(a)) / (b - a);
+  double fraction = (log(slope) - a) / (b - a);
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
@@ -860,11 +861,12 @@ tfloat_ln_turnpt(Datum start, Datum end,
   double a = DatumGetFloat8(start);
   double b = DatumGetFloat8(end);
   if (a == b) return 0;
-  long double duration = (long double) (upper - lower);
-  long double xstar = ((long double) b - (long double) a)
-                    / (logl((long double) b) - logl((long double) a));
-  long double fraction = (xstar - (long double) a)
-                       / ((long double) b - (long double) a);
+  /* Compute in IEEE-754 double (not long double): long double is 80-bit on
+   * x86 but 128-bit on aarch64, so it makes the turning point platform-
+   * dependent.  double is identical across platforms. */
+  double duration = (double) (upper - lower);
+  double xstar = (b - a) / (log(b) - log(a));
+  double fraction = (xstar - a) / (b - a);
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
