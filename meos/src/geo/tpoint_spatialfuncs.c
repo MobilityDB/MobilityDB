@@ -3405,7 +3405,7 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   /* Use GEOS only for non-scalar input */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   GEOSGeometry *geom = NULL;
-  initGEOS(lwnotice, lwgeom_geos_error);
+  meos_initialize_geos();
   geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
 
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
@@ -3462,7 +3462,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
-  finishGEOS();
   return nseqs;
 }
 

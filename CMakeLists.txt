@@ -252,6 +252,11 @@ int main() {
 # Other dependencies
 #--------------------------------
 
+# POSIX threads — needed for pthread_once in meos_initialize_geos()
+# On Linux ≥ glibc 2.34 pthreads are in libc; on older systems and MinGW
+# CMake's Threads::Threads target adds the correct -lpthread / -lwinpthread.
+find_package(Threads REQUIRED)
+
 # GEOS geometry library
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
