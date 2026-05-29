@@ -163,4 +163,70 @@ Trgeo_minus_stbox(PG_FUNCTION_ARGS)
   return Trgeo_restrict_stbox(fcinfo, REST_MINUS);
 }
 
+
+/*****************************************************************************
+ * Centroid and convex hull functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Trgeometry_centroid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_centroid);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the centroid of a temporal rigid geometry as a temporal point
+ * @sqlfn centroid()
+ */
+Datum
+Trgeometry_centroid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_centroid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_convex_hull(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_convex_hull);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the convex hull of a temporal rigid geometry
+ * @sqlfn convexHull()
+ */
+Datum
+Trgeometry_convex_hull(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *result = trgeometry_convex_hull(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
+ * Body-frame trajectory function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Trgeometry_body_point_trajectory(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_body_point_trajectory);
+/**
+ * @ingroup mobilitydb_rgeo_spatialfuncs
+ * @brief Return the world-frame trajectory of a body-frame point on a moving
+ * rigid geometry
+ * @sqlfn bodyPointTrajectory()
+ */
+Datum
+Trgeometry_body_point_trajectory(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = trgeometry_body_point_trajectory(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/

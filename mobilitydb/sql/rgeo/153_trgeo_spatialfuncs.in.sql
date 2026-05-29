@@ -66,6 +66,22 @@ CREATE FUNCTION traversedArea(trgeometry, bool DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Trgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+
+CREATE FUNCTION centroid(trgeometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION convexHull(trgeometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bodyPointTrajectory(trgeometry, geometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_body_point_trajectory'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/

@@ -268,6 +268,48 @@ SELECT ST_AsText(traversedArea(
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_spatial_functions">
+		<title>Spatial Functions</title>
+
+		<para>These functions derive a spatial value from the moving body. <varname>centroid</varname> and <varname>bodyPointTrajectory</varname> return temporal points tracking a position over time; <varname>convexHull</varname> returns a static geometry.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_centroid_func">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Return the centroid of the moving body as a temporal point</para>
+				<para><varname>centroid(trgeometry) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
+-- Interp=Step;[POINT(0.5 0.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_convexHull_func">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Return the convex hull of the area traversed by the moving body</para>
+				<para><varname>convexHull(trgeometry) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_GeometryType(convexHull(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
+-- ST_Polygon
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_bodyPointTrajectory_func">
+				<indexterm significance="normal"><primary><varname>bodyPointTrajectory</varname></primary></indexterm>
+				<para>Return the world-frame trajectory of a body-frame point carried by the moving rigid geometry. The point is expressed in the reference shape's local frame and the time-varying pose is applied to it at each instant.</para>
+				<para><varname>bodyPointTrajectory(trgeometry, geometry) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(bodyPointTrajectory(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]',
+  geometry 'Point(0 0)'));
+-- Interp=Step;[POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-02]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_modifications">
 		<title>Modifications</title>
 
