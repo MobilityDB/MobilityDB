@@ -34,6 +34,7 @@
 
 /* C */
 #include <float.h>
+#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -505,6 +506,379 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
+ * GEOS-free analytic nearest approach distance between a temporal circular
+ * buffer and a geometry
+ *
+ * The traversed region of a temporal circular buffer is the union of the
+ * swept capsules of its segments; the distance to a geometry is the minimum
+ * of the per-segment distances. For one segment the centre c(t) and radius
+ * r(t) vary linearly in t. The distance from the swept capsule to a
+ * geometry edge is min over t of [ dist(c(t), edge) - r(t) ], clamped at 0.
+ * On each of the three projection regimes (closest to the edge start, to
+ * the edge end, or perpendicular) the squared point distance is a quadratic
+ * in t, so f(t) = sqrt(quadratic) - linear is minimised in closed form by
+ * evaluating the interval endpoints and the roots of the squared
+ * stationarity equation. A polygon that contains a segment centre gives a
+ * zero distance directly. No GEOS call is made.
+ *****************************************************************************/
+
+/**
+ * @brief Minimise f(t) = sqrt(A t^2 + B t + C) - (R0 + DR t) over [lo,hi]
+ * @details Candidates are the interval endpoints and the real roots of the
+ * stationarity equation squared, (A^2 - A DR^2) t^2 + (A B - B DR^2) t +
+ * (B^2/4 - C DR^2) = 0. Spurious roots introduced by squaring only add
+ * larger values, so the minimum over the candidates is exact.
+ */
+static double
+tcb_minfun(double A, double B, double C, double R0, double DR, double lo,
+  double hi)
+{
+  double cand[6];
+  int nc = 0;
+  cand[nc++] = lo;
+  cand[nc++] = hi;
+  double a2 = A * (A - DR * DR);
+  double a1 = B * (A - DR * DR);
+  double a0 = 0.25 * B * B - C * DR * DR;
+  if (fabs(a2) > 1e-18)
+  {
+    double disc = a1 * a1 - 4.0 * a2 * a0;
+    if (disc >= 0.0)
+    {
+      double sd = sqrt(disc);
+      cand[nc++] = (-a1 + sd) / (2.0 * a2);
+      cand[nc++] = (-a1 - sd) / (2.0 * a2);
+    }
+  }
+  else if (fabs(a1) > 1e-18)
+    cand[nc++] = -a0 / a1;
+  double best = DBL_MAX;
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < lo) t = lo;
+    if (t > hi) t = hi;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double f = sqrt(q) - (R0 + DR * t);
+    if (f < best) best = f;
+  }
+  return best;
+}
+
+/**
+ * @brief A geometry boundary segment with its precomputed 2D bounding box;
+ * @p is_poly marks segments that belong to a polygon ring (used by the
+ * ray-casting interior test)
+ */
+typedef struct
+{
+  double x1, y1, x2, y2;
+  double xmin, ymin, xmax, ymax;
+  bool is_poly;
+} TcbSeg;
+
+/**
+ * @brief Append the segments of a point array to the segment array, growing
+ * it as needed. A single-point array contributes one degenerate segment.
+ */
+static void
+tcb_segs_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbSeg **arr,
+  int *cap, int *cnt)
+{
+  if (! pa || pa->npoints == 0)
+    return;
+  uint32_t np = pa->npoints;
+  uint32_t nseg = (np == 1) ? 1 : np - 1;
+  for (uint32_t i = 0; i < nseg; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = (np == 1) ? a : getPoint2d_cp(pa, i + 1);
+    if (*cnt == *cap)
+    {
+      int newcap = (*cap == 0) ? 64 : *cap * 2;
+      *arr = (*arr == NULL) ? palloc(sizeof(TcbSeg) * newcap) :
+        repalloc(*arr, sizeof(TcbSeg) * newcap);
+      *cap = newcap;
+    }
+    TcbSeg *s = &(*arr)[(*cnt)++];
+    s->x1 = a->x; s->y1 = a->y; s->x2 = b->x; s->y2 = b->y;
+    s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
+    s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
+    s->is_poly = is_poly;
+  }
+}
+
+/**
+ * @brief Recursively collect the boundary segments of a geometry. Returns
+ * false for a curved type that cannot be decomposed exactly (the caller
+ * then falls back to the exact traversed-area path).
+ */
+static bool
+tcb_geo_segs(const LWGEOM *lw, TcbSeg **arr, int *cap, int *cnt,
+  bool *has_poly)
+{
+  switch (lw->type)
+  {
+    case POINTTYPE:
+      tcb_segs_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
+        cnt);
+      return true;
+    case LINETYPE:
+      tcb_segs_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
+        cnt);
+      return true;
+    case TRIANGLETYPE:
+      tcb_segs_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
+        cap, cnt);
+      *has_poly = true;
+      return true;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *p = lwgeom_as_lwpoly(lw);
+      for (uint32_t i = 0; i < p->nrings; i++)
+        tcb_segs_add_ptarray(p->rings[i], true, arr, cap, cnt);
+      if (p->nrings > 0)
+        *has_poly = true;
+      return true;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        if (! tcb_geo_segs(c->geoms[i], arr, cap, cnt, has_poly))
+          return false;
+      return true;
+    }
+    default:
+      /* Curved or unsupported type: let the caller use the exact path */
+      return false;
+  }
+}
+
+/**
+ * @brief Ray-casting test: true if (x,y) is inside any polygon ring among
+ * the segments (even-odd rule over the polygon-ring segments only)
+ */
+static bool
+tcb_pt_in_polys(double x, double y, const TcbSeg *segs, int n)
+{
+  bool inside = false;
+  for (int i = 0; i < n; i++)
+  {
+    if (! segs[i].is_poly)
+      continue;
+    double y1 = segs[i].y1, y2 = segs[i].y2;
+    if ((y1 > y) != (y2 > y))
+    {
+      double xint = segs[i].x1 +
+        (y - y1) / (y2 - y1) * (segs[i].x2 - segs[i].x1);
+      if (x < xint)
+        inside = ! inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
+ */
+static double
+tcb_seg_edge_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbSeg *e)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  const double ux = bx - ax, uy = by - ay;
+  const double l2 = ux * ux + uy * uy;
+
+  /* Degenerate edge (a point): distance to that point over the whole t */
+  if (l2 <= 1e-24)
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    return tcb_minfun(A, B, C, r1, dr, 0.0, 1.0);
+  }
+
+  /* Projection parameter s(t) = (s0 + s1 t) / l2, split [0,1] at s=0, s=1 */
+  const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
+  const double s1 = dcx * ux + dcy * uy;
+  double bp[4];
+  int nb = 0;
+  bp[nb++] = 0.0;
+  bp[nb++] = 1.0;
+  if (fabs(s1) > 1e-18)
+  {
+    double ta = -s0 / s1, tb = (l2 - s0) / s1;
+    if (ta > 0.0 && ta < 1.0) bp[nb++] = ta;
+    if (tb > 0.0 && tb < 1.0) bp[nb++] = tb;
+  }
+  /* Sort the (at most 4) breakpoints */
+  for (int i = 0; i < nb; i++)
+    for (int j = i + 1; j < nb; j++)
+      if (bp[j] < bp[i]) { double tmp = bp[i]; bp[i] = bp[j]; bp[j] = tmp; }
+
+  double best = DBL_MAX;
+  for (int k = 0; k + 1 < nb; k++)
+  {
+    double lo = bp[k], hi = bp[k + 1];
+    if (hi - lo < 1e-15) continue;
+    double mt = 0.5 * (lo + hi);
+    double s = (s0 + s1 * mt) / l2;
+    double A, B, C;
+    if (s <= 0.0)
+    {
+      /* Closest to the edge start A */
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+      C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    }
+    else if (s >= 1.0)
+    {
+      /* Closest to the edge end B */
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
+      C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
+    }
+    else
+    {
+      /* Perpendicular distance: cross(c(t)-A, u) / |u| */
+      double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
+      double k1 = dcx * uy - dcy * ux;
+      A = k1 * k1 / l2;
+      B = 2.0 * k0 * k1 / l2;
+      C = k0 * k0 / l2;
+    }
+    double m = tcb_minfun(A, B, C, r1, dr, lo, hi);
+    if (m < best) best = m;
+  }
+  return best;
+}
+
+/**
+ * @brief Update the running minimum with one swept-capsule unit (the centre
+ * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
+ */
+static void
+tcb_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const TcbSeg *segs, int n, bool has_poly, double *best)
+{
+  if (has_poly &&
+      (tcb_pt_in_polys(cx1, cy1, segs, n) ||
+       tcb_pt_in_polys(cx2, cy2, segs, n)))
+  {
+    *best = 0.0;
+    return;
+  }
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  for (int k = 0; k < n && *best > 0.0; k++)
+  {
+    const TcbSeg *e = &segs[k];
+    if (*best != DBL_MAX)
+    {
+      double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
+      double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+      if (dx * dx + dy * dy >= (*best) * (*best))
+        continue;
+    }
+    double m = tcb_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, e);
+    if (m < *best) *best = m;
+  }
+}
+
+/**
+ * @brief Update the running minimum with one temporal circular buffer
+ * sequence (linear interpolation walks consecutive segments; discrete or
+ * step interpolation treats each instant as a stationary disk)
+ */
+static void
+tcb_seq_nad(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
+  double *best)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && *best > 0.0; i++)
+    {
+      const Cbuffer *c = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
+        has_poly, best);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && *best > 0.0; i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
+    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    tcb_unit_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, segs,
+      n, has_poly, best);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free nearest approach distance between a temporal circular
+ * buffer and a geometry
+ */
+static double
+tcbuffer_geo_nad_analytic(const Temporal *temp, const GSERIALIZED *gs)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  TcbSeg *segs = NULL;
+  int cap = 0, n = 0;
+  bool has_poly = false;
+  bool ok = tcb_geo_segs(lw, &segs, &cap, &n, &has_poly);
+  lwgeom_free(lw);
+
+  /* Curved / unsupported geometry, or no segments: fall back to the exact
+   * traversed-area distance so the result is never wrong */
+  if (! ok || n == 0)
+  {
+    if (segs) pfree(segs);
+    GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+    double result = geom_distance2d(trav, gs);
+    pfree(trav);
+    return result;
+  }
+
+  double best = DBL_MAX;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
+    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    tcb_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
+      has_poly, &best);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tcb_seq_nad((TSequence *) temp, segs, n, has_poly, &best);
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && best > 0.0; i++)
+      tcb_seq_nad(TSEQUENCESET_SEQ_N(ss, i), segs, n, has_poly, &best);
+  }
+
+  pfree(segs);
+  return best < 0.0 ? 0.0 : best;
+}
+
+/*****************************************************************************
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
@@ -547,10 +921,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
-  double result = geom_distance2d(trav, gs);
-  pfree(trav);
-  return result;
+  return tcbuffer_geo_nad_analytic(temp, gs);
 }
 
 /**
