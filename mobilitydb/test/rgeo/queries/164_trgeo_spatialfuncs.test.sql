@@ -50,3 +50,9 @@ SELECT ST_AsText(round(convexHull(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));
 
 -------------------------------------------------------------------------------
+
+-- Motion metrics
+SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]');
+SELECT asText(cumulativeLength(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));
+SELECT asText(speed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));
+SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));

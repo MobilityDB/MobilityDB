@@ -310,6 +310,42 @@ SELECT asText(bodyPointTrajectory(
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_motion_metrics">
+		<title>Motion Metrics</title>
+
+		<para>These functions report the motion of a temporal rigid geometry along its centroid trajectory.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_length">
+				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
+				<para>Return the total length traversed by the centroid, or its cumulative length over time</para>
+				<para><varname>length(trgeometry) → float</varname></para>
+				<para><varname>cumulativeLength(trgeometry) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_speed">
+				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+				<para>Return the speed of the centroid as a temporal float</para>
+				<para><varname>speed(trgeometry) → tfloat</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_twcentroid">
+				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
+				<para>Return the time-weighted centroid of the centroid trajectory as a geometry</para>
+				<para><varname>twCentroid(trgeometry) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));
+-- POINT(1.5 2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_modifications">
 		<title>Modifications</title>
 

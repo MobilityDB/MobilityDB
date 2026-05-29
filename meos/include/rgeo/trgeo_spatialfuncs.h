@@ -46,6 +46,10 @@ extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
 extern Temporal *trgeometry_centroid(const Temporal *temp);
 extern GSERIALIZED *trgeometry_convex_hull(const Temporal *temp);
 extern Temporal *trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs);
+extern double trgeometry_length(const Temporal *temp);
+extern Temporal *trgeometry_cumulative_length(const Temporal *temp);
+extern Temporal *trgeometry_speed(const Temporal *temp);
+extern GSERIALIZED *trgeometry_twcentroid(const Temporal *temp);
 
 /*****************************************************************************/
 
