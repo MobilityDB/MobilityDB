@@ -1,3 +1,8 @@
 build/
 .cache
 .vscode
+
+# Large AIS daily archives downloaded from https://web.ais.dk/aisdata/ for
+# the trgeo_distance / ais_*_full tutorials — keep them out of the repo.
+meos/examples/data/aisdk-*.csv
+meos/examples/data/aisdk-*.csv:Zone.Identifier
