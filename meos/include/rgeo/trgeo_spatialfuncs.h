@@ -46,6 +46,11 @@ extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
 extern Temporal *trgeometry_centroid(const Temporal *temp);
 extern GSERIALIZED *trgeometry_convex_hull(const Temporal *temp);
 extern Temporal *trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs);
+extern double trgeometry_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeometry_frechet_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
+extern Match *trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
+extern Match *trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
 
 /*****************************************************************************/
 

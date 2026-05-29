@@ -461,6 +461,42 @@ SELECT ST_AsText(shortestLine(
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_similarity">
+		<title>Similarity</title>
+
+		<para>The similarity functions compare two temporal rigid geometries through their centroid trajectories.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_similarityDistance">
+				<indexterm significance="normal"><primary><varname>hausdorffDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
+				<para>Return the discrete Hausdorff distance, the discrete Fréchet distance, or the Dynamic Time Warp distance between two temporal rigid geometries</para>
+				<para><varname>hausdorffDistance(trgeometry, trgeometry) → float</varname></para>
+				<para><varname>frechetDistance(trgeometry, trgeometry) → float</varname></para>
+				<para><varname>dynTimeWarpDistance(trgeometry, trgeometry) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(frechetDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2.828427
+SELECT round(hausdorffDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_similarityPath">
+				<indexterm significance="normal"><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
+				<para>Return the correspondence pairs between two temporal rigid geometries with respect to the discrete Fréchet distance or the Dynamic Time Warp distance, as a set of <varname>(i,j)</varname> instant-index pairs</para>
+				<para><varname>frechetDistancePath(trgeometry, trgeometry) → {(i,j)}</varname></para>
+				<para><varname>dynTimeWarpPath(trgeometry, trgeometry) → {(i,j)}</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_comparisons">
 		<title>Comparisons</title>
 

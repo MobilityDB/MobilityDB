@@ -119,6 +119,11 @@ extern STBox *trgeometry_space_time_boxes(const Temporal *temp, double xsize, do
 extern STBox *trgeometry_stboxes(const Temporal *temp, int *count);
 extern STBox *trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count);
 extern STBox *trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
+extern double trgeometry_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeometry_frechet_distance(const Temporal *temp1, const Temporal *temp2);
+extern double trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
+extern Match *trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
+extern Match *trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
 
 /*****************************************************************************
  * Transformation functions

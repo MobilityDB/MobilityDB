@@ -40,6 +40,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <float.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -54,6 +55,7 @@
 #include "pose/pose.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
+#include "temporal/temporal_analytics.h"
 #include "temporal/temporal.h"
 
 /*****************************************************************************
@@ -286,6 +288,107 @@ trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
   lfinfo.restype = T_TGEOMPOINT;
   lfinfo.invert = INVERT_NO;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+}
+
+
+/*****************************************************************************
+ * Similarity distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_analytics_similarity
+ * @brief Return the Hausdorff distance between two temporal rigid geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @csqlfn #Trgeometry_hausdorff_distance()
+ */
+double
+trgeometry_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
+{
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return DBL_MAX;
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  double result = temporal_hausdorff_distance(tp1, tp2);
+  pfree(tp1); pfree(tp2);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_analytics_similarity
+ * @brief Return the discrete Frechet distance between two temporal rigid
+ * geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @csqlfn #Trgeometry_frechet_distance()
+ */
+double
+trgeometry_frechet_distance(const Temporal *temp1, const Temporal *temp2)
+{
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return DBL_MAX;
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  double result = temporal_similarity(tp1, tp2, FRECHET);
+  pfree(tp1); pfree(tp2);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_analytics_similarity
+ * @brief Return the Dynamic Time Warp distance between two temporal rigid
+ * geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @csqlfn #Trgeometry_dyntimewarp_distance()
+ */
+double
+trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
+{
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return DBL_MAX;
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  double result = temporal_similarity(tp1, tp2, DYNTIMEWARP);
+  pfree(tp1); pfree(tp2);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_analytics_similarity
+ * @brief Return the discrete Frechet path between two temporal rigid
+ * geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[out] count Number of elements in the resulting array
+ * @csqlfn #Trgeometry_frechet_path()
+ */
+Match *
+trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
+{
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return NULL;
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Match *result = temporal_similarity_path(tp1, tp2, count, FRECHET);
+  pfree(tp1); pfree(tp2);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_analytics_similarity
+ * @brief Return the Dynamic Time Warp path between two temporal rigid
+ * geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[out] count Number of elements in the resulting array
+ * @csqlfn #Trgeometry_dyntimewarp_path()
+ */
+Match *
+trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count)
+{
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+    return NULL;
+  Temporal *tp1 = trgeometry_to_tpoint(temp1);
+  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Match *result = temporal_similarity_path(tp1, tp2, count, DYNTIMEWARP);
+  pfree(tp1); pfree(tp2);
+  return result;
 }
 
 /*****************************************************************************/

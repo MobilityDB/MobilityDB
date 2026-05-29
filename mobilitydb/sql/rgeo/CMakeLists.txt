@@ -10,6 +10,7 @@ SET(LOCAL_FILES
   166_trgeo_boxops
   157_trgeo_posops
   158_trgeo_tile
+  160_trgeo_similarity
   161_trgeo_distance
   161_trgeo_vclip
   162_trgeo_indexes

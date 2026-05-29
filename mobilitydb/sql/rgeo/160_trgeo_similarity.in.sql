@@ -29,81 +29,46 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal poses
+ * @brief Similarity distance functions for temporal rigid geometries
+ * @note The reference-point centroid trajectory is used as a proxy for pose
+ * distance, consistent with all other trgeometry distance functions
  */
 
 /*****************************************************************************
- * SRID
+ * Frechet distance and path
  *****************************************************************************/
 
-CREATE FUNCTION SRID(trgeometry)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tspatial_srid'
+CREATE FUNCTION frechetDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setSRID(trgeometry, integer)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION transform(trgeometry, integer)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Tspatial_transform'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION transformPipeline(trgeometry, text, srid integer DEFAULT 0,
-    is_forward boolean DEFAULT true)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
+CREATE FUNCTION frechetDistancePath(trgeometry, trgeometry)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Trgeometry_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * traversedArea
+ * Dynamic Time Warp distance and path
  *****************************************************************************/
 
-CREATE FUNCTION traversedArea(trgeometry, bool DEFAULT FALSE)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_traversed_area'
+CREATE FUNCTION dynTimeWarpDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-
-CREATE FUNCTION centroid(trgeometry)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Trgeometry_centroid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION convexHull(trgeometry)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_convex_hull'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION bodyPointTrajectory(trgeometry, geometry)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Trgeometry_body_point_trajectory'
+CREATE FUNCTION dynTimeWarpPath(trgeometry, trgeometry)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'Trgeometry_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * AtGeometry and MinusGeometry
+ * Hausdorff distance
  *****************************************************************************/
 
-CREATE FUNCTION atGeometry(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_at_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusGeometry(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_minus_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION atStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_at_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_minus_stbox'
+CREATE FUNCTION hausdorffDistance(trgeometry, trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_hausdorff_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
