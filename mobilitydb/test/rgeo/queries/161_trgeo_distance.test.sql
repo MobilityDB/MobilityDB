@@ -27,135 +27,122 @@
 --
 -------------------------------------------------------------------------------
 
--- Helper: a simple moving square
--- Pose(Point(0 0),0)@t1 => Pose(Point(4 0),0)@t5: translates right 4 units over 5 days
+-- Polygon at origin (no pose transform) — world shape equals reference body
+-- Distance from TInstant to static geometry
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> ST_SetSRID(ST_MakePoint(20, 5), 5676)
+), 6);
+
+-- Same as above reversed (geometry <-> trgeometry)
+SELECT round(maxValue(
+  ST_SetSRID(ST_MakePoint(20, 5), 5676)
+  <-> trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+), 6);
+
+-- Distance zero: point inside polygon
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> ST_SetSRID(ST_MakePoint(5, 5), 5676)
+), 6);
+
+-- TSequence <-> geometry: polygon moves from (0,0) to (50,0), point at (25,20)
+-- At t=2000-01-01 12:00: polygon center ~(25,0), closest edge point (25,10), dist=10
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(50 0),0)@2000-01-02]'
+  <-> ST_SetSRID(ST_MakePoint(25, 20), 5676)
+), 6);
 
 -------------------------------------------------------------------------------
--- tdistance — instant and discrete
--------------------------------------------------------------------------------
+-- TInstant × TInstant same timestamp — distance equals static distance
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <->
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(20 0),0)@2000-01-01'
+), 6);
 
--- TInstant: identity pose → standard Euclidean distance from world polygon
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
-  geometry 'Point(2 2)'), 6);
--- TInstant: non-identity pose → polygon shifts to (5,5)-(6,5)-(6,6)-(5,6)
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 5),0)@2000-01-01',
-  geometry 'Point(2 2)'), 6);
--- Discrete sequence: per-instant Euclidean distance with pose applied
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0),0)@2000-01-01, Pose(Point(5 5),0)@2000-01-02}',
-  geometry 'Point(2 2)'), 6);
+-- TInstant × TInstant different timestamps — no time overlap, result NULL
+SELECT trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));Pose(Point(20 0),0)@2000-01-02';
 
--------------------------------------------------------------------------------
--- tdistance — continuous sequence
--------------------------------------------------------------------------------
+-- TSequence × TSequence overlapping: two stationary polygons 15 units apart
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]'
+  <->
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+), 6);
 
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  geometry 'Point(2 2)'), 6);
-SELECT round(tdistance(
-  geometry 'Point(2 2)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'), 6);
-SELECT round(tdistance(
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(tdistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'), 6);
-
--------------------------------------------------------------------------------
--- nearestApproachInstant
--------------------------------------------------------------------------------
-
-SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
-  geometry 'Point(2 2)'));
-SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  geometry 'Point(2 2)'));
-SELECT asText(nearestApproachInstant(
-  geometry 'Point(2 2)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'));
+-- TSequence × TSequence non-overlapping time spans — result NULL
+SELECT trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]'
+  <-> trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-03, Pose(Point(20 0),0)@2000-01-04]';
 
 -------------------------------------------------------------------------------
 -- nearestApproachDistance
--------------------------------------------------------------------------------
 
-SELECT round(nearestApproachDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
-  geometry 'Point(2 2)'), 6);
-SELECT round(nearestApproachDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  geometry 'Point(2 2)'), 6);
-SELECT round(nearestApproachDistance(
-  geometry 'Point(2 2)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  stbox 'STBOX X((1,-1),(3,3))'), 6);
-SELECT round(nearestApproachDistance(
-  stbox 'STBOX X((1,-1),(3,3))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
-SELECT round(nearestApproachDistance(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'), 6);
+-- TInstant: same as distance for a single instant
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+    ST_SetSRID(ST_MakePoint(20, 5), 5676)
+  ), 6);
+
+-- TSequence × TSequence stationary 15 apart
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]',
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+  ), 6);
+
+-- Two approaching polygons: p1 moves from (0,0) to (15,0), p2 stays at (20,0)
+-- At t=start: gap=15; at t=end: gap=0
+SELECT round(
+  nearestApproachDistance(
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(15 0),0)@2000-01-02]',
+    trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+  ), 6);
 
 -------------------------------------------------------------------------------
--- shortestLine
--------------------------------------------------------------------------------
+-- nearestApproachInstant
 
-SELECT ST_AsText(shortestLine(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2000-01-01',
-  geometry 'Point(2 2)'));
-SELECT ST_AsText(shortestLine(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  geometry 'Point(2 2)'));
-SELECT ST_AsText(shortestLine(
-  geometry 'Point(2 2)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(
-  tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 5),0)@2000-01-01, Pose(Point(4 5),0)@2000-01-05]'));
+-- TInstant: returns the single instant
+SELECT asText(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+  ST_SetSRID(ST_MakePoint(20, 5), 5676)
+));
+
+-- TSequence × TSequence stationary: returns the first instant (all equal)
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 0),0)@2000-01-02]',
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+));
+
+-- Approaching polygons: minimum distance at the last instant
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(15 0),0)@2000-01-02]',
+  trgeometry 'SRID=5676;Polygon((0 0,5 0,5 5,0 5,0 0));[Pose(Point(20 0),0)@2000-01-01, Pose(Point(20 0),0)@2000-01-02]'
+));
 
 -------------------------------------------------------------------------------
--- Table queries
--------------------------------------------------------------------------------
+-- tdistance(trgeo, tgeompoint)
 
-SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
-  tdistance(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+-- TInstant trgeo <-> TInstant tgeompoint (same timestamp)
+SELECT round(maxValue(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01'
+  <-> setSRID(tgeompoint 'Point(20 5)@2000-01-01', 5676)
+), 6);
 
-SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
-  nearestApproachInstant(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+-- TSequence trgeo <-> TSequence tgeompoint, overlapping
+-- trgeo: polygon (0,0)-(10,10) moving from (0,0) to (50,0) over 2 days
+-- tgeompoint: point moving from (25,20) to (25,5) over the second day only
+SELECT asText(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(50 0),0)@2000-01-02]'
+  <-> setSRID(tgeompoint '[Point(25 20)@2000-01-01 12:00, Point(25 5)@2000-01-02]', 5676)
+);
 
-SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
-  nearestApproachDistance(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
+-- nearestApproachDistance(trgeo, tgeompoint)
+SELECT round(nearestApproachDistance(
+  trgeometry 'SRID=5676;Polygon((0 0,10 0,10 10,0 10,0 0));Pose(Point(0 0),0)@2000-01-01',
+  setSRID(tgeompoint 'Point(20 5)@2000-01-01', 5676)
+), 6);
 
-SELECT COUNT(*) FROM tbl_trgeometry2d WHERE
-  shortestLine(temp, ST_SetSRID('Point(50 50)'::geometry, 5676)) IS NOT NULL;
-
--------------------------------------------------------------------------------
+/*****************************************************************************/
