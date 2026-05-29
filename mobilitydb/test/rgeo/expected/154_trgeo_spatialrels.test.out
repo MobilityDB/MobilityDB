@@ -1,0 +1,294 @@
+SELECT eContains(
+  geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(
+  geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(2 0.5)');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT aContains(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(2 0.5)');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT eContains(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(
+  geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(
+  geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(2 0.5)');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(2 0.5)');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eDisjoint(
+  geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(
+  geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(10 10),0)@2001-01-01');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(10 10),0)@2001-01-01');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT eTouches(
+  geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT aTouches(
+  geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ atouches 
+----------
+ t
+(1 row)
+
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT aTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))');
+ atouches 
+----------
+ t
+(1 row)
+
+SELECT eTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 0),0)@2001-01-01');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT aTouches(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 0),0)@2001-01-01');
+ atouches 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(
+  geometry 'Point(6 0)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  2.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(
+  geometry 'Point(6 0)',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  2.0);
+ adwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(6 0)',
+  2.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(6 0)',
+  2.0);
+ adwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(3 0),0)@2001-01-01',
+  3.0);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(3 0),0)@2001-01-01',
+  3.0);
+ adwithin 
+----------
+ f
+(1 row)
+
