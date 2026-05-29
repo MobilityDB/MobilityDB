@@ -54,6 +54,7 @@
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
+#include <meos_cbuffer.h>
 
 /*****************************************************************************
  * Some GEOS versions cannot handle spatial relationships where one of the
@@ -1207,7 +1208,17 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
+  /* Touch requires the temporal value and the geometry to be at distance
+   * zero; a strictly positive exact nearest-approach distance means they
+   * are disjoint, so they cannot touch under either quantifier. This is
+   * applied only on the geometry path: the cbuffer path turns into a
+   * many-vertex disk for which the analytic distance is not a win. */
+  if (nad_tcbuffer_geo(temp, gs) > 1e-6)
+    return 0;
+  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
 }
 
