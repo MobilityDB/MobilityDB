@@ -289,6 +289,78 @@ trgeometry_to_tpoint(const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_rgeo_conversion
+ * @brief Materialise the moving polygon of a temporal rigid geometry as a
+ * temporal geometry (one rotated/translated polygon per instant).
+ * @details For each instant, applies the instant's pose to the trgeo's
+ * reference geometry and emits the resulting polygon. The returned
+ * `tgeometry` has the same temporal structure as the input and the same
+ * SRID as the reference geometry.
+ * @note Unlike `trgeometry_to_tpoint` (which gives the antenna point trajectory),
+ * this preserves the body's footprint at each instant — the natural input
+ * for compositional spatial-rel queries against `tgeometry`'s full surface.
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tgeometry()
+ */
+Temporal *
+trgeometry_to_tgeometry(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_has_geom(temp->flags))
+    return NULL;
+  const GSERIALIZED *ref = trgeo_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    GSERIALIZED *poly = geom_apply_pose(ref,
+      DatumGetPoseP(tinstant_value(inst)));
+    TInstant *res = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+      inst->t);
+    pfree(poly);
+    return (Temporal *) res;
+  }
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      GSERIALIZED *poly = geom_apply_pose(ref,
+        DatumGetPoseP(tinstant_value(inst)));
+      insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+        inst->t);
+      pfree(poly);
+    }
+    return (Temporal *) tsequence_make_free(insts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
+      STEP, NORMALIZE);
+  }
+  /* TSEQUENCESET */
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  for (int s = 0; s < ss->count; s++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, s);
+    TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      GSERIALIZED *poly = geom_apply_pose(ref,
+        DatumGetPoseP(tinstant_value(inst)));
+      insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+        inst->t);
+      pfree(poly);
+    }
+    seqs[s] = tsequence_make_free(insts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
+      STEP, NORMALIZE);
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
+}
+
+/**
  * @ingroup meos_internal_rgeo_conversion
  * @brief Return the reference geometry of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
@@ -839,6 +911,7 @@ trgeo_segments(const Temporal *temp, int *count)
   pfree(segs);
   return result;
 }
+
 /*
  * @brief Adaptive sub-sampling tolerances for trgeometry_traversed_area.
  *
