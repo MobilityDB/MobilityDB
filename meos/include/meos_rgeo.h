@@ -114,6 +114,8 @@ extern GSERIALIZED *trgeometry_traversed_area(const Temporal *temp, bool unary_u
 extern Temporal *trgeometry_centroid(const Temporal *temp);
 extern GSERIALIZED *trgeometry_convex_hull(const Temporal *temp);
 extern Temporal *trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs);
+extern STBox *trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count);
+extern STBox *trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
 
 /*****************************************************************************
  * Transformation functions

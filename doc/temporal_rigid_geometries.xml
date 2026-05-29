@@ -532,6 +532,30 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_tile">
+		<title>Tiles</title>
+
+		<para>These functions return the spatiotemporal boxes of a multidimensional grid that the temporal rigid geometry intersects, computed on its centroid trajectory.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_spaceBoxes">
+				<indexterm significance="normal"><primary><varname>spaceBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
+				<para>Return the spatiotemporal boxes of a temporal rigid geometry split with respect to a spatial, temporal, or spatiotemporal grid</para>
+				<para><varname>spaceBoxes(trgeometry, xsize float [, ysize float [, zsize float]], sorigin geometry = 'Point(0 0 0)', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<para><varname>timeBoxes(trgeometry, interval, torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<para><varname>spaceTimeBoxes(trgeometry, xsize float [, ysize float [, zsize float]], interval, sorigin geometry = 'Point(0 0 0)', torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  2.0), 1);
+-- 6
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_aggregations">
 		<title>Aggregations</title>
 

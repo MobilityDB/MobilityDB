@@ -9,6 +9,7 @@ set(RGEO_SRCS
   trgeo_seq.c
   trgeo_seqset.c
   trgeo_spatialfuncs.c
+  trgeo_tile.c
   trgeo_spatialrels.c
   trgeo_utils.c
   trgeo_vclip.c
