@@ -403,4 +403,77 @@ Trgeometry_dyntimewarp_path(PG_FUNCTION_ARGS)
   return Trgeo_similarity_path(fcinfo, DYNTIMEWARP);
 }
 
+/*****************************************************************************
+ * Motion metrics
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Trgeometry_length(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_length);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the length traversed by the centroid of a temporal rigid
+ * geometry
+ * @sqlfn length()
+ */
+Datum
+Trgeometry_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = trgeometry_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_cumulative_length(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_cumulative_length);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the cumulative length traversed by the centroid of a temporal
+ * rigid geometry
+ * @sqlfn cumulativeLength()
+ */
+Datum
+Trgeometry_cumulative_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_cumulative_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_speed);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the speed of the centroid of a temporal rigid geometry
+ * @sqlfn speed()
+ */
+Datum
+Trgeometry_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_twcentroid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_twcentroid);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the time-weighted centroid of the centroid trajectory of a
+ * temporal rigid geometry
+ * @sqlfn twCentroid()
+ */
+Datum
+Trgeometry_twcentroid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *result = trgeometry_twcentroid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 /*****************************************************************************/

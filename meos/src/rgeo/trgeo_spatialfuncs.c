@@ -391,4 +391,83 @@ trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *c
   return result;
 }
 
+/*****************************************************************************
+ * Motion metrics
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the length traversed by the centroid of a temporal rigid
+ * geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_length()
+ */
+double
+trgeometry_length(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, -1.0);
+
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  double result = tpoint_length(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the cumulative length traversed by the centroid of a temporal
+ * rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_cumulative_length()
+ */
+Temporal *
+trgeometry_cumulative_length(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *result = tpoint_cumulative_length(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the speed of the centroid of a temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_speed()
+ */
+Temporal *
+trgeometry_speed(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *result = temporal_derivative(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the time-weighted centroid of the centroid trajectory of a
+ * temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_twcentroid()
+ */
+GSERIALIZED *
+trgeometry_twcentroid(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  GSERIALIZED *result = tpoint_twcentroid(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
 /*****************************************************************************/

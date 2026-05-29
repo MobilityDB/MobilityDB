@@ -83,6 +83,27 @@ CREATE FUNCTION bodyPointTrajectory(trgeometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Motion metrics
+ *****************************************************************************/
+
+CREATE FUNCTION length(trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_length'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cumulativeLength(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_cumulative_length'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION speed(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_speed'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION twCentroid(trgeometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_twcentroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 
