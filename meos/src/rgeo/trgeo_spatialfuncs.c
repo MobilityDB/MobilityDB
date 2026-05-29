@@ -49,6 +49,11 @@
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_spatialfuncs.h"
+#include "rgeo/trgeo_utils.h"
+#include "pose/pose.h"
+#include "temporal/lifting.h"
+#include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 
 /*****************************************************************************
@@ -181,5 +186,106 @@ trgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
   return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
 #endif /* MEOS */
+
+
+
+/**
+ * @brief Apply a pose to a body-frame geometry and return the centroid of the
+ * world-frame result as a Datum
+ */
+static Datum
+datum_pose_geom_centroid(Datum pose_datum, Datum geom_datum)
+{
+  GSERIALIZED *world_geom = geom_apply_pose(DatumGetGserializedP(geom_datum),
+    DatumGetPoseP(pose_datum));
+  GSERIALIZED *centroid = geom_centroid(world_geom);
+  pfree(world_geom);
+  return GserializedPGetDatum(centroid);
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the centroid of a temporal rigid geometry as a temporal point
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_centroid()
+ */
+Temporal *
+trgeometry_centroid(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_pose_geom_centroid;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_GEOMETRY;
+  lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.invert = INVERT_NO;
+  return tfunc_temporal_base(temp, PointerGetDatum(trgeo_geom_p(temp)), &lfinfo);
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the convex hull of a temporal rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_convex_hull()
+ */
+GSERIALIZED *
+trgeometry_convex_hull(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
+  if (! trav)
+    return NULL;
+  GSERIALIZED *result = geom_convex_hull(trav);
+  pfree(trav);
+  return result;
+}
+
+/*****************************************************************************
+ * Body-frame trajectory functions
+ *****************************************************************************/
+
+/**
+ * @brief Apply a pose to a body-frame geometry and return the world-frame
+ * result as a Datum
+ */
+static Datum
+datum_pose_apply_to_geom(Datum pose_datum, Datum geom_datum)
+{
+  const Pose *pose = DatumGetPoseP(pose_datum);
+  GSERIALIZED *gs = DatumGetGserializedP(geom_datum);
+  return GserializedPGetDatum(geom_apply_pose(gs, pose));
+}
+
+/**
+ * @ingroup meos_rgeo_spatialfuncs
+ * @brief Return the world-frame trajectory of a body-frame point on a moving
+ * rigid geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Body-frame geometry
+ * @csqlfn #Trgeometry_body_point_trajectory()
+ */
+Temporal *
+trgeometry_body_point_trajectory(const Temporal *temp, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  VALIDATE_NOT_NULL(gs, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_pose_apply_to_geom;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = T_GEOMETRY;
+  lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.invert = INVERT_NO;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+}
 
 /*****************************************************************************/
