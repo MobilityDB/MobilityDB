@@ -851,7 +851,7 @@ trgeometry_sequences(const Temporal *temp, int *count)
  * @csqlfn #Trgeometry_points()
  */
 Set *
-trgeo_points(const Temporal *temp)
+trgeometry_points(const Temporal *temp)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeometry_to_tpose(temp);
@@ -869,7 +869,7 @@ trgeo_points(const Temporal *temp)
  * @csqlfn #Trgeometry_rotation()
  */
 Temporal *
-trgeo_rotation(const Temporal *temp)
+trgeometry_rotation(const Temporal *temp)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeometry_to_tpose(temp);
@@ -889,7 +889,7 @@ trgeo_rotation(const Temporal *temp)
  * @csqlfn #Trgeometry_segments()
  */
 TSequence **
-trgeo_segments(const Temporal *temp, int *count)
+trgeometry_segments(const Temporal *temp, int *count)
 {
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_continuous(temp))

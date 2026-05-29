@@ -111,6 +111,9 @@ extern TSequence *trgeometry_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeometry_start_value(const Temporal *temp);
 extern bool trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED *trgeometry_traversed_area(const Temporal *temp, bool unary_union);
+extern STBox *trgeometry_stboxes(const Temporal *temp, int *count);
+extern STBox *trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count);
+extern STBox *trgeometry_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 
 /*****************************************************************************
  * Transformation functions

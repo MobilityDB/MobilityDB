@@ -7,6 +7,7 @@ SET(LOCAL_FILES
   154_trgeo_spatialrels
   155_trgeo_tempspatialrels
   156_trgeo_topops
+  166_trgeo_boxops
   157_trgeo_posops
   161_trgeo_distance
   161_trgeo_vclip
