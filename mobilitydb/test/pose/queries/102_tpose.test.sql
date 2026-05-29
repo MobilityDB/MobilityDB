@@ -599,3 +599,6 @@ SELECT numSequences(tposeSeqSetGaps(ARRAY[
 ]::tpose[], '5 minutes'::interval));
 
 -------------------------------------------------------------------------------/
+
+-- tprecision
+SELECT asText(tprecision(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-01 00:00:04]', interval '2 secs'));

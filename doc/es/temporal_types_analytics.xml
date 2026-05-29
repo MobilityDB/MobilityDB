@@ -138,7 +138,7 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
 			<listitem xml:id="ttype_tprecision">
 				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Reducir la precisión temporal de un valor temporal con respecto a un intervalo calculando el promedio/centroide ponderado por el tiempo en cada intervalo de tiempo</para>
-				<para><varname>tprecision({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')</varname></para>
+				<para><varname>tprecision({tnumber,tgeo,tpose,tcbuffer,trgeometry},duration interval,torigin timestamptz='2000-01-03')</varname></para>
 				<para><varname> → {tnumber,tgeompoint}</varname></para>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

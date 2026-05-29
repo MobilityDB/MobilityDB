@@ -454,6 +454,11 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tprecision(trgeometry, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Restriction Functions
