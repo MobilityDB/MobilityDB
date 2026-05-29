@@ -556,6 +556,34 @@ SELECT array_length(spaceBoxes(
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="trgeometry_bbox_decomposition">
+		<title>Bounding Boxes</title>
+
+		<para>These functions decompose a temporal rigid geometry into the bounding boxes or time spans of its segments or of a requested number of bins.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_stboxes">
+				<indexterm significance="normal"><primary><varname>stboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
+				<para>Return the array of spatiotemporal boxes or time spans of the segments of a temporal rigid geometry</para>
+				<para><varname>stboxes(trgeometry) → stbox[]</varname></para>
+				<para><varname>spans(trgeometry) → tstzspan[]</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_split_boxes">
+				<indexterm significance="normal"><primary><varname>splitNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitEachNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
+				<para>Return the spatiotemporal boxes or time spans of a temporal rigid geometry split into a given number of bins, or with a given number of segments per bin</para>
+				<para><varname>splitNStboxes(trgeometry, integer) → stbox[]</varname></para>
+				<para><varname>splitEachNStboxes(trgeometry, integer) → stbox[]</varname></para>
+				<para><varname>splitNSpans(trgeometry, integer) → tstzspan[]</varname></para>
+				<para><varname>splitEachNSpans(trgeometry, integer) → tstzspan[]</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="trgeometry_aggregations">
 		<title>Aggregations</title>
 

@@ -23,47 +23,39 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
 /**
  * @file
- * @brief Bounding box operators for temporal rigid geometries
+ * @brief Bounding box operations for temporal rigid geometries
  */
 
-#ifndef __TRGEO_BOXOPS_H__
-#define __TRGEO_BOXOPS_H__
+CREATE FUNCTION spans(trgeometry)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxes(trgeometry)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Trgeometry_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Postgres */
-#include <postgres.h>
-/* MEOS */
-#include "temporal/temporal.h"
-#include "geo/stbox.h"
-
-/*****************************************************************************/
-
-/* Functions computing the bounding box at the creation of the temporal rigid 
- * geometry */
-
-extern void trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst,
-  STBox *box);
-extern void trgeoinstarr_static_stbox(const GSERIALIZED *geom, 
-  TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_rotating_stbox(const GSERIALIZED *geom,
-  TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
-  TInstant **instants, int count, interpType interp, void *box);
-
-/* Functions decomposing a temporal rigid geometry into per-instant or
- * per-segment spatiotemporal boxes */
-
-extern STBox *trgeometry_stboxes(const Temporal *temp, int *count);
-extern STBox *trgeometry_split_n_stboxes(const Temporal *temp, int box_count,
-  int *count);
-extern STBox *trgeometry_split_each_n_stboxes(const Temporal *temp,
-  int elems_per_box, int *count);
+CREATE FUNCTION splitNSpans(trgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION splitEachNSpans(trgeometry, integer)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION splitNStboxes(trgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Trgeometry_split_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION splitEachNStboxes(trgeometry, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Trgeometry_split_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
-
-#endif /* __TRGEO_BOXOPS_H__ */
