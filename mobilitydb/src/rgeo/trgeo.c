@@ -420,7 +420,7 @@ PGDLLEXPORT Datum Trgeometry_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_conversion
- * @brief Convert a temporal rigid geometry into a temporal point 
+ * @brief Convert a temporal rigid geometry into a temporal point
  * @sqlfn tgeompoint()
  */
 Datum
@@ -428,6 +428,23 @@ Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = trgeometry_to_tpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_to_tgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_to_tgeometry);
+/**
+ * @ingroup mobilitydb_rgeo_conversion
+ * @brief Materialise the moving polygon of a temporal rigid geometry
+ * as a temporal geometry (one polygon per instant)
+ * @sqlfn tgeometry()
+ */
+Datum
+Trgeometry_to_tgeometry(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_to_tgeometry(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
