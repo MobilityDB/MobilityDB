@@ -4,6 +4,7 @@ add_library(pg_rgeo OBJECT
   trgeo_distance.c
   trgeo_geom_clip.c
   trgeo_spatialfuncs.c
+  trgeo_tile.c
   trgeo_spatialrels.c
   trgeo_vclip.c
   )

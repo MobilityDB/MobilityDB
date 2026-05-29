@@ -8,6 +8,7 @@ SET(LOCAL_FILES
   155_trgeo_tempspatialrels
   156_trgeo_topops
   157_trgeo_posops
+  158_trgeo_tile
   161_trgeo_distance
   161_trgeo_vclip
   162_trgeo_indexes

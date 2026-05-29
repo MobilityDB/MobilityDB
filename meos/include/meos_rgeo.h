@@ -101,9 +101,9 @@ extern GSERIALIZED *trgeometry_end_value(const Temporal *temp);
 extern GSERIALIZED *trgeometry_geom(const Temporal *temp);
 extern TInstant *trgeometry_instant_n(const Temporal *temp, int n);
 extern TInstant **trgeometry_instants(const Temporal *temp, int *count);
-extern Set *trgeometry_points(const Temporal *temp);
-extern Temporal *trgeometry_rotation(const Temporal *temp);
-extern TSequence **trgeometry_segments(const Temporal *temp, int *count);
+extern Set *trgeo_points(const Temporal *temp);
+extern Temporal *trgeo_rotation(const Temporal *temp);
+extern TSequence **trgeo_segments(const Temporal *temp, int *count);
 extern TSequence *trgeometry_sequence_n(const Temporal *temp, int i);
 extern TSequence **trgeometry_sequences(const Temporal *temp, int *count);
 extern TInstant *trgeometry_start_instant(const Temporal *temp);
@@ -111,6 +111,8 @@ extern TSequence *trgeometry_start_sequence(const Temporal *temp);
 extern GSERIALIZED *trgeometry_start_value(const Temporal *temp);
 extern bool trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED *trgeometry_traversed_area(const Temporal *temp, bool unary_union);
+extern STBox *trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count);
+extern STBox *trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
 
 /*****************************************************************************
  * Transformation functions
