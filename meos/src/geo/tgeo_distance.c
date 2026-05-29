@@ -994,7 +994,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /* Spatial-only distance between two STBoxes; ignores time entirely. */
-static double
+double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)
 {
   /* Spatial extents overlap → exact minimum is 0 (some pair of points

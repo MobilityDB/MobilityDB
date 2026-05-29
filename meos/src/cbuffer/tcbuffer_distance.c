@@ -40,7 +40,12 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/lifting.h"
+#include "temporal/tinstant.h"
+#include "temporal/tsequence.h"
+#include "temporal/tsequenceset.h"
+#include "geo/stbox.h"
 #include "geo/tgeo.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer.h"
@@ -1473,6 +1478,439 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
+}
+
+/*****************************************************************************
+ * Threshold-aware plane-sweep spatial-min kernel for tcbuffer
+ *
+ * Computes the exact minimum spatial distance between two temporal circular
+ * buffers without materialising either traversed area.  Walks segment pairs
+ * directly: for each pair of cbuffer-segments (A,r_A)->(B,r_B) and
+ * (C,r_C)->(D,r_D), the closed-form min over (s,t) in [0,1]^2 of
+ *   f(s,t) = |c1(s) - c2(t)| - r1(s) - r2(t)
+ * is the global min of nine candidates: 4 corners (s,t in {0,1}^2), 4 edge
+ * critical points (one per edge, root of a 1D quadratic), and 1 interior
+ * critical point (root of a quadratic in D=sqrt(h)).  Each candidate is O(1)
+ * arithmetic.  The plane-sweep sorts T2's expanded (radius-aware) segment
+ * boxes by minx once per pair and tightens the running threshold as it
+ * walks.  Returns the same value as
+ * `ST_Distance(traversedArea(temp1), traversedArea(temp2))` to liblwgeom
+ * numerical tolerance.
+ *****************************************************************************/
+
+typedef struct
+{
+  int idx;
+  float minx;
+  float maxx;
+  float miny;
+  float maxy;
+} CbufSegBox;
+
+static int
+cbufsegbox_cmp_minx(const void *a, const void *b)
+{
+  float da = ((const CbufSegBox *) a)->minx;
+  float db = ((const CbufSegBox *) b)->minx;
+  return (da < db) ? -1 : (da > db ? 1 : 0);
+}
+
+/* Append candidate value of f(s,t) on edge s=0 (in t) given:
+ *   e = |E|^2 with E = A - C
+ *   q = E . V
+ *   v = |V|^2
+ *   dr2 = r_D - r_C
+ *   r_sum = r_A + r_C  (radius offset at t=0)
+ * Computes the critical point of g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2
+ * via the quadratic v(v - dr2^2) t^2 - 2 q (v - dr2^2) t + (q^2 - dr2^2 e) = 0.
+ * Only v > dr2^2 yields a local minimum; the v == dr2^2 inflection case is
+ * skipped (covered by corners). */
+static void
+cbufsegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_sum,
+  double *best)
+{
+  double dr2sq = dr2 * dr2;
+  if (v <= dr2sq)
+    return;
+  double diff = v - dr2sq;
+  double aa = v * diff;
+  double bb = -2.0 * q * diff;
+  double cc = q * q - dr2sq * e;
+  double disc = bb * bb - 4.0 * aa * cc;
+  if (disc < 0.0)
+    return;
+  double sq = sqrt(disc);
+  for (int sign = -1; sign <= 1; sign += 2)
+  {
+    double t = (-bb + sign * sq) / (2.0 * aa);
+    if (t <= 0.0 || t >= 1.0)
+      continue;
+    double h = e - 2.0 * t * q + t * t * v;
+    /* h is the squared centerline distance at t.  h <= 0 means the centers
+     * coincide there, so the swept discs overlap and f is negative; do not
+     * skip it (skipping misses the true minimum), and skip the sign-
+     * consistency check which only qualifies a strictly-positive root. */
+    if (h > 0.0 && dr2 * (v * t - q) < 0.0)
+      continue;
+    double f = sqrt(h > 0.0 ? h : 0.0) - r_sum - t * dr2;
+    if (f < *best)
+      *best = f;
+  }
+}
+
+/* Append candidate value of f(s,t) on edge t=0 (in s) given:
+ *   e = |E|^2 with E = A - C
+ *   p = E . U
+ *   u = |U|^2
+ *   dr1 = r_B - r_A
+ *   r_sum = r_A + r_C
+ * Critical point of g(s) = sqrt(e + 2sp + s^2 u) - r_sum - s dr1, derivative
+ * (us + p)/sqrt(...) - dr1 = 0; analogous quadratic. */
+static void
+cbufsegm_edge_crit_in_s(double e, double p, double u, double dr1, double r_sum,
+  double *best)
+{
+  double dr1sq = dr1 * dr1;
+  if (u <= dr1sq)
+    return;
+  double diff = u - dr1sq;
+  double aa = u * diff;
+  double bb = 2.0 * p * diff;
+  double cc = p * p - dr1sq * e;
+  double disc = bb * bb - 4.0 * aa * cc;
+  if (disc < 0.0)
+    return;
+  double sq = sqrt(disc);
+  for (int sign = -1; sign <= 1; sign += 2)
+  {
+    double s = (-bb + sign * sq) / (2.0 * aa);
+    if (s <= 0.0 || s >= 1.0)
+      continue;
+    double h = e + 2.0 * s * p + s * s * u;
+    /* h <= 0 means centers coincide at s, swept discs overlap, f negative;
+     * keep it (skipping misses the minimum) and bypass the sign check. */
+    if (h > 0.0 && dr1 * (u * s + p) < 0.0)
+      continue;
+    double f = sqrt(h > 0.0 ? h : 0.0) - r_sum - s * dr1;
+    if (f < *best)
+      *best = f;
+  }
+}
+
+/* Exact min spatial distance between two cbuffer segments,
+ *   c1(s) = A + s(B-A), r1(s) = r_A + s(r_B - r_A), s in [0,1]
+ *   c2(t) = C + t(D-C), r2(t) = r_C + t(r_D - r_C), t in [0,1]
+ * Returns max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)),
+ * capped above at @p best_so_far (caller's running threshold).  The
+ * function never raises @p best_so_far above its input value.
+ */
+static double
+cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,
+  double rB, const POINT2D *C, double rC, const POINT2D *D, double rD,
+  double best_so_far)
+{
+  double Ux = B->x - A->x, Uy = B->y - A->y;
+  double Vx = D->x - C->x, Vy = D->y - C->y;
+  double Ex = A->x - C->x, Ey = A->y - C->y;
+  double u = Ux * Ux + Uy * Uy;
+  double v = Vx * Vx + Vy * Vy;
+  double w = Ux * Vx + Uy * Vy;
+  double e = Ex * Ex + Ey * Ey;
+  double p = Ex * Ux + Ey * Uy;
+  double q = Ex * Vx + Ey * Vy;
+  double dr1 = rB - rA;
+  double dr2 = rD - rC;
+  double r0 = rA + rC;
+  double best = best_so_far;
+
+  /* 4 corners.  |B-C|^2 = e + u + 2p; |A-D|^2 = e - 2q + v;
+   *             |B-D|^2 = e + u + v + 2p - 2q - 2w. */
+  double d;
+  d = sqrt(e) - rA - rC;
+  if (d < best) best = d;
+  d = sqrt(e + u + 2.0 * p) - rB - rC;
+  if (d < best) best = d;
+  {
+    double h01 = e - 2.0 * q + v;
+    if (h01 > 0.0) { d = sqrt(h01) - rA - rD; if (d < best) best = d; }
+    else           { d = -rA - rD;            if (d < best) best = d; }
+  }
+  {
+    double h11 = e + u + v + 2.0 * p - 2.0 * q - 2.0 * w;
+    if (h11 > 0.0) { d = sqrt(h11) - rB - rD; if (d < best) best = d; }
+    else           { d = -rB - rD;            if (d < best) best = d; }
+  }
+  if (best <= 0.0)
+    return 0.0;
+
+  /* 4 edges. */
+  if (v > 0.0)
+  {
+    /* Edge s=0: f(0,t) = sqrt(e - 2tq + t^2 v) - rA - rC - t dr2 */
+    cbufsegm_edge_crit_in_t(e, q, v, dr2, rA + rC, &best);
+    /* Edge s=1: substitute (E + U) for E.  |E+U|^2 = e + u + 2p,
+     * (E+U).V = q + w, radius at s=1 is rB. */
+    cbufsegm_edge_crit_in_t(e + u + 2.0 * p, q + w, v, dr2, rB + rC, &best);
+  }
+  if (u > 0.0)
+  {
+    /* Edge t=0: f(s,0) = sqrt(e + 2sp + s^2 u) - rA - rC - s dr1 */
+    cbufsegm_edge_crit_in_s(e, p, u, dr1, rA + rC, &best);
+    /* Edge t=1: substitute (E - V) for E.  |E-V|^2 = e + v - 2q,
+     * (E-V).U = p - w, radius at t=1 is rD. */
+    cbufsegm_edge_crit_in_s(e + v - 2.0 * q, p - w, u, dr1, rA + rD, &best);
+  }
+  if (best <= 0.0)
+    return 0.0;
+
+  /* Interior critical point: solve
+   *   [u  -w] [s]   [dr1 D - p]                 D = sqrt(h(s,t))
+   *   [-w  v] [t] = [dr2 D + q]
+   * giving s(D) = alpha + beta D, t(D) = gamma + delta D.  Substitute back
+   * into h(s,t) = D^2 to get a quadratic A D^2 + B D + C0 = 0.  Skip when
+   * the linear system is rank-deficient (parallel segments, det = 0);
+   * boundary candidates already cover that case. */
+  double det = u * v - w * w;
+  if (det > 0.0)
+  {
+    double alpha = (-v * p + w * q) / det;
+    double beta  = (v * dr1 + w * dr2) / det;
+    double gamma = (u * q - w * p) / det;
+    double delta = (u * dr2 + w * dr1) / det;
+
+    double Acoef = u * beta * beta + v * delta * delta
+                 - 2.0 * w * beta * delta - 1.0;
+    double Bcoef = 2.0 * (u * alpha * beta + v * gamma * delta
+                        + beta * p - delta * q
+                        - w * (alpha * delta + beta * gamma));
+    double Ccoef = e + u * alpha * alpha + v * gamma * gamma
+                 + 2.0 * alpha * p - 2.0 * gamma * q
+                 - 2.0 * w * alpha * gamma;
+
+    double Ds[2];
+    int nD = 0;
+    if (fabs(Acoef) < 1e-18)
+    {
+      if (fabs(Bcoef) > 1e-18)
+        Ds[nD++] = -Ccoef / Bcoef;
+    }
+    else
+    {
+      double disc = Bcoef * Bcoef - 4.0 * Acoef * Ccoef;
+      if (disc >= 0.0)
+      {
+        double sq = sqrt(disc);
+        Ds[nD++] = (-Bcoef + sq) / (2.0 * Acoef);
+        Ds[nD++] = (-Bcoef - sq) / (2.0 * Acoef);
+      }
+    }
+    for (int k = 0; k < nD; k++)
+    {
+      double Dval = Ds[k];
+      if (Dval < 0.0)
+        continue;
+      double s = alpha + beta * Dval;
+      double t = gamma + delta * Dval;
+      if (s <= 0.0 || s >= 1.0 || t <= 0.0 || t >= 1.0)
+        continue;
+      double f = Dval - r0 - s * dr1 - t * dr2;
+      if (f < best)
+        best = f;
+    }
+  }
+
+  return best > 0.0 ? best : 0.0;
+}
+
+/* Plane-sweep over two cbuffer sequences. */
+static double
+mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
+  const TSequence *seq2, double threshold)
+{
+  double best = threshold;
+
+  /* Build expanded (radius-aware) segment boxes for seq2 once, then plane-
+   * sweep seq1's segments against them.  Single-instant subsequences degrade
+   * to single points carrying the instant's radius, handled via the same
+   * kernel with degenerate segment (B == A, rB == rA). */
+  int n2_segs = seq2->count > 1 ? seq2->count - 1 : 1;
+  CbufSegBox *boxes2 = palloc(n2_segs * sizeof(CbufSegBox));
+  for (int j = 0; j < n2_segs; j++)
+  {
+    const Cbuffer *cb_a = DatumGetCbufferP(
+      tinstant_value_p(TSEQUENCE_INST_N(seq2, j)));
+    const Cbuffer *cb_b = (seq2->count > 1) ?
+      DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq2, j + 1))) :
+      cb_a;
+    const POINT2D *pa = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a));
+    const POINT2D *pb = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b));
+    double r_max = fmax(cb_a->radius, cb_b->radius);
+    boxes2[j].idx = j;
+    boxes2[j].minx = (float) (fmin(pa->x, pb->x) - r_max);
+    boxes2[j].maxx = (float) (fmax(pa->x, pb->x) + r_max);
+    boxes2[j].miny = (float) (fmin(pa->y, pb->y) - r_max);
+    boxes2[j].maxy = (float) (fmax(pa->y, pb->y) + r_max);
+  }
+  qsort(boxes2, n2_segs, sizeof(CbufSegBox), cbufsegbox_cmp_minx);
+
+  int n1_segs = seq1->count > 1 ? seq1->count - 1 : 1;
+  for (int i = 0; i < n1_segs; i++)
+  {
+    const Cbuffer *cb_a1 = DatumGetCbufferP(
+      tinstant_value_p(TSEQUENCE_INST_N(seq1, i)));
+    const Cbuffer *cb_b1 = (seq1->count > 1) ?
+      DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq1, i + 1))) :
+      cb_a1;
+    const POINT2D *pa1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a1));
+    const POINT2D *pb1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b1));
+    double r_max1 = fmax(cb_a1->radius, cb_b1->radius);
+    double s1_minx = fmin(pa1->x, pb1->x) - r_max1;
+    double s1_maxx = fmax(pa1->x, pb1->x) + r_max1;
+    double s1_miny = fmin(pa1->y, pb1->y) - r_max1;
+    double s1_maxy = fmax(pa1->y, pb1->y) + r_max1;
+    double thresh = best;
+    double hi_x = s1_maxx + thresh;
+    double lo_x = s1_minx - thresh;
+    int hi_idx;
+    {
+      int lo = 0, hi = n2_segs;
+      while (lo < hi)
+      {
+        int mid = (lo + hi) / 2;
+        if ((double) boxes2[mid].minx > hi_x) hi = mid;
+        else lo = mid + 1;
+      }
+      hi_idx = lo;
+    }
+    for (int k = 0; k < hi_idx; k++)
+    {
+      if ((double) boxes2[k].maxx < lo_x)
+        continue;
+      if ((double) boxes2[k].maxy < s1_miny - best)
+        continue;
+      if ((double) boxes2[k].miny > s1_maxy + best)
+        continue;
+      int j = boxes2[k].idx;
+      const Cbuffer *cb_a2 = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq2, j)));
+      const Cbuffer *cb_b2 = (seq2->count > 1) ?
+        DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq2, j + 1))) :
+        cb_a2;
+      const POINT2D *pa2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a2));
+      const POINT2D *pb2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b2));
+      double d = cbuffersegm_segm_mindist(pa1, cb_a1->radius, pb1, cb_b1->radius,
+        pa2, cb_a2->radius, pb2, cb_b2->radius, best);
+      if (d < best) best = d;
+      if (best == 0.0) { pfree(boxes2); return 0.0; }
+    }
+  }
+  pfree(boxes2);
+  return best;
+}
+
+/* Subtype dispatch. */
+static double
+mindist_tcbuffer_tcbuffer_threshold(const Temporal *temp1,
+  const Temporal *temp2, double threshold)
+{
+  if (temp1->subtype == TSEQUENCESET)
+  {
+    const TSequenceSet *ss1 = (const TSequenceSet *) temp1;
+    for (int i = 0; i < ss1->count; i++)
+    {
+      double d = mindist_tcbuffer_tcbuffer_threshold(
+        (const Temporal *) TSEQUENCESET_SEQ_N(ss1, i), temp2, threshold);
+      if (d < threshold) threshold = d;
+      if (threshold == 0.0) return 0.0;
+    }
+    return threshold;
+  }
+  if (temp2->subtype == TSEQUENCESET)
+  {
+    const TSequenceSet *ss2 = (const TSequenceSet *) temp2;
+    for (int i = 0; i < ss2->count; i++)
+    {
+      double d = mindist_tcbuffer_tcbuffer_threshold(temp1,
+        (const Temporal *) TSEQUENCESET_SEQ_N(ss2, i), threshold);
+      if (d < threshold) threshold = d;
+      if (threshold == 0.0) return 0.0;
+    }
+    return threshold;
+  }
+  if (temp1->subtype == TINSTANT)
+  {
+    TInstant *one[1] = { (TInstant *) temp1 };
+    TSequence *singleton = tsequence_make(one, 1, true, true, LINEAR,
+      NORMALIZE_NO);
+    double d;
+    if (temp2->subtype == TINSTANT)
+    {
+      TInstant *two[1] = { (TInstant *) temp2 };
+      TSequence *single2 = tsequence_make(two, 1, true, true, LINEAR,
+        NORMALIZE_NO);
+      d = mindist_tcbufferseq_tcbufferseq_threshold(singleton, single2,
+        threshold);
+      pfree(single2);
+    }
+    else
+    {
+      d = mindist_tcbufferseq_tcbufferseq_threshold(singleton,
+        (const TSequence *) temp2, threshold);
+    }
+    pfree(singleton);
+    return d;
+  }
+  if (temp2->subtype == TINSTANT)
+  {
+    TInstant *one[1] = { (TInstant *) temp2 };
+    TSequence *singleton = tsequence_make(one, 1, true, true, LINEAR,
+      NORMALIZE_NO);
+    double d = mindist_tcbufferseq_tcbufferseq_threshold(
+      (const TSequence *) temp1, singleton, threshold);
+    pfree(singleton);
+    return d;
+  }
+  return mindist_tcbufferseq_tcbufferseq_threshold(
+    (const TSequence *) temp1, (const TSequence *) temp2, threshold);
+}
+
+/**
+ * @ingroup meos_cbuffer_dist
+ * @brief Return the minimum spatial distance between two temporal circular
+ * buffers, capped at @p threshold
+ * @details Time-agnostic spatial minimum, equivalent to
+ * `ST_Distance(traversedArea(temp1), traversedArea(temp2))` and to the
+ * BerlinMOD Q5 semantics on the tgeompoint side.  Walks segment pairs
+ * via a closed-form per-pair kernel (corners + edge critical points +
+ * interior critical point of the unconstrained 2D minimisation), with
+ * STBox-pair pruning on the outer pair and radius-expanded segment-bbox
+ * pruning inside a plane sweep.  Neither traversed area is materialised.
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] threshold Running minimum from a calling aggregate; pass
+ *   @c DBL_MAX for unconditional evaluation
+ */
+double
+mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  double threshold)
+{
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return DBL_MAX;
+
+  /* Outer STBox prune.  The STBox of a tcbuffer encloses every point any
+   * disc visits, so the minimum spatial distance is bounded below by the
+   * spatial distance between the two STBoxes.  TINSTANT subtypes carry no
+   * precomputed bbox (temporal_bbox_ptr returns NULL) so the prune skips
+   * them; the per-pair kernel handles the instant case directly. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp1->flags) &&
+      temp1->subtype != TINSTANT && temp2->subtype != TINSTANT)
+  {
+    const STBox *bbox1 = (const STBox *) temporal_bbox_ptr(temp1);
+    const STBox *bbox2 = (const STBox *) temporal_bbox_ptr(temp2);
+    double bbox_dist = stbox_spatial_distance(bbox1, bbox2);
+    if (bbox_dist >= threshold)
+      return threshold;
+  }
+  return mindist_tcbuffer_tcbuffer_threshold(temp1, temp2, threshold);
 }
 
 /*****************************************************************************
