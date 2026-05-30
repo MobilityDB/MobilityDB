@@ -605,7 +605,7 @@ FROM test;
 			<listitem xml:id="tcbuffer_traversedArea">
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
 				<para>Return the area traversed by the temporal circular buffer</para>
-				<para><varname>traversedArea(tcbuffer) → geometry</varname></para>
+				<para><varname>traversedArea(tcbuffer, unary_union=false) → geometry</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
