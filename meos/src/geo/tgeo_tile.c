@@ -838,8 +838,8 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   int64 tunits = hast ? interval_units(duration) : 0;
   int32 srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
   int32 gs_srid = hasx ? gserialized_get_srid(sorigin) : SRID_UNKNOWN;
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
+  if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
+    return NULL;
   POINT3DZ pt, ptorig;
   if (hasx)
   {
