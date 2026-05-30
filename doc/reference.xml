@@ -2254,7 +2254,6 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
