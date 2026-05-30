@@ -517,6 +517,47 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tnpoint_modifications">
+		<title>Modificaciones</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Agregar un instante temporal o una secuencia temporal</para>
+				<para><varname>appendInstant(tnpoint,tnpointInst) → tnpoint</varname></para>
+				<para><varname>appendSequence(tnpoint,tnpointSeq) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendInstant(tnpoint 'Npoint(1, 0.1)@2001-01-01', 'Npoint(1, 0.2)@2001-01-02'));
+-- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.2)@2001-01-02 00:00:00+01]
+SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 0.2)@2001-01-02]'));
+-- {[NPoint(1,0.1)@2001-01-01 00:00:00+01], [NPoint(1,0.2)@2001-01-02 00:00:00+01]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Fusionar los puntos de red temporales</para>
+				<para><varname>merge(tnpoint,tnpoint) → tnpoint</varname></para>
+				<para><varname>merge(tnpoint[]) → tnpoint</varname></para>
+				<para><varname>mergeAgg(tnpoint) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
+  '[Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.5)@2001-01-05]'));
+-- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-05 00:00:00+01]
+SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.2)@2001-01-02]',
+  '[Npoint(1, 0.2)@2001-01-02, Npoint(1, 0.3)@2001-01-03]']));
+-- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.3)@2001-01-03 00:00:00+01]
+WITH temp(inst) AS (
+  SELECT tnpoint 'Npoint(1, 0.1)@2001-01-01' UNION
+  SELECT tnpoint 'Npoint(1, 0.2)@2001-01-02' UNION
+  SELECT tnpoint 'Npoint(1, 0.3)@2001-01-03' )
+SELECT asText(mergeAgg(inst)) FROM temp;
+-- {NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.2)@2001-01-02 00:00:00+01, NPoint(1,0.3)@2001-01-03 00:00:00+01}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tnpoint_restrictions">
 		<title>Restricciones</title>
 		<itemizedlist>
