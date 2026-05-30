@@ -733,13 +733,23 @@ struct SkipList
 };
 
 /**
- * @brief Enumeration for the relative position of a given element into a
- * skiplist
+ * @brief Skiplist mode discriminator
+ *
+ * SKIPLIST_TEMPORAL is the legacy mode used by every production aggregate
+ * (temporal_aggfuncs.c, tgeo_aggfuncs.c, tnpoint_aggfuncs.c); elements are
+ * Temporal* values and merging routes through tsequence_tagg.
+ *
+ * SKIPLIST_KEYVALUE is the (key, value)-pair mode used by MEOS-direct
+ * streaming consumers (see meos/examples/ais_expand_skiplist.c). The
+ * supported pattern is search-then-splice-on-miss with caller-managed
+ * in-place mutation via the user-supplied merge_fn. The batch-merge code
+ * path inside keyval_skiplist_merge is unvalidated and contains known
+ * correctness bugs.
  */
 typedef enum
 {
-  TEMPORAL,
-  KEYVALUE
+  SKIPLIST_TEMPORAL,
+  SKIPLIST_KEYVALUE
 } SkipListType;
 
 /*****************************************************************************
