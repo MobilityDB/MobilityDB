@@ -1797,34 +1797,46 @@ extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
  *****************************************************************************/
 
 extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbool_tand_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbool_tor_combinefn(SkipList *state1, SkipList *state2);
 extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
 extern SkipList *temporal_merge_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *temporal_merge_combinefn(SkipList *state1, SkipList *state2);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *temporal_tcount_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tmax_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tfloat_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tmin_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tfloat_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tsum_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tfloat_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tfloat_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tfloat_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *timestamptz_tcount_transfn(SkipList *state, TimestampTz t);
 extern SkipList *tint_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tmax_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tint_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tmin_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tsum_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tnumber_tavg_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tnumber_wavg_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tstzset_tcount_transfn(SkipList *state, const Set *s);
 extern SkipList *tstzspan_tcount_transfn(SkipList *state, const Span *s);
 extern SkipList *tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss);
 extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *ttext_tmax_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *ttext_tmin_combinefn(SkipList *state1, SkipList *state2);
 
 /*****************************************************************************
  * Analytics functions for temporal types
