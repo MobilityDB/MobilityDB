@@ -77,7 +77,7 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
-  Datum trav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
+  Datum trav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
   Datum result;
   if (numparam == 2)
   {
@@ -116,7 +116,7 @@ spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum dgeo = PointerGetDatum(gs);
-  Datum dtrav = PointerGetDatum(trgeo_traversed_area(temp, UNARY_UNION_NO));
+  Datum dtrav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
   Datum result;
   if (numparam == 2)
   {
@@ -154,7 +154,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
     geom_contains(gs, trav);
   pfree(trav);
@@ -171,7 +171,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Acontains_geo_trgeo()
+ * @csqlfn #Acontains_geo_trgeometry()
  */
 inline int
 econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -189,7 +189,7 @@ econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Acontains_geo_trgeo()
+ * @csqlfn #Acontains_geo_trgeometry()
  */
 inline int
 acontains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -237,7 +237,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Ecovers_geo_trgeo()
+ * @csqlfn #Ecovers_geo_trgeometry()
  */
 inline int
 ecovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -255,7 +255,7 @@ ecovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Acovers_geo_trgeo()
+ * @csqlfn #Acovers_geo_trgeometry()
  */
 inline int
 acovers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
@@ -301,7 +301,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Ecovers_trgeo_geo()
+ * @csqlfn #Ecovers_trgeometry_geo()
  */
 inline int
 ecovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -319,7 +319,7 @@ ecovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Acovers_trgeo_geo()
+ * @csqlfn #Acovers_trgeometry_geo()
  */
 inline int
 acovers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -356,7 +356,7 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * disjoint, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
- * @csqlfn #Edisjoint_trgeo_geo()
+ * @csqlfn #Edisjoint_trgeometry_geo()
  */
 inline int
 edisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -371,7 +371,7 @@ edisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
- * @csqlfn #Adisjoint_trgeo_geo()
+ * @csqlfn #Adisjoint_trgeometry_geo()
  */
 inline int
 adisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -385,7 +385,7 @@ adisjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return 1 if the temporal rigid geometries are ever disjoint, 0 if not,
  * and -1 on error or if the temporal rigid geometries do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Edisjoint_trgeo_trgeo()
+ * @csqlfn #Edisjoint_trgeometry_trgeometry()
  */
 inline int
 edisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
@@ -399,7 +399,7 @@ edisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * not, and -1 on error or if the temporal rigid geometries do not intersect
  * in time
  * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Adisjoint_trgeo_trgeo()
+ * @csqlfn #Adisjoint_trgeometry_trgeometry()
  */
 inline int
 adisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
@@ -419,7 +419,7 @@ adisjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
- * @csqlfn #Eintersects_trgeo_geo()
+ * @csqlfn #Eintersects_trgeometry_geo()
  */
 inline int
 eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -435,7 +435,7 @@ eintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @note aIntersects(trgeo, gs) is equivalent to NOT eDisjoint(trgeo, gs)
- * @csqlfn #Aintersects_trgeo_geo()
+ * @csqlfn #Aintersects_trgeometry_geo()
  */
 inline int
 aintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -449,7 +449,7 @@ aintersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return 1 if the temporal rigid geometries ever intersect, 0 if not,
  * and -1 on error or if the temporal rigid geometries do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Eintersects_trgeo_trgeo()
+ * @csqlfn #Eintersects_trgeometry_trgeometry()
  */
 inline int
 eintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
@@ -462,7 +462,7 @@ eintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return 1 if the temporal rigid geometries always intersect, 0 if not,
  * and -1 on error or if the temporal rigid geometries do not intersect in time
  * @param[in] temp1,temp2 Temporal rigid geometries
- * @csqlfn #Aintersects_trgeo_trgeo()
+ * @csqlfn #Aintersects_trgeometry_trgeometry()
  */
 inline int
 aintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
@@ -482,7 +482,7 @@ aintersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
- * @csqlfn #Etouches_trgeo_geo()
+ * @csqlfn #Etouches_trgeometry_geo()
  */
 int
 etouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -500,7 +500,7 @@ etouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     return 0;
 
   datum_func2 func = geo_intersects_fn_geo(temp->flags, gs->gflags);
-  GSERIALIZED *trav = trgeo_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
   GSERIALIZED *geobound = geom_boundary(gs);
   bool result = false;
   if (geobound && ! gserialized_is_empty(geobound))
@@ -526,7 +526,7 @@ etouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
- * @csqlfn #Atouches_trgeo_geo()
+ * @csqlfn #Atouches_trgeometry_geo()
  */
 int
 atouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -547,7 +547,7 @@ atouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool result = false;
   if (geobound && ! gserialized_is_empty(geobound))
   {
-    // TODO trgeo_minus_geom(temp, geobound, NULL);
+    // TODO trgeometry_minus_geom(temp, geobound, NULL);
     Temporal *temp1 = (Temporal *) temp;
     result = (temp1 == NULL);
     if (temp1)
@@ -588,7 +588,7 @@ edwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #Adwithin_trgeo_geo()
+ * @csqlfn #Adwithin_trgeometry_geo()
  */
 int
 adwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -810,7 +810,7 @@ ea_dwithin_trgeo_trgeo_sync(const Temporal *sync1, const Temporal *sync2,
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #EA_dwithin_trgeo_trgeo()
+ * @csqlfn #EA_dwithin_trgeometry_trgeometry()
  */
 int
 ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
@@ -840,7 +840,7 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
  * on time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
- * @csqlfn #EA_dwithin_trgeo_trgeo()
+ * @csqlfn #EA_dwithin_trgeometry_trgeometry()
  */
 inline int
 edwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
@@ -855,7 +855,7 @@ edwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)
  * intersect on time
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
- * @csqlfn #Adwithin_trgeo_trgeo()
+ * @csqlfn #Adwithin_trgeometry_trgeometry()
  */
 inline int
 adwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, double dist)

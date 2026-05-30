@@ -168,7 +168,7 @@ trgeo_from_mfjson(const char *mfjson)
  * @param[in] temp Temporal rigid geometry
  */
 char *
-trgeo_out(const Temporal *temp)
+trgeometry_out(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -249,7 +249,7 @@ trgeo_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_to_tpose(const Temporal *temp)
+trgeometry_to_tpose(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -272,7 +272,7 @@ trgeo_to_tpose(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_to_tpoint(const Temporal *temp)
+trgeometry_to_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -314,7 +314,7 @@ trgeo_geom_p(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 GSERIALIZED *
-trgeo_geom(const Temporal *temp)
+trgeometry_geom(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -397,7 +397,7 @@ geo_tposeseqset_to_trgeo(const GSERIALIZED *gs, const TSequenceSet *ss)
  * @param[in] temp Temporal pose
  */
 Temporal *
-geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
+geo_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -444,7 +444,7 @@ geom_apply_pose(const GSERIALIZED *gs, const Pose *pose)
  * @csqlfn #Trgeometry_start_value()
  */
 GSERIALIZED *
-trgeo_start_value(const Temporal *temp)
+trgeometry_start_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -472,7 +472,7 @@ trgeo_start_value(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 GSERIALIZED *
-trgeo_end_value(const Temporal *temp)
+trgeometry_end_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -509,7 +509,7 @@ trgeo_end_value(const Temporal *temp)
  * @csqlfn #Trgeometry_value_n()
  */
 bool
-trgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
+trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(result, false);
@@ -572,7 +572,7 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @csqlfn #Temporal_start_instant()
  */
 TInstant *
-trgeo_start_instant(const Temporal *temp)
+trgeometry_start_instant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -592,7 +592,7 @@ trgeo_start_instant(const Temporal *temp)
  * @csqlfn #Temporal_end_instant()
  */
 TInstant *
-trgeo_end_instant(const Temporal *temp)
+trgeometry_end_instant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -613,7 +613,7 @@ trgeo_end_instant(const Temporal *temp)
  * @csqlfn #Temporal_instant_n()
  */
 TInstant *
-trgeo_instant_n(const Temporal *temp, int n)
+trgeometry_instant_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -638,7 +638,7 @@ trgeo_instant_n(const Temporal *temp, int n)
  * @csqlfn #Temporal_instants()
  */
 TInstant **
-trgeo_instants(const Temporal *temp, int *count)
+trgeometry_instants(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
@@ -665,7 +665,7 @@ trgeo_instants(const Temporal *temp, int *count)
  * @csqlfn #Temporal_start_sequence()
  */
 TSequence *
-trgeo_start_sequence(const Temporal *temp)
+trgeometry_start_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -689,7 +689,7 @@ trgeo_start_sequence(const Temporal *temp)
  * @csqlfn #Temporal_end_sequence()
  */
 TSequence *
-trgeo_end_sequence(const Temporal *temp)
+trgeometry_end_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
 
@@ -715,7 +715,7 @@ trgeo_end_sequence(const Temporal *temp)
  * @csqlfn #Temporal_sequence_n()
  */
 TSequence *
-trgeo_sequence_n(const Temporal *temp, int n)
+trgeometry_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
 
@@ -750,7 +750,7 @@ trgeo_sequence_n(const Temporal *temp, int n)
  * @csqlfn #Temporal_sequences()
  */
 TSequence **
-trgeo_sequences(const Temporal *temp, int *count)
+trgeometry_sequences(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
 
@@ -783,7 +783,7 @@ trgeo_sequences(const Temporal *temp, int *count)
  * @csqlfn #Temporal_round()
  */
 Temporal *
-trgeo_round(const Temporal *temp, int maxdd)
+trgeometry_round(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
 
@@ -791,10 +791,10 @@ trgeo_round(const Temporal *temp, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   GSERIALIZED *res_geo = geo_round(trgeo_geom_p(temp), maxdd);
   Temporal *res_tpose = temporal_round(tpose, maxdd);
-  Temporal *result = geo_tpose_to_trgeo(res_geo, res_tpose);
+  Temporal *result = geo_tpose_to_trgeometry(res_geo, res_tpose);
   pfree(tpose); pfree(res_geo); pfree(res_tpose);
   return result;
 }
@@ -808,7 +808,7 @@ trgeo_round(const Temporal *temp, int maxdd)
  * @csqlfn #Trgeometry_to_tinstant()
  */
 TInstant *
-trgeo_to_tinstant(const Temporal *temp)
+trgeometry_to_tinstant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
 
@@ -851,7 +851,7 @@ trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
     else
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *res = temporal_tsequence(tpose, interp);
   TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -882,7 +882,7 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
     if (interp == INTERP_NONE || interp == DISCRETE)
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   TSequenceSet *res = temporal_tsequenceset(tpose, interp);
   TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -899,17 +899,17 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-trgeo_set_interp(const Temporal *temp, interpType interp)
+trgeometry_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_set_interp(tpose, interp);
   if (! res)
     return NULL;
   /* We need to explicitly set the temporal type to T_TPOSE */
   res->temptype = T_TPOSE;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
   return result;
 }
@@ -930,7 +930,7 @@ trgeo_set_interp(const Temporal *temp, interpType interp)
  * @csqlfn #Temporal_restrict_value()
  */
 Temporal *
-trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
+trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -938,7 +938,7 @@ trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   Temporal *res = temporal_restrict_value(temp, value, atfunc);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -953,7 +953,7 @@ trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 Temporal *
 trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_AT);
+  return trgeometry_restrict_value(temp, PointerGetDatum(gs), REST_AT);
 }
 
 /**
@@ -966,7 +966,7 @@ trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
+  return trgeometry_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -981,14 +981,14 @@ trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
  * @csqlfn #Temporal_restrict_values()
  */
 Temporal *
-trgeo_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
+trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_GEOMSET(s, NULL); 
   Temporal *res = temporal_restrict_values(temp, s, atfunc);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1003,7 +1003,7 @@ trgeo_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 inline Temporal *
 trgeo_at_values(const Temporal *temp, const Set *s)
 {
-  return trgeo_restrict_values(temp, s, REST_AT);
+  return trgeometry_restrict_values(temp, s, REST_AT);
 }
 
 /**
@@ -1017,7 +1017,7 @@ trgeo_at_values(const Temporal *temp, const Set *s)
 inline Temporal *
 trgeo_minus_values(const Temporal *temp, const Set *s)
 {
-  return trgeo_restrict_values(temp, s, REST_MINUS);
+  return trgeometry_restrict_values(temp, s, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -1032,17 +1032,17 @@ trgeo_minus_values(const Temporal *temp, const Set *s)
  * @csqlfn #Temporal_restrict_timestamptz()
  */
 Temporal *
-trgeo_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_restrict_timestamptz(tpose, t, atfunc);
   pfree(tpose); 
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1057,7 +1057,7 @@ trgeo_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 inline Temporal *
 trgeo_at_timestamptz(const Temporal *temp, TimestampTz t)
 {
-  return trgeo_restrict_timestamptz(temp, t, REST_AT);
+  return trgeometry_restrict_timestamptz(temp, t, REST_AT);
 }
 
 /**
@@ -1071,7 +1071,7 @@ trgeo_at_timestamptz(const Temporal *temp, TimestampTz t)
 inline Temporal *
 trgeo_minus_timestamptz(const Temporal *temp, TimestampTz t)
 {
-  return trgeo_restrict_timestamptz(temp, t, REST_MINUS);
+  return trgeometry_restrict_timestamptz(temp, t, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -1086,16 +1086,16 @@ trgeo_minus_timestamptz(const Temporal *temp, TimestampTz t)
  * @csqlfn #Temporal_restrict_tstzset()
  */
 Temporal *
-trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
+trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzset(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1110,7 +1110,7 @@ trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 inline Temporal *
 trgeo_at_tstzset(const Temporal *temp, const Set *s)
 {
-  return trgeo_restrict_tstzset(temp, s, REST_AT);
+  return trgeometry_restrict_tstzset(temp, s, REST_AT);
 }
 
 /**
@@ -1124,7 +1124,7 @@ trgeo_at_tstzset(const Temporal *temp, const Set *s)
 inline Temporal *
 trgeo_minus_tstzset(const Temporal *temp, const Set *s)
 {
-  return trgeo_restrict_tstzset(temp, s, REST_MINUS);
+  return trgeometry_restrict_tstzset(temp, s, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -1139,16 +1139,16 @@ trgeo_minus_tstzset(const Temporal *temp, const Set *s)
  * @csqlfn #Temporal_restrict_tstzspan()
  */
 Temporal *
-trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
+trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspan(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1163,7 +1163,7 @@ trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 inline Temporal *
 trgeo_at_tstzspan(const Temporal *temp, const Span *s)
 {
-  return trgeo_restrict_tstzspan(temp, s, REST_AT);
+  return trgeometry_restrict_tstzspan(temp, s, REST_AT);
 }
 
 /**
@@ -1177,7 +1177,7 @@ trgeo_at_tstzspan(const Temporal *temp, const Span *s)
 inline Temporal *
 trgeo_minus_tstzspan(const Temporal *temp, const Span *s)
 {
-  return trgeo_restrict_tstzspan(temp, s, REST_MINUS);
+  return trgeometry_restrict_tstzspan(temp, s, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -1192,17 +1192,17 @@ trgeo_minus_tstzspan(const Temporal *temp, const Span *s)
  * @csqlfn #Temporal_restrict_tstzspanset()
  */
 Temporal *
-trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
+trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspanset(tpose, ss, atfunc);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1217,7 +1217,7 @@ trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 inline Temporal *
 trgeo_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
-  return trgeo_restrict_tstzspanset(temp, ss, REST_AT);
+  return trgeometry_restrict_tstzspanset(temp, ss, REST_AT);
 }
 
 /**
@@ -1231,7 +1231,7 @@ trgeo_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 inline Temporal *
 trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
-  return trgeo_restrict_tstzspanset(temp, ss, REST_MINUS);
+  return trgeometry_restrict_tstzspanset(temp, ss, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -1247,17 +1247,17 @@ trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
  * @csqlfn #Temporal_before_timestamptz()
  */
 Temporal *
-trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_before_timestamptz(tpose, t, atfunc);
   pfree(tpose); 
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1273,17 +1273,17 @@ trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @csqlfn #Temporal_after_timestamptz()
  */
 Temporal *
-trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
+trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_after_timestamptz(tpose, t, atfunc);
   pfree(tpose); 
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1311,7 +1311,7 @@ trgeo_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @endcode
  */
 Temporal *
-trgeo_append_tinstant(Temporal *temp, const TInstant *inst, 
+trgeometry_append_tinstant(Temporal *temp, const TInstant *inst, 
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure the validity of the arguments */
@@ -1320,14 +1320,14 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
     return NULL;
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   TInstant *tpose_inst = trgeoinst_tposeinst(inst);
   Temporal *res = temporal_append_tinstant(tpose, tpose_inst, interp, maxdist,
     maxt, expand);
   if (! res)
     return NULL;
   
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_inst);
   return result;
 }
@@ -1341,7 +1341,7 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
  * @csqlfn #Temporal_append_tsequence()
  */
 Temporal *
-trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
+trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
@@ -1351,12 +1351,12 @@ trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;
 
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
   Temporal *res = temporal_append_tsequence(tpose, tpose_seq, expand);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_seq);
   return result;
 }
@@ -1369,16 +1369,16 @@ trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
  * @csqlfn #Temporal_delete_timestamptz
  */
 Temporal *
-trgeo_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
+trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_delete_timestamptz(tpose, t, connect);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1394,16 +1394,16 @@ trgeo_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
  * @csqlfn #Temporal_delete_tstzset()
  */
 Temporal *
-trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
+trgeometry_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_delete_tstzset(tpose, s, connect);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1418,16 +1418,16 @@ trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
  * @csqlfn #Temporal_delete_tstzspan()
  */
 Temporal *
-trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
+trgeometry_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspan(tpose, s, connect);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1442,17 +1442,17 @@ trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
  * @csqlfn #Temporal_delete_tstzspanset()
  */
 Temporal *
-trgeo_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
+trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_to_tpose(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspanset(tpose, ss, connect);
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }

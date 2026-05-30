@@ -59,7 +59,7 @@ inline Datum
 Trgeometry_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = trgeo_traversed_area(temp);
+  GSERIALIZED *result = trgeometry_traversed_area(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
