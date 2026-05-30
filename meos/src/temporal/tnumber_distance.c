@@ -161,8 +161,8 @@ tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_temp = (! lfinfo.reslinear || basetype == T_INT4) ? NULL :
-    &tfloat_distance_turnpt;
+  lfinfo.tpfn_temp = (! lfinfo.reslinear || basetype == T_INT4 ||
+    basetype == T_INT8) ? NULL : &tfloat_distance_turnpt;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
