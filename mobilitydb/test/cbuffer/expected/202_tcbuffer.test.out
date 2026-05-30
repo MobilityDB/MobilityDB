@@ -550,6 +550,12 @@ SELECT tempSubtype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
  Instant
 (1 row)
 
+SELECT tempBasetype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ tempbasetype 
+--------------
+ cbuffer
+(1 row)
+
 SELECT tempSubtype(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
  tempsubtype 
 -------------

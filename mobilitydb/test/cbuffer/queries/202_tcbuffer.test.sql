@@ -189,6 +189,7 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1)
 -------------------------------------------------------------------------------
 
 SELECT tempSubtype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+SELECT tempBasetype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
 SELECT tempSubtype(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
 SELECT tempSubtype(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
 SELECT tempSubtype(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');

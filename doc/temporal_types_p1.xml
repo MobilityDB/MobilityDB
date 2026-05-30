@@ -838,6 +838,18 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_tempBasetype">
+				<indexterm significance="normal"><primary><varname>tempBasetype</varname></primary></indexterm>
+				<para>Return the base type</para>
+				<para><varname>tempBasetype(ttype) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tempBasetype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
+-- int4
+SELECT tempBasetype(tgeompoint 'Point(1 1)@2001-01-01');
+-- geometry
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_interp">
 				<indexterm significance="normal"><primary><varname>interpolation</varname></primary></indexterm>
 				<para>Return the interpolation</para>

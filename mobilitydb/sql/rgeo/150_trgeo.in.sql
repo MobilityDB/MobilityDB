@@ -237,6 +237,10 @@ CREATE FUNCTION tempSubtype(trgeometry)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(trgeometry)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION interp(trgeometry)
   RETURNS text

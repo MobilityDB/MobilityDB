@@ -1802,6 +1802,20 @@ temporal_subtype(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the string representation of the base type of a temporal value
+ * @param[in] temp Temporal value
+ * @csqlfn #Temporal_basetype_name()
+ */
+const char *
+temporal_basetype_name(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return meostype_name(temptype_basetype(temp->temptype));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value
  * @param[in] temp Temporal value

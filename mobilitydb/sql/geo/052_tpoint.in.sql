@@ -320,9 +320,17 @@ CREATE FUNCTION tempSubtype(tgeompoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(tgeompoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tempSubtype(tgeogpoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(tgeogpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION interp(tgeompoint)
