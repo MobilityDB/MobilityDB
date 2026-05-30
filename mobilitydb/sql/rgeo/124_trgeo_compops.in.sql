@@ -38,12 +38,12 @@
 
 CREATE FUNCTION ever_eq(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ever_eq_geo_trgeometry'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Always_eq_geo_trgeometry'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -62,11 +62,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ever_ne_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(geometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Always_ne_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -86,12 +86,12 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION ever_eq(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Ever_eq_trgeometry_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Always_eq_trgeometry_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -110,11 +110,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Ever_ne_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(trgeometry, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Always_ne_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -134,12 +134,12 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION ever_eq(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ever_eq_trgeometry_trgeometry'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Always_eq_trgeometry_trgeometry'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -158,11 +158,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Ever_ne_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(trgeometry, trgeometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_trgeo_trgeo'
+  AS 'MODULE_PATHNAME', 'Always_ne_trgeometry_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -184,11 +184,11 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION temporal_teq(geometry, trgeometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Teq_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(trgeometry, geometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Teq_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(trgeometry, trgeometry)
   RETURNS tbool
@@ -217,11 +217,11 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION temporal_tne(geometry, trgeometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tne_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(trgeometry, geometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tne_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(trgeometry, trgeometry)
   RETURNS tbool
