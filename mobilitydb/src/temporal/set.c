@@ -953,3 +953,22 @@ Set_hash_extended(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Set_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Round-trip a set through the Arrow C Data Interface, returning the
+ * reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Set_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = meos_set_arrow_roundtrip(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+/*****************************************************************************/

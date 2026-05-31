@@ -20,6 +20,7 @@ engines:
       - "postgres/**"
       - "pgtypes/**"
       - "arrow/**"
+      - "nanoarrow/**"
     config:
       languages:
         - "c"
@@ -28,5 +29,6 @@ exclude_paths:
   - "postgres/**"
   - "pgtypes/**"
   - "arrow/**"
+  - "nanoarrow/**"
   - "meos/test/**"
   - "meos/examples/**"
