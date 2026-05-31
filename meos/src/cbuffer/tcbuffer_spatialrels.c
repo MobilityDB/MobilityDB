@@ -44,6 +44,7 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
@@ -154,6 +155,66 @@ spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  *****************************************************************************/
 
 /**
+ * @brief Return the 2D distance between two axis-aligned bounding boxes,
+ * 0 when they overlap
+ */
+static double
+box2d_distance(double axmin, double aymin, double axmax, double aymax,
+  double bxmin, double bymin, double bxmax, double bymax)
+{
+  double dx = fmax(fmax(axmin - bxmax, bxmin - axmax), 0.0);
+  double dy = fmax(fmax(aymin - bymax, bymin - aymax), 0.0);
+  return sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * @brief Set the 2D bounding box of the circular buffer value of a temporal
+ * instant (the buffer centre expanded by its radius)
+ */
+static void
+tcbufferinst_xybox(const TInstant *inst, double *xmin, double *ymin,
+  double *xmax, double *ymax)
+{
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  double r = cb->radius;
+  *xmin = p->x - r; *xmax = p->x + r;
+  *ymin = p->y - r; *ymax = p->y + r;
+}
+
+/**
+ * @brief Decide a per-segment spatial relationship from bounding boxes alone
+ * @details When the swept-capsule box of a segment is disjoint from the
+ * geometry box, the two geometries are disjoint, so every supported
+ * predicate has a constant result and the swept area need not be built. For
+ * `dwithin` the result is only decided when the boxes are farther apart than
+ * the distance. Returns true and sets @p result when the predicate is
+ * decided, false when the segment must be evaluated exactly.
+ */
+static bool
+tcbuffer_geo_box_decided(varfunc func, Datum param, int numparam,
+  double sxmin, double symin, double sxmax, double symax,
+  double gxmin, double gymin, double gxmax, double gymax, int *result)
+{
+  double bd = box2d_distance(sxmin, symin, sxmax, symax, gxmin, gymin,
+    gxmax, gymax);
+  if (func == (varfunc) (&datum_geom_dwithin2d) && numparam == 3)
+  {
+    if (bd > DatumGetFloat8(param))
+    {
+      *result = 0;
+      return true;
+    }
+    return false;
+  }
+  if (bd <= 0.0)
+    return false;
+  /* The segment box and the geometry are disjoint */
+  *result = (func == (varfunc) (&datum_geom_disjoint2d)) ? 1 : 0;
+  return true;
+}
+
+/**
  * @brief Return 1 if a temporal circular buffer instant and a geometry 
  * ever/always satisfy a spatial relationship
  * @param[in] inst Temporal instant
@@ -170,6 +231,14 @@ ea_spatialrel_tcbufferinst_geo(const TInstant *inst, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
   assert(inst); assert(gs); assert(inst->temptype == T_TCBUFFER);
+  STBox gbox;
+  geo_set_stbox(gs, &gbox);
+  double ixmin, iymin, ixmax, iymax;
+  tcbufferinst_xybox(inst, &ixmin, &iymin, &ixmax, &iymax);
+  int decided;
+  if (tcbuffer_geo_box_decided(func, param, numparam, ixmin, iymin, ixmax,
+      iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &decided))
+    return decided;
   const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
   GSERIALIZED *trav = cbuffer_to_geom(cb);
   int result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
@@ -196,16 +265,26 @@ ea_spatialrel_tcbufferseq_discstep_geo(const TSequence *seq,
   assert(seq); assert(gs); assert(seq->temptype == T_TCBUFFER);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE ||
     MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  STBox gbox;
+  geo_set_stbox(gs, &gbox);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
-    GSERIALIZED *trav = cbuffer_to_geom(cb);
-    bool result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
-    pfree(trav);
-    if (result && ever)
+    double ixmin, iymin, ixmax, iymax;
+    tcbufferinst_xybox(inst, &ixmin, &iymin, &ixmax, &iymax);
+    int result;
+    if (! tcbuffer_geo_box_decided(func, param, numparam, ixmin, iymin,
+        ixmax, iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &result))
+    {
+      const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+      GSERIALIZED *trav = cbuffer_to_geom(cb);
+      result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert) ?
+        1 : 0;
+      pfree(trav);
+    }
+    if (result == 1 && ever)
       return 1;
-    else if (! result && ! ever)
+    else if (result != 1 && ! ever)
       return 0;
   }
   return ever ? 0 : 1;
@@ -235,14 +314,30 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
     return ea_spatialrel_tcbufferinst_geo(TSEQUENCE_INST_N(seq, 0), gs,
       param, func, numparam, invert);
 
-  /* General case */
+  /* General case (segment from the first instant to each later instant,
+   * matching the exact baseline traversal) */
+  STBox gbox;
+  geo_set_stbox(gs, &gbox);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  double b1xmin, b1ymin, b1xmax, b1ymax;
+  tcbufferinst_xybox(inst1, &b1xmin, &b1ymin, &b1xmax, &b1ymax);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    GSERIALIZED *trav = tcbuffersegm_traversed_area(inst1, inst2);
-    int result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
-    pfree(trav);
+    double b2xmin, b2ymin, b2xmax, b2ymax;
+    tcbufferinst_xybox(inst2, &b2xmin, &b2ymin, &b2xmax, &b2ymax);
+    /* The swept capsule of a linearly moving, linearly resized disk is
+     * contained in the union of the two endpoint disk boxes */
+    double sxmin = fmin(b1xmin, b2xmin), symin = fmin(b1ymin, b2ymin);
+    double sxmax = fmax(b1xmax, b2xmax), symax = fmax(b1ymax, b2ymax);
+    int result;
+    if (! tcbuffer_geo_box_decided(func, param, numparam, sxmin, symin,
+        sxmax, symax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &result))
+    {
+      GSERIALIZED *trav = tcbuffersegm_traversed_area(inst1, inst2);
+      result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
+      pfree(trav);
+    }
     if (result == 1 && ever)
       return 1;
     else if (result != 1 && ! ever)
@@ -329,15 +424,17 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
-  /* Bounding box test */ 
-  if (func != (varfunc) (&datum_geom_disjoint2d))
+  /* Bounding box test. When the whole value box and the geometry box do
+   * not overlap the temporal value is disjoint from the geometry at every
+   * instant, so a non-disjoint relationship is always false and disjoint
+   * is always true. */
   {
     STBox box1, box2;
     tspatial_set_stbox(temp, &box1);
     /* Non-empty geometries have a bounding box */
     geo_set_stbox(gs, &box2);
     if (! overlaps_stbox_stbox(&box1, &box2))
-      return 0;
+      return (func == (varfunc) (&datum_geom_disjoint2d)) ? 1 : 0;
   }
 
   assert(temptype_subtype(temp->subtype));
@@ -1501,8 +1598,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
-  lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = false;
+  lfinfo.restype = T_TFLOAT;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
