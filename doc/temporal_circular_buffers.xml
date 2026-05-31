@@ -24,6 +24,8 @@
 		</mediaobject>
 		</figure>
 
+	<para>Operational guidance on choosing between <varname>tcbuffer</varname> and <varname>tgeompoint</varname>; the 2D-only-by-design constraint (PostGIS curve linearisation, GEOS 2D-only consumption); the numerical hazards production workloads should anticipate (zero-radius degeneracy, negative-radius rejection, turning-point timestamp clamping, NAD failure sentinel); and the durability, storage, extent, and aggregation conventions are collected in <xref linkend="cbuffer_production_guidance"/>.</para>
+
 	<sect1 xml:id="static_circular_buffers">
 		<title>Static Circular Buffers</title>
 
@@ -1103,6 +1105,62 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</listitem>
 		</itemizedlist>
 		<para>These operators work on bounding boxes, not the entire values.</para>
+	</sect1>
+
+	<sect1 xml:id="cbuffer_production_guidance">
+		<title>Production guidance</title>
+		<para>This section captures the operational knowledge production workloads need on top of the function reference: when <varname>cbuffer</varname> / <varname>tcbuffer</varname> are the right type, why the implementation is 2D-only, and the numerical hazards that bite radar-tracking and uncertainty-aware workloads. Most of these are surfaced separately throughout the chapter; the goal here is one place a new contributor can read end-to-end before instrumenting an application.</para>
+
+		<sect2 xml:id="cbuffer_when_to_use">
+			<title>When to use tcbuffer vs tgeompoint</title>
+			<para>A <varname>tgeompoint</varname> is, for the purposes of this comparison, a <varname>tcbuffer</varname> with a fixed zero radius. Use <varname>tgeompoint</varname> when only the trajectory of a body's <emphasis>position</emphasis> matters and any uncertainty / footprint is either irrelevant or carried out-of-band &#x2014; vehicle GPS tracks, animal movement, AIS feeds.</para>
+			<para>Use <varname>tcbuffer</varname> when the <emphasis>radius</emphasis> &#x2014; an uncertainty halo, a physical footprint, or a coverage extent &#x2014; is part of the value and varies along the trajectory. Canonical workloads are radar tracks with per-instant uncertainty halos, vehicle exclusion zones whose size depends on speed, and sensor coverage cones reduced to a moving disk. Storing radius alongside position lets every spatial predicate (intersects, contains, dwithin, distance) and every temporal aggregate (extent, atSpace) take the radius into account in a single pass, which a separate <varname>tgeompoint</varname> + radius column cannot do.</para>
+			<para>The position component of a <varname>tcbuffer</varname> is recoverable as a <varname>tgeompoint</varname> via the standard cast; consequently a single <varname>tcbuffer</varname> column subsumes a <varname>tgeompoint</varname> column when both are needed and the storage cost (an extra 8-byte radius per instant) is acceptable.</para>
+		</sect2>
+
+		<sect2 xml:id="cbuffer_2d_only">
+			<title>2D-only by design</title>
+			<para>Circular buffers are intentionally 2D-only. The constructor (<varname>cbuffer_make</varname>) rejects any input geometry carrying a Z coordinate, and the MFJSON parser rejects any payload whose <varname>"point"</varname> array carries a third element. Two layers in the underlying spatial pipeline make 3D unworkable:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>PostGIS curve linearisation</emphasis>. The spatial-predicate path goes through <varname>cbuffer_to_geom</varname> &#x2192; <varname>geocircle_make</varname> &#x2192; <varname>lwcircle_make</varname> &#x2192; <varname>lwcircstring_from_lwpointarray</varname>, producing a <varname>CIRCULARSTRING</varname> wrapped in a <varname>CURVEPOLYGON</varname>. Before any topological predicate runs, PostGIS linearises the curve to straight segments (<varname>postgis/liblwgeom/lwgeom_geos.c:420-426</varname>) because the downstream consumer is GEOS.</para></listitem>
+				<listitem><para><emphasis>GEOS is 2D-only</emphasis>. <varname>ST_Contains</varname>, <varname>ST_Intersects</varname>, and the other topological predicates ultimately call into GEOS, which silently drops the Z coordinate when consuming a 3D geometry. Even if a 3D <varname>CIRCULARSTRING</varname> survived the WKT round-trip, every predicate would degrade to its 2D projection.</para></listitem>
+			</itemizedlist>
+			<para>Extending <varname>tcbuffer</varname> to 3D would therefore require either a native 3D engine (rather than GEOS) or different primitives entirely (a sphere, or a capped cylinder for swept volumes), neither of which is in scope for the current type. The 2D rejection at construction time is deliberate: a silent drop would be worse than a clear error.</para>
+		</sect2>
+
+		<sect2 xml:id="cbuffer_hazards">
+			<title>Numerical hazards</title>
+			<para>Four hazards reliably bite real radar-tracking and uncertainty-aware workloads. The implementation mitigates each as follows:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Zero-radius degeneracy</emphasis>. A circular buffer with <varname>radius = 0</varname> is geometrically a point. Naive area / perimeter / containment kernels can divide by zero or produce empty intersections.</para>
+					<para><emphasis>Mitigation</emphasis>: zero-radius is treated as a first-class case at the constructor (<varname>cbuffer.c</varname>) and in every distance / spatial-predicate kernel. <varname>geom_to_cbuffer</varname> on a plain <varname>POINT</varname> produces a zero-radius <varname>cbuffer</varname>; the round-trip through <varname>cbuffer_to_geom</varname> returns the original point geometry, not a degenerate <varname>CURVEPOLYGON</varname>.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Negative-radius rejection</emphasis>. A negative radius is meaningless and would silently produce wrong-side results in containment checks.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>cbuffer_make</varname> rejects <varname>radius &lt; 0</varname> at construction, and the same check is applied at the WKT / WKB / MFJSON parser entries so corrupt input data fails loudly rather than poisoning a downstream query.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Turning-point timestamp clamping</emphasis>. The closed-form solver in <varname>cbuffersegm_distance_turnpt</varname> can return zero-crossing roots that lie exactly on the segment's lower or upper bound, which violates the open-interval assumption the caller relies on.</para>
+					<para><emphasis>Mitigation</emphasis>: the zero-crossing branch now uses strict <varname>(lower, upper)</varname> membership rather than the historical inclusive comparison, so boundary-coincident roots are dropped and the calling segment's own endpoints are taken as the distance-touch witnesses.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>NAD failure sentinel</emphasis>. The nearest-approach-distance function family historically returned <varname>-1.0</varname> on failure (e.g., empty or invalid input), but the PG-side wrappers were already written against the <varname>DBL_MAX</varname> sentinel that the rest of the temporal-types stack uses, so genuine failures were silently coerced into a finite result.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>nad_tcbuffer_*</varname> now returns <varname>DBL_MAX</varname> on error, matching the wrapper's expectation. Callers checking for failure must compare against <varname>DBL_MAX</varname>, not against any negative sentinel.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="cbuffer_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of a <varname>cbuffer</varname> is the position point followed by the 8-byte radius. The byte layout is stable: <varname>asBinary(cbuffer)</varname> / <varname>cbufferFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit, and the WKB / EWKB / HexEWKB serialisations follow the standard PostGIS endian-flag-then-payload pattern. The <varname>asMFJSON(tcbuffer)</varname> / <varname>tcbufferFromMFJSON(text)</varname> pair is now bidirectional, so MovingFeatures-JSON is a viable interchange format on equal footing with WKB.</para>
+			<para>The <varname>pg_dump</varname> output of a table containing <varname>cbuffer</varname> or <varname>tcbuffer</varname> columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable.</para>
+		</sect2>
+
+		<sect2 xml:id="cbuffer_extent_aggregation">
+			<title>Extent and aggregation</title>
+			<para>The <varname>extent(tcbuffer)</varname> aggregate returns the spatiotemporal <varname>STBox</varname> covering every disk in the input, padded by each instant's radius. It is polymorphic with the <varname>extent</varname> aggregates on the other spatial temporal types, so a single query can compute one bounding box across a heterogeneous set of <varname>tgeompoint</varname>, <varname>tgeometry</varname>, and <varname>tcbuffer</varname> columns.</para>
+		</sect2>
 	</sect1>
 </chapter>
 
