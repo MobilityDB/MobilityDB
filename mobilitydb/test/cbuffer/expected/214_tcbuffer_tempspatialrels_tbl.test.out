@@ -28,6 +28,12 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tContains(t1.temp, t
    102
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tContains(g, temp) ?= true <> eContains(g, temp);
+ count 
+-------
+  3275
+(1 row)
+
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE tContains(cb, temp) ?= true <> eContains(cb, temp);
  count 
 -------
@@ -50,6 +56,12 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tCovers(t1.temp, t2.
  count 
 -------
    102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tCovers(g, temp) ?= true <> eCovers(g, temp);
+ count 
+-------
+  3275
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDisjoint(g, temp) IS NOT NULL;
