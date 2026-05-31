@@ -496,6 +496,103 @@ tgeompoint_to_tnpoint(const Temporal *temp)
  * Accessor functions
  *****************************************************************************/
 
+#if MEOS
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the start value of a temporal network point
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_start_value()
+ */
+Npoint *
+tnpoint_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  return DatumGetNpointP(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the end value of a temporal network point
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_end_value()
+ */
+Npoint *
+tnpoint_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  return DatumGetNpointP(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the n-th value of a temporal network point
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tnpoint_value_n(const Temporal *temp, int n, Npoint **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetNpointP(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return the array of copies of base values of a temporal network point
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+Npoint **
+tnpoint_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  Npoint **result = palloc(sizeof(Npoint *) * *count);
+  for (int i = 0; i < *count; i++)
+  {
+    const Npoint *np = DatumGetNpointP(datumarr[i]);
+    result[i] = npoint_make(np->rid, np->pos);
+  }
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return the value of a temporal network point at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tnpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+  Npoint **value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(value, false); VALIDATE_TNPOINT(temp, false);
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetNpointP(res);
+  return result;
+}
+#endif /* MEOS */
+
 /**
  * @brief Return the network segments covered by the temporal network point
  */
