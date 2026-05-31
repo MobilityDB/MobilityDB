@@ -351,4 +351,260 @@ SELECT temporalTime(atStbox(
 			</listitem>
 		</itemizedlist>
 	</sect1>
+
+	<sect1 xml:id="trgeometry_distance">
+		<title>Distance Operations</title>
+
+		<para>Distance between a trgeometry and a geometry / pose / spatiotemporal box / another trgeometry is computed on the <emphasis>materialised</emphasis> geometry — the reference shape rotated and translated according to the pose. Distance is exact at every shared timestamp; for sequence inputs an adaptive recursive bisection emits intermediate marks where the distance trajectory deviates from a straight line.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_tdistance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tdistance</varname></primary></indexterm>
+				<para>Return the temporal distance between two trgeometries</para>
+				<para><varname>{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat</varname></para>
+				<para><varname>tdistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(maxValue(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
+-- 4
+
+SELECT asText(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+-- [1@2001-01-01 ..., 9@2001-01-02 ...]
+</programlisting>
+				<para>The dispatcher covers every subtype combination — TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asymmetric, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. The adaptive sub-sampling kernel underlies every continuous combo; instant combos materialise once. Pure-translation segments converge at depth 0 (two endpoint marks); rotation-heavy segments emit up to 32 marks per inter-instant gap. The bound on the LINEAR-interpolated approximation between marks is <varname>1e-3</varname> by construction.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_nad">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+				<para>Return the smallest distance between two trgeometries over their shared time domain</para>
+				<para><varname>{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float</varname></para>
+				<para><varname>nearestApproachDistance({geometry,trgeometry,stbox}, {geometry,trgeometry,stbox}) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'
+       |=|
+       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01, Pose(Point(50 0), 0.0)@2001-01-02]';
+-- 39
+</programlisting>
+				<para>The <varname>|=|</varname> operator can be used for nearest-neighbour searches against GiST or SP-GiST indexes (see <xref linkend="trgeometry_indexing"/>).</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_nai">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Return the instant at which the two arguments are at their smallest mutual distance</para>
+				<para><varname>nearestApproachInstant({geometry,trgeometry}, {geometry,trgeometry}) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+  geometry 'Point(5 5)'));
+-- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00+00
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Return the line connecting the two arguments at their nearest approach</para>
+				<para><varname>shortestLine({geometry,trgeometry}, {geometry,trgeometry}) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  geometry 'Point(10 0)'));
+-- LINESTRING(1 0,10 0)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_comparisons">
+		<title>Comparisons</title>
+
+		<para>Equality and ever / always operators compare two trgeometries on the materialised geometry — both the reference shape and the pose path must agree at every shared instant.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_eq">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<para>Test exact (in)equality of two trgeometries</para>
+				<para><varname>trgeometry = trgeometry → boolean</varname></para>
+				<para><varname>trgeometry &lt;&gt; trgeometry → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_evereq">
+				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+				<para>Test whether the materialised geometry is ever (not) equal to the operand at any time</para>
+				<para><varname>{geometry,trgeometry} ?= {geometry,trgeometry} → boolean</varname></para>
+				<para><varname>{geometry,trgeometry} ?&lt;&gt; {geometry,trgeometry} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]'
+       ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_alwayseq">
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+				<para>Test whether the materialised geometry is always (not) equal to the operand</para>
+				<para><varname>{geometry,trgeometry} %= {geometry,trgeometry} → boolean</varname></para>
+				<para><varname>{geometry,trgeometry} %&lt;&gt; {geometry,trgeometry} → boolean</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_bbox_ops">
+		<title>Bounding-Box Operators</title>
+
+		<para>Topological and position operators compare the spatiotemporal bounding boxes of the operands; both can be a <varname>trgeometry</varname>, an <varname>stbox</varname>, a <varname>geometry</varname>, or a <varname>tstzspan</varname>.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_topops">
+				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+				<para>Standard topological operators on bounding boxes</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'
+       &amp;&amp;
+       stbox 'STBOX X((5, -1), (15, 1))';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_posops">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<para>Spatial and temporal position operators</para>
+				<para>The full set <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname> all accept <varname>trgeometry</varname> on either side.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_aggregations">
+		<title>Aggregations</title>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_tcount">
+				<indexterm significance="normal"><primary><varname>tcount</varname></primary></indexterm>
+				<para>Number of overlapping trgeometries at each instant — equivalent to <varname>tcount</varname> on the underlying tpose</para>
+				<para><varname>tcount(trgeometry) → tint</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Aggregate bounding box of a column of trgeometries</para>
+				<para><varname>extent(trgeometry) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM tbl_trgeometry;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Combine two trgeometries with the same reference geometry into a single sequence-set</para>
+				<para><varname>merge(trgeometry, trgeometry) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_indexing">
+		<title>Indexing</title>
+
+		<para>Three index types are available on <varname>trgeometry</varname> columns. Each uses the spatiotemporal bounding box of the materialised geometry and supports topological, position, and KNN distance queries.</para>
+
+		<itemizedlist>
+			<listitem><para><varname>GIST(temp)</varname> — R-tree GiST.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_quadtree_ops)</varname> — quad-tree SP-GiST.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_kdtree_ops)</varname> — kd-tree SP-GiST.</para></listitem>
+		</itemizedlist>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX tbl_trgeometry_gist_idx
+  ON tbl_trgeometry
+  USING GIST(temp);
+
+-- topological lookup
+SELECT count(*) FROM tbl_trgeometry
+WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02])';
+
+-- KNN (ordered scan)
+SELECT mmsi
+FROM tbl_trgeometry
+ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01'
+LIMIT 10;
+</programlisting>
+
+		<para>The kd-tree variant typically wins on workloads dominated by KNN queries with a tight ordering bound; the quad-tree variant is more uniform. The R-tree GiST is the safe default for mixed read/write workloads.</para>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_production_guidance">
+		<title>Production guidance</title>
+		<para>This section captures the operational knowledge production workloads need on top of the function reference: when <varname>trgeometry</varname> is the right type relative to its neighbours (<varname>tpose</varname> and <varname>tgeometry</varname>), the frame conventions the implementation enforces, and the numerical hazards real rigid-body workloads hit. Most of these are surfaced separately throughout the chapter; the goal here is one place a new contributor can read end-to-end before instrumenting an application.</para>
+
+		<sect2 xml:id="trgeometry_when_to_use">
+			<title>When to use trgeometry vs tpose vs tgeometry</title>
+			<para>Three temporal types span the rigid-body / arbitrary-shape design space. Pick the narrowest type that fits the workload — narrower types pay less storage and produce sharper bounding boxes for the spatial index.</para>
+			<itemizedlist>
+				<listitem><para><varname>tpose</varname> — temporal position and orientation only; the body is treated as a point with a heading. Use when the shape is irrelevant to the query (kinematic tracking, heading-only collision proxies).</para></listitem>
+				<listitem><para><varname>trgeometry</varname> — a single static reference shape that translates and rotates over time per a temporal pose. Use when the shape <emphasis>matters</emphasis> but is rigid: ships, vehicles, drones with fixed geometry, body-conforming exclusion zones. The reference geometry is stored once per row, not per instant, so storage is dominated by the underlying <varname>tpose</varname>.</para></listitem>
+				<listitem><para><varname>tgeometry</varname> — temporal arbitrary geometry whose shape itself varies over time. Use when the shape is non-rigid: storm wind swaths, expanding plumes, evolving polygons.</para></listitem>
+			</itemizedlist>
+			<para>A <varname>trgeometry</varname> can be projected to its underlying <varname>tpose</varname> (centroid trajectory) or to a fully-materialised <varname>tgeometry</varname> via the conversions in <xref linkend="trgeometry_conversions"/>. The reverse direction (lifting a <varname>tgeometry</varname> back to a <varname>trgeometry</varname>) is not generally well-defined since arbitrary shape changes do not factor cleanly into rotation + translation of a fixed reference.</para>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_frame_conventions">
+			<title>Frame conventions</title>
+			<itemizedlist>
+				<listitem><para><emphasis>2D-only reference geometry</emphasis>. The reference shape is a 2D polygon or polyhedral surface; the pose's rotation component is the 2D yaw angle from <xref linkend="temporal_poses"/>. There is no 3D rigid-body representation in this type — workloads needing full 3D orientation (quaternion) on a 3D shape should compose <varname>tpose</varname> with the materialisation step explicitly.</para></listitem>
+				<listitem><para><emphasis>Single shared reference geometry</emphasis>. Every instant of a <varname>trgeometry</varname> shares the same reference shape; only the pose varies. The shape is stored once per row, not per instant.</para></listitem>
+				<listitem><para><emphasis>Same-SRID requirement</emphasis>. The reference geometry and the temporal pose must share an SRID; the constructor rejects mismatches with the standard MEOS <varname>ensure_same_srid</varname> error. The materialised geometry inherits this SRID.</para></listitem>
+				<listitem><para><emphasis>Centroid-based spatial-restriction semantics</emphasis>. <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname>, and <varname>minusStbox</varname> test the centroid of the materialised shape against the region — not the materialised shape itself. A trgeometry whose centroid lies outside a region but whose body extends into the region is <emphasis>excluded</emphasis>. This mirrors the underlying <varname>tpose</varname> semantics (a pose is a point) and is a deliberate design choice; workloads needing whole-shape containment must materialise to <varname>tgeometry</varname> first.</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_hazards">
+			<title>Numerical hazards</title>
+			<para>Four hazards reliably bite real rigid-body workloads. The implementation mitigates each as follows:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Mixed-SRID inputs</emphasis>. Constructing a <varname>trgeometry</varname> from a reference geometry and a <varname>tpose</varname> in different SRIDs would silently produce wrong materialised positions if the SRIDs were not checked.</para>
+					<para><emphasis>Mitigation</emphasis>: the constructor and every cross-type operator route through <varname>ensure_same_srid</varname>, which raises an error naming both SRIDs. The error path is loud and explicit; there is no implicit transform.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>traversedArea sampling caveat</emphasis>. The <varname>traversedArea</varname> function samples at the input instants and connects them with the convex hull of the two endpoint polygons. Pure-translation segments are exact, but inter-instant rotations are approximated — for a 90° rotation between two instants, the swept ribbon is wider than the convex hull captures.</para>
+					<para><emphasis>Mitigation</emphasis>: documented in <xref linkend="trgeometry_traversed_area"/>. Workloads needing tight swept-area bounds must up-sample the input <varname>tpose</varname> before constructing the <varname>trgeometry</varname>; the <varname>setInterp</varname> + sub-instant insertion pattern from the <varname>tpose</varname> chapter is the standard approach. Adaptive sub-sampling within <varname>traversedArea</varname> is a documented future refinement.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Adaptive sub-sampling tolerance in materialised distance</emphasis>. Continuous-distance kernels (<varname>tdistance</varname>, <varname>nearestApproachDistance</varname>) materialise the rigid shape per inter-instant gap and emit intermediate marks where the distance trajectory deviates from a straight line. The depth-cap is 32 marks per gap and the LINEAR-interpolated approximation between marks is bounded by <varname>1e-3</varname> (in CRS units).</para>
+					<para><emphasis>Mitigation</emphasis>: the <varname>1e-3</varname> bound is a documented design choice. Pure-translation segments converge at depth 0; rotation-heavy segments use the full 32-mark budget. Workloads that need sharper precision on a specific operator should pre-process the input poses to denser instants rather than rely on tighter recursion.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Centroid-based spatial restriction surprise</emphasis>. <varname>atGeometry(trgeometry, geometry)</varname> tests the pose centroid against the region, not the materialised shape. A long ship whose stern is in a harbour but whose bow has crossed the harbour boundary will be reported as inside the harbour as long as its centroid is inside.</para>
+					<para><emphasis>Mitigation</emphasis>: documented as a tier-D design choice in <xref linkend="trgeometry_restrictions"/>. Workloads needing whole-shape semantics must convert via <varname>trgeometry::tgeometry</varname> before applying the spatial restriction. The conversion materialises one polygon per instant and is correspondingly more expensive.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_durability">
+			<title>Durability and storage</title>
+			<para>The on-disk representation of a <varname>trgeometry</varname> is the reference <varname>GSERIALIZED</varname> followed by the temporal-pose payload. The byte layout is stable: <varname>asBinary(trgeometry)</varname> / <varname>trgeometryFromBinary(bytea)</varname> round-trip preserves the value bit-for-bit (including the reference shape's SRID, Z and M flags, and the underlying <varname>tpose</varname> subtype), and the WKB / EWKB / HexEWKB serialisations follow the standard PostGIS endian-flag-then-payload pattern.</para>
+			<para>The <varname>asMFJSON(trgeometry)</varname> / <varname>trgeometryFromMFJSON(text)</varname> pair is bidirectional. Each instant renders as <varname>{"geometry":&lt;reference-geojson&gt;,"values":[&lt;pose-payload&gt;]}</varname>: the reference geometry uses the standard PostGIS GeoJSON shape and the pose payload follows the OGC GeoPose Basic-YPR conformance class layout (<varname>{"position":...,"quaternion":...}</varname> for 3D / <varname>{"position":...,"rotation":...}</varname> for 2D). The reference geometry is emitted once per instant in the current schema; future schema work could elevate it to a chapter-level header to avoid the per-instant repetition for long sequences.</para>
+			<para>The <varname>pg_dump</varname> output of a table containing <varname>trgeometry</varname> columns uses the WKT representation by default; <varname>pg_dump --binary-upgrade</varname> uses the WKB representation. Both are round-trip-stable across PostgreSQL major-version upgrades.</para>
+		</sect2>
+	</sect1>
 </chapter>
