@@ -42,7 +42,7 @@ DROP TABLE tbl_pose2d_tmp;
 -- Accessing values
 -------------------------------------------------------------------------------
 
-SELECT ST_AsEWKT(MAX(point(pose)), 6) FROM tbl_pose2d;
+SELECT MAX(ST_X(point(pose))) FROM tbl_pose2d;
 SELECT MAX(rotation(pose)) FROM tbl_pose2d;
 
 -------------------------------------------------------------------------------
