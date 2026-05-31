@@ -807,6 +807,9 @@ extern bool right_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2
 extern int acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern int acovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
