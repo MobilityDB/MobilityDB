@@ -242,6 +242,10 @@ extern char *tnpoint_out(const Temporal *temp, int maxdd);
  *****************************************************************************/
 
 extern TInstant *tnpointinst_make(const Npoint *np, TimestampTz t);
+extern Temporal *tnpoint_from_base_temp(const Npoint *np, const Temporal *temp);
+extern TSequence *tnpointseq_from_base_tstzset(const Npoint *np, const Set *s);
+extern TSequence *tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s, interpType interp);
+extern TSequenceSet *tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************
  * Conversion functions

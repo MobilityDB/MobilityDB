@@ -255,7 +255,7 @@ tpose_from_mfjson(const char *mfjson)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TInstant *
-tposeinst_make(const TInstant *inst1, const TInstant *inst2)
+tpointfloat_to_tposeinst(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
@@ -288,7 +288,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   /* Instantaneous sequence */
   if (seq1->count == 1)
   {
-    TInstant *inst = tposeinst_make(inst1, inst2);
+    TInstant *inst = tpointfloat_to_tposeinst(inst1, inst2);
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
@@ -300,7 +300,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   {
     inst1 = TSEQUENCE_INST_N(seq1, i);
     inst2 = TSEQUENCE_INST_N(seq2, i);
-    instants[i] = tposeinst_make(inst1, inst2);
+    instants[i] = tpointfloat_to_tposeinst(inst1, inst2);
   }
   TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
@@ -374,7 +374,7 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tposeinst_make((TInstant *) sync1,
+      result = (Temporal *) tpointfloat_to_tposeinst((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
@@ -387,6 +387,85 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   }
   pfree(sync1); pfree(sync2);
   return result;
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose instant from a pose and a timestamptz
+ * @param[in] pose Value
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tposeinst_make(const Pose *pose, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  return tinstant_make(PointerGetDatum(pose), T_TPOSE, t);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose from a pose and the time frame of another
+ * temporal value
+ * @param[in] pose Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tpose_from_base_temp(const Pose *pose, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(pose), T_TPOSE, temp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose discrete sequence from a pose and a
+ * timestamptz set
+ * @param[in] pose Value
+ * @param[in] s Set
+ */
+TSequence *
+tposeseq_from_base_tstzset(const Pose *pose, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(pose), T_TPOSE, s);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence from a pose and a timestamptz span
+ * @param[in] pose Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(pose), T_TPOSE, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence set from a pose and a timestamptz
+ * span set
+ * @param[in] pose Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(pose), T_TPOSE,
+    ss, interp);
 }
 
 /*****************************************************************************

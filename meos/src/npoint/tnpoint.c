@@ -302,6 +302,72 @@ tnpointinst_make(const Npoint *np, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(np), T_TNPOINT, t);
 }
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point from a network point and the time
+ * frame of another temporal value
+ * @param[in] np Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tnpoint_from_base_temp(const Npoint *np, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(np), T_TNPOINT, temp);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point discrete sequence from a network
+ * point and a timestamptz set
+ * @param[in] np Value
+ * @param[in] s Set
+ */
+TSequence *
+tnpointseq_from_base_tstzset(const Npoint *np, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(np), T_TNPOINT, s);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point sequence from a network point and a
+ * timestamptz span
+ * @param[in] np Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(np), T_TNPOINT, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point sequence set from a network point and
+ * a timestamptz span set
+ * @param[in] np Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(np), T_TNPOINT,
+    ss, interp);
+}
 #endif /* MEOS */
 
 /*****************************************************************************
