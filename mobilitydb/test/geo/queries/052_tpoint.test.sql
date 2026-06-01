@@ -1309,6 +1309,14 @@ SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[
 SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
 SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
 SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+-- Delete a span/spanset covering an entire composing sequence of a sequence set
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(3 3)@2000-01-04, Point(4 4)@2000-01-05]}', tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(3 3)@2000-01-04, Point(4 4)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02],[Point(3.5 3.5)@2000-01-04, Point(4.5 4.5)@2000-01-05]}', tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02],[Point(3.5 3.5)@2000-01-04, Point(4.5 4.5)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+-- Delete a whole MIDDLE composing sequence: the surviving outer sequences stay disjoint (no bridge across the pre-existing gaps)
+SELECT asText(deleteTime(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02],[Point(3 3)@2000-01-04, Point(4 4)@2000-01-05],[Point(6 6)@2000-01-07, Point(7 7)@2000-01-08]}', tstzspan '[2000-01-04, 2000-01-05]'));
+SELECT asText(deleteTime(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02],[Point(3 3)@2000-01-04, Point(4 4)@2000-01-05],[Point(6 6)@2000-01-07, Point(7 7)@2000-01-08]}', tstzspanset '{[2000-01-04, 2000-01-05]}'));
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing
