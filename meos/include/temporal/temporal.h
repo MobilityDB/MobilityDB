@@ -68,11 +68,6 @@
 #define MEOS_FP_GT(A, B) (((A) - MEOS_EPSILON) > (B))
 #define MEOS_FP_GE(A, B) (((A) + MEOS_EPSILON) >= (B))
 
-/**
- * Precision for distance operations
- */
-#define DIST_EPSILON    1.0e-06
-
 #define UNUSED          __attribute__((unused))
 
 /** Symbolic constants for lifting */
