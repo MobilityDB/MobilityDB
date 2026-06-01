@@ -529,3 +529,18 @@ SELECT eDwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1
 SELECT eDwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
+-- Crossing-value synchronization with non-coincident time spans: two trips
+-- that never meet must report eIntersects false / aDisjoint true even when one
+-- time span strictly contains the other
+SELECT eIntersects(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+SELECT aDisjoint(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+-- A genuine coincidence over the common time is still detected
+SELECT eIntersects(
+  tgeompoint '[Point(5 5)@2000-01-01, Point(5 5)@2000-01-02]',
+  tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-03]');
+
+-------------------------------------------------------------------------------

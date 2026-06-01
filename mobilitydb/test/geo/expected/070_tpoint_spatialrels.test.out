@@ -2087,3 +2087,27 @@ SELECT eDwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1
 ERROR:  Operation on mixed SRID
 SELECT eDwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID
+SELECT eIntersects(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT aDisjoint(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(
+  tgeompoint '[Point(5 5)@2000-01-01, Point(5 5)@2000-01-02]',
+  tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
