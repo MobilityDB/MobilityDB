@@ -782,4 +782,164 @@ Adwithin_tgeo_tgeo(PG_FUNCTION_ARGS)
   return EA_dwithin_tgeo_tgeo(fcinfo, ALWAYS);
 }
 
+/*****************************************************************************
+ * Set-set spatial join
+ *****************************************************************************/
+
+/**
+ * @brief State carried across the calls of a set-set spatial-join SRF
+ */
+typedef struct
+{
+  int *pairs;        /**< Flattened (i, j) index pairs, length 2 * max_calls */
+  SpanSet **periods; /**< Per-pair spansets for tDwithinPairs, NULL otherwise */
+} TgeoarrJoinState;
+
+PGDLLEXPORT Datum Edwithin_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Edwithin_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geos that are ever
+ * within a distance
+ * @sqlfn eDwithinPairs()
+ */
+Datum
+Edwithin_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
+    ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
+    double dist = PG_GETARG_FLOAT8(2);
+    int count1, count2, npairs = 0;
+    Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
+    Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
+    TgeoarrJoinState *state = palloc0(sizeof(TgeoarrJoinState));
+    state->pairs = edwithin_tgeoarr_tgeoarr((const Temporal **) arr1, count1,
+      (const Temporal **) arr2, count2, dist, &npairs);
+    pfree(arr1); pfree(arr2);
+    PG_FREE_IF_COPY(array1, 0); PG_FREE_IF_COPY(array2, 1);
+    funcctx->user_fctx = state;
+    funcctx->max_calls = npairs;
+    get_call_result_type(fcinfo, NULL, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+  funcctx = SRF_PERCALL_SETUP();
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+  TgeoarrJoinState *state = funcctx->user_fctx;
+  int k = funcctx->call_cntr;
+  Datum values[2];
+  bool isnull[2] = {false, false};
+  /* The kernel returns 0-based indexes into the input arrays; expose them as
+   * 1-based positions to match the SQL array convention */
+  values[0] = Int32GetDatum(state->pairs[2 * k] + 1);
+  values[1] = Int32GetDatum(state->pairs[2 * k + 1] + 1);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+PGDLLEXPORT Datum Tdwithin_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geos that are ever
+ * within a distance together with the periods during which they are
+ * @sqlfn tDwithinPairs()
+ */
+Datum
+Tdwithin_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
+    ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
+    double dist = PG_GETARG_FLOAT8(2);
+    int count1, count2, npairs = 0;
+    Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
+    Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
+    TgeoarrJoinState *state = palloc0(sizeof(TgeoarrJoinState));
+    state->pairs = tdwithin_tgeoarr_tgeoarr((const Temporal **) arr1, count1,
+      (const Temporal **) arr2, count2, dist, &npairs, &state->periods);
+    pfree(arr1); pfree(arr2);
+    PG_FREE_IF_COPY(array1, 0); PG_FREE_IF_COPY(array2, 1);
+    funcctx->user_fctx = state;
+    funcctx->max_calls = npairs;
+    get_call_result_type(fcinfo, NULL, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+  funcctx = SRF_PERCALL_SETUP();
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+  TgeoarrJoinState *state = funcctx->user_fctx;
+  int k = funcctx->call_cntr;
+  Datum values[3];
+  bool isnull[3] = {false, false, false};
+  /* The kernel returns 0-based indexes into the input arrays; expose them as
+   * 1-based positions to match the SQL array convention */
+  values[0] = Int32GetDatum(state->pairs[2 * k] + 1);
+  values[1] = Int32GetDatum(state->pairs[2 * k + 1] + 1);
+  values[2] = PointerGetDatum(state->periods[k]);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
+PGDLLEXPORT Datum Adisjoint_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adisjoint_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geos that are always
+ * disjoint
+ * @sqlfn aDisjointPairs()
+ */
+Datum
+Adisjoint_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  if (SRF_IS_FIRSTCALL())
+  {
+    funcctx = SRF_FIRSTCALL_INIT();
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
+    ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
+    int count1, count2, npairs = 0;
+    Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
+    Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
+    TgeoarrJoinState *state = palloc0(sizeof(TgeoarrJoinState));
+    state->pairs = adisjoint_tgeoarr_tgeoarr((const Temporal **) arr1, count1,
+      (const Temporal **) arr2, count2, &npairs);
+    pfree(arr1); pfree(arr2);
+    PG_FREE_IF_COPY(array1, 0); PG_FREE_IF_COPY(array2, 1);
+    funcctx->user_fctx = state;
+    funcctx->max_calls = npairs;
+    get_call_result_type(fcinfo, NULL, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+  funcctx = SRF_PERCALL_SETUP();
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+  TgeoarrJoinState *state = funcctx->user_fctx;
+  int k = funcctx->call_cntr;
+  Datum values[2];
+  bool isnull[2] = {false, false};
+  /* The kernel returns 0-based indexes into the input arrays; expose them as
+   * 1-based positions to match the SQL array convention */
+  values[0] = Int32GetDatum(state->pairs[2 * k] + 1);
+  values[1] = Int32GetDatum(state->pairs[2 * k + 1] + 1);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
+}
+
 /*****************************************************************************/

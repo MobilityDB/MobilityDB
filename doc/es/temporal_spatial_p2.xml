@@ -570,6 +570,32 @@ SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tgeo_setset_join">
+					<indexterm significance="normal"><primary><varname>eDwithinPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithinPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjointPairs</varname></primary></indexterm>
+					<para>Devuelve los pares de índices que satisfacen la relación entre dos arreglos de geometrías temporales, generalizando la relación escalar correspondiente a una unión espacial conjunto-conjunto</para>
+					<para><varname>eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer, j integer)</varname></para>
+					<para><varname>tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer, j integer, periods tstzspanset)</varname></para>
+					<para><varname>aDisjointPairs(tgeo[],tgeo[]) → setof(i integer, j integer)</varname></para>
+					<para>Cada función resuelve el producto cruzado podado de los dos arreglos en una sola llamada y devuelve los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares que cumplen. <varname>eDwithinPairs</varname> devuelve los pares que alguna vez están a la distancia, <varname>tDwithinPairs</varname> devuelve además los períodos durante los cuales cada par está a la distancia, y <varname>aDisjointPairs</varname> devuelve los pares que siempre son disjuntos. La caja espaciotemporal de cada entrada se usa como prefiltro de caja envolvente para que la relación exacta se calcule solo sobre los pares candidatos que sobreviven. Los pares cuyas extensiones temporales no se solapan se excluyen, de acuerdo con la relación escalar. Los índices se asignan a las identidades originales mediante un <varname>array_agg(identity ORDER BY ...)</varname> paralelo.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+        tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
+-- 1 | 1
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
+-- 1 | 1 | {[2001-01-01, 2001-01-02]}
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]']);
+-- 1 | 1
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="tgeo_tIntersects">
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 					<para>Intersección temporal &Z_support; &geography_support;</para>

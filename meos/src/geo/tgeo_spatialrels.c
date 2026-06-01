@@ -1823,4 +1823,255 @@ adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 }
 #endif /* MEOS */
 
+/*****************************************************************************
+ * Set-set spatial join
+ *
+ * Generalisation of the scalar ever/temporal spatial relationships to two
+ * arrays of temporal geos, resolving the pruned N x M cross product inside a
+ * single call.  Every input's STBox is materialised once and used as a cheap
+ * bounding-box prefilter (always sound, independent of any index) so that the
+ * exact per-pair predicate runs only on the surviving candidate pairs.  The
+ * result is the set of qualifying (i, j) indexes into the input arrays,
+ * mirroring #Mindistance_tgeoarr_tgeoarr().
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the spatial extents of two spatiotemporal boxes
+ * overlap, ignoring the time dimension
+ */
+static bool
+stbox_overlaps_space(const STBox *box1, const STBox *box2)
+{
+  if (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
+      box1->ymin > box2->ymax || box2->ymin > box1->ymax)
+    return false;
+  if (MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags) &&
+      (box1->zmin > box2->zmax || box2->zmin > box1->zmax))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if the spatial extents of two spatiotemporal boxes are
+ * within a distance, ignoring the time dimension
+ * @details Equivalent to expanding the first box by @p dist in every spatial
+ * dimension and testing spatial overlap; a sound lower-bound prefilter for the
+ * within-distance relationships in the planar (non-geodetic) case.
+ */
+static bool
+stbox_within_dist_space(const STBox *box1, const STBox *box2, double dist)
+{
+  if (box1->xmin - dist > box2->xmax || box2->xmin - dist > box1->xmax ||
+      box1->ymin - dist > box2->ymax || box2->ymin - dist > box1->ymax)
+    return false;
+  if (MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags) &&
+      (box1->zmin - dist > box2->zmax || box2->zmin - dist > box1->zmax))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Validate two arrays of temporal geos and materialise their STBoxes
+ * @details Ensures both arrays are non-empty and that every element is a
+ * non-NULL temporal geo sharing the SRID, dimensionality, and geodetic flag of
+ * the first element of the first array.
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] bb1,bb2 Materialised STBoxes (allocated on success)
+ * @return True on success, false on any validation failure
+ */
+static bool
+tgeoarr_tgeoarr_init(const Temporal **arr1, int count1, const Temporal **arr2,
+  int count2, STBox ***bb1, STBox ***bb2)
+{
+  if (count1 <= 0 || count2 <= 0)
+    return false;
+  for (int i = 0; i < count1; i++)
+    VALIDATE_TGEO(arr1[i], false);
+  for (int j = 0; j < count2; j++)
+    VALIDATE_TGEO(arr2[j], false);
+  int32 srid = tspatial_srid(arr1[0]);
+  int16 flags = arr1[0]->flags;
+  for (int i = 1; i < count1; i++)
+    if (! ensure_same_srid(tspatial_srid(arr1[i]), srid) ||
+        ! ensure_same_dimensionality(arr1[i]->flags, flags) ||
+        ! ensure_same_geodetic(arr1[i]->flags, flags))
+      return false;
+  for (int j = 0; j < count2; j++)
+    if (! ensure_same_srid(tspatial_srid(arr2[j]), srid) ||
+        ! ensure_same_dimensionality(arr2[j]->flags, flags) ||
+        ! ensure_same_geodetic(arr2[j]->flags, flags))
+      return false;
+  STBox **boxes1 = palloc(count1 * sizeof(STBox *));
+  STBox **boxes2 = palloc(count2 * sizeof(STBox *));
+  for (int i = 0; i < count1; i++) boxes1[i] = tspatial_to_stbox(arr1[i]);
+  for (int j = 0; j < count2; j++) boxes2[j] = tspatial_to_stbox(arr2[j]);
+  *bb1 = boxes1; *bb2 = boxes2;
+  return true;
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geos that are ever
+ * within a distance
+ * @details The exact per-pair predicate #edwithin_tgeo_tgeo() runs only on the
+ * pairs that survive a temporal-overlap prefilter and, in the planar case, a
+ * spatial within-distance bounding-box prefilter; pairs that do not intersect
+ * on time are not within the distance and are excluded, matching the scalar
+ * predicate.
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[in] dist Distance
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Edwithin_tgeoarr_tgeoarr()
+ */
+int *
+edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, double dist, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  STBox **bb1, **bb2;
+  if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
+    return NULL;
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
+  int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
+  int nres = 0;
+  for (int i = 0; i < count1; i++)
+    for (int j = 0; j < count2; j++)
+    {
+      /* No common time → never within the distance */
+      if (! overlaps_span_span(&bb1[i]->period, &bb2[j]->period))
+        continue;
+      /* Farther apart than the distance in the planar case */
+      if (! geodetic && ! stbox_within_dist_space(bb1[i], bb2[j], dist))
+        continue;
+      if (ea_dwithin_tgeo_tgeo(arr1[i], arr2[j], dist, EVER) == 1)
+      {
+        result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
+      }
+    }
+  for (int i = 0; i < count1; i++) pfree(bb1[i]);
+  for (int j = 0; j < count2; j++) pfree(bb2[j]);
+  pfree(bb1); pfree(bb2);
+  *count = nres;
+  if (nres == 0) { pfree(result); return NULL; }
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geos that are ever
+ * within a distance together with the periods during which they are
+ * @details The temporal predicate #tdwithin_tgeo_tgeo() runs only on the pairs
+ * that survive a temporal-overlap prefilter and, in the planar case, a spatial
+ * within-distance bounding-box prefilter; a pair is returned only when the
+ * temporal boolean is true at some instant.
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[in] dist Distance
+ * @param[out] count Number of resulting index pairs
+ * @param[out] periods Spansets of the times when each resulting pair is within
+ * the distance (allocated on success, one per resulting pair)
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Tdwithin_tgeoarr_tgeoarr()
+ */
+int *
+tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, double dist, int *count,
+  SpanSet ***periods)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  STBox **bb1, **bb2;
+  if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
+    return NULL;
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
+  int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
+  SpanSet **ss = palloc((size_t) count1 * count2 * sizeof(SpanSet *));
+  int nres = 0;
+  for (int i = 0; i < count1; i++)
+    for (int j = 0; j < count2; j++)
+    {
+      if (! overlaps_span_span(&bb1[i]->period, &bb2[j]->period))
+        continue;
+      if (! geodetic && ! stbox_within_dist_space(bb1[i], bb2[j], dist))
+        continue;
+      Temporal *td = tdwithin_tgeo_tgeo(arr1[i], arr2[j], dist);
+      if (! td)
+        continue;
+      SpanSet *when = tbool_when_true(td);
+      pfree(td);
+      if (! when)
+        continue;
+      result[2 * nres] = i; result[2 * nres + 1] = j;
+      ss[nres] = when; nres++;
+    }
+  for (int i = 0; i < count1; i++) pfree(bb1[i]);
+  for (int j = 0; j < count2; j++) pfree(bb2[j]);
+  pfree(bb1); pfree(bb2);
+  *count = nres;
+  if (nres == 0) { pfree(result); pfree(ss); return NULL; }
+  *periods = ss;
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geos that are always
+ * disjoint
+ * @details Derived from intersection by negation (always disjoint is the
+ * negation of ever intersects).  A pair that does not intersect on time is
+ * excluded, matching the scalar predicate; a pair whose spatial extents are
+ * disjoint while their time extents overlap is always disjoint and is returned
+ * without the exact test; the exact #eintersects_tgeo_tgeo() runs only on the
+ * pairs whose boxes overlap in both space and time.
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Adisjoint_tgeoarr_tgeoarr()
+ */
+int *
+adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  STBox **bb1, **bb2;
+  if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
+    return NULL;
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
+  int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
+  int nres = 0;
+  for (int i = 0; i < count1; i++)
+    for (int j = 0; j < count2; j++)
+    {
+      /* No common time → the scalar predicate is undefined (excluded) */
+      if (! overlaps_span_span(&bb1[i]->period, &bb2[j]->period))
+        continue;
+      /* Spatially disjoint while overlapping on time → always disjoint */
+      if (! geodetic && ! stbox_overlaps_space(bb1[i], bb2[j]))
+      {
+        result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
+        continue;
+      }
+      /* Always disjoint is the negation of ever intersects */
+      if (INVERT_RESULT(ea_intersects_tgeo_tgeo(arr1[i], arr2[j], EVER)) == 1)
+      {
+        result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
+      }
+    }
+  for (int i = 0; i < count1; i++) pfree(bb1[i]);
+  for (int j = 0; j < count2; j++) pfree(bb2[j]);
+  pfree(bb1); pfree(bb2);
+  *count = nres;
+  if (nres == 0) { pfree(result); return NULL; }
+  return result;
+}
+
 /*****************************************************************************/
