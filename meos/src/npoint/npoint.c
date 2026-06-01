@@ -72,8 +72,6 @@
 #define NPOINT_MAXLEN     128
 #define NSEGMENT_MAXLEN   128
 
-#define SQL_ROUTE_MAXLEN  64
-
 /*****************************************************************************
  * Collinear and interpolation function
  *****************************************************************************/
