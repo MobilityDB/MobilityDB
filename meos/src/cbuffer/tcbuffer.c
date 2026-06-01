@@ -250,6 +250,140 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 }
 
 /**
+ * @brief Return 1 or 2 if two temporal circular buffer segments are within a
+ * distance during a sub-period of the segment, return 0 otherwise
+ * @details Unlike #tcbuffersegm_dwithin_turnpt, which returns the instants at
+ * which the distance equals @p dist (used to split the temporal distance), this
+ * returns the sub-interval `[t1, t2]` of `[lower, upper]` during which the two
+ * segments are within @p dist, so the temporal `tDwithin` boolean is true on a
+ * continuous interval rather than only at the crossing instant. It is derived
+ * from the crossings together with the within status at the two segment
+ * endpoints.
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers defining the second segment
+ * @param[in] dist Distance
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps defining the resulting within-distance period
+ * @pre The segments are not constant.
+ */
+int
+tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2)
+{
+  assert(t1); assert(t2); assert(lower < upper);
+  Cbuffer *sv1 = DatumGetCbufferP(start1);
+  Cbuffer *ev1 = DatumGetCbufferP(end1);
+  Cbuffer *sv2 = DatumGetCbufferP(start2);
+  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  double d = DatumGetFloat8(dist);
+  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv1));
+  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev1));
+  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv2));
+  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev2));
+  double duration = (double) (upper - lower);
+  if (duration <= FP_TOLERANCE)
+  {
+    *t1 = *t2 = 0;
+    return 0;
+  }
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  double r0 = sv1->radius + sv2->radius;
+  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
+  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
+  double vr = (ev1->radius - sv1->radius + ev2->radius - sv2->radius) /
+    duration;
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = 2 * (dx0 * vx + dy0 * vy - (r0 + d) * vr);
+  double c = dx0 * dx0 + dy0 * dy0 - (r0 + d) * (r0 + d);
+  double delta = b * b - 4 * a * c;
+  double roots[2];
+  int nroots = 0;
+  if (delta >= -FP_TOLERANCE)
+  {
+    double t_cand1, d1;
+    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    {
+      t_cand1 = -c / b;
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+      }
+    }
+    else
+    {
+      double sqrt_delta = sqrt(fmax(0.0, delta));
+      t_cand1 = (-b - sqrt_delta) / (2 * a);
+      double t_cand2 = (-b + sqrt_delta) / (2 * a);
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+      }
+      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
+          t_cand2 <= duration + FP_TOLERANCE)
+      {
+        d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
+        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand2;
+      }
+    }
+  }
+  if (nroots == 2 && roots[0] > roots[1])
+  {
+    double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
+  }
+  /* Within status at the two segment endpoints */
+  bool win_lower = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
+    0.0) <= d + FP_TOLERANCE);
+  bool win_upper = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
+    duration) <= d + FP_TOLERANCE);
+  double tstart, tend;
+  if (nroots == 0)
+  {
+    /* No crossing: within throughout the segment, or never */
+    if (! win_lower)
+    {
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+    tstart = 0.0; tend = duration;
+  }
+  else if (nroots == 1)
+  {
+    /* One crossing: within on the side whose endpoint is within */
+    if (win_lower && ! win_upper)
+    {
+      tstart = 0.0; tend = roots[0];
+    }
+    else if (! win_lower && win_upper)
+    {
+      tstart = roots[0]; tend = duration;
+    }
+    else
+    {
+      /* Tangent touch: within only at the crossing instant */
+      *t1 = *t2 = lower + (TimestampTz) roots[0];
+      return 1;
+    }
+  }
+  else
+  {
+    /* Two crossings: within between them */
+    tstart = roots[0]; tend = roots[1];
+  }
+  if (tend - tstart < FP_TOLERANCE)
+  {
+    *t1 = *t2 = lower + (TimestampTz) tstart;
+    return 1;
+  }
+  *t1 = lower + (TimestampTz) tstart;
+  *t2 = lower + (TimestampTz) tend;
+  return 2;
+}
+
+/**
  * @brief Return 1 or 2 if two temporal circular buffer segments are at a
  * minimum distance during the period defined by the output timestamps, return
  * 0 otherwise
