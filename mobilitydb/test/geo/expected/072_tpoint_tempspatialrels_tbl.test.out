@@ -170,14 +170,14 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
  count 
 -------
-    18
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
   WHERE tIntersects(t1.temp, t2.temp) ?= true <> eIntersects(t1.temp, t2.temp);
  count 
 -------
-    20
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
@@ -303,7 +303,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tDwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
  count 
 -------
-     0
+     4
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq

@@ -2369,10 +2369,10 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
           start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
       if (cross)
       {
-        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1, 
+        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
           start1->temptype, start1->t, end1->t, tpt1);
-        Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue1, endvalue1, 
-          start1->temptype, start1->t, end1->t, tpt1);
+        Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
+          start2->temptype, start2->t, end2->t, tpt1);
         res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
         DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
         DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
