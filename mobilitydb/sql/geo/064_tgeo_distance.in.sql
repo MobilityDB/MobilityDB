@@ -252,11 +252,11 @@ CREATE FUNCTION shortestLine(tgeography, tgeography)
 
 CREATE FUNCTION minDistance(tgeompoint[], tgeompoint[])
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tgeoarr_tgeoarr_mindist'
+  AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minDistance(tgeometry[], tgeometry[])
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tgeoarr_tgeoarr_mindist'
+  AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*
