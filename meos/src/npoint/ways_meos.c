@@ -411,7 +411,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
   {
     /* We need to reproduce the following SQL query for a given geometry geo
      *   SELECT npoint(gid, ST_LineLocatePoint(the_geom, geo))
-     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, DIST_EPSILON)
+     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, MEOS_EPSILON)
      *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
      */
     /* Buffer for reading the geometry string */
