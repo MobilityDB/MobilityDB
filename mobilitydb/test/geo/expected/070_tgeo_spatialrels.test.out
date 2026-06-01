@@ -1997,3 +1997,64 @@ SELECT eDwithin(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1
 ERROR:  Operation on mixed SRID
 SELECT eDwithin(tgeography 'SRID=4283;Point(1 1)@2000-01-01', tgeography 'Point(1 1)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+        tgeompoint '[Point(50 50)@2000-01-01, Point(50 60)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]',
+        tgeompoint '[Point(200 200)@2000-01-01, Point(200 210)@2000-01-02]'],
+  2.0) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(0 0)@2000-03-01, Point(0 10)@2000-03-02]'],
+  2.0) ORDER BY i, j;
+ i | j 
+---+---
+(0 rows)
+
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeometry '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]'],
+  2.0) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+
+SELECT i, j FROM eDwithinPairs(ARRAY[]::tgeompoint[],
+  ARRAY[tgeompoint 'Point(0 0)@2000-01-01'], 2.0) ORDER BY i, j;
+ i | j 
+---+---
+(0 rows)
+
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+        tgeompoint '[Point(50 50)@2000-01-01, Point(50 60)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]',
+        tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+ 2 | 1
+ 2 | 2
+(3 rows)
+
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(5 5)@2000-03-01, Point(5 10)@2000-03-02]']) ORDER BY i, j;
+ i | j 
+---+---
+(0 rows)
+
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeometry '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+

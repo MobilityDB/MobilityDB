@@ -145,4 +145,19 @@ CREATE FUNCTION tDwithin(tgeometry, tgeometry, dist float)
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Set-set spatial join
+ *****************************************************************************/
+
+CREATE FUNCTION tDwithinPairs(tgeompoint[], tgeompoint[], dist float,
+    OUT i integer, OUT j integer, OUT periods tstzspanset)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithinPairs(tgeometry[], tgeometry[], dist float,
+    OUT i integer, OUT j integer, OUT periods tstzspanset)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

@@ -330,3 +330,23 @@ SELECT tDwithin(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(0 0)', -1);
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Point(0 0 0)', -1);
 
 -------------------------------------------------------------------------------
+-- Set-set spatial join
+-------------------------------------------------------------------------------
+
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+        tgeompoint '[Point(50 50)@2000-01-01, Point(50 60)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]',
+        tgeompoint '[Point(200 200)@2000-01-01, Point(200 210)@2000-01-02]'],
+  2.0) ORDER BY i, j;
+-- Pairs that do not overlap on time produce no row
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeompoint '[Point(0 0)@2000-03-01, Point(0 10)@2000-03-02]'],
+  2.0) ORDER BY i, j;
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeometry '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]'],
+  ARRAY[tgeometry '[Point(1 0)@2000-01-01, Point(1 10)@2000-01-02]'],
+  2.0) ORDER BY i, j;
+
+-------------------------------------------------------------------------------

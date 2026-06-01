@@ -868,6 +868,9 @@ extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZE
 extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern double tgeoarr_tgeoarr_mindist(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
 extern double mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double threshold);
+extern int *edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count);
+extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count, SpanSet ***periods);
+extern int *adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 
 /* Aggregates */
 
