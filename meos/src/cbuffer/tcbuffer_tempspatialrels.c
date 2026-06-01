@@ -917,14 +917,14 @@ tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @ingroup meos_cbuffer_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer and a circular buffer intersect
- * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Tdisjoint_tcbuffer_geo()
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Tintersects_cbuffer_tcbuffer()
  */
 inline Temporal *
 tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TINTERSECTS);
 }
 
 /**
@@ -933,12 +933,12 @@ tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * buffer and a circular buffer intersect
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Tdisjoint_tcbuffer_geo()
+ * @csqlfn #Tintersects_tcbuffer_cbuffer()
  */
 inline Temporal *
 tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT);
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TINTERSECTS);
 }
 
 /**

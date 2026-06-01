@@ -1047,7 +1047,7 @@ int
 ea_intersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  return ea_disjoint_tcbuffer_geo(temp, gs, ever);
+  return ea_intersects_tcbuffer_geo(temp, gs, ever);
 }
 
 /**
