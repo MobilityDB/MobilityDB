@@ -98,7 +98,7 @@ extern ND_STATS *pg_get_nd_stats(const Oid tableid, AttrNumber att_num,
   int mode, bool only_parent);
 
 extern float8 geo_sel(VariableStatData *vardata, const STBox *box,
-  meosOper oper);
+  MeosOper oper);
 extern float8 geo_joinsel(const ND_STATS *s1, const ND_STATS *s2);
 
 /*****************************************************************************/

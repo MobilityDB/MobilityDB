@@ -61,7 +61,7 @@
  * don't have statistics or cannot use them for some reason
  */
 float8
-span_sel_default(meosOper oper UNUSED)
+span_sel_default(MeosOper oper UNUSED)
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_SEL;
@@ -72,7 +72,7 @@ span_sel_default(meosOper oper UNUSED)
  * we don't have statistics or cannot use them for some reason
  */
 float8
-span_joinsel_default(meosOper oper UNUSED)
+span_joinsel_default(MeosOper oper UNUSED)
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
@@ -97,7 +97,7 @@ value_oper_sel(Oid operid UNUSED, MeosType ltype,
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_oper_sel(meosOper oper UNUSED, MeosType ltype,
+time_oper_sel(MeosOper oper UNUSED, MeosType ltype,
   MeosType rtype)
 {
   if ((timeset_type(ltype) || timespan_basetype(ltype) || timespan_type(ltype) ||
@@ -610,7 +610,7 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
  */
 static Selectivity
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
-  meosOper oper)
+  MeosOper oper)
 {
   SpanBound *hist_lower, *hist_upper;
   SpanBound const_lower, const_upper;
@@ -702,7 +702,7 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
  * @note This estimate is for the portion of values that are not NULL
  */
 Selectivity
-span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
+span_sel_hist(VariableStatData *vardata, const Span *constval, MeosOper oper,
   bool value)
 {
   AttStatsSlot hslot, lslot;
@@ -864,7 +864,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   span_const_to_span(other, &span);
   /* Determine whether we can estimate selectivity for the operator */
   MeosType ltype, rtype;
-  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
@@ -980,7 +980,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   bool value = (s->basetype != T_TIMESTAMPTZ);
   /* Determine whether we can estimate selectivity for the operator */
   MeosType ltype, rtype;
-  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool found = value ?
     value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
   if (! found)
@@ -1155,7 +1155,7 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
 static Selectivity
 span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
   SpanBound *lower2, SpanBound *upper2, int nhist2, Datum *length,
-  int length_nvalues, meosOper oper)
+  int length_nvalues, MeosOper oper)
 {
   /* If the spans do not overlap return 0.0 */
   if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
@@ -1191,7 +1191,7 @@ span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
  */
 static Selectivity
 span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
-  AttStatsSlot *lslot, meosOper oper)
+  AttStatsSlot *lslot, MeosOper oper)
 {
   int nhist1, nhist2;
   SpanBound *lower1, *upper1, *lower2, *upper2;
@@ -1290,7 +1290,7 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
  */
 static Selectivity
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
-  bool value, meosOper oper)
+  bool value, MeosOper oper)
 {
   /* There is only one lslot, see explanation below */
   AttStatsSlot hslot1, hslot2, lslot;
@@ -1410,7 +1410,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * @brief Estimate join selectivity for spans
  */
 Selectivity
-span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
+span_joinsel(PlannerInfo *root, bool value, MeosOper oper, List *args,
   JoinType jointype UNUSED, SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1466,7 +1466,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
 
   /* Determine whether we can estimate selectivity for the operator */
   MeosType ltype, rtype;
-  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
@@ -1529,7 +1529,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
 
   /* Determine whether we can estimate selectivity for the operator */
   MeosType ltype, rtype;
-  meosOper oper = oid_meosoper(operid, &ltype, &rtype);
+  MeosOper oper = oid_meosoper(operid, &ltype, &rtype);
   bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {

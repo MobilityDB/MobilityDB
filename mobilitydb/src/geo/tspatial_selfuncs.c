@@ -414,7 +414,7 @@ nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2)
  * @brief Dispatch function for the position operators
  */
 static double
-nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, meosOper oper)
+nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, MeosOper oper)
 {
   if (oper == LEFT_OP)
     return nd_box_ratio_left(b1, b2);
@@ -485,7 +485,7 @@ nd_box_from_stbox(const STBox *box, ND_BOX *nd_box)
  * file gserialized_estimate.c
  */
 Selectivity
-geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
+geo_sel(VariableStatData *vardata, const STBox *box, MeosOper oper)
 {
   ND_STATS *nd_stats;
   AttStatsSlot sslot;
