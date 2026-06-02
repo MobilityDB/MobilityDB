@@ -596,3 +596,11 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------/
+
+SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
+  tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01',
+  tcbuffer 'Cbuffer(Point(2 2), 0.5)@2000-01-02',
+  tcbuffer 'Cbuffer(Point(3 3), 0.5)@2000-01-03'
+]::tcbuffer[], '5 minutes'::interval));
+
+-------------------------------------------------------------------------------/
