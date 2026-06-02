@@ -73,6 +73,69 @@ SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 
 /* Errors */
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 ERROR:  Operation on mixed SRID
+SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),1)', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),1)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(cbuffer 'Cbuffer(Point(1 1),1)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '{Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1)@2000-01-02, Cbuffer(Point(1 1),1)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1)@2000-01-02, Cbuffer(Point(1 1),1)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '{[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1)@2000-01-02, Cbuffer(Point(1 1),1)@2000-01-03],[Cbuffer(Point(3 3),1)@2000-01-04, Cbuffer(Point(3 3),1)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1),0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+ ecovers 
+---------
+ t
+(1 row)
+
+/* Errors */
+SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
+ERROR:  Operation on mixed SRID
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
  edisjoint 
 -----------
@@ -341,6 +404,18 @@ SELECT eTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 
  etouches 
 ----------
  f
+(1 row)
+
+SELECT eTouches(tcbuffer 'Cbuffer(Point(0 0),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),0.5)@2000-01-01');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 0),0.5)@2000-01-01, Cbuffer(Point(2 0),0.5)@2000-01-02]');
+ etouches 
+----------
+ t
 (1 row)
 
 /* Errors */
