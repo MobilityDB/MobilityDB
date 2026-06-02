@@ -26,6 +26,10 @@
 			<listitem><para>Finally, for temporal point types, the function <varname>tCentroid</varname> generalizes the function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para></listitem>
 		</itemizedlist>
 
+		<note>
+			<para>The names <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname>, and <varname>appendSequence</varname> each denote both a scalar function and an aggregate. The canonical name of the aggregate form carries an <varname>Agg</varname> suffix (<varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, and <varname>appendSequenceAgg</varname>), so that the scalar and aggregate names are distinct. The bare aggregate names remain available as backward-compatibility aliases and are deprecated; they will be removed in a future major release. The scalar forms (the box accessors <varname>tMin</varname>/<varname>tMax</varname> and the binary builder <varname>merge</varname>) keep their names.</para>
+		</note>
+
 		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="ttype_examples"/>.</para>
 		<itemizedlist>
 			<listitem xml:id="tCount">
