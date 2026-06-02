@@ -1,0 +1,59 @@
+name: MEOS smoke tests (valgrind)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/meos-smoke.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+  push:
+    paths:
+      - '.github/workflows/meos-smoke.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+
+jobs:
+  smoke:
+    name: Smoke + valgrind
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev \
+            valgrind
+
+      - name: Build and install MEOS
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on \
+            -DRGEO=on -DPOSE=on -DCBUFFER=on -DNPOINT=on ..
+          make -j $(nproc)
+          sudo make install
+          sudo ldconfig
+
+      - name: Regenerate smoke suites and run under valgrind
+        run: |
+          export MEOS_INCLUDE_DIR=/usr/local/include
+          export MEOS_BUILD_DIR=/usr/local/lib
+          ./meos/test/run_smoketests.sh
+
+      - name: Upload valgrind logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs
+          path: meos/test/build/*.err
