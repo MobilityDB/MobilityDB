@@ -65,7 +65,28 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   assert(func);
-  return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
+  /* Cross-type comparison: trgeometry's basetype is Pose, but the
+   * right-hand value here is a GSERIALIZED (geometry). Build the
+   * lifted-function info locally with cross_type=true so the lifting
+   * machinery skips segment-locate intersection finding (which would
+   * dispatch on the temptype's basetype Pose and reinterpret the
+   * GSERIALIZED bytes through posesegm_locate, garbage-tripping
+   * ensure_valid_pose_pose's SRID equality check). */
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_BOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.ever = ever;
+  lfinfo.cross_type = true;
+  return eafunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /**
@@ -268,7 +289,23 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
+  /* Cross-type: see eacomp_trgeo_geo's comment. Build lfinfo locally
+   * with cross_type=true so the lifting machinery skips segment-locate
+   * intersection finding for the geometry-vs-pose-basetype mismatch. */
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.cross_type = true;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /**
@@ -286,7 +323,21 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
-  return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
+  /* Cross-type: see eacomp_trgeo_geo's comment. */
+  MeosType basetype = temptype_basetype(temp->temptype);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.cross_type = true;
+  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
 /*****************************************************************************/
