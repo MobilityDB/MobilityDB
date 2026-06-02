@@ -165,19 +165,18 @@ CREATE FUNCTION tDwithin(cbuffer, tcbuffer, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_cbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- The function is not strict
 CREATE FUNCTION tDwithin(tcbuffer, cbuffer, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_cbuffer'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
--- CREATE FUNCTION tDwithin(geometry, tcbuffer, dist float)
-  -- RETURNS tbool
-  -- AS 'MODULE_PATHNAME', 'Tdwithin_geo_tcbuffer'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION tDwithin(tcbuffer, geometry, dist float)
-  -- RETURNS tbool
-  -- AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_geo'
-  -- LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(geometry, tcbuffer, dist float)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDwithin(tcbuffer, geometry, dist float)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tcbuffer, tcbuffer, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_tcbuffer'
