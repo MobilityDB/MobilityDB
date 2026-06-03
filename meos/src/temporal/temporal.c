@@ -2630,11 +2630,11 @@ temporal_insts_p(const Temporal *temp, int *count)
       *count = 1;
       return tinstant_insts((TInstant *) temp, count);
     case TSEQUENCE:
-      *count = ((TSequence *) temp)->count;
-      return tsequence_insts_p((TSequence *) temp);
+      return tsequence_insts_p((TSequence *) temp, count);
     default: /* TSEQUENCESET */
     {
-      const TInstant **result = tsequenceset_insts_p((TSequenceSet *) temp);
+      const TInstant **result = tsequenceset_insts_p((TSequenceSet *) temp,
+        count);
       *count = tinstarr_remove_duplicates((TInstant **) result,
         ((TSequenceSet *) temp)->totalcount);
       return result;
