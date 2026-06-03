@@ -2062,6 +2062,12 @@ SELECT eDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tge
  t
 (1 row)
 
+SELECT eDwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(10 0)@2000-01-02]', tgeompoint '[Point(5 -100)@2000-01-01, Point(5 100)@2000-01-02]', 1);
+ edwithin 
+----------
+ t
+(1 row)
+
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
  edwithin 
 ----------
