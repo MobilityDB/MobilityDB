@@ -702,7 +702,7 @@ set_vals(const Set *s)
  * @csqlfn #Set_values()
  */
 Datum *
-set_values(const Set *s)
+set_values(const Set *s, int *count)
 {
   assert(s);
   Datum *result = palloc(sizeof(Datum) * s->count);
@@ -710,6 +710,7 @@ set_values(const Set *s)
   for (int i = 0; i < s->count; i++)
     result[i] = byval ? SET_VAL_N(s, i) : datum_copy(SET_VAL_N(s, i),
       s->basetype);
+  *count = s->count;
   return result;
 }
 
@@ -1028,7 +1029,8 @@ set_unnest_state_make(const Set *set)
   state->done = false;
   state->i = 0;
   state->count = set->count;
-  state->values = set_values(set);
+  int nvalues;
+  state->values = set_values(set, &nvalues);
   state->set = set_copy(set);
   return state;
 }
