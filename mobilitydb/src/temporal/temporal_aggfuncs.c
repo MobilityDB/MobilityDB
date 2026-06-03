@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -449,6 +449,90 @@ Tint_tsum_combinefn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Tbigint_tmin_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tmin_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal minimum aggregation of temporal
+ * big integers
+ * @sqlfn tMin()
+ */
+Datum
+Tbigint_tmin_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_transfn(fcinfo, &datum_min_int64, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_tmin_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tmin_combinefn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal minimum aggregation of temporal
+ * big integers
+ * @sqlfn tMin()
+ */
+Datum
+Tbigint_tmin_combinefn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_combinefn(fcinfo, &datum_min_int64, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_tmax_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tmax_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal maximum aggregation of temporal
+ * big integers
+ * @sqlfn tMax()
+ */
+Datum
+Tbigint_tmax_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_transfn(fcinfo, &datum_max_int64, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_tmax_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tmax_combinefn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal maximum aggregation of temporal
+ * big integers
+ * @sqlfn tMax()
+ */
+Datum
+Tbigint_tmax_combinefn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_combinefn(fcinfo, &datum_max_int64, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_tsum_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tsum_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal sum aggregation of temporal big
+ * integers
+ * @sqlfn tSum()
+ */
+Datum
+Tbigint_tsum_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_transfn(fcinfo, &datum_sum_int64, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_tsum_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_tsum_combinefn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal sum aggregation of temporal big
+ * integers
+ * @sqlfn tSum()
+ */
+Datum
+Tbigint_tsum_combinefn(PG_FUNCTION_ARGS)
+{
+  return Temporal_tagg_combinefn(fcinfo, &datum_sum_int64, CROSSINGS_NO);
+}
 
 /*****************************************************************************/
 
