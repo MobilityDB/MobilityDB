@@ -4,6 +4,12 @@ SELECT tbox 'TBOXINT XT([1, 1],[2000-01-01,2000-01-02])';
  TBOXINT XT([1, 2),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+SELECT tbox 'TBOXBIGINT XT([1, 1],[2000-01-01,2000-01-02])';
+                                        tbox                                        
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 2),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
 SELECT tbox 'TBOXFLOAT XT([1.0, 1.0],[2000-01-01,2000-01-02])';
                                        tbox                                        
 -----------------------------------------------------------------------------------
@@ -14,6 +20,12 @@ SELECT tbox 'TBOXINT X([1, 1])';
        tbox        
 -------------------
  TBOXINT X([1, 2))
+(1 row)
+
+SELECT tbox 'TBOXBIGINT X([1, 1])';
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 2))
 (1 row)
 
 SELECT tbox 'TBOXFLOAT X([1.0, 1.0])';
@@ -187,6 +199,24 @@ SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
  TBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
+SELECT tbox(bigintspan '[1,2]', timestamptz '2000-01-01');
+                                        tbox                                        
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 3),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+(1 row)
+
+SELECT tbox(bigintspan '[1,2]', tstzspan '[2000-01-01,2000-01-02]');
+                                        tbox                                        
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 3),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT tbox(bigintspan '[1,2]');
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 3))
+(1 row)
+
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
  floatspan 
 -----------
@@ -217,6 +247,12 @@ SELECT 1::tbox;
  TBOXINT X([1, 2))
 (1 row)
 
+SELECT 1::bigint::tbox;
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 2))
+(1 row)
+
 SELECT 1.5::tbox;
           tbox           
 -------------------------
@@ -227,6 +263,12 @@ SELECT intset '{1,2}'::tbox;
        tbox        
 -------------------
  TBOXINT X([1, 3))
+(1 row)
+
+SELECT bigintset '{1,2}'::tbox;
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 3))
 (1 row)
 
 SELECT floatset '{1,2}'::tbox;
@@ -247,6 +289,12 @@ SELECT intspan '[1,2]'::tbox;
  TBOXINT X([1, 3))
 (1 row)
 
+SELECT bigintspan '[1,2]'::tbox;
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 3))
+(1 row)
+
 SELECT floatspan '[1,2]'::tbox;
         tbox         
 ---------------------
@@ -263,6 +311,12 @@ SELECT intspanset '{[1,2]}'::tbox;
        tbox        
 -------------------
  TBOXINT X([1, 3))
+(1 row)
+
+SELECT bigintspanset '{[1,2]}'::tbox;
+         tbox         
+----------------------
+ TBOXBIGINT X([1, 3))
 (1 row)
 
 SELECT floatspanset '{[1,2]}'::tbox;
@@ -288,7 +342,31 @@ SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
  [1, 2)
 (1 row)
 
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
+ [1, 2)
+(1 row)
+
 SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+ floatspan 
+-----------
+ [1, 1]
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+ intspan 
+---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXBIGINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
  floatspan 
 -----------
  [1, 1]
@@ -297,6 +375,12 @@ SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
  intspan 
 ---------
+ [1, 2)
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::bigintspan;
+ bigintspan 
+------------
  [1, 2)
 (1 row)
 
@@ -310,6 +394,8 @@ SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
+ERROR:  The tbox must have X dimension
+SELECT tbox 'TBOXBIGINT T([2000-01-01, 2000-01-02))'::bigintspan;
 ERROR:  The tbox must have X dimension
 SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
  min 
@@ -491,6 +577,30 @@ SELECT Tmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
  Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
+SELECT Xmin(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])');
+ xmin 
+------
+    1
+(1 row)
+
+SELECT Xmax(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])');
+ xmax 
+------
+    2
+(1 row)
+
+SELECT Tmin(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])');
+             tmin             
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT Tmax(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])');
+             tmax             
+------------------------------
+ Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
 SELECT MIN(xmin(b)) FROM tbl_tboxint;
  min 
 -----
@@ -620,10 +730,40 @@ SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-
 /* Errors */
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '-1 day', interval '-1 day');
 ERROR:  The interval must be positive: -1 days
+SELECT shiftValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', 1::bigint);
+                                     shiftvalue                                     
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([2, 4),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT shiftValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1::bigint);
+                                     shiftvalue                                     
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([0, 2),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT scaleValue(tbox 'TBOXBIGINT XT([1,3],[2000-01-01,2000-01-02])', 4::bigint);
+                                     scalevalue                                     
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([1, 6),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT shiftScaleValue(tbox 'TBOXBIGINT XT([1,3],[2000-01-01,2000-01-02])', 1::bigint, 4::bigint);
+                                  shiftscalevalue                                   
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([2, 7),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
                                    expandvalue                                    
 ----------------------------------------------------------------------------------
  TBOXINT XT([-1, 5),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', 2::bigint);
+                                     expandvalue                                     
+-------------------------------------------------------------------------------------
+ TBOXBIGINT XT([-1, 5),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
 (1 row)
 
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
@@ -645,6 +785,18 @@ SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interv
 (1 row)
 
 SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', -1);
+ expandvalue 
+-------------
+ 
+(1 row)
+
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,4],[2000-01-01,2000-01-02])', -1::bigint);
+                                    expandvalue                                     
+------------------------------------------------------------------------------------
+ TBOXBIGINT XT([2, 4),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT expandValue(tbox 'TBOXBIGINT XT([1,2],[2000-01-01,2000-01-02])', -1::bigint);
  expandvalue 
 -------------
  
