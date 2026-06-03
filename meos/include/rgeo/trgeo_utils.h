@@ -45,6 +45,7 @@
 
 extern bool ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void lwgeom_apply_pose(const Pose *pose, LWGEOM *geom);
+extern GSERIALIZED *geom_apply_pose(const GSERIALIZED *gs, const Pose *pose);
 extern double geom_radius(const GSERIALIZED *gs);
 
 /*****************************************************************************/

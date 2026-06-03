@@ -2398,3 +2398,13 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01
  t
 (1 row)
 
+SELECT numSequences(trgeometrySeqSetGaps(ARRAY[
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.0)@2000-01-01',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(2 2), 0.5)@2000-01-02',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(3 3), 1.0)@2000-01-03'
+]::trgeometry[], '5 minutes'::interval));
+ numsequences 
+--------------
+            3
+(1 row)
+

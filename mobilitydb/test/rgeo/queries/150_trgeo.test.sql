@@ -611,3 +611,11 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' >= trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------
+
+SELECT numSequences(trgeometrySeqSetGaps(ARRAY[
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.0)@2000-01-01',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(2 2), 0.5)@2000-01-02',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(3 3), 1.0)@2000-01-03'
+]::trgeometry[], '5 minutes'::interval));
+
+-------------------------------------------------------------------------------/
