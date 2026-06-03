@@ -1,0 +1,191 @@
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.7071067811865476,"w":0.7071067811865476}}'),
+  0, 6);
+                                           asgeopose                                           
+-----------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}'),
+  0, 6);
+                                  asgeopose                                  
+-----------------------------------------------------------------------------
+ {"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.7071067811865476,"w":0.7071067811865476}}'),
+  1, 6);
+                                    asgeopose                                    
+---------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'),
+  0, 6);
+                                           asgeopose                                           
+-----------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":30,"pitch":45,"roll":60}}'),
+  1, 6);
+                                     asgeopose                                     
+-----------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":30,"pitch":45,"roll":60}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":50.85,"lon":4.35},"angles":{"yaw":45}}'),
+  1, 6);
+                                     asgeopose                                      
+------------------------------------------------------------------------------------
+ {"position":{"lat":50.85,"lon":4.35,"h":0},"angles":{"yaw":45,"pitch":0,"roll":0}}
+(1 row)
+
+SELECT poseFromGeoPose(asGeoPose(
+  poseFromGeoPose(
+    '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0.1,"y":0.2,"z":0.3,"w":0.927362}}'),
+  0, 15)) =
+  poseFromGeoPose(
+    '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0.1,"y":0.2,"z":0.3,"w":0.927362}}');
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT length(asGeoPose(
+  poseFromGeoPose('{"position":{"lat":1,"lon":1,"h":1},"quaternion":{"x":0,"y":0,"z":0,"w":1}}')
+)) > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}'),
+  0, 6);
+                                  asgeopose                                  
+-----------------------------------------------------------------------------
+ {"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.7071067811865476,"w":0.7071067811865476}}'),
+  0, 6);
+                                           asgeopose                                           
+-----------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'),
+  0, 6);
+                                           asgeopose                                           
+-----------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":0,"lon":0,"h":0},"angles":{"yaw":0,"pitch":45,"roll":0}}'),
+  0, 6);
+                                        asgeopose                                         
+------------------------------------------------------------------------------------------
+ {"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0.382683,"z":0,"w":0.92388}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":0,"lon":0,"h":0},"angles":{"yaw":0,"pitch":0,"roll":30}}'),
+  0, 6);
+                                         asgeopose                                         
+-------------------------------------------------------------------------------------------
+ {"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0.258819,"y":0,"z":0,"w":0.965926}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":90,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}'),
+  0, 6);
+                                  asgeopose                                   
+------------------------------------------------------------------------------
+ {"position":{"lat":90,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":-45,"lon":180,"h":-100},"quaternion":{"x":0,"y":0,"z":0,"w":1}}'),
+  0, 6);
+                                     asgeopose                                      
+------------------------------------------------------------------------------------
+ {"position":{"lat":-45,"lon":180,"h":-100},"quaternion":{"x":0,"y":0,"z":0,"w":1}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":0,"lon":0},"angles":{"yaw":45,"pitch":0,"roll":0}}'),
+  1, 6);
+                                  asgeopose                                  
+-----------------------------------------------------------------------------
+ {"position":{"lat":0,"lon":0,"h":0},"angles":{"yaw":45,"pitch":0,"roll":0}}
+(1 row)
+
+SELECT asGeoPose(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.7071067811865476,"w":0.7071067811865476}}'),
+  1, 6);
+                                    asgeopose                                    
+---------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+(1 row)
+
+/* Errors */
+-- Invalid JSON.
+SELECT poseFromGeoPose('not-json');
+ERROR:  Invalid GeoPose JSON: null expected (at offset 1)
+SELECT poseFromGeoPose('{"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  GeoPose JSON missing required 'position' object
+SELECT poseFromGeoPose('{"position":{"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  GeoPose 'position' must carry numeric 'lat' and 'lon' members
+SELECT poseFromGeoPose('{"position":{"lat":0,"lon":0,"h":0}}');
+ERROR:  GeoPose JSON requires either a 'quaternion' object (Basic-Quaternion) or an 'angles' object (Basic-YPR)
+SELECT poseFromGeoPose('{"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0}}');
+ERROR:  GeoPose 'quaternion' must carry numeric 'w','x','y','z' members
+SELECT asGeoPose(pose 'Pose(Point(1 1),0.5)', 99, 6);
+ERROR:  Unknown GeoPose conformance class 99 (0 = Basic-Quaternion, 1 = Basic-YPR)
+SELECT asGeoPose(pose 'SRID=5676;Pose(Point(1 1),0.5)', 0, 6);
+ERROR:  GeoPose JSON requires SRID 4326 (WGS-84), got 5676
+SELECT asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6);
+                                                                                                                asgeopose                                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-Quaternion","interpolation":"None","instants":[{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":"Thu Jan 01 00:00:00 2026 PST"}]}
+(1 row)
+
+SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
+                           astext                           
+------------------------------------------------------------
+ Pose(POINT Z (8 47 0),1,0,0,0@Thu Jan 01 00:00:00 2026 PST
+(1 row)
+
+SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6);
+                                                                                                                                                                                                     asgeopose                                                                                                                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-Quaternion","interpolation":"Linear","lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":48,"lon":9,"h":0},"quaternion":{"x":0,"y":0,"z":0.247404,"w":0.968912},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]}
+(1 row)
+
+SELECT asText(tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6)));
+                                                                          astext                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Pose(POINT Z (8 47 0),1,0,0,0@Thu Jan 01 00:00:00 2026 PST, Pose(POINT Z (9 48 0),0.968912386131041,0,0,0.247404098595501@Fri Jan 02 00:00:00 2026 PST]
+(1 row)
+
+SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01, Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)@2026-01-02]', 1, 6);
+                                                                                                                                                                                             asgeopose                                                                                                                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR","interpolation":"Linear","lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]}
+(1 row)
+
+SELECT asGeoPose(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04, Pose(Point(11 51), 1.5)@2026-01-05]}', 1, 4);
+                                                                                                                                                                                                                                                                                                                                                       asgeopose                                                                                                                                                                                                                                                                                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR","interpolation":"Linear","sequences":[{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":0},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":48,"lon":9,"h":0},"angles":{"yaw":28.65,"pitch":0,"roll":0},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]},{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":50,"lon":10,"h":0},"angles":{"yaw":57.3,"pitch":0,"roll":0},"validTime":"Sun Jan 04 00:00:00 2026 PST"},{"position":{"lat":51,"lon":11,"h":0},"angles":{"yaw":85.94,"pitch":0,"roll":0},"validTime":"Mon Jan 05 00:00:00 2026 PST"}]}]}
+(1 row)
+
