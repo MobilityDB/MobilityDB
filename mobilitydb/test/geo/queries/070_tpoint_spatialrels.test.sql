@@ -516,6 +516,9 @@ SELECT eDwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@200
 -- Coverage
 SELECT eDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 1)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 3)@2000-01-02]', 1);
+-- Trajectories far apart at both shared endpoints that meet only strictly
+-- between the vertices
+SELECT eDwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(10 0)@2000-01-02]', tgeompoint '[Point(5 -100)@2000-01-01, Point(5 100)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 1);
 
