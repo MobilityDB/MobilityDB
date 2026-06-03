@@ -1,0 +1,41 @@
+{
+	"name": "pointcloud",
+	"abstract": "LIDAR data support type and functions",
+	"description": "Point and Patch types for LIDAR storage. Aggregate and access functions. JSON and binary serializations. Compression.",
+	"version": "1.0.0",
+	"release_status": "unstable",
+	"maintainer": "Paul Ramsey",
+	"license": "bsd",
+	"provides": {
+		"pointcloud": {
+			"abstract": "LIDAR point and patch types and functions",
+			"version": "1.0.0",
+			"file": "",
+			"docfile": ""
+		}
+	}
+	"prereqs": {
+      "runtime": {
+         "requires": {
+         }
+      }
+    },
+    "generated_by": "Paul Ramsey",
+	"resources": {
+		"bugtracker": {
+			"web": "https://github.com/pgpointcloud/pointcloud"
+		},
+		"repository": {
+			"url": "",
+			"web": "https://github.com/pgpointcloud/pointcloud",
+			"type": "git"
+		}
+	},
+	"meta-spec": {
+		"version": "1.0.0",
+		"url": "http://pgxn.org/meta/spec.txt"
+	},
+	"tags": [
+		"gis", "lidar"
+	]
+}

@@ -1,0 +1,19 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (EXTRACT(EPOCH FROM timestampN(traj, n))*1000000)::bigint AS t, valueN(traj, n) AS pcp, PC_PCId(valueN(traj, n)) AS pcid FROM test_patches_plugin_out, generate_series(1, numInstants(traj)) n WHERE id = 1 ORDER BY n",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.text",
+      "filename": "/tmp/tpcpatch_roundtrip.csv",
+      "format": "csv",
+      "order": "X,Y,Z,time_t",
+      "keep_unspecified": "false"
+    }
+  ]
+}
