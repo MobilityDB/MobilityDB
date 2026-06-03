@@ -311,6 +311,9 @@ extern RTree *rtree_create_datespan();
 extern RTree *rtree_create_tstzspan();
 extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
+#if POINTCLOUD
+extern RTree *rtree_create_tpcbox();
+#endif
 extern void rtree_free(RTree *rtree);
 extern void rtree_insert(RTree *rtree, void *box, int id);
 extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id);
@@ -383,6 +386,9 @@ extern void meos_initialize_error_handler(error_handler_fn err_handler);
 extern void meos_finalize_timezone(void);
 extern void meos_finalize_projsrs(void);
 extern void meos_finalize_ways(void);
+#if POINTCLOUD
+extern void meos_initialize_pointcloud(void);
+#endif
 
 extern bool meos_set_datestyle(const char *newval, void *extra);
 extern bool meos_set_intervalstyle(const char *newval, int extra);
