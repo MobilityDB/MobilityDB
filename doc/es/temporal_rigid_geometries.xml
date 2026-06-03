@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="trgeometry">
+	<title>Geometrías rígidas temporales</title>
+
+	<para>Una geometría rígida temporal (<varname>trgeometry</varname>) es una geometría de referencia 2D estática —normalmente un polígono que describe la forma de un cuerpo en movimiento— emparejada con una pose temporal (<varname>tpose</varname>) que describe cómo esa geometría se traslada y rota a lo largo del tiempo. La geometría materializada en el instante <varname>t</varname> es la geometría de referencia rotada y trasladada de acuerdo con la pose interpolada en <varname>t</varname>.</para>
+
+	<para>Esta es la representación natural para objetos en movimiento cuya <emphasis>forma</emphasis> importa, no solo su posición. El ejemplo motivador es el tráfico marítimo AIS, donde el casco de cada barco (un pentágono derivado de los desplazamientos de antena <varname>A</varname>, <varname>B</varname>, <varname>C</varname>, <varname>D</varname>) sigue una trayectoria de pose definida por informes de latitud/longitud y rumbo. La geometría materializada en cualquier instante es el contorno real del barco en ese momento.</para>
+
+	<para>El tipo <varname>trgeometry</varname> se construye sobre <xref linkend="temporal_poses"/>. La mayoría de los operadores de acceso, comparación, topológicos, de posición y de indexación tienen la misma forma que las funciones <varname>tpose</varname> correspondientes; este capítulo cubre la superficie específica de trgeometry: la materialización de pose a forma, el área recorrida, la distancia materializada y las restricciones espaciales sobre la trayectoria del centroide.</para>
+
+	<para>La guía operativa para elegir entre <varname>trgeometry</varname>, <varname>tpose</varname> y <varname>tgeometry</varname>; las convenciones de marco que la implementación impone (forma de referencia solo 2D, una única geometría de referencia compartida por fila, requisito de mismo SRID, semántica de restricción espacial basada en el centroide); los riesgos numéricos que las cargas de trabajo de producción deben anticipar (advertencia de muestreo para <varname>traversedArea</varname> en segmentos de rotación, tolerancia de submuestreo adaptativo en la distancia materializada, rechazo de SRID mixtos); y las convenciones de durabilidad y almacenamiento se recopilan en <xref linkend="trgeometry_production_guidance"/>.</para>
+
+	<sect1 xml:id="trgeometry_inout">
+		<title>Entrada y salida</title>
+
+		<para>Un literal <varname>trgeometry</varname> empareja una geometría de referencia con una pose temporal. La geometría de referencia va primero, separada de la pose por un punto y coma; la pose sigue la sintaxis estándar de <varname>tpose</varname> (instante, secuencia o conjunto de secuencias).</para>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 1.5)@2001-01-02]';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02], [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
+</programlisting>
+
+		<para>La geometría de referencia puede ser cualquier polígono 2D o superficie poliédrica. La interpolación de la pose es lineal en la traslación y de camino angular más corto en la rotación. Los SRID se heredan de la geometría de referencia y de la pose; deben coincidir.</para>
+
+		<para>Se puede especificar un SRID para una trgeometry ya sea al comienzo del literal o antes de la geometría de referencia, como se muestra a continuación.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.5)@2001-01-01';
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;Pose(Point(0 0), 0.5)@2001-01-01';
+</programlisting>
+
+		<para>La interpolación escalonada también se puede especificar de la misma manera que para otros tipos temporales:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]';
+</programlisting>
+
+		<para>Se admiten los formatos de transmisión estándar.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Devuelve la representación de texto conocido (Well-Known Text o WKT)</para>
+				<para><varname>asText({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1.123456789 1.123456789), 0.5)@2000-01-01', 6);
+-- POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1.123457 1.123457),0.5)@Sat Jan 01 00:00:00 2000 PST
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_asEWKT">
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<para>Devuelve la representación extendida de texto conocido (Extended Well-Known Text o EWKT), prefijada con el SRID</para>
+				<para><varname>asEWKT({trgeometry,trgeometry[]} [, maxdecimaldigits int=15]) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(trgeometry 'SRID=25832;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01');
+-- SRID=25832;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+				<para><varname>asMFJSON(trgeometry [, options int=0 [, flags int=0 [, maxdecimaldigits int=15]]]) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_asEWKB">
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<para>Devuelve la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+				<para><varname>asEWKB(trgeometry [, endian text]) → bytea</varname></para>
+				<para>La función complementaria <varname>asHexEWKB</varname> devuelve los mismos bytes como un texto codificado en hexadecimal.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_fromText">
+				<indexterm significance="normal"><primary><varname>trgeometryFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromEWKB</varname></primary></indexterm>
+				<para>Cada formato de salida tiene un analizador complementario:</para>
+				<para><varname>trgeometryFromText(text) → trgeometry</varname></para>
+				<para><varname>trgeometryFromEWKT(text) → trgeometry</varname></para>
+				<para><varname>trgeometryFromMFJSON(text) → trgeometry</varname></para>
+				<para><varname>trgeometryFromEWKB(bytea) → trgeometry</varname></para>
+				<para><varname>trgeometryFromHexEWKB(text) → trgeometry</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_constructors">
+		<title>Constructores</title>
+
+		<para>Una <varname>trgeometry</varname> se puede construir directamente a partir de sus tipos componentes: una geometría de referencia más una pose temporal:</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_constructor">
+				<indexterm significance="normal"><primary><varname>trgeometry</varname></primary></indexterm>
+				<para>Construir una geometría rígida temporal a partir de una geometría de referencia y una pose temporal</para>
+				<para><varname>trgeometry(geometry, tpose) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry(
+  geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))',
+  tpose 'Pose(Point(0 0), 0.0)@2001-01-01');
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST
+</programlisting>
+				<para>Ambos argumentos deben compartir el mismo SRID. La geometría de referencia puede ser un polígono o una superficie poliédrica; la pose puede ser de cualquier subtipo temporal.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Agregar un único instante a una trgeometry existente, ampliando la trayectoria de pose subyacente</para>
+				<para><varname>appendInstant(trgeometry, trgeometry [, maxdist float [, maxt interval]]) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT appendInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-02');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_appendSequence">
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Agregar una secuencia completa a una trgeometry existente</para>
+				<para><varname>appendSequence(trgeometry, trgeometry) → trgeometry</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_conversions">
+		<title>Conversión de tipos</title>
+
+		<para>La <varname>trgeometry</varname> se puede proyectar a sus tipos componentes o a una trayectoria de puntos puros.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_to_tpose">
+				<indexterm significance="normal"><primary><varname>tpose</varname></primary></indexterm>
+				<para>Devuelve la pose temporal subyacente</para>
+				<para><varname>tpose(trgeometry) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.5)@2001-01-02]'));
+-- [Pose(POINT(0 0),0)@..., Pose(POINT(10 0),0.5)@...]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_to_tgeompoint">
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
+				<para>Devuelve la trayectoria del centroide (antena) como un punto temporal</para>
+				<para><varname>tgeompoint(trgeometry) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+-- [POINT(0 0)@..., POINT(10 0)@...]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_accessors">
+		<title>Accesores</title>
+
+		<para>Se aplican los accesores estándar de los tipos temporales: cada uno devuelve la geometría materializada en la marca de tiempo solicitada (la forma de referencia rotada y trasladada de acuerdo con la pose interpolada), o un valor de metadatos derivado de la trayectoria de pose.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_startValue">
+				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Devuelve la geometría materializada al inicio, al final o en una marca de tiempo elegida</para>
+				<para><varname>startValue(trgeometry) → geometry</varname></para>
+				<para><varname>endValue(trgeometry) → geometry</varname></para>
+				<para><varname>valueAtTimestamp(trgeometry, timestamptz) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(startValue(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0))
+
+SELECT asText(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+  timestamptz '2001-01-01 12:00:00'));
+-- POLYGON((5 0,6 0,6 1,5 1,5 0))
+</programlisting>
+				<para>Tenga en cuenta que la rotación interpola linealmente a lo largo del camino angular más corto; una rotación de 90° entre dos instantes separados por un día devuelve un polígono rotado 45° en el punto medio.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_numInstants">
+				<indexterm significance="normal"><primary><varname>numInstants</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numSequences</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>numTimestamps</varname></primary></indexterm>
+				<para>Devuelve el número de instantes, secuencias o marcas de tiempo distintos</para>
+				<para><varname>numInstants(trgeometry) → integer</varname></para>
+				<para><varname>numSequences(trgeometry) → integer</varname></para>
+				<para><varname>numTimestamps(trgeometry) → integer</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_instants">
+				<indexterm significance="normal"><primary><varname>instants</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>sequences</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>segments</varname></primary></indexterm>
+				<para>Devuelve el arreglo de instantes, secuencias o segmentos entre instantes constituyentes</para>
+				<para><varname>instants(trgeometry) → trgeometry[]</varname></para>
+				<para><varname>sequences(trgeometry) → trgeometry[]</varname></para>
+				<para><varname>segments(trgeometry) → trgeometry[]</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT array_length(
+  instants(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.5)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}'),
+  1);
+-- 3
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_points">
+				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<para>Devuelve el conjunto de puntos del centroide (antena) distintos vistos a lo largo de la trgeometry</para>
+				<para><varname>points(trgeometry) → geomset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 5), 0.0)@2001-01-02, Pose(Point(0 0), 0.0)@2001-01-03}'));
+-- {"POINT(0 0)", "POINT(5 5)"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_rotation">
+				<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
+				<para>Devuelve el ángulo de rotación como un flotante temporal</para>
+				<para><varname>rotation(trgeometry) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(rotation(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+-- [0@..., 1.5@...]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_geom">
+				<indexterm significance="normal"><primary><varname>geom</varname></primary></indexterm>
+				<para>Devuelve la geometría de referencia estática</para>
+				<para><varname>geom(trgeometry) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.5)@2001-01-01'));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0))
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_traversed_area">
+		<title>Área recorrida</title>
+
+		<para>La función <varname>traversedArea</varname> devuelve la unión de cada geometría materializada sobre el dominio temporal de la trgeometry: la huella espacial del cuerpo en movimiento.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_traversedArea_func">
+				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
+				<para>Devuelve la unión de los polígonos materializados a lo largo del dominio temporal de la trgeometry</para>
+				<para><varname>traversedArea(trgeometry [, unary_union boolean = true]) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(traversedArea(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+-- POLYGON((0 0, 11 0, 11 1, 0 1, 0 0))
+</programlisting>
+				<para>Con <varname>unary_union = false</varname> la función devuelve una GeometryCollection de los polígonos materializados por instante sin disolverlos, lo que resulta útil cuando quien llama desea hacer su propio posprocesamiento.</para>
+				<para><emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Agregar submuestras intermedias es un refinamiento futuro documentado.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_spatial_functions">
+		<title>Funciones espaciales</title>
+
+		<para>Estas funciones derivan un valor espacial del cuerpo en movimiento. <varname>centroid</varname> y <varname>bodyPointTrajectory</varname> devuelven puntos temporales que siguen una posición a lo largo del tiempo; <varname>convexHull</varname> devuelve una geometría estática.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_centroid_func">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Devuelve el centroide del cuerpo en movimiento como un punto temporal</para>
+				<para><varname>centroid(trgeometry) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
+-- Interp=Step;[POINT(0.5 0.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_convexHull_func">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Devuelve la envolvente convexa del área recorrida por el cuerpo en movimiento</para>
+				<para><varname>convexHull(trgeometry) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_GeometryType(convexHull(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]'));
+-- ST_Polygon
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_bodyPointTrajectory_func">
+				<indexterm significance="normal"><primary><varname>bodyPointTrajectory</varname></primary></indexterm>
+				<para>Devuelve la trayectoria en el marco del mundo de un punto del marco del cuerpo transportado por la geometría rígida en movimiento. El punto se expresa en el marco local de la forma de referencia y la pose variable en el tiempo se le aplica en cada instante.</para>
+				<para><varname>bodyPointTrajectory(trgeometry, geometry) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(bodyPointTrajectory(
+  trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]',
+  geometry 'Point(0 0)'));
+-- Interp=Step;[POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-02]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_motion_metrics">
+		<title>Métricas de movimiento</title>
+
+		<para>Estas funciones informan sobre el movimiento de una geometría rígida temporal a lo largo de su trayectoria del centroide.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_length">
+				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
+				<para>Devuelve la longitud total recorrida por el centroide, o su longitud acumulada a lo largo del tiempo</para>
+				<para><varname>length(trgeometry) → float</varname></para>
+				<para><varname>cumulativeLength(trgeometry) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_speed">
+				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+				<para>Devuelve la velocidad del centroide como un flotante temporal</para>
+				<para><varname>speed(trgeometry) → tfloat</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_twcentroid">
+				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
+				<para>Devuelve el centroide ponderado en el tiempo de la trayectoria del centroide como una geometría</para>
+				<para><varname>twCentroid(trgeometry) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 4),0)@2001-01-02]'));
+-- POINT(1.5 2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_modifications">
+		<title>Modificaciones</title>
+
+		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_round">
+				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+				<para>Redondear todos los componentes numéricos a un número dado de posiciones decimales</para>
+				<para><varname>round(trgeometry, integer) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(round(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1.123456789 1.123456789), 0.123456)@2001-01-01',
+  3));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1.123 1.123),0.123)@...
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_setInterp">
+				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Convertir entre interpolaciones lineal y escalonada</para>
+				<para><varname>setInterp(trgeometry, text) → trgeometry</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_shiftTime">
+				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar, escalar, o desplazar y escalar el dominio temporal de una trgeometry</para>
+				<para><varname>shiftTime(trgeometry, interval) → trgeometry</varname></para>
+				<para><varname>scaleTime(trgeometry, interval) → trgeometry</varname></para>
+				<para><varname>shiftScaleTime(trgeometry, interval, interval) → trgeometry</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_restrictions">
+		<title>Restricciones espaciales</title>
+
+		<para>Las funciones <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> restringen una trgeometry a (el complemento de) una geometría o una caja espaciotemporal. La semántica refleja la de <varname>tpose</varname>: una geometría rígida temporal está «en» una región en el instante <varname>t</varname> si y solo si su centroide (antena) en <varname>t</varname> se encuentra en esa región.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_atGeometry">
+				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
+				<para>Restringir una trgeometry a (el complemento de) una geometría</para>
+				<para><varname>atGeometry(trgeometry, geometry) → trgeometry</varname></para>
+				<para><varname>minusGeometry(trgeometry, geometry) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT temporalTime(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+-- {[2001-01-02, 2001-01-04]}
+
+SELECT temporalTime(minusGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+-- {[2001-01-01, 2001-01-02), (2001-01-04, 2001-01-05]}
+</programlisting>
+				<para>La restricción contra una geometría vacía devuelve NULL para <varname>atGeometry</varname> y la entrada original para <varname>minusGeometry</varname>.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringir una trgeometry a (el complemento de) una caja espaciotemporal</para>
+				<para><varname>atStbox(trgeometry, stbox [, border_inc boolean = true]) → trgeometry</varname></para>
+				<para><varname>minusStbox(trgeometry, stbox [, border_inc boolean = true]) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT temporalTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX X((1, -1), (3, 1))'));
+-- {[2001-01-02, 2001-01-04]}
+
+SELECT temporalTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
+-- {[2001-01-02, 2001-01-04]}
+</programlisting>
+				<para>Si la STBox solo tiene un componente temporal, la llamada se reduce a <varname>atTime</varname> estándar; si solo tiene un componente espacial, se conserva el dominio temporal.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_distance">
+		<title>Operaciones de distancia</title>
+
+		<para>La distancia entre una trgeometry y una geometría / pose / caja espaciotemporal / otra trgeometry se calcula sobre la geometría <emphasis>materializada</emphasis>: la forma de referencia rotada y trasladada de acuerdo con la pose. La distancia es exacta en cada marca de tiempo compartida; para entradas de secuencia, una bisección recursiva adaptativa emite marcas intermedias donde la trayectoria de distancia se desvía de una línea recta.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_tdistance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tdistance</varname></primary></indexterm>
+				<para>Devuelve la distancia temporal entre dos trgeometries</para>
+				<para><varname>{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat</varname></para>
+				<para><varname>tdistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(maxValue(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
+-- 4
+
+SELECT asText(tdistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
+-- [1@2001-01-01 ..., 9@2001-01-02 ...]
+</programlisting>
+				<para>El despachador cubre cada combinación de subtipos: TINSTANT × TINSTANT, TINSTANT × TSEQUENCE asimétrica, TSEQUENCE × TSEQUENCE, TSEQUENCE × TSEQUENCESET, TSEQUENCESET × TSEQUENCESET. El núcleo de submuestreo adaptativo subyace a cada combinación continua; las combinaciones de instantes se materializan una vez. Los segmentos de traslación pura convergen en profundidad 0 (dos marcas extremas); los segmentos con mucha rotación emiten hasta 32 marcas por intervalo entre instantes. La cota sobre la aproximación interpolada LINEAL entre marcas es <varname>1e-3</varname> por construcción.</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_nad">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+				<para>Devuelve la distancia más pequeña entre dos trgeometries sobre su dominio temporal compartido</para>
+				<para><varname>{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float</varname></para>
+				<para><varname>nearestApproachDistance({geometry,trgeometry,stbox}, {geometry,trgeometry,stbox}) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'
+       |=|
+       trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(50 0), 0.0)@2001-01-01, Pose(Point(50 0), 0.0)@2001-01-02]';
+-- 39
+</programlisting>
+				<para>El operador <varname>|=|</varname> se puede utilizar para búsquedas de vecino más cercano contra índices GiST o SP-GiST (véase <xref linkend="trgeometry_indexing"/>).</para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_nai">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Devuelve el instante en el que los dos argumentos están a su menor distancia mutua</para>
+				<para><varname>nearestApproachInstant({geometry,trgeometry}, {geometry,trgeometry}) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]',
+  geometry 'Point(5 5)'));
+-- POLYGON((5 0,6 0,6 1,5 1,5 0));Pose(POINT(5 0),0)@2001-01-01 12:00:00+00
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Devuelve la línea que conecta los dos argumentos en su aproximación más cercana</para>
+				<para><varname>shortestLine({geometry,trgeometry}, {geometry,trgeometry}) → geometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
+  geometry 'Point(10 0)'));
+-- LINESTRING(1 0,10 0)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_similarity">
+		<title>Similitud</title>
+
+		<para>Las funciones de similitud comparan dos geometrías rígidas temporales a través de sus trayectorias del centroide.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_similarityDistance">
+				<indexterm significance="normal"><primary><varname>hausdorffDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
+				<para>Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta, o la distancia de deformación dinámica del tiempo (Dynamic Time Warp) entre dos geometrías rígidas temporales</para>
+				<para><varname>hausdorffDistance(trgeometry, trgeometry) → float</varname></para>
+				<para><varname>frechetDistance(trgeometry, trgeometry) → float</varname></para>
+				<para><varname>dynTimeWarpDistance(trgeometry, trgeometry) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(frechetDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2.828427
+SELECT round(hausdorffDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_similarityPath">
+				<indexterm significance="normal"><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
+				<para>Devuelve los pares de correspondencia entre dos geometrías rígidas temporales con respecto a la distancia de Fréchet discreta o a la distancia de deformación dinámica del tiempo (Dynamic Time Warp), como un conjunto de pares de índices de instante <varname>(i,j)</varname></para>
+				<para><varname>frechetDistancePath(trgeometry, trgeometry) → {(i,j)}</varname></para>
+				<para><varname>dynTimeWarpPath(trgeometry, trgeometry) → {(i,j)}</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_comparisons">
+		<title>Comparaciones</title>
+
+		<para>Los operadores de igualdad y de siempre / alguna vez comparan dos trgeometries sobre la geometría materializada: tanto la forma de referencia como la trayectoria de pose deben coincidir en cada instante compartido.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_eq">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<para>Probar la (des)igualdad exacta de dos trgeometries</para>
+				<para><varname>trgeometry = trgeometry → boolean</varname></para>
+				<para><varname>trgeometry &lt;&gt; trgeometry → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_evereq">
+				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+				<para>Probar si la geometría materializada es alguna vez (no) igual al operando en algún momento</para>
+				<para><varname>{geometry,trgeometry} ?= {geometry,trgeometry} → boolean</varname></para>
+				<para><varname>{geometry,trgeometry} ?&lt;&gt; {geometry,trgeometry} → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]'
+       ?= geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_alwayseq">
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+				<para>Probar si la geometría materializada es siempre (no) igual al operando</para>
+				<para><varname>{geometry,trgeometry} %= {geometry,trgeometry} → boolean</varname></para>
+				<para><varname>{geometry,trgeometry} %&lt;&gt; {geometry,trgeometry} → boolean</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_bbox_ops">
+		<title>Operadores de caja delimitadora</title>
+
+		<para>Los operadores topológicos y de posición comparan las cajas delimitadoras espaciotemporales de los operandos; ambos pueden ser una <varname>trgeometry</varname>, un <varname>stbox</varname>, una <varname>geometry</varname> o un <varname>tstzspan</varname>.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_topops">
+				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+				<para>Operadores topológicos estándar sobre cajas delimitadoras</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'
+       &amp;&amp;
+       stbox 'STBOX X((5, -1), (15, 1))';
+-- t
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_posops">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<para>Operadores de posición espacial y temporal</para>
+				<para>El conjunto completo <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname> acepta <varname>trgeometry</varname> en cualquiera de los lados.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_tile">
+		<title>Mosaicos</title>
+
+		<para>Estas funciones devuelven las cajas espaciotemporales de una cuadrícula multidimensional que la geometría rígida temporal interseca, calculadas sobre su trayectoria del centroide.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_spaceBoxes">
+				<indexterm significance="normal"><primary><varname>spaceBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
+				<para>Devuelve las cajas espaciotemporales de una geometría rígida temporal dividida con respecto a una cuadrícula espacial, temporal o espaciotemporal</para>
+				<para><varname>spaceBoxes(trgeometry, xsize float [, ysize float [, zsize float]], sorigin geometry = 'Point(0 0 0)', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<para><varname>timeBoxes(trgeometry, interval, torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<para><varname>spaceTimeBoxes(trgeometry, xsize float [, ysize float [, zsize float]], interval, sorigin geometry = 'Point(0 0 0)', torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT array_length(spaceBoxes(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  2.0), 1);
+-- 6
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_bbox_decomposition">
+		<title>Cajas delimitadoras</title>
+
+		<para>Estas funciones descomponen una geometría rígida temporal en las cajas delimitadoras o los lapsos de tiempo de sus segmentos o de un número solicitado de contenedores.</para>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_stboxes">
+				<indexterm significance="normal"><primary><varname>stboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spans</varname></primary></indexterm>
+				<para>Devuelve el arreglo de cajas espaciotemporales o lapsos de tiempo de los segmentos de una geometría rígida temporal</para>
+				<para><varname>stboxes(trgeometry) → stbox[]</varname></para>
+				<para><varname>spans(trgeometry) → tstzspan[]</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_split_boxes">
+				<indexterm significance="normal"><primary><varname>splitNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitEachNStboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
+				<para>Devuelve las cajas espaciotemporales o los lapsos de tiempo de una geometría rígida temporal dividida en un número dado de contenedores, o con un número dado de segmentos por contenedor</para>
+				<para><varname>splitNStboxes(trgeometry, integer) → stbox[]</varname></para>
+				<para><varname>splitEachNStboxes(trgeometry, integer) → stbox[]</varname></para>
+				<para><varname>splitNSpans(trgeometry, integer) → tstzspan[]</varname></para>
+				<para><varname>splitEachNSpans(trgeometry, integer) → tstzspan[]</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_aggregations">
+		<title>Agregaciones</title>
+
+		<itemizedlist>
+			<listitem xml:id="trgeometry_tcount">
+				<indexterm significance="normal"><primary><varname>tcount</varname></primary></indexterm>
+				<para>Número de trgeometries solapadas en cada instante, equivalente a <varname>tcount</varname> sobre la tpose subyacente</para>
+				<para><varname>tcount(trgeometry) → tint</varname></para>
+			</listitem>
+
+			<listitem xml:id="trgeometry_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Caja delimitadora agregada de una columna de trgeometries</para>
+				<para><varname>extent(trgeometry) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM tbl_trgeometry;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="trgeometry_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Combinar dos trgeometries con la misma geometría de referencia en un único conjunto de secuencias</para>
+				<para><varname>merge(trgeometry, trgeometry) → trgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(5 0), 0.0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(5 0), 0.0)@2001-01-05]'));
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_indexing">
+		<title>Indexación</title>
+
+		<para>Hay tres tipos de índices disponibles sobre columnas <varname>trgeometry</varname>. Cada uno utiliza la caja delimitadora espaciotemporal de la geometría materializada y admite consultas topológicas, de posición y de distancia KNN.</para>
+
+		<itemizedlist>
+			<listitem><para><varname>GIST(temp)</varname> — GiST de árbol R.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_quadtree_ops)</varname> — SP-GiST de árbol cuádruple.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_kdtree_ops)</varname> — SP-GiST de árbol kd.</para></listitem>
+		</itemizedlist>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX tbl_trgeometry_gist_idx
+  ON tbl_trgeometry
+  USING GIST(temp);
+
+-- topological lookup
+SELECT count(*) FROM tbl_trgeometry
+WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02])';
+
+-- KNN (ordered scan)
+SELECT mmsi
+FROM tbl_trgeometry
+ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01'
+LIMIT 10;
+</programlisting>
+
+		<para>La variante de árbol kd suele ganar en cargas de trabajo dominadas por consultas KNN con una cota de ordenación ajustada; la variante de árbol cuádruple es más uniforme. El GiST de árbol R es el valor predeterminado seguro para cargas de trabajo mixtas de lectura/escritura.</para>
+	</sect1>
+
+	<sect1 xml:id="trgeometry_production_guidance">
+		<title>Guía de producción</title>
+		<para>Esta sección recoge el conocimiento operativo que las cargas de trabajo de producción necesitan además de la referencia de funciones: cuándo <varname>trgeometry</varname> es el tipo adecuado en relación con sus vecinos (<varname>tpose</varname> y <varname>tgeometry</varname>), las convenciones de marco que la implementación impone y los riesgos numéricos que las cargas de trabajo reales de cuerpos rígidos encuentran. La mayoría de estos se exponen por separado a lo largo del capítulo; el objetivo aquí es disponer de un único lugar donde un nuevo contribuyente pueda leer de principio a fin antes de instrumentar una aplicación.</para>
+
+		<sect2 xml:id="trgeometry_when_to_use">
+			<title>Cuándo usar trgeometry frente a tpose frente a tgeometry</title>
+			<para>Tres tipos temporales abarcan el espacio de diseño de cuerpo rígido / forma arbitraria. Elija el tipo más estrecho que se ajuste a la carga de trabajo: los tipos más estrechos pagan menos almacenamiento y producen cajas delimitadoras más nítidas para el índice espacial.</para>
+			<itemizedlist>
+				<listitem><para><varname>tpose</varname> — solo posición y orientación temporal; el cuerpo se trata como un punto con un rumbo. Úselo cuando la forma sea irrelevante para la consulta (seguimiento cinemático, sustitutos de colisión basados solo en el rumbo).</para></listitem>
+				<listitem><para><varname>trgeometry</varname> — una única forma de referencia estática que se traslada y rota a lo largo del tiempo según una pose temporal. Úselo cuando la forma <emphasis>importa</emphasis> pero es rígida: barcos, vehículos, drones con geometría fija, zonas de exclusión que se ajustan al cuerpo. La geometría de referencia se almacena una vez por fila, no por instante, de modo que el almacenamiento está dominado por la <varname>tpose</varname> subyacente.</para></listitem>
+				<listitem><para><varname>tgeometry</varname> — geometría arbitraria temporal cuya forma misma varía a lo largo del tiempo. Úselo cuando la forma no sea rígida: franjas de viento de tormentas, plumas en expansión, polígonos en evolución.</para></listitem>
+			</itemizedlist>
+			<para>Una <varname>trgeometry</varname> se puede proyectar a su <varname>tpose</varname> subyacente (trayectoria del centroide) o a una <varname>tgeometry</varname> totalmente materializada mediante las conversiones de <xref linkend="trgeometry_conversions"/>. La dirección inversa (elevar una <varname>tgeometry</varname> de vuelta a una <varname>trgeometry</varname>) no está en general bien definida, ya que los cambios de forma arbitrarios no se factorizan limpiamente en rotación + traslación de una referencia fija.</para>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_frame_conventions">
+			<title>Convenciones de marco</title>
+			<itemizedlist>
+				<listitem><para><emphasis>Geometría de referencia solo 2D</emphasis>. La forma de referencia es un polígono 2D o una superficie poliédrica; el componente de rotación de la pose es el ángulo de guiñada (yaw) 2D de <xref linkend="temporal_poses"/>. No hay representación de cuerpo rígido 3D en este tipo; las cargas de trabajo que necesiten orientación 3D completa (cuaternión) sobre una forma 3D deben componer <varname>tpose</varname> con el paso de materialización de forma explícita.</para></listitem>
+				<listitem><para><emphasis>Geometría de referencia única compartida</emphasis>. Cada instante de una <varname>trgeometry</varname> comparte la misma forma de referencia; solo varía la pose. La forma se almacena una vez por fila, no por instante.</para></listitem>
+				<listitem><para><emphasis>Requisito de mismo SRID</emphasis>. La geometría de referencia y la pose temporal deben compartir un SRID; el constructor rechaza las discrepancias con el error estándar de MEOS <varname>ensure_same_srid</varname>. La geometría materializada hereda este SRID.</para></listitem>
+				<listitem><para><emphasis>Semántica de restricción espacial basada en el centroide</emphasis>. <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> prueban el centroide de la forma materializada contra la región, no la forma materializada en sí. Una trgeometry cuyo centroide se encuentra fuera de una región pero cuyo cuerpo se extiende dentro de la región se <emphasis>excluye</emphasis>. Esto refleja la semántica subyacente de <varname>tpose</varname> (una pose es un punto) y es una decisión de diseño deliberada; las cargas de trabajo que necesiten contención de la forma completa deben materializar primero a <varname>tgeometry</varname>.</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_hazards">
+			<title>Riesgos numéricos</title>
+			<para>Cuatro riesgos afectan de forma fiable a las cargas de trabajo reales de cuerpos rígidos. La implementación mitiga cada uno de la siguiente manera:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Entradas con SRID mixtos</emphasis>. Construir una <varname>trgeometry</varname> a partir de una geometría de referencia y una <varname>tpose</varname> en SRID diferentes produciría silenciosamente posiciones materializadas erróneas si los SRID no se comprobaran.</para>
+					<para><emphasis>Mitigación</emphasis>: el constructor y cada operador entre tipos pasan por <varname>ensure_same_srid</varname>, que genera un error que nombra ambos SRID. La ruta de error es ruidosa y explícita; no hay transformación implícita.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Advertencia de muestreo de traversedArea</emphasis>. La función <varname>traversedArea</varname> muestrea en los instantes de entrada y los conecta con la envolvente convexa de los dos polígonos extremos. Los segmentos de traslación pura son exactos, pero las rotaciones entre instantes se aproximan: para una rotación de 90° entre dos instantes, la cinta barrida es más ancha de lo que captura la envolvente convexa.</para>
+					<para><emphasis>Mitigación</emphasis>: documentado en <xref linkend="trgeometry_traversed_area"/>. Las cargas de trabajo que necesiten cotas ajustadas del área barrida deben sobremuestrear la <varname>tpose</varname> de entrada antes de construir la <varname>trgeometry</varname>; el patrón de <varname>setInterp</varname> + inserción de subinstantes del capítulo de <varname>tpose</varname> es el enfoque estándar. El submuestreo adaptativo dentro de <varname>traversedArea</varname> es un refinamiento futuro documentado.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Tolerancia de submuestreo adaptativo en la distancia materializada</emphasis>. Los núcleos de distancia continua (<varname>tdistance</varname>, <varname>nearestApproachDistance</varname>) materializan la forma rígida por cada intervalo entre instantes y emiten marcas intermedias donde la trayectoria de distancia se desvía de una línea recta. El tope de profundidad es de 32 marcas por intervalo y la aproximación interpolada LINEAL entre marcas está acotada por <varname>1e-3</varname> (en unidades del CRS).</para>
+					<para><emphasis>Mitigación</emphasis>: la cota de <varname>1e-3</varname> es una decisión de diseño documentada. Los segmentos de traslación pura convergen en profundidad 0; los segmentos con mucha rotación usan el presupuesto completo de 32 marcas. Las cargas de trabajo que necesiten una precisión más nítida en un operador específico deben preprocesar las poses de entrada a instantes más densos en lugar de confiar en una recursión más ajustada.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Sorpresa de la restricción espacial basada en el centroide</emphasis>. <varname>atGeometry(trgeometry, geometry)</varname> prueba el centroide de la pose contra la región, no la forma materializada. Un barco largo cuya popa está en un puerto pero cuya proa ha cruzado el límite del puerto se informará como dentro del puerto mientras su centroide esté dentro.</para>
+					<para><emphasis>Mitigación</emphasis>: documentado como una decisión de diseño de nivel D en <xref linkend="trgeometry_restrictions"/>. Las cargas de trabajo que necesiten semántica de forma completa deben convertir mediante <varname>trgeometry::tgeometry</varname> antes de aplicar la restricción espacial. La conversión materializa un polígono por instante y es, en consecuencia, más costosa.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="trgeometry_durability">
+			<title>Durabilidad y almacenamiento</title>
+			<para>La representación en disco de una <varname>trgeometry</varname> es el <varname>GSERIALIZED</varname> de referencia seguido de la carga útil de la pose temporal. La disposición de bytes es estable: <varname>asBinary(trgeometry)</varname> / <varname>trgeometryFromBinary(bytea)</varname> realiza un ciclo de ida y vuelta que preserva el valor bit a bit (incluido el SRID de la forma de referencia, las banderas Z y M, y el subtipo de la <varname>tpose</varname> subyacente), y las serializaciones WKB / EWKB / HexEWKB siguen el patrón estándar de PostGIS de bandera de endianidad seguida de carga útil.</para>
+			<para>El par <varname>asMFJSON(trgeometry)</varname> / <varname>trgeometryFromMFJSON(text)</varname> es bidireccional. Cada instante se representa como <varname>{"geometry":&lt;reference-geojson&gt;,"values":[&lt;pose-payload&gt;]}</varname>: la geometría de referencia usa la forma GeoJSON estándar de PostGIS y la carga útil de la pose sigue la disposición de la clase de conformidad OGC GeoPose Basic-YPR (<varname>{"position":...,"quaternion":...}</varname> para 3D / <varname>{"position":...,"rotation":...}</varname> para 2D). La geometría de referencia se emite una vez por instante en el esquema actual; un trabajo futuro de esquema podría elevarla a un encabezado a nivel de capítulo para evitar la repetición por instante en secuencias largas.</para>
+			<para>La salida de <varname>pg_dump</varname> de una tabla que contiene columnas <varname>trgeometry</varname> usa la representación WKT de forma predeterminada; <varname>pg_dump --binary-upgrade</varname> usa la representación WKB. Ambas son estables en el ciclo de ida y vuelta entre actualizaciones de versión mayor de PostgreSQL.</para>
+		</sect2>
+	</sect1>
+</chapter>
