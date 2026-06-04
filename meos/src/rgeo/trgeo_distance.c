@@ -61,6 +61,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
+#include "rgeo/trgeo_utils.h"
 #include "rgeo/trgeo_vclip.h"
 
 /*****************************************************************************
@@ -287,8 +288,15 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 {
-  double dist = geom_distance2d(trgeoinst_geom_p(inst), gs);
-  return tinstant_make(Float8GetDatum(dist), T_FLOAT8, inst->t);
+  /* Materialize the reference geometry at the pose of the instant before
+   * computing the distance */
+  const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+  LWGEOM *geom = lwgeom_from_gserialized(trgeoinst_geom_p(inst));
+  lwgeom_apply_pose(pose, geom);
+  GSERIALIZED *posed = geo_serialize(geom);
+  double dist = geom_distance2d(posed, gs);
+  lwgeom_free(geom); pfree(posed);
+  return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
 }
 
 /**
@@ -899,7 +907,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -1777,7 +1785,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 
   lwpoly_free(poly1); lwpoly_free(poly2);
   free_cfp_array(&cfpa); free_tdist_array(&tda);
@@ -1855,23 +1863,137 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the temporal pose obtained by subtracting the position of a
+ * temporal point from the translation of a temporal pose at a common instant
+ * @details The resulting pose keeps the rotation of the input pose and has its
+ * translation expressed in the (non-rotating) reference frame of the temporal
+ * point, that is, @p (pose.x - point.x, pose.y - point.y, pose.theta).
+ * @pre Both instants are synchronized (same timestamp)
+ */
+static TInstant *
+relpose_tposeinst_tpointinst(const TInstant *inst1, const TInstant *inst2)
+{
+  assert(inst1); assert(inst2); assert(inst1->temptype == T_TPOSE);
+  assert(inst2->temptype == T_TGEOMPOINT);
+  const Pose *pose = DatumGetPoseP(tinstant_value_p(inst1));
+  POINT4D p;
+  datum_point4d(tinstant_value_p(inst2), &p);
+  Pose *relpose = pose_make_2d(pose->data[0] - p.x, pose->data[1] - p.y,
+    pose->data[2], pose_srid(pose));
+  TInstant *result = tinstant_make(PointerGetDatum(relpose), T_TPOSE,
+    inst1->t);
+  pfree(relpose);
+  return result;
+}
+
+/**
+ * @brief Return the temporal pose expressing the translation of a temporal
+ * pose relative to a temporal point at synchronized instants
+ * @pre Both sequences are synchronized
+ */
+static TSequence *
+relpose_tposeseq_tpointseq(const TSequence *seq1, const TSequence *seq2)
+{
+  assert(seq1); assert(seq2); assert(seq1->temptype == T_TPOSE);
+  assert(seq2->temptype == T_TGEOMPOINT);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
+  for (int i = 0; i < seq1->count; i++)
+    instants[i] = relpose_tposeinst_tpointinst(TSEQUENCE_INST_N(seq1, i),
+      TSEQUENCE_INST_N(seq2, i));
+  return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc,
+    seq1->period.upper_inc, interp, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal pose expressing the translation of a temporal
+ * pose relative to a temporal point at synchronized instants
+ * @pre Both sequence sets are synchronized
+ */
+static TSequenceSet *
+relpose_tposeseqset_tpointseqset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2)
+{
+  assert(ss1); assert(ss2); assert(ss1->temptype == T_TPOSE);
+  assert(ss2->temptype == T_TGEOMPOINT);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss1->count);
+  for (int i = 0; i < ss1->count; i++)
+    sequences[i] = relpose_tposeseq_tpointseq(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i));
+  return tsequenceset_make_free(sequences, ss1->count, NORMALIZE);
+}
+
+/**
  * @ingroup meos_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries.
+ * @brief Return the temporal distance between a temporal rigid geometry and a
+ * temporal geometry point
+ * @details In the non-rotating reference frame of the temporal point, the
+ * vertices of the rigid geometry @p A are
+ * @p (trans_A(t) - p_B(t)) + R(theta_A(t)) * u_i. Both translations are linear
+ * in time and the rotation @p theta_A is unchanged, so the relative
+ * translation @p trans_A(t) - p_B(t) remains linear. The problem is therefore
+ * exactly that of a moving rigid geometry against a static point at the origin,
+ * which is solved exactly by @ref tdistance_trgeometry_geo.
+ * @param[in] temp1 Temporal rigid geometry
+ * @param[in] temp2 Temporal geometry point
  * @sqlop @p <->
  */
 Temporal *
-tdistance_trgeometry_tpoint(const Temporal *temp1 UNUSED,
-  const Temporal *temp2 UNUSED)
+tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
-  /* TODO */
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented yet.", __FUNCTION__);
-  return NULL;
+  if (MEOS_FLAGS_GET_Z(temp1->flags) || MEOS_FLAGS_GET_Z(temp2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
+
+  /* Synchronize the pose of the temporal rigid geometry and the temporal
+   * point. Synchronization is without adding crossings: both the pose
+   * translation and the point are interpolated linearly, and the rotation is
+   * interpolated exactly as in the temporal rigid geometry, which is precisely
+   * the evolution assumed by the distance solvers */
+  Temporal *tpose = trgeometry_to_tpose(temp1);
+  Temporal *sync1, *sync2;
+  if (! intersection_temporal_temporal(tpose, temp2, SYNCHRONIZE_NOCROSS,
+      &sync1, &sync2))
+  {
+    pfree(tpose);
+    return NULL;
+  }
+  pfree(tpose);
+
+  /* Express the pose translation in the reference frame of the temporal
+   * point, reducing the problem to a moving rigid geometry against a static
+   * point at the origin */
+  Temporal *relpose;
+  assert(temptype_subtype(sync1->subtype));
+  if (sync1->subtype == TINSTANT)
+    relpose = (Temporal *) relpose_tposeinst_tpointinst((TInstant *) sync1,
+      (TInstant *) sync2);
+  else if (sync1->subtype == TSEQUENCE)
+    relpose = (Temporal *) relpose_tposeseq_tpointseq((TSequence *) sync1,
+      (TSequence *) sync2);
+  else /* sync1->subtype == TSEQUENCESET */
+    relpose = (Temporal *) relpose_tposeseqset_tpointseqset(
+      (TSequenceSet *) sync1, (TSequenceSet *) sync2);
+  pfree(sync1); pfree(sync2);
+
+  /* Rebuild a temporal rigid geometry with the same reference geometry and the
+   * relative poses, then compute the distance to the static origin point */
+  const GSERIALIZED *ref_gs = trgeo_geom_p(temp1);
+  Temporal *reltrgeo = geo_tpose_to_trgeometry(ref_gs, relpose);
+  pfree(relpose);
+  LWPOINT *originpt = lwpoint_make2d(gserialized_get_srid(ref_gs), 0, 0);
+  GSERIALIZED *origin = geo_serialize((LWGEOM *) originpt);
+  lwpoint_free(originpt);
+  Temporal *result = tdistance_trgeometry_geo(reltrgeo, origin);
+  pfree(reltrgeo); pfree(origin);
+  return result;
 }
 
 /**
@@ -2056,7 +2178,7 @@ double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_tpoint(temp2, temp2))
+  if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
