@@ -326,7 +326,7 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 				<para>Obtenir la trayectoria o el área atravesada &Z_support; &geography_support;</para>
 				<para><varname>trajectory(tpoint,unary_union=false) → geo</varname></para>
 				<para><varname>traversedArea(tgeo,unary_union=false) → geo</varname></para>
-				<para>Esta función es equivalente a <link linkend="getValues"><varname>getValues</varname></link> para los valores temporales alphanuméricos. El último argumento indica si se aplica la función PostGIS <ulink url="https://postgis.net/docs/ST_UnaryUnion.html">ST_UnaryUnion</ulink> para eliminar geometrías redundantes en el resultado. Tenga en cuenta que establecer este argumento como verdadero implica un alto consumo computacional.</para>
+				<para>Esta función es equivalente a <link linkend="ttype_getValues"><varname>getValues</varname></link> para los valores temporales alphanuméricos. El último argumento indica si se aplica la función PostGIS <ulink url="https://postgis.net/docs/ST_UnaryUnion.html">ST_UnaryUnion</ulink> para eliminar geometrías redundantes en el resultado. Tenga en cuenta que establecer este argumento como verdadero implica un alto consumo computacional.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(trajectory(tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02,
   Point(0 0)@2001-01-03]'));

@@ -740,15 +740,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSequences"><varname>numSequences</varname>, <varname>sequences</varname></link>: Return the (number of) sequences</para>
+					<para><link linkend="ttype_numSequences"><varname>numSequences</varname>, <varname>sequences</varname></link>: Return the (number of) sequences</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Return the start, end, or n-th sequence</para>
+					<para><link linkend="ttype_startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Return the start, end, or n-th sequence</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="segments"><varname>segments</varname></link>: Return the segments</para>
+					<para><link linkend="ttype_segments"><varname>segments</varname></link>: Return the segments</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1220,23 +1220,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tContains"><varname>tContains</varname></link>: Temporal contains</para>
+						<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Temporal contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint</para>
+						<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tDwithin"><varname>tDwithin</varname></link>: Temporal distance within</para>
+						<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tIntersects"><varname>tIntersects</varname></link>: Temporal intersects</para>
+						<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Temporal intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
+						<para><link linkend="tgeo_tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1522,7 +1522,7 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+						<para><link linkend="pose_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
