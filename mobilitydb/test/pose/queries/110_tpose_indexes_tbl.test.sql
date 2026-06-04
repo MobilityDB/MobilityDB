@@ -148,3 +148,16 @@ SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tpose2d_quadtree_idx;
 
 -------------------------------------------------------------------------------
+-- Coverage of all the same and order by logic in SP-GiST indexes
+
+CREATE TABLE tbl_tpose_big_allthesame AS
+  SELECT k, tpose(pose 'SRID=3812;Pose(Point(25 25), 0.3)', t) AS temp
+  FROM tbl_tstzspan_big;
+CREATE INDEX tbl_tpose_big_allthesame_quadtree_idx ON tbl_tpose_big_allthesame USING SPGIST(temp);
+ANALYZE tbl_tpose_big_allthesame;
+
+-- EXPLAIN ANALYZE
+
+DROP TABLE tbl_tpose_big_allthesame;
+
+-------------------------------------------------------------------------------
