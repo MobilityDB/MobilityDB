@@ -46,13 +46,9 @@ endif()
 #-------------------------------------
 
 # Find PostgreSQL
-# Minimum supported version is 16. Older versions (14, 15) carry an
-# accumulating maintenance burden (per-version conditional code, allocator
-# differences exposed by the PG14/15 backend in load_jsonb_tables) that no
-# longer pays off; PostgreSQL 14 reaches end-of-life on 2026-11-12. Build
-# fails clearly here rather than letting the host pretend to be supported
-# and crashing later in fixtures.
-set(PG_MIN_MAJOR_VERSION "16")
+# Minimum supported version is 14. Build fails clearly here rather than letting
+# the host pretend to be supported and crashing later in fixtures.
+set(PG_MIN_MAJOR_VERSION "14")
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if(POSTGRESQL_VERSION_MAJOR VERSION_LESS PG_MIN_MAJOR_VERSION)
   message(FATAL_ERROR
