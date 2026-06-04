@@ -891,6 +891,7 @@ CREATE TYPE time_tgeogpoint AS (
   temp tgeogpoint
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tgeompoint, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeompoint

@@ -45,6 +45,7 @@ CREATE FUNCTION span_extent_combinefn(intspan, intspan)
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION span_extent_transfn(bigintspan, bigintspan)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
@@ -54,6 +55,7 @@ CREATE FUNCTION span_extent_combinefn(bigintspan, bigintspan)
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION span_extent_transfn(floatspan, floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'

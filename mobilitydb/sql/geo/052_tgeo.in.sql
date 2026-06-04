@@ -890,6 +890,7 @@ CREATE TYPE time_tgeog AS (
   tgeog tgeography
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tgeometry, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeom

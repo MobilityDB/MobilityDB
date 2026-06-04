@@ -214,7 +214,21 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.6)' &gt;= cbuffer 'Cbuffer(Point(1 1), 0.5
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>cbuffer_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_covers</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_disjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_dwithin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_intersects</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_same</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffer_touches</varname></primary></indexterm>
+</sect2>
 	</sect1>
 
 	<sect1 xml:id="temp_circular_buffers">
@@ -348,7 +362,12 @@ SELECT asEWKT(tcbufferFromHexEWKB(
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>cbufferfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbufferfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffersetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cbuffersetfromhexwkb</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tcbuffer_constructors">
 		<title>Constructors</title>
@@ -433,7 +452,9 @@ SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tcbufferseqsetgaps</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tcbuffer_conversions">
 		<title>Conversions</title>
@@ -620,6 +641,8 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 		<itemizedlist>
 			<listitem xml:id="tcbuffer_nearestApproachDistance">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nearestapproachdistance</varname></primary></indexterm>
 				<para>Return the smallest distance ever</para>
 				<para><varname>{geo,cbuffer,tcbuffer} |=| {geo,cbuffer,tcbuffer} → float</varname></para>
 				<para>The operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST or an SP-GiST index (see <xref linkend="ttype_indexing"/>).</para>

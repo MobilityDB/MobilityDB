@@ -139,7 +139,7 @@ CREATE FUNCTION tDwithin(geometry, tgeometry, dist float)
 CREATE FUNCTION tDwithin(tgeometry, geometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tgeometry, tgeometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'

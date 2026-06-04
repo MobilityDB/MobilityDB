@@ -65,9 +65,8 @@ Datum
 Temporal_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  int dbl_dig_for_wkt = (PG_NARGS() > 1) ? PG_GETARG_INT32(1) :
+    OUT_DEFAULT_DECIMAL_DIGITS;
   char *str = temporal_out(temp, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
@@ -96,9 +95,8 @@ Temporalarr_as_text(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_NULL();
   }
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  int dbl_dig_for_wkt = (PG_NARGS() > 1) ? PG_GETARG_INT32(1) :
+    OUT_DEFAULT_DECIMAL_DIGITS;
 
   Temporal **temparr = temparr_extract(array, &count);
   char **strarr = temparr_out(temparr, count, Int32GetDatum(dbl_dig_for_wkt));
@@ -140,8 +138,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
    * 2 = short crs, only for temporal points
    * 4 = long crs, only for temporal points
    */
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-   option = PG_GETARG_INT32(1);
+  option = PG_GETARG_INT32(1);
 
   if (tspatial_type(temp->temptype))
   {
@@ -170,11 +167,10 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
     with_bbox = 1;
 
   /* Retrieve JSON flags (e.g. for pretty print) if any (default is 0) */
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    flags = PG_GETARG_INT32(2);
+  flags = PG_GETARG_INT32(2);
 
   /* Retrieve precision if any (default is max) */
-  if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
+  if (PG_NARGS() > 3)
   {
     precision = PG_GETARG_INT32(3);
     if (precision > OUT_DEFAULT_DECIMAL_DIGITS)

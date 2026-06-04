@@ -40,9 +40,9 @@
  * @ingroup meos_pose
  * @brief Input and output functions for temporal poses
  *
- * @defgroup meos_geo_constructor Constructor functions
- * @ingroup meos_geo
- * @brief Constructor functions for temporal geometries
+ * @defgroup meos_pose_constructor Constructor functions
+ * @ingroup meos_pose
+ * @brief Constructor functions for temporal poses
  *
  * @defgroup meos_pose_conversion Conversion functions
  * @ingroup meos_pose
@@ -68,9 +68,13 @@
  *   @ingroup meos_pose_comp
  *   @brief Temporal comparison functions for temporal poses
  *
- * @defgroup meos_pose_distance Distance functions
+ * @defgroup meos_pose_dist Distance functions
  * @ingroup meos_pose
  * @brief Distance functions for temporal poses
+ *
+ * @defgroup meos_pose_agg Aggregate functions
+ * @ingroup meos_pose
+ * @brief Aggregate functions for temporal poses
  */
 
 /*****************************************************************************/

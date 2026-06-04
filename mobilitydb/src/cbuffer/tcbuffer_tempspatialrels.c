@@ -483,8 +483,6 @@ PG_FUNCTION_INFO_V1(Tdwithin_cbuffer_tcbuffer);
 Datum
 Tdwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
@@ -506,8 +504,6 @@ PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_cbuffer);
 Datum
 Tdwithin_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double dist = PG_GETARG_FLOAT8(2);

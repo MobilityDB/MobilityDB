@@ -40,19 +40,19 @@
 CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(stbox, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_stbox_cbuffer'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_stbox'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, cbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_cbuffer'
@@ -159,8 +159,8 @@ CREATE FUNCTION nearestApproachInstant(stbox, tcbuffer)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(cbuffer, tcbuffer)
   RETURNS tcbuffer
-  AS 'SELECT @extschema@.nearestApproachInstant(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_cbuffer_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, geometry)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'NAI_tcbuffer_geo'
@@ -171,8 +171,8 @@ CREATE FUNCTION nearestApproachInstant(tcbuffer, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, cbuffer)
   RETURNS tcbuffer
-  AS 'SELECT @extschema@.nearestApproachInstant($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'NAI_tcbuffer_tcbuffer'
@@ -186,8 +186,12 @@ CREATE FUNCTION nearestApproachDistance(geometry, tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(stbox, tcbuffer)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(cbuffer, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_cbuffer_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(cbuffer, tcbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_cbuffer_tcbuffer'
@@ -198,12 +202,12 @@ CREATE FUNCTION nearestApproachDistance(tcbuffer, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tcbuffer, stbox)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_tcbuffer_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tcbuffer, cbuffer)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tcbuffer, tcbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tcbuffer_tcbuffer'
@@ -257,8 +261,8 @@ CREATE FUNCTION shortestLine(stbox, tcbuffer)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(cbuffer, tcbuffer)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_cbuffer_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tcbuffer, geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tcbuffer_geo'
@@ -269,8 +273,8 @@ CREATE FUNCTION shortestLine(tcbuffer, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tcbuffer, cbuffer)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tcbuffer, tcbuffer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tcbuffer_tcbuffer'

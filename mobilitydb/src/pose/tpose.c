@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Tpose_in);
 /**
  * @ingroup mobilitydb_pose_inout
  * @brief Generic input function for temporal pose objects
- *
+ * @sqlfn tpose_in()
  * @note Examples of input for the various temporal types:
  * - Instant
  * @code

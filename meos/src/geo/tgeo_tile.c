@@ -1290,8 +1290,8 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   }
 
   /* Disable the usage of bitmatrix for instantaneous temporal values, for
-   * time only bins, or for temporal geos */
-  if (! xsize || temporal_num_instants(temp) == 1 || tgeo_type(temp->temptype))
+   * time only bins, or for non-point spatial types (tgeo, trgeometry, ...) */
+  if (! xsize || temporal_num_instants(temp) == 1 || ! tpoint_type(temp->temptype))
       bitmatrix = false;
 
   /* Zero-init at declaration: when xsize == 0 the if-block below is

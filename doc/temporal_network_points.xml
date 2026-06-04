@@ -101,7 +101,18 @@ SELECT nsegment(76, 0.3, 0.5);
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>npointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromtext</varname></primary></indexterm>
+</sect2>
 
 		<sect2 xml:id="npoint_conversion_functions">
 			<title>Conversions</title>
@@ -275,7 +286,21 @@ SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>npoint_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
+</sect2>
 	</sect1>
 
 	<sect1 xml:id="temp_network_points">
@@ -389,7 +414,12 @@ SELECT tnpointSeqSetGaps(ARRAY[tnpoint 'NPoint(1,0.1)@2001-01-01',
 </programlisting>
 				</listitem>
 			</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>create_trip</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointseqsetgaps</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tnpoint_conversions">
 		<title>Conversions</title>
@@ -705,7 +735,12 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Spatial Relationships</title>

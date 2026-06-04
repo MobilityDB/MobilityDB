@@ -58,6 +58,15 @@ CREATE FUNCTION transformPipeline(tpose, text, srid integer DEFAULT 0,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Trajectory
+ *****************************************************************************/
+
+CREATE FUNCTION trajectory(tpose)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tpose_trajectory'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 

@@ -796,6 +796,7 @@ CREATE FUNCTION set_union_transfn(internal, tstzset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION intset_union_finalfn(internal)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'

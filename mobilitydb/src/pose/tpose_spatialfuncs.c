@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Tpose_trajectory);
 /**
  * @ingroup mobilitydb_pose_accessor
  * @brief Return the trajectory of a temporal pose
- * @sqlfn atGeometry()
+ * @sqlfn trajectory()
  */
 inline Datum
 Tpose_trajectory(PG_FUNCTION_ARGS)

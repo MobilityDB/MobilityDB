@@ -205,7 +205,11 @@ CREATE FUNCTION round(pose, integer DEFAULT 0)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Pose_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+CREATE FUNCTION round(pose[], integer DEFAULT 0)
+  RETURNS pose[]
+  AS 'MODULE_PATHNAME', 'Posearr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * SRID functions
  *****************************************************************************/

@@ -55,96 +55,39 @@ CREATE FUNCTION aContains(geometry, tgeompoint)
  * eDisjoint, aDisjoint
  *****************************************************************************/
 
--- TODO implement the index support in the tspatial_supportfn
-
-CREATE FUNCTION _edisjoint(geometry, tgeompoint)
+CREATE FUNCTION eDisjoint(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(geometry, tgeompoint)
-  RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeompoint, geometry)
+CREATE FUNCTION eDisjoint(tgeompoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tgeompoint, geometry)
-  RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeompoint, tgeompoint)
+CREATE FUNCTION eDisjoint(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tgeompoint, tgeompoint)
-  RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
--- CREATE FUNCTION eDisjoint(geometry, tgeompoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeompoint, geometry)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeompoint, tgeompoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(geography, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(geography, tgeogpoint)
   RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeogpoint, geography)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(tgeogpoint, geography)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeogpoint, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
--- CREATE FUNCTION eDisjoint(geography, tgeogpoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeogpoint, geography)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeogpoint, tgeogpoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
-
--- TODO implement the index support in the tspatial_supportfn
 
 CREATE FUNCTION aDisjoint(geometry, tgeompoint)
   RETURNS boolean
@@ -170,6 +113,7 @@ CREATE FUNCTION aDisjoint(geography, tgeogpoint)
 CREATE FUNCTION aDisjoint(tgeogpoint, geography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tgeo_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean

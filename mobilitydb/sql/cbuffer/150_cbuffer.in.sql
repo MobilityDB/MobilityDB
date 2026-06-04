@@ -90,6 +90,23 @@ CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION cbufferFromBinary(bytea)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(cbuffer, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cbufferFromHexWKB(text)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(cbuffer, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/
@@ -137,6 +154,10 @@ CREATE FUNCTION radius(cbuffer)
 CREATE FUNCTION round(cbuffer, integer DEFAULT 0)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(cbuffer[], integer DEFAULT 0)
+  RETURNS cbuffer[]
+  AS 'MODULE_PATHNAME', 'Cbufferarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

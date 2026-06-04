@@ -32,6 +32,7 @@
  * @brief Operators for span set types
  */
 
+-- The function is not strict
 CREATE FUNCTION tprecision(timestamptz, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz

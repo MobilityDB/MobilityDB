@@ -142,6 +142,10 @@
  * @defgroup mobilitydb_geo_tile Tile functions
  * @ingroup mobilitydb_geo
  * @brief Tile functions for temporal geometries
+ *
+ * @defgroup mobilitydb_geo_datagen Data generator functions
+ * @ingroup mobilitydb_geo
+ * @brief Data generator functions for temporal geometries
  */
 
 /*****************************************************************************/

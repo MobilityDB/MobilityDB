@@ -118,6 +118,7 @@ CREATE FUNCTION tcount_transfn(internal, tstzspanset)
   AS 'MODULE_PATHNAME', 'Tstzspanset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tcount_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
@@ -175,6 +176,7 @@ CREATE FUNCTION tcount_transfn(internal, tbool)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tbool_tand_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tand_transfn'
@@ -233,6 +235,7 @@ CREATE FUNCTION tcount_transfn(internal, tint)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tint_tmin_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmin_transfn'
@@ -258,6 +261,7 @@ CREATE FUNCTION tint_tsum_combinefn(internal, internal)
   AS 'MODULE_PATHNAME', 'Tint_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tavg_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
@@ -324,6 +328,7 @@ CREATE FUNCTION tcount_transfn(internal, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tfloat_tmin_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmin_transfn'
@@ -413,6 +418,7 @@ CREATE FUNCTION tcount_transfn(internal, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION ttext_tmin_transfn(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmin_transfn'
@@ -483,6 +489,7 @@ CREATE FUNCTION temporal_merge_transfn(internal, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION temporal_merge_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_combinefn'
@@ -566,6 +573,7 @@ CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext, interp text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- These functions are not strict
+-- The function is not strict
 CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool, interp text,
     maxt interval)
   RETURNS tbool

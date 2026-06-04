@@ -141,9 +141,8 @@ Datum
 Spanset_as_text(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  int dbl_dig_for_wkt = (PG_NARGS() > 1) ? PG_GETARG_INT32(1) :
+    OUT_DEFAULT_DECIMAL_DIGITS;
   char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
   text *result = cstring2text(str);
   pfree(str);
@@ -1001,9 +1000,7 @@ Datum
 Floatspanset_degrees(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  bool normalize = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    normalize = PG_GETARG_BOOL(1);
+  bool normalize = PG_GETARG_BOOL(1);
   SpanSet *result = floatspanset_degrees(ss, normalize);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);

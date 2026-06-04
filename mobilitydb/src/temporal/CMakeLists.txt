@@ -22,7 +22,7 @@ add_library(pg_temporal OBJECT
   temporal_aggfuncs.c
   temporal_analytics.c
   temporal_analyze.c
-  temporal_boxops.c
+  temporal_topops.c
   temporal_compops.c
   temporal_index.c
   temporal_posops.c

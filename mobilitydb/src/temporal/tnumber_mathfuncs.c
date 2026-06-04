@@ -377,9 +377,7 @@ Datum
 Float_degrees(PG_FUNCTION_ARGS)
 {
   double value = PG_GETARG_FLOAT8(0);
-  bool normalize = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    normalize = PG_GETARG_BOOL(1);
+  bool normalize = PG_GETARG_BOOL(1);
   PG_RETURN_FLOAT8(float_degrees(value, normalize));
 }
 
@@ -394,9 +392,7 @@ Datum
 Tfloat_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool normalize = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    normalize = PG_GETARG_BOOL(1);
+  bool normalize = PG_GETARG_BOOL(1);
   Temporal *result = tfloat_degrees(temp, normalize);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);

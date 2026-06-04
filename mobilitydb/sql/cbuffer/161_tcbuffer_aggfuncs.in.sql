@@ -111,6 +111,7 @@ CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION temporal_append_finalfn(tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'

@@ -63,6 +63,7 @@ CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -221,6 +222,7 @@ CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION temporal_append_finalfn(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'

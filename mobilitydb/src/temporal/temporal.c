@@ -407,9 +407,7 @@ Temporal_in(PG_FUNCTION_ARGS)
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   Temporal *result = temporal_in(input, oid_meostype(temptypid));
-  int32 typmod = -1;
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-    typmod = PG_GETARG_INT32(2);
+  int32 typmod = PG_GETARG_INT32(2);
   if (typmod >= 0)
     result = temporal_valid_typmod(result, typmod);
   PG_RETURN_TEMPORAL_P(result);
@@ -1873,7 +1871,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
   TInstant *inst = PG_GETARG_TINSTANT_P(1);
   /* Get interpolation */
   interpType interp;
-  if (PG_NARGS() == 2 || PG_ARGISNULL(2))
+  if (PG_NARGS() == 2)
   {
     /* Set default interpolation according to the base type */
     MeosType temptype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 1));
@@ -2481,8 +2479,10 @@ Temporal_minus_tstzspanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_before_timestamptz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_before_timestamptz);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the instants before or equal to
  * a timestamptz
+ * @sqlfn beforeTimestamp()
  */
 Datum
 Temporal_before_timestamptz(PG_FUNCTION_ARGS)
@@ -2506,8 +2506,10 @@ Temporal_before_timestamptz(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_after_timestamptz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_after_timestamptz);
 /**
+ * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the instants after or equal to
  * a timestamptz
+ * @sqlfn afterTimestamp()
  */
 Datum
 Temporal_after_timestamptz(PG_FUNCTION_ARGS)

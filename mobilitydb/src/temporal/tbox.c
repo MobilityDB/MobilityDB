@@ -143,9 +143,7 @@ Datum
 Tbox_as_text(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  int dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = tbox_out(box, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
@@ -1196,7 +1194,7 @@ Tbox_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_hash);
 /**
- * @ingroup mobilitydb_temporal_box_comp
+ * @ingroup mobilitydb_box_comp
  * @brief Return the hash value of a temporal box
  * @sqlfn tbox_hash()
  */
@@ -1210,7 +1208,7 @@ Tbox_hash(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_hash_extended);
 /**
- * @ingroup mobilitydb_temporal_box_comp
+ * @ingroup mobilitydb_box_comp
  * @brief Return the hash value of a temporal box
  * @sqlfn tbox_hash_extended()
  */

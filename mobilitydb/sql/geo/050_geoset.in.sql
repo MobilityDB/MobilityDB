@@ -351,6 +351,7 @@ CREATE FUNCTION set_union_transfn(internal, geography)
   AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION set_union_transfn(internal, geomset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
@@ -360,6 +361,7 @@ CREATE FUNCTION set_union_transfn(internal, geogset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION geomset_union_finalfn(internal)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'

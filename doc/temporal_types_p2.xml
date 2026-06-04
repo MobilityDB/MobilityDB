@@ -424,7 +424,13 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 </programlisting>
 				</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>atvalue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusvalue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valuespan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valueweight</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>volume</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_bbox">
 		<title>Bounding Box Operators</title>
@@ -438,7 +444,29 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
 
 		<para>We refer to <xref linkend="box_topo_pos"/> for the bounding box operators.</para>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>temporal_above</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_adjacent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_after</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_back</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_before</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_below</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_contained</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_front</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_left</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overabove</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overafter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overback</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overbefore</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overbelow</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overfront</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overlaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overleft</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_overright</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_right</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_same</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_comparisons">
 		<title>Comparisons</title>
@@ -573,7 +601,20 @@ SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>always_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>always_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>always_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>always_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>always_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>always_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ever_ne</varname></primary></indexterm>
+</sect2>
 
 		<sect2>
 			<title>Temporal Comparisons</title>
@@ -624,7 +665,28 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 				</listitem>
 			</itemizedlist>
 		</sect2>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tbool_and</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbool_not</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbool_or</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_teq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_tge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_tgt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_tle</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_tlt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>temporal_tne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnumber_add</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnumber_div</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnumber_mult</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnumber_sub</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttext_cat</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_miscellaneous">
 		<title>Miscellaneous</title>
@@ -650,7 +712,9 @@ SELECT mobilitydb_full_version();
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>spacetimesplit</varname></primary></indexterm>
+</sect1>
 
 </chapter>
 

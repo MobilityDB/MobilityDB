@@ -846,7 +846,7 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_distance
+ * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
@@ -867,7 +867,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_distance
+ * @ingroup meos_geo_base_dist
  * @brief Return the 3D distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
@@ -2975,7 +2975,7 @@ geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 #define PGIS_FP_TOLERANCE 1e-12
 
 /**
- * @ingroup meos_geo_base_distance
+ * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geographies
  * @param[in] gs1,gs2 Geographies
  * @note PostGIS function: @p geography_distance_uncached(PG_FUNCTION_ARGS).

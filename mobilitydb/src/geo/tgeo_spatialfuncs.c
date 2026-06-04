@@ -70,9 +70,7 @@ Datum
 Tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool unary_union = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    unary_union = PG_GETARG_BOOL(1);
+  bool unary_union = PG_GETARG_BOOL(1);
   GSERIALIZED *result = tpoint_trajectory(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -89,9 +87,7 @@ Datum
 Tgeo_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool unary_union = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    unary_union = PG_GETARG_BOOL(1);
+  bool unary_union = PG_GETARG_BOOL(1);
   GSERIALIZED *result = tgeo_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -319,8 +315,8 @@ Tgeo_scale(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
   GSERIALIZED *sorigin = NULL;
-  /* Do we have the optional false origin? */
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+  /* Do we have the optional scale origin? */
+  if (PG_NARGS() > 2)
     sorigin = PG_GETARG_GSERIALIZED_P(2);
   Temporal *result = tgeo_scale(temp, scale, sorigin);
   if (! result)

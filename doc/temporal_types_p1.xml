@@ -681,7 +681,20 @@ SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tboolfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboolfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboolfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextfrommfjson</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_constructors">
 		<title>Constructors</title>
@@ -789,7 +802,29 @@ SELECT asText(tgeompointSeqSetGaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tboolinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboolseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboolseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboolseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloatseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tintseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttextseqsetgaps</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tbool</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tfloat</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>ttext</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_conversions">
 		<title>Conversions</title>
@@ -1096,7 +1131,14 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>getbin</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>gettime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>positions</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>interp</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="ttype_transformations">
 		<title>Transformations</title>

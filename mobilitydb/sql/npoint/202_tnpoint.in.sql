@@ -564,6 +564,7 @@ CREATE TYPE time_tnpoint AS (
   temp tnpoint
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tnpoint, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tnpoint

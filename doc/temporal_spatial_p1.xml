@@ -238,7 +238,53 @@ SELECT asEWKT(tgeompointFromHexEWKB(
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tgeogpointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfrommfjson</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointfromtext</varname></primary></indexterm>
+				<!-- Constructor function names -->
+				<indexterm significance="normal"><primary><varname>tgeometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeometryseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeompointseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeogpointseqsetgaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeography</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyinst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyseq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyseqset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeographyseqsetgaps</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tgeo_conversions">
 		<title>Conversions</title>
@@ -321,6 +367,7 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 			<listitem xml:id="tgeo_trajectory">
 				<indexterm significance="normal"><primary><varname>trajectory</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>convexhull</varname></primary></indexterm>
 				<para>Return the trajectory or the traversed area &Z_support; &geography_support;</para>
 				<para><varname>trajectory(tpoint,unary_union=false) → geo</varname></para>
 				<para><varname>traversedArea(tgeo,unary_union=false) → geo</varname></para>
@@ -529,7 +576,10 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>tgeo_teq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tgeo_tne</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tgeo_transformations">
 		<title>Transformations</title>
@@ -726,7 +776,11 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 1)@2001-01-0
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>transform_gk</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>translate</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transscale</varname></primary></indexterm>
+</sect1>
 
 </chapter>
 

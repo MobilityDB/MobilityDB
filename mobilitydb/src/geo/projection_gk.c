@@ -283,7 +283,9 @@ tgeompoint_transform_gk(const Temporal *temp)
 PGDLLEXPORT Datum Geometry_transform_gk(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
+ * @ingroup mobilitydb_geo_transf
  * @brief Transform a geometry into the Gauss-Krueger projection used in Secondo
+ * @sqlfn transform_gk()
  */
 Datum
 Geometry_transform_gk(PG_FUNCTION_ARGS)
@@ -295,8 +297,10 @@ Geometry_transform_gk(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeompoint_transform_gk(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_transform_gk);
 /**
+ * @ingroup mobilitydb_geo_transf
  * @brief Transform a temporal point into the Gauss-Krueger projection used in
  * Secondo
+ * @sqlfn transform_gk()
  */
 Datum
 Tgeompoint_transform_gk(PG_FUNCTION_ARGS)

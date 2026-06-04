@@ -36,6 +36,7 @@
  * Multidimensional tiling
  ******************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION spaceBoxes(tgeometry, xsize float, ysize float, zsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -55,6 +56,7 @@ CREATE FUNCTION spaceBoxes(tgeometry, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION timeBoxes(tgeometry, interval,
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -62,6 +64,7 @@ CREATE FUNCTION timeBoxes(tgeometry, interval,
   AS 'MODULE_PATHNAME', 'Tgeo_time_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION spaceTimeBoxes(tgeometry, xsize float, ysize float,
     zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
@@ -91,6 +94,7 @@ CREATE TYPE point_tgeo AS (
   tgeo tgeometry
 );
 
+-- The function is not strict
 CREATE FUNCTION spaceSplit(tgeometry, xsize float, ysize float, zsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
@@ -116,6 +120,7 @@ CREATE TYPE point_time_tgeo AS (
   tgeo tgeometry
 );
 
+-- The function is not strict
 CREATE FUNCTION spaceTimeSplit(tgeometry, xsize float, ysize float,
     zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,

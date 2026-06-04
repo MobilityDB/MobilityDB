@@ -160,6 +160,11 @@ CREATE FUNCTION asHexEWKB(tpose, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
+CREATE FUNCTION tpose(tgeompoint, tfloat)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_make'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tpose(pose, timestamptz)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
@@ -603,6 +608,7 @@ CREATE TYPE time_tpose AS (
   temp tpose
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tpose, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tpose

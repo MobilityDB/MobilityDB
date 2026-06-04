@@ -139,9 +139,8 @@ Datum
 Set_as_text(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  int dbl_dig_for_wkt = (PG_NARGS() > 1) ? PG_GETARG_INT32(1) :
+    OUT_DEFAULT_DECIMAL_DIGITS;
   char *str = set_out(s, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
@@ -614,9 +613,7 @@ Datum
 Floatset_degrees(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  bool normalize = false;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    normalize = PG_GETARG_BOOL(1);
+  bool normalize = PG_GETARG_BOOL(1);
   Set *result = floatset_degrees(s, normalize);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
@@ -731,6 +728,7 @@ PG_FUNCTION_INFO_V1(Set_unnest);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return the list of values of a set
+ * @sqlfn unnest()
  */
 Datum
 Set_unnest(PG_FUNCTION_ARGS)

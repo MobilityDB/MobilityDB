@@ -98,8 +98,8 @@ CREATE FUNCTION nearestApproachInstant(stbox, tpose)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(pose, tpose)
   RETURNS tpose
-  AS 'SELECT @extschema@.nearestApproachInstant(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_pose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, geometry)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_tpose_geo'
@@ -110,8 +110,8 @@ CREATE FUNCTION nearestApproachInstant(tpose, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, pose)
   RETURNS tpose
-  AS 'SELECT @extschema@.nearestApproachInstant($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_tpose_tpose'
@@ -125,8 +125,8 @@ CREATE FUNCTION nearestApproachDistance(geometry, tpose)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(stbox, tpose)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(pose, tpose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_pose_tpose'
@@ -137,12 +137,12 @@ CREATE FUNCTION nearestApproachDistance(tpose, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tpose, stbox)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_tpose_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tpose, pose)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tpose, tpose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpose_tpose'
@@ -196,8 +196,8 @@ CREATE FUNCTION shortestLine(stbox, tpose)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(pose, tpose)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_pose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tpose_geo'
@@ -208,8 +208,8 @@ CREATE FUNCTION shortestLine(tpose, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, pose)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, tpose)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tpose_tpose'

@@ -615,6 +615,7 @@ CREATE TYPE time_tcbuffer AS (
   temp tcbuffer
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tcbuffer, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tcbuffer

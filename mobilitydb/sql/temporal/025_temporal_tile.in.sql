@@ -38,6 +38,7 @@
  * Bins
  *****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION bins(intspan, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
@@ -51,6 +52,7 @@ CREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION bins(datespan, tsize interval,
     torigin date DEFAULT '2000-01-01')
   RETURNS datespan[]
@@ -64,6 +66,7 @@ CREATE FUNCTION bins(tstzspan, tsize interval,
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION bins(intspanset, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
@@ -77,6 +80,7 @@ CREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION bins(datespanset, tsize interval,
     torigin date DEFAULT '2000-01-01')
   RETURNS datespan[]
@@ -114,6 +118,7 @@ CREATE FUNCTION getBin(timestamptz, interval, timestamptz DEFAULT '2000-01-03')
 
 /*****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION timeBins(tbool, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
@@ -135,6 +140,7 @@ CREATE FUNCTION timeBins(ttext, tsize interval,
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION valueBins(tint, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
@@ -194,6 +200,7 @@ CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
  * Boxes
  *****************************************************************************/
 
+-- The function is not strict
 CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
@@ -203,6 +210,7 @@ CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION timeBoxes(tint, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
@@ -214,6 +222,7 @@ CREATE FUNCTION timeBoxes(tfloat, tsize interval,
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
+-- The function is not strict
 CREATE FUNCTION valueTimeBoxes(tint, vsize int, tsize interval,
     vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
@@ -238,6 +247,7 @@ CREATE TYPE number_tfloat AS (
   tnumber tfloat
 );
 
+-- The function is not strict
 CREATE FUNCTION valueSplit(tint, size integer, origin integer DEFAULT 0)
   RETURNS SETOF number_tint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
@@ -266,6 +276,7 @@ CREATE TYPE time_ttext AS (
   temp ttext
 );
 
+-- The function is not strict
 CREATE FUNCTION timeSplit(tbool, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbool
@@ -300,6 +311,7 @@ CREATE TYPE number_time_tfloat AS (
   tnumber tfloat
 );
 
+-- The function is not strict
 CREATE FUNCTION valueTimeSplit(tint, size integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF number_time_tint
