@@ -35,6 +35,7 @@
 				<para><varname>numspan</varname> represents any number span type, that is, either <varname>intspan</varname> or <varname>floatspan</varname>,</para>
 			</listitem>
 		</itemizedlist>
+		<para>Operational guidance on choosing between <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>; the numerical hazards real workloads should anticipate (integer overflow on <varname>tint</varname>, NaN / infinity acceptance on <varname>tfloat</varname>, floating-point precision drift in linear interpolation, locale-sensitive comparison on <varname>ttext</varname>); and the durability and storage conventions the implementation enforces are collected in <xref linkend="talpha_operational_notes"/>.</para>
 	</sect1>
 
 	<sect1 xml:id="talpha_conversions">
@@ -581,6 +582,56 @@ SELECT initcap(ttext '[AA@2001-01-01, bb@2001-01-02]');
 </programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="talpha_operational_notes">
+		<title>Operational notes</title>
+		<para>This section captures the operational knowledge operational workloads need on top of the function reference: when each alphanumeric temporal type is the right fit, the conventions the implementation assumes, and the few hazards that real workloads need to be aware of. The four alphanumeric types (<varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>) are the foundational temporal types from which the rest of MobilityDB's temporal infrastructure derives; their surface is mature and the design choices below are intentional.</para>
+
+		<sect2 xml:id="talpha_when_to_use">
+			<title>When to use which type</title>
+			<itemizedlist>
+				<listitem><para><varname>tbool</varname> &#x2014; temporal Boolean. Use for state predicates that vary over time (e.g. "is the engine on", "is the door open"). Pairs naturally with <varname>whenTrue()</varname> to extract the timespans where a derived condition holds.</para></listitem>
+				<listitem><para><varname>tint</varname> &#x2014; temporal integer (32-bit signed). Use for counters, discrete-state codes, ordinal categories that change over time. Step interpolation by default (a value persists until explicitly changed); linear interpolation is supported but rarely the right choice for integers.</para></listitem>
+				<listitem><para><varname>tfloat</varname> &#x2014; temporal floating-point (IEEE 754 double). The most common alphanumeric type. Linear interpolation by default. Use for any continuous numeric measurement (speed, temperature, pressure, &#x2026;).</para></listitem>
+				<listitem><para><varname>ttext</varname> &#x2014; temporal text. Step interpolation only (text values are categorical). Use for status strings, tag changes, free-form annotations that vary over time.</para></listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="talpha_hazards">
+			<title>Numerical and semantic hazards</title>
+			<para>The four alphanumeric types collectively expose four hazards that real workloads should be aware of. Each is intentional behaviour, not a bug; the implementation choices are documented below so workloads can validate inputs at the ingestion boundary if stricter semantics are required.</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Integer overflow on <varname>tint</varname> arithmetic</emphasis>. The <varname>+</varname>, <varname>-</varname>, and <varname>*</varname> operators on <varname>tint</varname> use native 32-bit signed arithmetic without overflow checking. Values approaching <varname>INT_MAX</varname> or <varname>INT_MIN</varname> can silently wrap. Workloads dealing with large counters or summed quantities should either constrain inputs at the ingestion boundary or cast to <varname>tfloat</varname> before arithmetic.</para>
+					<para><emphasis>Mitigation</emphasis>: division by zero is detected and raised as a clear error. Only the additive / multiplicative operators carry the wraparound risk.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>NaN and infinity acceptance on <varname>tfloat</varname> input</emphasis>. The WKT parser accepts the strings <varname>NaN</varname> and <varname>Inf</varname> as valid <varname>tfloat</varname> values (because <varname>strtod</varname> accepts them). They propagate through subsequent operations following IEEE 754 rules.</para>
+					<para><emphasis>Mitigation</emphasis>: workloads requiring strict numeric semantics should validate inputs at ingestion (e.g., reject any row where the value parses to <varname>NaN</varname> / <varname>Inf</varname>). Mathematical functions (<varname>ln</varname>, <varname>log10</varname>, <varname>exp</varname>) explicitly check for <varname>NaN</varname> / <varname>Inf</varname> on input and return clear errors rather than producing further <varname>NaN</varname>s; only the parser and the basic arithmetic operators are permissive.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Floating-point precision drift in <varname>tfloat</varname> linear interpolation</emphasis>. Linear interpolation between two instants computes <varname>v1 + (v2 - v1) * t_ratio</varname> in IEEE 754 double precision; long sequences with frequent interpolation can accumulate small rounding errors. The implementation does not apply an epsilon &#x2014; exact-equality comparisons on interpolated values may give counter-intuitive results.</para>
+					<para><emphasis>Mitigation</emphasis>: comparisons that need to be robust against rounding should use <varname>abs(a - b) &lt; tolerance</varname>, not <varname>=</varname>. The duration aggregates (<varname>twAvg</varname>, <varname>integral</varname>, <varname>derivative</varname>) account for interpolation in their computation and are the recommended way to consume an interpolated tfloat.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Locale-sensitive comparison on <varname>ttext</varname></emphasis>. <varname>temporal_eq</varname>, <varname>temporal_cmp</varname>, and the comparison operators on <varname>ttext</varname> use the underlying PostgreSQL <varname>text_cmp</varname>, which respects the database collation. Identical inputs may compare differently across deployments with different default collations (e.g., a case-insensitive vs case-sensitive collation). UTF-8 encoding is assumed throughout.</para>
+					<para><emphasis>Mitigation</emphasis>: workloads that require deterministic comparison across deployments should pin the database / column collation to a fixed value (e.g., <varname>C</varname> or <varname>C.UTF-8</varname>) rather than rely on the default. Within a single deployment the behaviour is deterministic.</para>
+				</listitem>
+			</itemizedlist>
+			<para><varname>tbool</varname> has no hazards beyond the generic temporal ones (timestamp ordering, sequence-bound inclusivity) &#x2014; Boolean algebra is deterministic and the implementation is byval.</para>
+		</sect2>
+
+		<sect2 xml:id="talpha_durability">
+			<title>Durability and storage</title>
+			<para>All four alphanumeric types have stable on-disk representations:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>WKT</emphasis> via <varname>tbool_in</varname> / <varname>tint_in</varname> / <varname>tfloat_in</varname> / <varname>ttext_in</varname> and the corresponding <varname>*_out</varname> functions. Round-trip is bit-stable.</para></listitem>
+				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> via the standard PostGIS endian-flag-then-payload pattern. Stable across PostgreSQL major versions.</para></listitem>
+				<listitem><para><emphasis>MFJSON</emphasis> via <varname>asMFJSON(temporal)</varname> and <varname>FromMFJSON(text)</varname>. Bidirectional for all four types.</para></listitem>
+				<listitem><para><emphasis>pg_dump</emphasis> uses WKT in plain mode and WKB under <varname>--binary-upgrade</varname>; both round-trip cleanly.</para></listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 </chapter>
