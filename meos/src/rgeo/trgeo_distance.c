@@ -889,12 +889,6 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
     cfp_elem next_cfp = cfp;
     v_clip_tpoly_point(poly, point, pose2, &next_cfp.cf_1, NULL);
     append_cfp_elem(&cfpa, next_cfp);
-    if (next_cfp.cf_1 != cfp.cf_1)
-    {
-      printf("Problem, cfp changed from %d to %d at end of temporal segment\n",
-        cfp.cf_1, next_cfp.cf_1);
-      fflush(stdout);
-    }
     cfp = next_cfp;
   }
 
@@ -1341,8 +1335,6 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else if (ratio_3 <= ratio_4)
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
@@ -1393,8 +1385,6 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], uint_mod_sub(i1, 1, n1), &qs);
     getPoint4d_p(poly1->rings[0], i1, &qe);
@@ -1504,8 +1494,6 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else if (ratio_3 <= ratio_4)
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
@@ -1556,8 +1544,6 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
@@ -1774,12 +1760,6 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
     v_clip_tpoly_tpoly(poly1, poly2, pose2, NULL, &next_cfp.cf_1,
       &next_cfp.cf_2, NULL);
     append_cfp_elem(&cfpa, next_cfp);
-    if (next_cfp.cf_1 != cfp.cf_1 || next_cfp.cf_2 != cfp.cf_2)
-    {
-      printf("Problem, cfp changed from (%d, %d) to (%d, %d) at end of temporal segment\n",
-        cfp.cf_1, cfp.cf_2, next_cfp.cf_1, next_cfp.cf_2);
-      fflush(stdout);
-    }
     cfp = next_cfp;
   }
 

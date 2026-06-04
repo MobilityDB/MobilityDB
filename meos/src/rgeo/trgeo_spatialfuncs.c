@@ -260,7 +260,7 @@ static Datum
 datum_pose_apply_to_geom(Datum pose_datum, Datum geom_datum)
 {
   const Pose *pose = DatumGetPoseP(pose_datum);
-  GSERIALIZED *gs = DatumGetGserializedP(geom_datum);
+  const GSERIALIZED *gs = DatumGetGserializedP(geom_datum);
   return GserializedPGetDatum(geom_apply_pose(gs, pose));
 }
 

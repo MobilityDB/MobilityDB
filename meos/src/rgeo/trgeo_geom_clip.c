@@ -230,7 +230,7 @@ dedup_sorted(double *events, int n)
  * @return number of merged intervals emitted.
  */
 static int
-walk_events_and_emit(double *events, int nuniq,
+walk_events_and_emit(const double *events, int nuniq,
   bool (*intersects)(double t_m, void *ctx), void *ctx,
   Span *out)
 {
@@ -326,7 +326,7 @@ typedef struct {
 static bool
 m1_intersects_at(double t_m, void *ctx_)
 {
-  M1Ctx *ctx = (M1Ctx *) ctx_;
+  const M1Ctx *ctx = (const M1Ctx *) ctx_;
   double sax = ctx->a1x + t_m * ctx->dxd;
   double say = ctx->a1y + t_m * ctx->dyd;
   double sbx = ctx->b1x + t_m * ctx->dxd;
@@ -531,18 +531,20 @@ typedef struct {
 } PolypointMovingEdgeState;
 
 static double
+/* cppcheck-suppress constParameterCallback */
 residual_endpoint_on_edge_wrap(double t, void *state)
 {
-  EndpointEdgeState *s = (EndpointEdgeState *) state;
+  const EndpointEdgeState *s = (const EndpointEdgeState *) state;
   return m2_residual_endpoint_on_edge(t, s->x1, s->y1, s->th1,
     s->x2, s->y2, s->th2, s->px_local, s->py_local,
     s->e1x, s->e1y, s->e2x, s->e2y);
 }
 
 static double
+/* cppcheck-suppress constParameterCallback */
 residual_polypoint_on_movingedge_wrap(double t, void *state)
 {
-  PolypointMovingEdgeState *s = (PolypointMovingEdgeState *) state;
+  const PolypointMovingEdgeState *s = (const PolypointMovingEdgeState *) state;
   return m2_residual_polypoint_on_movingedge(t, s->x1, s->y1, s->th1,
     s->x2, s->y2, s->th2, s->pa_x, s->pa_y, s->pb_x, s->pb_y,
     s->pe_x, s->pe_y);
@@ -600,7 +602,7 @@ solve_m2_numerical(residual_fn f, void *state, double *roots, int max_roots)
  * @return 1 if a root in [0, 1] exists, else 0.
  */
 static int
-solve_m2_taylor_endpoint_on_edge(EndpointEdgeState *s, double *root)
+solve_m2_taylor_endpoint_on_edge(const EndpointEdgeState *s, double *root)
 {
   double dth = s->th2 - s->th1;
   double dx = s->x2 - s->x1, dy = s->y2 - s->y1;
@@ -636,7 +638,7 @@ typedef struct {
 static bool
 m2_intersects_at(double t_m, void *ctx_)
 {
-  M2Ctx *ctx = (M2Ctx *) ctx_;
+  const M2Ctx *ctx = (const M2Ctx *) ctx_;
   double sax, say, sbx, sby;
   posed_endpoint_at(t_m, ctx->x1, ctx->y1, ctx->th1,
     ctx->x2, ctx->y2, ctx->th2, ctx->pa_x, ctx->pa_y, &sax, &say);
@@ -844,7 +846,7 @@ clip_lwgeom_m1_accum(const POINT2D *a1, const POINT2D *b1,
     case MULTIPOLYGONTYPE:
     case COLLECTIONTYPE:
     {
-      LWCOLLECTION *coll = lwgeom_as_lwcollection((LWGEOM *) geom);
+      const LWCOLLECTION *coll = lwgeom_as_lwcollection((LWGEOM *) geom);
       if (coll)
         for (uint32_t i = 0; i < coll->ngeoms; i++)
           n = clip_lwgeom_m1_accum(a1, b1, a2, b2, coll->geoms[i],
@@ -907,7 +909,7 @@ clip_lwgeom_m2_accum(const POINT2D *p_a_local, const POINT2D *p_b_local,
     case MULTIPOLYGONTYPE:
     case COLLECTIONTYPE:
     {
-      LWCOLLECTION *coll = lwgeom_as_lwcollection((LWGEOM *) geom);
+      const LWCOLLECTION *coll = lwgeom_as_lwcollection((LWGEOM *) geom);
       if (coll)
         for (uint32_t i = 0; i < coll->ngeoms; i++)
           n = clip_lwgeom_m2_accum(p_a_local, p_b_local, pose1, pose2,

@@ -410,7 +410,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
       const TSequenceSet *ss = (const TSequenceSet *) temp;
       if (ss->totalcount <= box_count)
         return trgeometry_stboxes(temp, count);
-      int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
+      int nboxes = box_count;
       STBox *result = palloc(sizeof(STBox) * nboxes);
       if (ss->count <= box_count)
       {

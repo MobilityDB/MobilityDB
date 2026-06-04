@@ -869,11 +869,15 @@ ea_dwithin_trgeoseq_trgeoseq_cont(const TSequence *seq1, const TSequence *seq2,
      * is true */
     int solutions = tdwithin_trgeosegm_trgeosegm(sv1, sev1, sv2, sev2,
       lower, upper, dist, &t1, &t2);
+    /* The turning-point solver is a not-implemented stub returning 0; the
+     * guards remain so the evaluation is correct once it is implemented */
+    /* cppcheck-suppress-begin knownConditionTrueFalse */
     bool res = (solutions == 2 ||
       (solutions == 1 && ((t1 != lower || lower_inc) &&
         (t1 != upper || upper_inc))));
     if ((ever && res) || (! ever && ! res))
       return ret_loop;
+    /* cppcheck-suppress-end knownConditionTrueFalse */
 
     sv1 = ev1;
     sv2 = ev2;
