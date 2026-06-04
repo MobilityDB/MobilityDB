@@ -75,13 +75,27 @@ jobs:
             --enable=warning,style,performance,portability \
             --inline-suppr \
             --suppress='*:*/postgres/*' \
-            --suppress='*:postgres/*' \
             --suppress='*:*/postgis/*' \
-            --suppress='*:postgis/*' \
             --suppress='*:*/pgtypes/*' \
+            --suppress='*:*/h3-pg/*' \
+            --suppress='*:postgres/*' \
+            --suppress='*:postgis/*' \
             --suppress='*:pgtypes/*' \
+            --suppress='*:h3-pg/*' \
+            --suppress='*:*lwin_wkt_lex.c' \
+            --suppress='*:*lwin_wkt_lex.l' \
+            --suppress='*:*lwin_wkt_parse.c' \
+            --suppress='*:*lwin_wkt_parse.y' \
+            --suppress='*:lwin_wkt_lex.c' \
+            --suppress='*:lwin_wkt_lex.l' \
+            --suppress='*:lwin_wkt_parse.c' \
+            --suppress='*:lwin_wkt_parse.y' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
+            --suppress='preprocessorErrorDirective:*/postgres/*' \
+            --suppress='preprocessorErrorDirective:postgres/*' \
+            -DUINT64_FORMAT='"%llu"' \
+            -DINT64_FORMAT='"%lld"' \
             --xml --xml-version=2 \
             -j "$(nproc)" \
             2> cppcheck.xml || true

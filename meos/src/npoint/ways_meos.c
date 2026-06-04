@@ -297,7 +297,7 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
   {
     if (! get_ways_record(gid, rec))
       return false;
-    ways_entry = AddRouteToWaysCache(ways_cache, rec);
+    AddRouteToWaysCache(ways_cache, rec);
     return true;
   }
   /* The route was found in the cache */

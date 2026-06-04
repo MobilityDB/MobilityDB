@@ -298,7 +298,7 @@ extern GSERIALIZED *shortestline_tnpoint_tnpoint(const Temporal *temp1, const Te
  * Aggregate functions
  *****************************************************************************/
 
-extern SkipList *tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tnpoint_tcentroid_transfn(SkipList *state, const Temporal *temp);
 
 /*****************************************************************************
  * Comparison functions

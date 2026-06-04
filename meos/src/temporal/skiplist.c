@@ -157,7 +157,7 @@ temporal_skiplist_make()
  * @param[in] size Size of the structure
  */
 void
-skiplist_set_extra(SkipList *list, void *data, size_t size)
+skiplist_set_extra(SkipList *list, const void *data, size_t size)
 {
 #if ! MEOS
   MemoryContext ctx;

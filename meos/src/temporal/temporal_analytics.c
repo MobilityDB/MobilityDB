@@ -374,7 +374,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   MeosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
-  MeosType basetype_out = temptype_basetype(temptype_out);
+  MeosType basetype_o = temptype_basetype(temptype_out);
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(ss->temptype);
   int ninsts = 0;
@@ -393,7 +393,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
       /* We keep only the first instant since the tprecision operation amounts
        * to a granularity change */
       instants[ninsts++] = tinstant_make(value, temptype_out, lower);
-      DATUM_FREE(value, basetype_out);
+      DATUM_FREE(value, basetype_o);
       pfree(proj);
     }
     else
@@ -1477,7 +1477,7 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
  * @brief Return the 2D distance between the points
  */
 static inline double
-dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
+dist2d_pt_pt(const POINT2D *p1, const POINT2D *p2)
 {
   return hypot(p2->x - p1->x, p2->y - p1->y);
 }
@@ -1486,7 +1486,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
  * @brief Return the 3D distance between the points
  */
 static inline double
-dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
+dist3d_pt_pt(const POINT3DZ *p1, const POINT3DZ *p2)
 {
   return hypot3d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);
 }
@@ -1500,7 +1500,7 @@ dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
  * file measures.c
  */
 static double
-dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
+dist2d_pt_seg(const POINT2D *p, const POINT2D *A, const POINT2D *B)
 {
   POINT2D c;
   double r;
@@ -1533,7 +1533,7 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
  * @see http://geomalgorithms.com/a02-_lines.html
  */
 static double
-dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
+dist3d_pt_seg(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
 {
   POINT3DZ c;
   double r;
@@ -1573,8 +1573,10 @@ static void
 tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   int *split, double *dist)
 {
-  POINT2D *p2k, *p2_sync, *p2a, *p2b;
-  POINT3DZ *p3k, *p3_sync, *p3a, *p3b;
+  POINT2D *p2k, *p2a, *p2b;
+  POINT3DZ *p3k, *p3a, *p3b;
+  const POINT2D *p2_sync;
+  const POINT3DZ *p3_sync;
   Datum value;
   // interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);

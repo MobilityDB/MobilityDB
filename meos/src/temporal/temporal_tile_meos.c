@@ -568,7 +568,6 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
         pfree(fragments[j]);
       nfrags = 0;
       lower += tunits;
-      upper += tunits;
     }
     /* Number of time bins of the current sequence */
     int l = tcontseq_time_split_iter(seq, lower, end, tunits, count,
@@ -849,18 +848,11 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
     TInstant *bounds[2];
     bounds[0] = (TInstant *) inst1;
-    int nfrags = 1;
-    if (i < seq->count)
-    {
-      tofree[nfree++] = bounds[1] = tinstant_make(value, seq->temptype,
-        inst2->t);
-      nfrags++;
-    }
-    result[bin_no * numcols + seq_no] = tsequence_make(bounds, nfrags,
+    tofree[nfree++] = bounds[1] = tinstant_make(value, seq->temptype,
+      inst2->t);
+    result[bin_no * numcols + seq_no] = tsequence_make(bounds, 2,
       lower_inc1, false, STEP, NORMALIZE);
-    bounds[0] = bounds[1];
     inst1 = inst2;
-    lower_inc1 = true;
   }
   /* Last value if upper inclusive */
   if (seq->period.upper_inc)
