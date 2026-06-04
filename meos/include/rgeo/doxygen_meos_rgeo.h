@@ -48,6 +48,10 @@
  * @ingroup meos_rgeo
  * @brief Distance functions for temporal rigid geometries
  *
+ * @defgroup meos_rgeo_agg Aggregate functions
+ * @ingroup meos_rgeo
+ * @brief Aggregate functions for temporal rigid geometries
+ *
  * @defgroup meos_rgeo_comp Comparison functions
  * @ingroup meos_rgeo
  * @brief Comparison functions for temporal rigid geometries

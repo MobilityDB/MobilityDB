@@ -125,7 +125,12 @@ SELECT stboxFromHexWKB(
 </programlisting>
 				</listitem>
 			</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>stboxfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stboxfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboxfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboxfromhexwkb</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="box_constructors">
 		<title>Constructors</title>
@@ -638,7 +643,10 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 				<imageobject><imagedata scale="65" fileref="images/berlinmod_grid1k.png"/></imageobject>
 			</mediaobject>
 		</figure>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>stboxes</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tboxes</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="box_set_ops">
 		<title>Set Operations</title>
@@ -672,7 +680,12 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>stbox_intersection</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_union</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_intersection</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_union</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="box_topo_pos">
 		<title>Bounding Box Operations</title>
@@ -857,7 +870,42 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				</listitem>
 			</itemizedlist>
 		</sect2>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>stbox_above</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_adjacent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_after</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_back</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_before</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_below</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_contained</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_front</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_left</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overabove</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overafter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overback</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overbefore</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overbelow</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overfront</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overlaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overleft</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_overright</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_right</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_same</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_adjacent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_after</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_before</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_contained</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_left</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_overafter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_overbefore</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_overlaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_overleft</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_overright</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_right</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_same</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="box_comparisons">
 		<title>Comparisons</title>
@@ -904,7 +952,20 @@ SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])',
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>stbox_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox_ne</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="box_aggregations">
 		<title>Aggregations</title>

@@ -260,7 +260,41 @@ SELECT floatspansetFromHexWKB(
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>bigintsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>bigintspanfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>bigintspansetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datesetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datespanfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datespansetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspanfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspansetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspanfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspansetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>textsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspanfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspansetfromhexwkb</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>bigintsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>bigintspanfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>bigintspansetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datesetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datespanfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>datespansetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspanfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspansetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspanfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspansetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>textsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspanfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspansetfrombinary</varname></primary></indexterm>
+</sect1>
 
 	<sect1>
 		<title>Constructors</title>
@@ -317,7 +351,22 @@ SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>datespanset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspanset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspanset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspanset</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>datespan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspan</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>dateset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzset</varname></primary></indexterm>
+</sect1>
 
 	<sect1>
 		<title>Conversions</title>
@@ -893,7 +942,12 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>spann</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timespan</varname></primary></indexterm>
+				<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>textset_cat</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="spatialset_spatial_srid">
 		<title>Spatial Reference System</title>
@@ -944,7 +998,18 @@ FROM test;
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>geogsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geogsetfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geogsetfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geogsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geogsetfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomsetfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomsetfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomsetfromtext</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="setspan_set_ops">
 		<title>Set Operations</title>
@@ -998,7 +1063,14 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>set_intersection</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_minus</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_union</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_intersection</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_minus</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_union</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="setspan_topo_pos">
 		<title>Bounding Box Operations</title>
@@ -1205,7 +1277,23 @@ SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
 				</listitem>
 			</itemizedlist>
 		</sect2>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>set_contained</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_left</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_overlaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_overleft</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_overright</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_right</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_adjacent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_contained</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_contains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_left</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_overlaps</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_overleft</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_overright</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_right</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="setspan_distance">
 		<title>Distance Operations</title>
@@ -1234,7 +1322,10 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>set_distance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_distance</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="setspan_comparisons">
 		<title>Comparisons</title>
@@ -1292,7 +1383,26 @@ SELECT spanset_cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>set_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>span_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset_ne</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="setspan_agg">
 		<title>Aggregations</title>

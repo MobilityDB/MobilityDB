@@ -101,7 +101,18 @@ SELECT nsegment(76, 0.3, 0.5);
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>npointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromhexewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointfromtext</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromewkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromewkt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npointsetfromtext</varname></primary></indexterm>
+</sect2>
 
 		<sect2 xml:id="npoint_conversion_functions">
 			<title>Conversions</title>
@@ -275,7 +286,21 @@ SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';
 </programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
+						<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>npoint_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>npoint_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_ge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_gt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_le</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_lt</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>nsegment_ne</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>same</varname></primary></indexterm>
+</sect2>
 	</sect1>
 
 	<sect1 xml:id="temp_network_points">
@@ -331,6 +356,37 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 </programlisting>
 
 		<para>We present next the operation for temporal network point types. Most functions for temporal types described in the previous chapters can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_inout">
+		<title>Input and Output</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+				<para><varname>asText(tnpoint,maxdecimaldigits int DEFAULT 15) → text</varname></para>
+				<para><varname>asEWKT(tnpoint,maxdecimaldigits int DEFAULT 15) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tnpoint 'Npoint(1,0.5)@2001-01-01');
+-- Npoint(1,0.5)@2001-01-01
+SELECT asEWKT(tnpoint '[Npoint(1,0.5)@2001-01-01, Npoint(1,0.7)@2001-01-02]');
+-- [Npoint(1,0.5)@2001-01-01, Npoint(1,0.7)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_asBinary">
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Return the Well-Known Binary (WKB) or the hexadecimal WKB representation</para>
+				<para><varname>asBinary(tnpoint,endianenconding text DEFAULT '') → bytea</varname></para>
+				<para><varname>asHexWKB(tnpoint,endianenconding text DEFAULT '') → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(tnpoint 'Npoint(1,0.5)@2001-01-01');
+SELECT asHexWKB(tnpoint 'Npoint(1,0.5)@2001-01-01');
+</programlisting>
+			</listitem>
+		</itemizedlist>
 	</sect1>
 
 	<sect1 xml:id="tnpoint_constructors">
@@ -389,7 +445,12 @@ SELECT tnpointSeqSetGaps(ARRAY[tnpoint 'NPoint(1,0.1)@2001-01-01',
 </programlisting>
 				</listitem>
 			</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>create_trip</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointfrombinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointfromhexwkb</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointseqsetgaps</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tnpoint_conversions">
 		<title>Conversions</title>
@@ -530,6 +591,76 @@ SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_modifications">
+		<title>Modifications</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Append a temporal instant or a temporal sequence</para>
+				<para><varname>appendInstant(tnpoint,tnpointInst) → tnpoint</varname></para>
+				<para><varname>appendSequence(tnpoint,tnpointSeq) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendInstant(tnpoint 'Npoint(1,0.5)@2001-01-01', 'Npoint(1,0.7)@2001-01-02'));
+-- {Npoint(1,0.5)@2001-01-01, Npoint(1,0.7)@2001-01-02}
+SELECT asText(appendSequence(tnpoint '[Npoint(1,0.5)@2001-01-01]', '[Npoint(1,0.7)@2001-01-02]'));
+-- {[Npoint(1,0.5)@2001-01-01], [Npoint(1,0.7)@2001-01-02]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge the temporal network points</para>
+				<para><varname>merge(tnpoint,tnpoint) → tnpoint</varname></para>
+				<para><varname>merge(tnpoint[]) → tnpoint</varname></para>
+				<para><varname>merge(tnpoint) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(tnpoint
+  '[Npoint(1,0.3)@2001-01-01, Npoint(1,0.5)@2001-01-02]',
+  '[Npoint(1,0.5)@2001-01-02, Npoint(1,0.7)@2001-01-03]'));
+-- [Npoint(1,0.3)@2001-01-01, Npoint(1,0.5)@2001-01-02, Npoint(1,0.7)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_insert">
+				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
+				<para>Insert the instants or sequences of the second argument into the first one, connecting them if the connect flag is true (default)</para>
+				<para><varname>insert(tnpoint,tnpoint,connect boolean DEFAULT TRUE) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(insert(tnpoint '[Npoint(1,0.3)@2001-01-01, Npoint(1,0.7)@2001-01-03]',
+  'Npoint(1,0.5)@2001-01-02'));
+-- [Npoint(1,0.3)@2001-01-01, Npoint(1,0.5)@2001-01-02, Npoint(1,0.7)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_update">
+				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
+				<para>Update the first argument with the second one</para>
+				<para><varname>update(tnpoint,tnpoint,connect boolean DEFAULT TRUE) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(update(tnpoint '[Npoint(1,0.3)@2001-01-01, Npoint(1,0.7)@2001-01-03]',
+  'Npoint(1,0.5)@2001-01-02'));
+-- [Npoint(1,0.3)@2001-01-01, Npoint(1,0.5)@2001-01-02, Npoint(1,0.7)@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnpoint_deleteTime">
+				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
+				<para>Delete from the temporal network point the instants or sequences at the given time</para>
+				<para><varname>deleteTime(tnpoint,timestamptz) → tnpoint</varname></para>
+				<para><varname>deleteTime(tnpoint,tstzset) → tnpoint</varname></para>
+				<para><varname>deleteTime(tnpoint,tstzspan) → tnpoint</varname></para>
+				<para><varname>deleteTime(tnpoint,tstzspanset) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(deleteTime(tnpoint
+  '[Npoint(1,0.3)@2001-01-01, Npoint(1,0.5)@2001-01-02, Npoint(1,0.7)@2001-01-03]',
+  '2001-01-02'::timestamptz));
+-- [Npoint(1,0.3)@2001-01-01, Npoint(1,0.7)@2001-01-03]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -705,7 +836,12 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
+					<!-- Function names for the operators above -->
+				<indexterm significance="normal"><primary><varname>contained_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>contains_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>overlaps_rid</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>same_rid</varname></primary></indexterm>
+</sect1>
 
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Spatial Relationships</title>

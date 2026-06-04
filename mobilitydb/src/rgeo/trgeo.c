@@ -70,6 +70,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_in);
 /**
  * @ingroup mobilitydb_rgeo_inout
  * @brief Generic input function for temporal rigid geometries
+ * @sqlfn trgeometry_in()
  * @details Examples of input for the various temporal types:
  * - Instant
  * @code
@@ -106,6 +107,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_out);
 /**
  * @ingroup mobilitydb_rgeo_inout
  * @brief Generic output function for temporal rigid geometries
+ * @sqlfn trgeometry_out()
  */
 Datum
 Trgeometry_out(PG_FUNCTION_ARGS)
@@ -156,7 +158,9 @@ Trgeometry_send(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_typmod_in);
 /**
+ * @ingroup mobilitydb_rgeo_inout
  * @brief Input typmod information for temporal rigid geometries
+ * @sqlfn trgeo_typmod_in()
  */
 Datum
 Trgeometry_typmod_in(PG_FUNCTION_ARGS)

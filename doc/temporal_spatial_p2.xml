@@ -601,5 +601,84 @@ SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
 			</itemizedlist>
 		</sect2>
 	</sect1>
+
+	<sect1 xml:id="tgeo_comparisons">
+		<title>Comparisons</title>
+		<itemizedlist>
+			<listitem xml:id="tgeo_tcompare">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Return the result of the comparison</para>
+				<para><varname>tgeometry = tgeometry → boolean</varname></para>
+				<para><varname>tgeometry &lt;&gt; tgeometry → boolean</varname></para>
+				<para><varname>tgeometry &lt; tgeometry → boolean</varname></para>
+				<para><varname>tgeometry &gt; tgeometry → boolean</varname></para>
+				<para><varname>tgeometry &lt;= tgeometry → boolean</varname></para>
+				<para><varname>tgeometry &gt;= tgeometry → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tgeometry 'Point(1 1)@2001-01-01' = tgeometry 'Point(1 1)@2001-01-01';
+-- true
+SELECT tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' &lt;
+  tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-02]';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tgeo_aggregations">
+		<title>Aggregations</title>
+		<itemizedlist>
+			<listitem xml:id="tgeo_tcount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
+				<para>Temporal count</para>
+				<para><varname>tCount(tgeometry) → tint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tCount(geo)) FROM (VALUES (tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03]'),
+  (tgeometry '[Point(3 3)@2001-01-02, Point(4 4)@2001-01-04]')) t(geo);
+-- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 0@2001-01-04]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeo_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Return the bounding box that encompasses all temporal geometries in the group</para>
+				<para><varname>extent(tgeometry) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(geo) FROM (VALUES (tgeometry 'Point(1 1)@2001-01-01'),
+  (tgeometry 'Point(3 3)@2001-01-02')) t(geo);
+-- STBOX XT((1,1),(3,3),[2001-01-01, 2001-01-02])
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeo_merge_agg">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge all temporal geometries in the group</para>
+				<para><varname>merge(tgeometry) → tgeometry</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH temp(geo) AS (
+  SELECT tgeometry 'Point(1 1)@2001-01-01' UNION ALL
+  SELECT tgeometry 'Point(2 2)@2001-01-02' UNION ALL
+  SELECT tgeometry 'Point(3 3)@2001-01-03')
+SELECT ST_AsText(merge(geo)) FROM temp;
+-- {POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tgeo_indexing">
+		<title>Indexing</title>
+		<para>GiST and SP-GiST indexes can be defined for table columns of the <varname>tgeometry</varname> and <varname>tgeography</varname> types. An example of index creation is as follows.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX tgeo_gist_idx ON tgeo_test USING GIST(geo);
+CREATE INDEX tgeo_spgist_idx ON tgeo_test USING SPGIST(geo);
+</programlisting>
+		<para>The operators that can be used in queries that take advantage of an index are those listed in the section about <link linkend="tgeo_spatial_bbox">bounding box operators</link>.</para>
+	</sect1>
 </chapter>
 

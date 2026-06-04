@@ -1,0 +1,241 @@
+<!--
+Copyright(c) MobilityDB Contributors
+
+This documentation is licensed under a
+Creative Commons Attribution-Share Alike 3.0 License
+https://creativecommons.org/licenses/by-sa/3.0/
+-->
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="MEOS Ecosystem" id="meos-ecosystem">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1"
+                  connect="1" arrows="1" fold="1" page="1" pageScale="1"
+                  pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             LAYER LABELS
+        ═══════════════════════════════════════════════════════════════ -->
+
+        <mxCell id="L1" value="HTTP / OGC API"
+          style="text;html=1;fontStyle=1;fontSize=10;align=left;strokeColor=none;fillColor=none;"
+          vertex="1" parent="1">
+          <mxGeometry x="10" y="60" width="130" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L2" value="SQL / Query engines"
+          style="text;html=1;fontStyle=1;fontSize=10;align=left;strokeColor=none;fillColor=none;"
+          vertex="1" parent="1">
+          <mxGeometry x="10" y="160" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L3" value="C library (core)"
+          style="text;html=1;fontStyle=1;fontSize=10;align=left;strokeColor=none;fillColor=none;"
+          vertex="1" parent="1">
+          <mxGeometry x="10" y="280" width="130" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="L4" value="Language bindings"
+          style="text;html=1;fontStyle=1;fontSize=10;align=left;strokeColor=none;fillColor=none;"
+          vertex="1" parent="1">
+          <mxGeometry x="10" y="390" width="140" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             NODES
+        ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- HTTP layer -->
+        <mxCell id="api" value="MobilityAPI&#xa;(HTTP / OGC API)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;"
+          vertex="1" parent="1">
+          <mxGeometry x="460" y="60" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- SQL layer -->
+        <mxCell id="pg" value="MobilityDB&#xa;(PostgreSQL)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;"
+          vertex="1" parent="1">
+          <mxGeometry x="270" y="160" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="duck" value="MobilityDuck&#xa;(DuckDB)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;"
+          vertex="1" parent="1">
+          <mxGeometry x="650" y="160" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- MEOS core -->
+        <mxCell id="meos" value="MEOS&#xa;C library"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;"
+          vertex="1" parent="1">
+          <mxGeometry x="420" y="270" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Language bindings -->
+        <mxCell id="py" value="PyMEOS&#xa;(Python)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="java" value="JMEOS&#xa;(Java)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="290" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rust" value="meos-rs&#xa;(Rust)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="420" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="go" value="GoMEOS&#xa;(Go)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="550" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="net" value="MEOS.NET&#xa;(.NET / C#)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="680" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="js" value="MEOS.js&#xa;(JavaScript)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="810" y="390" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- MEOS-API (shared catalog) -->
+        <mxCell id="meosapi" value="MEOS-API&#xa;(meos-api.json)"
+          style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="270" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             EDGES
+        ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- MobilityAPI ↔ SQL layers -->
+        <mxCell id="e1" style="endArrow=open;endFill=0;startArrow=open;startFill=0;"
+          edge="1" source="api" target="pg" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" style="endArrow=open;endFill=0;startArrow=open;startFill=0;"
+          edge="1" source="api" target="duck" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SQL layers → MEOS -->
+        <mxCell id="e3" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="pg" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="duck" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Language bindings → MEOS -->
+        <mxCell id="e5" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="py" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="java" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="rust" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e8" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="go" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e9" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="net" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e10" style="endArrow=open;endFill=0;startArrow=none;"
+          edge="1" source="js" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- MEOS-API ↔ MEOS (generates catalog from headers) -->
+        <mxCell id="e11"
+          style="endArrow=open;endFill=0;startArrow=none;dashed=1;"
+          edge="1" source="meosapi" target="meos" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11a" value="parses headers"
+          style="edgeLabel;html=1;fontSize=9;" vertex="1" connectable="0" parent="e11">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             LEGEND
+        ═══════════════════════════════════════════════════════════════ -->
+
+        <mxCell id="leg0" value="Legend" style="text;html=1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="160" y="480" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg1" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="505" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1t" value="SQL / query-engine binding"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="200" y="505" width="180" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg2" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="530" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2t" value="Language binding"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="200" y="530" width="180" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg3" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="555" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3t" value="API / service layer"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="200" y="555" width="180" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg4" value=""
+          style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="580" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg4t" value="Tooling / metadata (MEOS-API catalog)"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="200" y="580" width="240" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

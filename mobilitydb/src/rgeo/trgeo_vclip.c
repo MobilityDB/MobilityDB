@@ -62,8 +62,9 @@
 
 PG_FUNCTION_INFO_V1(VClip_poly_point);
 /**
- * @brief Return the temporal distance between the geometry/geography 
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between a polygon and a point
+ * @sqlfn v_clip_poly_point()
  */
 PGDLLEXPORT Datum
 VClip_poly_point(PG_FUNCTION_ARGS)
@@ -87,8 +88,9 @@ VClip_poly_point(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_poly_poly);
 /**
- * @brief Return the temporal distance between the geometry/geography
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between two polygons
+ * @sqlfn v_clip_poly_poly()
  */
 PGDLLEXPORT Datum
 VClip_poly_poly(PG_FUNCTION_ARGS)
@@ -113,8 +115,10 @@ VClip_poly_poly(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_point);
 /**
- * @brief Return the temporal distance between the geometry/geography
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between a temporal rigid geometry and a
+ * point at a given timestamp
+ * @sqlfn v_clip_tpoly_point()
  */
 PGDLLEXPORT Datum
 VClip_tpoly_point(PG_FUNCTION_ARGS)
@@ -148,8 +152,10 @@ VClip_tpoly_point(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_poly);
 /**
- * @brief Return the temporal distance between the geometry/geography
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between a temporal rigid geometry and a
+ * polygon at a given timestamp
+ * @sqlfn v_clip_tpoly_poly()
  */
 PGDLLEXPORT Datum
 VClip_tpoly_poly(PG_FUNCTION_ARGS)
@@ -185,8 +191,10 @@ VClip_tpoly_poly(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_tpoint);
 /**
- * @brief Return the temporal distance between the geometry/geography
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between a temporal rigid geometry and a
+ * temporal point at a given timestamp
+ * @sqlfn v_clip_tpoly_tpoint()
  */
 PGDLLEXPORT Datum
 VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
@@ -221,8 +229,10 @@ VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_tpoly);
 /**
- * @brief Return the temporal distance between the geometry/geography
- * point/polygon and the temporal rigid geometry
+ * @ingroup mobilitydb_rgeo_dist
+ * @brief Return the V-clip distance between two temporal rigid geometries at
+ * a given timestamp
+ * @sqlfn v_clip_tpoly_tpoly()
  */
 PGDLLEXPORT Datum
 VClip_tpoly_tpoly(PG_FUNCTION_ARGS)

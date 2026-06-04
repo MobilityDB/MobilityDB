@@ -97,6 +97,22 @@
  * @defgroup mobilitydb_rgeo_agg Aggregate functions
  * @ingroup mobilitydb_rgeo
  * @brief Aggregate functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_tile Tile functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Tile and split functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_bbox Bounding box functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Bounding box functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_boxops Bounding box operators
+ * @ingroup mobilitydb_rgeo
+ * @brief Bounding box operator functions for temporal rigid geometries
+ *
+ * @defgroup mobilitydb_rgeo_analytics Analytics functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Analytics functions for temporal rigid geometries
  */
 
 /*****************************************************************************/

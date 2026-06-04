@@ -1,0 +1,220 @@
+<!--
+Copyright(c) MobilityDB Contributors
+
+This documentation is licensed under a
+Creative Commons Attribution-Share Alike 3.0 License
+https://creativecommons.org/licenses/by-sa/3.0/
+-->
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Spatiotemporal Type Hierarchy" id="spatiotemporal-hierarchy">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1"
+                  connect="1" arrows="1" fold="1" page="1" pageScale="1"
+                  pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══════════════ Abstract supertypes (italic) ═══════════════ -->
+
+        <mxCell id="2" value="&lt;i&gt;TSpatial&lt;/i&gt;"
+          style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="430" y="40" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="4" value="&lt;i&gt;TGeo&lt;/i&gt;"
+          style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="160" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════ Concrete spatiotemporal types ═══════════════ -->
+
+        <mxCell id="3" value="TCbuffer"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="30" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="5" value="TNpoint"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="290" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="6" value="TPose"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="420" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="7" value="TRGeometry"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="560" y="160" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════ Pending types (dashed / yellow) ═══════════════ -->
+        <!-- TH3Index: pending reclassification from talpha to tspatial      -->
+        <!-- TPCPoint: pending pgPointCloud upstream merge (branch: pointcloud) -->
+
+        <mxCell id="8" value="TH3Index"
+          style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="700" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="9" value="TPCPoint"
+          style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="830" y="160" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════ TGeo subtypes ═══════════════ -->
+
+        <mxCell id="10" value="TGeometry"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="90" y="290" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="11" value="TGeography"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="230" y="290" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="12" value="TGeomPoint"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="90" y="400" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="13" value="TGeogPoint"
+          style="rounded=0;whiteSpace=wrap;html=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="230" y="400" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════ Inheritance edges (hollow triangle at supertype) ═══════════════ -->
+        <!-- Convention: source=subtype, target=supertype; endArrow at supertype end -->
+
+        <mxCell id="20" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="3" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TGeo → TSpatial with total/exclusive annotation -->
+        <mxCell id="21" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="4" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="21a" value="total/exclusive"
+          style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;"
+          vertex="1" connectable="0" parent="21">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="22" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="5" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="23" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="6" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="24" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="7" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Pending inheritance edges (dashed) -->
+        <mxCell id="25" style="endArrow=block;endFill=0;startArrow=none;dashed=1;"
+          edge="1" source="8" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="26" style="endArrow=block;endFill=0;startArrow=none;dashed=1;"
+          edge="1" source="9" target="2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TPose → TRGeometry: composition (TRGeometry wraps a TPose trajectory) -->
+        <mxCell id="27"
+          style="endArrow=none;startArrow=diamondThin;startFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+          edge="1" source="6" target="7" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TGeo → TGeometry, TGeography (total/exclusive) -->
+        <mxCell id="28" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="10" target="4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="28a" value="total/exclusive"
+          style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;"
+          vertex="1" connectable="0" parent="28">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="29" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="11" target="4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="29a" value="total/exclusive"
+          style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;"
+          vertex="1" connectable="0" parent="29">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- TGeometry → TGeomPoint, TGeography → TGeogPoint -->
+        <mxCell id="30" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="12" target="10" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="31" style="endArrow=block;endFill=0;startArrow=none;"
+          edge="1" source="13" target="11" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════ Legend ═══════════════ -->
+        <mxCell id="40" value="Legend" style="text;html=1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="460" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="41" value=""
+          style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;"
+          vertex="1" parent="1">
+          <mxGeometry x="30" y="485" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="42" value="Abstract type"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="70" y="485" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="43" value=""
+          style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#fff2cc;strokeColor=#d6b656;"
+          vertex="1" parent="1">
+          <mxGeometry x="30" y="510" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="44" value="Pending (branch not yet merged)"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="70" y="510" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="45" value="◇ composition (TRGeometry wraps a TPose)"
+          style="text;html=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="30" y="535" width="280" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

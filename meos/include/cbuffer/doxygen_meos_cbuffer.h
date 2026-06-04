@@ -64,6 +64,10 @@
  * @ingroup meos_cbuffer
  * @brief Distance functions for temporal circular buffers
  *
+ * @defgroup meos_cbuffer_agg Aggregate functions
+ * @ingroup meos_cbuffer
+ * @brief Aggregate functions for temporal circular buffers
+ *
  * @defgroup meos_cbuffer_comp Comparison functions
  * @ingroup meos_cbuffer
  * @brief Comparison functions for temporal circular buffers
