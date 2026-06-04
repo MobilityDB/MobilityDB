@@ -923,7 +923,7 @@ minus_date_date(DateADT d1, DateADT d2)
  * datatypes have the same lower bound, Julian day zero.
  */
 Timestamp
-date2timestamp_opt_overflow(DateADT dateVal, int *overflow)
+meos_date2timestamp_opt_overflow(DateADT dateVal, int *overflow) /* MEOS */
 {
   Timestamp  result;
 
@@ -969,7 +969,7 @@ date2timestamp_opt_overflow(DateADT dateVal, int *overflow)
 static TimestampTz
 date2timestamp(DateADT dateVal)
 {
-  return date2timestamp_opt_overflow(dateVal, NULL);
+  return meos_date2timestamp_opt_overflow(dateVal, NULL);
 }
 
 /**
