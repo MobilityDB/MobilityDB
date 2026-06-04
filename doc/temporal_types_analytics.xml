@@ -567,12 +567,11 @@ FROM unnest(bins(tstzspanset '{[2001-01-15, 2001-01-17],[2001-01-22, 2001-01-25]
 				</listitem>
 
 				<listitem xml:id="getBin">
-					<indexterm significance="normal"><primary><varname/></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getBin</varname></primary></indexterm>
 					<para>Return the bin that contains a number or a timestamp</para>
 					<para><varname>getBin(number,size number,origin number=0) → span</varname></para>
-					<para><varname>getBin(date,duration interval,origin date='2000-01-03') → </varname></para>
-					<para><varname>getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  timestamptz</varname></para>
+					<para><varname>getBin(date,duration interval,origin date='2000-01-03') → datespan</varname></para>
+					<para><varname>getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → tstzspan</varname></para>
 					<para>If the origin is not specified, it is set by default to 0 for value bins and to Monday, January 3, 2000 for time bins.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getBin(2, 2);
@@ -580,7 +579,7 @@ SELECT getBin(2, 2);
 SELECT getBin(2, 2.5, 1.5);
 -- [1.5, 4)
 SELECT getBin('2001-01-04', interval '1 week');
--- [2001-01-03, 2001-01-10)
+-- [2001-01-01, 2001-01-08)
 SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
 </programlisting>
