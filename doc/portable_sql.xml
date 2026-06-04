@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="portable_sql">
+	<title>Portable Named-Function Dialect</title>
+
+	<para>Every MobilityDB operator is also callable as a bare named function. A query written with named functions only, using no operator symbols, is portable: the same SQL runs unchanged on MobilityDB (PostgreSQL), MobilityDuck (DuckDB) and MobilitySpark (Apache Spark), which cannot register PostgreSQL operator symbols. Each named alias reuses the operator's own implementation, so it returns exactly the same result as the operator.</para>
+
+	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …), the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …), the distance functions <varname>tdistance</varname> and <varname>nearestApproachDistance</varname>, and the ever/always comparison functions (<varname>ever_eq</varname>, <varname>always_eq</varname>, …) are already named functions and need no mapping. The remaining operators map to bare names as follows.</para>
+
+	<informaltable frame="all" colsep="1" rowsep="1">
+		<?dblatex table-width="autowidth.column: 1 2 3"?>
+		<tgroup cols="3" align="left" colsep="1" rowsep="1">
+			<thead>
+				<row>
+					<entry>Category</entry>
+					<entry>Operator</entry>
+					<entry>Portable function</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row><entry>Topology</entry><entry>&amp;&amp;</entry><entry>overlaps(a, b)</entry></row>
+				<row><entry></entry><entry>@&gt;</entry><entry>contains(a, b)</entry></row>
+				<row><entry></entry><entry>&lt;@</entry><entry>contained(a, b)</entry></row>
+				<row><entry></entry><entry>-|-</entry><entry>adjacent(a, b)</entry></row>
+				<row><entry>Time position</entry><entry>&lt;&lt;#</entry><entry>before(a, b)</entry></row>
+				<row><entry></entry><entry>#&gt;&gt;</entry><entry>after(a, b)</entry></row>
+				<row><entry></entry><entry>&amp;&lt;#</entry><entry>overbefore(a, b)</entry></row>
+				<row><entry></entry><entry>#&amp;&gt;</entry><entry>overafter(a, b)</entry></row>
+				<row><entry>Space, X axis</entry><entry>&lt;&lt;</entry><entry>left(a, b)</entry></row>
+				<row><entry></entry><entry>&gt;&gt;</entry><entry>right(a, b)</entry></row>
+				<row><entry></entry><entry>&amp;&lt;</entry><entry>overleft(a, b)</entry></row>
+				<row><entry></entry><entry>&amp;&gt;</entry><entry>overright(a, b)</entry></row>
+				<row><entry>Space, Y axis</entry><entry>&lt;&lt;|</entry><entry>below(a, b)</entry></row>
+				<row><entry></entry><entry>|&gt;&gt;</entry><entry>above(a, b)</entry></row>
+				<row><entry></entry><entry>&amp;&lt;|</entry><entry>overbelow(a, b)</entry></row>
+				<row><entry></entry><entry>|&amp;&gt;</entry><entry>overabove(a, b)</entry></row>
+				<row><entry>Space, Z axis</entry><entry>&lt;&lt;/</entry><entry>front(a, b)</entry></row>
+				<row><entry></entry><entry>/&gt;&gt;</entry><entry>back(a, b)</entry></row>
+				<row><entry></entry><entry>&amp;&lt;/</entry><entry>overfront(a, b)</entry></row>
+				<row><entry></entry><entry>/&amp;&gt;</entry><entry>overback(a, b)</entry></row>
+				<row><entry>Temporal comparison</entry><entry>#=</entry><entry>teq(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;&gt;</entry><entry>tne(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;</entry><entry>tlt(a, b)</entry></row>
+				<row><entry></entry><entry>#&lt;=</entry><entry>tle(a, b)</entry></row>
+				<row><entry></entry><entry>#&gt;</entry><entry>tgt(a, b)</entry></row>
+				<row><entry></entry><entry>#&gt;=</entry><entry>tge(a, b)</entry></row>
+				<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry>tdistance(a, b)</entry></row>
+				<row><entry></entry><entry>|=|</entry><entry>nearestApproachDistance(a, b)</entry></row>
+				<row><entry>Same</entry><entry>~=</entry><entry>same(a, b)</entry></row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+
+	<para>For example, the bounding-box overlap <literal>t1.trip &amp;&amp; t2.trip</literal> is written portably as <literal>overlaps(t1.trip, t2.trip)</literal>, and the temporal-before test <literal>p1.period &lt;&lt;# p2.period</literal> as <literal>before(p1.period, p2.period)</literal>.</para>
+</chapter>
