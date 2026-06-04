@@ -80,6 +80,7 @@
 			</listitem>
 		</itemizedlist>
 		<para>In the following, we specify with the symbol &Z_support; that the function supports 3D geometries and with the symbol &geography_support; that the function supports geographies.</para>
+		<para>Operational guidance on choosing between <varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, and <varname>tgeography</varname>; the SRID and dimensionality conventions the implementation enforces; and the named numerical hazards production workloads should anticipate is collected in <xref linkend="geo_production_guidance"/>.</para>
 	</sect1>
 
 	<sect1 xml:id="tgeo_inout">
