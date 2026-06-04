@@ -187,6 +187,10 @@ if(RGEO)
   message(STATUS "Including rigid geometries")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud temporal types")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 
 # PostgreSQL
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:common>")

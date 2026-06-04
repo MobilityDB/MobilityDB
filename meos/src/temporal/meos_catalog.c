@@ -124,6 +124,13 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TGEOMETRY] = "tgeometry",
   [T_TGEOGRAPHY] = "tgeography",
   [T_TRGEOMETRY] = "trgeometry",
+  [T_PCPOINT] = "pcpoint",
+  [T_PCPOINTSET] = "pcpointset",
+  [T_TPCPOINT] = "tpcpoint",
+  [T_PCPATCH] = "pcpatch",
+  [T_PCPATCHSET] = "pcpatchset",
+  [T_TPCPATCH] = "tpcpatch",
+  [T_TPCBOX] = "tpcbox",
 };
 
 /**
@@ -226,6 +233,8 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_POSESET,       T_POSE},
   {T_NPOINTSET,     T_NPOINT},
   {T_CBUFFERSET,    T_CBUFFER},
+  {T_PCPOINTSET,    T_PCPOINT},
+  {T_PCPATCHSET,    T_PCPATCH},
 };
 
 /**
@@ -278,6 +287,8 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TRGEOMETRY, T_POSE},
   {T_TNPOINT,    T_NPOINT},
   {T_TCBUFFER,   T_CBUFFER},
+  {T_TPCPOINT,   T_PCPOINT},
+  {T_TPCPATCH,   T_PCPATCH},
 };
 
 /*****************************************************************************/
@@ -598,6 +609,9 @@ meos_basetype(MeosType type)
 #if POSE || RGEO
     || type == T_POSE
 #endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
+#endif
     );
 }
 #endif
@@ -621,6 +635,9 @@ basetype_varlength(MeosType type)
   return (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
 #endif
     );
 }
@@ -658,6 +675,10 @@ meostype_length(MeosType type)
 #endif
 #if POSE || RGEO
   if (type == T_POSE)
+    return -1;
+#endif
+#if POINTCLOUD
+  if (type == T_PCPOINT || type == T_PCPATCH)
     return -1;
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -753,6 +774,9 @@ set_basetype(MeosType type)
 #if POSE || RGEO
       || type == T_POSE
 #endif
+#if POINTCLOUD
+      || type == T_PCPOINT || type == T_PCPATCH
+#endif
       );
 }
 #endif
@@ -774,6 +798,9 @@ set_type(MeosType type)
 #endif
 #if POSE || RGEO
       || type == T_POSESET
+#endif
+#if POINTCLOUD
+      || type == T_PCPOINTSET || type == T_PCPATCHSET
 #endif
       );
 }
@@ -903,6 +930,32 @@ ensure_spatialset_type(MeosType type)
   return false;
 }
 #endif /* MEOS */
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a pgpointcloud base type (pcpoint, pcpatch)
+ */
+inline bool
+pointcloud_basetype(MeosType type)
+{
+  return (type == T_PCPOINT || type == T_PCPATCH);
+}
+
+/**
+ * @brief Return true if the type is a pgpointcloud set type
+ * (pcpointset, pcpatchset)
+ * @note Unlike @p spatialset_type, pointcloud sets carry no bounding box —
+ * dimension-level access requires loading the schema XML keyed by pcid
+ * from the pgpointcloud @p pointcloud_formats PG catalog table, which
+ * MEOS cannot do — the TPCBox bbox type is the separate structure that
+ * carries pointcloud spatial bounds.
+ */
+inline bool
+pointcloudset_type(MeosType type)
+{
+  return (type == T_PCPOINTSET || type == T_PCPATCHSET);
+}
+#endif /* POINTCLOUD */
 
 /*****************************************************************************/
 
@@ -1084,6 +1137,9 @@ temporal_type(MeosType type)
 #if RGEO
     || type == T_TRGEOMETRY
 #endif
+#if POINTCLOUD
+    || type == T_TPCPOINT || type == T_TPCPATCH
+#endif
     );
 }
 
@@ -1108,6 +1164,9 @@ temporal_basetype(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
 #endif
     );
 }
@@ -1164,6 +1223,18 @@ talpha_type(MeosType type)
   return (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
     type == T_TDOUBLE3 || type == T_TDOUBLE4);
 }
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a temporal pgpointcloud type
+ *   (tpcpoint, tpcpatch) — its bounding box is a TPCBox.
+ */
+inline bool
+tpointcloud_temptype(MeosType type)
+{
+  return (type == T_TPCPOINT || type == T_TPCPATCH);
+}
+#endif
 
 /**
  * @brief Return true if the type is a temporal number type

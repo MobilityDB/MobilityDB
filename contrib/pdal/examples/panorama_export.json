@@ -1,0 +1,36 @@
+{
+  "_comment": [
+    "Heritage / PANORAMA workflow — export one campaign of one site to",
+    "a Potree-ready LAS file. Replace site_id and the timestamp in the",
+    "WHERE clause for each campaign.",
+    "",
+    "Companion design doc: examples/panorama_export.md.",
+    "",
+    "Assumes a `heritage_scans(site_id int, campaigns tpcpatch)` table.",
+    "After this pipeline writes /tmp/site_<id>_<campaign>.las, run:",
+    "  PotreeConverter /tmp/site_42_2024.las \\",
+    "    -o /var/www/potree/site42/2024 --overwrite",
+    "and serve <span>/var/www/potree/site42/2024/metadata.json</span> via the",
+    "PANORAMA front-end."
+  ],
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "host=/tmp dbname=panorama",
+      "query": "SELECT (EXTRACT(EPOCH FROM timestampN(s.campaigns, n)) * 1000000)::bigint AS t, valueN(s.campaigns, n) AS pcp, PC_PCId(valueN(s.campaigns, n)) AS pcid FROM heritage_scans s, generate_series(1, numInstants(s.campaigns)) n WHERE s.site_id = 42 AND timestampN(s.campaigns, n) = '2024-04-01'::timestamptz",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.las",
+      "filename": "/tmp/site_42_2024.las",
+      "extra_dims": "all",
+      "minor_version": "4",
+      "dataformat_id": "6",
+      "scale_x": "0.001",
+      "scale_y": "0.001",
+      "scale_z": "0.001"
+    }
+  ]
+}

@@ -65,6 +65,9 @@ endif()
 if(RGEO)
   add_subdirectory(rgeo)
 endif()
+if(POINTCLOUD)
+  add_subdirectory(pointcloud)
+endif()
 
 list(SORT PROJECT_SQL_FILES)
 

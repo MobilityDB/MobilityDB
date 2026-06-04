@@ -1,0 +1,60 @@
+{
+  "_comment": [
+    "Drone photogrammetry ingest — RGB-coloured point cloud from a",
+    "Structure-from-Motion / Multi-View Stereo pipeline (Pix4D,",
+    "RealityCapture, Metashape, OpenDroneMap) into a MobilityDB",
+    "tpcpatch column.",
+    "",
+    "Prerequisites:",
+    "  1. Register pcid 700 (X/Y/Z + R/G/B). See examples/",
+    "     drone_photogrammetry_ingest.sql.",
+    "  2. The destination table drone_photo_surveys is created by the",
+    "     same SQL file.",
+    "",
+    "Source format:",
+    "  This pipeline targets a .laz or .copc file. For .ply (the most",
+    "  common photogrammetry export), swap readers.las for readers.ply",
+    "  and drop the filters.assign for time_t (PLY has no per-point",
+    "  time). For PLY without per-point timestamps, set time_t to the",
+    "  campaign capture time so every point lands in a single instant:",
+    "      filters.assign value=['time_t = 1714386000000000']",
+    "  where 1714386000000000 = 2024-04-29 10:00:00 UTC in microseconds.",
+    "",
+    "Why one tpcpatch row per survey:",
+    "  Photogrammetry surveys are discrete campaigns (one flight, one",
+    "  reconstruction). Storing each survey as one tpcpatch lets you",
+    "  compare campaigns at the same site over time:",
+    "    - pcpatch_icp(s1.cloud, s2.cloud, ...) on per-instant patches",
+    "      gives the rigid alignment between two surveys (heritage",
+    "      facade settlement, road surface change).",
+    "    - tnpoints(cloud) over a campaign tells you reconstructed",
+    "      density per timestamp, useful for QC.",
+    "    - atGeometry(cloud, ST_GeomFromText('POLYGON(...)')) clips a",
+    "      survey to a parcel or bridge footprint."
+  ],
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "/path/to/photogrammetry.laz"
+    },
+    {
+      "type": "filters.assign",
+      "value": [
+        "time_t = GpsTime * 1000000"
+      ]
+    },
+    {
+      "type": "filters.sort",
+      "dimension": "time_t",
+      "order": "ASC"
+    },
+    {
+      "type": "writers.tpcpatch",
+      "connection": "dbname=mobility",
+      "table": "drone_photo_surveys",
+      "column": "cloud",
+      "pcid": 700,
+      "compression": "dimensional"
+    }
+  ]
+}

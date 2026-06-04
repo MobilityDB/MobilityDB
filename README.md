@@ -162,9 +162,9 @@ As can be seen, the PostgreSQL binaries are in the `bin` subdirectory while the 
 Once MobilityDB is installed, it needs to be enabled in each database you want to use it in. In the example below we use a database named `mobility`.
 ```bash
 createdb mobility
-psql mobility -c "CREATE EXTENSION PostGIS"
-psql mobility -c "CREATE EXTENSION MobilityDB"
+psql mobility -c "CREATE EXTENSION MobilityDB CASCADE"
 ```
+`CASCADE` resolves every required extension automatically. The exact set depends on the build flags MobilityDB was configured with: `postgis` is always pulled in, and `pointcloud` is also pulled in when the build had `-DPOINTCLOUD=ON`. For the optional companion extensions (`pointcloud_postgis`, `mobilitydb_pcl`, `h3`, `h3_postgis`, etc.) create them explicitly after MobilityDB; each declares its own `requires =` clause so `CASCADE` resolves the rest of the chain. See the [Building MobilityDB and MEOS](https://github.com/MobilityDB/MobilityDB/wiki/Building-MobilityDB-and-MEOS) wiki page for the full extension dependency tree.
 
 Docker Container
 -----------------

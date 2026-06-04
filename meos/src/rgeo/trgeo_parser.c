@@ -135,10 +135,10 @@ error:
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
- * no moreinput after the sequence
+ * no more input after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  * @param[in] geom Reference geometry
- * @param[out] result New sequence, may be NULL
+ * @return Newly-allocated TSequence on success, NULL on parse error
  */
 TSequence *
 trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,

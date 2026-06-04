@@ -1,0 +1,233 @@
+COPY tbl_tpcpatch TO '/tmp/tbl_tpcpatch' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tpcpatch_tmp;
+NOTICE:  table "tbl_tpcpatch_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tpcpatch_tmp AS TABLE tbl_tpcpatch WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tpcpatch_tmp FROM '/tmp/tbl_tpcpatch' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tpcpatch_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_tpcpatch
+  WHERE tpcpatchFromBinary(asBinary(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch
+  WHERE tpcpatchFromHexWKB(asHexWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT bool_and(pcid(inst) = 1) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(seq)  = 1) FROM tbl_tpcpatch_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(pcid(ss)   = 1) FROM tbl_tpcpatch_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(inst) = 1) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_discseq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(seq) BETWEEN 1 AND 10) FROM tbl_tpcpatch_seq;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(ss)  BETWEEN 1 AND 100) FROM tbl_tpcpatch_seqset;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(startNumPoints(inst) BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(endNumPoints(inst)   BETWEEN 1 AND 10) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numPoints(inst) = startNumPoints(inst)) FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numPoints(temp) >= 1) FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numPoints(temp) =
+  (SELECT COUNT(*) FROM points(temp))) FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(numInstants(temp) =
+  (SELECT COUNT(DISTINCT t) FROM points(temp))) FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp =  t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch t1, tbl_tpcpatch t2 WHERE t1.temp <  t2.temp;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch
+WHERE atTime(temp, tstzspan '[2001-01-01, 2002-01-01]') IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE atTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 1, 0)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT bool_and(atTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NULL)
+FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(minusTpcbox(temp,
+  tpcbox_zt(-100, -100, 0, 100, 100, 100,
+    tstzspan '[2001-01-01, 2001-12-31]', 999, 0)) IS NOT NULL)
+FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch
+WHERE atTpcboxFine(temp,
+  tpcbox_zt(-1000, -1000, -1000, 1000, 1000, 1000,
+    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT bool_and(numPoints(atTpcboxFine(temp,
+  tpcbox_zt(-1000, -1000, -1000, 1000, 1000, 1000,
+    tstzspan '[2001-01-01, 2002-01-01]', 1, 0))) <= numPoints(temp))
+FROM tbl_tpcpatch
+WHERE atTpcboxFine(temp,
+  tpcbox_zt(-1000, -1000, -1000, 1000, 1000, 1000,
+    tstzspan '[2001-01-01, 2002-01-01]', 1, 0)) IS NOT NULL;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch
+WHERE atGeometry(temp,
+  geometry 'SRID=0;POLYGON((-1000 -1000, 1000 -1000, 1000 1000, -1000 1000, -1000 -1000))'
+) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT bool_and(numPoints(atGeometry(temp, g.poly)) <= numPoints(temp))
+FROM tbl_tpcpatch_inst,
+     LATERAL (SELECT inst AS temp) t,
+     (SELECT geometry 'SRID=0;POLYGON((-50 -50, 50 -50, 50 50, -50 50, -50 -50))' AS poly) g
+WHERE atGeometry(t.temp, g.poly) IS NOT NULL;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(NOT eIntersects(temp,
+  geometry 'SRID=0;POLYGON((1000000 1000000, 1000000 1000001, 1000001 1000001, 1000001 1000000, 1000000 1000000))'))
+FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(eIntersects(temp,
+  geometry 'SRID=0;POLYGON((-10000 -10000, 10000 -10000, 10000 10000, -10000 10000, -10000 -10000))'))
+FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT
+  (SELECT COUNT(*) FROM tbl_tpcpatch t, LATERAL points(t.temp))
+  =
+  (SELECT COALESCE(SUM(numPoints(temp)), 0) FROM tbl_tpcpatch);
+ ?column? 
+----------
+ t
+(1 row)
+

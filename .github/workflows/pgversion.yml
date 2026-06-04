@@ -85,17 +85,53 @@ jobs:
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
-          sudo apt-get -y install lcov
+          # postgresql-N-pointcloud so the coverage build can compile
+          # -DPOINTCLOUD=ON; without it, meos/src/pointcloud/* (the
+          # consumer of pgPointCloud's libpc.a) plus the cross-cutting
+          # #if POINTCLOUD blocks in temporal/* are stripped at preprocess
+          # time and show as 404/missed on Coveralls. The runtime tests
+          # also need the 'pointcloud' PG extension available (CREATE
+          # EXTENSION mobilitydb CASCADE will pull it in). pgdg ships
+          # postgresql-${VER}-pointcloud for the supported PG versions.
+          sudo apt-get -y install lcov \
+            postgresql-${{ matrix.psql }}-pointcloud
+
+      - name: Build pgPointCloud from source (for libpc.a)
+        if: matrix.coverage == '1'
+        run: |
+          # MobilityDB's POINTCLOUD=ON build links against pgPointCloud's
+          # static lib (pointcloud-pg/lib/libpc.a, produced as a side-
+          # effect of the upstream autotools build). The runtime extension
+          # we installed above does NOT ship that static archive — only
+          # the .so. So clone + build pgPointCloud here just to harvest
+          # the libpc.a that meos/src/pointcloud/CMakeLists.txt:114
+          # checks for.
+          sudo apt-get -y install autoconf automake libtool \
+            libxml2-dev pkg-config
+          # The pgPointCloud source is vendored at pointcloud-pg/ (tracked
+          # in the branch); we just need to run its autotools build to
+          # produce the static archive.
+          cd pointcloud-pg
+          ./autogen.sh
+          ./configure \
+            --with-pgconfig=/usr/lib/postgresql/${{ matrix.psql }}/bin/pg_config
+          make -j $(nproc)
+          # Sanity: libpc.a must land where MobilityDB's CMake will look.
+          ls -la lib/libpc.a
 
       - name: Configure for gcc
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage build enables all opt-in subsystems so their sources get instrumented.
+          # Coverage matrix entry enables the opt-in subsystems whose
+          # sources would otherwise be stripped from the gcov-instrumented
+          # build. Non-coverage entries keep the lean default to verify
+          # the gating still works. POINTCLOUD=ON requires the
+          # pgPointCloud build step earlier in this job.
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON' || '' }} \
+            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DPOINTCLOUD=ON' || '' }} \
             ..
 
       - name: Build

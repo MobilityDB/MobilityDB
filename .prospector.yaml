@@ -1,0 +1,25 @@
+# Prospector config for the few Python scripts in this repo (currently
+# only `scripts/pointcloud_import/extract.py`). Codacy's Prospector
+# wrapper picks this file up from the repo root.
+#
+# pydocstyle's default profile leaves both D212 ("multi-line docstring
+# summary should start at the first line") and D213 ("…second line")
+# active even though they are mutually exclusive — any multi-line
+# docstring violates exactly one of them. Pick D212 (PEP 257) and
+# disable D213.
+#
+# `strictness:` is intentionally not set so Codacy's default linter set
+# stays in effect — only this targeted D213 disable is layered on top.
+pydocstyle:
+  run: true
+  disable:
+    - D213
+
+# pylint's `too-many-locals` default threshold (15) is unreasonably tight
+# for both `try_transform` (18 locals doing a single regex-driven rewrite
+# loop) and `main` (23 locals — argparse + I/O wiring). Either function
+# would lose readability if forced to factor more state into helpers, so
+# the two warnings are silenced rather than worked around.
+pylint:
+  disable:
+    - too-many-locals

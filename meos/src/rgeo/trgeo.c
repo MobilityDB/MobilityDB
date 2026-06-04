@@ -1242,8 +1242,7 @@ trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
  * timestamptz
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly before, false when
- * the restriction is before or equal
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_before_timestamptz()
  */
 Temporal *
@@ -1268,8 +1267,7 @@ trgeo_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * timestamptz
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly after, false when
- * the restriction is before or equal
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_after_timestamptz()
  */
 Temporal *
