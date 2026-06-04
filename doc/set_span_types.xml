@@ -16,10 +16,10 @@
 	</para>
 
 	<para>
-		The base types used for constructing set, span, and span set types are the types <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>,  <varname>text</varname>, <varname>date</varname>, and <varname>timestamptz</varname> (timestamp with time zone) provided by PostgreSQL, the types <varname>geometry</varname> and <varname>geography</varname> provided by PostGIS, and the type <varname>npoint</varname> (network point) provided by MobilityDB (see <xref linkend="temporal_network_points"/>). MobilityDB provides the following set and span types:
+		The base types used for constructing set, span, and span set types are the types <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>,  <varname>text</varname>, <varname>date</varname>, and <varname>timestamptz</varname> (timestamp with time zone) provided by PostgreSQL, the types <varname>geometry</varname> and <varname>geography</varname> provided by PostGIS, and the types <varname>cbuffer</varname> (circular buffer, see <xref linkend="temporal_circular_buffers"/>) and <varname>npoint</varname> (network point, see <xref linkend="temporal_network_points"/>) provided by MobilityDB. MobilityDB provides the following set and span types:
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>dateset</varname>,  <varname>tstzset</varname>,  <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname>.</para>
+				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>dateset</varname>,  <varname>tstzset</varname>,  <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, <varname>npointset</varname>.</para>
 			</listitem>
 			<listitem>
 				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>datespan</varname>, <varname>tstzspan</varname>.</para>
@@ -117,9 +117,11 @@ SELECT textset '{"highway"}';
 SELECT floatset '{3.5, 1.2}';
 -- Erroneous set: duplicate elements
 SELECT geomset '{"Point(1 1)", "Point(1 1)"}';
+-- Circular-buffer set: each element is a cbuffer WKT
+SELECT cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1.0)"}';
 </programlisting>
 		<para>
-			Notice that the elements of the sets <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, and <varname>npointset</varname> must be enclosed between double quotes. Notice also that geometries and geographies follow the order defined in PostGIS.
+			Notice that the elements of the sets <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, and <varname>npointset</varname> must be enclosed between double quotes. Notice also that geometries and geographies follow the order defined in PostGIS.
 		</para>
 
 		<para>
@@ -916,6 +918,12 @@ SELECT asEWKT(setSRID(geomset '{Point(1 1), Point(2 2)}', 5676));
 -- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
 SELECT asEWKT(setSRID(poseset '{"Pose(Point(1 1),1)", "Pose(Point(2 2),3)"}', 5676));
 -- SRID=5676;{"Pose(POINT(2 2),3)", "Pose(POINT(1 1),1)"}
+SELECT SRID(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)",
+  "Cbuffer(Point(2 2),1.0)"}');
+-- 4326
+SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)",
+  "Cbuffer(Point(2 2),1.0)"}', 3812));
+-- SRID=3812;{"Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),1)"}
 </programlisting>
 			</listitem>
 
