@@ -31,7 +31,7 @@ SELECT round(maxValue(
 ), 6);
    round   
 -----------
- 32.015621
+ 26.925824
 (1 row)
 
 SELECT round(maxValue(

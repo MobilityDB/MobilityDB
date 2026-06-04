@@ -1,9 +1,9 @@
 SELECT round(v_clip_poly_point(
   'Polygon((0 0,2 0,2 2,0 2,0 0))'::geometry,
   'Point(1 1)'::geometry), 6);
-  round   
-----------
- 1.414214
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(v_clip_poly_point(
@@ -11,7 +11,7 @@ SELECT round(v_clip_poly_point(
   'Point(3 3)'::geometry), 6);
   round   
 ----------
- 3.162278
+ 1.414214
 (1 row)
 
 SELECT round(v_clip_poly_point(
@@ -19,15 +19,15 @@ SELECT round(v_clip_poly_point(
   'Point(1 0)'::geometry), 6);
  round 
 -------
-     1
+     0
 (1 row)
 
 SELECT round(v_clip_poly_poly(
   'Polygon((0 0,2 0,2 2,0 2,0 0))'::geometry,
   'Polygon((1 1,3 1,3 3,1 3,1 1))'::geometry), 6);
-  round   
-----------
- 1.414214
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(v_clip_poly_poly(
@@ -35,7 +35,7 @@ SELECT round(v_clip_poly_poly(
   'Polygon((2 2,3 2,3 3,2 3,2 2))'::geometry), 6);
   round   
 ----------
- 2.236068
+ 1.414214
 (1 row)
 
 SELECT round(v_clip_poly_poly(
@@ -68,9 +68,9 @@ SELECT round(v_clip_tpoly_poly(
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
   'Polygon((1 1,3 1,3 3,1 3,1 1))'::geometry,
   timestamptz '2000-01-01'), 6);
-  round   
-----------
- 1.414214
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(v_clip_tpoly_poly(
@@ -79,16 +79,16 @@ SELECT round(v_clip_tpoly_poly(
   timestamptz '2000-01-01'), 6);
   round   
 ----------
- 4.472136
+ 2.828427
 (1 row)
 
 SELECT round(v_clip_tpoly_tpoint(
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
   tgeompoint 'Point(1 1)@2000-01-01',
   timestamptz '2000-01-01'), 6);
-  round   
-----------
- 1.414214
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(v_clip_tpoly_tpoint(
@@ -104,9 +104,9 @@ SELECT round(v_clip_tpoly_tpoly(
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(0 0),0)@2000-01-01',
   trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));Pose(Point(1 1),0)@2000-01-01',
   timestamptz '2000-01-01'), 6);
-  round   
-----------
- 1.414214
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(v_clip_tpoly_tpoly(
@@ -115,6 +115,6 @@ SELECT round(v_clip_tpoly_tpoly(
   timestamptz '2000-01-01'), 6);
   round   
 ----------
- 6.403124
+ 5.656854
 (1 row)
 

@@ -108,7 +108,7 @@ static inline double
 compute_s(POINT4D p, POINT4D vs, POINT4D ve)
 {
   return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    (ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y);
+    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
 }
 
 /**
