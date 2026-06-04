@@ -543,7 +543,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   TSequence *syncseq1, *syncseq2;
   synchronize_tsequence_tsequence(seq1, seq2, &syncseq1, &syncseq2, crossings);
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
-  // MeosType basetype = temptype_basetype(seq1->temptype);
+  // meosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 0; i < syncseq1->count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
@@ -1443,13 +1443,17 @@ Span *
 temporal_extent_transfn(Span *state, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
-  if (! state || ! temp)
-  {
-    if (! state && ! temp)
-      return NULL;
-    if (! state)
-      return temporal_to_tstzspan(temp);
+  if (! state && ! temp)
+    return NULL;
+  /* Non-null state and null temporal, return the state */
+  if (! temp)
     return state;
+  /* Null state and non-null temporal, return the bbox of the temporal */
+  if (! state)
+  {
+    Span *result = palloc0(sizeof(Span));
+    temporal_set_tstzspan(temp, result);
+    return result;
   }
 
   Span s;

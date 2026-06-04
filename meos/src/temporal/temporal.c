@@ -1086,6 +1086,7 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup meos_temporal_conversion
  * @brief Return the bounding period of a temporal value
@@ -1102,7 +1103,7 @@ temporal_to_tstzspan(const Temporal *temp)
   temporal_set_tstzspan(temp, result);
   return result;
 }
-
+#endif /* MEOS */
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the value span of a temporal number

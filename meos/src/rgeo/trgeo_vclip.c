@@ -269,6 +269,7 @@ edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
     {
       /* Find edge with the largest positive distance
          to the given point */
+      double distance = -1;
       getPoint4d_p(poly->rings[0], i + 1, &v_end);
       if (pose)
         apply_pose_point4d(&v_end, pose);
@@ -276,7 +277,7 @@ edge_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
       if ((ccw_poly && angle > 0)
         || (!ccw_poly && angle < 0))
       {
-        double distance = compute_dist2(point, v_start, v_end);
+        distance = compute_dist2(point, v_start, v_end);
         if (distance > dmax)
         {
           dmax = distance;

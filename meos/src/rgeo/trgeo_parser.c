@@ -336,6 +336,7 @@ trgeo_parse(const char **str, MeosType temptype)
 
   p_whitespace(str);
 
+  const char *bak = *str;
   Temporal *result = NULL; /* keep compiler quiet */
   /* Determine the subtype of the temporal rigid geometry and call the
    * function corresponding to the subtype passing the SRID */
@@ -356,7 +357,7 @@ trgeo_parse(const char **str, MeosType temptype)
   }
   else if (**str == '{')
   {
-    const char *bak = *str;
+    bak = *str;
     p_obrace(str);
     p_whitespace(str);
     if (**str == '[' || **str == '(')
