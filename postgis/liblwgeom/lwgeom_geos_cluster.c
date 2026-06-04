@@ -59,8 +59,9 @@ static int combine_geometries(UNIONFIND* uf, void** geoms, uint32_t num_geoms, v
 static GEOSGeometry*
 geos_envelope_surrogate(const LWGEOM* g)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	if (lwgeom_is_empty(g))
-		return GEOSGeom_createEmptyPolygon();
+		return GEOSGeom_createEmptyPolygon_r(ctx);
 
 	if (lwgeom_get_type(g) == POINTTYPE) {
 		const POINT2D* pt = getPoint2d_cp(lwgeom_as_lwpoint(g)->point, 0);
@@ -79,12 +80,13 @@ geos_envelope_surrogate(const LWGEOM* g)
 static struct STRTree
 make_strtree(void** geoms, uint32_t num_geoms, char is_lwgeom)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	struct STRTree tree;
 	tree.envelopes = 0;
 	tree.num_geoms = 0;
 	tree.geom_ids = 0;
 
-	tree.tree = GEOSSTRtree_create(STRTREE_NODE_CAPACITY);
+	tree.tree = GEOSSTRtree_create_r(ctx, STRTREE_NODE_CAPACITY);
 	if (tree.tree == NULL)
 	{
 		return tree;
@@ -100,7 +102,7 @@ make_strtree(void** geoms, uint32_t num_geoms, char is_lwgeom)
 		{
 			tree.geom_ids[i] = i;
 			tree.envelopes[i] = geos_envelope_surrogate(geoms[i]);
-			GEOSSTRtree_insert(tree.tree, tree.envelopes[i], &(tree.geom_ids[i]));
+			GEOSSTRtree_insert_r(ctx, tree.tree, tree.envelopes[i], &(tree.geom_ids[i]));
 		}
 	}
 	else
@@ -110,7 +112,7 @@ make_strtree(void** geoms, uint32_t num_geoms, char is_lwgeom)
 		for (i = 0; i < num_geoms; i++)
 		{
 			tree.geom_ids[i] = i;
-			GEOSSTRtree_insert(tree.tree, geoms[i], &(tree.geom_ids[i]));
+			GEOSSTRtree_insert_r(ctx, tree.tree, geoms[i], &(tree.geom_ids[i]));
 		}
 	}
 
@@ -121,14 +123,15 @@ make_strtree(void** geoms, uint32_t num_geoms, char is_lwgeom)
 static void
 destroy_strtree(struct STRTree * tree)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	size_t i;
-	GEOSSTRtree_destroy(tree->tree);
+	GEOSSTRtree_destroy_r(ctx, tree->tree);
 
 	if (tree->envelopes)
 	{
 		for (i = 0; i < tree->num_geoms; i++)
 		{
-			GEOSGeom_destroy(tree->envelopes[i]);
+			GEOSGeom_destroy_r(ctx, tree->envelopes[i]);
 		}
 		lwfree(tree->envelopes);
 	}
@@ -157,6 +160,7 @@ query_accumulate(void* item, void* userdata)
 int
 union_intersecting_pairs(GEOSGeometry** geoms, uint32_t num_geoms, UNIONFIND* uf)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	uint32_t p, i;
 	struct STRTree tree;
 	struct QueryContext cxt =
@@ -181,11 +185,11 @@ union_intersecting_pairs(GEOSGeometry** geoms, uint32_t num_geoms, UNIONFIND* uf
 	{
 		const GEOSPreparedGeometry* prep = NULL;
 
-		if (!geoms[p] || GEOSisEmpty(geoms[p]))
+		if (!geoms[p] || GEOSisEmpty_r(ctx, geoms[p]))
 			continue;
 
 		cxt.num_items_found = 0;
-		GEOSSTRtree_query(tree.tree, geoms[p], &query_accumulate, &cxt);
+		GEOSSTRtree_query_r(ctx, tree.tree, geoms[p], &query_accumulate, &cxt);
 
 		for (i = 0; i < cxt.num_items_found; i++)
 		{
@@ -193,7 +197,7 @@ union_intersecting_pairs(GEOSGeometry** geoms, uint32_t num_geoms, UNIONFIND* uf
 
 			if (p != q && UF_find(uf, p) != UF_find(uf, q))
 			{
-				int geos_type = GEOSGeomTypeId(geoms[p]);
+				int geos_type = GEOSGeomTypeId_r(ctx, geoms[p]);
 				int geos_result;
 
 				/* Don't build prepared a geometry around a Point or MultiPoint -
@@ -205,13 +209,13 @@ union_intersecting_pairs(GEOSGeometry** geoms, uint32_t num_geoms, UNIONFIND* uf
 					/* Lazy initialize prepared geometry */
 					if (prep == NULL)
 					{
-						prep = GEOSPrepare(geoms[p]);
+						prep = GEOSPrepare_r(ctx, geoms[p]);
 					}
-					geos_result = GEOSPreparedIntersects(prep, geoms[q]);
+					geos_result = GEOSPreparedIntersects_r(ctx, prep, geoms[q]);
 				}
 				else
 				{
-					geos_result = GEOSIntersects(geoms[p], geoms[q]);
+					geos_result = GEOSIntersects_r(ctx, geoms[p], geoms[q]);
 				}
 				if (geos_result > 1)
 				{
@@ -226,7 +230,7 @@ union_intersecting_pairs(GEOSGeometry** geoms, uint32_t num_geoms, UNIONFIND* uf
 		}
 
 		if (prep)
-			GEOSPreparedGeom_destroy(prep);
+			GEOSPreparedGeom_destroy_r(ctx, prep);
 
 		if (!success)
 			break;
@@ -262,6 +266,7 @@ cluster_intersecting(GEOSGeometry** geoms, uint32_t num_geoms, GEOSGeometry*** c
 static int
 dbscan_update_context(GEOSSTRtree* tree, struct QueryContext* cxt, LWGEOM** geoms, uint32_t p, double eps)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	cxt->num_items_found = 0;
 
 	GEOSGeometry* query_envelope;
@@ -280,9 +285,9 @@ dbscan_update_context(GEOSSTRtree* tree, struct QueryContext* cxt, LWGEOM** geom
 	if (!query_envelope)
 		return LW_FAILURE;
 
-	GEOSSTRtree_query(tree, query_envelope, &query_accumulate, cxt);
+	GEOSSTRtree_query_r(ctx, tree, query_envelope, &query_accumulate, cxt);
 
-	GEOSGeom_destroy(query_envelope);
+	GEOSGeom_destroy_r(ctx, query_envelope);
 
 	return LW_SUCCESS;
 }
@@ -559,6 +564,7 @@ cluster_within_distance(LWGEOM** geoms, uint32_t num_geoms, double tolerance, LW
 static int
 combine_geometries(UNIONFIND* uf, void** geoms, uint32_t num_geoms, void*** clusterGeoms, uint32_t* num_clusters, char is_lwgeom)
 {
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 	size_t i, j, k;
 
 	/* Combine components of each cluster into their own GeometryCollection */
@@ -588,9 +594,9 @@ combine_geometries(UNIONFIND* uf, void** geoms, uint32_t num_geoms, void*** clus
 			}
 			else
 			{
-				int srid = GEOSGetSRID(((GEOSGeometry**) geoms_in_cluster)[0]);
-				GEOSGeometry* combined = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, (GEOSGeometry**) geoms_in_cluster, j);
-				GEOSSetSRID(combined, srid);
+				int srid = GEOSGetSRID_r(ctx, ((GEOSGeometry**) geoms_in_cluster)[0]);
+				GEOSGeometry* combined = GEOSGeom_createCollection_r(ctx, GEOS_GEOMETRYCOLLECTION, (GEOSGeometry**) geoms_in_cluster, j);
+				GEOSSetSRID_r(ctx, combined, srid);
 				(*clusterGeoms)[k++] = combined;
 			}
 			j = 0;
