@@ -217,3 +217,14 @@ SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry 'SRID=5676;Polygo
      0
 (1 row)
 
+CREATE TABLE tbl_trgeometry_big_allthesame AS
+  SELECT k, trgeometry(geometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1))',
+    tpose(pose 'SRID=5676;Pose(Point(25 25), 0.3)', timeSpan(temp))) AS temp
+  FROM tbl_trgeometry2d WHERE temp IS NOT NULL;
+SELECT 100
+CREATE INDEX tbl_trgeometry_big_allthesame_quadtree_idx ON tbl_trgeometry_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_trgeometry_big_allthesame;
+ANALYZE
+DROP TABLE tbl_trgeometry_big_allthesame;
+DROP TABLE
