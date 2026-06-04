@@ -110,6 +110,11 @@
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>             /* TPCBox, DatumGetTpcboxP */
+  #include "pointcloud/tpcbox.h"
+  #include "pointcloud/tpc_boxops.h"       /* tpcbox_set_stbox */
+#endif
 
 /*****************************************************************************
  * General functions
@@ -679,6 +684,19 @@ tspatial_spgist_get_stbox(Datum value, MeosType type, STBox *result)
     const Temporal *temp = DatumGetTemporalP(value);
     tspatial_set_stbox(temp, result);
   }
+#if POINTCLOUD
+  else if (type == T_TPCBOX)
+  {
+    tpcbox_set_stbox(DatumGetTpcboxP(value), result);
+  }
+  else if (type == T_TPCPOINT || type == T_TPCPATCH)
+  {
+    const Temporal *temp = DatumGetTemporalP(value);
+    TPCBox tpcbox;
+    temporal_set_bbox(temp, &tpcbox);
+    tpcbox_set_stbox(&tpcbox, result);
+  }
+#endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,

@@ -131,6 +131,11 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
     posinf = Int32GetDatum(INT_MAX);
     neginf = Int32GetDatum(INT_MIN);
   }
+  else if (centroid->span.basetype == T_INT8)
+  {
+    posinf = Int64GetDatum(INT64_MAX);
+    neginf = Int64GetDatum(INT64_MIN);
+  }
   else
   {
     double d = get_float8_infinity();
@@ -578,18 +583,11 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
       datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
     return DBL_MAX;
 
-  double result;
-  if (datum_lt(query->span.upper, nodebox->left.span.lower, query->span.basetype))
-    result = (query->span.basetype == T_INT4) ?
-      (double) (DatumGetInt32(nodebox->left.span.lower) - DatumGetInt32(query->span.upper)) :
-      DatumGetFloat8(nodebox->left.span.lower) - DatumGetFloat8(query->span.upper);
-  else if (datum_gt(query->span.lower, nodebox->right.span.upper, query->span.basetype))
-    result = (query->span.basetype == T_INT4) ?
-      (double) (DatumGetInt32(query->span.lower) - DatumGetInt32(nodebox->right.span.upper)) :
-      DatumGetFloat8(query->span.lower) - DatumGetFloat8(nodebox->right.span.upper);
-  else
-    result = 0.0;
-  return result;
+  /* Compute distance to left and right boundary boxes */
+  double d1 = nad_tbox_tbox(query, &nodebox->left);
+  double d2 = nad_tbox_tbox(query, &nodebox->right);
+  /* Return the minimum distance */
+  return Min(d1, d2);
 }
 
 /**
