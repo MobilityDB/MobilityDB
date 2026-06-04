@@ -38,3 +38,7 @@
 
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION mobilitydb_datagen" to load this file. \quit
+
+-- Set a fixed seed once so that every create_test_tables_* call in this session
+-- produces reproducible tables for a given PostgreSQL version
+SELECT setseed(0.5);
