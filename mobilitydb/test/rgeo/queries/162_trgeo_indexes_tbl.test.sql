@@ -103,3 +103,17 @@ SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp && trgeometry :'TRG_LIT';
 SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp @> trgeometry :'TRG_LIT';
 SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp <@ trgeometry :'TRG_LIT';
 SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry :'TRG_LIT';
+
+-------------------------------------------------------------------------------
+-- Coverage of all the same and order by logic in SP-GiST indexes
+
+CREATE TABLE tbl_trgeometry_big_allthesame AS
+  SELECT k, trgeometry(geometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1))',
+    tpose(pose 'SRID=5676;Pose(Point(25 25), 0.3)', timeSpan(temp))) AS temp
+  FROM tbl_trgeometry2d WHERE temp IS NOT NULL;
+CREATE INDEX tbl_trgeometry_big_allthesame_quadtree_idx ON tbl_trgeometry_big_allthesame USING SPGIST(temp);
+ANALYZE tbl_trgeometry_big_allthesame;
+
+-- EXPLAIN ANALYZE
+
+DROP TABLE tbl_trgeometry_big_allthesame;
