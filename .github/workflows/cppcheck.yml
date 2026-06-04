@@ -58,7 +58,8 @@ jobs:
           cd build
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DMEOS=on ..
+                -DMEOS=on \
+                -DCBUFFER=on -DNPOINT=on -DPOSE=on -DRGEO=on ..
 
       - name: Run cppcheck (XML output - universally supported)
         # --project uses the same -I paths CMake records for the real

@@ -2674,7 +2674,6 @@ meos_tbox_from_arrow(const struct ArrowSchema *schema,
       return NULL;
     span = *s;
     pfree(s);
-    idx++;
   }
   /* tbox_make is the canonical constructor; a null component is the
    * canonical way to express an absent dimension. */
@@ -2849,7 +2848,6 @@ meos_stbox_from_arrow(const struct ArrowSchema *schema,
   if (hasz)
   {
     aw_axis_read(array->children[idx], &zmin, &zmax);
-    idx++;
   }
   /* stbox_make is the canonical constructor: the verbatim flags word drives
    * hasx / hasz / geodetic and the raw spatial extent and srid are passed
