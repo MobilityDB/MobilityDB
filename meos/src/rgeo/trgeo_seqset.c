@@ -305,7 +305,7 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap
  * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(),
  * tgeompoint_seqset_gaps(), tgeogpoint_seqset_gaps()
  */

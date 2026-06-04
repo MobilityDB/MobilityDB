@@ -797,15 +797,15 @@
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Anexar un instante temporal a un valor temporal</para>
+				<para><link linkend="appendInstant"><varname>appendInstant</varname></link>: Anexar un instante temporal a un valor temporal</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Anexar una secuencia temporal a un valor temporal</para>
+				<para><link linkend="appendSequence"><varname>appendSequence</varname></link>: Anexar una secuencia temporal a un valor temporal</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusionar los valores temporales</para>
+				<para><link linkend="merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1175,10 +1175,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Devuelve la distancia espacial mínima entre dos geometrías temporales sobre la unión de sus extensiones temporales</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
 				</listitem>
 
@@ -1409,7 +1405,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMinAgg</varname>, <varname>tMax</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Mínimo, máximo, suma y promedio temporal</para>
+					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Mínimo, máximo, suma y promedio temporal</para>
 				</listitem>
 
 				<listitem>

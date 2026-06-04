@@ -579,6 +579,7 @@ tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   lfinfo.param[0] = param;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
+  lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);

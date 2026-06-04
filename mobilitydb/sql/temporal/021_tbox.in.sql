@@ -508,7 +508,6 @@ CREATE OPERATOR * (
  * Extent aggregation
  *****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION tbox_extent_transfn(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_extent_transfn'

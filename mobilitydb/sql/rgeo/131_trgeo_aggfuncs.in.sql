@@ -29,16 +29,15 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal circular buffers
+ * @brief Aggregate functions for temporal rigid geometries
  */
 
--- The function is not strict
-CREATE FUNCTION tcount_transfn(internal, tcbuffer)
+CREATE FUNCTION tcount_transfn(internal, trgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tcbuffer) (
+CREATE AGGREGATE tcount(trgeometry) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -48,13 +47,12 @@ CREATE AGGREGATE tcount(tcbuffer) (
   PARALLEL = SAFE
 );
 
--- The function is not strict
-CREATE FUNCTION wcount_transfn(internal, tcbuffer, interval)
+CREATE FUNCTION wcount_transfn(internal, trgeometry, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tcbuffer, interval) (
+CREATE AGGREGATE wcount(trgeometry, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -66,33 +64,20 @@ CREATE AGGREGATE wcount(tcbuffer, interval) (
 
 /*****************************************************************************/
 
--- The function is not strict
-CREATE FUNCTION temporal_merge_transfn(internal, tcbuffer)
+CREATE FUNCTION temporal_merge_transfn(internal, trgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcbuffer_tagg_finalfn(internal)
-  RETURNS tcbuffer
+CREATE FUNCTION trgeometry_tagg_finalfn(internal)
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE merge(tcbuffer) (
+CREATE AGGREGATE merge(trgeometry) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tcbuffer_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE mergeAgg(tcbuffer) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tcbuffer_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
+  FINALFUNC = trgeometry_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -103,69 +88,48 @@ CREATE AGGREGATE mergeAgg(tcbuffer) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer)
-  RETURNS tcbuffer
+CREATE FUNCTION temporal_app_tinst_transfn(trgeometry, trgeometry)
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
+CREATE FUNCTION temporal_app_tinst_transfn(trgeometry, trgeometry,
     interp text DEFAULT NULL)
-  RETURNS tcbuffer
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
+CREATE FUNCTION temporal_app_tinst_transfn(trgeometry, trgeometry,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
-  RETURNS tcbuffer
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_append_finalfn(tcbuffer)
-  RETURNS tcbuffer
+CREATE FUNCTION temporal_append_finalfn(trgeometry)
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE appendInstant(tcbuffer) (
+CREATE AGGREGATE appendInstant(trgeometry) (
   SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
+  STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-CREATE AGGREGATE appendInstantAgg(tcbuffer) (
+CREATE AGGREGATE appendInstant(trgeometry, text) (
   SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
+  STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-CREATE AGGREGATE appendInstant(tcbuffer, text) (
+CREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tcbuffer, text) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tcbuffer,
+  STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
@@ -173,21 +137,14 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_tseq_transfn(tcbuffer, tcbuffer)
-  RETURNS tcbuffer
+CREATE FUNCTION temporal_app_tseq_transfn(trgeometry, trgeometry)
+  RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE appendSequence(tcbuffer) (
+CREATE AGGREGATE appendSequence(trgeometry) (
   SFUNC = temporal_app_tseq_transfn,
-  STYPE = tcbuffer,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendSequenceAgg(tcbuffer) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tcbuffer,
+  STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );

@@ -174,7 +174,7 @@ ensure_one_true(bool hasshift, bool haswidth)
 bool
 ensure_valid_interp(MeosType temptype, interpType interp)
 {
-  if (interp == LINEAR && ! temptype_supports_linear(temptype))
+  if (interp == LINEAR && ! temptype_continuous(temptype))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal type cannot have linear interpolation");
@@ -900,7 +900,7 @@ tsequence_from_base_temp(Datum value, MeosType temptype, const TSequence *seq)
   return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? 
     tdiscseq_from_base_temp(value, temptype, seq) :
     tsequence_from_base_tstzspan(value, temptype, &seq->period,
-      temptype_supports_linear(temptype) ? LINEAR : STEP);
+      temptype_continuous(temptype) ? LINEAR : STEP);
 }
 
 /**
@@ -917,7 +917,7 @@ tsequenceset_from_base_temp(Datum value, MeosType temptype,
   const TSequenceSet *ss)
 {
   assert(ss);
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
@@ -1010,6 +1010,7 @@ tbool_to_tint(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_bool_to_int;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TINT;
   return tfunc_temporal(temp, &lfinfo);
@@ -1030,6 +1031,7 @@ tint_to_tfloat(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_int_to_float;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TINT;
   lfinfo.restype = T_TFLOAT;
   return tfunc_temporal(temp, &lfinfo);
@@ -1056,6 +1058,7 @@ tfloat_to_tint(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_float_to_int;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TINT;
   return tfunc_temporal(temp, &lfinfo);
@@ -1220,10 +1223,6 @@ temporal_round(const Temporal *temp, int maxdd)
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
-  /* Rounding to a precision finer than the segment's variation is effectively
-   * affine; the chord-of-f deviation is bounded by 0.5*10^-maxdd which is below
-   * the user-requested precision.  Treat as affine and inherit interpolation. */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1319,6 +1318,7 @@ tfloat_floor(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_floor;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
   return tfunc_temporal(temp, &lfinfo);
@@ -1339,6 +1339,7 @@ tfloat_ceil(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_ceil;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
   return tfunc_temporal(temp, &lfinfo);
@@ -1406,8 +1407,6 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  /* Scale by 180/pi is affine: linear input -> linear output */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1426,10 +1425,9 @@ tfloat_radians(const Temporal *temp)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_radians;
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  /* Scale by pi/180 is affine: linear input -> linear output */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -2076,6 +2074,7 @@ tnumber_avg_value(const Temporal *temp)
  * @param[in] n Number (1-based)
  * @param[out] result Resulting timestamp
  * @return On error return false
+ * @csqlfn #Temporal_value_n()
  */
 bool
 temporal_value_n(const Temporal *temp, int n, Datum *result)

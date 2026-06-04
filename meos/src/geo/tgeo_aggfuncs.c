@@ -203,7 +203,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
- * @param[in] state Current aggregate value, may be `NULL`
+ * @param[in] state Current aggregate value
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_tcentroid_transfn()
  */
@@ -247,8 +247,8 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal extent aggregation of spatiotemporal
  * values
- * @param[in] state Current aggregate value, may be `NULL`
- * @param[in] temp Spatiotemporal value, may be `NULL`
+ * @param[in] state Current aggregate value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Tspatial_extent_transfn()
  */
 STBox *
@@ -366,7 +366,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int32_t srid)
 /**
  * @ingroup meos_geo_agg
  * @brief Final function for temporal centroid aggregation of temporal points
- * @param[in] state Current aggregate value, may be `NULL`
+ * @param[in] state Current aggregate value
  * @csqlfn #Tpoint_tcentroid_finalfn()
  */
 Temporal *

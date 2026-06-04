@@ -100,7 +100,7 @@ Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   MeosType basetype = temptype_basetype(temp1->temptype);
   assert(basetype == T_INT4 || basetype == T_FLOAT8);
   Temporal *result;
-  if (basetype == T_FLOAT8 && (oper == MUL || oper == DIV))
+  if (basetype == T_FLOAT8 && (oper == MULT || oper == DIV))
     result = arithop_tnumber_tnumber(temp1, temp2, oper, func,
       &tfloat_arithop_turnpt);
   else
@@ -208,46 +208,46 @@ Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Temporal multiplication
  *****************************************************************************/
 
-PGDLLEXPORT Datum Mul_number_tnumber(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Mul_number_tnumber);
+PGDLLEXPORT Datum Mult_number_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a number and a temporal number
- * @sqlfn tnumber_mul()
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 inline Datum
-Mul_number_tnumber(PG_FUNCTION_ARGS)
+Mult_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_number_tnumber(fcinfo, MUL, &datum_mul);
+  return Arithop_number_tnumber(fcinfo, MULT, &datum_mult);
 }
 
-PGDLLEXPORT Datum Mul_tnumber_number(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Mul_tnumber_number);
+PGDLLEXPORT Datum Mult_tnumber_number(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a temporal number and a number
- * @sqlfn tnumber_mul()
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 inline Datum
-Mul_tnumber_number(PG_FUNCTION_ARGS)
+Mult_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_number(fcinfo, MUL, &datum_mul);
+  return Arithop_tnumber_number(fcinfo, MULT, &datum_mult);
 }
 
-PGDLLEXPORT Datum Mul_tnumber_tnumber(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Mul_tnumber_tnumber);
+PGDLLEXPORT Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of two temporal numbers
- * @sqlfn tnumber_mul()
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 inline Datum
-Mul_tnumber_tnumber(PG_FUNCTION_ARGS)
+Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_tnumber(fcinfo, MUL, &datum_mul);
+  return Arithop_tnumber_tnumber(fcinfo, MULT, &datum_mult);
 }
 
 /*****************************************************************************

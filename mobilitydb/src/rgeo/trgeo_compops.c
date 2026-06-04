@@ -53,8 +53,8 @@
  * Ever/always comparison functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Ever_eq_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_eq_geo_trgeometry);
+PGDLLEXPORT Datum Ever_eq_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever equal to a geometry
@@ -62,13 +62,13 @@ PG_FUNCTION_INFO_V1(Ever_eq_geo_trgeometry);
  * @sqlop @p ?=
  */
 inline Datum
-Ever_eq_geo_trgeometry(PG_FUNCTION_ARGS)
+Ever_eq_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_geo_tspatial(fcinfo, &ever_eq_geo_trgeometry);
+  return EAcomp_geo_tspatial(fcinfo, &ever_eq_geo_trgeo);
 }
 
-PGDLLEXPORT Datum Always_eq_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_eq_geo_trgeometry);
+PGDLLEXPORT Datum Always_eq_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_eq_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always equal to a
@@ -77,13 +77,13 @@ PG_FUNCTION_INFO_V1(Always_eq_geo_trgeometry);
  * @sqlop @p %=
  */
 inline Datum
-Always_eq_geo_trgeometry(PG_FUNCTION_ARGS)
+Always_eq_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_geo_tspatial(fcinfo, &always_eq_geo_trgeometry);
+  return EAcomp_geo_tspatial(fcinfo, &always_eq_geo_trgeo);
 }
 
-PGDLLEXPORT Datum Ever_ne_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_ne_geo_trgeometry);
+PGDLLEXPORT Datum Ever_ne_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_ne_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever different from a
@@ -92,13 +92,13 @@ PG_FUNCTION_INFO_V1(Ever_ne_geo_trgeometry);
  * @sqlop @p ?<>
  */
 inline Datum
-Ever_ne_geo_trgeometry(PG_FUNCTION_ARGS)
+Ever_ne_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_geo_tspatial(fcinfo, &ever_ne_geo_trgeometry);
+  return EAcomp_geo_tspatial(fcinfo, &ever_ne_geo_trgeo);
 }
 
-PGDLLEXPORT Datum Always_ne_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_ne_geo_trgeometry);
+PGDLLEXPORT Datum Always_ne_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_ne_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always different from a
@@ -107,15 +107,15 @@ PG_FUNCTION_INFO_V1(Always_ne_geo_trgeometry);
  * @sqlop @p %<>
  */
 inline Datum
-Always_ne_geo_trgeometry(PG_FUNCTION_ARGS)
+Always_ne_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_geo_tspatial(fcinfo, &always_ne_geo_trgeometry);
+  return EAcomp_geo_tspatial(fcinfo, &always_ne_geo_trgeo);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Ever_eq_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_geo);
+PGDLLEXPORT Datum Ever_eq_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever equal to a geometry
@@ -123,13 +123,13 @@ PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_geo);
  * @sqlop @p ?=
  */
 inline Datum
-Ever_eq_trgeometry_geo(PG_FUNCTION_ARGS)
+Ever_eq_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tspatial_geo(fcinfo, &ever_eq_trgeometry_geo);
+  return EAcomp_tspatial_geo(fcinfo, &ever_eq_trgeo_geo);
 }
 
-PGDLLEXPORT Datum Always_eq_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_eq_trgeometry_geo);
+PGDLLEXPORT Datum Always_eq_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_eq_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always equal to a
@@ -138,13 +138,13 @@ PG_FUNCTION_INFO_V1(Always_eq_trgeometry_geo);
  * @sqlop @p %=
  */
 inline Datum
-Always_eq_trgeometry_geo(PG_FUNCTION_ARGS)
+Always_eq_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tspatial_geo(fcinfo, &always_eq_trgeometry_geo);
+  return EAcomp_tspatial_geo(fcinfo, &always_eq_trgeo_geo);
 }
 
-PGDLLEXPORT Datum Ever_ne_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_geo);
+PGDLLEXPORT Datum Ever_ne_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_ne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever different from a
@@ -153,13 +153,13 @@ PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_geo);
  * @sqlop @p ?<>
  */
 inline Datum
-Ever_ne_trgeometry_geo(PG_FUNCTION_ARGS)
+Ever_ne_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tspatial_geo(fcinfo, &ever_ne_trgeometry_geo);
+  return EAcomp_tspatial_geo(fcinfo, &ever_ne_trgeo_geo);
 }
 
-PGDLLEXPORT Datum Always_ne_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_ne_trgeometry_geo);
+PGDLLEXPORT Datum Always_ne_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_ne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always different from a
@@ -168,15 +168,15 @@ PG_FUNCTION_INFO_V1(Always_ne_trgeometry_geo);
  * @sqlop @p %<>
  */
 inline Datum
-Always_ne_trgeometry_geo(PG_FUNCTION_ARGS)
+Always_ne_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tspatial_geo(fcinfo, &always_ne_trgeometry_geo);
+  return EAcomp_tspatial_geo(fcinfo, &always_ne_trgeo_geo);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Ever_eq_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_trgeometry);
+PGDLLEXPORT Datum Ever_eq_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_eq_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are ever equal
@@ -184,13 +184,13 @@ PG_FUNCTION_INFO_V1(Ever_eq_trgeometry_trgeometry);
  * @sqlop @p ?=
  */
 inline Datum
-Ever_eq_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Ever_eq_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_temporal_temporal(fcinfo, &ever_eq_trgeometry_trgeometry);
+  return EAcomp_temporal_temporal(fcinfo, &ever_eq_trgeo_trgeo);
 }
 
-PGDLLEXPORT Datum Always_eq_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_eq_trgeometry_trgeometry);
+PGDLLEXPORT Datum Always_eq_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_eq_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are always equal
@@ -198,13 +198,13 @@ PG_FUNCTION_INFO_V1(Always_eq_trgeometry_trgeometry);
  * @sqlop @p %=
  */
 inline Datum
-Always_eq_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Always_eq_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_temporal_temporal(fcinfo, &always_eq_trgeometry_trgeometry);
+  return EAcomp_temporal_temporal(fcinfo, &always_eq_trgeo_trgeo);
 }
 
-PGDLLEXPORT Datum Ever_ne_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_trgeometry);
+PGDLLEXPORT Datum Ever_ne_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ever_ne_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are ever different
@@ -212,13 +212,13 @@ PG_FUNCTION_INFO_V1(Ever_ne_trgeometry_trgeometry);
  * @sqlop @p ?<>
  */
 inline Datum
-Ever_ne_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Ever_ne_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_temporal_temporal(fcinfo, &ever_ne_trgeometry_trgeometry);
+  return EAcomp_temporal_temporal(fcinfo, &ever_ne_trgeo_trgeo);
 }
 
-PGDLLEXPORT Datum Always_ne_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Always_ne_trgeometry_trgeometry);
+PGDLLEXPORT Datum Always_ne_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Always_ne_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if two temporal poses are always different
@@ -226,17 +226,17 @@ PG_FUNCTION_INFO_V1(Always_ne_trgeometry_trgeometry);
  * @sqlop @p %<>
  */
 inline Datum
-Always_ne_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Always_ne_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return EAcomp_temporal_temporal(fcinfo, &always_ne_trgeometry_trgeometry);
+  return EAcomp_temporal_temporal(fcinfo, &always_ne_trgeo_trgeo);
 }
 
 /*****************************************************************************
  * Temporal comparison functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Teq_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_geo_trgeometry);
+PGDLLEXPORT Datum Teq_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Teq_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever equal to a gs
@@ -244,13 +244,13 @@ PG_FUNCTION_INFO_V1(Teq_geo_trgeometry);
  * @sqlop @p #=
  */
 inline Datum
-Teq_geo_trgeometry(PG_FUNCTION_ARGS)
+Teq_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_geo_tspatial(fcinfo, &teq_geo_trgeometry);
+  return Tcomp_geo_tspatial(fcinfo, &teq_geo_trgeo);
 }
 
-PGDLLEXPORT Datum Tne_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_geo_trgeometry);
+PGDLLEXPORT Datum Tne_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tne_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
@@ -259,15 +259,15 @@ PG_FUNCTION_INFO_V1(Tne_geo_trgeometry);
  * @sqlop @p #<>
  */
 inline Datum
-Tne_geo_trgeometry(PG_FUNCTION_ARGS)
+Tne_geo_trgeo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_geo_tspatial(fcinfo, &tne_geo_trgeometry);
+  return Tcomp_geo_tspatial(fcinfo, &tne_geo_trgeo);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Teq_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_trgeometry_geo);
+PGDLLEXPORT Datum Teq_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Teq_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever equal to a gs
@@ -275,13 +275,13 @@ PG_FUNCTION_INFO_V1(Teq_trgeometry_geo);
  * @sqlop @p #=
  */
 inline Datum
-Teq_trgeometry_geo(PG_FUNCTION_ARGS)
+Teq_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tspatial_geo(fcinfo, &teq_trgeometry_geo);
+  return Tcomp_tspatial_geo(fcinfo, &teq_trgeo_geo);
 }
 
-PGDLLEXPORT Datum Tne_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_trgeometry_geo);
+PGDLLEXPORT Datum Tne_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
@@ -290,15 +290,15 @@ PG_FUNCTION_INFO_V1(Tne_trgeometry_geo);
  * @sqlop @p #<>
  */
 inline Datum
-Tne_trgeometry_geo(PG_FUNCTION_ARGS)
+Tne_trgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tspatial_geo(fcinfo, &tne_trgeometry_geo);
+  return Tcomp_tspatial_geo(fcinfo, &tne_trgeo_geo);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Teq_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Teq_trgeometry_trgeometry);
+PGDLLEXPORT Datum Teq_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Teq_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if two temporal poses are ever equal
@@ -306,13 +306,13 @@ PG_FUNCTION_INFO_V1(Teq_trgeometry_trgeometry);
  * @sqlop @p #=
  */
 inline Datum
-Teq_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Teq_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
 }
 
-PGDLLEXPORT Datum Tne_trgeometry_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tne_trgeometry_trgeometry);
+PGDLLEXPORT Datum Tne_trgeo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tne_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if two temporal poses are ever different
@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(Tne_trgeometry_trgeometry);
  * @sqlop @p #<>
  */
 inline Datum
-Tne_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+Tne_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
 }

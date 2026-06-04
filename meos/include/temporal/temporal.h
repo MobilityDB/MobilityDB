@@ -68,6 +68,11 @@
 #define MEOS_FP_GT(A, B) (((A) - MEOS_EPSILON) > (B))
 #define MEOS_FP_GE(A, B) (((A) + MEOS_EPSILON) >= (B))
 
+/**
+ * Precision for distance operations
+ */
+#define DIST_EPSILON    1.0e-06
+
 #define UNUSED          __attribute__((unused))
 
 /** Symbolic constants for lifting */
@@ -288,10 +293,6 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* Definition of a variadic function type for temporal lifting */
 typedef Datum (*varfunc) (Datum, ...);
-
-/* Definition of a turning point function for a unary temporal lift */
-typedef int (*tpfunc_unary)(Datum, Datum, TimestampTz, TimestampTz,
-  TimestampTz *, TimestampTz *);
 
 /* Definition of a turning point function for a temporal and a base types */
 typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,

@@ -50,7 +50,7 @@
 /**
  * @ingroup meos_internal_setspan_agg
  * @brief Transition function for span extent aggregate of values
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] value Value to aggregate
  * @param[in] basetype Type of the value
  */
@@ -70,8 +70,8 @@ spanbase_extent_transfn(Span *state, Datum value, MeosType basetype)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of sets
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Set to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Set to aggregate
  */
 Span *
 set_extent_transfn(Span *state, const Set *s)
@@ -100,8 +100,8 @@ set_extent_transfn(Span *state, const Set *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of spans
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Span to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Span to aggregate
  */
 Span *
 span_extent_transfn(Span *state, const Span *s)
@@ -127,8 +127,8 @@ span_extent_transfn(Span *state, const Span *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of span sets
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] ss Span set to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state
+ * @param[in] ss Span set to aggregate
  */
 Span *
 spanset_extent_transfn(Span *state, const SpanSet *ss)

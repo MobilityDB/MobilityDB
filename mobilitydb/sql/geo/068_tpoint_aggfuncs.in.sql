@@ -32,7 +32,6 @@
  * @brief Aggregate functions for temporal points
  */
 
--- The function is not strict
 CREATE FUNCTION tspatial_extent_transfn(stbox, tgeompoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
@@ -57,7 +56,6 @@ CREATE AGGREGATE extent(tgeogpoint) (
 
 /*****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -88,7 +86,6 @@ CREATE AGGREGATE tcount(tgeogpoint) (
   PARALLEL = SAFE
 );
 
--- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, tgeompoint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
@@ -117,7 +114,6 @@ CREATE AGGREGATE wcount(tgeogpoint, interval) (
   PARALLEL = SAFE
 );
 
--- The function is not strict
 CREATE FUNCTION tcentroid_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_transfn'
@@ -143,7 +139,6 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
 
 /*****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
@@ -167,18 +162,6 @@ CREATE AGGREGATE merge(tgeompoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeompoint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE mergeAgg(tgeompoint) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tgeompoint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -188,18 +171,6 @@ CREATE AGGREGATE merge(tgeogpoint) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeogpoint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE mergeAgg(tgeogpoint) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tgeogpoint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -260,21 +231,7 @@ CREATE AGGREGATE appendInstant(tgeompoint) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeompoint) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeompoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeogpoint) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeogpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeogpoint) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
@@ -287,21 +244,7 @@ CREATE AGGREGATE appendInstant(tgeompoint, text) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeompoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeompoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeogpoint, text) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeogpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeogpoint, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
@@ -314,21 +257,7 @@ CREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeompoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeompoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeogpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeogpoint, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,
@@ -353,21 +282,7 @@ CREATE AGGREGATE appendSequence(tgeompoint) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendSequenceAgg(tgeompoint) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tgeompoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendSequence(tgeogpoint) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tgeogpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendSequenceAgg(tgeogpoint) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,

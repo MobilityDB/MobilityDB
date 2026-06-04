@@ -438,7 +438,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
     /* If float/point sequences and collinear last/first segments having the same duration
        ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
     */
-    (temptype_supports_linear(seq1->temptype) && eq_last1_first1 &&
+    (temptype_continuous(seq1->temptype) && eq_last1_first1 &&
       datum_collinear(last2value, first1value, first2value, basetype,
         last2->t, first1->t, first2->t))
     ))
@@ -1597,6 +1597,8 @@ tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
  * @param[in] hasshift True when the shift argument is given
  * @param[in] haswidth True when the width argument is given
  * @pre The width is greater than 0 if it is not NULL // TODO
+ * @csqlfn #Tnumber_shift_value(), #Tnumber_scale_value(),
+ * #Tnumber_shift_scale_value()
  */
 TSequence *
 tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
@@ -2148,6 +2150,7 @@ tsegment_value_at_timestamptz(Datum start, Datum end, MeosType temptype,
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
  * @param[out] result Result
  * @return Return true if the timestamp is contained in the temporal sequence
+ * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tcontseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
@@ -2212,6 +2215,7 @@ tcontseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
  * @param[out] result Result
  * @return Return true if the timestamp is contained in the temporal sequence
+ * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t,

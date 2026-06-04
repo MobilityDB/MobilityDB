@@ -141,7 +141,7 @@ int main(void)
 
     /* We need to implement the following SQL query for a given geo
      *   SELECT npoint(gid, ST_LineLocatePoint(the_geom, geo))
-     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, MEOS_EPSILON)
+     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, DIST_EPSILON)
      *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
      */
     

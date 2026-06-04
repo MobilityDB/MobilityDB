@@ -1482,7 +1482,7 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
- * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @param[in] sorigin Point geometry for the origin
  * @csqlfn #Tgeo_scale()
  */
 Temporal *
@@ -1648,10 +1648,9 @@ tgeo_centroid(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) 
     (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
+  lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
-  /* Centroid is affine in vertex positions: linear input -> linear output */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 

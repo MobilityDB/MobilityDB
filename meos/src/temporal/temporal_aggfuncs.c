@@ -718,7 +718,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
 /**
  * @brief Generic transition function for aggregating temporal values
  * of instant subtype
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] inst Temporal value to aggregate
  * @param[in] func Function, may be NULL for the merge aggregate function
  */
@@ -738,7 +738,7 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 /**
  * @brief Generic transition function for aggregating temporal discrete
  * sequence values
- * @param[in,out] state Skiplist containing the state, may be `NULL`
+ * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function, may be NULL for the merge aggregate function
  */
@@ -758,7 +758,7 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 /**
  * @brief Generic transition function for aggregating temporal values
  * of sequence subtype
- * @param[in,out] state Skiplist containing the state, may be `NULL`
+ * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -777,7 +777,7 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
 /**
  * @brief Generic transition function for aggregating temporal values
  * of sequence set subtype
- * @param[in,out] state Skiplist containing the state, may be `NULL`
+ * @param[in,out] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -799,7 +799,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
 /**
  * @brief Generic transition function for aggregating temporal values
  * of sequence set subtype
- * @param[in,out] state Skiplist containing the state, may be `NULL`
+ * @param[in,out] state Skiplist containing the state
  * @param[in] temp Temporal value
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -825,7 +825,7 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
 
 /**
  * @brief Generic combine function for aggregating temporal values
- * @param[in] state1, state2 State values, may be `NULL`
+ * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
@@ -872,7 +872,7 @@ skiplist_temporal_values(SkipList *list)
 /**
  * @ingroup meos_temporal_agg
  * @brief Generic final function for aggregating temporal values
- * @param[in] state Current aggregate state, may be `NULL`
+ * @param[in] state Current aggregate state
  * @csqlfn #Temporal_tagg_finalfn()
  */
 Temporal *
@@ -989,7 +989,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
 /**
  * @brief Transition function for aggregating temporal values that require a
  * transformation to each composing instant/sequence
- * @param[in] state Current state, may be `NULL`
+ * @param[in] state Current state
  * @param[in] temp New temporal value
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -1198,7 +1198,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamps
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] t Timestamp to aggregate
  * @csqlfn #Timestamptz_tcount_transfn()
  */
@@ -1222,7 +1222,7 @@ timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamp sets
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] s Timestamp set to aggregate
  * @csqlfn #Tstzset_tcount_transfn()
  */
@@ -1253,7 +1253,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz spans
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] s Timestamp span to aggregate
  * @csqlfn #Tstzspan_tcount_transfn()
  */
@@ -1285,7 +1285,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamptz span
  * sets
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] ss Timestamp span set to aggregate
  * @csqlfn #Tstzspanset_tcount_transfn()
  */
@@ -1321,7 +1321,7 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregation
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] temp Temporal value to aggregate
  * @csqlfn #Temporal_tcount_transfn()
  */
@@ -1407,7 +1407,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 /**
  * @ingroup meos_temporal_agg
  * @brief Final function for temporal average aggregation
- * @param[in] state Current aggregate state, may be `NULL`
+ * @param[in] state Current aggregate state
  * @csqlfn #Tnumber_tavg_finalfn()
  */
 Temporal *
@@ -1435,8 +1435,8 @@ tnumber_tavg_finalfn(SkipList *state)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
  * @csqlfn #Temporal_extent_transfn()
  */
 Span *
@@ -1461,8 +1461,8 @@ temporal_extent_transfn(Span *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal numbers
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
  * @csqlfn #Tnumber_extent_transfn()
  */
 TBox *
@@ -1500,11 +1500,11 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
 /**
  * @ingroup meos_internal_temporal_agg
  * @brief Transition function for append temporal instant aggregate
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] inst Temporal value to aggregate
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance
- * @param[in] maxt Maximum duration, may be `NULL`
+ * @param[in] maxt Maximum duration
  * @csqlfn #Temporal_app_tinst_transfn()
  */
 Temporal *
@@ -1534,7 +1534,7 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 /**
  * @ingroup meos_internal_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state
  * @param[in] seq Temporal value to aggregate
  * @csqlfn #Temporal_app_tseq_transfn()
  */

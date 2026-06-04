@@ -794,15 +794,15 @@
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Append a temporal instant to a temporal value</para>
+				<para><link linkend="appendInstant"><varname>appendInstant</varname></link>: Append a temporal instant to a temporal value</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal sequence to a temporal value</para>
+				<para><link linkend="appendSequence"><varname>appendSequence</varname></link>: Append a temporal sequence to a temporal value</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge temporal values</para>
+				<para><link linkend="merge"><varname>merge</varname></link>: Merge temporal values</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1174,10 +1174,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="tgeo_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal point at which the two arguments are at the nearest distance</para>
 				</listitem>
 
@@ -1410,7 +1406,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMinAgg</varname>, <varname>tMax</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
+					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
 				</listitem>
 
 				<listitem>
@@ -1635,11 +1631,11 @@
 				<title>Modifications</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal instant or a temporal sequence</para>
+						<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tpose_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal poses</para>
+						<para><link linkend="tpose_merge"><varname>merge</varname></link>: Merge the temporal poses</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

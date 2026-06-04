@@ -26,10 +26,6 @@
 			<listitem><para>Finalmente, para puntos temporales, la función <varname>tCentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
 		</itemizedlist>
 
-		<note>
-			<para>Los nombres <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname> y <varname>appendSequence</varname> designan tanto una función escalar como una agregación. El nombre canónico de la forma de agregación lleva el sufijo <varname>Agg</varname> (<varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname> y <varname>appendSequenceAgg</varname>), de modo que los nombres escalar y de agregación sean distintos. Los nombres de agregación sin sufijo siguen disponibles como alias de compatibilidad y están obsoletos; se eliminarán en una versión mayor futura. Las formas escalares (los accesores de caja <varname>tMin</varname>/<varname>tMax</varname> y el constructor binario <varname>merge</varname>) conservan sus nombres.</para>
-		</note>
-
 		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en la <xref linkend="ttype_examples" />.</para>
 		<itemizedlist>
 			<listitem xml:id="tCount">

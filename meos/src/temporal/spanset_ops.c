@@ -339,6 +339,7 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a span set and a value are adjacent
  * @param[in] ss Span set
  * @param[in] value Value
+ * @csqlfn #Adjacent_spanset_value()
  */
 inline bool
 adjacent_spanset_value(const SpanSet *ss, Datum value)
@@ -354,6 +355,7 @@ adjacent_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return true if a span set and a value are adjacent
  * @param[in] ss Span set
  * @param[in] value Value
+ * @csqlfn #Adjacent_spanset_value()
  */
 inline bool
 adjacent_value_spanset(Datum value, const SpanSet *ss)

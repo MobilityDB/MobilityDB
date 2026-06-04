@@ -50,7 +50,7 @@ typedef enum
 {
   ADD,
   SUB,
-  MUL,
+  MULT,
   DIV,
   DIST,
 } TArithmetic;

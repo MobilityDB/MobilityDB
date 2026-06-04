@@ -646,7 +646,6 @@ CREATE FUNCTION quadSplit(stbox)
  * Extent aggreation
  *****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION stbox_extent_transfn(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_extent_transfn'

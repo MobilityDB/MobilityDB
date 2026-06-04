@@ -111,7 +111,7 @@ Datum
 Trgeometry_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = trgeometry_out(temp);
+  char *result = trgeo_out(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -283,7 +283,7 @@ Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
@@ -349,7 +349,7 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
   double maxdist = -1.0;
   Interval *maxt = NULL;
   MeosType temptype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
-  interpType interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
@@ -389,7 +389,7 @@ Trgeometry_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *tpose = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = geo_tpose_to_trgeometry(gs, tpose);
+  Temporal *result = geo_tpose_to_trgeo(gs, tpose);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -411,7 +411,7 @@ Datum
 Trgeometry_to_tpose(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeometry_to_tpose(temp);
+  Temporal *result = trgeo_to_tpose(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -427,7 +427,7 @@ Datum
 Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeometry_to_tpoint(temp);
+  Temporal *result = trgeo_to_tpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -443,7 +443,7 @@ Datum
 Trgeometry_to_geom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = trgeometry_geom(temp);
+  GSERIALIZED *result = trgeo_geom(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -463,7 +463,7 @@ Datum
 Trgeometry_start_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = trgeometry_start_value(temp);
+  GSERIALIZED *result = trgeo_start_value(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -479,7 +479,7 @@ Datum
 Trgeometry_end_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = trgeometry_end_value(temp);
+  GSERIALIZED *result = trgeo_end_value(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -497,7 +497,7 @@ Trgeometry_value_n(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   GSERIALIZED *result;
-  bool found = trgeometry_value_n(temp, n, &result);
+  bool found = trgeo_value_n(temp, n, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();
@@ -541,7 +541,7 @@ Datum
 Trgeometry_to_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = trgeometry_to_tinstant(temp);
+  TInstant *result = trgeo_to_tinstant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }

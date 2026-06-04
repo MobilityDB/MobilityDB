@@ -32,7 +32,6 @@
  * @brief Moving window temporal aggregate functions
  */
 
--- The function is not strict
 CREATE FUNCTION tint_wmin_transfn(internal, tint, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_wmin_transfn'
@@ -102,7 +101,6 @@ CREATE AGGREGATE wavg(tint, interval) (
 
 /*****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION tfloat_wmin_transfn(internal, tfloat, interval)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_wmin_transfn'
