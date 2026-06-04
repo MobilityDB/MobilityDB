@@ -287,7 +287,6 @@ tnumberseq_linear_abs(const TSequence *seq)
     }
     instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
-    value1 = value2;
     dvalue1 = dvalue2;
   }
   /* We are sure that ninsts > 0 */
@@ -514,7 +513,6 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
       result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
-    inst1 = inst2;
     value1 = value2;
   }
   return ninsts;

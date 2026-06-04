@@ -186,7 +186,7 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
+  const STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
@@ -1301,7 +1301,6 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
     }
-    start = end;
     startvalue = endvalue;
     lower = upper;
     lower_inc = true;

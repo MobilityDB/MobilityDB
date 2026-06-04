@@ -238,10 +238,6 @@ findMemberByName(json_object *poObj, const char *pszName)
   if (pszName == NULL || poObj == NULL)
     return NULL;
 
-  it.key = NULL;
-  it.val = NULL;
-  it.entry = NULL;
-
   if (json_object_get_object(poTmp))
   {
     if (! json_object_get_object(poTmp)->head)
@@ -1068,7 +1064,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     json_object *poObjSrs = findMemberByName(poObj, "crs");
     if (poObjSrs)
     {
-      json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
+      const json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
       if (poObjSrsType)
       {
         json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
@@ -1128,7 +1124,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
       strcmp(pszInterp, "Linear") == 0)
     {
       interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEP;
-      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+      const json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs)
         result = (Temporal *) tsequenceset_from_mfjson(poObj, spatial, srid,
           temptype, interp);
@@ -1161,7 +1157,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
  * @brief Check that we are not about to read off the end of the WKB array
  */
 static inline void
-wkb_parse_state_check(meos_wkb_parse_state *s, size_t next)
+wkb_parse_state_check(const meos_wkb_parse_state *s, size_t next)
 {
   if ((s->pos + next) > (s->wkb + s->wkb_size))
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
@@ -1559,7 +1555,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
  * @brief Return the size of a span base value from its WKB representation
  */
 static size_t
-span_basevalue_from_wkb_size(meos_wkb_parse_state *s)
+span_basevalue_from_wkb_size(const meos_wkb_parse_state *s)
 {
   assert(span_basetype(s->basetype));
   switch (s->basetype)

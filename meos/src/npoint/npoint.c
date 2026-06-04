@@ -916,7 +916,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
     for (int i = 0; i < numpoints; i++)
     {
       /* The composing points are from 1 to numcount */
-      GSERIALIZED *point = line_point_n(gs, i + 1);
+      const GSERIALIZED *point = line_point_n(gs, i + 1);
       np = geompoint_to_npoint(point);
       if (np)
         points[npoints++] = np;

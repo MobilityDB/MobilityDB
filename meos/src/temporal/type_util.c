@@ -764,7 +764,7 @@ pfree_array(void **array, int count)
  * @note The function frees the memory of the input strings after finishing
  */
 char *
-stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
+stringarr_to_string(char **strings, int count, size_t outlen, const char *prefix,
   char open, char close, bool quotes, bool spaces)
 {
   size_t size = strlen(prefix) + outlen + 3;

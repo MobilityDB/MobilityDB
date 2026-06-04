@@ -175,7 +175,7 @@ datum_sum_double4(Datum l, Datum r)
 bool
 ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
 {
-  Temporal *head = (Temporal *) skiplist_headval(state);
+  const Temporal *head = (Temporal *) skiplist_headval(state);
   if (head->subtype != subtype)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -219,7 +219,7 @@ span_span_cmp(const Span *s1, const Span *s2)
  * @brief Comparison function used for skiplists
  */
 static int
-temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
+temporal_skiplist_elempos(const SkipList *list, const Span *s, int cur)
 {
   if (cur == 0)
     return 1; /* Head is -inf */
@@ -251,8 +251,8 @@ temporal_skiplist_common(SkipList *list, void **values, int count,
   int *lower, int *upper, int update[SKIPLIST_MAXLEVEL])
 {
   /* Temporal aggregation cannot mix instants and sequences */
-  Temporal *temp1 = (Temporal *) skiplist_headval(list);
-  Temporal *temp2 = (Temporal *) values[0];
+  const Temporal *temp1 = (Temporal *) skiplist_headval(list);
+  const Temporal *temp2 = (Temporal *) values[0];
   if (temp1->subtype != temp2->subtype)
   {
     meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
@@ -1370,7 +1370,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     const TInstant *inst = instants[i];
-    double2 *value = (double2 *) DatumGetPointer(tinstant_value_p(inst));
+    const double2 *value = (double2 *) DatumGetPointer(tinstant_value_p(inst));
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1393,7 +1393,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      double2 *value2 = (double2 *) DatumGetPointer(tinstant_value_p(inst));
+      const double2 *value2 = (double2 *) DatumGetPointer(tinstant_value_p(inst));
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }

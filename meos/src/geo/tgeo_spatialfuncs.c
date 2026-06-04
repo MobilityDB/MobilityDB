@@ -86,14 +86,14 @@ datum_point4d(Datum value, POINT4D *p)
   memset(p, 0, sizeof(POINT4D));
   if (FLAGS_GET_Z(gs->gflags))
   {
-    POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
+    const POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
     p->x = point->x;
     p->y = point->y;
     p->z = point->z;
   }
   else
   {
-    POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
+    const POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
     p->x = point->x;
     p->y = point->y;
   }

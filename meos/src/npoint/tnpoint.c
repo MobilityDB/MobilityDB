@@ -643,7 +643,7 @@ tnpoint_positions(const Temporal *temp, int *count)
 int64
 tnpointinst_route(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return np->rid;
 }
 
@@ -718,7 +718,7 @@ tnpointseqset_routes(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, i), 0);
-    Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+    const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
     values[i] = np->rid;
   }
   datumarr_sort(values, ss->count, T_INT8);

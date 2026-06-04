@@ -60,7 +60,7 @@
  * @brief Create a bit matrix
  */
 BitMatrix *
-bitmatrix_make(int *count, int ndims)
+bitmatrix_make(const int *count, int ndims)
 {
   /* Calculate the needed number of bits and bytes */
   int i, bitCount = 1;
@@ -85,7 +85,7 @@ bitmatrix_make(int *count, int ndims)
  * @brief Get the value of the bit in the bit matrix
  */
 static bool
-bitmatrix_get(const BitMatrix *bm, int *coords)
+bitmatrix_get(const BitMatrix *bm, const int *coords)
 {
   int i, j;
   for (i = 0; i < bm->ndims; i++)
@@ -109,7 +109,7 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
  * @brief Set the value of the bit in the bit matrix
  */
 static void
-bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
+bitmatrix_set_cell(BitMatrix *bm, const int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->ndims; i++)
@@ -275,7 +275,7 @@ bitmatrix_print(const BitMatrix *bm)
  * @return Number of tiles set
  */
 static int
-fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
+fastvoxel_bm(int *coords1, const double *eps1, int *coords2, const double *eps2,
   int ndims, BitMatrix *bm)
 {
   int i, k, coords[MAXDIMS], next[MAXDIMS], result = 0;

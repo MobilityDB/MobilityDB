@@ -178,7 +178,7 @@ stbox_out(const STBox *box, int maxdd)
     snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
     srid[0] = '\0';
-  char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
+  const char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
   if (hast)
     /* The second argument is not used for periods */
     period = span_out(&box->period, maxdd);
@@ -2354,7 +2354,7 @@ stbox_quad_split(const STBox *box, int *count)
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-  Span *period = hast ? (Span *) &box->period : NULL;
+  const Span *period = hast ? &box->period : NULL;
   *count = hasz ? 8 : 4;
   STBox *result = palloc(sizeof(STBox) * (*count));
   double deltax = (box->xmax - box->xmin) / 2.0;

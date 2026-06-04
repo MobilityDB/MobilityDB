@@ -198,7 +198,7 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tinstant_extend(inst, interv, result);
       break;
@@ -341,7 +341,7 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interv,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tinstant_transform_wcount(inst, interv, result);
       break;
@@ -498,7 +498,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tnumberinst_transform_wavg(inst, interv, result);
       break;
