@@ -31,11 +31,17 @@
  * @file
  * @brief Spatial restriction functions for temporal rigid geometries
  *
- * The restriction is evaluated on the temporal centroid trajectory
- * (`trgeometry_to_tpoint`): a `trgeometry` is "in" a geometry / STBox at time
- * `t` iff its antenna position at `t` lies in that geometry / STBox.
- * This matches the tpose convention and uses the existing tgeompoint
- * restriction kernels.
+ * The restriction is exact for the body extent: a `trgeometry` is "in" a
+ * geometry / STBox at time `t` iff its posed reference polygon (the whole
+ * body, not merely its centre point) overlaps that geometry / STBox at `t`.
+ * The overlap intervals are computed per trgeometry segment from the
+ * swept-edge clip primitive (`trgeo_geom_clip_*`): every time at which a
+ * moving body edge touches the target boundary is a candidate state-change,
+ * and each inter-event sub-interval is classified by an exact GEOS
+ * polygon-overlap midpoint test. This is exact for pure-translation
+ * segments. Rotating segments and target geometries with interior rings
+ * (holes) raise an honest `FEATURE_NOT_SUPPORTED` error instead of silently
+ * reducing to the centre point.
  */
 
 /* PostgreSQL */
@@ -50,6 +56,8 @@
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
+#include "rgeo/trgeo_geom_clip.h"
+#include "rgeo/trgeo_inst.h"
 #include "rgeo/trgeo_spatialfuncs.h"
 #include "rgeo/trgeo_utils.h"
 #include "pose/pose.h"
@@ -59,6 +67,408 @@
 #include "temporal/temporal.h"
 
 /*****************************************************************************
+ * Exact body-overlap interval computation
+ *
+ * Given a trgeometry and a static target geometry, compute the set of
+ * timestamps during which the posed reference polygon (the whole body)
+ * overlaps the target. The computation is performed per consecutive-instant
+ * segment and is exact for pure translation:
+ *
+ *   - Critical events: every time at which a moving body edge touches the
+ *     target boundary. These are exactly the interval endpoints returned by
+ *     the swept-edge clip primitive across all body edges (the clip captures
+ *     moving-edge-endpoint-on-target-edge, target-vertex-on-moving-edge, and
+ *     moving-endpoint-inside-target events). The overlap state
+ *     `intersects(B(t), target)` is constant between consecutive events.
+ *   - Classification: each inter-event sub-interval is classified by an
+ *     exact GEOS polygon-overlap test (`geom_intersects2d`) at its midpoint,
+ *     applied to the materialised world body. This correctly handles full
+ *     containment in either direction, where no boundary touch occurs.
+ *
+ * A segment whose two endpoint poses differ in rotation by more than
+ * FP tolerance, or a target geometry carrying interior rings (holes,
+ * ignored by the M1 clip), raises an honest FEATURE_NOT_SUPPORTED error.
+ *****************************************************************************/
+
+/* Floating-point tolerance for the pure-translation / rotation test;
+ * matches the FP_TOLERANCE convention in trgeo_geom_clip.c */
+#define TRGEO_RESTRICT_TOLERANCE 1e-12
+
+/**
+ * @brief Return true if any polygon component of an LWGEOM carries an
+ * interior ring (hole). The M1 clip primitive ignores holes, so a holey
+ * target is rejected rather than silently treated as solid.
+ */
+static bool
+lwgeom_has_interior_ring(const LWGEOM *geom)
+{
+  if (! geom)
+    return false;
+  switch (geom->type)
+  {
+    case POLYGONTYPE:
+      return ((const LWPOLY *) geom)->nrings > 1;
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (lwgeom_has_interior_ring(coll->geoms[i]))
+          return true;
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Append to @p events the per-body-edge clip-interval endpoints (in
+ * segment-local parameter t in [0, 1]) for a pure-translation body segment.
+ *
+ * The body translates by @p dx, @p dy with fixed orientation. Each exterior
+ * ring edge of the (already world-posed at t = 0) body @p body0 sweeps a
+ * parallelogram; the clip primitive returns the times at which that edge
+ * touches the target boundary.
+ */
+static void
+collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
+  const LWGEOM *target, double **events, int *nevents, int *cap)
+{
+  if (! body0)
+    return;
+  switch (body0->type)
+  {
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) body0;
+      /* Exterior ring only: the body interior is solid for overlap. */
+      const POINTARRAY *pa = poly->rings[0];
+      for (uint32_t k = 0; k + 1 < pa->npoints; k++)
+      {
+        const POINT2D *p0 = getPoint2d_cp(pa, k);
+        const POINT2D *p1 = getPoint2d_cp(pa, k + 1);
+        POINT2D a1 = *p0, b1 = *p1;
+        POINT2D a2 = { p0->x + dx, p0->y + dy };
+        POINT2D b2 = { p1->x + dx, p1->y + dy };
+        Span *iv = NULL;
+        int n = trgeo_geom_clip_lwgeom(&a1, &b1, &a2, &b2, target, &iv);
+        for (int m = 0; m < n; m++)
+        {
+          if (*nevents + 2 > *cap)
+          {
+            *cap = (*nevents + 2) * 2 + 8;
+            *events = repalloc(*events, (size_t) *cap * sizeof(double));
+          }
+          (*events)[(*nevents)++] = DatumGetFloat8(iv[m].lower);
+          (*events)[(*nevents)++] = DatumGetFloat8(iv[m].upper);
+        }
+        if (iv)
+          pfree(iv);
+      }
+      break;
+    }
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) body0;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        collect_edge_events_m1(coll->geoms[i], dx, dy, target, events,
+          nevents, cap);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+static int
+restrict_double_cmp(const void *a, const void *b)
+{
+  double da = *(const double *) a, db = *(const double *) b;
+  return (da < db) ? -1 : (da > db) ? 1 : 0;
+}
+
+/**
+ * @brief Compute, for one pure-translation segment, the absolute-time spans
+ * during which the posed body overlaps the target, appending them to the
+ * dynamic span buffer (@p spans, @p nspans, @p spancap).
+ *
+ * @param[in] ref Body reference geometry (body frame)
+ * @param[in] pose1,pose2 Segment endpoint poses (same orientation)
+ * @param[in] t1,t2 Segment endpoint timestamps
+ * @param[in] target Static target geometry
+ * @param[in] lwtarget LWGEOM view of @p target (for the clip primitive)
+ * @return true on success, false if the error handler returned (error set)
+ */
+static bool
+segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
+  const Pose *pose2, TimestampTz t1, TimestampTz t2,
+  const GSERIALIZED *target, const LWGEOM *lwtarget,
+  Span **spans, int *nspans, int *spancap)
+{
+  /* Pure translation: orientation is fixed over the segment (the caller has
+   * already verified theta1 == theta2 within tolerance). */
+  double dx = pose2->data[0] - pose1->data[0];
+  double dy = pose2->data[1] - pose1->data[1];
+
+  /* World-posed body at the segment start. */
+  GSERIALIZED *body0_gs = geom_apply_pose(ref, pose1);
+  LWGEOM *body0 = lwgeom_from_gserialized(body0_gs);
+
+  /* Critical events: clip-interval endpoints across all body edges. */
+  int cap = 16;
+  double *events = palloc((size_t) cap * sizeof(double));
+  int nevents = 0;
+  events[nevents++] = 0.0;
+  events[nevents++] = 1.0;
+  collect_edge_events_m1(body0, dx, dy, lwtarget, &events, &nevents, &cap);
+
+  qsort(events, (size_t) nevents, sizeof(double), restrict_double_cmp);
+  /* Deduplicate. */
+  int nuniq = 0;
+  for (int k = 0; k < nevents; k++)
+    if (nuniq == 0 ||
+        fabs(events[k] - events[nuniq - 1]) > TRGEO_RESTRICT_TOLERANCE)
+      events[nuniq++] = events[k];
+
+  /* Classify each inter-event sub-interval by an exact GEOS overlap test at
+   * its midpoint, applied to the materialised world body. Merge adjacent
+   * overlapping sub-intervals. */
+  bool prev_overlap = false;
+  double run_start = 0.0;
+  for (int k = 0; k < nuniq - 1; k++)
+  {
+    double ta = events[k], tb = events[k + 1];
+    if (tb - ta <= TRGEO_RESTRICT_TOLERANCE)
+      continue;
+    double tm = 0.5 * (ta + tb);
+    Pose *posem = posesegm_interpolate(pose1, pose2, tm);
+    GSERIALIZED *bodym = geom_apply_pose(ref, posem);
+    bool ov = geom_intersects2d(bodym, target);
+    pfree(bodym);
+    pfree(posem);
+    if (ov && ! prev_overlap)
+    {
+      run_start = ta;
+      prev_overlap = true;
+    }
+    else if (! ov && prev_overlap)
+    {
+      /* Emit [run_start, ta] in absolute time. */
+      if (*nspans + 1 > *spancap)
+      {
+        *spancap = (*nspans + 1) * 2 + 8;
+        *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
+      }
+      TimestampTz lo = t1 + (TimestampTz) llround(run_start * (double) (t2 - t1));
+      TimestampTz hi = t1 + (TimestampTz) llround(ta * (double) (t2 - t1));
+      span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(hi),
+        true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+      (*nspans)++;
+      prev_overlap = false;
+    }
+  }
+  if (prev_overlap)
+  {
+    if (*nspans + 1 > *spancap)
+    {
+      *spancap = (*nspans + 1) * 2 + 8;
+      *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
+    }
+    TimestampTz lo = t1 + (TimestampTz) llround(run_start * (double) (t2 - t1));
+    span_set(TimestampTzGetDatum(lo), TimestampTzGetDatum(t2),
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+    (*nspans)++;
+  }
+
+  pfree(events);
+  lwgeom_free(body0);
+  pfree(body0_gs);
+  return true;
+}
+
+/**
+ * @brief Test the posed body overlap at a single instant timestamp,
+ * appending an instantaneous span to the buffer if it overlaps.
+ */
+static void
+instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
+  const GSERIALIZED *target, Span **spans, int *nspans, int *spancap)
+{
+  GSERIALIZED *body = geom_apply_pose(ref, pose);
+  bool ov = geom_intersects2d(body, target);
+  pfree(body);
+  if (! ov)
+    return;
+  if (*nspans + 1 > *spancap)
+  {
+    *spancap = (*nspans + 1) * 2 + 8;
+    *spans = repalloc(*spans, (size_t) *spancap * sizeof(Span));
+  }
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, T_TSTZSPAN, &(*spans)[*nspans]);
+  (*nspans)++;
+}
+
+/**
+ * @brief Compute the timestamps at which a trgeometry body overlaps a target
+ * geometry, returning a tstzspanset (or NULL if no overlap).
+ *
+ * Iterates the trgeometry instants. Each linear segment is required to be a
+ * pure translation; any rotating segment raises FEATURE_NOT_SUPPORTED. The
+ * caller has already rejected holey targets.
+ *
+ * @return The overlap spanset on success. On error (rotation) the MEOS error
+ * handler is invoked; @p *err is set to true and NULL is returned.
+ */
+static SpanSet *
+trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
+  const LWGEOM *lwgs, bool *err)
+{
+  *err = false;
+  const GSERIALIZED *ref = trgeo_geom_p(temp);
+  int spancap = 16, nspans = 0;
+  Span *spans = palloc((size_t) spancap * sizeof(Span));
+
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
+      inst->t, gs, &spans, &nspans, &spancap);
+  }
+  else
+  {
+    /* Collect the sequences to iterate. */
+    int nseqs;
+    const TSequence **seqs;
+    const TSequence *one;
+    if (temp->subtype == TSEQUENCE)
+    {
+      one = (const TSequence *) temp;
+      seqs = &one;
+      nseqs = 1;
+    }
+    else
+    {
+      const TSequenceSet *sset = (const TSequenceSet *) temp;
+      nseqs = sset->count;
+      seqs = palloc((size_t) nseqs * sizeof(TSequence *));
+      for (int i = 0; i < nseqs; i++)
+        ((const TSequence **) seqs)[i] = TSEQUENCESET_SEQ_N(sset, i);
+    }
+    bool linear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+    for (int s = 0; s < nseqs; s++)
+    {
+      const TSequence *seq = seqs[s];
+      if (seq->count == 1)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+        instant_overlap_span(ref, DatumGetPoseP(tinstant_value_p(inst)),
+          inst->t, gs, &spans, &nspans, &spancap);
+        continue;
+      }
+      if (! linear)
+      {
+        /* Step interpolation: each instant holds its pose (the body is static)
+         * over [t_i, t_{i+1}); if the held body overlaps the target, the whole
+         * step interval overlaps. The last instant contributes an instant. */
+        for (int i = 0; i < seq->count; i++)
+        {
+          const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+          const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+          GSERIALIZED *body = geom_apply_pose(ref, pose);
+          bool ov = geom_intersects2d(body, gs);
+          pfree(body);
+          if (! ov)
+            continue;
+          if (nspans + 1 > spancap)
+          {
+            spancap = (nspans + 1) * 2 + 8;
+            spans = repalloc(spans, (size_t) spancap * sizeof(Span));
+          }
+          TimestampTz hi = (i + 1 < seq->count) ?
+            TSEQUENCE_INST_N(seq, i + 1)->t : inst->t;
+          bool upper_inc = (i + 1 < seq->count) ? false : true;
+          span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(hi),
+            true, upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &spans[nspans]);
+          nspans++;
+        }
+        continue;
+      }
+      for (int i = 0; i + 1 < seq->count; i++)
+      {
+        const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+        const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+        const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+        const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+        /* Pure-translation guard: any rotation is honestly not implemented. */
+        if (fabs(pose2->data[2] - pose1->data[2]) > TRGEO_RESTRICT_TOLERANCE)
+        {
+          pfree(spans);
+          if (temp->subtype == TSEQUENCESET)
+            pfree(seqs);
+          *err = true;
+          meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+            "Exact spatial restriction of a temporal rigid geometry with a "
+            "rotating segment is not implemented");
+          return NULL;
+        }
+        if (! segment_overlap_spans(ref, pose1, pose2, inst1->t, inst2->t,
+            gs, lwgs, &spans, &nspans, &spancap))
+        {
+          pfree(spans);
+          if (temp->subtype == TSEQUENCESET)
+            pfree(seqs);
+          *err = true;
+          return NULL;
+        }
+      }
+    }
+    if (temp->subtype == TSEQUENCESET)
+      pfree(seqs);
+  }
+
+  if (nspans == 0)
+  {
+    pfree(spans);
+    return NULL;
+  }
+  /* spanset_make_free normalises (sorts + merges adjacent/overlapping spans)
+   * and takes ownership of the spans array. */
+  return spanset_make_free(spans, nspans, NORMALIZE, ORDER);
+}
+
+/**
+ * @brief Restrict a temporal rigid geometry to (the complement of) a set of
+ * timestamps, preserving the appended reference geometry.
+ * @details The generic temporal restriction operates on the pose component
+ * and drops the reference geometry; this re-appends it so the result is a
+ * well-formed temporal rigid geometry.
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] ss Set of timestamps (overlap intervals); when NULL, an empty
+ * restriction is assumed
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+static Temporal *
+trgeo_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
+{
+  if (! ss)
+    /* No overlap: at -> empty, minus -> whole. */
+    return atfunc ? NULL : temporal_copy(temp);
+  /* Restrict the pose component, then re-append the reference geometry: the
+   * generic temporal restriction operates on the pose and drops the geometry. */
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res = temporal_restrict_tstzspanset(tpose, ss, atfunc);
+  pfree(tpose);
+  if (! res)
+    return NULL;
+  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  pfree(res);
+  return result;
+}
+
+/*****************************************************************************
  * Restriction by geometry
  *****************************************************************************/
 
@@ -66,6 +476,9 @@
  * @ingroup meos_internal_rgeo_restrict
  * @brief Return a temporal rigid geometry restricted to (the complement
  * of) a geometry
+ * @details The restriction is exact on the body extent for pure-translation
+ * trgeometries. Rotating segments and holey targets raise an honest
+ * FEATURE_NOT_SUPPORTED error.
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
@@ -80,17 +493,26 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
-  Temporal *res = tgeo_restrict_geom(tpoint, gs, atfunc);
-  Temporal *result = NULL;
-  if (res)
+  LWGEOM *lwgs = lwgeom_from_gserialized(gs);
+  /* The M1 clip ignores polygon holes; reject holey targets honestly. */
+  if (lwgeom_has_interior_ring(lwgs))
   {
-    SpanSet *ss = temporal_time(res);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-    pfree(res);
-    pfree(ss);
+    lwgeom_free(lwgs);
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Exact spatial restriction of a temporal rigid geometry against a "
+      "geometry with interior rings (holes) is not implemented");
+    return NULL;
   }
-  pfree(tpoint);
+
+  bool err;
+  SpanSet *ss = trgeo_overlap_spanset(temp, gs, lwgs, &err);
+  lwgeom_free(lwgs);
+  if (err)
+    return NULL;
+
+  Temporal *result = trgeo_restrict_overlap(temp, ss, atfunc);
+  if (ss)
+    pfree(ss);
   return result;
 }
 
@@ -131,10 +553,19 @@ trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_internal_rgeo_restrict
  * @brief Return a temporal rigid geometry restricted to (the complement
  * of) a spatiotemporal box
+ * @details The spatial footprint of the box is treated as a rectangular
+ * polygon and the exact body-overlap restriction is applied; the result is
+ * additionally restricted to the box's time span. Exact on the body extent
+ * for pure-translation trgeometries; rotating segments raise an honest
+ * FEATURE_NOT_SUPPORTED error.
  * @param[in] temp Temporal rigid geometry
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @note @p border_inc governs the temporal upper border (carried in the box
+ * period). The spatial footprint is the closed box region: an area body
+ * overlaps it on a positive-measure set of times, so border-only spatial
+ * contact (a measure-zero boundary touch) does not change the result.
  */
 Temporal *
 trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -144,17 +575,52 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   if (! ensure_valid_trgeo_stbox(temp, box))
     return NULL;
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
-  Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
-  Temporal *result = NULL;
-  if (res)
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  /* The box period already encodes its temporal-border inclusivity; the
+   * spatial overlap is an exact closed-region area test (see @note). */
+  (void) border_inc;
+
+  /* Spatial overlap spans (whole time domain if the box has no X bounds). */
+  SpanSet *spatial = NULL;
+  if (hasx)
   {
-    SpanSet *ss = temporal_time(res);
-    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-    pfree(res);
-    pfree(ss);
+    GSERIALIZED *geo = stbox_geo(box);
+    LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
+    bool err;
+    spatial = trgeo_overlap_spanset(temp, geo, lwgeo, &err);
+    lwgeom_free(lwgeo);
+    pfree(geo);
+    if (err)
+      return NULL;
+    if (! spatial)
+      /* No spatial overlap. */
+      return atfunc ? NULL : temporal_copy(temp);
   }
-  pfree(tpoint);
+
+  /* Intersect the spatial overlap with the box time span. */
+  SpanSet *atspans;
+  if (hast)
+  {
+    Span *period = span_copy(&box->period);
+    SpanSet *periodset = spanset_make_free(period, 1, NORMALIZE_NO, ORDER_NO);
+    if (spatial)
+    {
+      atspans = intersection_spanset_spanset(spatial, periodset);
+      pfree(periodset);
+      pfree(spatial);
+      if (! atspans)
+        return atfunc ? NULL : temporal_copy(temp);
+    }
+    else
+      atspans = periodset;
+  }
+  else
+    atspans = spatial;
+
+  Temporal *result = trgeo_restrict_overlap(temp, atspans, atfunc);
+  if (atspans)
+    pfree(atspans);
   return result;
 }
 
