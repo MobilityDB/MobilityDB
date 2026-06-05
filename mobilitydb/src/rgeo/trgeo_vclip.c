@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -76,7 +76,7 @@ VClip_poly_point(PG_FUNCTION_ARGS)
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly));
   LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs_point));
   uint32_t poly_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_point(poly, point, NULL, &poly_feature, &distance);
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -101,7 +101,7 @@ VClip_poly_poly(PG_FUNCTION_ARGS)
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly1));
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   uint32_t poly1_feature = 0, poly2_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_tpoly(poly1, poly2, NULL, NULL, &poly1_feature, &poly2_feature,
     &distance);
   lwpoly_free(poly1);
@@ -138,7 +138,7 @@ VClip_tpoly_point(PG_FUNCTION_ARGS)
   LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs_point));
   Pose *pose = DatumGetPoseP(value);
   uint32_t poly_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_point(poly, point, pose, &poly_feature, &distance);
   lwpoly_free(poly); lwpoint_free(point);
   PG_FREE_IF_COPY(temp, 0);
@@ -173,7 +173,7 @@ VClip_tpoly_poly(PG_FUNCTION_ARGS)
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   Pose *pose1 = DatumGetPoseP(value);
   uint32_t poly1_feature = 0, poly2_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_tpoly(poly1, poly2, pose1, NULL, &poly1_feature, &poly2_feature,
     &distance);
   lwpoly_free(poly1);
@@ -210,7 +210,7 @@ VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs_point = DatumGetGserializedP(value2);
   LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs_point));
   uint32_t poly_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_point(poly, point, pose, &poly_feature, &distance);
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -247,7 +247,7 @@ VClip_tpoly_tpoly(PG_FUNCTION_ARGS)
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   Pose *pose2 = DatumGetPoseP(value2);
   uint32_t poly1_feature = 0, poly2_feature = 0;
-  double distance;
+  double distance = 0;
   v_clip_tpoly_tpoly(poly1, poly2, pose1, pose2, &poly1_feature,
     &poly2_feature, &distance);
   lwpoly_free(poly1);
