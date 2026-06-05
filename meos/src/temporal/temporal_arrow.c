@@ -599,8 +599,13 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   ArrowArena *arena_a = palloc0(sizeof(ArrowArena));
 
   /* Schema: the full nested contract. The value leaf "g" is the only part
-   * that varies by base type; everything else is fixed structure. */
-  struct ArrowSchema *inst_kids[2];
+   * that varies by base type; everything else is fixed structure. The
+   * struct children arrays are arena-allocated (not stack arrays): the
+   * consumer walks the schema after this function returns, so a struct
+   * node's children pointer must outlive the call (mirrors the array-side
+   * inst_a_kids/seq_a_kids and the schema-side top_sc below). */
+  struct ArrowSchema **inst_kids =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 2);
   inst_kids[0] = aw_schema_leaf(arena_s, "tsu:UTC", "t");
   if (is_point)
   {
@@ -678,7 +683,8 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
     aw_schema_struct(arena_s, "item", inst_kids, 2);
   struct ArrowSchema *insts_list = aw_schema_list(arena_s, "insts", inst_st);
 
-  struct ArrowSchema *seq_kids[3];
+  struct ArrowSchema **seq_kids =
+    arena_alloc(arena_s, sizeof(struct ArrowSchema *) * 3);
   seq_kids[0] = aw_schema_leaf(arena_s, "b", "lower_inc");
   seq_kids[1] = aw_schema_leaf(arena_s, "b", "upper_inc");
   seq_kids[2] = insts_list;
@@ -772,6 +778,9 @@ meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema,
   double *py = xy ? arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pz = ((is_point && has_z) || any3d) ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
+  /* pr[] is written via pr[k] = cbuffer_radius(...) inside #if CBUFFER; the
+   * cppcheck CI build defines CBUFFER=0 so it cannot see the write. */
+  /* cppcheck-suppress constVariablePointer */
   double *pr = is_cbuffer ?
     arena_alloc(arena_a, sizeof(double) * vn) : NULL;
   double *pth = any2dpose ?
@@ -1371,6 +1380,10 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   const double *pz = ((v_is_point && vstruct->n_children == 3) ||
     v_is_pose3d) ?
     (const double *) vstruct->children[2]->buffers[1] : NULL;
+  /* In the cppcheck CI build (CBUFFER=0) the earlier #if ! CBUFFER guard
+   * returns before this point when v_is_cbuffer, so cppcheck deduces the
+   * condition is always false; with CBUFFER=1 it is a live runtime test. */
+  /* cppcheck-suppress knownConditionTrueFalse */
   const double *pr = v_is_cbuffer ?
     (const double *) vstruct->children[2]->buffers[1] : NULL;
   const double *pth = (v_is_pose && ! v_is_pose3d) ?
@@ -2674,6 +2687,7 @@ meos_tbox_from_arrow(const struct ArrowSchema *schema,
       return NULL;
     span = *s;
     pfree(s);
+    idx++;
   }
   /* tbox_make is the canonical constructor; a null component is the
    * canonical way to express an absent dimension. */
@@ -2848,6 +2862,7 @@ meos_stbox_from_arrow(const struct ArrowSchema *schema,
   if (hasz)
   {
     aw_axis_read(array->children[idx], &zmin, &zmax);
+    idx++;
   }
   /* stbox_make is the canonical constructor: the verbatim flags word drives
    * hasx / hasz / geodetic and the raw spatial extent and srid are passed

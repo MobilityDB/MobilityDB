@@ -58,8 +58,7 @@ jobs:
           cd build
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DMEOS=on \
-                -DCBUFFER=on -DNPOINT=on -DPOSE=on -DRGEO=on ..
+                -DMEOS=on ..
 
       - name: Run cppcheck (XML output - universally supported)
         # --project uses the same -I paths CMake records for the real
@@ -83,6 +82,14 @@ jobs:
             --suppress='*:postgis/*' \
             --suppress='*:pgtypes/*' \
             --suppress='*:h3-pg/*' \
+            --suppress='*:*lwin_wkt_lex.c' \
+            --suppress='*:*lwin_wkt_lex.l' \
+            --suppress='*:*lwin_wkt_parse.c' \
+            --suppress='*:*lwin_wkt_parse.y' \
+            --suppress='*:lwin_wkt_lex.c' \
+            --suppress='*:lwin_wkt_lex.l' \
+            --suppress='*:lwin_wkt_parse.c' \
+            --suppress='*:lwin_wkt_parse.y' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
             --suppress='preprocessorErrorDirective:*/postgres/*' \
