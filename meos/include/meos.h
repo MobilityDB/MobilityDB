@@ -330,6 +330,7 @@ extern int rtree_search_temporal(const RTree *rtree, RTreeSearchOp op, const Tem
 typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
+extern void meos_initialize_noexit_error_handler(void);
 extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_collation(void);
 extern void meos_finalize_timezone(void);

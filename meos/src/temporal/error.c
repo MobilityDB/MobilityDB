@@ -181,6 +181,32 @@ meos_initialize_error_handler(error_handler_fn err_handler)
     err_handler ? err_handler : &default_error_handler, __ATOMIC_RELEASE);
   return;
 }
+
+/**
+ * @brief No-exit error handler reporting via meos_errno() only
+ * @details Never calls exit(); safe to invoke from a foreign thread in a
+ * JVM (JNR-FFI on Spark / JMEOS) where exit() would tear the host process
+ * down. Errors are reported through meos_errno() only.
+ */
+static void
+noexit_error_handler(int errlevel __attribute__((__unused__)), int errcode,
+  const char *errmsg __attribute__((__unused__)))
+{
+  meos_errno_set(errcode);
+  return;
+}
+
+/**
+ * @brief Install the no-exit error handler
+ * @details Safe to call from multiple threads -- the underlying atomic
+ * store is idempotent and always sets the same function pointer.
+ */
+void
+meos_initialize_noexit_error_handler(void)
+{
+  __atomic_store_n(&MEOS_ERROR_HANDLER, &noexit_error_handler, __ATOMIC_RELEASE);
+  return;
+}
 #endif /* MEOS */
 
 /*****************************************************************************/
