@@ -17,12 +17,12 @@
 
 CREATE FUNCTION teq(geometry, trgeometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Teq_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION teq(trgeometry, geometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Teq_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION teq(trgeometry, trgeometry)
@@ -32,12 +32,12 @@ CREATE FUNCTION teq(trgeometry, trgeometry)
 
 CREATE FUNCTION tne(geometry, trgeometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_trgeo'
+  AS 'MODULE_PATHNAME', 'Tne_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tne(trgeometry, geometry)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_trgeo_geo'
+  AS 'MODULE_PATHNAME', 'Tne_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tne(trgeometry, trgeometry)
