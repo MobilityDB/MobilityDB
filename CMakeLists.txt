@@ -221,6 +221,13 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 # Disable compiler optimizations for debugging
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
+# Deterministic floating-point across platforms and optimization levels: disable
+# fused multiply-add contraction so geometric results do not depend on the
+# compiler's FMA decisions
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffp-contract=off")
+endif()
+
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
 include(TestBigEndian)
