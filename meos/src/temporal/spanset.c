@@ -209,6 +209,7 @@ SPANSET_SP_N(const SpanSet *ss, int index)
  * @brief Return a span set from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] spansettype Span set type
+ * @csqlfn #Spanset_in()
  */
 SpanSet *
 spanset_in(const char *str, MeosType spansettype)
