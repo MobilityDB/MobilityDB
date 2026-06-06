@@ -640,8 +640,8 @@ parse_mfjson_pose(json_object *mfjson, int32_t srid)
     }
     z = json_object_get_double(rotation);
   }
-  Pose *result = hasZ ? pose_make_3d(x, y, z, w_q, x_q, y_q, z_q, srid) :
-    pose_make_2d(x, y, z, srid);
+  Pose *result = hasZ ? pose_make_3d(x, y, z, w_q, x_q, y_q, z_q, false, srid) :
+    pose_make_2d(x, y, z, false, srid);
   return result;
 }
 
@@ -1468,6 +1468,8 @@ pose_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
   s->has_srid = false;
   if (wkb_flags & MEOS_WKB_ZFLAG)
     s->hasz = true;
+  if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+    s->geodetic = true;
   if (wkb_flags & MEOS_WKB_SRIDFLAG)
     s->has_srid = true;
   return;
@@ -1496,14 +1498,14 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
     double X = double_from_wkb_state(s);
     double Y = double_from_wkb_state(s);
     double Z = double_from_wkb_state(s);
-    result = pose_make_3d(x, y, z, W, X, Y, Z, srid);
+    result = pose_make_3d(x, y, z, W, X, Y, Z, s->geodetic, srid);
   }
   else
   {
     double x = double_from_wkb_state(s);
     double y = double_from_wkb_state(s);
     double theta = double_from_wkb_state(s);
-    result = pose_make_2d(x, y, theta, srid);
+    result = pose_make_2d(x, y, theta, s->geodetic, srid);
   }
   return result;
 }

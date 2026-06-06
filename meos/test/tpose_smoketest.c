@@ -123,10 +123,10 @@ main(void)
   { Pose * r = pose_copy(pose1);
     printf("pose_copy: %s\n", r ? "OK" : "NULL");
     if (r) free(r); }
-  { Pose * r = pose_make_2d(1.0, 1.0, 1.0, 0);
+  { Pose * r = pose_make_2d(1.0, 1.0, 1.0, false, 0);
     printf("pose_make_2d: %s\n", r ? "OK" : "NULL");
     if (r) free(r); }
-  { Pose * r = pose_make_3d(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0);
+  { Pose * r = pose_make_3d(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, false, 0);
     printf("pose_make_3d: %s\n", r ? "OK" : "NULL");
     if (r) free(r); }
   { Pose * r = pose_make_point2d(geom1, 1.0);

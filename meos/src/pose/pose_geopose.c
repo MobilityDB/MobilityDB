@@ -254,7 +254,8 @@ pose_from_geopose_object(json_object *root)
     /* Note: any reasonable client emits a unit quaternion. We keep the
      * input verbatim — the canonicalisation/normalisation pass is a
      * separate phase. */
-    result = pose_make_3d(lon, lat, h, W, X, Y, Z, GEOPOSE_GEOGRAPHIC_SRID);
+    result = pose_make_3d(lon, lat, h, W, X, Y, Z, true,
+      GEOPOSE_GEOGRAPHIC_SRID);
   }
   else if (jyp != NULL && json_object_is_type(jyp, json_type_object))
   {
@@ -277,7 +278,8 @@ pose_from_geopose_object(json_object *root)
     if (! have_h && pitch_deg == 0.0 && roll_deg == 0.0)
     {
       double theta_rad = GEOPOSE_DEG2RAD(yaw_deg);
-      result = pose_make_2d(lon, lat, theta_rad, GEOPOSE_GEOGRAPHIC_SRID);
+      result = pose_make_2d(lon, lat, theta_rad, true,
+        GEOPOSE_GEOGRAPHIC_SRID);
     }
     else
     {
@@ -285,7 +287,7 @@ pose_from_geopose_object(json_object *root)
       geopose_ypr_to_quaternion(GEOPOSE_DEG2RAD(yaw_deg),
         GEOPOSE_DEG2RAD(pitch_deg), GEOPOSE_DEG2RAD(roll_deg),
         &W, &X, &Y, &Z);
-      result = pose_make_3d(lon, lat, h, W, X, Y, Z,
+      result = pose_make_3d(lon, lat, h, W, X, Y, Z, true,
         GEOPOSE_GEOGRAPHIC_SRID);
     }
   }
