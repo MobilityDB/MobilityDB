@@ -928,6 +928,21 @@ datum_pose_point(Datum pose)
   return GserializedPGetDatum(pose_to_point(DatumGetPoseP(pose)));
 }
 
+/**
+ * @brief Convert a pose into a point that is geography when the pose is
+ * geodetic and geometry otherwise
+ */
+Datum
+datum_pose_geopoint(Datum pose)
+{
+  const Pose *p = DatumGetPoseP(pose);
+  bool hasz = MEOS_FLAGS_GET_Z(p->flags);
+  GSERIALIZED *gs = geopoint_make(p->data[0], p->data[1],
+    hasz ? p->data[2] : 0.0, hasz, MEOS_FLAGS_GET_GEODETIC(p->flags),
+    pose_srid(p));
+  return GserializedPGetDatum(gs);
+}
+
 /*****************************************************************************/
 
 /**

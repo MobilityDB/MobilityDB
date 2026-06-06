@@ -488,7 +488,7 @@ tpose_to_tpoint(const Temporal *temp)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_pose_point;
+  lfinfo.func = (varfunc) &datum_pose_geopoint;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = MEOS_FLAGS_GET_GEODETIC(temp->flags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;

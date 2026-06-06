@@ -831,7 +831,7 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 
 	<sect1 xml:id="tpose_conversions">
 		<title>Conversions</title>
-		<para>A temporal pose value can be converted to and from a temporal geometry point. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
+		<para>A temporal pose value can be converted to and from a temporal point, which is a temporal geometry point for a planar pose and a temporal geography point for a geodetic pose. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
@@ -844,6 +844,17 @@ SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
   Pose(Point Z(2 2 2), 1, 0, 0, 0)@2001-01-02)')::tgeompoint);
 -- [POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_tgeogpoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convert a geodetic temporal pose into a temporal geography point</para>
+				<para><varname>tpose::tgeogpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText((tpose '[GeodPose(Point(1 1), 0.2)@2001-01-01,
+  GeodPose(Point(1 1), 0.3)@2001-01-02)')::tgeogpoint);
+-- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02)
 </programlisting>
 			</listitem>
 		</itemizedlist>
