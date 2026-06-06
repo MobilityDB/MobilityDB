@@ -2466,14 +2466,6 @@ int main(void)
 
   /* Topological functions for temporal types */
 
-  /* bool adjacent_numspan_tnumber(const Span *s, const Temporal *temp); */
-  bool_result = adjacent_numspan_tnumber(fspan1, tfloat1);
-  printf("adjacent_numspan_tnumber(%s, %s): %c\n", fspan1_out, tfloat1_out, bool_result ? 't' : 'n');
-
-  /* bool adjacent_tbox_tnumber(const TBox *box, const Temporal *temp); */
-  bool_result = adjacent_tbox_tnumber(tbox1, tfloat1);
-  printf("adjacent_tbox_tnumber(%s, %s): %c\n", tbox1_out, tfloat1_out, bool_result ? 't' : 'n');
-
   /* bool adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   bool_result = adjacent_temporal_temporal(tfloat1, tfloat2);
   printf("adjacent_temporal_temporal(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
@@ -2493,10 +2485,6 @@ int main(void)
   /* bool adjacent_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2); */
   bool_result = adjacent_tnumber_tnumber(tfloat1, tfloat2);
   printf("adjacent_tnumber_tnumber(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
-
-  /* bool adjacent_tstzspan_temporal(const Span *s, const Temporal *temp); */
-  bool_result = adjacent_tstzspan_temporal(tstzspan1, tfloat1);
-  printf("adjacent_tstzspan_temporal(%s, %s): %c\n", tstzspan1_out, tstzspan1_out, bool_result ? 't' : 'n');
 
   /* bool contained_numspan_tnumber(const Span *s, const Temporal *temp); */
   bool_result = contained_numspan_tnumber(fspan1, tfloat1);
@@ -2562,14 +2550,6 @@ int main(void)
   bool_result = contains_tstzspan_temporal(tstzspan1, tfloat1);
   printf("contains_tstzspan_temporal(%s, %s): %c\n", tstzspan1_out, tfloat1_out, bool_result ? 't' : 'n');
 
-  /* bool overlaps_numspan_tnumber(const Span *s, const Temporal *temp); */
-  bool_result = overlaps_numspan_tnumber(fspan1, tfloat1);
-  printf("overlaps_numspan_tnumber(%s, %s): %c\n", fspan1_out, tfloat1_out, bool_result ? 't' : 'n');
-
-  /* bool overlaps_tbox_tnumber(const TBox *box, const Temporal *temp); */
-  bool_result = overlaps_tbox_tnumber(tbox1, tfloat1);
-  printf("overlaps_tbox_tnumber(%s, %s): %c\n", tbox1_out, tfloat1_out, bool_result ? 't' : 'n');
-
   /* bool overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   bool_result = overlaps_temporal_temporal(tfloat1, tfloat2);
   printf("overlaps_temporal_temporal(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
@@ -2590,18 +2570,6 @@ int main(void)
   bool_result = overlaps_tnumber_tnumber(tfloat1, tfloat2);
   printf("overlaps_tnumber_tnumber(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
 
-  /* bool overlaps_tstzspan_temporal(const Span *s, const Temporal *temp); */
-  bool_result = overlaps_tstzspan_temporal(tstzspan1, tfloat1);
-  printf("overlaps_tstzspan_temporal(%s, %s): %c\n", tstzspan1_out, tfloat1_out, bool_result ? 't' : 'n');
-
-  /* bool same_numspan_tnumber(const Span *s, const Temporal *temp); */
-  bool_result = same_numspan_tnumber(fspan1, tfloat1);
-  printf("same_numspan_tnumber(%s, %s): %c\n", fspan1_out, tfloat1_out, bool_result ? 't' : 'n');
-
-  /* bool same_tbox_tnumber(const TBox *box, const Temporal *temp); */
-  bool_result = same_tbox_tnumber(tbox1, tfloat1);
-  printf("same_tbox_tnumber(%s, %s): %c\n", tbox1_out, tfloat1_out, bool_result ? 't' : 'n');
-
   /* bool same_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   bool_result = same_temporal_temporal(tfloat1, tfloat2);
   printf("same_temporal_temporal(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
@@ -2621,10 +2589,6 @@ int main(void)
   /* bool same_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2); */
   bool_result = same_tnumber_tnumber(tfloat1, tfloat2);
   printf("same_tnumber_tnumber(%s, %s): %c\n", tfloat1_out, tfloat2_out, bool_result ? 't' : 'n');
-
-  /* bool same_tstzspan_temporal(const Span *s, const Temporal *temp); */
-  bool_result = same_tstzspan_temporal(tstzspan1, tfloat1);
-  printf("same_tstzspan_temporal(%s, %s): %c\n", tstzspan1_out, tfloat1_out, bool_result ? 't' : 'n');
 
   /*****************************************************************************/
   /* Position functions for temporal types */

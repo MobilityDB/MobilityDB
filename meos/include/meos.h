@@ -1628,14 +1628,11 @@ extern TBox *tnumber_tboxes(const Temporal *temp, int *count);
 
 /* Topological functions for temporal types */
 
-extern bool adjacent_numspan_tnumber(const Span *s, const Temporal *temp);
-extern bool adjacent_tbox_tnumber(const TBox *box, const Temporal *temp);
 extern bool adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
 extern bool adjacent_temporal_tstzspan(const Temporal *temp, const Span *s);
 extern bool adjacent_tnumber_numspan(const Temporal *temp, const Span *s);
 extern bool adjacent_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool adjacent_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
-extern bool adjacent_tstzspan_temporal(const Span *s, const Temporal *temp);
 extern bool contained_numspan_tnumber(const Span *s, const Temporal *temp);
 extern bool contained_tbox_tnumber(const TBox *box, const Temporal *temp);
 extern bool contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
@@ -1652,22 +1649,16 @@ extern bool contains_tnumber_numspan(const Temporal *temp, const Span *s);
 extern bool contains_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool contains_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool contains_tstzspan_temporal(const Span *s, const Temporal *temp);
-extern bool overlaps_numspan_tnumber(const Span *s, const Temporal *temp);
-extern bool overlaps_tbox_tnumber(const TBox *box, const Temporal *temp);
 extern bool overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
 extern bool overlaps_temporal_tstzspan(const Temporal *temp, const Span *s);
 extern bool overlaps_tnumber_numspan(const Temporal *temp, const Span *s);
 extern bool overlaps_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool overlaps_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
-extern bool overlaps_tstzspan_temporal(const Span *s, const Temporal *temp);
-extern bool same_numspan_tnumber(const Span *s, const Temporal *temp);
-extern bool same_tbox_tnumber(const TBox *box, const Temporal *temp);
 extern bool same_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
 extern bool same_temporal_tstzspan(const Temporal *temp, const Span *s);
 extern bool same_tnumber_numspan(const Temporal *temp, const Span *s);
 extern bool same_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool same_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
-extern bool same_tstzspan_temporal(const Span *s, const Temporal *temp);
 
 /*****************************************************************************/
 

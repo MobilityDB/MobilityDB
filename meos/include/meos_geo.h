@@ -735,7 +735,6 @@ extern STBox *tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *cou
 
 /* Topological functions */
 
-extern bool adjacent_stbox_tspatial(const STBox *box, const Temporal *temp);
 extern bool adjacent_tspatial_stbox(const Temporal *temp, const STBox *box);
 extern bool adjacent_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2);
 extern bool contained_stbox_tspatial(const STBox *box, const Temporal *temp);
@@ -744,10 +743,8 @@ extern bool contained_tspatial_tspatial(const Temporal *temp1, const Temporal *t
 extern bool contains_stbox_tspatial(const STBox *box, const Temporal *temp);
 extern bool contains_tspatial_stbox(const Temporal *temp, const STBox *box);
 extern bool contains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2);
-extern bool overlaps_stbox_tspatial(const STBox *box, const Temporal *temp);
 extern bool overlaps_tspatial_stbox(const Temporal *temp, const STBox *box);
 extern bool overlaps_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2);
-extern bool same_stbox_tspatial(const STBox *box, const Temporal *temp);
 extern bool same_tspatial_stbox(const Temporal *temp, const STBox *box);
 extern bool same_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2);
 
