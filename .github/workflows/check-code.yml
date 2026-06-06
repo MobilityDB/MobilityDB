@@ -24,3 +24,11 @@ jobs:
           sudo apt install -y licensecheck
       - name: Run License Check
         run: ./tools/scripts/test_license.sh
+
+  csqlfn_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check @csqlfn derivation links
+        run: python3 tools/scripts/check_csqlfn.py --gaps
