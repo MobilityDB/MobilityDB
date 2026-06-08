@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -638,6 +638,7 @@ set_num_values(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the start value of a set
  * @param[in] s Set
+ * @csqlfn #Set_start_value()
  */
 Datum
 set_start_value(const Set *s)
@@ -651,6 +652,7 @@ set_start_value(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the end value of a set
  * @param[in] s Set
+ * @csqlfn #Set_end_value()
  */
 Datum
 set_end_value(const Set *s)
@@ -723,6 +725,7 @@ set_values(const Set *s)
  * decimal places
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Set_round()
  */
 Set *
 set_round(const Set *s, int maxdd)

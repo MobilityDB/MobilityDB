@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -67,11 +67,6 @@
 #define MEOS_FP_LE(A, B) (((A) - MEOS_EPSILON) <= (B))
 #define MEOS_FP_GT(A, B) (((A) - MEOS_EPSILON) > (B))
 #define MEOS_FP_GE(A, B) (((A) + MEOS_EPSILON) >= (B))
-
-/**
- * Precision for distance operations
- */
-#define DIST_EPSILON    1.0e-06
 
 #define UNUSED          __attribute__((unused))
 

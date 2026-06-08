@@ -1,7 +1,7 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -532,6 +532,7 @@ spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Temporal_time_bins()
  */
 Span *
 temporal_time_bins(const Temporal *temp, const Interval *duration,

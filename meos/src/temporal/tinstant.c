@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -82,6 +82,7 @@ tinstant_value_p(const TInstant *inst)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a copy of the base value of a temporal instant
  * @param[in] inst Temporal instant
+ * @csqlfn #Tinstant_value()
  */
 Datum
 tinstant_value(const TInstant *inst)

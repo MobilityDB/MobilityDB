@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -866,7 +866,7 @@ extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern double tgeoarr_tgeoarr_mindist(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
+extern double mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
 extern double mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double threshold);
 
 /* Aggregates */

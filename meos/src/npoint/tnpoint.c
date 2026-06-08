@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -213,6 +213,7 @@ tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * @brief Return a temporal network point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
+ * @csqlfn #Tnpoint_in()
  */
 Temporal *
 tnpoint_in(const char *str)

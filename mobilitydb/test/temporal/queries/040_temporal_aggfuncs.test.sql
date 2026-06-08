@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
@@ -472,3 +472,16 @@ temp2(seq) AS (
 SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
 
 -------------------------------------------------------------------------------
+
+-- Each Agg-suffix alias equals its bare aggregate and the two coexist in one
+-- query (the bare and Agg forms must not share a destructive transition state)
+WITH temp(t) AS ( VALUES (tint '[1@2000-01-01, 3@2000-01-03]'), (tint '[5@2000-01-05, 7@2000-01-07]') )
+SELECT tmin(t) = tminAgg(t), tmax(t) = tmaxAgg(t), merge(t) = mergeAgg(t) FROM temp;
+WITH temp(t) AS ( VALUES (tfloat '[1@2000-01-01, 3@2000-01-03]'), (tfloat '[5@2000-01-05, 7@2000-01-07]') )
+SELECT tmin(t) = tminAgg(t), tmax(t) = tmaxAgg(t), merge(t) = mergeAgg(t) FROM temp;
+WITH temp(t) AS ( VALUES (ttext '[AAA@2000-01-01, CCC@2000-01-03]'), (ttext '[EEE@2000-01-05, GGG@2000-01-07]') )
+SELECT tmin(t) = tminAgg(t), tmax(t) = tmaxAgg(t), merge(t) = mergeAgg(t) FROM temp;
+WITH temp(inst) AS ( VALUES (tint '1@2000-01-01'), (tint '2@2000-01-02'), (tint '3@2000-01-03') )
+SELECT appendInstant(inst ORDER BY inst) = appendInstantAgg(inst ORDER BY inst) FROM temp;
+WITH temp(seq) AS ( VALUES (tint '[1@2000-01-01, 2@2000-01-02]'), (tint '[3@2000-01-03, 4@2000-01-04]') )
+SELECT appendSequence(seq ORDER BY seq) = appendSequenceAgg(seq ORDER BY seq) FROM temp;

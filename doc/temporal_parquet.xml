@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<appendix xml:id="temporal_parquet">
+	<title>TemporalParquet: a Parquet Footer Convention for Temporal Types</title>
+	<para>
+		Apache Parquet has become the de-facto interchange format for columnar analytics data on object storage. Geospatial data has had a documented Parquet convention — <ulink url="https://geoparquet.org/">GeoParquet</ulink> — since 2022; mobility data (trajectories, temporal types, spans, sets) has not. This appendix documents <emphasis>TemporalParquet</emphasis>, the convention MobilityDB adopts for storing temporal columns in Parquet files: a <varname>BYTE_ARRAY</varname> column carrying MEOS-WKB encoded values, with a JSON metadata object in the Parquet file footer that describes each column's encoding, base type, subtype, and (where applicable) SRID, geodetic flag, or H3 resolution.
+	</para>
+
+	<para>
+		The convention is the file-format substrate of the <emphasis>Temporal Data Lake</emphasis> architecture and is consumed by MobilityDuck (DuckDB extension) and MobilitySpark (Apache Spark binding). The same <varname>.parquet</varname> shard written by one platform reads back losslessly on the other two.
+	</para>
+
+	<sect1>
+		<title>File Structure</title>
+		<para>
+			For every column carrying a MobilityDB temporal type, the column is <varname>BYTE_ARRAY</varname> with logical-type <varname>NONE</varname>; each row value is the MEOS-WKB encoding of the temporal value; NULLs are encoded as Parquet NULLs.
+		</para>
+		<para>
+			The Parquet file's <varname>key_value_metadata</varname> carries an entry with key <varname>temporal</varname> whose value is a JSON document:
+		</para>
+<programlisting>
+{
+  "version": "1.0.0",
+  "primary_temporal_column": "traj",
+  "columns": {
+    "traj": {
+      "encoding": "MEOS-WKB",
+      "encoding_version": "1.0",
+      "base_type": "tgeompoint",
+      "subtype": "Sequence",
+      "interpolation": "linear",
+      "srid": 4326,
+      "geodetic": false,
+      "has_z": false
+    }
+  }
+}
+</programlisting>
+		<para>
+			The <varname>temporal</varname> object coexists with GeoParquet's <varname>geo</varname> object: a single file can have both.
+		</para>
+	</sect1>
+
+	<sect1>
+		<title>Type Coverage</title>
+		<informaltable frame="all">
+			<tgroup cols="3">
+				<thead>
+					<row>
+						<entry>MobilityDB type</entry>
+						<entry><varname>base_type</varname> value</entry>
+						<entry>Notes</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>tbigint</varname>, <varname>ttext</varname></entry>
+						<entry>same</entry>
+						<entry>Scalar temporals.</entry>
+					</row>
+					<row>
+						<entry><varname>tgeompoint</varname>, <varname>tgeogpoint</varname></entry>
+						<entry>same</entry>
+						<entry><varname>srid</varname>, <varname>geodetic</varname>, <varname>has_z</varname> populated.</entry>
+					</row>
+					<row>
+						<entry><varname>tgeometry</varname>, <varname>tgeography</varname></entry>
+						<entry>same</entry>
+						<entry>General spatial-temporal.</entry>
+					</row>
+					<row>
+						<entry><varname>th3index</varname></entry>
+						<entry><varname>th3index</varname></entry>
+						<entry>Carries optional <varname>h3_resolution</varname>; see <xref linkend="tp_th3index"/>.</entry>
+					</row>
+					<row>
+						<entry><varname>tpcpoint</varname>, <varname>tpcpatch</varname></entry>
+						<entry>each as its own <varname>base_type</varname></entry>
+						<entry>Temporal point-cloud types.</entry>
+					</row>
+					<row>
+						<entry><varname>tcbuffer</varname>, <varname>tnpoint</varname>, <varname>tpose</varname>, <varname>trgeometry</varname></entry>
+						<entry>each as its own <varname>base_type</varname></entry>
+						<entry>Extended temporal types.</entry>
+					</row>
+					<row>
+						<entry><varname>stbox</varname>, <varname>tbox</varname>, <varname>tpcbox</varname></entry>
+						<entry>same</entry>
+						<entry>Bounding boxes.</entry>
+					</row>
+					<row>
+						<entry><varname>intspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname>, spansets, sets</entry>
+						<entry>each as its own <varname>base_type</varname></entry>
+						<entry>Spans, spansets, sets.</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		<para>
+			The <varname>subtype</varname> field applies only to lifted temporal types (<varname>Instant</varname> / <varname>Sequence</varname> / <varname>SequenceSet</varname>); span / set / box columns omit it.
+		</para>
+
+		<sect2>
+			<title>Type-Specific Optional Fields</title>
+			<para>
+				Some <varname>base_type</varname> values may carry optional metadata that lets consumers decide whether the column is usable for a given workload <emphasis>without decoding any row</emphasis>:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><varname>srid</varname> — EPSG code of the column's CRS. Required for spatial-temporal types.</para>
+				</listitem>
+				<listitem>
+					<para><varname>geodetic</varname> — <varname>true</varname> ⇒ spheroidal-metre math (Haversine / Vincenty); see <xref linkend="tp_geodetic"/>.</para>
+				</listitem>
+				<listitem>
+					<para><varname>has_z</varname> — column carries a Z dimension throughout.</para>
+				</listitem>
+				<listitem>
+					<para><varname>h3_resolution</varname> — applies to <varname>th3index</varname>. Optional integer in <varname>[0, 15]</varname> declaring every cell in the column was produced at this resolution. Consumers MAY rely on it to gate cell-membership prefilters (cross-join probes via <varname>everEqH3IndexTh3Index</varname>) without decoding any row.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tp_geodetic">
+			<title>Geodetic Distances</title>
+			<para>
+				<varname>tgeompoint</varname> stores coordinates in the input CRS (e.g. lon/lat WGS-84) and computes <emphasis>Euclidean</emphasis> distances in that coordinate space; <varname>length(tgeompoint)</varname> over a WGS-84 trajectory therefore returns degrees, not kilometres.
+			</para>
+			<para>
+				<varname>tgeogpoint</varname> is the geodetically-correct variant: it carries the same MEOS-WKB bytes but with the geodetic flag set in the type tag, causing MEOS to route all spatial math through the spheroidal Haversine / Vincenty engine — lengths and speeds are in <emphasis>metres</emphasis>.
+			</para>
+			<para>
+				When writing TemporalParquet files that consumers will use for distance or speed analytics, prefer <varname>tgeogpoint</varname> (set <varname>"geodetic": true</varname> in the column metadata). The geodetic flag is self-describing in MEOS-WKB: a file written with <varname>asBinary(tgeogpointSeq(...))</varname> reconstructs as a geodetic sequence on any platform that calls <varname>tgeogpointFromBinary(blob)</varname>.
+			</para>
+		</sect2>
+	</sect1>
+
+	<sect1 xml:id="tp_th3index">
+		<title>Worked Example: <varname>th3index</varname></title>
+		<para>
+			<varname>th3index</varname> ships a cross-platform binding across MobilityDB, MobilityDuck, and MobilitySpark. The MEOS-WKB encoder handles the <varname>th3index</varname> payload identically to <varname>tbigint</varname> (both lift over an <varname>int64</varname>); the metadata <varname>base_type</varname> is the discriminator. The companion <varname>h3_resolution</varname> field declares uniform resolution per column so consumers can gate cell-membership prefilters without scanning the data.
+		</para>
+		<para>
+			Example footer entry for a BerlinMOD trips table:
+		</para>
+<programlisting>
+{
+  "version": "1.0.0",
+  "primary_temporal_column": "trip",
+  "columns": {
+    "trip": {
+      "encoding": "MEOS-WKB",
+      "encoding_version": "1.0",
+      "base_type": "tgeompoint",
+      "subtype": "Sequence",
+      "interpolation": "linear",
+      "srid": 4326,
+      "geodetic": false,
+      "has_z": false
+    },
+    "trip_h3": {
+      "encoding": "MEOS-WKB",
+      "encoding_version": "1.0",
+      "base_type": "th3index",
+      "subtype": "Sequence",
+      "interpolation": "step",
+      "h3_resolution": 7
+    }
+  }
+}
+</programlisting>
+		<para>
+			The companion <varname>trip_h3</varname> column is produced once at load time via <varname>tgeompoint_to_th3index(trip, 7)</varname> and acts as a cheap cell-membership prefilter on subsequent cross-join queries that runs unchanged on MobilityDB, MobilityDuck and MobilitySpark:
+		</para>
+<programlisting>
+-- BerlinMOD Q5 (nearest-approach) with the th3index prefilter
+SELECT t1.licence AS licence1, t2.licence AS licence2,
+       nearestApproachDistance(t1.trip, t2.trip) AS d
+FROM   Trips t1 JOIN Trips t2 ON t1.vehId &lt; t2.vehId
+WHERE  everEqTh3IndexTh3Index(t1.trip_h3, t2.trip_h3)
+  AND  nearestApproachDistance(t1.trip, t2.trip) IS NOT NULL;
+</programlisting>
+		<para>
+			<varname>interpolation</varname> is always <varname>step</varname> for <varname>th3index</varname> (a vehicle is in exactly one cell at a time); <varname>subtype</varname> follows the source <varname>tgeompoint</varname>'s subtype after the lifted conversion. The <varname>h3_resolution</varname> field is the consumer-side hint that lets a reader gate the prefilter without decoding any row.
+		</para>
+		<note>
+			<title>Soundness note</title>
+			<para>
+				A <varname>th3index</varname> column produced by densifying a <varname>tgeompoint</varname> covers the cells the trajectory passes through at the densification resolution. The <varname>trip_h3</varname> prefilter is a candidate filter for cell-membership pruning.
+			</para>
+			<para>
+				The TemporalParquet metadata schema is independent of how the column is produced — <varname>base_type: "th3index"</varname> and <varname>h3_resolution</varname> describe the bytes regardless. A consumer that needs strict semantic correctness evaluates the underlying <varname>tgeompoint</varname> predicate rather than relying on the prefilter alone as a <varname>WHERE</varname> clause.
+			</para>
+		</note>
+	</sect1>
+
+	<sect1>
+		<title>Encoding Versioning</title>
+		<para>
+			<varname>encoding_version</varname> is <varname>MAJOR.MINOR</varname> of the MEOS-WKB schema. New WKB tags (e.g. when a future temporal type lands) bump <varname>MINOR</varname>; breaking layout changes bump <varname>MAJOR</varname>. Readers MUST refuse files with a higher <varname>MAJOR</varname> than they support; readers MAY accept higher <varname>MINOR</varname> by skipping the unrecognised tags.
+		</para>
+	</sect1>
+
+	<sect1>
+		<title>Reference Implementation</title>
+		<para>
+			A Python reference implementation ships in <varname>scripts/parquet/</varname>: <varname>tp_export.py</varname> writes annotated TemporalParquet files, <varname>tp_import.py</varname> reads them back, and <varname>tp_inspect.py</varname> dumps the footer metadata. A round-trip regression test exercises export, footer inspection, and re-import with value parity.
+		</para>
+		<para>
+			The convention spec and the beta-testing guide live in <varname>doc/temporal-parquet/</varname>; this appendix is the user-facing summary.
+		</para>
+	</sect1>
+
+	<sect1>
+		<title>Related</title>
+		<itemizedlist>
+			<listitem>
+				<para>Temporal Data Lake RFC — edge-to-cloud architecture; this convention is the file-format substrate.</para>
+			</listitem>
+			<listitem>
+				<para>MEOS-WKB byte-format specification — the encoding TemporalParquet columns carry.</para>
+			</listitem>
+			<listitem>
+				<para><ulink url="https://geoparquet.org/">GeoParquet specification</ulink> — the spatial-Parquet standard this convention is modelled on.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+</appendix>

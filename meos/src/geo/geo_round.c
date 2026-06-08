@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -524,6 +524,7 @@ round_geometrycollection(const GSERIALIZED *gs, int maxdd)
  * @param[in] gs Geometry/geography
  * @param[in] maxdd Maximum number of decimal digits
  * @note Currently not all geometry types are allowed
+ * @csqlfn #Geo_round()
  */
 GSERIALIZED *
 geo_round(const GSERIALIZED *gs, int maxdd)

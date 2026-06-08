@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -1033,6 +1033,7 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tgeo_space_boxes()
  */
 inline STBox *
 tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
@@ -1364,6 +1365,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @note This function in MEOS corresponds to the MobilityDB function
  * #Tgeo_space_time_split_common. Note that the test for the validity of the
  * arguments is done in #tgeo_space_time_tile_init
+ * @csqlfn #Tgeo_space_time_split()
  */
 Temporal **
 tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
@@ -1457,6 +1459,7 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * the upper border is assumed as outside of the box.
  * @param[out] space_bins Array of space bins
  * @param[out] count Number of elements in the output arrays
+ * @csqlfn #Tgeo_space_split()
  */
 inline Temporal **
 tgeo_space_split(const Temporal *temp, double xsize, double ysize,

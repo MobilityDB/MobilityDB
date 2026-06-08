@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -72,6 +72,7 @@ spanbase_extent_transfn(Span *state, Datum value, MeosType basetype)
  * @brief Transition function for span extent aggregate of sets
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Set to aggregate, may be `NULL`
+ * @csqlfn #Set_extent_transfn()
  */
 Span *
 set_extent_transfn(Span *state, const Set *s)
@@ -102,6 +103,7 @@ set_extent_transfn(Span *state, const Set *s)
  * @brief Transition function for span extent aggregate of spans
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Span to aggregate, may be `NULL`
+ * @csqlfn #Span_extent_transfn()
  */
 Span *
 span_extent_transfn(Span *state, const Span *s)
@@ -129,6 +131,7 @@ span_extent_transfn(Span *state, const Span *s)
  * @brief Transition function for span extent aggregate of span sets
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] ss Span set to aggregate, may be `NULL`
+ * @csqlfn #Spanset_extent_transfn()
  */
 Span *
 spanset_extent_transfn(Span *state, const SpanSet *ss)

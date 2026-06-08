@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -1016,6 +1016,7 @@ nsegmentarr_geom(Nsegment **segments, int count)
  * @ingroup meos_npoint_base_transf
  * @brief Return a network point with the precision of the position set to a
  * number of decimal places
+ * @csqlfn #Npoint_round()
  */
 Npoint *
 npoint_round(const Npoint *np, int maxdd)
@@ -1044,6 +1045,7 @@ datum_npoint_round(Datum npoint, Datum size)
  * @ingroup meos_npoint_base_transf
  * @brief Return a network segment with the precision of the positions set to a
  * number of decimal places
+ * @csqlfn #Nsegment_round()
  */
 Nsegment *
 nsegment_round(const Nsegment *ns, int maxdd)

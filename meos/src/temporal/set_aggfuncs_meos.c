@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -225,6 +225,7 @@ value_union_transfn(Set *state, Datum value, MeosType basetype)
  * @code
  * state = set_union_transfn(state, set);
  * @endcode
+ * @csqlfn #Set_union_transfn()
  */
 Set *
 set_union_transfn(Set *state, Set *s)
@@ -254,6 +255,7 @@ set_union_transfn(Set *state, Set *s)
  * @brief Final function for set union aggregate
  * @param[in,out] state Current aggregate state
  * @note The input state must be free by the calling function
+ * @csqlfn #Set_union_finalfn()
  */
 Set *
 set_union_finalfn(Set *state)

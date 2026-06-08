@@ -1,7 +1,7 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -429,8 +429,8 @@ Shortestline_tgeo_tgeo(PG_FUNCTION_ARGS)
  * Set-set spatial minimum distance
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tgeoarr_tgeoarr_mindist(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeoarr_tgeoarr_mindist);
+PGDLLEXPORT Datum Mindistance_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Mindistance_tgeoarr_tgeoarr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the exact minimum spatial distance between two arrays of
@@ -438,14 +438,14 @@ PG_FUNCTION_INFO_V1(Tgeoarr_tgeoarr_mindist);
  * @sqlfn minDistance()
  */
 Datum
-Tgeoarr_tgeoarr_mindist(PG_FUNCTION_ARGS)
+Mindistance_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
 {
   ArrayType *array1 = PG_GETARG_ARRAYTYPE_P(0);
   ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(1);
   int count1, count2;
   Temporal **arr1 = (Temporal **) temparr_extract(array1, &count1);
   Temporal **arr2 = (Temporal **) temparr_extract(array2, &count2);
-  double result = tgeoarr_tgeoarr_mindist((const Temporal **) arr1, count1,
+  double result = mindistance_tgeoarr_tgeoarr((const Temporal **) arr1, count1,
     (const Temporal **) arr2, count2);
   pfree(arr1); pfree(arr2);
   PG_FREE_IF_COPY(array1, 0);

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -209,6 +209,7 @@ SPANSET_SP_N(const SpanSet *ss, int index)
  * @brief Return a span set from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] spansettype Span set type
+ * @csqlfn #Spanset_in()
  */
 SpanSet *
 spanset_in(const char *str, MeosType spansettype)

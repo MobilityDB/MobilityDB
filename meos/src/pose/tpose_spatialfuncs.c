@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -172,6 +172,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tpose_at_stbox()
+ * @csqlfn #Tpose_at_stbox()
  */
 inline Temporal *
 tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
@@ -186,6 +187,7 @@ tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tpose_minus_stbox()
+ * @csqlfn #Tpose_minus_stbox()
  */
 inline Temporal *
 tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)

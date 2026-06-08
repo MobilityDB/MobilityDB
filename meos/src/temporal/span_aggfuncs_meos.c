@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -253,6 +253,7 @@ span_union_transfn(SpanSet *state, const Span *s)
  * @code
  * state = spanset_union_transfn(state, spanset);
  * @endcode
+ * @csqlfn #Spanset_union_transfn()
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)

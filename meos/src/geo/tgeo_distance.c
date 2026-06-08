@@ -1,7 +1,7 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -1268,10 +1268,10 @@ tgeoarr_pair_cmp(const void *a, const void *b)
  * @param[in] count1,count2 Array lengths (must be > 0)
  * @return Minimum spatial distance; DBL_MAX on validation failure or on
  *   any empty input array.
- * @csqlfn #Tgeoarr_tgeoarr_mindist()
+ * @csqlfn #Mindistance_tgeoarr_tgeoarr()
  */
 double
-tgeoarr_tgeoarr_mindist(const Temporal **arr1, int count1,
+mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2)
 {
   VALIDATE_NOT_NULL(arr1, DBL_MAX);

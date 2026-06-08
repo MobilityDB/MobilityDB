@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -243,7 +243,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
     "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
-    DIST_EPSILON, geomstr);
+    MEOS_EPSILON, geomstr);
   pfree(geomstr);
   Npoint *result = palloc(sizeof(Npoint));
   bool isNull = true;

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -252,11 +252,11 @@ CREATE FUNCTION shortestLine(tgeography, tgeography)
 
 CREATE FUNCTION minDistance(tgeompoint[], tgeompoint[])
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tgeoarr_tgeoarr_mindist'
+  AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minDistance(tgeometry[], tgeometry[])
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Tgeoarr_tgeoarr_mindist'
+  AS 'MODULE_PATHNAME', 'Mindistance_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -166,6 +166,7 @@ trgeo_from_mfjson(const char *mfjson)
  * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_out()
  */
 char *
 trgeometry_out(const Temporal *temp)
@@ -247,6 +248,7 @@ trgeo_as_ewkt(const Temporal *temp, int maxdd)
  * @brief Return a temporal pose obtained by removing the reference geometry
  * of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tpose()
  */
 Temporal *
 trgeometry_to_tpose(const Temporal *temp)
@@ -270,6 +272,7 @@ trgeometry_to_tpose(const Temporal *temp)
  * @brief Return a temporal point obtained from the points of the temporal
  * pose of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tpoint()
  */
 Temporal *
 trgeometry_to_tpoint(const Temporal *temp)
@@ -470,6 +473,7 @@ trgeometry_start_value(const Temporal *temp)
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the end base value of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_end_value()
  */
 GSERIALIZED *
 trgeometry_end_value(const Temporal *temp)

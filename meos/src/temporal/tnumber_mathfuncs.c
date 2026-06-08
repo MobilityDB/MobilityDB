@@ -2,7 +2,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -482,6 +482,7 @@ angular_difference(Datum degrees1, Datum degrees2)
  * @brief Return the angular difference, i.e., the smaller angle between the
  * two degree values
  * @param[in] degrees1,degrees2 Values
+ * @csqlfn #Float_angular_difference()
  */
 double
 float_angular_difference(double degrees1, double degrees2)

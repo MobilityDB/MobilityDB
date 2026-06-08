@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -137,6 +137,7 @@ stbox_expand(const STBox *box1, STBox *box2)
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  * @param[in] str String
+ * @csqlfn #Stbox_in()
  */
 STBox *
 stbox_in(const char *str)
@@ -153,6 +154,7 @@ stbox_in(const char *str)
  * box
  * @param[in] box Spatiotemporal box
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Stbox_out()
  */
 char *
 stbox_out(const STBox *box, int maxdd)
@@ -710,6 +712,7 @@ gbox_to_stbox(const GBOX *box)
  * @ingroup meos_geo_box_conversion
  * @brief Convert a `BOX3D` into a spatiotemporal box
  * @param[in] box BOX3D
+ * @csqlfn #Box3d_to_stbox()
  */
 STBox *
 box3d_to_stbox(const BOX3D *box)
@@ -1670,6 +1673,7 @@ stbox_transf_pj(const STBox *box, int32_t srid_to, const LWPROJ *pj)
  * @brief Return a spatiotemporal box transformed to another SRID
  * @param[in] box Spatiotemporal box
  * @param[in] srid_to Target SRID
+ * @csqlfn #Stbox_transform()
  */
 STBox *
 stbox_transform(const STBox *box, int32_t srid_to)
@@ -1700,6 +1704,7 @@ stbox_transform(const STBox *box, int32_t srid_to)
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
+ * @csqlfn #Stbox_transform_pipeline()
  */
 STBox *
 stbox_transform_pipeline(const STBox *box, const char *pipeline,
@@ -2573,6 +2578,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
  * @param[in] box Spatiotemporal box
  * @return On error return @p INT_MAX
  * @sqlfn stbox_hash()
+ * @csqlfn #Stbox_hash()
  */
 uint32
 stbox_hash(const STBox *box)
