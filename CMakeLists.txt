@@ -205,6 +205,10 @@ add_compile_definitions(_USE_MATH_DEFINES)
 if(CMAKE_COMPILER_IS_GNUCC)
   # MobilityDB compiler flags
   add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter -Wno-strict-aliasing)
+  # Treat an implicit function declaration as an error: it silently assumes an
+  # int return, truncating any 64-bit pointer the callee actually returns and
+  # producing a hard-to-trace crash at runtime rather than at build time.
+  add_definitions(-Werror=implicit-function-declaration -Werror=implicit-int)
   # -Wno-strict-aliasing was removed to access directly PostGIS points
   # See file tpoint_spatialfuncs.h
   # add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
