@@ -45,7 +45,7 @@ var searchData=
   ['max_5ftypmod_5flen_42',['MAX_TYPMOD_LEN',['../mobilitydb_2src_2geo_2tgeo_8c_a50c6ab8bd04e31500a8a0c1bb8558703.html#a50c6ab8bd04e31500a8a0c1bb8558703',1,'tgeo.c']]],
   ['maxallocsize_43',['MaxAllocSize',['../meos_2src_2temporal_2skiplist_8c_a74a92b981e9b6aa591c5fbb24efd1dac.html#a74a92b981e9b6aa591c5fbb24efd1dac',1,'skiplist.c']]],
   ['maxbox3dlen_44',['MAXBOX3DLEN',['../postgis__funcs_8c_a1a38946956e9c81cdeb44f0449bf09b0.html#a1a38946956e9c81cdeb44f0449bf09b0',1,'postgis_funcs.c']]],
-  ['maxdims_45',['MAXDIMS',['../tgeo__tile_8h_a45ed35a158331b8f57fd66c5a18fa835.html#a45ed35a158331b8f57fd66c5a18fa835',1,'MAXDIMS():&#160;tgeo_tile.h'],['../temporal__tile_8h_a45ed35a158331b8f57fd66c5a18fa835.html#a45ed35a158331b8f57fd66c5a18fa835',1,'MAXDIMS():&#160;temporal_tile.h']]],
+  ['maxdims_45',['MAXDIMS',['../tgeo__tile_8h_a45ed35a158331b8f57fd66c5a18fa835.html#a45ed35a158331b8f57fd66c5a18fa835',1,'tgeo_tile.h']]],
   ['maxgboxlen_46',['MAXGBOXLEN',['../postgis__funcs_8c_a150de4c339494f58e8c5e8821007a27a.html#a150de4c339494f58e8c5e8821007a27a',1,'postgis_funcs.c']]],
   ['maxidx_47',['MAXIDX',['../set_8h_a3667114b667b0cbab1e1a78ff5aa2d1c.html#a3667114b667b0cbab1e1a78ff5aa2d1c',1,'set.h']]],
   ['maxint4len_48',['MAXINT4LEN',['../postgres__types_8c_abadc0337f88d6ee42aee9ac4ab9b946a.html#abadc0337f88d6ee42aee9ac4ab9b946a',1,'postgres_types.c']]],
