@@ -891,13 +891,14 @@ SELECT minDistance(t1, t2) FROM (
          tgeompoint '[Point(5 0)@2000-01-01, Point(15 0)@2000-01-02]'  AS t2) v;
 
 -- Aggregate over multiple rows: minimum across all per-pair distances
+-- (per-pair values are approximately 12.7, 4, and 1)
 WITH pairs(t1, t2) AS (VALUES
   (tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]',
-   tgeompoint '[Point(10 10)@2000-01-01, Point(11 11)@2000-01-02]'),  -- ~12.7
+   tgeompoint '[Point(10 10)@2000-01-01, Point(11 11)@2000-01-02]'),
   (tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]',
-   tgeompoint '[Point(0 5)@2000-01-01, Point(1 5)@2000-01-02]'),       -- 4
+   tgeompoint '[Point(0 5)@2000-01-01, Point(1 5)@2000-01-02]'),
   (tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]',
-   tgeompoint '[Point(2 1)@2000-01-01, Point(2 2)@2000-01-02]'))       -- ~1
+   tgeompoint '[Point(2 1)@2000-01-01, Point(2 2)@2000-01-02]'))
 SELECT round(minDistance(t1, t2)::numeric, 6) FROM pairs;
 
 -- Grouped: per-group minimum equivalent to MIN over the array form
