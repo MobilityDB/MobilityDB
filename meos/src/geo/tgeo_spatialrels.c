@@ -107,12 +107,18 @@ datum_geom_disjoint3d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geographies are disjoint
+ *
+ * The geographic intersects predicate uses a `0.0` distance ε to match
+ * PostGIS's `geography_intersects` semantics and MEOS's own static
+ * `geog_intersects` wrapper. lwgeom's internal convergence epsilon
+ * (`PGIS_FP_TOLERANCE`, 1e-12) remains the implementation detail of
+ * `geog_dwithin` and is unchanged. See #1091.
  */
 Datum
 datum_geog_disjoint(Datum geog1, Datum geog2)
 {
   return BoolGetDatum(! geog_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), 0.00001, true));
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
@@ -137,12 +143,18 @@ datum_geom_intersects3d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geographies intersect
+ *
+ * Uses a `0.0` distance ε to match PostGIS's `geography_intersects`
+ * semantics and MEOS's own static `geog_intersects` wrapper. lwgeom's
+ * internal convergence epsilon (`PGIS_FP_TOLERANCE`, 1e-12) remains
+ * the implementation detail of `geog_dwithin` and is unchanged.
+ * See #1091.
  */
 Datum
 datum_geog_intersects(Datum geog1, Datum geog2)
 {
   return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), 0.00001, true));
+    DatumGetGserializedP(geog2), 0.0, true));
 }
 
 /**
@@ -935,6 +947,16 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
+  /* tdisjoint is the negation of tintersects = tdwithin with zero
+   * distance, with the ever/always quantifier swapped (cf. static
+   * geog_disjoint = ! geog_dwithin(., ., 0.0); #1088 temporal-result
+   * pattern). For geodetic coordinates route through the
+   * geodetic-capable dwithin kernel; the planar trajectory machinery
+   * below is not applicable. */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+    return INVERT_RESULT(ea_dwithin_tgeo_geo(temp, gs, 0.0, ! ever));
+
   int result;
 
   /* ALWAYS */
@@ -1088,6 +1110,15 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
+  /* tintersects is tdwithin with zero distance (cf. static
+   * geog_intersects = geog_dwithin(., ., 0.0); same definitional
+   * equivalence used at the temporal-result layer in
+   * tinterrel_tgeo_geo per #1088). For geodetic coordinates route
+   * through the geodetic-capable dwithin kernel instead of the planar
+   * spatialrel_tgeo_geo trajectory. */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+    return ea_dwithin_tgeo_geo(temp, gs, 0.0, ever);
 
   /* ALWAYS */
   if (! ever)
@@ -1461,6 +1492,36 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+
+  /* For geodetic coordinates the planar `spatialrel_tgeo_geo`
+   * trajectory and the planar `geom_buffer` + `covers` machinery below
+   * are not applicable. Use the lifted temporal-base helper
+   * `eafunc_temporal_base` with the geodetic-aware `geo_dwithin_fn_geo`
+   * selector (which returns `datum_geog_dwithin` for geodetic input);
+   * this mirrors `ea_dwithin_tgeo_tgeo` for the temporal-base case and
+   * stays inside extension-safe lifting machinery (no `*_meos.c`
+   * dependency). Same architectural pattern as `tdistance_tgeo_geo`
+   * for the geo argument. */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  {
+    LiftedFunctionInfo lfinfo;
+    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+    lfinfo.func = (varfunc) geo_dwithin_fn_geo(temp->flags, gs->gflags);
+    lfinfo.numparam = 1;
+    lfinfo.param[0] = Float8GetDatum(dist);
+    lfinfo.argtype[0] = temp->temptype;
+    lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+    lfinfo.restype = T_TBOOL;
+    lfinfo.invert = INVERT_NO;
+    lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+    lfinfo.ever = ever;
+    /* No tpfn_base for the temporal-base dwithin turning point yet --
+     * the continuous-segment crossing detection is pre-existing
+     * planar-only at this layer (cf. #1087); instant/discrete cases
+     * are exact, continuous segments fall back to endpoint sampling. */
+    lfinfo.tpfn_base = NULL;
+    return eafunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+  }
 
   /* EVER */
   if (ever)

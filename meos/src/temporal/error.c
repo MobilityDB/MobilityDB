@@ -196,6 +196,18 @@ meos_initialize_error_handler(error_handler_fn err_handler)
 
 /**
  * @brief Function handling error messages
+ *
+ * @note Return-or-not contract is *undefined*: depending on the
+ * installed handler this function MAY return to the caller. The
+ * default handler `exit(EXIT_FAILURE)`s on `ERROR` (safe for one-shot
+ * CLI use); any custom handler installed via
+ * `meos_initialize_error_handler` may return. Code in MEOS that calls
+ * `meos_error(ERROR, ...)` MUST be immediately followed by a `return`,
+ * `goto`, `break`, or sentinel assignment -- NEVER let execution fall
+ * through. Historic fall-through bugs caused by relying on the
+ * exit-on-ERROR path: MobilityDB#1089 (closed by PR #1090), #1093
+ * (wider audit). See the corresponding doc comment on the public
+ * declaration of `meos_error` in `meos/include/meos.h`.
  */
 void
 meos_error(int errlevel, int errcode, const char *format, ...)

@@ -207,12 +207,18 @@ extern Set *union_set_pose(const Set *s, const Pose *pose);
  * Input/output functions
  *****************************************************************************/
 
+extern Temporal *tpose_from_mfjson(const char *str);
 Temporal *tpose_in(const char *str);
 
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
+extern TInstant *tposeinst_make(const Pose *pose, TimestampTz t);
+extern Temporal *tpose_from_base_temp(const Pose *pose, const Temporal *temp);
+extern TSequence *tposeseq_from_base_tstzset(const Pose *pose, const Set *s);
+extern TSequence *tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp);
+extern TSequenceSet *tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************
  * Conversion functions

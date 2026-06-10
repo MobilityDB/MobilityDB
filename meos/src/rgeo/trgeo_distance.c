@@ -136,9 +136,17 @@ append_cfp_elem(cfp_array *cfpa, cfp_elem cfp)
     cfpa->size *= 2;
     cfp_elem *new_arr = repalloc(cfpa->arr, sizeof(cfp_elem) * cfpa->size);
     if (new_arr == NULL)
+    {
+      /* See doc-comment on meos_error in meos/include/meos.h: handler is
+       * not guaranteed to abort. Restore the size field and bail before
+       * the OOB write at cfpa->arr[cfpa->count++] below -- repalloc
+       * failure leaves cfpa->arr pointing at the OLD (now too-small)
+       * buffer relative to the bumped cfpa->size. */
+      cfpa->size /= 2;
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Not enough memory");
-    else
-      cfpa->arr = new_arr;
+      return;
+    }
+    cfpa->arr = new_arr;
   }
   cfpa->arr[cfpa->count++] = cfp;
 }
@@ -186,9 +194,16 @@ append_tdist_elem(tdist_array *tda, tdist_elem td)
     tda->size *= 2;
     tdist_elem *new_arr = repalloc(tda->arr, sizeof(tdist_elem) * tda->size);
     if (new_arr == NULL)
+    {
+      /* See doc-comment on meos_error in meos/include/meos.h: handler is
+       * not guaranteed to abort. Restore the size field and bail before
+       * the OOB write at tda->arr[tda->count++] below (same pattern as
+       * append_cfp_elem above). */
+      tda->size /= 2;
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Not enough memory");
-    else
-      tda->arr = new_arr;
+      return;
+    }
+    tda->arr = new_arr;
   }
   tda->arr[tda->count++] = td;
 }
@@ -1703,9 +1718,16 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
         state = edge_vertex_tpoly_poly(poly1, pose1, pose2, poly2,
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
       else /* edge <-> edge */
+      {
         // state = edge_edge_tpoly_poly(poly1, pose1, pose2, poly2,
         //   &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
+        /* See doc-comment on meos_error in meos/include/meos.h: handler is
+         * not guaranteed to abort. Bail before reading uninitialised `state`
+         * in the `if (state == MEOS_CONTINUE)` check below. Matches the
+         * surrounding `return NULL` idiom on impossible-state paths. */
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Can't happen");
+        return NULL;
+      }
 
       // printf("Features after %d, %d\n", cfp.cf_1, cfp.cf_2);
       // printf("Dirs after = (%d, %d)\n", dir1, dir2);

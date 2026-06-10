@@ -242,6 +242,10 @@ extern char *tnpoint_out(const Temporal *temp, int maxdd);
  *****************************************************************************/
 
 extern TInstant *tnpointinst_make(const Npoint *np, TimestampTz t);
+extern Temporal *tnpoint_from_base_temp(const Npoint *np, const Temporal *temp);
+extern TSequence *tnpointseq_from_base_tstzset(const Npoint *np, const Set *s);
+extern TSequence *tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s, interpType interp);
+extern TSequenceSet *tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************
  * Conversion functions
@@ -255,12 +259,17 @@ extern Temporal *tnpoint_to_tgeompoint(const Temporal *temp);
  *****************************************************************************/
 
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
+extern Npoint *tnpoint_end_value(const Temporal *temp);
 extern double tnpoint_length(const Temporal *temp);
 extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpoint_route(const Temporal *temp);
 extern Set *tnpoint_routes(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
+extern Npoint *tnpoint_start_value(const Temporal *temp);
 extern GSERIALIZED *tnpoint_trajectory(const Temporal *temp);
+extern bool tnpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Npoint **value);
+extern bool tnpoint_value_n(const Temporal *temp, int n, Npoint **result);
+extern Npoint **tnpoint_values(const Temporal *temp, int *count);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 
 /*****************************************************************************

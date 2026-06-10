@@ -1376,8 +1376,131 @@ typedef intptr_t sigjmp_buf[5];
 #define NON_EXEC_STATIC static
 #endif
 
-/* /port compatibility functions */
+/* /port compatibility functions: port.h is included AFTER the symbol-collision
+ * shim below, so that its pg_* prototypes are renamed to the meos_pg_* names
+ * used at the call sites and definitions (otherwise the prototypes stay pg_*
+ * while the calls become meos_pg_*, an implicit declaration). */
 
+/* === MEOS pg-vendored symbol-collision shim =============================
+ *
+ * Prefix-rename pg-vendored symbols to avoid collision with host code that
+ * statically links its own copy of PostgreSQL's timestamp / timezone /
+ * port helpers (DuckDB-as-MobilityDuck-host is the motivating case).
+ *
+ * Without these defines, MEOS-internal calls like
+ *     tspatialinst_parse() -> timestamp_parse() -> pg_next_dst_boundary()
+ * can resolve to the HOST process's copies of those functions at dynamic-
+ * link time, which use a separate IANATimeZoneCache that MEOS never
+ * initialized — producing NULL-deref SIGSEGVs on the first parse of any
+ * temporal-instance literal carrying a timestamp.
+ *
+ * Compile-time rename: every MEOS .c source includes postgres.h before
+ * any pg-vendored declaration, so the #defines below cover both the
+ * function DEFINITIONS in postgres-utils, postgres-timezone, postgres-port
+ * and every internal CALL site under meos-src.  Pure-MEOS API names (the
+ * meos_-prefixed family declared in meos.h) are NOT renamed.
+ */
+#define DateTimeParseError                       meos_DateTimeParseError
+#define DecodeDateTime                           meos_DecodeDateTime
+#define DecodeISO8601Interval                    meos_DecodeISO8601Interval
+#define DecodeInterval                           meos_DecodeInterval
+#define DecodeSpecial                            meos_DecodeSpecial
+#define DecodeTimeOnly                           meos_DecodeTimeOnly
+#define DecodeTimezone                           meos_DecodeTimezone
+#define DecodeTimezoneAbbrev                     meos_DecodeTimezoneAbbrev
+#define DecodeUnits                              meos_DecodeUnits
+#define DetermineTimeZoneAbbrevOffset            meos_DetermineTimeZoneAbbrevOffset
+#define DetermineTimeZoneOffset                  meos_DetermineTimeZoneOffset
+#define EncodeDateOnly                           meos_EncodeDateOnly
+#define EncodeDateTime                           meos_EncodeDateTime
+#define EncodeInterval                           meos_EncodeInterval
+#define EncodeSpecialDate                        meos_EncodeSpecialDate
+#define EncodeSpecialTimestamp                   meos_EncodeSpecialTimestamp
+#define EncodeTimeOnly                           meos_EncodeTimeOnly
+#define GetCurrentDateTime                       meos_GetCurrentDateTime
+#define GetCurrentTimeUsec                       meos_GetCurrentTimeUsec
+#define GetCurrentTimestamp                      meos_GetCurrentTimestamp
+#define GetEpochTime                             meos_GetEpochTime
+#define ParseDateTime                            meos_ParseDateTime
+#define ReadDir                                  meos_ReadDir
+#define SetEpochTimestamp                        meos_SetEpochTimestamp
+#define ValidateDate                             meos_ValidateDate
+#define asc_initcap                              meos_asc_initcap
+#define asc_tolower                              meos_asc_tolower
+#define asc_toupper                              meos_asc_toupper
+#define date2isoweek                             meos_date2isoweek
+#define date2isoyear                             meos_date2isoyear
+#define date2isoyearday                          meos_date2isoyearday
+#define date2j                                   meos_date2j
+#define dt2time                                  meos_dt2time
+#define elog                                     meos_elog
+#define float8_cmp_internal                      meos_float8_cmp_internal
+#define float_overflow_error                     meos_float_overflow_error
+#define float_underflow_error                    meos_float_underflow_error
+#define float_zero_divide_error                  meos_float_zero_divide_error
+#define hash_bytes                               meos_hash_bytes
+#define hash_bytes_extended                      meos_hash_bytes_extended
+#define hash_bytes_uint32                        meos_hash_bytes_uint32
+#define hash_bytes_uint32_extended               meos_hash_bytes_uint32_extended
+#define interval2tm                              meos_interval2tm
+#define isoweek2date                             meos_isoweek2date
+#define isoweek2j                                meos_isoweek2j
+#define isoweekdate2date                         meos_isoweekdate2date
+#define j2date                                   meos_j2date
+#define j2day                                    meos_j2day
+#define pg_ascii_tolower                         meos_pg_ascii_tolower
+#define pg_ascii_toupper                         meos_pg_ascii_toupper
+#define pg_get_timezone_name                     meos_pg_get_timezone_name
+#define pg_get_timezone_offset                   meos_pg_get_timezone_offset
+#define pg_gmtime                                meos_pg_gmtime
+#define pg_interpret_timezone_abbrev             meos_pg_interpret_timezone_abbrev
+#define pg_interval_to_char                      meos_pg_interval_to_char
+#define pg_lltoa                                 meos_pg_lltoa
+#define pg_localtime                             meos_pg_localtime
+#define pg_ltoa                                  meos_pg_ltoa
+#define pg_next_dst_boundary                     meos_pg_next_dst_boundary
+#define pg_open_tzfile                           meos_pg_open_tzfile
+#define pg_qsort                                 meos_pg_qsort
+#define pg_qsort_strcmp                          meos_pg_qsort_strcmp
+#define pg_strcasecmp                            meos_pg_strcasecmp
+#define pg_strncasecmp                           meos_pg_strncasecmp
+#define pg_strtoint32                            meos_pg_strtoint32
+#define pg_strtoint64                            meos_pg_strtoint64
+#define pg_timestamp_to_char                     meos_pg_timestamp_to_char
+#define pg_timestamptz_to_char                   meos_pg_timestamptz_to_char
+#define pg_to_date                               meos_pg_to_date
+#define pg_to_timestamp                          meos_pg_to_timestamp
+#define pg_tolower                               meos_pg_tolower
+#define pg_toupper                               meos_pg_toupper
+#define pg_tz_acceptable                         meos_pg_tz_acceptable
+#define pg_tzset                                 meos_pg_tzset
+#define pg_tzset_offset                          meos_pg_tzset_offset
+#define pg_ulltoa_n                              meos_pg_ulltoa_n
+#define pg_ultoa_n                               meos_pg_ultoa_n
+#define pg_ultostr                               meos_pg_ultostr
+#define pg_ultostr_zeropad                       meos_pg_ultostr_zeropad
+#define pgfnames                                 meos_pgfnames
+#define pgfnames_cleanup                         meos_pgfnames_cleanup
+#define qsort_arg                                meos_qsort_arg
+#define scanner_isspace                          meos_scanner_isspace
+#define select_default_timezone                  meos_select_default_timezone
+#define string_hash                              meos_string_hash
+#define strtoint                                 meos_strtoint
+#define tag_hash                                 meos_tag_hash
+#define time2tm                                  meos_time2tm
+#define time_overflows                           meos_time_overflows
+#define timestamp2tm                             meos_timestamp2tm
+#define timestamp_cmp_internal                   meos_timestamp_cmp_internal
+#define tm2interval                              meos_tm2interval
+#define tm2time                                  meos_tm2time
+#define tm2timestamp                             meos_tm2timestamp
+#define tzload                                   meos_tzload
+#define tzparse                                  meos_tzparse
+#define uint32_hash                              meos_uint32_hash
+
+/* /port compatibility functions, included with the shim active so the pg_*
+ * prototypes match the meos_pg_* call sites and definitions */
 #include "port.h"
+
 
 #endif							/* PG_C_H */

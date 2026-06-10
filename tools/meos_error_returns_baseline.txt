@@ -1,0 +1,9 @@
+# meos_error(ERROR, ...) -> non-control-transfer follow-up baseline.
+# Each line: <relative path>:<line of meos_error call>  -- next stmt summary
+# Regenerate with: python3 tools/check_meos_error_returns.py --rebaseline
+# See tools/check_meos_error_returns.py docstring + MobilityDB#1091, #1093.
+meos/src/geo/tpoint_datagen.c:184
+meos/src/rgeo/trgeo_utils.c:59
+meos/src/rgeo/trgeo_utils.c:73
+meos/src/rgeo/trgeo_vclip.c:634
+meos/src/temporal/temporal_aggfuncs.c:564
