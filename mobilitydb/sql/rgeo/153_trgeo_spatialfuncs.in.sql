@@ -58,27 +58,73 @@ CREATE FUNCTION transformPipeline(trgeometry, text, srid integer DEFAULT 0,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * traversedArea
+ *****************************************************************************/
+
+CREATE FUNCTION traversedArea(trgeometry, bool DEFAULT FALSE)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_traversed_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION centroid(trgeometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION convexHull(trgeometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bodyPointTrajectory(trgeometry, geometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_body_point_trajectory'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Motion metrics
+ *****************************************************************************/
+
+CREATE FUNCTION length(trgeometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Trgeometry_length'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cumulativeLength(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_cumulative_length'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION speed(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_speed'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION twCentroid(trgeometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_twcentroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 
--- CREATE FUNCTION atGeometry(trgeometry, geometry)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Trgeo_at_geom'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atGeometry(trgeometry, geometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_at_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusGeometry(trgeometry, geometry)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Trgeo_minus_geom'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusGeometry(trgeometry, geometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION atStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Trgeo_at_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atStbox(trgeometry, stbox, bool DEFAULT TRUE)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  -- RETURNS trgeometry
-  -- AS 'MODULE_PATHNAME', 'Trgeo_minus_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
