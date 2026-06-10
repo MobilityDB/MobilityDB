@@ -399,7 +399,9 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func)
       {
-        Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
+        Datum v1 = tinstant_value_p(inst1);
+        Datum v2 = tinstant_value_p(inst2);
+        Datum value = func(v1, v2);
         result[count++] = tinstant_make(value, inst1->temptype, inst1->t);
         if (tofree)
           tofree1[nfree1++] = result[count - 1];
@@ -407,8 +409,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
          * datum_min_text return one of their inputs verbatim; those pointers
          * are still owned by the input instants and must not be freed here. */
         if (! basetype_byvalue(temptype_basetype(inst1->temptype)) &&
-            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst1)) &&
-            DatumGetPointer(value) != DatumGetPointer(tinstant_value_p(inst2)))
+            DatumGetPointer(value) != DatumGetPointer(v1) &&
+            DatumGetPointer(value) != DatumGetPointer(v2))
           pfree(DatumGetPointer(value));
       }
       else
