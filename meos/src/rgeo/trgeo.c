@@ -173,8 +173,8 @@ trgeometry_out(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  char *geom = geo_out(trgeo_geom_p(temp));
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
+  const char *geom = geo_out(trgeo_geom_p(temp));
+  const char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(geom) + strlen(pose) + 2;
   char *result = palloc(len);
@@ -204,7 +204,7 @@ trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
     maxdd, NULL);
   lwgeom_free(geom);
   /* Write the pose */
-  char *wkt_pose = tspatial_as_text(temp, maxdd);
+  const char *wkt_pose = tspatial_as_text(temp, maxdd);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(wkt_geom) + strlen(wkt_pose) + 2;
   char *result = palloc(len);
@@ -267,8 +267,9 @@ trgeometry_to_tpose(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_conversion
- * @brief Return a temporal point obtained from the points of the temporal
- * pose of a temporal rigid geometry
+ * @brief Return a temporal point from a temporal rigid geometry
+ * @details The result is a temporal geometry point for a planar rigid geometry
+ * and a temporal geography point for a geodetic rigid geometry
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
@@ -281,11 +282,84 @@ trgeometry_to_tpoint(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_pose_point;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.restype = MEOS_FLAGS_GET_GEODETIC(temp->flags) ?
+    T_TGEOGPOINT : T_TGEOMPOINT;
   /* Extracting the anchor point of a rigid geometry is affine */
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
+}
+
+/**
+ * @ingroup meos_rgeo_conversion
+ * @brief Materialise the moving polygon of a temporal rigid geometry as a
+ * temporal geometry (one rotated/translated polygon per instant).
+ * @details For each instant, applies the instant's pose to the trgeo's
+ * reference geometry and emits the resulting polygon. The returned
+ * `tgeometry` has the same temporal structure as the input and the same
+ * SRID as the reference geometry.
+ * @note Unlike `trgeometry_to_tpoint` (which gives the antenna point trajectory),
+ * this preserves the body's footprint at each instant — the natural input
+ * for compositional spatial-rel queries against `tgeometry`'s full surface.
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tgeometry()
+ */
+Temporal *
+trgeometry_to_tgeometry(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_has_geom(temp->flags))
+    return NULL;
+  const GSERIALIZED *ref = trgeo_geom_p(temp);
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    GSERIALIZED *poly = geom_apply_pose(ref,
+      DatumGetPoseP(tinstant_value(inst)));
+    TInstant *res = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+      inst->t);
+    pfree(poly);
+    return (Temporal *) res;
+  }
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      GSERIALIZED *poly = geom_apply_pose(ref,
+        DatumGetPoseP(tinstant_value(inst)));
+      insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+        inst->t);
+      pfree(poly);
+    }
+    return (Temporal *) tsequence_make_free(insts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
+      STEP, NORMALIZE);
+  }
+  /* TSEQUENCESET */
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  for (int s = 0; s < ss->count; s++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, s);
+    TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      GSERIALIZED *poly = geom_apply_pose(ref,
+        DatumGetPoseP(tinstant_value(inst)));
+      insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
+        inst->t);
+      pfree(poly);
+    }
+    seqs[s] = tsequence_make_free(insts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
+      STEP, NORMALIZE);
+  }
+  return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
 }
 
 /**
@@ -620,7 +694,7 @@ trgeometry_instant_n(const Temporal *temp, int n)
   if (! ensure_positive(n))
     return NULL;
 
-  TInstant *inst = temporal_instant_n(temp, n);
+  const TInstant *inst = temporal_instant_n(temp, n);
   if (! inst)
     return NULL;
   TInstant *res = trgeoinst_tposeinst(inst);
@@ -768,6 +842,239 @@ trgeometry_sequences(const Temporal *temp, int *count)
     pfree(seq);
   }
   pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the set of distinct points seen along a temporal rigid
+ * geometry's antenna trajectory
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_points()
+ */
+Set *
+trgeometry_points(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Set *result = tpose_points(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the rotation of a temporal rigid geometry as a temporal float
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_rotation()
+ */
+Temporal *
+trgeometry_rotation(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Temporal *result = tpose_rotation(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the array of inter-instant segments of a temporal rigid
+ * geometry — one TSequence per consecutive pair of instants
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] count Number of resulting segments
+ * @csqlfn #Temporal_segments()
+ */
+TSequence **
+trgeometry_segments(const Temporal *temp, int *count)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_continuous(temp))
+    return NULL;
+  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  TSequence **segs = temporal_segments(tpose, count);
+  pfree(tpose);
+  if (! segs)
+    return NULL;
+  TSequence **result = palloc(sizeof(TSequence *) * (*count));
+  for (int i = 0; i < *count; i++)
+  {
+    result[i] = geo_tposeseq_to_trgeo(geo, segs[i]);
+    pfree(segs[i]);
+  }
+  pfree(segs);
+  return result;
+}
+
+/*
+ * @brief Adaptive sub-sampling tolerances for trgeometry_traversed_area.
+ *
+ * Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH
+ * in the trgeometry distance kernel (see meos/src/rgeo/trgeo_distance.c).
+ * Pure-translation segments need no sampling: the convex hull of two
+ * endpoint polygons equals the swept ribbon. Rotation-heavy segments
+ * are bisected while the rotation magnitude across the half-segment
+ * exceeds the tolerance (radians). At the default tolerance of 0.05 rad
+ * (~2.86°) and a max depth of 5, a 90° rotation produces 32 sub-samples;
+ * a 180° rotation hits the depth cap.
+ */
+#define TRGEO_TRAVERSED_AREA_ANGLE_TOL    0.05
+#define TRGEO_TRAVERSED_AREA_MAX_DEPTH    5
+
+/**
+ * @brief Append the materialised polygon at timestamp @p t to the running
+ * geom array, growing it as needed.
+ */
+static void
+trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
+  GSERIALIZED ***buf, int *buf_n, int *buf_cap)
+{
+  Datum value;
+  if (! trgeo_value_at_timestamptz(temp, t, false, &value))
+    return;
+  if (*buf_n == *buf_cap)
+  {
+    *buf_cap *= 2;
+    *buf = repalloc(*buf, sizeof(GSERIALIZED *) * (*buf_cap));
+  }
+  (*buf)[(*buf_n)++] = DatumGetGserializedP(value);
+}
+
+/**
+ * @brief Recursive bisection for trgeometry_traversed_area: append samples on
+ * (t_a, t_b] where the rotation magnitude exceeds the tolerance. Models
+ * the same depth-bounded recursion as `trgeo_pair_dist_adaptive` in the
+ * distance kernel; the convergence test here is the rotation magnitude
+ * across the half-segment, since pure-translation segments need no
+ * extra samples (the convex hull of the two endpoint polygons already
+ * equals the swept ribbon under unary union).
+ */
+static void
+trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
+  const TInstant *inst_b, int depth, GSERIALIZED ***buf, int *buf_n,
+  int *buf_cap)
+{
+  Pose *pose_a = DatumGetPoseP(tinstant_value_p((TInstant *) inst_a));
+  Pose *pose_b = DatumGetPoseP(tinstant_value_p((TInstant *) inst_b));
+  /* Angular shortest-path distance between the two pose orientations. */
+  double dtheta = pose_b->data[2] - pose_a->data[2];
+  while (dtheta > M_PI)  dtheta -= 2.0 * M_PI;
+  while (dtheta < -M_PI) dtheta += 2.0 * M_PI;
+  double abs_dtheta = fabs(dtheta);
+  if (abs_dtheta < TRGEO_TRAVERSED_AREA_ANGLE_TOL ||
+      depth >= TRGEO_TRAVERSED_AREA_MAX_DEPTH ||
+      inst_b->t - inst_a->t <= 1)
+  {
+    /* Rotation is small enough across [t_a, t_b] that the convex hull
+     * of the two endpoint polygons covers the swept ribbon. Emit only
+     * t_b (t_a was emitted by the caller as the previous segment's
+     * endpoint or the initial instant). */
+    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+    return;
+  }
+  /* Bisect: emit a midpoint sample, then recurse on both halves. */
+  TimestampTz t_m = inst_a->t + (inst_b->t - inst_a->t) / 2;
+  /* Build a virtual midpoint instant on the stack so we can recurse on
+   * the same shape as inst_a / inst_b. trgeo_value_at_timestamptz
+   * gives us a fresh GSERIALIZED for the midpoint pose's materialised
+   * polygon, but we need the underlying Pose to compute dtheta on the
+   * sub-segment. Read it via the public tpose accessor.
+   */
+  Datum dpose_m;
+  Temporal *tpose_t = trgeometry_to_tpose(temp);
+  bool ok = tpose_t &&
+    temporal_value_at_timestamptz(tpose_t, t_m, false, &dpose_m);
+  if (tpose_t) pfree(tpose_t);
+  if (! ok)
+  {
+    /* Fall back to flat sampling at the midpoint and stop. */
+    trgeo_trav_emit_at(temp, t_m, buf, buf_n, buf_cap);
+    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+    return;
+  }
+  TInstant *inst_m = tinstant_make(dpose_m, T_TPOSE, t_m);
+  trgeo_trav_adaptive(temp, inst_a, inst_m, depth + 1, buf, buf_n, buf_cap);
+  trgeo_trav_adaptive(temp, inst_m, inst_b, depth + 1, buf, buf_n, buf_cap);
+  pfree(inst_m); pfree(DatumGetPointer(dpose_m));
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the union of every materialised polygon of a temporal rigid
+ * geometry over its time domain
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] unary_union True to apply a unary spatial union to the per-
+ * instant polygons; false to return the raw GeometryCollection
+ * @csqlfn #Trgeometry_traversed_area()
+ *
+ * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
+ * for general temporal geometries; the trgeometry-specific step is
+ * materialising the reference polygon at every emitted sample via
+ * `geom_apply_pose`. Sample selection mirrors the adaptive recursive
+ * bisection in `tdistance_trgeoseq_trgeoseq_linear`: each input instant
+ * is emitted; between two consecutive instants the segment is bisected
+ * while the rotation magnitude across the half-segment exceeds
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` and the recursion depth is below
+ * `TRGEO_TRAVERSED_AREA_MAX_DEPTH`. Pure-translation segments
+ * terminate at depth 0 with two samples (start and end). The unary
+ * union dissolves any redundant overlap between samples.
+ */
+GSERIALIZED *
+trgeometry_traversed_area(const Temporal *temp, bool unary_union)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  int n_insts = 0;
+  /* temporal_insts_p returns a pointer-to-array of in-place instants;
+   * neither the elements nor the array itself need element-freeing —
+   * we only pfree the array wrapper at the end. (The MEOS-public
+   * temporal_instants is gated by #if MEOS, so it isn't available in
+   * the PG-extension build.) */
+  const TInstant **insts = temporal_insts_p(temp, &n_insts);
+  if (! insts || n_insts <= 0)
+    return NULL;
+
+  /* Initial capacity is generous — bisection rarely goes deep. */
+  int cap = (n_insts > 1) ? n_insts * 4 : n_insts;
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * cap);
+  int n_geoms = 0;
+
+  /* Emit the first instant. */
+  trgeo_trav_emit_at(temp, insts[0]->t, &geoms, &n_geoms, &cap);
+  /* Per inter-instant segment, recursively bisect. The recursion
+   * appends samples on (t_m, t_b], reusing the t_a sample emitted by
+   * the previous iteration. */
+  for (int i = 0; i + 1 < n_insts; i++)
+    trgeo_trav_adaptive(temp, insts[i], insts[i + 1], 0,
+      &geoms, &n_geoms, &cap);
+
+  GSERIALIZED *result;
+  if (n_geoms == 1)
+  {
+    result = geoms[0];
+  }
+  else
+  {
+    GSERIALIZED *coll = geo_collect_garray(geoms, n_geoms);
+    for (int i = 0; i < n_geoms; i++)
+      pfree(geoms[i]);
+    if (unary_union)
+    {
+      result = geom_unary_union(coll, -1);
+      pfree(coll);
+    }
+    else
+      result = coll;
+  }
+  pfree(geoms);
+  pfree(insts);
   return result;
 }
 
@@ -1242,8 +1549,7 @@ trgeo_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
  * timestamptz
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly before, false when
- * the restriction is before or equal
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_before_timestamptz()
  */
 Temporal *
@@ -1268,8 +1574,7 @@ trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * timestamptz
  * @param[in] temp Temporal rigid geometry
  * @param[in] t Timestamptz
- * @param[in] strict True if the restriction is strictly after, false when
- * the restriction is before or equal
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Temporal_after_timestamptz()
  */
 Temporal *

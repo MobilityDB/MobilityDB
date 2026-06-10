@@ -80,6 +80,11 @@ extern TSequenceSet *geo_tposeseqset_to_trgeo(const GSERIALIZED *gs,
 extern bool trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, Datum *result);
 
+/* Restriction functions */
+
+extern Temporal *trgeometry_restrict_value(const Temporal *temp, Datum value,
+  bool atfunc);
+
 /* Transformation functions */
 
 
