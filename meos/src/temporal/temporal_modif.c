@@ -1372,7 +1372,13 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
 
   /* General case */
   TSequenceSet *minus = tsequenceset_restrict_tstzspanset(ss, ps, REST_MINUS);
-  /* The are minus->count - 1 holes that may be filled */
+  /* The deletion may remove every instant or leave a single fragment, in which
+   * case there is nothing to reconnect */
+  if (minus == NULL)
+    return NULL;
+  if (minus->count == 1)
+    return minus;
+  /* There are minus->count - 1 holes that may be filled */
   TSequence **sequences = palloc(sizeof(TSequence *) * (minus->count * 2 - 1));
   TSequence **tofree = palloc(sizeof(TSequence *) * (minus->count - 1));
   TInstant *instants[2] = {0};
@@ -1391,10 +1397,16 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     s = SPANSET_SP_N(ps, j++);
   }
   seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, 1);
-  while (i < ss->count && j < ps->count)
+  while (i < minus->count && j < ps->count)
   {
+    /* Bridge the previous and current fragments only when the deleted span
+     * is adjacent to BOTH — that is, it fills the whole gap between them.
+     * A span that sits in a pre-existing gap (not touching the previous
+     * fragment) leaves the fragments disjoint. */
     if (timestamptz_cmp_internal(DatumGetTimestampTz(s->upper),
-          DatumGetTimestampTz(seq->period.lower) <= 0))
+          DatumGetTimestampTz(seq->period.lower)) <= 0 &&
+        timestamptz_cmp_internal(DatumGetTimestampTz(s->lower),
+          DatumGetTimestampTz(sequences[nseqs - 1]->period.upper)) <= 0)
     {
       instants[0] = (TInstant *) TSEQUENCE_INST_N(sequences[nseqs - 1],
         sequences[nseqs - 1]->count - 1);
@@ -1411,7 +1423,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     s = SPANSET_SP_N(ps, j++);
   }
   /* Add remaining sequences to the result */
-  while (i < ss->count)
+  while (i < minus->count)
     sequences[nseqs++] = (TSequence *) TSEQUENCESET_SEQ_N(minus, i++);
   /* Construct the result */
   int newcount;
