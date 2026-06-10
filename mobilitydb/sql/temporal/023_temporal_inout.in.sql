@@ -45,6 +45,10 @@ CREATE FUNCTION tintFromMFJSON(text)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbigintFromMFJSON(text)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatFromMFJSON(text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
@@ -64,6 +68,10 @@ CREATE FUNCTION tintFromBinary(bytea)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbigintFromBinary(bytea)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatFromBinary(bytea)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
@@ -79,6 +87,10 @@ CREATE FUNCTION tboolFromHexWKB(text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintFromHexWKB(text)
   RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbigintFromHexWKB(text)
+  RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatFromHexWKB(text)
@@ -112,6 +124,15 @@ CREATE FUNCTION asText(tint[])
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asText(tbigint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tbigint[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asText(tfloat, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
@@ -140,6 +161,11 @@ CREATE FUNCTION asMFJSON(temp tint, options int4 DEFAULT 0,
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asMFJSON(temp tbigint, options int4 DEFAULT 0,
+    flags int4 DEFAULT 0)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asMFJSON(temp tfloat, options int4 DEFAULT 0,
     flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -161,6 +187,10 @@ CREATE FUNCTION asBinary(tint, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(tbigint, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tfloat, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
@@ -175,6 +205,10 @@ CREATE FUNCTION asHexWKB(tbool, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(tint, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(tbigint, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

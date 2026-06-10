@@ -124,6 +124,11 @@ CREATE FUNCTION timeBins(tint, tsize interval,
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_time_bins'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeBins(tbigint, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_time_bins'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION timeBins(tfloat, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]
@@ -137,6 +142,10 @@ CREATE FUNCTION timeBins(ttext, tsize interval,
 
 CREATE FUNCTION valueBins(tint, vsize int, vorigin int DEFAULT 0)
   RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueBins(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
+  RETURNS bigintspan[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_bins'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueBins(tfloat, vsize float, vorigin float DEFAULT 0.0)
@@ -198,12 +207,21 @@ CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueBoxes(tbigint, vsize bigint, vorigin bigint DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION timeBoxes(tint, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeBoxes(tbigint, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
@@ -216,6 +234,11 @@ CREATE FUNCTION timeBoxes(tfloat, tsize interval,
 
 CREATE FUNCTION valueTimeBoxes(tint, vsize int, tsize interval,
     vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueTimeBoxes(tbigint, vsize bigint, tsize interval,
+    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
@@ -233,6 +256,10 @@ CREATE TYPE number_tint AS (
   number integer,
   tnumber tint
 );
+CREATE TYPE number_tbigint AS (
+  number bigint,
+  tnumber tbigint
+);
 CREATE TYPE number_tfloat AS (
   number float,
   tnumber tfloat
@@ -240,6 +267,10 @@ CREATE TYPE number_tfloat AS (
 
 CREATE FUNCTION valueSplit(tint, size integer, origin integer DEFAULT 0)
   RETURNS SETOF number_tint
+  AS 'MODULE_PATHNAME', 'Tnumber_value_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueSplit(tbigint, size bigint, origin bigint DEFAULT 0)
+  RETURNS SETOF number_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueSplit(tfloat, size float, origin float DEFAULT 0.0)
@@ -256,6 +287,10 @@ CREATE TYPE time_tbool AS (
 CREATE TYPE time_tint AS (
   time timestamptz,
   temp tint
+);
+CREATE TYPE time_tbigint AS (
+  time timestamptz,
+  temp tbigint
 );
 CREATE TYPE time_tfloat AS (
   time timestamptz,
@@ -276,6 +311,11 @@ CREATE FUNCTION timeSplit(tint, size interval,
   RETURNS SETOF time_tint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeSplit(tbigint, size interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF time_tbigint
+  AS 'MODULE_PATHNAME', 'Temporal_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION timeSplit(tfloat, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tfloat
@@ -294,6 +334,11 @@ CREATE TYPE number_time_tint AS (
   time timestamptz,
   tnumber tint
 );
+CREATE TYPE number_time_tbigint AS (
+  number bigint,
+  time timestamptz,
+  tnumber tbigint
+);
 CREATE TYPE number_time_tfloat AS (
   number float,
   time timestamptz,
@@ -303,6 +348,11 @@ CREATE TYPE number_time_tfloat AS (
 CREATE FUNCTION valueTimeSplit(tint, size integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF number_time_tint
+  AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueTimeSplit(tbigint, size bigint, duration interval,
+    vorigin bigint DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF number_time_tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_value_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION valueTimeSplit(tfloat, size float, duration interval,
