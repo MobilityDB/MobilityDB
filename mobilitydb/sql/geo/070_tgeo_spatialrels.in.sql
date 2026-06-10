@@ -72,7 +72,7 @@ CREATE FUNCTION aContains(tgeometry, tgeometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * eCovers, aCovers
+ * eCovers
  *****************************************************************************/
 
 CREATE FUNCTION eCovers(geometry, tgeometry)
@@ -88,24 +88,6 @@ CREATE FUNCTION eCovers(tgeometry, geometry)
 CREATE FUNCTION eCovers(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ecovers_tgeo_tgeo'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
-
-CREATE FUNCTION aCovers(geometry, tgeometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_geo_tgeo'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aCovers(tgeometry, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_tgeo_geo'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aCovers(tgeometry, tgeometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Acovers_tgeo_tgeo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
