@@ -1,0 +1,54 @@
+name: test-linux
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linux:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-22.04]
+        pg: [17, 16, 15, 14, 13]
+        config: [Release, Debug]
+
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} 🐘${{ matrix.pg }} (${{ matrix.config }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pg_validate_extupgrade
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: pg_validate_extupgrade
+          git: https://github.com/rjuju/pg_validate_extupgrade
+
+      - name: Setup PostgreSQL
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -p -i -v ${{ matrix.pg }}
+          sudo apt-get -y install postgresql-${{ matrix.pg }}-postgis-3
+          sudo -u postgres -i createuser --superuser runner
+          sudo -u postgres -i createdb runner
+          psql -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_raster;"
+
+      - name: Generate
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Install
+        run: sudo cmake --install build --component h3-pg
+
+      - name: Test
+        env:
+          PGHOST: /var/run/postgresql
+        run: ctest --test-dir build --output-on-failure --build-config ${{ matrix.config }}
+
+      - name: Print regression diffs
+        if: ${{ failure() }}
+        run: cat build/*/test/regression.diffs
