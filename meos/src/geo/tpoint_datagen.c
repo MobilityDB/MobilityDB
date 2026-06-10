@@ -54,8 +54,14 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 {
   double result, az1 = 0, az2 = 0; /* make compilier quiet */
   if (! azimuth_pt_pt(&p1, &p2, &az1) ||  ! azimuth_pt_pt(&p3, &p2, &az2))
+  {
+    /* See doc-comment on meos_error in meos/include/meos.h: handler is
+     * not guaranteed to abort. Return 0 explicitly rather than fall
+     * through with stale az1=az2=0 producing a silently-zero angle. */
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "Cannot compute angle betwen equal points");
+    return 0.0;
+  }
   result = az2 - az1;
   result += (result < 0) * 2 * M_PI; /* we dont want negative angle */
   return result / RADIANS_PER_DEGREE;
