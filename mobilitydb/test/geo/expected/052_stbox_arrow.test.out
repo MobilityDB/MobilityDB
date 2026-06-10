@@ -1,0 +1,120 @@
+SELECT arrowRoundtrip(stbox 'STBOX X((1,1),(2,2))');
+    arrowroundtrip    
+----------------------
+ STBOX X((1,1),(2,2))
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX Z((1,1,1),(2,2,2))');
+      arrowroundtrip      
+--------------------------
+ STBOX Z((1,1,1),(2,2,2))
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX T([2000-01-01,2000-01-05])');
+                            arrowroundtrip                             
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
+                                    arrowroundtrip                                    
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,1),(5,5)),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])');
+                                      arrowroundtrip                                      
+------------------------------------------------------------------------------------------
+ STBOX ZT(((1,1,1),(5,5,5)),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=5676;STBOX X((1,1),(2,2))');
+         arrowroundtrip         
+--------------------------------
+ SRID=5676;STBOX X((1,1),(2,2))
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
+                                         arrowroundtrip                                         
+------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((1,1),(5,5)),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])');
+                              arrowroundtrip                               
+---------------------------------------------------------------------------
+ GEODSTBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'GEODSTBOX X((1,1),(1,1))');
+           arrowroundtrip           
+------------------------------------
+ SRID=4326;GEODSTBOX X((1,1),(1,1))
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=4326;GEODSTBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
+                                           arrowroundtrip                                           
+----------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX XT(((1,1),(5,5)),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX X((1,1),(2,2))') = stbox 'STBOX X((1,1),(2,2))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX Z((1,1,1),(2,2,2))') = stbox 'STBOX Z((1,1,1),(2,2,2))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX T([2000-01-01,2000-01-05])') = stbox 'STBOX T([2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])') = stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])') = stbox 'STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=5676;STBOX X((1,1),(2,2))') = stbox 'SRID=5676;STBOX X((1,1),(2,2))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])') = stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])') = stbox 'GEODSTBOX T([2000-01-01,2000-01-02])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'GEODSTBOX X((1,1),(1,1))') = stbox 'GEODSTBOX X((1,1),(1,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(stbox 'SRID=4326;GEODSTBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])') = stbox 'SRID=4326;GEODSTBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+

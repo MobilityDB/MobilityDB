@@ -124,6 +124,19 @@ SELECT stboxFromHexWKB(
 -- STBOX X((1,1),(2,2))
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="box_arrowRoundtrip">
+					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+					<para>Convierte una caja temporal o espaciotemporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+					<para><varname>arrowRoundtrip(box) → box</varname></para>
+					<para>Una caja es un subconjunto finito de un dominio producto (una caja temporal del dominio tiempo y valor, una caja espaciotemporal del dominio espacio y tiempo), cerrando el álgebra de tipos sobre el dominio producto. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada. La codificación refleja la caja canónica: el indicador de banderas se transporta literalmente, el span de tiempo y el span de valor de una caja temporal y el span de tiempo de una caja espaciotemporal reutilizan la misma estructura de span que un valor span, la extensión espacial de una caja espaciotemporal son sus dobles mínimo y máximo en bruto por eje, y se preserva el identificador de referencia espacial; las dimensiones realmente presentes (valor, tiempo, espacio bidimensional o tridimensional) siguen a las banderas.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))');
+-- TBOXFLOAT XT([1.5, 9.75],[2000-01-01,2000-12-31))
+SELECT arrowRoundtrip(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
+-- SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])
+</programlisting>
+				</listitem>
 			</itemizedlist>
 	</sect1>
 

@@ -628,6 +628,27 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un valor temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tbool) → tbool</varname></para>
+				<para><varname>arrowRoundtrip(tint) → tint</varname></para>
+				<para><varname>arrowRoundtrip(tbigint) → tbigint</varname></para>
+				<para><varname>arrowRoundtrip(tfloat) → tfloat</varname></para>
+				<para><varname>arrowRoundtrip(ttext) → ttext</varname></para>
+				<para><varname>arrowRoundtrip(tgeompoint) → tgeompoint</varname></para>
+				<para><varname>arrowRoundtrip(tgeogpoint) → tgeogpoint</varname></para>
+				<para><varname>arrowRoundtrip(tgeometry) → tgeometry</varname></para>
+				<para><varname>arrowRoundtrip(tgeography) → tgeography</varname></para>
+				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada. Los puntos temporales se descomponen en columnas paralelas de coordenadas x, y y (cuando está presente) z, y se preserva el identificador de referencia espacial. Una geometría o geografía temporal general usa una columna de valores binaria grande opaca que transporta el binario bien conocido extendido de cada instante, de modo que geometrías arbitrarias se convierten de ida y vuelta con su identificador de referencia espacial y dimensionalidad.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT arrowRoundtrip(tint '1@2001-01-01');
+-- 1@2001-01-01
+SELECT arrowRoundtrip(tfloat '{[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}');
+-- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttypeFromMFJSON">
 				<indexterm significance="normal"><primary><varname>ttypeFromMFJSON</varname></primary></indexterm>
 				<para>Entrar a partir de la representación Moving Features JSON (MF-JSON)</para>

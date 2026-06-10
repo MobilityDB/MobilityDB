@@ -276,6 +276,10 @@ include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 message(STATUS "GSL_VERSION: ${GSL_VERSION}")
 add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
 
+# Apache Arrow C Data Interface (vendored, header-only; no libarrow link).
+# Set at the top level so both the MEOS and the MobilityDB builds find it.
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/arrow")
+
 #----------------------------------------------
 # Configure PostGIS with optional dependencies
 #----------------------------------------------
