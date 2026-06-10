@@ -56,7 +56,9 @@ datum_npoint_distance(Datum np1, Datum np2)
 {
   Datum geom1 = PointerGetDatum(npoint_to_geompoint(DatumGetNpointP(np1)));
   Datum geom2 = PointerGetDatum(npoint_to_geompoint(DatumGetNpointP(np2)));
-  return datum_pt_distance2d(geom1, geom2);
+  Datum result = datum_pt_distance2d(geom1, geom2);
+  pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
+  return result;
 }
 
 /*****************************************************************************
@@ -67,10 +69,10 @@ datum_npoint_distance(Datum np1, Datum np2)
  * @ingroup meos_npoint_dist
  * @brief Return the temporal distance between a geometry point and a temporal
  * network point
- * @csqlfn #Tdistance_tnpoint_point()
+ * @csqlfn #Tdistance_tnpoint_geo()
  */
 Temporal *
-tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs) || 
