@@ -342,9 +342,11 @@ extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 
 extern BOX3D *box3d_make(double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, int32_t srid);
+extern BOX3D *box3d_in(const char *str);
 extern char *box3d_out(const BOX3D *box, int maxdd);
 extern GBOX *gbox_make(bool hasz, double xmin, double xmax, double ymin,
   double ymax, double zmin, double zmax);
+extern GBOX *gbox_in(const char *str);
 extern char *gbox_out(const GBOX *box, int maxdd);
 
 /* Constructor functions */
