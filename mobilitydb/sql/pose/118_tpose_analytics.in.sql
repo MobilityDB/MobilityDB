@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -29,44 +29,45 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal network points.
- * @note The only function currently provided is temporal centroid.
+ * @brief Analytic functions for temporal poses
  */
-
-/* PostgreSQL */
-#include <postgres.h>
-/* MEOS */
-#include <meos.h>
-#include <meos_internal.h>
-#include "temporal/temporal.h"
-#include "temporal/skiplist.h"
-#include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_temporal/skiplist.h"
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
-/**
- * @ingroup mobilitydb_npoint_agg
- * @brief Transition function for temporal centroid aggregation of temporal
- * network points
- * @sqlfn tCentroid()
- */
-Datum
-Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  MemoryContext ctx;
-  INPUT_AGG_TRANS_STATE(fcinfo, state, ctx);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  store_fcinfo(fcinfo);
-  state = tnpoint_tcentroid_transfn(state, temp);
-  PG_FREE_IF_COPY(temp, 1);
-  unset_aggregation_context(ctx);
-  PG_RETURN_SKIPLIST_P(state);
-}
+CREATE FUNCTION minDistSimplify(tpose, float)
+  RETURNS tpose
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(@extschema@.minDistSimplify($1::@extschema@.tgeompoint, $2)))
+    )
+  $$;
 
+CREATE FUNCTION minTimeDeltaSimplify(tpose, interval)
+  RETURNS tpose
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(@extschema@.minTimeDeltaSimplify($1::@extschema@.tgeompoint, $2)))
+    )
+  $$;
+
+CREATE FUNCTION maxDistSimplify(tpose, float, boolean DEFAULT TRUE)
+  RETURNS tpose
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(@extschema@.maxDistSimplify($1::@extschema@.tgeompoint, $2, $3)))
+    )
+  $$;
+
+CREATE FUNCTION douglasPeuckerSimplify(tpose, float, boolean DEFAULT TRUE)
+  RETURNS tpose
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(@extschema@.douglasPeuckerSimplify($1::@extschema@.tgeompoint, $2, $3)))
+    )
+  $$;
 
 /*****************************************************************************/
