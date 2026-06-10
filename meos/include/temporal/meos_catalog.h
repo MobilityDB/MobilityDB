@@ -117,6 +117,9 @@ typedef enum
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
   T_TBIGINT        = 63,  /**< temporal big integer type */
+  T_H3INDEX        = 64,  /**< static H3 cell index type (uint64) */
+  T_H3INDEXSET     = 65,  /**< h3index set type */
+  T_TH3INDEX       = 66,  /**< temporal H3 index type (libh3 cell index over time) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;
