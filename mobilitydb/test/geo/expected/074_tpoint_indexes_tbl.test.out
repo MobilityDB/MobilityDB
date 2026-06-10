@@ -847,6 +847,46 @@ SELECT round(distance, 6) FROM test;
   66.99836
 (3 rows)
 
+WITH test AS (
+  SELECT temp |=| geometry 'Point(1 1)' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+    7.6287
+ 11.516189
+ 11.516189
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+ 14.004276
+    31.366
+    32.332
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeogpoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 3787384.994748
+ 3787650.660488
+ 3817820.847674
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geography 'Point(1 1)' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 3768425.182236
+ 3768425.182236
+ 3784781.353772
+(3 rows)
+
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeompoint3D_rtree_idx;
@@ -879,6 +919,46 @@ SELECT round(distance, 6) FROM test;
  47.623706
  56.138497
   66.99836
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geometry 'Point(1 1)' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+    7.6287
+ 11.516189
+ 11.516189
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+ 14.004276
+    31.366
+    32.332
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeogpoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 3787384.994748
+ 3787650.660488
+ 3817820.847674
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geography 'Point(1 1)' AS distance FROM tbl_tgeogpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 3768425.182236
+ 3768425.182236
+ 3784781.353772
 (3 rows)
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
