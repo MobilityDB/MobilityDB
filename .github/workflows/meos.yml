@@ -65,6 +65,8 @@ jobs:
           ./geo_test
           gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
+          gcc -Wall -g -I/usr/local/include -o rtree_mest_test rtree_mest_test.c -L/usr/local/lib -lmeos -lm
+          ./rtree_mest_test
 
   threaded:
     name: Thread-safety (TSan)
