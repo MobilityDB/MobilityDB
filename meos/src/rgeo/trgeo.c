@@ -407,13 +407,43 @@ geo_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    return (Temporal *) geo_tposeinst_to_trgeo(gs, (TInstant *) temp);
-  else if (temp->subtype == TSEQUENCE)
-    return (Temporal *) geo_tposeseq_to_trgeo(gs, (TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    return (Temporal *) geo_tposeseqset_to_trgeo(gs, (TSequenceSet *) temp);
+  /* Reconcile the SRID of the reference geometry and the temporal pose: copy the
+   * known SRID onto the one that is unknown, and error if both are known and
+   * differ. This mirrors the text parser (trgeo_parse_geom) so that programmatic
+   * and parsed construction agree, and guarantees that the resulting value is
+   * SRID-consistent across its reference geometry and its pose. */
+  int32_t srid_geom = gserialized_get_srid(gs);
+  int32_t srid_temp = tspatial_srid(temp);
+  int32_t srid;
+  if (! ensure_srid_reconcile(srid_geom, srid_temp, &srid))
+    return NULL;
+  GSERIALIZED *gs1 = (GSERIALIZED *) gs;
+  Temporal *temp1 = (Temporal *) temp;
+  bool free_gs = false, free_temp = false;
+  if (srid_geom == SRID_UNKNOWN && srid != SRID_UNKNOWN)
+  {
+    gs1 = geo_copy(gs);
+    gserialized_set_srid(gs1, srid);
+    free_gs = true;
+  }
+  else if (srid_temp == SRID_UNKNOWN && srid != SRID_UNKNOWN)
+  {
+    temp1 = tspatial_set_srid(temp, srid);
+    free_temp = true;
+  }
+
+  Temporal *result;
+  assert(temptype_subtype(temp1->subtype));
+  if (temp1->subtype == TINSTANT)
+    result = (Temporal *) geo_tposeinst_to_trgeo(gs1, (TInstant *) temp1);
+  else if (temp1->subtype == TSEQUENCE)
+    result = (Temporal *) geo_tposeseq_to_trgeo(gs1, (TSequence *) temp1);
+  else /* temp1->subtype == TSEQUENCESET */
+    result = (Temporal *) geo_tposeseqset_to_trgeo(gs1, (TSequenceSet *) temp1);
+
+  if (free_gs) pfree(gs1);
+  if (free_temp) pfree(temp1);
+  return result;
 }
 
 /*****************************************************************************
