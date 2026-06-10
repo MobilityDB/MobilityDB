@@ -71,6 +71,9 @@
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_boxops.h"
 #endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox);
@@ -126,6 +129,10 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 #if RGEO
   else if (inst->temptype == T_TRGEOMETRY)
     tposeinst_set_stbox(inst, (STBox *) box);
+#endif
+#if H3
+  else if (inst->temptype == T_TH3INDEX)
+    th3indexinst_set_stbox(inst, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -242,6 +249,10 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   else if (temptype == T_TRGEOMETRY)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
 #endif
+#if H3
+  else if (temptype == T_TH3INDEX)
+    th3indexinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -300,6 +311,10 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
 #if RGEO
   else if (seq->temptype == T_TRGEOMETRY)
     tposeseq_expand_stbox(seq, inst);
+#endif
+#if H3
+  else if (seq->temptype == T_TH3INDEX)
+    th3indexseq_expand_stbox(seq, inst);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -379,10 +394,10 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
 STBox *
 tgeoinst_stboxes(const TInstant *inst)
 {
-  assert(inst); assert(tgeo_type_all(inst->temptype));
+  assert(inst); assert(tspatial_type(inst->temptype));
   /* One bounding box per instant */
   STBox *result = palloc(sizeof(STBox));
-  tgeoinst_set_stbox(inst, &result[0]);
+  tspatialinst_set_stbox(inst, &result[0]);
   return result;
 }
 
@@ -394,12 +409,12 @@ tgeoinst_stboxes(const TInstant *inst)
 static STBox *
 tgeoseq_disc_stboxes(const TSequence *seq)
 {
-  assert(seq); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   /* One bounding box per instant */
   STBox *result = palloc(sizeof(STBox) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[i]);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[i]);
   return result;
 }
 
@@ -413,13 +428,13 @@ tgeoseq_disc_stboxes(const TSequence *seq)
 static int
 tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 {
-  assert(seq); assert(result); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
     return 1;
   }
 
@@ -427,10 +442,10 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    tgeoinst_set_stbox(inst, &result[i]);
+    tspatialinst_set_stbox(inst, &result[i]);
     inst = TSEQUENCE_INST_N(seq, i + 1);
     STBox box;
-    tgeoinst_set_stbox(inst, &box);
+    tspatialinst_set_stbox(inst, &box);
     stbox_expand(&box, &result[i]);
   }
   return seq->count - 1;
@@ -448,7 +463,7 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 STBox *
 tgeoseq_stboxes(const TSequence *seq, int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
 
   /* Discrete case */
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
@@ -474,7 +489,7 @@ tgeoseq_stboxes(const TSequence *seq, int *count)
 STBox *
 tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(ss); assert(count); assert(tgeo_type_all(ss->temptype));
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
 
   /* One bounding box per segment */
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
@@ -501,7 +516,7 @@ STBox *
 tgeo_stboxes(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -528,7 +543,7 @@ tgeo_stboxes(const Temporal *temp, int *count)
 static STBox *
 tgeoseq_disc_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(box_count > 0);
 
@@ -551,11 +566,11 @@ tgeoseq_disc_split_n_stboxes(const TSequence *seq, int box_count, int *count)
     int j = i + size;
     if (k < remainder)
       j++;
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
     for (int l = i + 1; l < j; l++)
     {
       STBox box;
-      tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, l), &box);
+      tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, l), &box);
       stbox_expand(&box, &result[k]);
     }
     i = j;
@@ -576,14 +591,14 @@ static int
 tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
   STBox *result)
 {
-  assert(seq); assert(result); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   assert(box_count > 0);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
     return 1;
   }
 
@@ -603,11 +618,11 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
     int j = i + size;
     if (k < remainder)
       j++;
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
     for (int l = i + 1; l <= j; l++)
     {
       STBox box;
-      tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, l), &box);
+      tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, l), &box);
       stbox_expand(&box, &result[k]);
     }
     i = j;
@@ -633,7 +648,7 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
 STBox *
 tgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
   assert(box_count > 0);
 
   /* Discrete case */
@@ -662,7 +677,7 @@ tgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 STBox *
 tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 {
-  assert(ss); assert(count); assert(tgeo_type_all(ss->temptype));
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
   assert(box_count > 0);
 
   /* One bounding box per segment */
@@ -740,7 +755,7 @@ STBox *
 tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_positive(box_count))
     return NULL;
 
@@ -774,7 +789,7 @@ static STBox *
 tgeoseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
   int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(elems_per_box > 0);
 
@@ -784,11 +799,11 @@ tgeoseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
   for (int i = 0; i < seq->count; ++i)
   {
     if (i % elems_per_box == 0)
-      tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+      tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
     else
     {
       STBox box;
-      tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
+      tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
       stbox_expand(&box, &result[k - 1]);
     }
   }
@@ -810,7 +825,7 @@ static int
 tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
   int elems_per_box, STBox *result)
 {
-  assert(seq); assert(result); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(result); assert(tspatial_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   assert(elems_per_box > 0);
 
@@ -823,11 +838,11 @@ tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
 
   /* General case */
   int k = 0;
-  tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
+  tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
   for (int i = 1; i < seq->count; ++i)
   {
     STBox box;
-    tgeoinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
+    tspatialinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
     stbox_expand(&box, &result[k]);
     if ((i % elems_per_box == 0) && (i < seq->count - 1))
       result[++k] = box;
@@ -851,7 +866,7 @@ static STBox *
 tgeoseq_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
   int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type_all(seq->temptype));
+  assert(seq); assert(count); assert(tspatial_type(seq->temptype));
   assert(elems_per_box > 0);
 
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
@@ -878,7 +893,7 @@ static STBox *
 tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
   int *count)
 {
-  assert(ss); assert(count); assert(tgeo_type_all(ss->temptype));
+  assert(ss); assert(count); assert(tspatial_type(ss->temptype));
   assert(elems_per_box > 0);
 
   /* Singleton sequence set */
@@ -913,7 +928,7 @@ STBox *
 tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
 

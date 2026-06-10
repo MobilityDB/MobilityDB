@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
@@ -516,6 +516,9 @@ SELECT eDwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@200
 -- Coverage
 SELECT eDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 1)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(4 4)@2000-01-01, Point(2 3)@2000-01-02]', 1);
+-- Trajectories far apart at both shared endpoints that meet only strictly
+-- between the vertices
+SELECT eDwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(10 0)@2000-01-02]', tgeompoint '[Point(5 -100)@2000-01-01, Point(5 100)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
 SELECT eDwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 1);
 
@@ -527,5 +530,20 @@ SELECT eDwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(
 SELECT eDwithin(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 SELECT eDwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)', 2);
 SELECT eDwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+
+-------------------------------------------------------------------------------
+-- Crossing-value synchronization with non-coincident time spans: two trips
+-- that never meet must report eIntersects false / aDisjoint true even when one
+-- time span strictly contains the other
+SELECT eIntersects(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+SELECT aDisjoint(
+  tgeompoint '[Point(0 0)@2000-01-01, Point(0 10)@2000-01-02]',
+  tgeompoint '[Point(100 0)@2000-01-01, Point(100 10)@2000-01-03]');
+-- A genuine coincidence over the common time is still detected
+SELECT eIntersects(
+  tgeompoint '[Point(5 5)@2000-01-01, Point(5 5)@2000-01-02]',
+  tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-03]');
 
 -------------------------------------------------------------------------------

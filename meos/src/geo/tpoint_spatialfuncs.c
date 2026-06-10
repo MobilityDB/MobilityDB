@@ -1684,7 +1684,7 @@ geomeas_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
       int ngeoms1 = coll1->ngeoms;
       for (int j = 0; j < ngeoms1; j++)
       {
-        LWGEOM *geom2 = coll1->geoms[j];
+        const LWGEOM *geom2 = coll1->geoms[j];
         if (geom2->type == POINTTYPE)
         {
           TInstant *inst2 = geomeas_tpointinst(geom2);
@@ -2111,10 +2111,11 @@ tpointseq_decouple_iter(const TSequence *seq, int64 *times)
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count, interp);
   if (interp == LINEAR)
+  {
     for (int i = 0; i < seq->count; i++)
       lwpoint_free((LWPOINT *) points[i]);
-  if (interp == LINEAR)
     pfree(points);
+  }
   return result;
 }
 
@@ -2221,32 +2222,29 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @param[in] extent Extent
  * @param[in] buffer Buffer
  * @param[in] clip_geom True when the geometry is clipped
- * @param[out] gsarr Array of geometries
- * @param[out] timesarr Array of timestamps
- * @param[out] count Number of elements in the output array
+ * @return Structure with the geometry, the parallel array of timestamps,
+ * and the number of timestamps
  * @csqlfn #Tpoint_AsMVTGeom()
  */
-bool
+MvtGeom
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
-  int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr,
-  int *count)
+  int32_t buffer, bool clip_geom)
 {
+  MvtGeom result = {NULL, NULL, 0};
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, false); VALIDATE_NOT_NULL(bounds, false);
-  VALIDATE_NOT_NULL(gsarr, false); VALIDATE_NOT_NULL(timesarr, false);
-  VALIDATE_NOT_NULL(count, false);
+  VALIDATE_TPOINT(temp, result); VALIDATE_NOT_NULL(bounds, result);
 
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Mapbox Vector Tiles: Geometric bounds are too small");
-    return false;
+    return result;
   }
   if (extent <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Mapbox Vector Tiles: Extent must be greater than 0");
-    return false;
+    return result;
   }
 
   /* Contrary to what is done in PostGIS we do not use the following filter
@@ -2270,13 +2268,13 @@ tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 
   Temporal *temp1 = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
   if (! temp1)
-    return false;
+    return result;
 
   /* Decouple the geometry and the timestamps */
-  *gsarr = tpoint_decouple(temp1, timesarr, count);
+  result.geom = tpoint_decouple(temp1, &result.times, &result.count);
 
   pfree(temp1);
-  return true;
+  return result;
 }
 
 /*****************************************************************************
@@ -2401,7 +2399,7 @@ tpoint_length(const Temporal *temp)
  * @brief Return the speed of a temporal point sequence (set)
  * @param[in] temp Temporal point
  * @return On error return -1.0
- * @csqlfn #Tpoint_length()
+ * @csqlfn #Tpoint_speed()
  */
 Temporal *
 tpoint_speed(const Temporal *temp)
@@ -3300,10 +3298,12 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         GEOSGeom_destroy(pt2);
         break;
       default:
+        GEOSGeom_destroy(mrr_geom);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
         return -1.0;
     }
+    GEOSGeom_destroy(mrr_geom);
   }
   return result;
 }
@@ -3462,7 +3462,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     result[nseqs++] = tsequence_make(instants, end - start, true, true, LINEAR,
       NORMALIZE_NO);
   }
-  finishGEOS();
   return nseqs;
 }
 

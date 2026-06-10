@@ -212,17 +212,19 @@ geoset_value_n(const Set *s, int n, GSERIALIZED **result)
  * @ingroup meos_geo_set_accessor
  * @brief Return an array of copies of the values of a geo set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 GSERIALIZED **
-geoset_values(const Set *s)
+geoset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_GEOSET(s, NULL);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetGserializedP(datum_copy(SET_VAL_N(s, i), s->basetype));
+  *count = s->count;
   return result;
 }
 

@@ -350,18 +350,15 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  GSERIALIZED *geom;
-  int64 *times; /* Timestamps are returned in Unix time */
-  int count;
-  bool found = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom,
-    &geom, &times, &count);
-  if (! found)
+  /* Timestamps are returned in Unix time */
+  MvtGeom mvt = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom);
+  if (! mvt.geom)
   {
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
 
-  ArrayType *timesarr = int64arr_to_array(times, count);
+  ArrayType *timesarr = int64arr_to_array(mvt.times, mvt.count);
   /* Build a tuple description for the function output */
   TupleDesc resultTupleDesc;
   get_call_result_type(fcinfo, NULL, &resultTupleDesc);
@@ -370,7 +367,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   /* Construct the composite return value */
   Datum values[2];
   /* Store geometry */
-  values[0] = PointerGetDatum(geom);
+  values[0] = PointerGetDatum(mvt.geom);
   /* Store timestamp array */
   values[1] = PointerGetDatum(timesarr);
   /* Form tuple */
@@ -452,6 +449,24 @@ Tpoint_length(PG_FUNCTION_ARGS)
   double result = tpoint_length(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Tpoint_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_speed);
+/**
+ * @ingroup mobilitydb_geo_accessor
+ * @brief Return the speed of a temporal sequence (set) point
+ * @sqlfn speed()
+ */
+Datum
+Tpoint_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpoint_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_cumulative_length(PG_FUNCTION_ARGS);

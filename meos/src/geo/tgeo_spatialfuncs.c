@@ -86,14 +86,14 @@ datum_point4d(Datum value, POINT4D *p)
   memset(p, 0, sizeof(POINT4D));
   if (FLAGS_GET_Z(gs->gflags))
   {
-    POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
+    const POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
     p->x = point->x;
     p->y = point->y;
     p->z = point->z;
   }
   else
   {
-    POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
+    const POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
     p->x = point->x;
     p->y = point->y;
   }
@@ -429,7 +429,21 @@ pose_flags(Pose *pose)
   MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
   return result;
 }
-#endif /* POSE || RGEO */ 
+#endif /* POSE || RGEO */
+
+#if H3
+/**
+ * @brief Get the MEOS flags from an H3 cell index
+ */
+static int16
+h3index_flags(void)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  MEOS_FLAGS_SET_GEODETIC(result, true);
+  return result;
+}
+#endif /* H3 */
 
 /**
  * @brief Get the MEOS flags from a spatial value
@@ -454,6 +468,11 @@ spatial_flags(Datum d, MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
+#endif
+#if H3
+    case T_H3INDEX:
+      (void) d;
+      return h3index_flags();
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -1666,10 +1685,11 @@ tgeo_centroid(const Temporal *temp)
  * @param[in] geoms Geometries
  * @param[in] n Number of elements in the input array
  * @param[in] k Number of clusters
+ * @param[out] count Number of elements in the output array
  * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
  */
 int *
-geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
+geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geoms, NULL);
@@ -1696,6 +1716,7 @@ geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k)
     if (lwgeoms[i])
       lwgeom_free(lwgeoms[i]);
   pfree(lwgeoms);
+  *count = (int) n;
   return result;
 }
 
@@ -1757,7 +1778,6 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
 
   uint32_t *result_ids = UF_get_collapsed_cluster_ids(uf, is_in_cluster);
   *count = uf->N;
-  finishGEOS();
   UF_destroy(uf);
   if (is_in_cluster)
     lwfree(is_in_cluster);
@@ -1841,7 +1861,6 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   }
   lwfree(geos_results);
   *count = nclusters;
-  finishGEOS();
   return result;
 }
 
@@ -1899,7 +1918,6 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
     lwgeom_free(lw_results[i]);
   }
   lwfree(lw_results);
-  finishGEOS();
   *count = nclusters;
   return result;
 }

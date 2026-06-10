@@ -332,26 +332,6 @@ SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 -------------------------------------------------------------------------------
 -- Granularity modification with tprecision and tsample
 
-SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
-SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
-SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
-SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
-
-SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
-SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
-SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
-SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
-
-SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_inst;
-SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_discseq;
-SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_seq;
-SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_seqset;
-
-SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_inst;
-SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_discseq;
-SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_seq;
-SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_seqset;
-
 -------------------------------------------------------------------------------
 -- Stop function
 
