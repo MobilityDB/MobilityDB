@@ -13,6 +13,7 @@ set(TEMPORAL_SRCS
   span_aggfuncs.c
   span_index.c
   span_ops.c
+  span_spgist.c
   spanset.c
   spanset_ops.c
   tbool_ops.c
@@ -30,6 +31,7 @@ set(TEMPORAL_SRCS
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c
+  tnumber_spgist.c
   tsequence.c
   tsequenceset.c
   ttext_funcs.c
