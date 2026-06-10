@@ -26,6 +26,7 @@
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY temporal_circular_buffers SYSTEM "temporal_circular_buffers.xml">
 <!ENTITY reference SYSTEM "reference.xml">
+<!ENTITY portable_sql SYSTEM "portable_sql.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
 <!ENTITY geography_support
@@ -128,6 +129,7 @@
 	&temporal_network_points;
 	&temporal_circular_buffers;
 	&reference;
+	&portable_sql;
 	&data_generator;
 <!--
 	<index />
