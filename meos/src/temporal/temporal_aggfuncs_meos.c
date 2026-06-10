@@ -306,6 +306,153 @@ temporal_merge_combinefn(SkipList *state1, SkipList *state2)
   return temporal_tagg_combinefn(state1, state2, NULL, CROSSINGS_NO);
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal count aggregate of temporal values
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Temporal_tcount_combinefn()
+ */
+SkipList *
+temporal_tcount_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal and aggregate of temporal booleans
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tbool_tand_combinefn()
+ */
+SkipList *
+tbool_tand_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_and, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal or aggregate of temporal booleans
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tbool_tor_combinefn()
+ */
+SkipList *
+tbool_tor_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_or, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal minimum aggregate of temporal
+ * integers
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tint_tmin_combinefn()
+ */
+SkipList *
+tint_tmin_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_min_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal minimum aggregate of temporal floats
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tfloat_tmin_combinefn()
+ */
+SkipList *
+tfloat_tmin_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_min_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal maximum aggregate of temporal
+ * integers
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tint_tmax_combinefn()
+ */
+SkipList *
+tint_tmax_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_max_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal maximum aggregate of temporal floats
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tfloat_tmax_combinefn()
+ */
+SkipList *
+tfloat_tmax_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_max_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal sum aggregate of temporal integers
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tint_tsum_combinefn()
+ */
+SkipList *
+tint_tsum_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal sum aggregate of temporal floats
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tfloat_tsum_combinefn()
+ */
+SkipList *
+tfloat_tsum_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_float8, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal minimum aggregate of temporal texts
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Ttext_tmin_combinefn()
+ */
+SkipList *
+ttext_tmin_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_min_text, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal maximum aggregate of temporal texts
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Ttext_tmax_combinefn()
+ */
+SkipList *
+ttext_tmax_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_max_text, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal average aggregate of temporal
+ * numbers
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tnumber_tavg_combinefn()
+ */
+SkipList *
+tnumber_tavg_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_double2, CROSSINGS_NO);
+}
+
 #endif /* MEOS */
 
 /*****************************************************************************
