@@ -18,9 +18,6 @@ list(SORT testfiles)
 # of the underlying functions. Re-enable once the expected output is
 # regenerated.
 set(SKIP_TESTS
-  150_trgeo               # Operation on mixed SRID drift
-  152_trgeo_compops       # Operation on mixed SRID drift
-  152_trgeo_compops_tbl   # Operation on mixed SRID drift (table form)
 )
 
 foreach(file ${testfiles})

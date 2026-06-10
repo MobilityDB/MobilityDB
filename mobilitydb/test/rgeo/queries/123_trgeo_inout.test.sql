@@ -135,6 +135,11 @@ SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1
 SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02}', 1, 3, 15)));
 SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02]', 1, 3, 15)));
 SELECT asText(trgeometryFromMFJSON(asMFJSON(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1),0.5)@2000-01-01, Pose(Point(2 2),0.5)@2000-01-02], [Pose(Point(3 3),0.5)@2000-01-03, Pose(Point(3 3),0.5)@2000-01-04]}', 1, 3, 15)));
+-- Regression test for issue #850: asMFJSON must produce valid JSON that round-trips
+-- through trgeometryFromMFJSON for geographic-range pose coordinates
+SELECT asText(trgeometryFromMFJSON(asMFJSON(v, 0, 0, 6))) = asText(v) FROM (VALUES (
+  trgeometry 'POLYGON((-0.5 -1,-0.5 1,0.5 1,0.5 -1,-0.5 -1));[Pose(POINT(-104.5 41.5),0)@2025-12-24 20:05:06+00, Pose(POINT(-104.5 41.5),-2.5)@2025-12-24 20:05:07+00]'
+)) t(v);
 
 /* Errors */
 SELECT asMFJSON(trgeometry 'SRID=123456;Polygon((1 1,2 2,3 1,1 1));Pose(Point(50.813810 4.384260),0.5)@2019-01-01 18:00:00.15+02', 4, 2);
