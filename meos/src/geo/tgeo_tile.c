@@ -848,7 +848,8 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
     hasz = (bool) FLAGS_GET_Z(point->gflags);
     if (hasz)
     {
-      ensure_has_Z_geo(sorigin);
+      if (! ensure_has_Z_geo(sorigin))
+        return NULL;
       const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
       pt.x = p1->x;
       pt.y = p1->y;
@@ -1305,7 +1306,8 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
     hasz = MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
-      ensure_has_Z_geo(sorigin);
+      if (! ensure_has_Z_geo(sorigin))
+        return NULL;
       const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
       pt.x = p3d->x;
       pt.y = p3d->y;
