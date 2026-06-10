@@ -588,6 +588,35 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
 }
 
 /**
+ * @brief Reconcile the SRID of two spatial components: copy the known SRID onto
+ * the one that is unknown, and ensure that two known SRIDs are equal
+ * @details This is the single construction-time SRID resolution used by the
+ * parsers and the constructors: an unknown (`SRID_UNKNOWN`) component adopts the
+ * SRID of the other, while two known but different SRIDs are rejected. By
+ * convention @p srid1 is the geometry SRID and @p srid2 the temporal type SRID.
+ * @param[in] srid1,srid2 SRIDs to reconcile
+ * @param[out] result Common SRID (the known one, or `SRID_UNKNOWN` if both are
+ * unknown)
+ * @return On error (two different known SRIDs) return false
+ */
+bool
+ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result)
+{
+  if (srid1 == SRID_UNKNOWN)
+    *result = srid2;
+  else if (srid2 == SRID_UNKNOWN || srid2 == srid1)
+    *result = srid1;
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "SRID of geometry (%d) and temporal type (%d) must correspond", srid1,
+      srid2);
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Ensure that two temporal points have the same dimensionality as given
  * by their flags
  */
