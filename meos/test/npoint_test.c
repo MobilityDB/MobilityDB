@@ -492,8 +492,8 @@ int main(void)
   printf("npointset_value_n(%s, %s): %c\n", npointset1_out, char_result, bool_result ? 't' : 'n');
   free(npoint_result); free(char_result);
 
-  /* Npoint **npointset_values(const Set *s); */
-  npointarray_result = npointset_values(npointset1);
+  /* Npoint **npointset_values(const Set *s, int *count); */
+  npointarray_result = npointset_values(npointset1, &count);
   printf("npointset_values(%s): {", npointset1_out);
   for (int i = 0; i < npointset1->count; i++)
   {
@@ -756,10 +756,10 @@ int main(void)
   printf("tdistance_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* Temporal *tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs); */
-  tfloat_result = tdistance_tnpoint_point(tnpoint1, geom1);
+  /* Temporal *tdistance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs); */
+  tfloat_result = tdistance_tnpoint_geo(tnpoint1, geom1);
   char_result = tfloat_out(tfloat_result, 6);
-  printf("tdistance_tnpoint_point(%s, %s): %s\n", tnpoint1_out, geom1_out, char_result);
+  printf("tdistance_tnpoint_geo(%s, %s): %s\n", tnpoint1_out, geom1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
