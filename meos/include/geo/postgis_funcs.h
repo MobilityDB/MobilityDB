@@ -36,6 +36,24 @@
 #ifndef __POSTGIS_FUNCS_H__
 #define __POSTGIS_FUNCS_H__
 
+/* MEOS: Prefix these vendored PostGIS symbols so they cannot be interposed by a
+ * PostGIS loaded through shared_preload_libraries. Without the prefix the
+ * preloaded PostGIS interposes these definitions and routes the geometry to
+ * GEOS conversion through PostGIS's non-reentrant global GEOS context rather
+ * than the per-thread context. */
+#define POSTGIS2GEOS MEOS_POSTGIS2GEOS
+#define GEOS2POSTGIS MEOS_GEOS2POSTGIS
+#define cart_to_lwpoint meos_cart_to_lwpoint
+#define lonlat_to_cart meos_lonlat_to_cart
+#define geography_centroid_from_mline meos_geography_centroid_from_mline
+#define geography_centroid_from_mpoly meos_geography_centroid_from_mpoly
+#define geography_centroid_from_wpoints meos_geography_centroid_from_wpoints
+#define geography_valid_type meos_geography_valid_type
+#define postgis_valid_typmod meos_postgis_valid_typmod
+#define itree_pip_contains meos_itree_pip_contains
+#define itree_pip_covers meos_itree_pip_covers
+#define itree_pip_intersects meos_itree_pip_intersects
+
 /*****************************************************************************/
 
 /* GEOS */
