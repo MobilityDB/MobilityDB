@@ -1,0 +1,47 @@
+SELECT round(MAX(maxValue(t1.temp <-> setSRID(t2.temp, 5676))), 6)
+FROM tbl_trgeometry2d t1, tbl_tgeompoint t2
+WHERE t1.temp <-> setSRID(t2.temp, 5676) IS NOT NULL;
+   round   
+-----------
+ 187.42017
+(1 row)
+
+SELECT round(MAX(nearestApproachDistance(t1.temp, setSRID(t2.temp, 5676))), 6)
+FROM tbl_trgeometry2d t1, tbl_tgeompoint t2;
+   round   
+-----------
+ 17.620953
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1,
+  (SELECT * FROM tbl_tgeompoint LIMIT 10) t2
+WHERE nearestApproachInstant(t1.temp, setSRID(t2.temp, 5676)) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6)
+FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2
+WHERE t1.temp <-> t2.temp IS NOT NULL;
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(MAX(nearestApproachDistance(t1.temp, t2.temp)), 6)
+FROM tbl_trgeometry2d t1, tbl_trgeometry2d t2;
+ round 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_trgeometry2d t1,
+  (SELECT * FROM tbl_trgeometry2d LIMIT 10) t2
+WHERE nearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+/*****************************************************************************/
