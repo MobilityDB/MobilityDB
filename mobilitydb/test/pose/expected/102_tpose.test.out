@@ -542,6 +542,12 @@ SELECT tempSubtype(tpose 'Pose(Point(1 1), 0.5)@2000-01-01');
  Instant
 (1 row)
 
+SELECT tempBasetype(tpose 'Pose(Point(1 1), 0.5)@2000-01-01');
+ tempbasetype 
+--------------
+ pose
+(1 row)
+
 SELECT tempSubtype(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');
  tempsubtype 
 -------------

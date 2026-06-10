@@ -829,6 +829,23 @@ Temporal_subtype(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
+PGDLLEXPORT Datum Temporal_basetype_name(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_basetype_name);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the base type of a temporal value as a string
+ * @sqlfn tempBasetype()
+ */
+Datum
+Temporal_basetype_name(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  const char *str = temporal_basetype_name(temp);
+  text *result = cstring2text(str);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 PGDLLEXPORT Datum Temporal_interp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_interp);
 /**

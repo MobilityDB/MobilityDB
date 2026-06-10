@@ -700,6 +700,7 @@
 
 				<listitem>
 					<para><link linkend="ttype_tempSubtype"><varname>tempSubtype</varname></link>: Devuelve el subtipo temporal</para>
+					<para><link linkend="ttype_tempBasetype"><varname>tempBasetype</varname></link>: Devuelve el tipo base</para>
 				</listitem>
 
 				<listitem>
