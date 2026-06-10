@@ -104,7 +104,7 @@ typedef struct
 typedef struct
 {
   Oid oproid;        /**< Oid of the operator (hashtable key) */
-  meosOper oper;     /**< Operator type number */
+  MeosOper oper;     /**< Operator type number */
   MeosType ltype;    /**< Type number of the left argument */
   MeosType rtype;    /**< Type number of the right argument */
   char status;       /* hash status */
@@ -135,8 +135,8 @@ typedef struct
  * @details
  * - Global array that enables the mapping MeosType -> Oid
  * - Global hash table that enables the mapping Oid -> MeosType
- * - Global hash table that enables the mapping meosOper -> Oid
- * - Global 3-dimensional array that enables the mapping meosOper -> Oid
+ * - Global hash table that enables the mapping MeosOper -> Oid
+ * - Global 3-dimensional array that enables the mapping MeosOper -> Oid
  *   in MobilityDB.
  *   The first dimension corresponds to the operator class (e.g., <=), the
  *   second and third dimensions correspond, respectively, to the left and
@@ -358,7 +358,7 @@ oid_meostype(Oid typid)
  * @arg[in] rt Type number for the right argument
  */
 Oid
-meosoper_oid(meosOper oper, MeosType lt, MeosType rt)
+meosoper_oid(MeosOper oper, MeosType lt, MeosType rt)
 {
   mobilitydb_initialize_cache();
 
@@ -377,7 +377,7 @@ meosoper_oid(meosOper oper, MeosType lt, MeosType rt)
  * @arg[in] oproid Operator oid
  * @arg[out] ltype,rtype Type number of the left/right argument
  */
-meosOper
+MeosOper
 oid_meosoper(Oid oproid, MeosType *ltype, MeosType *rtype)
 {
   mobilitydb_initialize_cache();
@@ -471,7 +471,7 @@ fill_oid_cache(PG_FUNCTION_ARGS)
     Oid oprright = DatumGetInt32(heap_getattr(tuple, oprright_n, tupDesc_pg,
       &isnull));
     /* Get the type and operator numbers */
-    meosOper oper = meosoper_from_string(oprname);
+    MeosOper oper = meosoper_from_string(oprname);
     MeosType ltype = oid_meostype(oprleft);
     MeosType rtype = oid_meostype(oprright);
     /* Fill the cache if the operator and all its types are recognized */
