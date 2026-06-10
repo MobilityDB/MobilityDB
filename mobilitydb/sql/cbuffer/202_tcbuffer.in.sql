@@ -82,7 +82,7 @@ CREATE FUNCTION tcbuffer(tcbuffer, integer)
 CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;
 
 /*****************************************************************************
- * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
+ * Input/output from (E)WKT, (E)WKB, and HexEWKB representation
  *****************************************************************************/
 
 CREATE FUNCTION tcbufferFromText(text)

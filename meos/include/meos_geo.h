@@ -404,7 +404,13 @@ extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
+typedef struct
+{
+  GSERIALIZED *center;   /**< Center of the minimum bounding circle */
+  double       radius;   /**< Radius of the minimum bounding circle */
+} MinBoundingCircle;
+
+extern MinBoundingCircle geom_min_bounding_radius(const GSERIALIZED *geom);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);

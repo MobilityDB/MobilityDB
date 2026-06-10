@@ -264,9 +264,6 @@ int main(void)
   /* Spatial reference system functions */
   printf("****************************************************************\n");
 
-  // /* void cbuffer_set_srid(Cbuffer *cb, int32_t srid); */
-  // void cbuffer_set_srid(cbuffer1, 3857); // TODO
-
   /* int32_t cbuffer_srid(const Cbuffer *cb); */
   int32_result = cbuffer_srid(cbuffer1);
   printf("cbuffer_srid(%s, true): %d\n", cbuffer1_out, int32_result);
@@ -556,10 +553,10 @@ int main(void)
   printf("tcbuffer_points(%s, 6): %s", tcbuffer1_out, char_result);
   free(floatset_result); free(char_result);
 
-  /* GSERIALIZED *tcbuffer_trav_area(const Temporal *temp, bool merge_union); */
-  geom_result = tcbuffer_trav_area(tcbuffer1, true);
+  /* GSERIALIZED *tcbuffer_traversed_area(const Temporal *temp, bool unary_union); */
+  geom_result = tcbuffer_traversed_area(tcbuffer1, true);
   char_result = geo_as_text(geom_result, 6);
-  printf("tcbuffer_trav_area(%s, true): %s\n", tcbuffer1_out, char_result);
+  printf("tcbuffer_traversed_area(%s, true): %s\n", tcbuffer1_out, char_result);
   free(geom_result); free(char_result);
 
   /*****************************************************************************

@@ -47,6 +47,8 @@
 extern bool point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
   const POINT3DZ *p3, const POINT3DZ *p4, double *fraction);
 
+extern double stbox_spatial_distance(const STBox *box1, const STBox *box2);
+
 extern int tgeompointsegm_distance_turnpt(Datum start1, Datum end1,
   Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -616,8 +616,9 @@ int main(void)
     free(geom_result);
   free(char_result);
 
-  /* GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius); */
-  geom_result = geom_min_bounding_radius(geom1, &float8_result);
+  /* MinBoundingCircle geom_min_bounding_radius(const GSERIALIZED *geom); */
+  { MinBoundingCircle _s = geom_min_bounding_radius(geom1);
+    geom_result = _s.center; float8_result = _s.radius; }
   char_result = geo_as_ewkt(geom_result, 6);
   printf("geom_min_bounding_radius(%s, %lf): %s\n", geom1_out, float8_result, char_result);
   free(geom_result); free(char_result);

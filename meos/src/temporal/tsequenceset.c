@@ -1107,9 +1107,10 @@ tsequenceset_inst_n(const TSequenceSet *ss, int n)
  * set
  * @note The function does NOT remove duplicate instants
  * @param[in] ss Temporal sequence set
+ * @param[out] count Number of elements in the output array
  */
 const TInstant **
-tsequenceset_insts_p(const TSequenceSet *ss)
+tsequenceset_insts_p(const TSequenceSet *ss, int *count)
 {
   assert(ss);
   const TInstant **result = palloc(sizeof(TInstant *) * ss->totalcount);
@@ -1120,6 +1121,7 @@ tsequenceset_insts_p(const TSequenceSet *ss)
     for (int j = 0; j < seq->count; j++)
       result[ninsts++] = TSEQUENCE_INST_N(seq, j);
   }
+  *count = ss->totalcount;
   return result;
 }
 

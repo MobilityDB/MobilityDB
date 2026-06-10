@@ -295,9 +295,29 @@ Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
   bool unary_union = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     unary_union = PG_GETARG_BOOL(1);
-  GSERIALIZED *result = tcbuffer_trav_area(temp, unary_union);
+  GSERIALIZED *result = tcbuffer_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Convex hull
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tcbuffer_convex_hull(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_convex_hull);
+/**
+ * @ingroup mobilitydb_cbuffer_accessor
+ * @brief Return the convex hull of a temporal circular buffer
+ * @sqlfn convexHull()
+ */
+Datum
+Tcbuffer_convex_hull(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *result = tcbuffer_convex_hull(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
