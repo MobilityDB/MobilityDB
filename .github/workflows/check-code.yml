@@ -10,6 +10,7 @@ on:
       - 'meos/**'
       - 'mobilitydb/**'
       - 'postgis/**'
+      - 'tools/**'
       - 'LICENSE.txt'
     branch_ignore: gh-pages
 
@@ -24,3 +25,15 @@ jobs:
           sudo apt install -y licensecheck
       - name: Run License Check
         run: ./tools/scripts/test_license.sh
+
+  portable_aliases_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Portable-alias invariants (0 collisions / unresolved / invented / unclassified)
+        run: python3 tools/portable_aliases/generate.py --check
+      - name: Generated alias SQL is up to date (idempotent)
+        run: |
+          python3 tools/portable_aliases/generate.py --insrc
+          git diff --exit-code -- mobilitydb/sql tools/portable_aliases/verify_equivalence.sql
