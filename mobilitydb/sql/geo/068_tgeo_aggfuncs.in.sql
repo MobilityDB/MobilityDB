@@ -143,18 +143,6 @@ CREATE AGGREGATE merge(tgeometry) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeometry_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE mergeAgg(tgeometry) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tgeometry_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -164,18 +152,6 @@ CREATE AGGREGATE merge(tgeography) (
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
   FINALFUNC = tgeography_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE mergeAgg(tgeography) (
-  SFUNC = temporal_merge_transfn,
-  STYPE = internal,
-  COMBINEFUNC = temporal_merge_combinefn,
-  FINALFUNC = tgeography_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
@@ -236,21 +212,7 @@ CREATE AGGREGATE appendInstant(tgeometry) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeometry) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeography) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeography,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeography) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
@@ -263,21 +225,7 @@ CREATE AGGREGATE appendInstant(tgeometry, text) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeometry, text) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeography, text) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeography,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeography, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
@@ -290,21 +238,7 @@ CREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstantAgg(tgeometry, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendInstant(tgeography, text, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tgeography,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendInstantAgg(tgeography, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
@@ -329,21 +263,7 @@ CREATE AGGREGATE appendSequence(tgeometry) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendSequenceAgg(tgeometry) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
 CREATE AGGREGATE appendSequence(tgeography) (
-  SFUNC = temporal_app_tseq_transfn,
-  STYPE = tgeography,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-
-CREATE AGGREGATE appendSequenceAgg(tgeography) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tgeography,
   FINALFUNC = temporal_append_finalfn,
