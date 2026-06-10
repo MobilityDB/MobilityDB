@@ -408,4 +408,30 @@ CREATE FUNCTION aDwithin(tgeography, tgeography, dist float)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Set-set spatial join
+ *****************************************************************************/
+
+CREATE FUNCTION eDwithinPairs(tgeompoint[], tgeompoint[], dist float,
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Edwithin_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eDwithinPairs(tgeometry[], tgeometry[], dist float,
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Edwithin_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aDisjointPairs(tgeompoint[], tgeompoint[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Adisjoint_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDisjointPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Adisjoint_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
