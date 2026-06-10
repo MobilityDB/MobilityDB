@@ -1,0 +1,49 @@
+SELECT count(*) FROM geopose_frames;
+ count 
+-------
+     4
+(1 row)
+
+SELECT geopose_frame_srid(1), geopose_frame_is_geographic(1);
+ geopose_frame_srid | geopose_frame_is_geographic 
+--------------------+-----------------------------
+               4326 | t
+(1 row)
+
+SELECT geopose_frame_name(2), geopose_frame_is_geographic(2);
+           geopose_frame_name            | geopose_frame_is_geographic 
+-----------------------------------------+-----------------------------
+ WGS-84 ECEF (Earth-Centred Earth-Fixed) | f
+(1 row)
+
+SELECT geopose_frame_srid(3) IS NULL AS ltp_srid_null,
+       geopose_frame_srid(4) IS NULL AS body_srid_null;
+ ltp_srid_null | body_srid_null 
+---------------+----------------
+ t             | t
+(1 row)
+
+SELECT geopose_frame_srid(999) AS unknown_srid;
+ unknown_srid 
+--------------
+             
+(1 row)
+
+INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic, description)
+VALUES (1000, 'CUSTOM', 'EXAMPLE', 'Example custom outer frame', 3857, false,
+        'Web Mercator projection used for tile-aligned visualisation.');
+INSERT 0 1
+SELECT geopose_frame_srid(1000), geopose_frame_name(1000);
+ geopose_frame_srid |     geopose_frame_name     
+--------------------+----------------------------
+               3857 | Example custom outer frame
+(1 row)
+
+DELETE FROM geopose_frames WHERE frame_id = 1000;
+DELETE 1
+SELECT count(*) FROM geopose_frames;
+ count 
+-------
+     4
+(1 row)
+

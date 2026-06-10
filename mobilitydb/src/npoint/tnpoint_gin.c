@@ -97,6 +97,7 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
   Temporal *temp;
   Datum *elems = NULL; /* make compiler quiet */
   Set *s, *routes;
+  int count;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
@@ -112,8 +113,8 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
     case GinContainedStrategyTnpointSet:
     case GinEqualStrategyTnpointSet:
       s = PG_GETARG_SET_P(0);
-      elems = set_values(s);
-      *nkeys = s->count;
+      elems = set_values(s, &count);
+      *nkeys = count;
       *searchMode = GIN_SEARCH_MODE_DEFAULT;
       PG_FREE_IF_COPY(s, 0);
       break;
