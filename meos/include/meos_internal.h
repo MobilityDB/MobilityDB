@@ -825,7 +825,7 @@ extern void set_set_span(const Set *s, Span *result);
 extern Datum set_start_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_vals(const Set *s);
-extern Datum *set_values(const Set *s);
+extern Datum *set_values(const Set *s, int *count);
 extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
 extern const Span **spanset_sps(const SpanSet *ss);

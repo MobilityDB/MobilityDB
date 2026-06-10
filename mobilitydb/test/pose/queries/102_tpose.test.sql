@@ -591,3 +591,29 @@ SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-
 SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' >= tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------/
+
+SELECT numSequences(tposeSeqSetGaps(ARRAY[
+  tpose 'Pose(Point(1 1), 0.0)@2000-01-01',
+  tpose 'Pose(Point(2 2), 0.5)@2000-01-02',
+  tpose 'Pose(Point(3 3), 1.0)@2000-01-03'
+]::tpose[], '5 minutes'::interval));
+
+-------------------------------------------------------------------------------
+-- Geodetic temporal poses
+-------------------------------------------------------------------------------
+
+SELECT asText(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]');
+SELECT tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]';
+
+-------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- Conversion to a temporal point: geometric for planar, geographic for geodetic
+-------------------------------------------------------------------------------
+
+SELECT asText(tgeompoint(tpose '[Pose(Point(1 1),0.1)@2000-01-01, Pose(Point(2 2),0.2)@2000-01-02]'));
+SELECT asText(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]'));
+SELECT pg_typeof(tgeompoint(tpose '[Pose(Point(1 1),0.1)@2000-01-01]'));
+SELECT pg_typeof(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01]'));
+
+-------------------------------------------------------------------------------/

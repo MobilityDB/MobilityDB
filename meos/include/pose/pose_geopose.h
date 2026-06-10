@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -28,45 +28,33 @@
  *****************************************************************************/
 
 /**
- * @file
- * @brief Aggregate functions for temporal network points.
- * @note The only function currently provided is temporal centroid.
+ * @brief OGC GeoPose JSON I/O — Basic-YPR and Basic-Quaternion conformance.
  */
+
+#ifndef __POSE_GEOPOSE_H__
+#define __POSE_GEOPOSE_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "temporal/temporal.h"
-#include "temporal/skiplist.h"
-#include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_temporal/skiplist.h"
+#include <meos_pose.h>
 
-/*****************************************************************************/
+/*****************************************************************************
+ * GeoPose conformance classes
+ *****************************************************************************/
 
-PGDLLEXPORT Datum Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
- * @ingroup mobilitydb_npoint_agg
- * @brief Transition function for temporal centroid aggregation of temporal
- * network points
- * @sqlfn tCentroid()
+ * @brief OGC GeoPose conformance classes implemented for the JSON I/O.
+ * @details The Advanced class (frame stacks, covariance) is not implemented
+ * in this version.
  */
-Datum
-Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
+typedef enum
 {
-  SkipList *state;
-  MemoryContext ctx;
-  INPUT_AGG_TRANS_STATE(fcinfo, state, ctx);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  store_fcinfo(fcinfo);
-  state = tnpoint_tcentroid_transfn(state, temp);
-  PG_FREE_IF_COPY(temp, 1);
-  unset_aggregation_context(ctx);
-  PG_RETURN_SKIPLIST_P(state);
-}
-
+  GEOPOSE_BASIC_QUATERNION = 0,  /**< {position, quaternion} canonical form */
+  GEOPOSE_BASIC_YPR        = 1   /**< {position, angles} (yaw/pitch/roll) */
+} GeoPoseClass;
 
 /*****************************************************************************/
+
+#endif /* __POSE_GEOPOSE_H__ */

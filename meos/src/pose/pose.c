@@ -160,7 +160,8 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
       theta = start->data[2] + (2 * M_PI + theta_delta) * ratio;
     if (theta > M_PI)
       theta = theta - 2 * M_PI;
-    result = pose_make_2d(x, y, theta, pose_srid(start));
+    result = pose_make_2d(x, y, theta, MEOS_FLAGS_GET_GEODETIC(start->flags),
+      pose_srid(start));
   }
   else
   {
@@ -201,12 +202,18 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
       Y = Y1 * s1 + Y2 * s2;
       Z = Z1 * s1 + Z2 * s2;
     }
-    double norm = W * W + X * X + Y * Y + Z * Z;
+    /* Normalise back to unit norm to absorb the floating-point drift the
+     * SLERP / LERP step introduces. Divide by sqrt(|q|^2) — the previous
+     * code divided by |q|^2 itself, which is a no-op on an exact unit
+     * quaternion and over-corrects by ~2x on small drift, and so failed
+     * to keep |q| = 1 over long compositions. */
+    double norm = sqrt(W * W + X * X + Y * Y + Z * Z);
     W /= norm;
     X /= norm;
     Y /= norm;
     Z /= norm;
-    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(start));
+    result = pose_make_3d(x, y, z, W, X, Y, Z,
+      MEOS_FLAGS_GET_GEODETIC(start->flags), pose_srid(start));
   }
   return result;
 }
@@ -356,17 +363,38 @@ ensure_valid_rotation(double theta)
   return true;
 }
 
+/* Tolerance for the |q|=1 check on input. Real sensor-fusion clients
+ * (IMUs, AR/VR runtimes, third-party physics engines) routinely deliver
+ * quaternions with drift of 1e-9 to 1e-6 in |q| because they don't
+ * renormalise on every frame. The previous MEOS_EPSILON (1e-7) bound
+ * rejected these as malformed, forcing every caller to renormalise
+ * client-side. The wider bound below accepts any quaternion within 0.1%
+ * of unit norm — enough to absorb the worst integrator drift seen in
+ * practice — while still catching obvious bugs (an unnormalised
+ * (1,1,1,1) is at |q|=2 and gets rejected). pose_make_3d will
+ * renormalise on acceptance so the on-disk representation is always
+ * exactly unit norm. */
+#define POSE_QUATERNION_NORM_TOLERANCE 1e-3
+
 /**
- * @brief Ensure that a 3D orientation has a unit norm
+ * @brief Ensure that a 3D orientation has a unit norm (within
+ * @p POSE_QUATERNION_NORM_TOLERANCE of 1)
  */
 bool
 ensure_unit_norm(double W, double X, double Y, double Z)
 {
-  if (fabs(sqrt(W * W + X * X + Y * Y + Z * Z) - 1) > MEOS_EPSILON)
+  double norm = sqrt(W * W + X * X + Y * Y + Z * Z);
+  if (! isfinite(norm) || norm == 0.0)
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "Rotation quaternion must be of unit norm. Received: %f",
-      sqrt(W * W + X * X + Y * Y + Z * Z));
+      "Rotation quaternion must be a finite, non-zero unit quaternion");
+    return false;
+  }
+  if (fabs(norm - 1.0) > POSE_QUATERNION_NORM_TOLERANCE)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Rotation quaternion must be of unit norm (within %g). Received |q|=%f",
+      POSE_QUATERNION_NORM_TOLERANCE, norm);
     return false;
   }
   return true;
@@ -389,18 +417,23 @@ pose_parse(const char **str, bool end)
   int32_t srid;
   srid_parse(str, &srid);
 
+  /* Determine whether the pose is geodetic from its GeodPose / Pose prefix */
+  bool geodetic = (pg_strncasecmp(*str, "GEODPOSE", 8) == 0);
+  const char *kw = geodetic ? "GEODPOSE" : "POSE";
+  int kwlen = geodetic ? 8 : 4;
+
   /* Determine whether the pose has a geometry */
   int32_t srid_geo;
   GSERIALIZED *geo = NULL;
-  if (strncasecmp(*str,"POSE",4) != 0)
+  if (pg_strncasecmp(*str, kw, kwlen) != 0)
   {
     if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
       return NULL;
   }
 
-  if (strncasecmp(*str, "POSE", 4) == 0)
+  if (pg_strncasecmp(*str, kw, kwlen) == 0)
   {
-    *str += 4;
+    *str += kwlen;
     p_whitespace(str);
   }
   else
@@ -435,8 +468,8 @@ pose_parse(const char **str, bool end)
     p_whitespace(str); p_comma(str); p_whitespace(str);
     if (! double_parse(str, &theta) || ! ensure_valid_rotation(theta))
       return NULL;
-    POINT4D *p = (POINT4D *) GS_POINT_PTR(point);
-    result = pose_make_2d(p->x, p->y, theta, srid);
+    const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
+    result = pose_make_2d(p->x, p->y, theta, geodetic, srid);
   }
   else
   {
@@ -455,8 +488,8 @@ pose_parse(const char **str, bool end)
       return NULL;
     if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
-    POINT4D *p = (POINT4D *) GS_POINT_PTR(point);
-    result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, srid);
+    const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
+    result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, geodetic, srid);
   }
   pfree(point);
 
@@ -503,10 +536,12 @@ pose_out(const Pose *pose, int maxdd)
   char *result = palloc(MAXPOSELEN);
   GSERIALIZED *gs = pose_to_point(pose);
   char *point = basetype_out(PointerGetDatum(gs), T_GEOMETRY, maxdd);
+  const char *posetype = MEOS_FLAGS_GET_GEODETIC(pose->flags) ?
+    "GEODPOSE" : "POSE";
   if (!MEOS_FLAGS_GET_Z(pose->flags))
   {
     char *theta = float8_out(pose->data[2], maxdd); /* theta if 2D*/
-    snprintf(result, MAXPOSELEN - 1, "POSE (%s, %s)", point, theta);
+    snprintf(result, MAXPOSELEN - 1, "%s (%s, %s)", posetype, point, theta);
     pfree(theta);
   }
   else
@@ -515,8 +550,8 @@ pose_out(const Pose *pose, int maxdd)
     char *X = float8_out(pose->data[4], maxdd);
     char *Y = float8_out(pose->data[5], maxdd);
     char *Z = float8_out(pose->data[6], maxdd);
-    snprintf(result, MAXPOSELEN - 1, "POSE(%s, %s, %s, %s, %s)",
-      point, W, X, Y, Z);
+    snprintf(result, MAXPOSELEN - 1, "%s(%s, %s, %s, %s, %s)",
+      posetype, point, W, X, Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   pfree(gs); pfree(point);
@@ -540,6 +575,8 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
 
   /* Write the pose */
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  const char *posetype = MEOS_FLAGS_GET_GEODETIC(pose->flags) ?
+    "GeodPose" : "Pose";
   int32_t srid = pose_srid(pose);
   GSERIALIZED *gs = hasz ?
     geopoint_make(pose->data[0], pose->data[1], pose->data[2], true, false,
@@ -558,26 +595,26 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
     X = float8_out(pose->data[4], maxdd);
     Y = float8_out(pose->data[5], maxdd);
     Z = float8_out(pose->data[6], maxdd);
-    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 3; // Three ','
+    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 4; // Four ','
   }
   else
   {
     theta = float8_out(pose->data[2], maxdd);
     len += strlen(theta) + 1; // One ','
   }
-  len += 7; // Pose() + '\0' at the end
+  len += strlen(posetype) + 3; // Type() + '\0' at the end
   char *result = palloc(len);
   if (hasz)
   {
-    snprintf(result, len, "Pose(%s,%s,%s,%s,%s)", wkt_point, W, X, Y, Z);
-    pfree(W); pfree(X); pfree(Y); pfree(Z); 
+    snprintf(result, len, "%s(%s,%s,%s,%s,%s)", posetype, wkt_point, W, X, Y, Z);
+    pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   else
   {
-    snprintf(result, len, "Pose(%s,%s)", wkt_point, theta);
+    snprintf(result, len, "%s(%s,%s)", posetype, wkt_point, theta);
     pfree(theta);
   }
-  lwgeom_free(geom); pfree(wkt_point);
+  lwgeom_free(geom); pfree(gs); pfree(wkt_point);
   return result;
 }
 
@@ -693,7 +730,7 @@ pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
  * @param[in] srid SRID
  */
 Pose *
-pose_make_2d(double x, double y, double theta, int32_t srid)
+pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
 {
   if (! ensure_valid_rotation(theta))
     return NULL;
@@ -707,6 +744,7 @@ pose_make_2d(double x, double y, double theta, int32_t srid)
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
   pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
@@ -733,13 +771,14 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
   if (theta == -M_PI)
     theta = M_PI;
 
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   const double *coordarr = (const double *) p;
   size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 3 * sizeof(double);
   Pose *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   pose_set_srid(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
@@ -756,12 +795,20 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
  */
 Pose *
 pose_make_3d(double x, double y, double z, double W, double X, double Y,
-  double Z, int32_t srid)
+  double Z, bool geodetic, int32_t srid)
 {
   if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
 
-  /* Ensure a unique representation for the quaternion */
+  /* Renormalise to absorb the small input drift permitted by
+   * POSE_QUATERNION_NORM_TOLERANCE. After this step |q|=1 to machine
+   * precision regardless of the caller's floating-point hygiene, so
+   * cmp/hash byte-equality and SLERP/Euler-decomposition correctness
+   * are independent of input quality. */
+  double inv_norm = 1.0 / sqrt(W * W + X * X + Y * Y + Z * Z);
+  W *= inv_norm; X *= inv_norm; Y *= inv_norm; Z *= inv_norm;
+
+  /* Ensure a unique representation for the quaternion (q ↔ -q). */
   if (W < 0.0)
   {
     W = -W;
@@ -775,6 +822,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
   pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
@@ -811,13 +859,14 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
     Z = -Z;
   }
 
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   const double * coordarr = (const double *) p;
   size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 7 * sizeof(double);
   Pose *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   pose_set_srid(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
@@ -878,6 +927,21 @@ Datum
 datum_pose_point(Datum pose)
 {
   return GserializedPGetDatum(pose_to_point(DatumGetPoseP(pose)));
+}
+
+/**
+ * @brief Convert a pose into a point that is geography when the pose is
+ * geodetic and geometry otherwise
+ */
+Datum
+datum_pose_geopoint(Datum pose)
+{
+  const Pose *p = DatumGetPoseP(pose);
+  bool hasz = MEOS_FLAGS_GET_Z(p->flags);
+  GSERIALIZED *gs = geopoint_make(p->data[0], p->data[1],
+    hasz ? p->data[2] : 0.0, hasz, MEOS_FLAGS_GET_GEODETIC(p->flags),
+    pose_srid(p));
+  return GserializedPGetDatum(gs);
 }
 
 /*****************************************************************************/
@@ -945,14 +1009,37 @@ datum_pose_rotation(Datum pose)
 }
 
 /**
+ * @brief Datum-typed wrappers for the Euler-angle accessors used by the
+ * temporal lifting infrastructure (tpose -> tfloat).
+ */
+Datum
+datum_pose_yaw(Datum pose)
+{
+  return Float8GetDatum(pose_yaw(DatumGetPoseP(pose)));
+}
+
+Datum
+datum_pose_pitch(Datum pose)
+{
+  return Float8GetDatum(pose_pitch(DatumGetPoseP(pose)));
+}
+
+Datum
+datum_pose_roll(Datum pose)
+{
+  return Float8GetDatum(pose_roll(DatumGetPoseP(pose)));
+}
+
+/**
  * @ingroup meos_pose_base_accessor
  * @brief Return the orientation of a 3D pose
  * @param[in] pose Pose
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Pose_orientation()
  */
 double *
-pose_orientation(const Pose *pose)
+pose_orientation(const Pose *pose, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
@@ -964,12 +1051,281 @@ pose_orientation(const Pose *pose)
   result[1] = pose->data[4];
   result[2] = pose->data[5];
   result[3] = pose->data[6];
+  *count = 4;
   return result;
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the yaw angle of a pose, in radians
+ * @details For a 2D pose this is the stored rotation @p theta, which is by
+ * convention the yaw of the body frame. For a 3D pose this is the @p Z
+ * component of the (yaw, pitch, roll) ZYX intrinsic Tait-Bryan decomposition
+ * of the orientation quaternion (the convention required by OGC GeoPose).
+ * @param[in] pose Pose
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Pose_yaw()
+ */
+double
+pose_yaw(const Pose *pose)
+{
+  VALIDATE_NOT_NULL(pose, DBL_MAX);
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    return pose->data[2];
+  double W = pose->data[3], X = pose->data[4];
+  double Y = pose->data[5], Z = pose->data[6];
+  return atan2(2.0 * (W * Z + X * Y), 1.0 - 2.0 * (Y * Y + Z * Z));
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the pitch angle of a pose, in radians
+ * @details A 2D pose has no pitch and returns @p 0. A 3D pose returns the
+ * pitch component of the ZYX intrinsic Tait-Bryan decomposition; the
+ * @p asin term is clamped to @p [-1, 1] to absorb the small numeric drift
+ * @p |q| - 1 that long quaternion compositions can introduce.
+ * @param[in] pose Pose
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Pose_pitch()
+ */
+double
+pose_pitch(const Pose *pose)
+{
+  VALIDATE_NOT_NULL(pose, DBL_MAX);
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    return 0.0;
+  double W = pose->data[3], X = pose->data[4];
+  double Y = pose->data[5], Z = pose->data[6];
+  double sinp = 2.0 * (W * Y - Z * X);
+  if (sinp >  1.0) sinp =  1.0;
+  if (sinp < -1.0) sinp = -1.0;
+  return asin(sinp);
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the roll angle of a pose, in radians
+ * @details A 2D pose has no roll and returns @p 0. A 3D pose returns the
+ * roll component of the ZYX intrinsic Tait-Bryan decomposition.
+ * @param[in] pose Pose
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Pose_roll()
+ */
+double
+pose_roll(const Pose *pose)
+{
+  VALIDATE_NOT_NULL(pose, DBL_MAX);
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    return 0.0;
+  double W = pose->data[3], X = pose->data[4];
+  double Y = pose->data[5], Z = pose->data[6];
+  return atan2(2.0 * (W * X + Y * Z), 1.0 - 2.0 * (X * X + Y * Y));
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the shortest-arc angular distance (radians) between two
+ * poses' orientations
+ * @details For 2D poses this is the shortest-arc difference in @p theta,
+ * accounting for the @p (-π, π] wrap. For 3D poses this is the SLERP arc
+ * angle @p 2 · acos(|q1 · q2|) under the quaternion double-cover
+ * convention (the absolute value gives the shortest of the two equivalent
+ * representations). The dot product is clamped to @p [-1, 1] to absorb
+ * the small numeric drift @p |q| - 1 that long compositions can
+ * introduce.
+ * @param[in] pose1,pose2 Poses (must agree on dimension)
+ * @return On error return @p DBL_MAX
+ */
+double
+pose_angular_distance(const Pose *pose1, const Pose *pose2)
+{
+  VALIDATE_NOT_NULL(pose1, DBL_MAX); VALIDATE_NOT_NULL(pose2, DBL_MAX);
+  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Cannot compute the angular distance between a 2D and a 3D pose");
+    return DBL_MAX;
+  }
+  if (! MEOS_FLAGS_GET_Z(pose1->flags))
+  {
+    double d = fabs(pose2->data[2] - pose1->data[2]);
+    return (d > M_PI) ? 2.0 * M_PI - d : d;
+  }
+  double dot = fabs(
+    pose1->data[3] * pose2->data[3] + pose1->data[4] * pose2->data[4] +
+    pose1->data[5] * pose2->data[5] + pose1->data[6] * pose2->data[6]);
+  if (dot >= 1.0) return 0.0;
+  return 2.0 * acos(dot);
+}
+
+/**
+ * @brief Apply the rigid-body transform encoded by @p pose to a body-frame
+ * point, producing the corresponding world-frame point. The transform is
+ *   world = R(q) · body + p
+ * with @p R(q) the rotation matrix of the pose's quaternion in Hamilton
+ * convention. The expansion below is the textbook
+ *   v' = q · v · q*
+ * written out as the standard 9-multiply form for v = (bx, by, bz).
+ */
+static void
+pose_apply_point4d(const Pose *pose,
+  double bx, double by, double bz,
+  double *wx, double *wy, double *wz)
+{
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+  {
+    /* 2D pose: rotation by theta about the Z-axis, then translate by
+     * (px, py). Z is preserved (assumes the body geometry's Z is also
+     * the world Z — the canonical 2D-body convention). */
+    double px = pose->data[0], py = pose->data[1];
+    double theta = pose->data[2];
+    double c = cos(theta), s = sin(theta);
+    *wx = px + c * bx - s * by;
+    *wy = py + s * bx + c * by;
+    *wz = bz;
+    return;
+  }
+  /* 3D pose */
+  double px = pose->data[0], py = pose->data[1], pz = pose->data[2];
+  double W = pose->data[3], X = pose->data[4];
+  double Y = pose->data[5], Z = pose->data[6];
+  /* Rotation of (bx, by, bz) by the unit quaternion (W, X, Y, Z). */
+  double xx = X * X, yy = Y * Y, zz = Z * Z;
+  double xy = X * Y, xz = X * Z, yz = Y * Z;
+  double wx_ = W * X, wy_ = W * Y, wz_ = W * Z;
+  *wx = px + bx * (1.0 - 2.0 * (yy + zz)) + by * (2.0 * (xy - wz_)) + bz * (2.0 * (xz + wy_));
+  *wy = py + bx * (2.0 * (xy + wz_)) + by * (1.0 - 2.0 * (xx + zz)) + bz * (2.0 * (yz - wx_));
+  *wz = pz + bx * (2.0 * (xz - wy_)) + by * (2.0 * (yz + wx_)) + bz * (1.0 - 2.0 * (xx + yy));
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the world-frame geometry obtained by applying a pose's
+ * rigid-body transform to a body-frame geometry
+ * @details The transform is @p world = R(q) · body + p where (p, q) are
+ * the pose's position and orientation. v1 supports point and multipoint
+ * body geometries; lines / polygons are deferred. The body geometry's
+ * dimensionality (2D / 3D) must match the pose's; the result inherits
+ * the pose's SRID.
+ * @param[in] pose Pose
+ * @param[in] body Body-frame geometry (POINT or MULTIPOINT)
+ * @return On error return @p NULL
+ * @csqlfn #Pose_apply_geo()
+ */
+GSERIALIZED *
+pose_apply_geo(const Pose *pose, const GSERIALIZED *body)
+{
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(body, NULL);
+  if (gserialized_is_empty(body))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "applyPose: body geometry must not be empty");
+    return NULL;
+  }
+  uint32_t gtype = gserialized_get_type(body);
+  if (gtype != POINTTYPE && gtype != MULTIPOINTTYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "applyPose: body geometry must be a POINT or MULTIPOINT (got geomtype %u)",
+      gtype);
+    return NULL;
+  }
+  bool pose_has_z = MEOS_FLAGS_GET_Z(pose->flags);
+  bool body_has_z = (bool) FLAGS_GET_Z(body->gflags);
+  if (pose_has_z != body_has_z)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "applyPose: pose and body geometry must have the same dimensionality");
+    return NULL;
+  }
+  /* Deserialize, walk every POINTARRAY of the body geometry, transform
+   * each POINT4D in place, re-serialize. The shape is preserved. */
+  LWGEOM *lw = lwgeom_from_gserialized(body);
+  /* Single-geometry walker: POINTTYPE has one POINT4D (no array);
+   * MULTIPOINTTYPE has an array of LWPOINTs. */
+  if (gtype == POINTTYPE)
+  {
+    LWPOINT *p = (LWPOINT *) lw;
+    POINT4D pt;
+    getPoint4d_p(p->point, 0, &pt);
+    double wx, wy, wz;
+    pose_apply_point4d(pose, pt.x, pt.y, pose_has_z ? pt.z : 0.0,
+      &wx, &wy, &wz);
+    pt.x = wx; pt.y = wy; if (pose_has_z) pt.z = wz;
+    ptarray_set_point4d(p->point, 0, &pt);
+  }
+  else /* MULTIPOINTTYPE */
+  {
+    LWMPOINT *mp = (LWMPOINT *) lw;
+    for (uint32_t i = 0; i < mp->ngeoms; i++)
+    {
+      LWPOINT *p = mp->geoms[i];
+      POINT4D pt;
+      getPoint4d_p(p->point, 0, &pt);
+      double wx, wy, wz;
+      pose_apply_point4d(pose, pt.x, pt.y, pose_has_z ? pt.z : 0.0,
+        &wx, &wy, &wz);
+      pt.x = wx; pt.y = wy; if (pose_has_z) pt.z = wz;
+      ptarray_set_point4d(p->point, 0, &pt);
+    }
+  }
+  lwgeom_set_srid(lw, pose_srid(pose));
+  GSERIALIZED *result = geo_serialize(lw);
+  lwgeom_free(lw);
+  return result;
+}
+
+/**
+ * @brief Datum-typed wrapper used by the temporal lifting infrastructure.
+ * Captures the body geometry as a parameter via @p LiftedFunctionInfo's
+ * argument (Datum) array.
+ */
+Datum
+datum_pose_apply_geo(Datum pose, Datum body)
+{
+  GSERIALIZED *r = pose_apply_geo(DatumGetPoseP(pose),
+    DatumGetGserializedP(body));
+  return GserializedPGetDatum(r);
 }
 
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return a pose whose orientation quaternion has been renormalised
+ * to unit norm
+ * @details A 2D pose is returned as a copy since its orientation is a single
+ * angle that does not drift. A 3D pose has its quaternion divided by its
+ * Euclidean norm so that long compositions of SLERPs (or any other path that
+ * accumulates floating-point drift in @p |q|) can be brought back to the
+ * @p |q| = 1 invariant required by the SLERP and Euler-decomposition code.
+ * @param[in] pose Pose
+ * @csqlfn #Pose_normalise()
+ */
+Pose *
+pose_normalise(const Pose *pose)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    return pose_copy(pose);
+
+  double W = pose->data[3], X = pose->data[4];
+  double Y = pose->data[5], Z = pose->data[6];
+  double norm = sqrt(W * W + X * X + Y * Y + Z * Z);
+  if (norm == 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Cannot normalise a pose with a zero-norm quaternion");
+    return NULL;
+  }
+  return pose_make_3d(pose->data[0], pose->data[1], pose->data[2],
+    W / norm, X / norm, Y / norm, Z / norm,
+    MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
+}
 
 /**
  * @ingroup meos_pose_base_transf
@@ -998,14 +1354,16 @@ pose_round(const Pose *pose, int maxdd)
     double X = float_round(pose->data[4], maxdd);
     double Y = float_round(pose->data[5], maxdd);
     double Z = float_round(pose->data[6], maxdd);
-    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose));
+    result = pose_make_3d(x, y, z, W, X, Y, Z,
+      MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
   }
   else
   {
     double x = float_round(pose->data[0], maxdd);
     double y = float_round(pose->data[1], maxdd);
     double theta = float_round(pose->data[2], maxdd);
-    result = pose_make_2d(x, y, theta, pose_srid(pose));
+    result = pose_make_2d(x, y, theta, MEOS_FLAGS_GET_GEODETIC(pose->flags),
+      pose_srid(pose));
   }
   return result;
 }
@@ -1062,7 +1420,7 @@ pose_srid(const Pose *pose)
   VALIDATE_NOT_NULL(pose, SRID_INVALID);
 
   int32 srid = 0;
-  srid = srid | (pose->srid[0] << 16);
+  srid = (pose->srid[0] << 16);
   srid = srid | (pose->srid[1] << 8);
   srid = srid | (pose->srid[2]);
   /* Only the first 21 bits are set. Slide up and back to pull
@@ -1106,6 +1464,135 @@ pose_set_srid(Pose *pose, int32_t srid)
  * transformation
  * @param[in] pj Information about the transformation
  */
+/* SRIDs whose orientation correction is implemented by
+ * pose_orientation_apply_frame_change. Cf. workstream #6 of the
+ * temporal-GeoPose plan. */
+#define POSE_SRID_WGS84_GEOGRAPHIC 4326   /* lat/lon/h, ENU local frame */
+#define POSE_SRID_WGS84_ECEF       4978   /* X/Y/Z geocentric Cartesian */
+
+/**
+ * @brief Compose two unit quaternions: out = a * b (Hamilton convention).
+ */
+static void
+quaternion_mul(double aw, double ax, double ay, double az,
+               double bw, double bx, double by, double bz,
+               double *ow, double *ox, double *oy, double *oz)
+{
+  *ow = aw*bw - ax*bx - ay*by - az*bz;
+  *ox = aw*bx + ax*bw + ay*bz - az*by;
+  *oy = aw*by - ax*bz + ay*bw + az*bx;
+  *oz = aw*bz + ax*by - ay*bx + az*bw;
+}
+
+/**
+ * @brief Build the unit quaternion representing the rotation from the
+ * East-North-Up basis at geographic point (@p lat_rad, @p lon_rad) to the
+ * WGS-84 ECEF basis. Standard ENU → ECEF rotation matrix:
+ *   [ -sin λ              cos λ              0     ]
+ *   [ -sin φ · cos λ     -sin φ · sin λ      cos φ ]
+ *   [  cos φ · cos λ      cos φ · sin λ      sin φ ]
+ * Converted to a quaternion via Shepperd's algorithm with the
+ * largest-trace branch for numerical stability.
+ */
+static void
+pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
+  double *W, double *X, double *Y, double *Z)
+{
+  double sl = sin(lon_rad), cl = cos(lon_rad);
+  double sp = sin(lat_rad), cp = cos(lat_rad);
+  /* Row-major 3x3 matrix R[i][j] (R takes ENU column vectors to ECEF) */
+  double R00 = -sl,        R01 =  cl,        R02 =  0.0;
+  double R10 = -sp * cl,   R11 = -sp * sl,   R12 =  cp;
+  double R20 =  cp * cl,   R21 =  cp * sl,   R22 =  sp;
+  double trace = R00 + R11 + R22;
+  if (trace > 0.0)
+  {
+    double S = 2.0 * sqrt(1.0 + trace);
+    *W = 0.25 * S;
+    *X = (R21 - R12) / S;
+    *Y = (R02 - R20) / S;
+    *Z = (R10 - R01) / S;
+  }
+  else if (R00 > R11 && R00 > R22)
+  {
+    double S = 2.0 * sqrt(1.0 + R00 - R11 - R22);
+    *W = (R21 - R12) / S;
+    *X = 0.25 * S;
+    *Y = (R01 + R10) / S;
+    *Z = (R02 + R20) / S;
+  }
+  else if (R11 > R22)
+  {
+    double S = 2.0 * sqrt(1.0 + R11 - R00 - R22);
+    *W = (R02 - R20) / S;
+    *X = (R01 + R10) / S;
+    *Y = 0.25 * S;
+    *Z = (R12 + R21) / S;
+  }
+  else
+  {
+    double S = 2.0 * sqrt(1.0 + R22 - R00 - R11);
+    *W = (R10 - R01) / S;
+    *X = (R02 + R20) / S;
+    *Y = (R12 + R21) / S;
+    *Z = 0.25 * S;
+  }
+}
+
+/**
+ * @brief Apply the orientation correction for a frame change between two
+ * SRIDs. The new orientation @p (q_new) re-expresses the same physical
+ * body→world rotation in the *target* frame's basis at the (transformed)
+ * point. v1 implements the canonical OGC GeoPose case
+ * (WGS-84 geographic ↔ ECEF); for other SRID pairs the orientation is
+ * passed through unchanged with a NOTICE — explicit cross-frame
+ * orientation maths can land on top of this kernel without changing
+ * the call sites.
+ */
+static void
+pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
+  double lat_rad, double lon_rad,
+  double Win, double Xin, double Yin, double Zin,
+  double *Wout, double *Xout, double *Yout, double *Zout)
+{
+  /* No-op for same-frame and for SRID 0 (treated as opaque). */
+  if (srid_from == srid_to || srid_from == 0 || srid_to == 0)
+  {
+    *Wout = Win; *Xout = Xin; *Yout = Yin; *Zout = Zin;
+    return;
+  }
+
+  /* Geographic (4326) -> ECEF (4978): rotate the orientation by the
+   * ENU → ECEF basis change at the point. */
+  if (srid_from == POSE_SRID_WGS84_GEOGRAPHIC &&
+      srid_to   == POSE_SRID_WGS84_ECEF)
+  {
+    double Rw, Rx, Ry, Rz;
+    pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
+    quaternion_mul(Rw, Rx, Ry, Rz, Win, Xin, Yin, Zin, Wout, Xout, Yout, Zout);
+    return;
+  }
+
+  /* ECEF (4978) -> geographic (4326): inverse rotation (conjugate of
+   * R since R is unit). */
+  if (srid_from == POSE_SRID_WGS84_ECEF &&
+      srid_to   == POSE_SRID_WGS84_GEOGRAPHIC)
+  {
+    double Rw, Rx, Ry, Rz;
+    pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
+    /* Conjugate of unit quaternion */
+    quaternion_mul(Rw, -Rx, -Ry, -Rz, Win, Xin, Yin, Zin,
+      Wout, Xout, Yout, Zout);
+    return;
+  }
+
+  /* Unknown frame pair — pass orientation through unchanged. */
+  meos_error(NOTICE, MEOS_ERR_VALUE_OUT_OF_RANGE,
+    "Orientation correction not implemented for SRID %d -> %d; "
+    "transforming position only", srid_from, srid_to);
+  *Wout = Win; *Xout = Xin; *Yout = Yin; *Zout = Zin;
+}
+
 Pose *
 pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
 {
@@ -1118,10 +1605,12 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
     pfree(result);
     return NULL;
   }
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
-  /* Only the coordinates are transformed, not the orientation */
+  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   const double * coordarr = (const double *) p;
-  if (MEOS_FLAGS_GET_Z(pose->flags))
+
+  int32_t srid_from = pose_srid(pose);
+  bool has_z = MEOS_FLAGS_GET_Z(pose->flags);
+  if (has_z)
   {
     result->data[0] = coordarr[0];
     result->data[1] = coordarr[1];
@@ -1132,6 +1621,47 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
     result->data[0] = coordarr[0];
     result->data[1] = coordarr[1];
   }
+  /* The result's SRID must match the target frame so downstream code
+   * (and the orientation correction below, which dispatches on the
+   * source/target SRID pair) sees the right value. */
+  pose_set_srid(result, srid_to);
+
+  /* Apply the orientation correction (workstream #6). For the
+   * geographic ↔ ECEF case the rotation depends on the lat/lon of the
+   * source point — compute that from the *input* pose's coordinates,
+   * which were lon/lat (degrees) when the source SRID is 4326, or
+   * derived from the output coordinates when the target is 4326. */
+  if (has_z)
+  {
+    double lat_rad = 0.0, lon_rad = 0.0;
+    if (srid_from == POSE_SRID_WGS84_GEOGRAPHIC)
+    {
+      lon_rad = pose->data[0] * (M_PI / 180.0);
+      lat_rad = pose->data[1] * (M_PI / 180.0);
+    }
+    else if (srid_to == POSE_SRID_WGS84_GEOGRAPHIC)
+    {
+      lon_rad = result->data[0] * (M_PI / 180.0);
+      lat_rad = result->data[1] * (M_PI / 180.0);
+    }
+    double W, X, Y, Z;
+    pose_orientation_apply_frame_change(srid_from, srid_to,
+      lat_rad, lon_rad,
+      pose->data[3], pose->data[4], pose->data[5], pose->data[6],
+      &W, &X, &Y, &Z);
+    /* Re-canonicalise (W >= 0) and renormalise. */
+    double n = sqrt(W*W + X*X + Y*Y + Z*Z);
+    if (n > 0.0) { W /= n; X /= n; Y /= n; Z /= n; }
+    if (W < 0.0) { W = -W; X = -X; Y = -Y; Z = -Z; }
+    result->data[3] = W;
+    result->data[4] = X;
+    result->data[5] = Y;
+    result->data[6] = Z;
+  }
+  /* 2D pose: theta is a planar angle whose meaning is intrinsic to
+   * the source projection. There's no general orientation-correction
+   * for 2D-projected → 2D-projected; passing through is the safest
+   * default. */
   return result;
 }
 
@@ -1211,7 +1741,9 @@ pose_distance(Datum pose1, Datum pose2)
 {
   Datum geom1 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose1)));
   Datum geom2 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose2)));
-  return datum_pt_distance2d(geom1, geom2);
+  Datum result = datum_pt_distance2d(geom1, geom2);
+  pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
+  return result;
 }
 
 /**
@@ -1485,7 +2017,7 @@ pose_hash(const Pose *pose)
   int32_t pb = 0, pc = 0;
   /* Point to just the type/coordinate part of buffer */
   size_t hsz1 = 8; /* varsize (4) + flags (1) + srid(3) */
-  uint8_t *b1 = (uint8_t *) pose + hsz1;
+  const uint8_t *b1 = (const uint8_t *) pose + hsz1;
   /* Calculate size of type/coordinate buffer */
   size_t sz1 = VARSIZE(pose);
   size_t bsz1 = sz1 - hsz1;
