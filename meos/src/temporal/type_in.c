@@ -2092,6 +2092,58 @@ type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
   return result;
 }
 
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the MEOS type tag encoded in the header of a hex-encoded
+ * Well-Known Binary (WKB) string, without parsing the whole value
+ * @details Sets, spans, span sets, and temporal values write their concrete
+ * @p MeosType as a 16-bit tag immediately after the endian flag; this function
+ * peeks that tag so a caller can dispatch on the concrete type at runtime.
+ * Temporal boxes (@p tbox, @p stbox) carry no in-band type tag in their WKB
+ * header, so they are not supported by this function.
+ * @param[in] hexwkb HexWKB string
+ * @return The concrete @p MeosType, or @p T_UNKNOWN when @p hexwkb is null,
+ * shorter than a header, has an invalid endian flag, or encodes a value out of
+ * the known type range
+ */
+MeosType
+meos_typeof_hexwkb(const char *hexwkb)
+{
+  /* This is a non-throwing discriminator: a null, short, or malformed input
+   * yields T_UNKNOWN rather than raising, so it can be called speculatively */
+  if (! hexwkb)
+    return T_UNKNOWN;
+  size_t size = strlen(hexwkb);
+  /* A header needs at least the endian flag (1 byte = 2 hex digits) and the
+   * 16-bit type tag (2 bytes = 4 hex digits) */
+  if (size < 6)
+    return T_UNKNOWN;
+  uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
+  meos_wkb_parse_state s;
+  memset(&s, 0, sizeof(meos_wkb_parse_state));
+  s.wkb = s.pos = wkb;
+  s.wkb_size = size / 2;
+  /* Read and validate the endian flag */
+  uint8_t wkb_little_endian = byte_from_wkb_state(&s);
+  if (wkb_little_endian != 0 && wkb_little_endian != 1)
+  {
+    pfree(wkb);
+    return T_UNKNOWN;
+  }
+  s.swap_bytes = false;
+  if (MEOS_IS_BIG_ENDIAN && wkb_little_endian)
+    s.swap_bytes = true;
+  else if ((! MEOS_IS_BIG_ENDIAN) && (! wkb_little_endian))
+    s.swap_bytes = true;
+  /* Read the 16-bit type tag */
+  uint16_t wkb_type = (uint16_t) int16_from_wkb_state(&s);
+  pfree(wkb);
+  /* Validate against the known type range */
+  if (wkb_type == T_UNKNOWN || wkb_type >= NUM_MEOS_TYPES)
+    return T_UNKNOWN;
+  return (MeosType) wkb_type;
+}
+
 /*****************************************************************************
  * WKB and HexWKB input functions for set and span types
  *****************************************************************************/

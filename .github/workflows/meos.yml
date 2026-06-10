@@ -59,6 +59,8 @@ jobs:
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
           ./setspan_test
+          gcc -Wall -g -I/usr/local/include -o typeof_test typeof_test.c -L/usr/local/lib -lmeos
+          ./typeof_test
           gcc -Wall -g -I/usr/local/include -o temporal_test temporal_test.c -L/usr/local/lib -lmeos
           ./temporal_test
           gcc -Wall -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
