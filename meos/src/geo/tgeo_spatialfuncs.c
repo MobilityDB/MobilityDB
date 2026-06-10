@@ -245,7 +245,6 @@ datum2_point_eq(Datum point1, Datum point2)
   return BoolGetDatum(datum_point_eq(point1, point2));
 }
 
-#if CBUFFER
 /**
  * @brief Return true if the points are equal
  */
@@ -272,7 +271,6 @@ datum2_point_nsame(Datum point1, Datum point2)
 {
   return BoolGetDatum(! datum_point_same(point1, point2));
 }
-#endif /* CBUFFER */
 
 /**
  * @brief Return the centroid of a geometry

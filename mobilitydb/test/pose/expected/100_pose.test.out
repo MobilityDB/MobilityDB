@@ -95,10 +95,64 @@ SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
  5676
 (1 row)
 
+SELECT yaw(pose 'Pose(Point(1 1),0.5)');
+ yaw 
+-----
+ 0.5
+(1 row)
+
+SELECT pitch(pose 'Pose(Point(1 1),0.5)');
+ pitch 
+-------
+     0
+(1 row)
+
+SELECT roll(pose 'Pose(Point(1 1),0.5)');
+ roll 
+------
+    0
+(1 row)
+
+SELECT yaw(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+ yaw 
+-----
+   0
+(1 row)
+
+SELECT pitch(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+ pitch 
+-------
+     0
+(1 row)
+
+SELECT roll(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+ roll 
+------
+    0
+(1 row)
+
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
                  astext                  
 -----------------------------------------
  Pose(POINT(1.123457 1.123457),0.123457)
+(1 row)
+
+SELECT asText(normalise(pose 'Pose(Point(1 1), 0.5)'));
+        astext        
+----------------------
+ Pose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(normalise(pose 'Pose(Point(1 1 1), 1, 0, 0, 0)'));
+            astext            
+------------------------------
+ Pose(POINT Z (1 1 1),1,0,0,0
+(1 row)
+
+SELECT asText(normalise(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
+                astext                
+--------------------------------------
+ Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5
 (1 row)
 
 SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
@@ -248,6 +302,99 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
  ?column? 
 ----------
+ t
+(1 row)
+
+SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
+                 asewkt                  
+-----------------------------------------
+ SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0
+(1 row)
+
+SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+                         asewkt                          
+---------------------------------------------------------
+ SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5
+(1 row)
+
+SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4326));
+                 asewkt                  
+-----------------------------------------
+ SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0
+(1 row)
+
+SELECT ST_AsText(applyPose(ST_Point(1,2), pose 'Pose(Point(0 0), 0)'));
+ st_astext  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT ST_AsText(applyPose(ST_Point(1,0), pose 'Pose(Point(10 20), 1.5707963267948966)'));
+  st_astext   
+--------------
+ POINT(10 21)
+(1 row)
+
+SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(10 20 30), 1, 0, 0, 0)'));
+     st_astext      
+--------------------
+ POINT Z (11 20 30)
+(1 row)
+
+SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)'));
+              st_astext              
+-------------------------------------
+ POINT Z (2.220446049250313e-16 1 0)
+(1 row)
+
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 1.0000005::float, 0::float, 0::float, 0::float, 0));
+            asewkt            
+------------------------------
+ Pose(POINT Z (0 0 0),1,0,0,0
+(1 row)
+
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 0.5005::float, 0.5005::float, 0.5005::float, 0.5005::float, 0));
+                asewkt                
+--------------------------------------
+ Pose(POINT Z (0 0 0),0.5,0.5,0.5,0.5
+(1 row)
+
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 1::float, 1::float, 1::float, 1::float, 0));
+ERROR:  Rotation quaternion must be of unit norm (within 0.001). Received |q|=2.000000
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0));
+ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
+SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::float, 0::float, 0));
+ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
+SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' = pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS wkt_canonical;
+ wkt_canonical 
+---------------
+ t
+(1 row)
+
+SELECT pose(0::float, 0::float, 0::float, 0.5::float, 0.5::float, 0.5::float, 0.5::float, 0)
+     = pose(0::float, 0::float, 0::float, -0.5::float, -0.5::float, -0.5::float, -0.5::float, 0) AS ctor_canonical;
+ ctor_canonical 
+----------------
+ t
+(1 row)
+
+SELECT poseFromBinary(asBinary(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)'))
+     = pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' AS wkb_canonical;
+ wkb_canonical 
+---------------
+ t
+(1 row)
+
+SELECT pose_hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
+     = pose_hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
+ hash_canonical 
+----------------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS approx_canonical;
+ approx_canonical 
+------------------
  t
 (1 row)
 

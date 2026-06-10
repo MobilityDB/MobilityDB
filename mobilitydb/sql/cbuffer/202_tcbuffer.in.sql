@@ -441,6 +441,12 @@ CREATE FUNCTION round(tcbuffer[], integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tprecision(tcbuffer, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION shiftTime(tcbuffer, interval)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_shift_time'

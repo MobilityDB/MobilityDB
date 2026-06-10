@@ -139,8 +139,8 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
 			<listitem xml:id="ttype_tprecision">
 				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
-				<para><varname>tprecision({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')</varname></para>
-				<para><varname> → {tnumber,tpoint}</varname></para>
+				<para><varname>tprecision({tnumber,tgeo,tpose,tcbuffer,trgeometry},duration interval,torigin timestamptz='2000-01-03')</varname></para>
+				<para><varname> → {tnumber,tgeo,tpose,tcbuffer,trgeometry}</varname></para>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',

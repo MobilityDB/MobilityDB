@@ -209,9 +209,19 @@ CREATE FUNCTION tgeompoint(trgeometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Trgeometry_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(trgeometry)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_to_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeometry(trgeometry)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_to_tgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);
 CREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);
+CREATE CAST (trgeometry AS tgeogpoint) WITH FUNCTION tgeogpoint(trgeometry);
+CREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);
 
 CREATE FUNCTION stbox(trgeometry)
   RETURNS stbox
@@ -285,6 +295,16 @@ CREATE FUNCTION endValue(trgeometry)
 CREATE FUNCTION valueN(trgeometry, int)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION points(trgeometry)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Trgeometry_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotation(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(trgeometry, timestamptz)
@@ -434,18 +454,11 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION tprecision(trgeometry, duration interval,
---   origin timestamptz DEFAULT '2000-01-03')
---   RETURNS trgeometry
---   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
---   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION tsample(trgeometry, duration interval,
---   origin timestamptz DEFAULT '2000-01-03')
---   RETURNS trgeometry
---   AS 'MODULE_PATHNAME', 'Temporal_tsample'
---   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tprecision(trgeometry, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Restriction Functions
