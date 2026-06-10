@@ -19,6 +19,7 @@ engines:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "arrow/**"
     config:
       languages:
         - "c"
@@ -26,5 +27,6 @@ exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "arrow/**"
   - "meos/test/**"
   - "meos/examples/**"
