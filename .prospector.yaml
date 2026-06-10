@@ -1,0 +1,18 @@
+strictness: medium
+doc-warnings: true
+test-warnings: false
+
+# Prospector's pydocstyle integration ignores `convention:` (see
+# prospector/tools/pydocstyle/__init__.py — `ConventionChecker()` is
+# instantiated with no arguments, so it runs *every* pydocstyle rule
+# regardless of what we configure here).  As a result, mutually-exclusive
+# rule pairs like D203/D211 and D212/D213 both fire and the source can
+# never be made clean.
+#
+# Disable pydocstyle inside Prospector and let local pydocstyle (driven by
+# .pydocstyle / setup.cfg, which honour the pep257 convention correctly)
+# enforce docstring style as a pre-push concern.  Codacy still runs the
+# substantive Prospector checks — pylint, pyflakes, mccabe complexity,
+# dodgy, profile-validator — on every PR.
+pydocstyle:
+  run: false
