@@ -401,7 +401,6 @@ SELECT asEWKT(tgeography(NULL, timestamptz '2012-01-01 08:00:00'));
 SELECT asEWKT(tgeometry(geometry 'point empty', timestamptz '2000-01-01'));
 SELECT asEWKT(tgeography(geography 'point empty', timestamptz '2000-01-01'));
 
-
 SELECT asEWKT(tgeometry(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
 SELECT asEWKT(tgeography(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
 -- NULL
@@ -423,7 +422,6 @@ SELECT asEWKT(tgeography(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'
 -- NULL
 SELECT asEWKT(tgeometry(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 SELECT asEWKT(tgeometry(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
-
 
 -------------------------------------------------------------------------------
 

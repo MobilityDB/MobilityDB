@@ -67,7 +67,10 @@
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_inst.h"
   #include "rgeo/trgeo_boxops.h"
-#endif 
+#endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 
 /*****************************************************************************
  * Input/output functions
@@ -385,14 +388,14 @@ spatialarr_as_ewkt(const Datum *spatialarr, MeosType elemtype, int count,
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument the bounding box of a spatial set
  * @param[in] s Set
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-spatialset_set_stbox(const Set *s, STBox *box)
+spatialset_set_stbox(const Set *s, STBox *result)
 {
-  assert(s); assert(box);
-  memset(box, 0, sizeof(STBox));
-  memcpy(box, SET_BBOX_PTR(s), sizeof(STBox));
+  assert(s); assert(result);
+  memset(result, 0, sizeof(STBox));
+  memcpy(result, SET_BBOX_PTR(s), sizeof(STBox));
   return;
 }
 
@@ -419,44 +422,48 @@ spatialset_to_stbox(const Set *s)
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial value
  * @param[in] temp Spatiotemporal value
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-tspatial_set_stbox(const Temporal *temp, STBox *box)
+tspatial_set_stbox(const Temporal *temp, STBox *result)
 {
-  assert(temp); assert(box); assert(tspatial_type(temp->temptype));
+  assert(temp); assert(result); assert(tspatial_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
       if (tgeo_type_all(temp->temptype))
-        tgeoinst_set_stbox((TInstant *) temp, box);
+        tgeoinst_set_stbox((TInstant *) temp, result);
 #if CBUFFER
       else if (temp->temptype == T_TCBUFFER)
-        tcbufferinst_set_stbox((TInstant *) temp, box);
+        tcbufferinst_set_stbox((TInstant *) temp, result);
 #endif
 #if NPOINT
       else if (temp->temptype == T_TNPOINT)
-        tnpointinst_set_stbox((TInstant *) temp, box);
+        tnpointinst_set_stbox((TInstant *) temp, result);
 #endif
 #if POSE
       else if (temp->temptype == T_TPOSE)
-        tposeinst_set_stbox((TInstant *) temp, box);
+        tposeinst_set_stbox((TInstant *) temp, result);
 #endif
 #if RGEO
       else if (temp->temptype == T_TRGEOMETRY)
         trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
-          (TInstant *) temp, box);
+          (TInstant *) temp, result);
+#endif
+#if H3
+      else if (temp->temptype == T_TH3INDEX)
+        th3indexinst_set_stbox((TInstant *) temp, result);
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown spatiotemporal type: %s", meostype_name(temp->temptype));
       break;
     case TSEQUENCE:
-      tspatialseq_set_stbox((TSequence *) temp, box);
+      tspatialseq_set_stbox((TSequence *) temp, result);
       break;
     default: /* TSEQUENCESET */
-      tspatialseqset_set_stbox((TSequenceSet *) temp, box);
+      tspatialseqset_set_stbox((TSequenceSet *) temp, result);
   }
   return;
 }
