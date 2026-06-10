@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -28,39 +28,50 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal points.
+ * @file
+ * @brief Analytic functions for temporal circular buffers
+ *
+ * All functions simplify the center-point trajectory (cast to tgeompoint),
+ * extract the surviving timestamps, and restrict the original tcbuffer to
+ * those timestamps — preserving the radius channel at each surviving instant.
  */
 
-#ifndef __TGEO_DISTANCE_H__
-#define __TGEO_DISTANCE_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-/* PostGIS */
-#include <liblwgeom.h>
-/* MEOS */
-#include <meos.h>
-#include "temporal/temporal.h"
-
 /*****************************************************************************/
 
-extern bool point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
-  const POINT3DZ *p3, const POINT3DZ *p4, double *fraction);
+CREATE FUNCTION minDistSimplify(tcbuffer, float)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.minDistSimplify($1::@extschema@.tgeompoint, $2))))
+  $$;
 
-extern double stbox_spatial_distance(const STBox *box1, const STBox *box2);
+CREATE FUNCTION minTimeDeltaSimplify(tcbuffer, interval)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.minTimeDeltaSimplify($1::@extschema@.tgeompoint, $2))))
+  $$;
 
-extern int tgeompointsegm_distance_turnpt(Datum start1, Datum end1,
-  Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2);
-extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
-  Datum start2, Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2);
-  
-extern double tnumberinst_distance(const TInstant *inst1,
-  const TInstant *inst2);
-extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
-  datum_func2 func);
+CREATE FUNCTION maxDistSimplify(tcbuffer, float, boolean DEFAULT TRUE)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.maxDistSimplify($1::@extschema@.tgeompoint, $2, $3))))
+  $$;
+
+CREATE FUNCTION douglasPeuckerSimplify(tcbuffer, float, boolean DEFAULT TRUE)
+  RETURNS tcbuffer
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+    SELECT @extschema@.atTime(
+      $1,
+      @extschema@.set(@extschema@.timestamps(
+        @extschema@.douglasPeuckerSimplify($1::@extschema@.tgeompoint, $2, $3))))
+  $$;
 
 /*****************************************************************************/
-
-#endif /* __TGEO_DISTANCE_H__ */
