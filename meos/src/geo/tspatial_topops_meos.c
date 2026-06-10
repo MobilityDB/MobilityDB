@@ -55,20 +55,6 @@
 
 /**
  * @ingroup meos_geo_bbox_topo
- * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * spatiotemporal value overlap
- * @param[in] box Spatiotemporal box
- * @param[in] temp Spatiotemporal value
- * @csqlfn #Overlaps_stbox_tspatial()
- */
-inline bool
-overlaps_stbox_tspatial(const STBox *box, const Temporal *temp)
-{
-  return boxop_tspatial_stbox(temp, box, &overlaps_stbox_stbox, INVERT);
-}
-
-/**
- * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box overlap
  * @param[in] temp Spatiotemporal value
@@ -190,20 +176,6 @@ contained_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_geo_bbox_topo
- * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * spatiotemporal value are equal in the common dimensions
- * @param[in] box Spatiotemporal box
- * @param[in] temp Spatiotemporal value
- * @csqlfn #Same_stbox_tspatial()
- */
-inline bool
-same_stbox_tspatial(const STBox *box, const Temporal *temp)
-{
-  return boxop_tspatial_stbox(temp, box, &same_stbox_stbox, INVERT);
-}
-
-/**
- * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box are equal in the common dimensions
  * @param[in] temp Spatiotemporal value
@@ -232,20 +204,6 @@ same_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************
  * adjacent
  *****************************************************************************/
-
-/**
- * @ingroup meos_geo_bbox_topo
- * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
- * spatiotemporal value are adjacent
- * @param[in] box Spatiotemporal box
- * @param[in] temp Spatiotemporal value
- * @csqlfn #Adjacent_stbox_tspatial()
- */
-inline bool
-adjacent_stbox_tspatial(const STBox *box, const Temporal *temp)
-{
-  return boxop_tspatial_stbox(temp, box, &adjacent_stbox_stbox, INVERT);
-}
 
 /**
  * @ingroup meos_geo_bbox_topo

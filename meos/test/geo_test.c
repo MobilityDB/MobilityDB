@@ -2059,9 +2059,6 @@ int main(void)
   /* Topological functions */
   printf("****************************************************************\n");
 
-  /* bool adjacent_stbox_tspatial(const STBox *box, const Temporal *temp); */
-  bool_result = adjacent_stbox_tspatial(stbox1, tgeompt1);
-  printf("adjacent_stbox_tspatial(%s, %s): %c\n", stbox1_out, tgeompt1_out, bool_result ? 't' : 'n');
 
   /* bool adjacent_tspatial_stbox(const Temporal *temp, const STBox *box); */
   bool_result = adjacent_tspatial_stbox(tgeompt1, stbox1);
@@ -2095,9 +2092,6 @@ int main(void)
   bool_result = contains_tspatial_tspatial(tgeompt1, tgeompt2);
   printf("contains_tspatial_tspatial(%s, %s): %c\n", tgeompt1_out, tgeompt2_out, bool_result ? 't' : 'n');
 
-  /* bool overlaps_stbox_tspatial(const STBox *box, const Temporal *temp); */
-  bool_result = overlaps_stbox_tspatial(stbox1, tgeompt1);
-  printf("overlaps_stbox_tspatial(%s, %s): %c\n", stbox1_out, tgeompt1_out, bool_result ? 't' : 'n');
 
   /* bool overlaps_tspatial_stbox(const Temporal *temp, const STBox *box); */
   bool_result = overlaps_tspatial_stbox(tgeompt1, stbox1);
@@ -2107,9 +2101,6 @@ int main(void)
   bool_result = overlaps_tspatial_tspatial(tgeompt1, tgeompt2);
   printf("overlaps_tspatial_tspatial(%s, %s): %c\n", tgeompt1_out, tgeompt2_out, bool_result ? 't' : 'n');
 
-  /* bool same_stbox_tspatial(const STBox *box, const Temporal *temp); */
-  bool_result = same_stbox_tspatial(stbox1, tgeompt1);
-  printf("same_stbox_tspatial(%s, %s): %c\n", stbox1_out, tgeompt1_out, bool_result ? 't' : 'n');
 
   /* bool same_tspatial_stbox(const Temporal *temp, const STBox *box); */
   bool_result = same_tspatial_stbox(tgeompt1, stbox1);
