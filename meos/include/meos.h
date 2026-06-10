@@ -1030,6 +1030,7 @@ extern SpanSet *union_span_date(const Span *s, DateADT d);
 extern SpanSet *union_span_float(const Span *s, double d);
 extern SpanSet *union_span_int(const Span *s, int i);
 extern SpanSet *union_span_span(const Span *s1, const Span *s2);
+extern Span *super_union_span_span(const Span *s1, const Span *s2, bool strict);
 extern SpanSet *union_span_spanset(const Span *s, const SpanSet *ss);
 extern SpanSet *union_span_timestamptz(const Span *s, TimestampTz t);
 extern SpanSet *union_spanset_bigint(const SpanSet *ss, int64 i);
