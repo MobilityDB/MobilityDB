@@ -2369,17 +2369,31 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
           start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
       if (cross)
       {
-        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1, 
-          start1->temptype, start1->t, end1->t, tpt1);
-        Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue1, endvalue1, 
-          start1->temptype, start1->t, end1->t, tpt1);
-        res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
-        DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
-        DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
-        if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+        /* The predicate may hold only strictly inside the turning-point
+         * interval (t1, t2) -- for a within-distance predicate over a
+         * trajectory crossing the values are within the band between t1 and
+         * t2 but exactly on the band at the bounds, whose value rounded to
+         * the microsecond can fall just outside. Evaluate at the midpoint,
+         * where the predicate holds robustly, in addition to the bound t1. */
+        TimestampTz tpts[2];
+        int ntpts = 0;
+        tpts[ntpts++] = tpt1;
+        if (tpt2 != tpt1)
+          tpts[ntpts++] = tpt1 + (tpt2 - tpt1) / 2;
+        for (int k = 0; k < ntpts; k++)
         {
-          pfree_array((void **) tofree, nfree);
-          return lfinfo->ever ? 1 : 0;
+          Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue1, endvalue1,
+            start1->temptype, start1->t, end1->t, tpts[k]);
+          Datum tpvalue2 = tsegment_value_at_timestamptz(startvalue2, endvalue2,
+            start2->temptype, start2->t, end2->t, tpts[k]);
+          res = DatumGetBool(tfunc_base_base(tpvalue1, tpvalue2, lfinfo));
+          DATUM_FREE(tpvalue1, temptype_basetype(seq1->temptype));
+          DATUM_FREE(tpvalue2, temptype_basetype(seq1->temptype));
+          if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+          {
+            pfree_array((void **) tofree, nfree);
+            return lfinfo->ever ? 1 : 0;
+          }
         }
       }
     }
