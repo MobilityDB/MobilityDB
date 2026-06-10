@@ -16,6 +16,7 @@ set(GEO_SRCS
   tpoint_spatialfuncs.c
   tspatial.c
   tspatial_parser.c
+  tspatial_spgist.c
   tspatial_tempspatialrels.c
   tspatial_srid.c
 )

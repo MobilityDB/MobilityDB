@@ -117,628 +117,6 @@
 #include "pg_temporal/tnumber_spgist.h"
 
 /*****************************************************************************
- * Data structures
- *****************************************************************************/
-
-/**
- * @brief Structure to represent the bounding box of a spatiotemporal value
- * as a 6- or 8-dimensional point depending on whether the spatiotemporal
- * value is in 2D+T or 3D+T.
- */
-typedef struct
-{
-  STBox left;
-  STBox right;
-} STboxNode;
-
-/**
- * @brief Structure to sort the temporal boxes of an inner node
- */
-typedef struct SortedSTbox
-{
-  STBox box;
-  int i;
-} SortedSTbox;
-
-/*****************************************************************************
- * General functions
- *****************************************************************************/
-
-/**
- * @brief Copy an @p STboxNode
- */
-STboxNode *
-stboxnode_copy(const STboxNode *box)
-{
-  STboxNode *result = palloc(sizeof(STboxNode));
-  memcpy(result, box, sizeof(STboxNode));
-  return result;
-}
-
-/**
- * @brief Calculate the quadrant
- * @details The quadrant is an 8-bit unsigned integer with all bits in use.
- * This function accepts 2 STBox as input.  All 8 bits are set by comparing a
- * corner of the box. This makes 256 quadrants in total.
- */
-static uint8
-getQuadrant8D(const STBox *centroid, const STBox *inBox)
-{
-  uint8 quadrant = 0;
-  int bit = 0;
-
-  /* Pack bits contiguously starting at bit 0: X, Y, Z if hasz, T if
-   * hast. The result is in [0, 1 << dims), matching the nNodes set
-   * by Stbox_quadtree_picksplit. */
-  if (inBox->xmin > centroid->xmin)
-    quadrant |= (1 << bit);
-  bit++;
-  if (inBox->xmax > centroid->xmax)
-    quadrant |= (1 << bit);
-  bit++;
-  if (inBox->ymin > centroid->ymin)
-    quadrant |= (1 << bit);
-  bit++;
-  if (inBox->ymax > centroid->ymax)
-    quadrant |= (1 << bit);
-  bit++;
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
-  {
-    if (inBox->zmin > centroid->zmin)
-      quadrant |= (1 << bit);
-    bit++;
-    if (inBox->zmax > centroid->zmax)
-      quadrant |= (1 << bit);
-    bit++;
-  }
-  if (MEOS_FLAGS_GET_T(centroid->flags))
-  {
-    if (datum_gt(inBox->period.lower, centroid->period.lower, T_TIMESTAMPTZ))
-      quadrant |= (1 << bit);
-    bit++;
-    if (datum_gt(inBox->period.upper, centroid->period.upper, T_TIMESTAMPTZ))
-      quadrant |= (1 << bit);
-  }
-
-  return quadrant;
-}
-
-/**
- * @brief Initialize the traversal value
- * @details In the beginning, we don't have any restrictions.  We have to
- * initialize the struct to cover the whole 8D space.
- */
-static void
-stboxnode_init(const STBox *centroid, STboxNode *nodebox)
-{
-  memset(nodebox, 0, sizeof(STboxNode));
-  double infinity = get_float8_infinity();
-
-  nodebox->left.xmin = nodebox->right.xmin = -infinity;
-  nodebox->left.xmax = nodebox->right.xmax = infinity;
-
-  nodebox->left.ymin = nodebox->right.ymin = -infinity;
-  nodebox->left.ymax = nodebox->right.ymax = infinity;
-
-  nodebox->left.zmin = nodebox->right.zmin = -infinity;
-  nodebox->left.zmax = nodebox->right.zmax = infinity;
-
-  nodebox->left.period.lower = nodebox->right.period.lower =
-    TimestampTzGetDatum(DT_NOBEGIN);
-  nodebox->left.period.upper = nodebox->right.period.upper =
-    TimestampTzGetDatum(DT_NOEND);
-
-  nodebox->left.srid = nodebox->right.srid = centroid->srid;
-  nodebox->left.flags = nodebox->right.flags = centroid->flags;
-
-  return;
-}
-
-/**
- * @brief Calculate the next traversal value for an oct-tree
- * @details All centroids are bounded by STboxNode, but SP-GiST only keeps
- * boxes. When we are traversing the tree, we must calculate STboxNode,
- * using centroid and quadrant.
- */
-static void
-stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
-  uint8 quadrant, STboxNode *next_nodebox)
-{
-  int bit = 0;
-  memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-
-  /* Bit layout matches getQuadrant8D. */
-  if (quadrant & (1 << bit))
-    next_nodebox->left.xmin = centroid->xmin;
-  else
-    next_nodebox->left.xmax = centroid->xmin;
-  bit++;
-  if (quadrant & (1 << bit))
-    next_nodebox->right.xmin = centroid->xmax;
-  else
-    next_nodebox->right.xmax = centroid->xmax;
-  bit++;
-  if (quadrant & (1 << bit))
-    next_nodebox->left.ymin = centroid->ymin;
-  else
-    next_nodebox->left.ymax = centroid->ymin;
-  bit++;
-  if (quadrant & (1 << bit))
-    next_nodebox->right.ymin = centroid->ymax;
-  else
-    next_nodebox->right.ymax = centroid->ymax;
-  bit++;
-  if (MEOS_FLAGS_GET_Z(centroid->flags))
-  {
-    if (quadrant & (1 << bit))
-      next_nodebox->left.zmin = centroid->zmin;
-    else
-      next_nodebox->left.zmax = centroid->zmin;
-    bit++;
-    if (quadrant & (1 << bit))
-      next_nodebox->right.zmin = centroid->zmax;
-    else
-      next_nodebox->right.zmax = centroid->zmax;
-    bit++;
-  }
-  if (MEOS_FLAGS_GET_T(centroid->flags))
-  {
-    if (quadrant & (1 << bit))
-      next_nodebox->left.period.lower = centroid->period.lower;
-    else
-      next_nodebox->left.period.upper = centroid->period.lower;
-    bit++;
-    if (quadrant & (1 << bit))
-      next_nodebox->right.period.lower = centroid->period.upper;
-    else
-      next_nodebox->right.period.upper = centroid->period.upper;
-  }
-
-  return;
-}
-
-/**
- * @brief Compute the next traversal value for a k-d tree given the bounding
- * box and the centroid of the current node, and the level.
- */
-static void
-stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
-  uint8 node, int level, STboxNode *next_nodebox)
-{
-  bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
-  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
-  int zdim = 4;
-  int tdim = 4 + (hasz ? 2 : 0);
-  int mod = level % dims;
-  memcpy(next_nodebox, nodebox, sizeof(STboxNode));
-  if (mod == 0)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.xmin = centroid->xmin;
-    else
-      next_nodebox->left.xmin = centroid->xmin;
-  }
-  else if (mod == 1)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.xmax = centroid->xmax;
-    else
-      next_nodebox->left.xmax = centroid->xmax;
-  }
-  else if (mod == 2)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.ymin = centroid->ymin;
-    else
-      next_nodebox->left.ymin = centroid->ymin;
-  }
-  else if (mod == 3)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.ymax = centroid->ymax;
-    else
-      next_nodebox->left.ymax = centroid->ymax;
-  }
-  else if (hasz && mod == zdim)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.zmin = centroid->zmin;
-    else
-      next_nodebox->left.zmin = centroid->zmin;
-  }
-  else if (hasz && mod == zdim + 1)
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.zmax = centroid->zmax;
-    else
-      next_nodebox->left.zmax = centroid->zmax;
-  }
-  else if (hast && mod == tdim)
-  {
-    /* Split the bounding box by lower bound  */
-    if (node == 0)
-      next_nodebox->right.period.lower = centroid->period.lower;
-    else
-      next_nodebox->left.period.lower = centroid->period.lower;
-  }
-  else /* hast && mod == tdim + 1 */
-  {
-    /* Split the bounding box by upper bound */
-    if (node == 0)
-      next_nodebox->right.period.upper = centroid->period.upper;
-    else
-      next_nodebox->left.period.upper = centroid->period.upper;
-  }
-  return;
-}
-
-/**
- * @brief Can any box from a nodebox overlap with a query?
- */
-static bool
-overlap8D(const STboxNode *nodebox, const STBox *query)
-{
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
-    result &= nodebox->left.xmin <= query->xmax &&
-      nodebox->right.xmax >= query->xmin &&
-      nodebox->left.ymin <= query->ymax &&
-      nodebox->right.ymax >= query->ymin;
-  if (MEOS_FLAGS_GET_Z(query->flags))
-    result &= nodebox->left.zmin <= query->zmax &&
-      nodebox->right.zmax >= query->zmin;
-  if (MEOS_FLAGS_GET_T(query->flags))
-    result &=
-      datum_le(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ) &&
-      datum_ge(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
-  return result;
-}
-
-/**
- * @brief Can any box from a nodebox overlap with a query?
- */
-static bool
-overlapKD(const STboxNode *nodebox, const STBox *query, int level)
-{
-  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
-  int zdim = 4;
-  int tdim = 4 + (hasz ? 2 : 0);
-  int mod = level % dims;
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
-  {
-    if (mod == 0)
-      result &= nodebox->left.xmin <= query->xmax;
-    else if (mod == 1)
-      result &= nodebox->right.xmax >= query->xmin;
-    else if (mod == 2)
-      result &= nodebox->left.ymin <= query->ymax;
-    else if (mod == 3)
-      result &= nodebox->right.ymax >= query->ymin;
-  }
-  if (MEOS_FLAGS_GET_Z(query->flags))
-  {
-    if (hasz && mod == zdim)
-      result &= nodebox->left.zmin <= query->zmax;
-    else if (hasz && mod == zdim + 1)
-      result &= nodebox->right.zmax >= query->zmin;
-  }
-  if (MEOS_FLAGS_GET_T(query->flags))
-  {
-    if (hast && mod == tdim)
-      result &= datum_le(nodebox->left.period.lower, query->period.upper,
-        T_TIMESTAMPTZ);
-    else if (hast && mod == tdim + 1)
-      result &= datum_ge(nodebox->right.period.upper, query->period.lower,
-        T_TIMESTAMPTZ);
-  }
-  return result;
-}
-
-/**
- * @brief Can any box from a nodebox contain a query?
- */
-static bool
-contain8D(const STboxNode *nodebox, const STBox *query)
-{
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
-    result &= nodebox->right.xmax >= query->xmax &&
-      nodebox->left.xmin <= query->xmin &&
-      nodebox->right.ymax >= query->ymax &&
-      nodebox->left.ymin <= query->ymin;
-  if (MEOS_FLAGS_GET_Z(query->flags))
-    result &= nodebox->right.zmax >= query->zmax &&
-      nodebox->left.zmin <= query->zmin;
-  if (MEOS_FLAGS_GET_T(query->flags))
-    result &=
-      datum_ge(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ) &&
-      datum_le(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
-  return result;
-}
-
-/**
- * @brief Can any box from a nodebox contain a query?
- */
-static bool
-containKD(const STboxNode *nodebox, const STBox *query, int level)
-{
-  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  bool hast = MEOS_FLAGS_GET_T(nodebox->left.flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
-  int zdim = 4;
-  int tdim = 4 + (hasz ? 2 : 0);
-  int mod = level % dims;
-  bool result = true;
-  /* Result value is computed only for the dimensions of the query */
-  if (MEOS_FLAGS_GET_X(query->flags))
-  {
-    if (mod == 0)
-      result &= nodebox->left.xmin <= query->xmin;
-    else if (mod == 1)
-      result &= nodebox->right.xmax >= query->xmax;
-    else if (mod == 2)
-      result &= nodebox->left.ymin <= query->ymin;
-    else if (mod == 3)
-      result &= nodebox->right.ymax >= query->ymax;
-  }
-  if (MEOS_FLAGS_GET_Z(query->flags))
-  {
-    if (hasz && mod == zdim)
-      result &= nodebox->left.zmin <= query->zmin;
-    else if (hasz && mod == zdim + 1)
-      result &= nodebox->right.zmax >= query->zmax;
-  }
-  if (MEOS_FLAGS_GET_T(query->flags))
-  {
-    if (hast && mod == tdim)
-      result &= datum_le(nodebox->left.period.lower, query->period.lower,
-        T_TIMESTAMPTZ);
-    else if (hast && mod == tdim + 1)
-      result &= datum_ge(nodebox->right.period.upper, query->period.upper,
-        T_TIMESTAMPTZ);
-  }
-  return result;
-}
-
-/**
- * @brief Can any box from a nodebox be to the left of a query?
- */
-static bool
-left8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->right.xmax < query->xmin);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend to the right of a query?
- */
-static bool
-overLeft8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->right.xmax <= query->xmax);
-}
-
-/**
- * @brief Can any box from a nodebox be to the right of a query?
- */
-static bool
-right8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.xmin > query->xmax);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend to the left of a query?
- */
-static bool
-overRight8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.xmin >= query->xmin);
-}
-
-/**
- * @brief Can any box from a nodebox be below a query?
- */
-static bool
-below8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->right.ymax < query->ymin);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend above a query?
- */
-static bool
-overBelow8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->right.ymax <= query->ymax);
-}
-
-/**
- * @brief Can any box from a nodebox be above a query?
- */
-static bool
-above8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.ymin > query->ymax);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend below a query?
- */
-static bool
-overAbove8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.ymin >= query->ymin);
-}
-
-/**
- * @brief Can any box from a nodebox be in front of a query?
- */
-static bool
-front8D(STboxNode *nodebox, STBox *query)
-{
-  return (nodebox->right.zmax < query->zmin);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend to the back of a query?
- */
-static bool
-overFront8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->right.zmax <= query->zmax);
-}
-
-/**
- * @brief Can any box from a nodebox be back to a query?
- */
-static bool
-back8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.zmin > query->zmax);
-}
-
-/**
- * @brief Can any box from a nodebox does not extend to the front of a query?
- */
-static bool
-overBack8D(const STboxNode *nodebox, const STBox *query)
-{
-  return (nodebox->left.zmin >= query->zmin);
-}
-
-/**
- * @brief Can any box from a nodebox be before a query?
- */
-static bool
-before8D(const STboxNode *nodebox, const STBox *query)
-{
-  return datum_lt(nodebox->right.period.upper, query->period.lower,
-    T_TIMESTAMPTZ);
-}
-
-/**
- * @brief Can any box from a nodebox be after a query?
- */
-static bool
-overBefore8D(const STboxNode *nodebox, const STBox *query)
-{
-  return datum_le(nodebox->right.period.upper, query->period.upper,
-    T_TIMESTAMPTZ);
-}
-
-/**
- * @brief Can any box from a nodebox be after a query?
- */
-static bool
-after8D(const STboxNode *nodebox, const STBox *query)
-{
-  return datum_gt(nodebox->left.period.lower, query->period.upper,
-    T_TIMESTAMPTZ);
-}
-
-/**
- * @brief Can any box from a nodebox be before a query?
- */
-static bool
-overAfter8D(const STboxNode *nodebox, const STBox *query)
-{
-  return datum_ge(nodebox->left.period.lower, query->period.lower,
-    T_TIMESTAMPTZ);
-}
-
-/**
- * @brief Return the lower bound for the distance between a query and a nodebox
- * @note The temporal dimension is only taken into account for returning
- * +infinity (which will be translated into NULL) if the boxes do not
- * intersect in time. Besides that, it is not possible to mix different
- * units in the computation. As a consequence, the filtering is not very
- * restrictive.
- */
-static double
-distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
-{
-  /* The query argument can be an empty geometry */
-  if (! MEOS_FLAGS_GET_X(query->flags))
-      return DBL_MAX;
-
-  /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MEOS_FLAGS_GET_T(query->flags);
-  if (hast && (
-      datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
-      datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
-    return DBL_MAX;
-
-  double dx, dy, dz = 0; /* make compiler quiet */
-  if (query->xmax < nodebox->left.xmin)
-    dx = nodebox->left.xmin - query->xmax;
-  else if (query->xmin > nodebox->right.xmax)
-    dx = query->xmin - nodebox->right.xmax;
-  else
-    dx = 0;
-
-  if (query->ymax < nodebox->left.ymin)
-    dy = nodebox->left.ymin - query->ymax;
-  else if (query->ymin > nodebox->right.ymax)
-    dy = query->ymin - nodebox->right.ymax;
-  else
-    dy = 0;
-
-  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
-  if (hasz)
-  {
-    if (query->zmax < nodebox->left.zmin)
-      dz = nodebox->left.zmin - query->zmax;
-    else if (query->zmin > nodebox->right.zmax)
-      dz = query->zmin - nodebox->right.zmax;
-    else
-      dz = 0;
-  }
-
-  return hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
-}
-
-/**
- * @brief Return in the last argument a spatiotemporal box obtained from a query 
- */
-static bool
-tspatial_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
-{
-  MeosType type = oid_meostype(scankey->sk_subtype);
-  if (type == T_TSTZSPAN)
-  {
-    Span *s = DatumGetSpanP(scankey->sk_argument);
-    tstzspan_set_stbox(s, result);
-  }
-  else if (type == T_STBOX)
-  {
-    memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBox));
-  }
-  else if (tspatial_type(type))
-  {
-    Temporal *temp = temporal_slice(scankey->sk_argument);
-    tspatial_set_stbox(temp, result);
-  }
-  else
-    elog(ERROR, "Unsupported type for indexing: %d", type);
-  return true;
-}
-
-/*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
@@ -927,11 +305,7 @@ static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
-  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
-  int zdim = 4;
-  int tdim = 4 + (hasz ? 2 : 0);
-  int mod = level % dims;
+  int mod = hasz ? level % 8 : level % 6;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
   else if (mod == 1)
@@ -940,16 +314,14 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
     return stbox_ymin_cmp(query, centroid);
   else if (mod == 3)
     return stbox_ymax_cmp(query, centroid);
-  else if (hasz && mod == zdim)
+  else if (hasz && mod == 4)
     return stbox_zmin_cmp(query, centroid);
-  else if (hasz && mod == zdim + 1)
+  else if (hasz && mod == 5)
     return stbox_zmax_cmp(query, centroid);
-  else if (hast && mod == tdim)
+  else if ((hasz && mod == 6) || (! hasz && mod == 4))
     return stbox_tmin_cmp(query, centroid);
-  else if (hast && mod == tdim + 1)
+  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
     return stbox_tmax_cmp(query, centroid);
-  /* We should never arrive here */
-  elog(ERROR, "stbox_level_cmp: unexpected error");
 }
 
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
@@ -993,8 +365,6 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBox *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
   STBox *centroid = palloc0(sizeof(STBox));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
@@ -1009,14 +379,10 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     lowZs = palloc(sizeof(double) * in->nTuples);
     highZs = palloc(sizeof(double) * in->nTuples);
   }
-  TimestampTz *lowTs = NULL, *highTs = NULL; /* make compiler quiet */
-  if (hast)
-  {
-    lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
-    highTs = palloc(sizeof(TimestampTz) * in->nTuples);
-  }
+  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
 
-  /* Calculate median of all coordinates */
+  /* Calculate median of all 8D coordinates */
   for (i = 0; i < in->nTuples; i++)
   {
     box = DatumGetSTboxP(in->datums[i]);
@@ -1029,11 +395,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
       lowZs[i] = box->zmin;
       highZs[i] = box->zmax;
     }
-    if (hast)
-    {
-      lowTs[i] = DatumGetTimestampTz(box->period.lower);
-      highTs[i] = DatumGetTimestampTz(box->period.upper);
-    }
+    lowTs[i] = DatumGetTimestampTz(box->period.lower);
+    highTs[i] = DatumGetTimestampTz(box->period.upper);
   }
 
   qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
@@ -1045,13 +408,8 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
     qsort(highZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
   }
-  if (hast)
-  {
-    qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz),
-      compareTimestampTz);
-    qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz),
-      compareTimestampTz);
-  }
+  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
 
   median = in->nTuples / 2;
 
@@ -1064,16 +422,13 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     centroid->zmin = lowZs[median];
     centroid->zmax = highZs[median];
   }
-  if (hast)
-  {
-    centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
-    centroid->period.upper = TimestampTzGetDatum(highTs[median]);
-  }
+  centroid->period.lower = TimestampTzGetDatum(lowTs[median]);
+  centroid->period.upper = TimestampTzGetDatum(highTs[median]);
 
-  /* getQuadrant8D packs bits contiguously into [0, 1 << dims). */
+  /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
-  out->nNodes = 1 << dims;
+  out->nNodes = hasz ? 256 : 128;
   out->nodeLabels = NULL;    /* We don't need node labels. */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
@@ -1096,10 +451,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   {
     pfree(lowZs); pfree(highZs);
   }
-  if (hast)
-  {
-    pfree(lowTs); pfree(highTs);
-  }
+  pfree(lowTs); pfree(highTs);
 
   PG_RETURN_VOID();
 }
@@ -1126,11 +478,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     sorted[i].i = i;
   }
   bool hasz = MEOS_FLAGS_GET_Z(sorted[0].box.flags);
-  bool hast = MEOS_FLAGS_GET_T(sorted[0].box.flags);
-  int dims = 4 + (hasz ? 2 : 0) + (hast ? 2 : 0);
-  int zdim = 4;
-  int tdim = 4 + (hasz ? 2 : 0);
-  int mod = in->level % dims;
+  int mod = hasz ? in->level % 8 : in->level % 6;
   qsort_comparator qsortfn;
   if (mod == 0)
     qsortfn = (qsort_comparator) &stbox_xmin_cmp;
@@ -1140,13 +488,13 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_ymin_cmp;
   else if (mod == 3)
     qsortfn = (qsort_comparator) &stbox_ymax_cmp;
-  else if (hasz && mod == zdim)
+  else if (hasz && mod == 4)
     qsortfn = (qsort_comparator) &stbox_zmin_cmp;
-  else if (hasz && mod == zdim + 1)
+  else if (hasz && mod == 5)
     qsortfn = (qsort_comparator) &stbox_zmax_cmp;
-  else if (hast && mod == tdim)
+  else if ((hasz && mod == 6) || (! hasz && mod == 4))
     qsortfn = (qsort_comparator) &stbox_tmin_cmp;
-  else /* hast && mod == tdim + 1 */
+  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
     qsortfn = (qsort_comparator) &stbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
@@ -1219,8 +567,13 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   {
     orderbys = palloc0(sizeof(STBox) * in->norderbys);
     for (i = 0; i < in->norderbys; i++)
+    {
       /* If the argument is an empty geometry the following call will do nothing */
-      tspatial_spgist_get_stbox(&in->orderbys[i], &orderbys[i]);
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      tspatial_spgist_get_stbox(value, type, &orderbys[i]);
+    }
   }
 
   if (in->allTheSame)
@@ -1266,8 +619,13 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   {
     queries = palloc0(sizeof(STBox) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
+    {
       /* The following call will do nothing for an empty geometry */
-      tspatial_spgist_get_stbox(&in->scankeys[i], &queries[i]);
+      const ScanKeyData *scankey = &in->scankeys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      tspatial_spgist_get_stbox(value, type, &queries[i]);
+    }
   }
 
   /* Allocate enough memory for nodes */
@@ -1452,10 +810,12 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= stbox_index_recheck(strategy);
 
-    if (tspatial_spgist_get_stbox(&in->scankeys[i], &box))
-      result = stbox_index_leaf_consistent(key, &box, strategy);
-    else
-      result = false;
+    const ScanKeyData *scankey = &in->scankeys[i];
+    Datum value = scankey->sk_argument;
+    MeosType type = oid_meostype(scankey->sk_subtype);
+    tspatial_spgist_get_stbox(value, type, &box);
+    result = stbox_index_leaf_consistent(key, &box, strategy);
+
     /* If any check is failed, we have found our answer. */
     if (! result)
       break;
@@ -1470,11 +830,11 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->norderbys; i++)
     {
       /* Convert the order by argument to a box and perform the test */
-      if (tspatial_spgist_get_stbox(&in->orderbys[i], &box))
-        distances[i] = nad_stbox_stbox(&box, key);
-      else
-        /* If empty geometry */
-        distances[i] = DBL_MAX;
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      tspatial_spgist_get_stbox(value, type, &box);
+      distances[i] = nad_stbox_stbox(&box, key);
     }
   }
 
