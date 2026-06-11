@@ -171,15 +171,17 @@ set_in(const char *str, MeosType settype)
 }
 
 /**
- * @brief Return true if the base type value is output enclosed into quotes
+ * @brief Return the quoting mode used when a base type value is output
  */
-static bool
+static int
 set_basetype_quotes(MeosType type)
 {
-  /* Text values are already output with quotes in the #basetype_out function */
+  /* Timestamps and spatial values are enclosed in quotes without escaping.
+   * Text values are already escaped and quoted (when needed) by the base type
+   * output function #basetype_out, so they must not be quoted again here */
   if (type == T_TIMESTAMPTZ || spatial_basetype(type))
-    return true;
-  return false;
+    return QUOTES;
+  return QUOTES_NO;
 }
 
 /**
@@ -194,15 +196,10 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
     return NULL;
 
   char **strings = palloc(sizeof(char *) * s->count);
-  size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
-  {
     strings[i] = value_out(SET_VAL_N(s, i), s->basetype, maxdd);
-    outlen += strlen(strings[i]) + 1;
-  }
-  bool quotes = set_basetype_quotes(s->basetype);
-  char *result = stringarr_to_string(strings, s->count, outlen, "", '{', '}',
-    quotes, SPACES);
+  char *result = stringarr_to_string(strings, s->count, "", '{', '}',
+    set_basetype_quotes(s->basetype), SPACES);
   return result;
 }
 

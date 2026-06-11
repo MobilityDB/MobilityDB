@@ -37,14 +37,14 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
-SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
+SELECT asText(floatset '{1.123456789, 2.123456789}', 6);
         astext        
 ----------------------
  {1.123457, 2.123457}
 (1 row)
 
 /* Errors */
-SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
+SELECT asText(floatset '{1.123456789, 2.123456789}', -6);
 ERROR:  The value cannot be negative: -6
 SELECT set(ARRAY [date '2000-01-01', '2000-01-02', '2000-01-03']);
                  set                  

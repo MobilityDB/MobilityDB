@@ -121,7 +121,19 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
-      return text_out(DatumGetTextP(value));
+    {
+      /* Text values are structurally quoted: always wrap in double quotes and
+       * escape embedded quotes/backslashes (QUOTES), never the PG-array style
+       * conditional quoting used for set elements, so the output is identical
+       * across all engines and round-trips */
+      char *str = text_to_cstring(DatumGetTextP(value));
+      char *result;
+      if (string_escape(str, QUOTES, &result))
+        pfree(str);
+      else
+        result = str;
+      return result;
+    }
 #if DEBUG_BUILD
     case T_DOUBLE2:
       return double2_out(DatumGetDouble2P(value), maxdd);

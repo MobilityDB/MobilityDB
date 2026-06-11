@@ -2016,7 +2016,6 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   assert(ss); assert(maxdd >= 0);
 
   char **strings = palloc(sizeof(char *) * ss->count);
-  size_t outlen = 0;
   char prefix[13];
   if (MEOS_FLAGS_GET_CONTINUOUS(ss->flags) &&
       ! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
@@ -2027,9 +2026,8 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   {
     strings[i] = tsequence_to_string(TSEQUENCESET_SEQ_N(ss, i), maxdd, true,
       value_out);
-    outlen += strlen(strings[i]) + 1;
   }
-  return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}',
+  return stringarr_to_string(strings, ss->count, prefix, '{', '}',
     QUOTES_NO, SPACES);
 }
 
