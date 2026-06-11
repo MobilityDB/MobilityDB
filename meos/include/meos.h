@@ -1329,6 +1329,7 @@ extern TimestampTz temporal_end_timestamptz(const Temporal *temp);
 extern uint32 temporal_hash(const Temporal *temp);
 extern TInstant *temporal_instant_n(const Temporal *temp, int n);
 extern TInstant **temporal_instants(const Temporal *temp, int *count);
+extern const TInstant **temporal_instants_p(const Temporal *temp, int *count);
 extern const char *temporal_interp(const Temporal *temp);
 extern bool temporal_lower_inc(const Temporal *temp);
 extern TInstant *temporal_max_instant(const Temporal *temp);
@@ -1853,6 +1854,10 @@ extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *t
 extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+
+
+extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon);
 
 /*****************************************************************************/
 
