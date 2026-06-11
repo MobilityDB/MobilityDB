@@ -102,11 +102,16 @@ char *
 text_out(const text *txt)
 {
   assert(txt);
-  char *str = text2cstring(txt);
-  size_t size = strlen(str) + 4;
-  char *result = palloc(size);
-  snprintf(result, size, "\"%s\"", str);
-  pfree(str);
+  char *res = text2cstring(txt);
+  char *result;
+  /* Text values are structurally quoted: always wrap in double quotes and
+   * escape any embedded quotes and backslashes (QUOTES), never the PG-array
+   * style conditional quoting (QUOTES_ESCAPE) used for set elements, so that
+   * the MEOS output is identical across all engines and round-trips */
+  if (string_escape(res, QUOTES, &result))
+    pfree(res);
+  else
+    result = res;
   return result;
 }
 

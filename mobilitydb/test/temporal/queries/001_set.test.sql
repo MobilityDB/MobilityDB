@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
@@ -43,9 +43,9 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 
 -- Output in WKT format
 
-SELECT asText(floatset '{1.12345678, 2.123456789}', 6);
+SELECT asText(floatset '{1.123456789, 2.123456789}', 6);
 /* Errors */
-SELECT asText(floatset '{1.12345678, 2.123456789}', -6);
+SELECT asText(floatset '{1.123456789, 2.123456789}', -6);
 
 -------------------------------------------------------------------------------
 -- Constructors
