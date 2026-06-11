@@ -85,11 +85,29 @@ option(CBUFFER
   OFF
   )
 
+# Option for including the temporal H3 index (`th3index`), which depends
+# on libh3.
+option(H3
+  "Set ON|OFF (default=OFF) to include the temporal H3 index type
+  (th3index). Requires libh3 on the build path."
+  OFF
+  )
+
 # Option for including network points
 option(NPOINT
   "Set ON|OFF (default=ON) to include network points
   "
   ON
+  )
+
+# Option for including pgpointcloud temporal types (tpcpoint, tpcpatch).
+# Requires pgpointcloud (libpointcloud-dev on Debian/Ubuntu) installed; the
+# `pointcloud-pg/` subtree provides the source MEOS imports a minimal libpc.a
+# from.
+option(POINTCLOUD
+  "Set ON|OFF (default=OFF) to include pgpointcloud temporal types
+  "
+  OFF
   )
 
 # Option for including geoposes
@@ -115,12 +133,28 @@ else()
   add_definitions(-DCBUFFER=0)
 endif()
 
+if(H3)
+  message(STATUS "Including temporal H3 index (th3index)")
+  add_definitions(-DH3=1)
+else()
+  message(STATUS "Excluding temporal H3 index")
+  add_definitions(-DH3=0)
+endif()
+
 if(NPOINT)
   message(STATUS "Including network points")
   add_definitions(-DNPOINT=1)
 else()
   message(STATUS "Excluding network points")
   add_definitions(-DNPOINT=0)
+endif()
+
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=1)
+else()
+  message(STATUS "Excluding pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=0)
 endif()
 
 if(POSE)
@@ -159,10 +193,36 @@ include(CTest)
 set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 enable_testing()
 
+# Locate libh3 for the temporal H3 index. This must follow project() so the
+# C toolchain's default library search paths are populated.
+if(H3)
+  find_library(H3_LIBRARY NAMES h3)
+  # PATH_SUFFIXES h3 — pgdg's libh3-dev installs to /usr/include/h3/h3api.h
+  # (subdirectory) rather than /usr/include/h3api.h. Add the suffix so
+  # find_path catches both layouts.
+  find_path(H3_INCLUDE_DIR NAMES h3api.h PATH_SUFFIXES h3)
+  if(NOT H3_LIBRARY OR NOT H3_INCLUDE_DIR)
+    message(FATAL_ERROR
+      "H3=ON was requested but libh3 was not found.\n"
+      "Install libh3 (https://github.com/uber/h3) or pass\n"
+      "  -DH3_LIBRARY=/path/to/libh3.so -DH3_INCLUDE_DIR=/path/to/h3api.h\n"
+      "to cmake.")
+  endif()
+  include_directories(${H3_INCLUDE_DIR})
+endif()
+
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STRING "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
 add_definitions(-DMOBILITYDB_VERSION_STRING="${MOBILITYDB_VERSION_STRING}")
 message(STATUS "MOBILITYDB_VERSION_STRING = '${MOBILITYDB_VERSION_STRING}'")
+
+# PostGIS is always required by the MobilityDB extension; pgPointCloud is
+# required only when POINTCLOUD=ON, so the control file's `requires` line is
+# assembled from this variable.
+set(MOBILITYDB_REQUIRES "postgis")
+if(POINTCLOUD)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
+endif()
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)

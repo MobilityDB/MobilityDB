@@ -63,6 +63,13 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+#if H3
+  #include <h3api.h>
+#endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/meos_schema_hook.h"
+#endif
 
 /*
  * Maximum length of an ESPG string to lookup
@@ -98,6 +105,18 @@ spatial_srid(Datum d, MeosType basetype)
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
 #endif
+#if H3
+    case T_H3INDEX:
+      /* H3 cells are inherently WGS84 (EPSG:4326) */
+      (void) d;
+      return SRID_DEFAULT;
+#endif
+#if POINTCLOUD
+    case T_PCPOINT: {
+      const Pcpoint *pt = (const Pcpoint *) DatumGetPointer(d);
+      return meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+    }
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown SRID function for type: %s", meostype_name(basetype));
@@ -128,6 +147,12 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
     case T_POSE:
       pose_set_srid(DatumGetPoseP(d), srid);
       return true;
+#endif
+#if H3
+    case T_H3INDEX:
+      /* H3 cells are inherently WGS84; only SRID 4326 is accepted */
+      (void) d;
+      return (srid == SRID_DEFAULT);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

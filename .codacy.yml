@@ -19,12 +19,30 @@ engines:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "h3-pg/**"
+      - "pointcloud-pg/**"
+      - "contrib/**"
     config:
       languages:
         - "c"
+# Vendored third-party trees are provenance-reviewed, not style-reviewed:
+#   * postgis/**, postgres/**, pgtypes/** - verbatim upstream source.
+#   * pointcloud-pg/**                    - vendored pgPointCloud project.
+#   * contrib/**                          - optional PCL/PDAL integration
+#                                           plugins; not part of the core
+#                                           codebase and pull in large
+#                                           generated files.
 exclude_paths:
   - "postgis/**"
   - "postgres/**"
   - "pgtypes/**"
+  - "pointcloud-pg/**"
+  - "contrib/**"
   - "meos/test/**"
   - "meos/examples/**"
+  # h3-pg is a vendored copy of the Apache-2.0 h3-pg project; its
+  # cyclomatic complexity should not count against MobilityDB's gate,
+  # and edits would be clobbered by re-vendoring.
+  - "h3-pg/**"
+  # scripts/h3pg_import is one-shot import tooling, not production code.
+  - "scripts/h3pg_import/**"

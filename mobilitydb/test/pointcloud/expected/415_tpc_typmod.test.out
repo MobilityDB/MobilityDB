@@ -1,0 +1,104 @@
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+SELECT NULL::tpcpoint(-1);
+ERROR:  Invalid pcid typmod: -1 (must be a positive integer)
+LINE 1: SELECT NULL::tpcpoint(-1);
+                     ^
+SELECT NULL::tpcpoint(abc);
+ERROR:  Invalid pcid typmod: abc (must be a positive integer)
+LINE 1: SELECT NULL::tpcpoint(abc);
+                     ^
+SELECT NULL::tpcpoint(0);
+ERROR:  Invalid pcid typmod: 0 (must be a positive integer)
+LINE 1: SELECT NULL::tpcpoint(0);
+                     ^
+SELECT NULL::tpcpoint(1, 2);
+ERROR:  Invalid pcid typmod: expected one integer, got 2 arguments
+LINE 1: SELECT NULL::tpcpoint(1, 2);
+                     ^
+DROP TABLE IF EXISTS tbl_typmod;
+NOTICE:  table "tbl_typmod" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_typmod (
+  trj1 tpcpoint(1),
+  trj2 tpcpoint(2),
+  pat1 tpcpatch(1),
+  pat2 tpcpatch(2),
+  unconstrained tpcpoint
+);
+CREATE TABLE
+SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+  WHERE attrelid = 'tbl_typmod'::regclass AND attnum > 0
+  ORDER BY attnum;
+ format_type 
+-------------
+ tpcpoint(1)
+ tpcpoint(2)
+ tpcpatch(1)
+ tpcpatch(2)
+ tpcpoint
+(5 rows)
+
+INSERT INTO tbl_typmod (trj1) VALUES
+  (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz));
+INSERT 0 1
+SELECT pcid(trj1) FROM tbl_typmod WHERE trj1 IS NOT NULL;
+ pcid 
+------
+    1
+(1 row)
+
+INSERT INTO tbl_typmod (trj1) VALUES
+  (tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
+            '2024-01-02'::timestamptz));
+ERROR:  Pcid of tpcpoint value (2) does not match column typmod pcid (1)
+INSERT INTO tbl_typmod (trj2) VALUES
+  (tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-03'::timestamptz));
+ERROR:  Pcid of tpcpoint value (1) does not match column typmod pcid (2)
+INSERT INTO tbl_typmod (trj2) VALUES
+  (tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
+            '2024-01-04'::timestamptz));
+INSERT 0 1
+SELECT pcid(trj2) FROM tbl_typmod WHERE trj2 IS NOT NULL;
+ pcid 
+------
+    2
+(1 row)
+
+INSERT INTO tbl_typmod (unconstrained) VALUES
+  (tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-05'::timestamptz)),
+  (tpcpoint(PC_MakePoint(2, ARRAY[1.0,1.0,1.0]::float[]),
+            '2024-01-06'::timestamptz));
+INSERT 0 2
+SELECT bool_and(pcid(unconstrained) IN (1, 2)) FROM tbl_typmod
+  WHERE unconstrained IS NOT NULL;
+ bool_and 
+----------
+ t
+(1 row)
+
+INSERT INTO tbl_typmod (pat1) VALUES
+  (tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+            '2024-01-01'::timestamptz));
+INSERT 0 1
+INSERT INTO tbl_typmod (pat1) VALUES
+  (tpcpatch(PC_Patch(ARRAY[
+    PC_MakePoint(2, ARRAY[1.0,1.0,1.0]::float[])]),
+    '2024-01-02'::timestamptz));
+ERROR:  Pcid of tpcpatch value (2) does not match column typmod pcid (1)
+ALTER TABLE tbl_typmod ALTER COLUMN trj1 TYPE tpcpoint(2);
+ERROR:  Pcid of tpcpoint value (1) does not match column typmod pcid (2)
+ALTER TABLE tbl_typmod ALTER COLUMN trj1 TYPE tpcpoint;
+ALTER TABLE
+SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+  WHERE attrelid = 'tbl_typmod'::regclass AND attname = 'trj1';
+ format_type 
+-------------
+ tpcpoint
+(1 row)
+
+DROP TABLE tbl_typmod;
+DROP TABLE
+DELETE FROM pointcloud_formats WHERE pcid = 2;
+DELETE 1

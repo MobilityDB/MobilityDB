@@ -343,7 +343,13 @@ tbox_parse(const char **str)
   p_whitespace(str);
   /* By default the span type is float span */
   MeosType spantype = T_FLOATSPAN;
-  if (pg_strncasecmp(*str, "TBOXINT", 7) == 0)
+  if (pg_strncasecmp(*str, "TBOXBIGINT", 10) == 0)
+  {
+    spantype = T_BIGINTSPAN;
+    *str += 10;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "TBOXINT", 7) == 0)
   {
     spantype = T_INTSPAN;
     *str += 7;
