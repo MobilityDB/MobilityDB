@@ -49,6 +49,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 #include "temporal/doublen.h"
 #include "temporal/postgres_types.h"
 #include "temporal/set.h"
@@ -920,6 +923,10 @@ bbox_expand(const void *box1, void *box2, MeosType temptype)
     span_expand((Span *) box1, (Span *) box2);
   else if (tnumber_type(temptype))
     tbox_expand((TBox *) box1, (TBox *) box2);
+#if POINTCLOUD
+  else if (tpointcloud_temptype(temptype))
+    tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
+#endif
   else /* tspatial_type(temptype) */
     stbox_expand((STBox *) box1, (STBox *) box2);
   return;
@@ -1843,6 +1850,8 @@ tsequence_max_val(const TSequence *seq)
     MeosType basetype = temptype_basetype(seq->temptype);
     if (basetype == T_INT4)
       max = Int32GetDatum(DatumGetInt32(max) - 1);
+    else if (basetype == T_INT8)
+      max = Int64GetDatum(DatumGetInt64(max) - 1);
     return max;
   }
 

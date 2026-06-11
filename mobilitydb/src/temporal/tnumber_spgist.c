@@ -175,6 +175,11 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
     posinf = Int32GetDatum(INT_MAX);
     neginf = Int32GetDatum(INT_MIN);
   }
+  else if (centroid->span.basetype == T_INT8)
+  {
+    posinf = Int64GetDatum(PG_INT64_MAX);
+    neginf = Int64GetDatum(PG_INT64_MIN);
+  }
   else
   {
     double d = get_float8_infinity();
@@ -626,10 +631,14 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
   if (datum_lt(query->span.upper, nodebox->left.span.lower, query->span.basetype))
     result = (query->span.basetype == T_INT4) ?
       (double) (DatumGetInt32(nodebox->left.span.lower) - DatumGetInt32(query->span.upper)) :
+      (query->span.basetype == T_INT8) ?
+      (double) (DatumGetInt64(nodebox->left.span.lower) - DatumGetInt64(query->span.upper)) :
       DatumGetFloat8(nodebox->left.span.lower) - DatumGetFloat8(query->span.upper);
   else if (datum_gt(query->span.lower, nodebox->right.span.upper, query->span.basetype))
     result = (query->span.basetype == T_INT4) ?
       (double) (DatumGetInt32(query->span.lower) - DatumGetInt32(nodebox->right.span.upper)) :
+      (query->span.basetype == T_INT8) ?
+      (double) (DatumGetInt64(query->span.lower) - DatumGetInt64(nodebox->right.span.upper)) :
       DatumGetFloat8(query->span.lower) - DatumGetFloat8(nodebox->right.span.upper);
   else
     result = 0.0;
@@ -859,6 +868,19 @@ compareInt4(const void *a, const void *b)
 }
 
 /**
+ * @brief Comparator for qsort for big integer values
+ */
+int
+compareInt8(const void *a, const void *b)
+{
+  int64 x = DatumGetInt64(*(Datum *) a);
+  int64 y = DatumGetInt64(*(Datum *) b);
+  if (x == y)
+    return 0;
+  return (x > y) ? 1 : -1;
+}
+
+/**
  * @brief Comparator for qsort for double values
  * @note We don't need to use the floating point macros in here, because this
  * is only going to be used in a place to affect the performance of the index,
@@ -919,9 +941,11 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   }
 
   qsort(lowXs, (size_t) in->nTuples, sizeof(Datum),
-    (basetype == T_INT4) ? compareInt4 : compareFloat8);
+    (basetype == T_INT4) ? compareInt4 :
+      ((basetype == T_INT8) ? compareInt8 : compareFloat8));
   qsort(highXs, (size_t) in->nTuples, sizeof(Datum),
-    (basetype == T_INT4) ? compareInt4 : compareFloat8);
+    (basetype == T_INT4) ? compareInt4 :
+      ((basetype == T_INT8) ? compareInt8 : compareFloat8));
   qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
   qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
 

@@ -364,7 +364,7 @@ tnumber_abs(const Temporal *temp)
 static Datum
 delta_value(Datum value1, Datum value2, MeosType basetype)
 {
-  assert(basetype == T_INT4 || basetype == T_FLOAT8);
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
   if (basetype == T_INT4)
     return Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
   else /* basetype == T_FLOAT8 */

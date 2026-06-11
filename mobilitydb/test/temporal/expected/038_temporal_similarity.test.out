@@ -94,6 +94,102 @@ SELECT frechetDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000
                0
 (1 row)
 
+SELECT frechetDistance(tbigint '1@2000-01-01', tbigint '1@2000-01-01');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
+SELECT frechetDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '1@2000-01-01');
+ frechetdistance 
+-----------------
+               1
+(1 row)
+
+SELECT frechetDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '1@2000-01-01');
+ frechetdistance 
+-----------------
+               1
+(1 row)
+
+SELECT frechetDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '1@2000-01-01');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '1@2000-01-01', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ frechetdistance 
+-----------------
+               1
+(1 row)
+
+SELECT frechetDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
+SELECT frechetDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
+SELECT frechetDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '1@2000-01-01', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ frechetdistance 
+-----------------
+               1
+(1 row)
+
+SELECT frechetDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
+SELECT frechetDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
+SELECT frechetDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '1@2000-01-01', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ frechetdistance 
+-----------------
+               2
+(1 row)
+
+SELECT frechetDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ frechetdistance 
+-----------------
+               0
+(1 row)
+
 SELECT frechetDistance(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01');
  frechetdistance 
 -----------------
@@ -312,6 +408,134 @@ SELECT COUNT(*) FROM Temp;
 
 WITH Temp AS (
   SELECT frechetDistancePath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '1@2000-01-01', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     1
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '1@2000-01-01', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '1@2000-01-01', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '1@2000-01-01', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT frechetDistancePath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -542,6 +766,102 @@ SELECT dynTimeWarpDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@
                    0
 (1 row)
 
+SELECT dynTimeWarpDistance(tbigint '1@2000-01-01', tbigint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   5
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '1@2000-01-01', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   1
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   4
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '1@2000-01-01', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   1
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   4
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '1@2000-01-01', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   5
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
+(1 row)
+
+SELECT dynTimeWarpDistance(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   0
+(1 row)
+
 SELECT dynTimeWarpDistance(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01');
  dyntimewarpdistance 
 ---------------------
@@ -760,6 +1080,134 @@ SELECT COUNT(*) FROM Temp;
 
 WITH Temp AS (
   SELECT dynTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '1@2000-01-01', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     1
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '1@2000-01-01') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '1@2000-01-01', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '1@2000-01-01', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     3
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '1@2000-01-01', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+SELECT COUNT(*) FROM Temp;
+ count 
+-------
+     5
+(1 row)
+
+WITH Temp AS (
+  SELECT dynTimeWarpPath(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------

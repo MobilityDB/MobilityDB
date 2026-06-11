@@ -47,6 +47,22 @@
 
 /**
  * @ingroup meos_temporal_math
+ * @brief Return the addition of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Add_number_tnumber()
+ */
+Temporal *
+add_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), ADD, &datum_add,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
  * @brief Return the temporal addition of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -75,6 +91,22 @@ add_float_tfloat(double d, const Temporal *temp)
   VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the addition of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Add_tnumber_number()
+ */
+Temporal *
+add_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), ADD, &datum_add,
+    INVERT_NO);
 }
 
 /**
@@ -130,6 +162,22 @@ add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_temporal_math
+ * @brief Return the subtraction of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Sub_number_tnumber()
+ */
+Temporal *
+sub_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), SUB, &datum_sub,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
  * @brief Return the temporal subtraction of an integer and a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -158,6 +206,22 @@ sub_float_tfloat(double d, const Temporal *temp)
   VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the subtraction of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Sub_tnumber_number()
+ */
+Temporal *
+sub_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), SUB, &datum_sub,
+    INVERT_NO);
 }
 
 /**
@@ -213,6 +277,22 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_temporal_math
+ * @brief Return the multiplication of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Mul_number_tnumber()
+ */
+Temporal *
+mul_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), MUL, &datum_mul,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
  * @brief Return the temporal multiplication of an integer and a temporal
  * integer
  * @param[in] i Value
@@ -242,6 +322,22 @@ mul_float_tfloat(double d, const Temporal *temp)
   VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the multiplication of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Mul_tnumber_number()
+ */
+Temporal *
+mul_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), MUL, &datum_mul,
+    INVERT_NO);
 }
 
 /**
@@ -290,7 +386,7 @@ mul_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   MeosType basetype = temptype_basetype(temp1->temptype);
-  assert(basetype == T_INT4 || basetype == T_FLOAT8);
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, MUL, &datum_mul,
     (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }
@@ -298,6 +394,22 @@ mul_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************
  * Temporal division
  *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the division of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Div_number_tnumber()
+ */
+Temporal *
+div_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), DIV, &datum_div,
+    INVERT);
+}
 
 /**
  * @ingroup meos_temporal_math
@@ -329,6 +441,21 @@ div_float_tfloat(double d, const Temporal *temp)
   VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the division of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+*/
+Temporal *
+div_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), DIV, &datum_div,
+    INVERT_NO);
 }
 
 /**
@@ -375,7 +502,7 @@ div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   MeosType basetype = temptype_basetype(temp1->temptype);
-  assert(basetype == T_INT4 || basetype == T_FLOAT8);
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
     (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
 }

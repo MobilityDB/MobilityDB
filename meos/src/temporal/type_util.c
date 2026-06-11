@@ -60,6 +60,11 @@
   // #include <meos_npoint.h>
   #include "npoint/tnpoint.h"
 #endif
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #if POSE
   #include "pose/pose.h"
 #endif
@@ -115,6 +120,9 @@ datum_cmp(Datum l, Datum r, MeosType type)
     case T_INT4:
       return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
         ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
         ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
@@ -132,6 +140,14 @@ datum_cmp(Datum l, Datum r, MeosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_cmp((const Pcpoint *) DatumGetPointer(l),
+        (const Pcpoint *) DatumGetPointer(r));
+    case T_PCPATCH:
+      return pcpatch_cmp((const Pcpatch *) DatumGetPointer(l),
+        (const Pcpatch *) DatumGetPointer(r));
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -197,6 +213,9 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_DATE:
     case T_BOOL:
     case T_INT4:
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return l == r;
     case T_FLOAT8:
@@ -228,6 +247,14 @@ datum_eq(Datum l, Datum r, MeosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_eq((const Pcpoint *) DatumGetPointer(l),
+        (const Pcpoint *) DatumGetPointer(r));
+    case T_PCPATCH:
+      return pcpatch_eq((const Pcpatch *) DatumGetPointer(l),
+        (const Pcpatch *) DatumGetPointer(r));
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -323,6 +350,9 @@ datum_add(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
     case T_FLOAT8:
@@ -350,6 +380,9 @@ datum_sub(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
     case T_FLOAT8:
@@ -374,6 +407,9 @@ datum_mul(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
     case T_FLOAT8:
@@ -395,6 +431,9 @@ datum_div(Datum l, Datum r, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
     case T_FLOAT8:
@@ -430,6 +469,9 @@ datum_hash(Datum d, MeosType type)
       return hash_bytes_uint32((int32) DatumGetBool(d));
     case T_INT4:
       return hash_bytes_uint32(DatumGetInt32(d));
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return pg_hashint8(DatumGetInt64(d));
     case T_FLOAT8:
@@ -446,6 +488,12 @@ datum_hash(Datum d, MeosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hash((const Pcpoint *) DatumGetPointer(d));
+    case T_PCPATCH:
+      return pcpatch_hash((const Pcpatch *) DatumGetPointer(d));
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -479,6 +527,9 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
       return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
     case T_INT4:
       return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return pg_hashint8extended(DatumGetInt64(d), seed);
     case T_FLOAT8:
@@ -492,6 +543,12 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
 #if NPOINT
     case T_NPOINT:
       return npoint_hash_extended(DatumGetNpointP(d), seed);
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hash_extended((const Pcpoint *) DatumGetPointer(d), seed);
+    case T_PCPATCH:
+      return pcpatch_hash_extended((const Pcpatch *) DatumGetPointer(d), seed);
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -538,6 +595,9 @@ datum_double(Datum d, MeosType type)
   {
     case T_INT4:
       return (double) DatumGetInt32(d);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return (double) DatumGetInt64(d);
     case T_FLOAT8:
@@ -563,6 +623,9 @@ double_datum(double d, MeosType type)
   {
     case T_INT4:
       return Int32GetDatum((int) d);
+#if H3
+    case T_H3INDEX:
+#endif
     case T_INT8:
       return Int64GetDatum((int64) d);
     case T_FLOAT8:

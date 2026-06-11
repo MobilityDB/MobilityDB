@@ -1,0 +1,20 @@
+{
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (asPatches(traj)).t * 1000000 AS t, (asPatches(traj)).pcp AS pcp, getPCID((asPatches(traj)).pcp) AS pcid FROM trajectories WHERE id = 1"
+    },
+    {
+      "type": "filters.assign",
+      "value": [
+        "GpsTime = time_t / 1000000.0"
+      ]
+    },
+    {
+      "type": "writers.las",
+      "filename": "trajectory.las",
+      "extra_dims": "all"
+    }
+  ]
+}

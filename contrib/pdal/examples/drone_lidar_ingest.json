@@ -1,0 +1,64 @@
+{
+  "_comment": [
+    "Drone LiDAR ingest — LAS / LAZ file from a UAV-mounted laser",
+    "scanner into a MobilityDB tpcpatch column.",
+    "",
+    "Prerequisites:",
+    "  1. Register a pcid that matches the drone's dim layout. See",
+    "     examples/drone_lidar_ingest.sql for the typical XYZ + I + GPS",
+    "     time + Classification schema used here (pcid 500).",
+    "  2. Have a target table:",
+    "       CREATE TABLE drone_traj (id serial PRIMARY KEY,",
+    "                                 traj tpcpatch);",
+    "",
+    "What this pipeline does:",
+    "  - readers.las opens the LAS / LAZ file and streams points.",
+    "  - filters.assign derives time_t (Unsigned64 microseconds since",
+    "    Unix epoch) from the LAS GpsTime field. The expression below",
+    "    assumes GpsTime is already in seconds-since-Unix-epoch (the",
+    "    convention emitted by most modern UAV processing toolchains).",
+    "    For LAS files using 'Adjusted GPS Standard Time' (header",
+    "    global_encoding bit 0 set) you need to add 315964782 seconds",
+    "    to bridge the GPS-Unix epoch difference, e.g.",
+    "      time_t = (GpsTime + 1000000000 + 315964782 - 18) * 1000000",
+    "    where 18 is the 2024 GPS-UTC leap-second offset.",
+    "  - filters.sort orders by time_t so the writer groups consecutive",
+    "    same-timestamp points into one pcpatch.",
+    "  - writers.tpcpatch INSERTs one tpcpatch row whose instants are",
+    "    the per-timestamp pcpatches. Set 'compression':'dimensional'",
+    "    on writers.tpcpatch to shrink the SQL INSERT payload by ~3x",
+    "    on dim-redundant data (the on-disk tpcpatch is normalised to",
+    "    PC_NONE either way).",
+    "",
+    "For a real drone LiDAR file with microsecond-precision GpsTime,",
+    "every point typically has a unique timestamp and the result is a",
+    "1-point-per-instant tpcpatch. To group neighbouring points into",
+    "richer instants, insert a filters.assign that quantises time_t",
+    "to a coarser grid (e.g. 100 ms buckets) before the sort."
+  ],
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "/path/to/drone.laz"
+    },
+    {
+      "type": "filters.assign",
+      "value": [
+        "time_t = GpsTime * 1000000"
+      ]
+    },
+    {
+      "type": "filters.sort",
+      "dimension": "time_t",
+      "order": "ASC"
+    },
+    {
+      "type": "writers.tpcpatch",
+      "connection": "dbname=mobility",
+      "table": "drone_traj",
+      "column": "traj",
+      "pcid": 500,
+      "compression": "none"
+    }
+  ]
+}

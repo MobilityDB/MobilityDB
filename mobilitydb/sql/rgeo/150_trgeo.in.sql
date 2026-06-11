@@ -702,3 +702,10 @@ CREATE OPERATOR CLASS trgeometry_hash_ops
     FUNCTION    1   temporal_hash(trgeometry);
 
 /******************************************************************************/
+
+CREATE FUNCTION arrowRoundtrip(trgeometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/

@@ -1,0 +1,54 @@
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+               arrowroundtrip               
+--------------------------------------------
+ NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02, Npoint(3, 0.6)@2000-01-03}');
+                                                            arrowroundtrip                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST, NPoint(2,0.5)@Sun Jan 02 00:00:00 2000 PST, NPoint(3,0.6)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+                                                            arrowroundtrip                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint 'Interp=Step;[Npoint(2, 0.2)@2000-01-01, Npoint(2, 0.4)@2000-01-02, Npoint(2, 0.7)@2000-01-03]');
+                                                                  arrowroundtrip                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[NPoint(2,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(2,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(2,0.7)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.7)@2000-01-05]}');
+                                                                                    arrowroundtrip                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.7)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2000-01-01') = tnpoint 'Npoint(1, 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02, Npoint(3, 0.6)@2000-01-03}') = tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(2, 0.5)@2000-01-02, Npoint(3, 0.6)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]') = tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.7)@2000-01-05]}') = tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.7)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+

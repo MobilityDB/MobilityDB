@@ -120,6 +120,8 @@ tnumberinst_double(const TInstant *inst)
   Datum value = tinstant_value_p(inst);
   if (inst->temptype == T_TINT)
     return (double)(DatumGetInt32(value));
+  else if (inst->temptype == T_TBIGINT)
+    return (double)(DatumGetInt64(value));
   else /* inst->temptype == T_TFLOAT */
     return DatumGetFloat8(value);
 }
