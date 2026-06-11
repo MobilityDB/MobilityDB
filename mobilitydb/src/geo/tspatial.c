@@ -189,6 +189,25 @@ Tspatial_as_ewkb(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
+PGDLLEXPORT Datum Tspatial_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_as_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a spatiotemporal value
+ * @note This will have 'SRID=#;' for spatiotemporal values
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Tspatial_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(temp),
+    temp->temptype, true);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

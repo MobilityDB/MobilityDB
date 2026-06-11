@@ -221,7 +221,7 @@ Set_as_hexwkb(PG_FUNCTION_ARGS)
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
   MeosType settype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype, false);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEXT_P(result);
 }

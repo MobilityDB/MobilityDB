@@ -217,7 +217,7 @@ Datum
 Span_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype, false));
 }
 
 /*****************************************************************************

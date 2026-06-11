@@ -222,7 +222,7 @@ Spanset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss), ss->spansettype);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss), ss->spansettype, false);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TEXT_P(result);
 }

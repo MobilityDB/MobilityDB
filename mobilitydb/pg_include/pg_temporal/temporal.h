@@ -201,7 +201,7 @@ extern void temporal_write(const Temporal *temp, StringInfo buf);
 extern bytea *Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, MeosType type,
   bool extended);
 extern text *Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value,
-  MeosType type);
+  MeosType type, bool extended);
 
 /* Parameter tests */
 
