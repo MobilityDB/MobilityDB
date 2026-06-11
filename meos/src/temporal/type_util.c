@@ -67,6 +67,9 @@
   #include "rgeo/trgeo.h"
 #endif
 
+/* Function defined in formatting.c */
+extern bool scanner_isspace(char ch);
+
 /*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
@@ -753,54 +756,221 @@ pfree_array(void **array, int count)
 }
 
 /**
+ * @brief Return the string resulting from escaping the input string
+ * @param[in] str String
+ * @param[in] quotes True when elements should be enclosed into quotes
+ * @param[out] result True when elements should be enclosed into quotes
+ * @result True when the string was escaped, false otherwise
+ * @note The function is derived from the PostgreSQL array_out() function
+ */
+bool
+string_escape(const char *str, int quotes, char **result)
+{
+  /* Count total space needed (including any overhead such as escaping
+     backslashes), and detect whether the string needs double quotes */
+  /* In QUOTES mode the value is always enclosed in double quotes */
+  bool needquotes = (quotes == QUOTES);
+  const char *tmp;
+  /* Size of the input string + '\0' */
+  size_t size = strlen(str) + 1;
+  /* As in the traditional PostgreSQL array output, in QUOTES_ESCAPE mode an
+   * empty string and a value equal (case-insensitively) to "NULL" must be
+   * quoted so that the output is unambiguous and round-trips through the
+   * parser */
+  if (quotes == QUOTES_ESCAPE &&
+      (str[0] == '\0' || pg_strcasecmp(str, "NULL") == 0))
+    needquotes = true;
+  /* Count the backslashes needed to escape embedded double quotes and
+   * backslashes (the escaping is performed in both quoting modes) and, in
+   * QUOTES_ESCAPE mode, detect the characters that require the value to be
+   * quoted */
+  for (tmp = str; *tmp != '\0'; tmp++)
+  {
+    char ch = *tmp;
+    if (ch == '"' || ch == '\\')
+    {
+      needquotes = true;
+      size += 1;
+    }
+    else if (quotes == QUOTES_ESCAPE &&
+        (ch == '{' || ch == '}' || ch == ',' || scanner_isspace(ch)))
+      needquotes = true;
+  }
+  /* Return if no quotes are needed */
+  if (! needquotes)
+    return false;
+
+  /* Count the pair of double quotes */
+  size += 2;
+
+  /* Construct the output string */
+  *result = (char *) palloc0(size);
+  char *p = *result;
+
+  /* Add the prefix, if any */
+  *p++ = '"';
+  for (tmp = str; *tmp; tmp++)
+  {
+    char ch = *tmp;
+    if (ch == '"' || ch == '\\')
+      *p++ = '\\';
+    *p++ = ch;
+  }
+  *p++ = '"';
+  *p = '\0';
+  return needquotes;
+}
+
+/**
+ * @brief Return the unescaped value of a double-quoted string
+ * @details This function is the exact inverse of function #string_escape: the
+ * input must start with a double quote, every backslash is dropped and the
+ * character following it is copied verbatim, and parsing stops at the first
+ * unescaped double quote. It is used by all the input functions that read a
+ * quoted base value (e.g., text, geometry) both for sets and for temporal
+ * values, so that the input is symmetric with the output for every binding.
+ * @param[in] str Input string, which must start with a double quote
+ * @param[out] result Newly allocated unescaped string
+ * @return Number of input characters consumed, including both double quotes,
+ * or 0 on error (unterminated quoted string)
+ * @note The function is derived from the PostgreSQL array input function
+ */
+size_t
+string_unescape(const char *str, char **result)
+{
+  assert(str); assert(result); assert(str[0] == '"');
+  /* Consume the opening double quote */
+  const char *p = str + 1;
+  /* The output is at most as long as the input (we only ever drop characters) */
+  char *buf = palloc(strlen(str) + 1);
+  size_t pos = 0;
+  bool closed = false;
+  while (*p != '\0')
+  {
+    if (*p == '\\')
+    {
+      /* Drop the backslash and copy the next character verbatim */
+      p++;
+      if (*p == '\0')
+        break;
+      buf[pos++] = *p++;
+    }
+    else if (*p == '"')
+    {
+      /* Unescaped double quote closes the value */
+      p++;
+      closed = true;
+      break;
+    }
+    else
+      buf[pos++] = *p++;
+  }
+  if (! closed)
+  {
+    pfree(buf);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Malformed quoted string: %s", str);
+    return 0;
+  }
+  buf[pos] = '\0';
+  *result = pstrdup(buf);
+  pfree(buf);
+  return (size_t) (p - str);
+}
+
+/**
  * @brief Return the string resulting from assembling an array of strings
  * @param[in] strings Array of strings to ouput
  * @param[in] count Number of elements in the input array
- * @param[in] outlen Total length of the elements and the additional ','
  * @param[in] prefix Prefix to add to the string (e.g., for interpolation)
  * @param[in] open, close Starting/ending character (e.g., '{' and '}')
  * @param[in] quotes True when elements should be enclosed into quotes
  * @param[in] spaces True when elements should be separated by spaces
- * @note The function frees the memory of the input strings after finishing
+ * @note The function frees the memory of the input strings after finishing.
+ * @note The functin is derived from the PostgreSQL array_out() function
  */
 char *
-stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
-  char open, char close, bool quotes, bool spaces)
+stringarr_to_string(char **strings, int count, char *prefix, char open,
+  char close, int quotes, bool spaces)
 {
-  size_t size = strlen(prefix) + outlen + 3;
-  if (quotes)
-    size += count * 4;
-  if (spaces)
-    size += count;
-  char *result = palloc(size);
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
+  /* Count total space needed (including any overhead such as escaping
+     backslashes), and detect whether each item needs double quotes */
+  char **escaped = (char **) palloc0(sizeof(char *) * count);
+  bool *needquotes = (bool *) palloc0(sizeof(bool) * count);
+  /* Prefix size + opening and closing characters */
+  size_t prefix_size = strlen(prefix);
+  size_t size = prefix_size + 2;
+
+  /* Iterate through the values */
   for (int i = 0; i < count; i++)
   {
-    if (quotes)
-      result[pos++] = '"';
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    if (quotes)
-      result[pos++] = '"';
-    result[pos++] = ',';
-    if (spaces)
-      result[pos++] = ' ';
-    pfree(strings[i]);
+    if (quotes == QUOTES)
+      needquotes[i] = true;
+    else if (quotes == QUOTES_ESCAPE)
+      needquotes[i] = string_escape(strings[i], quotes, &escaped[i]);
+
+    if (escaped[i])
+      /* The escaped representation already includes the wrapping quotes */
+      size += strlen(escaped[i]);
+    else if (needquotes[i])
+      /* Raw string + opening and closing quotes */
+      size += strlen(strings[i]) + 2;
+    else
+      size += strlen(strings[i]);
+    /* and the comma delimiter */
+    size += 1;
   }
+  /* The last element doesn't have a comma delimiter after it but that's OK,
+   * that space is needed for the trailing '\0'.
+   * Add in addition the spaces between elements if requested. */
   if (spaces)
+    size += count;
+
+  /* Construct the output string */
+  char *result = (char *) palloc0(size);
+  char *p = result;
+
+  /* Add the prefix, if any */
+  if (prefix_size)
   {
-    result[pos - 2] = close;
-    result[pos - 1] = '\0';
+    for (char *tmp = prefix; *tmp; tmp++)
+      *p++ = *tmp;
   }
-  else
+
+  *p++ = open;
+  for (int i = 0; i < count; i++)
   {
-    result[pos - 1] = close;
-    result[pos] = '\0';
+    if (escaped[i])
+    {
+      /* QUOTES_ESCAPE path: escaped[i] already includes wrapping quotes */
+      strcpy(p, escaped[i]);
+      p += strlen(p);
+      pfree(escaped[i]);
+    }
+    else if (needquotes[i])
+    {
+      /* QUOTES path: wrap raw string in double quotes */
+      *p++ = '"';
+      strcpy(p, strings[i]);
+      p += strlen(p);
+      *p++ = '"';
+    }
+    else
+    {
+      strcpy(p, strings[i]);
+      p += strlen(p);
+    }
+    if (i < count - 1)
+    {
+      *p++ = ',';
+      if (spaces)
+        *p++ = ' ';
+    }
   }
-  pfree(strings);
+  *p++ = close;
+  *p = '\0';
+
+  pfree(escaped); pfree(needquotes); pfree(strings);
   return result;
 }
 
