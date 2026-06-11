@@ -62,7 +62,7 @@ tpose_trajectory(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   GSERIALIZED *result = tpoint_trajectory(tpoint, UNARY_UNION_NO);
   pfree(tpoint);
   return result;
@@ -87,7 +87,7 @@ tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *tpoint = tpose_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_geom(tpoint, gs, atfunc);
   Temporal *result = NULL;
   if (res)
@@ -148,7 +148,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   if (! ensure_valid_tpose_stbox(temp, box))
     return NULL;
 
-  Temporal *tgeom = tpose_to_tpoint(temp);
+  Temporal *tgeom = tpose_to_tgeompoint(temp);
   Temporal *tgeomres = tgeo_restrict_stbox(tgeom, box, border_inc, atfunc);
   Temporal *result = NULL;
   if (tgeomres)

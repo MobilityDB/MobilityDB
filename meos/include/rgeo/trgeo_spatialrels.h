@@ -48,11 +48,11 @@
 extern int ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
 extern int ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
-  bool ever)
+  bool ever);
 extern int ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
 extern int ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool ever)
+  bool ever);
 
 /*****************************************************************************/
 

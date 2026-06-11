@@ -892,6 +892,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     char *t2 = pg_timestamptz_out(inst2->t);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+    pfree(t1); pfree(t2);
     return false;
   }
   if (merge && inst1->t == inst2->t &&
@@ -902,6 +903,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The temporal values have different value at their overlapping instant %s",
       t1);
+    pfree(t1);
     return false;
   }
   return true;

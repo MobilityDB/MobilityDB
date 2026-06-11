@@ -441,7 +441,7 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
   void *max_value = values[count - 1];
 
   /* Find the list values that are strictly before the span of new values */
-  memset(update, 0, sizeof(&update));
+  memset(update, 0, sizeof(int) * SKIPLIST_MAXLEVEL);
   int height = list->elems[0].height;
   SkipListElem *elem = &list->elems[0];
   int cur = 0;
@@ -490,6 +490,9 @@ keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
   int count1, void **keys2, void **values2, int count2, int *newcount,
   void ***newkeys, void ***tofree, int *nfree)
 {
+  /* Convention: result, *newkeys, and *tofree are three distinct allocations.
+   * The caller (skiplist_splice) frees the merged elements + the *tofree shell
+   * via pfree_array, then frees the result and *newkeys shells separately. */
   void **result = palloc(sizeof(void *) * (count1 + count2));
   void **newkeys1 = palloc(sizeof(void *) * (count1 + count2));
   void **tofree1 = palloc(sizeof(void *) * Max(count1, count2));
@@ -589,6 +592,12 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Array keeping the new aggregated values that must be freed */
   void **tofree = NULL;
   int nfree = 0;
+  /* Shells returned by the merge helpers; freed after the insertion loop.
+   * The merge helpers guarantee these are distinct allocations from tofree,
+   * so we can pfree them unconditionally without double-freeing the elements
+   * (which are released via pfree_array(tofree, nfree)). */
+  void **newvalues_shell = NULL;
+  void **newkeys_shell = NULL;
 
   /* Remove from the list the elements that overlap with the new elements
    * (if any) and compute their aggregation */
@@ -597,7 +606,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
     /* Determine the elements that will be spliced-out (if any) */
     int lower, upper;
 #if MEOS
-    spliced_count = (sktype == TEMPORAL) ?
+    spliced_count = (sktype == SKIPLIST_TEMPORAL) ?
       temporal_skiplist_common(list, values, count, &lower, &upper, update) :
       keyval_skiplist_common(list, keys, values, count, &lower, &upper, update);
 #else
@@ -645,7 +654,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       int newcount = 0;
       void **newkeys = NULL;
 #if MEOS
-      void **newvalues = (sktype == TEMPORAL) ?
+      void **newvalues = (sktype == SKIPLIST_TEMPORAL) ?
         temporal_skiplist_merge(spliced_vals, spliced_count, values, count,
           func, crossings, &newcount, &tofree, &nfree) :
         keyval_skiplist_merge(list, spliced_keys, spliced_vals, spliced_count,
@@ -671,6 +680,9 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       keys = newkeys;
       values = newvalues;
       count = newcount;
+      /* Stash the merge-helper shells for release after the insertion loop. */
+      newvalues_shell = newvalues;
+      newkeys_shell = newkeys;
     }
   }
 
@@ -696,7 +708,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
 #if ! MEOS
     MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    if (sktype == TEMPORAL)
+    if (sktype == SKIPLIST_TEMPORAL)
     {
       newelem->value = temporal_copy(values[i]);
     }
@@ -706,6 +718,7 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
       {
         void *newkey = palloc(list->key_size);
         memcpy(newkey, keys[i], list->key_size);
+        newelem->key = newkey;
       }
       else
         newelem->key = NULL;
@@ -732,6 +745,13 @@ skiplist_splice(SkipList *list, void **keys, void **values, int count,
   /* Free memory */
   if (spliced_count != 0)
     pfree_array((void **) tofree, nfree);
+  /* Release the merge-helper pointer-array shells. These are allocated by
+   * temporal_skiplist_merge / keyval_skiplist_merge as separate allocations
+   * from tofree, so freeing them here does not double-free the elements. */
+  if (newvalues_shell)
+    pfree(newvalues_shell);
+  if (newkeys_shell)
+    pfree(newkeys_shell);
   return;
 }
 

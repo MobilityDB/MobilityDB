@@ -249,6 +249,7 @@ ensure_valid_tseqarr(TSequence **sequences, int count)
         char *t2 = pg_timestamptz_out(lower2);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Timestamps for temporal value must be increasing: %s, %s", t1, t2);
+        pfree(t1); pfree(t2);
         return false;
       }
       if (! ensure_spatial_validity((Temporal *) sequences[i - 1],
@@ -465,11 +466,17 @@ ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
     if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
         ! ensure_spatial_validity((Temporal *) instants[i - 1],
           (Temporal *) instants[i]))
+    {
+      pfree(result);
       return NULL;
+    }
 #if NPOINT
     if (instants[i]->temptype == T_TNPOINT &&
         ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
+    {
+      pfree(result);
       return NULL;
+    }
 #endif
     /* Determine if there should be a split */
     bool split = false;

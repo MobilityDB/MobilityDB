@@ -174,15 +174,18 @@ void
 meos_finalize_projsrs(void)
 {
   MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
-  if (cache)
+  /* Idempotency: bail when no cache is live, and null the global slot after
+   * release so a second finalize call (or finalize before any init) does not
+   * pfree(NULL) / double-free. */
+  if (! cache)
+    return;
+  for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
   {
-    for (uint32_t i = 0; i < cache->PROJSRSCacheCount; i++)
-    {
-      if (cache->MEOSPROJSRSCache[i].projection)
-        PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
-    }
+    if (cache->MEOSPROJSRSCache[i].projection)
+      PROJSRSDestroyPJ(cache->MEOSPROJSRSCache[i].projection);
   }
   pfree(cache);
+  MEOS_PROJ_CACHE = NULL;
   return;
 }
 
