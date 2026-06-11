@@ -465,11 +465,17 @@ ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
     if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
         ! ensure_spatial_validity((Temporal *) instants[i - 1],
           (Temporal *) instants[i]))
+    {
+      pfree(result);
       return NULL;
+    }
 #if NPOINT
     if (instants[i]->temptype == T_TNPOINT &&
         ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
+    {
+      pfree(result);
       return NULL;
+    }
 #endif
     /* Determine if there should be a split */
     bool split = false;
