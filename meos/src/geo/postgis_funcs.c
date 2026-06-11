@@ -54,6 +54,7 @@
 #include <meos_internal.h>
 #include "temporal/postgres_types.h"
 #include "temporal/type_util.h"
+#include "geo/geo_poly_clip.h"  /* clip_poly_poly fast-path for polygon ∩/− polygon */
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -1650,16 +1651,41 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
 }
 
 /**
+ * @brief Return @c true iff @p gs is a 2D POLYGON or MULTIPOLYGON.
+ *
+ * Used by #geom_intersection2d / #geom_difference2d to decide whether to
+ * fast-path through the Clipper2-backed @c clip_poly_poly. Geography and
+ * 3D inputs fall through to the GEOS path so callers don't get silent
+ * downgrades on unsupported geometry types.
+ */
+static bool
+gs_is_planar_polygonal(const GSERIALIZED *gs)
+{
+  if (gserialized_is_geodetic(gs))
+    return false;
+  if (FLAGS_GET_Z(gs->gflags))
+    return false;
+  uint32_t t = gserialized_get_type(gs);
+  return (t == POLYGONTYPE || t == MULTIPOLYGONTYPE);
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the intersection of two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Intersection(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
+ *
+ * When both inputs are 2D POLYGON / MULTIPOLYGON the call routes through
+ * the Clipper2-backed #clip_poly_poly. Other type combinations fall
+ * through to PostGIS's GEOS-backed @c lwgeom_intersection_prec.
  */
 GSERIALIZED *
 geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gs1); assert(gs2);
+  if (gs_is_planar_polygonal(gs1) && gs_is_planar_polygonal(gs2))
+    return clip_poly_poly(gs1, gs2, CL_INTERSECTION);
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *lwresult = lwgeom_intersection_prec(geom1, geom2, -1);
@@ -1674,11 +1700,16 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Difference(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
+ *
+ * Same Clipper2 fast-path as #geom_intersection2d for 2D polygonal
+ * inputs; other types fall through to GEOS.
  */
 GSERIALIZED *
 geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gs1); assert(gs2);
+  if (gs_is_planar_polygonal(gs1) && gs_is_planar_polygonal(gs2))
+    return clip_poly_poly(gs1, gs2, CL_DIFFERENCE);
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   LWGEOM *lwresult = lwgeom_difference_prec(geom1, geom2, -1);

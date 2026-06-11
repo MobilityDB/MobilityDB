@@ -350,5 +350,34 @@ CREATE FUNCTION minusElevation(tgeompoint, floatspan)
   AS 'MODULE_PATHNAME', 'Tgeo_minus_elevation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Polygon clipping (Clipper2 backend)
+ *
+ * INTERNAL — these functions expose the in-process polygon Boolean engine
+ * used by the temporal types whose values are 2D regions (trgeo, tcbuffer,
+ * tgeometry, tgeography). They exist so the engine can be unit-tested and
+ * benchmarked from SQL; end users should keep using PostGIS ST_Intersection
+ * / ST_Union / ST_Difference / ST_SymDifference, which are more robust on
+ * degenerate inputs and handle curves / geography / 3D. The `_mdb_internal_`
+ * prefix marks them as not part of the public API.
+ *****************************************************************************/
+
+CREATE FUNCTION _mdb_internal_clip_intersection(geometry, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'cl_intersection'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION _mdb_internal_clip_union(geometry, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'cl_union'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION _mdb_internal_clip_difference(geometry, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'cl_difference'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION _mdb_internal_clip_sym_difference(geometry, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'cl_symDifference'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 /*****************************************************************************/

@@ -46,25 +46,23 @@ jobs:
           make -j $(nproc)
           sudo make install
 
+      - name: Run MEOS C-level CTest suite
+        # All *_test.c harnesses in meos/test/ are now wired into
+        # CMakeLists.txt and run uniformly via CTest. Each test is a
+        # self-contained MEOS-API exercise; CTest treats a non-zero
+        # return (or segfault) as failure, catching crashes and
+        # link-level breakage. Output-drift detection (baseline diff)
+        # is a tracked follow-up.
+        run: |
+          cd build
+          ctest --output-on-failure
+
       - name: Compile and run 01_hello_world.c
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -g -I/usr/local/include -o 01_hello_world 01_hello_world.c -L/usr/local/lib -lmeos
           ./01_hello_world
-
-      - name: Compile and run the tests for the PostgreSQL types
-        run: |
-          cd meos/test
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          gcc -Wall -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
-          ./setspan_test
-          gcc -Wall -g -I/usr/local/include -o temporal_test temporal_test.c -L/usr/local/lib -lmeos
-          ./temporal_test
-          gcc -Wall -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
-          ./geo_test
-          gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
-          ./npoint_test
 
   threaded:
     name: Thread-safety (TSan)

@@ -113,6 +113,7 @@ Requirements
 
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   CMake >= 3.7
+*   A C++17 compiler (e.g. GCC >= 7, Clang >= 5, MSVC >= 19.14) — required since the polygon Boolean engine was migrated to vendored Clipper2
 *   PostgreSQL >= 14
 *   PostGIS >= 3.0
 *   GEOS >= 3.8

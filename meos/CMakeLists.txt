@@ -168,9 +168,61 @@ file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}"
 string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
+# Stage the exported headers under canonical install names in
+# ${CMAKE_BINARY_DIR}/meos_export_include so the C-level CTest targets
+# in meos/test/ can compile against the same public API the installed
+# headers expose. The harnesses use unprefixed names like
+# `interval_in()` which only exist in the *_export.h variants — without
+# this staging they would compile against the in-tree headers (which
+# only declare `pg_interval_in()`), miss the prototype, and have the
+# returned pointer truncated to 32 bits → segfault on first call.
+# Mirrors the install() rules below: both transformed *_export.h files
+# and raw headers that the install step flattens (meos_catalog.h is
+# under temporal/ in the source tree but installed at top level).
+file(WRITE "${CMAKE_BINARY_DIR}/meos_export_include/meos.h"
+  "${MEOS_EXP_H}")
+file(WRITE "${CMAKE_BINARY_DIR}/meos_export_include/meos_internal.h"
+  "${MEOS_INTERNAL_EXP_H}")
+file(WRITE "${CMAKE_BINARY_DIR}/meos_export_include/meos_geo.h"
+  "${MEOS_GEO_EXP_H}")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/meos/include/temporal/meos_catalog.h"
+  "${CMAKE_BINARY_DIR}/meos_export_include/meos_catalog.h"
+  COPYONLY)
+configure_file(
+  "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
+  "${CMAKE_BINARY_DIR}/meos_export_include/meos_internal_geo.h"
+  COPYONLY)
+if(NPOINT)
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
+    "${CMAKE_BINARY_DIR}/meos_export_include/meos_npoint.h"
+    COPYONLY)
+endif()
+if(CBUFFER)
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+    "${CMAKE_BINARY_DIR}/meos_export_include/meos_cbuffer.h"
+    COPYONLY)
+endif()
+if(POSE)
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+    "${CMAKE_BINARY_DIR}/meos_export_include/meos_pose.h"
+    COPYONLY)
+endif()
+if(RGEO)
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
+    "${CMAKE_BINARY_DIR}/meos_export_include/meos_rgeo.h"
+    COPYONLY)
+endif()
+
 # MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:clip_clipper2>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:clipper2>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
@@ -303,6 +355,14 @@ configure_file(
 install(
   FILES ${CMAKE_BINARY_DIR}/meos.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+#-----------------------------------------------------------------------------
+# C-level tests (CTest)
+#-----------------------------------------------------------------------------
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 #-----------------------------------------------------------------------------
 # The End
