@@ -139,8 +139,17 @@ set(PGTYPES_SOURCES "")
 add_subdirectory(access)
 add_subdirectory(catalog)
 add_subdirectory(common)
+# pgtypes/libpq pulls in BSD socket headers (<netinet/in.h>, <netdb.h>)
+# that don't exist in MSYS2/MinGW's UCRT64 toolchain. The MEOS-side
+# code that consumes JSON paths uses jsonpath grammar from
+# pgtypes/utils, not libpq, so libpq is unnecessary on Windows.
+if(NOT WIN32)
+  add_subdirectory(libpq)
+endif()
+add_subdirectory(nodes)
 add_subdirectory(parser)
 add_subdirectory(port)
+add_subdirectory(regex)
 # add_subdirectory(storage)
 add_subdirectory(timezone)
 add_subdirectory(utils)

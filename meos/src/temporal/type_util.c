@@ -72,6 +72,11 @@
 /* Function defined in formatting.c */
 extern bool scanner_isspace(char ch);
 
+#if JSON
+  #include <utils/jsonb.h>
+  #include "json/tjsonb.h"
+#endif /* JSON */
+
 /*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
@@ -134,6 +139,10 @@ datum_cmp(Datum l, Datum r, MeosType type)
     case T_CBUFFER:
       return cbuffer_cmp(DatumGetCbufferP(l), DatumGetCbufferP(r));
 #endif
+#if JSON
+    case T_JSONB:
+      return pg_jsonb_cmp((Jsonb *) l, (Jsonb *) r);
+#endif /* JSON */
 #if NPOINT
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -230,6 +239,10 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_CBUFFER:
       return cbuffer_eq(DatumGetCbufferP(l), DatumGetCbufferP(r));
 #endif
+#if JSON
+    case T_JSONB:
+      return pg_jsonb_eq(DatumGetJsonbP(l), DatumGetJsonbP(r));
+#endif /* JSON */
 #if NPOINT
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -448,6 +461,10 @@ datum_hash(Datum d, MeosType type)
     case T_CBUFFER:
       return cbuffer_hash(DatumGetCbufferP(d));
 #endif
+#if JSON
+    case T_JSONB:
+      return pg_jsonb_hash(DatumGetJsonbP(d));
+#endif /* JSON */
 #if NPOINT
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));

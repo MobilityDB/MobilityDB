@@ -143,15 +143,6 @@ endif()
 # Build MEOS library
 #--------------------------------
 
-# Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
-
-# Read files
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
-
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
@@ -159,10 +150,10 @@ if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
-# if(JSON)
-  # message(STATUS "Including JSON types")
-  # set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
-# endif()
+if(JSON)
+  message(STATUS "Including JSON types")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
+endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
@@ -225,6 +216,7 @@ if(MEOS)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_error.h" MEOS_ERROR_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h" MEOS_JSON_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 
@@ -242,7 +234,13 @@ if(MEOS)
   string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
   file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
-  # Files from ${CMAKE_BINARY_DIR}
+  if(JSON)
+    # Generate meos_json_export.h
+    string(REGEX REPLACE "#include <pgtypes.h>\n" "#include <pg_numeric.h>\n#include <pg_json.h>\n" MEOS_JSON_EXP_H "${MEOS_JSON_H}")
+    file(WRITE "${CMAKE_BINARY_DIR}/meos_json_export.h" "${MEOS_JSON_EXP_H}")
+  endif()
+
+  # Install customized files from ${CMAKE_BINARY_DIR}
   install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     RENAME "meos.h")
@@ -275,8 +273,6 @@ if(MEOS)
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_timestamp.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-  install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_json.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pgtypes.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
@@ -295,8 +291,9 @@ if(MEOS)
   endif()
   if(JSON)
     install(
-      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+      FILES "${CMAKE_BINARY_DIR}/meos_json_export.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      RENAME "meos_json.h")
   endif()
   if(NPOINT)
     install(

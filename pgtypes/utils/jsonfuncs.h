@@ -38,7 +38,7 @@ typedef void (*JsonIterateStringValuesAction) (void *state, char *elem_value, in
 typedef text *(*JsonTransformStringValuesAction) (void *state, char *elem_value, int elem_len);
 
 /* build a JsonLexContext from a text datum; see also freeJsonLexContext */
-extern JsonLexContext *makeJsonLexContext(JsonLexContext *lex, text *json, bool need_escapes);
+extern JsonLexContext *makeJsonLexContext(JsonLexContext *lex, text *js, bool need_escapes);
 
 /* try to parse json, and errsave(escontext) on failure */
 extern bool pg_parse_json_or_errsave(JsonLexContext *lex, const JsonSemAction *sem,
@@ -52,16 +52,16 @@ extern void json_errsave_error(JsonParseErrorType error, JsonLexContext *lex,
   Node *escontext);
 
 /* get first JSON token */
-extern JsonTokenType json_get_first_token(text *json, bool throw_error);
+extern JsonTokenType json_get_first_token(text *js, bool throw_error);
 
 extern uint32 parse_jsonb_index_flags(Jsonb *jb);
 extern void iterate_jsonb_values(Jsonb *jb, uint32 flags, void *state,
   JsonIterateStringValuesAction action);
-extern void iterate_json_values(text *json, uint32 flags, void *action_state,
+extern void iterate_json_values(text *js, uint32 flags, void *action_state,
   JsonIterateStringValuesAction action);
 extern Jsonb *transform_jsonb_string_values(Jsonb *jsonb, void *action_state,
   JsonTransformStringValuesAction transform_action);
-extern text *transform_json_string_values(text *json, void *action_state,
+extern text *transform_json_string_values(text *js, void *action_state,
   JsonTransformStringValuesAction transform_action);
 
 /* Type categories returned by json_categorize_type */
@@ -87,6 +87,6 @@ extern Datum datum_to_json(Datum val, JsonTypeCategory tcategory,
   Oid outfuncoid);
 extern Datum datum_to_jsonb(Datum val, JsonTypeCategory tcategory,
   Oid outfuncoid);
-extern Jsonb *jsonb_from_text(const text *json, bool unique_keys);
+extern Jsonb *jsonb_from_text(const text *js, bool unique_keys);
 
 #endif

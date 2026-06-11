@@ -181,6 +181,10 @@ set_basetype_quotes(MeosType type)
    * output function #basetype_out, so they must not be quoted again here */
   if (type == T_TIMESTAMPTZ || spatial_basetype(type))
     return QUOTES;
+#if JSON
+  if (type == T_JSONB)
+    return QUOTES_ESCAPE;
+#endif /* JSON */
   return QUOTES_NO;
 }
 

@@ -628,8 +628,8 @@ mbbisearch(pg_wchar ucs, const struct mbinterval *table, int max)
 static int
 ucs_wcwidth(pg_wchar ucs)
 {
-#include "common/unicode_nonspacing_table.h"
-#include "common/unicode_east_asian_fw_table.h"
+#include "unicode_nonspacing_table.h" // MEOS removed "common/"
+#include "unicode_east_asian_fw_table.h"
 
 	/* test for 8-bit control characters */
 	if (ucs == 0)

@@ -27,6 +27,8 @@
   #include <utils/memutils.h>
 #endif
 
+#include "../../meos/include/meos_error.h"
+
 /*
  * initStringInfoInternal
  *

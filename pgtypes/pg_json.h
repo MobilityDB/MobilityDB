@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for base and time types corresponding to the external (SQL)
+ * @brief Functions for JSON types corresponding to the external (SQL)
  * PostgreSQL functions
  */
 
@@ -54,66 +54,105 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Functions for JSON */
+/* Input and output functions */
 
-extern text *json_array_element(const text *json, int element);
-extern text *json_array_element_text(const text *json, int element);
-extern text **json_array_elements(const text *json, int *count);
-extern text **json_array_elements_text(const text *json, int *count);
-extern int json_array_length(const text *json);
-extern text **json_each(const text *json, text **values, int *count);
-extern text **json_each_text(const text *json, text **values, int *count);
-extern text *json_extract_path(const text *json, text **path_elems, int path_len);
-extern text *json_extract_path_text(const text *json, text **path_elems, int path_len);
+
 extern text *json_in(const char *str);
+extern char *json_out(const text *js);
+extern Jsonb *jsonb_from_text(const text *txt, bool unique_keys);
+extern Jsonb *jsonb_in(const char *str);
+extern char *jsonb_out(const Jsonb *jb);
+
+/* Constructor functions */
+
 extern text *json_make(text **keys_vals, int count);
 extern text *json_make_two_arg(text **keys, text **values, int count);
-extern text *json_object_field(const text *json, const text *key);
-extern text *json_object_field_text(const text *json, const text *key);
-extern text **json_object_keys(const text *json, int *count);
-extern char *json_out(const text *json);
-extern text *json_strip_nulls(const text *json, bool strip_in_arrays);
-extern text *json_typeof(const text *json);
+extern Jsonb *jsonb_copy(const Jsonb *jb);
+extern Jsonb *jsonb_make(text **keys_vals, int count);
+extern Jsonb *jsonb_make_two_arg(text **keys, text **values, int count);
+
+/* Conversion functions */
+
+extern bool jsonb_to_bool(const Jsonb *jb);
+extern char *jsonb_to_cstring(const Jsonb *jb);
+extern float4 jsonb_to_float4(const Jsonb *jb);
+extern float8 jsonb_to_float8(const Jsonb *jb);
+extern int16 jsonb_to_int16(const Jsonb *jb);
+extern int32 jsonb_to_int32(const Jsonb *jb);
+extern int64 jsonb_to_int64(const Jsonb *jb);
+extern Numeric jsonb_to_numeric(const Jsonb *jb);
+extern jsonb_to_text(const Jsonb *jb);
+
+
+/* Accessor functions */
+
+extern text *json_array_element(const text *js, int element);
+extern text *json_array_element_text(const text *js, int element);
+extern text **json_array_elements(const text *js, int *count);
+extern text **json_array_elements_text(const text *js, int *count);
+extern int json_array_length(const text *js);
+extern text **json_each(const text *js, text **values, int *count);
+extern text **json_each_text(const text *js, text **values, int *count);
+extern text *json_extract_path(const text *js, text **path_elems, int path_len);
+extern text *json_extract_path_text(const text *js, text **path_elems, int path_len);
+extern text *json_object_field(const text *js, const text *key);
+extern text *json_object_field_text(const text *js, const text *key);
+extern text **json_object_keys(const text *js, int *count);
+extern text *json_typeof(const text *js);
+
 extern Jsonb *jsonb_array_element(const Jsonb *jb, int element);
 extern text *jsonb_array_element_text(const Jsonb *jb, int element);
 extern Jsonb **jsonb_array_elements(const Jsonb *jb, int *count);
 extern text **jsonb_array_elements_text(const Jsonb *jb, int *count);
-extern int jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *jsonb_concat(const Jsonb *jb1, const Jsonb *jb2);
+extern int jsonb_array_length(const Jsonb *jb);
 extern bool jsonb_contained(const Jsonb *jb1, const Jsonb *jb2);
 extern bool jsonb_contains(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *jsonb_copy(const Jsonb *jb);
-extern Jsonb *jsonb_delete(const Jsonb *jb, const text *key);
-extern Jsonb *jsonb_delete_array(const Jsonb *jb, text **keys_elems, int keys_len);
-extern Jsonb *jsonb_delete_idx(const Jsonb *jb, int idx);
-extern Jsonb *jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len);
 extern text **jsonb_each(const Jsonb *jb, Jsonb **values, int *count);
 extern text **jsonb_each_text(const Jsonb *jb, text **values, int *count);
-extern bool jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
 extern bool jsonb_exists(const Jsonb *jb, const text *key);
+extern bool jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len, bool any);
 extern Jsonb *jsonb_extract_path(const Jsonb *jb, text **path_elems, int path_len);
 extern text *jsonb_extract_path_text(const Jsonb *jb, text **path_elems, int path_len);
-extern Jsonb *jsonb_from_text(text *txt, bool unique_keys);
-extern bool jsonb_ge(const Jsonb *jb1, const Jsonb *jb2);
-extern bool jsonb_gt(const Jsonb *jb1, const Jsonb *jb2);
 extern uint32 jsonb_hash(const Jsonb *jb);
-extern uint64 jsonb_hash_extended(Jsonb *jb, uint64 seed);
-extern Jsonb *jsonb_in(char *str);extern bool jsonb_gt(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *jsonb_insert(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool after);
-extern bool jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
-extern bool jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);
-extern bool jsonb_ne(const Jsonb *jb1, const Jsonb *jb2);
-extern Jsonb *jsonb_make(text **keys_vals, int count);
-extern Jsonb *jsonb_make_two_arg(text **keys, text **values, int count);
+extern uint64 jsonb_hash_extended(const Jsonb *jb, uint64 seed);
 extern Jsonb *jsonb_object_field(const Jsonb *jb, const text *key);
 extern text *jsonb_object_field_text(const Jsonb *jb, const text *key);
 extern text **jsonb_object_keys(const Jsonb *jb, int *count);
-extern char *jsonb_out(const Jsonb *jb);
+
+/* Transformation functions */
+
+extern text *json_strip_nulls(const text *js, bool strip_in_arrays);
+extern Jsonb *jsonb_concat(const Jsonb *jb1, const Jsonb *jb2);
+extern Jsonb *jsonb_delete(const Jsonb *jb, const text *key);
+extern Jsonb *jsonb_delete_array(const Jsonb *jb, text **keys_elems, int keys_len);
+extern Jsonb *jsonb_delete_index(const Jsonb *jb, int idx);
+extern Jsonb *jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len);
+extern Jsonb *jsonb_insert(const Jsonb *jb, text **path_elems, int path_len, const Jsonb *newjb, bool after);
 extern text *jsonb_pretty(const Jsonb *jb);
-extern Jsonb *jsonb_set(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create);
-extern Jsonb *jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len, Jsonb *newjb, bool create, const text *handle_null);
+extern Jsonb *jsonb_set(const Jsonb *jb, text **path_elems, int path_len, const Jsonb *newjb, bool create);
+extern Jsonb *jsonb_set_lax(const Jsonb *jb, text **path_elems, int path_len, const Jsonb *newjb, bool create, const text *handle_null);
 extern Jsonb *jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays);
 
+/* Comparison functions */
+
+extern int jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_ge(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_gt(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_le(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_lt(const Jsonb *jb1, const Jsonb *jb2);
+extern bool jsonb_ne(const Jsonb *jb1, const Jsonb *jb2);
+
+/* JSON path functions */
+
+extern int jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern bool jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern Jsonb **jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern Jsonb *jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern Jsonb *jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern JsonPath *jsonpath_in(const char *str);
+extern JsonPath *jsonpath_copy(const JsonPath *jp);
+extern char *jsonpath_out(const JsonPath *jp);
 
 /*****************************************************************************/
 

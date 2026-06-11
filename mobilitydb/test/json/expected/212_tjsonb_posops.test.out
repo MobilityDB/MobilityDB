@@ -1,0 +1,576 @@
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' <<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' <<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' <<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' <<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' <<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' <<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' <<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' <<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' <<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' <<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' <<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' <<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' <<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' <<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' <<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' <<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' <<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #>> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #>> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #>> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #>> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #>> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #>> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #>> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #>> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #>> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #>> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #>> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #>> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #>> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #>> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #>> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #>> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #>> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #>> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' &<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' &<# tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' &<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' &<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' &<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' &<# tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' &<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' &<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' &<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' &<# tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' &<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' &<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' &<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' &<# tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' &<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' &<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' &<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' &<# tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tstzspan '[2000-01-01,2000-01-02]' #&> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #&> tstzspan '[2000-01-01,2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #&> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #&> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #&> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #&> tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #&> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #&> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #&> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #&> tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #&> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #&> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #&> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #&> tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01' #&> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(2 2)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}' #&> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]' #&> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}' #&> tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03],[{"geom": "Point(3 3)"}@2000-01-04, {"geom": "Point(3 3)"}@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+

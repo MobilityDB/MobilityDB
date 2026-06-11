@@ -22,6 +22,7 @@
 #include "utils/datetime.h"
 #include "utils/date.h"
 #include "pgtz.h"
+#include "../../meos/include/meos_error.h"
 
 /**
  * Structure to represent the timezone cache hash table, which extends

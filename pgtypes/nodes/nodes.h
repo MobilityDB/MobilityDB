@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
  *
  * nodes.h
- *	  Definitions for tagged nodes.
+ *    Definitions for tagged nodes.
  *
  *
  * Portions Copyright (c) 1996-2025, PostgreSQL Global Development Group
@@ -25,10 +25,9 @@
  */
 typedef enum NodeTag
 {
-	T_Invalid = 0,
+  T_Invalid = 0,
 
-// MEOS
-// #include "nodes/nodetags.h"
+#include "nodetags.h"
 } NodeTag;
 
 /*
@@ -134,35 +133,35 @@ typedef enum NodeTag
  */
 typedef struct Node
 {
-	NodeTag		type;
+  NodeTag    type;
 } Node;
 
-#define nodeTag(nodeptr)		(((const Node*)(nodeptr))->type)
+#define nodeTag(nodeptr)    (((const Node*)(nodeptr))->type)
 
 /*
  * newNode -
- *	  create a new node of the specified size and tag the node with the
- *	  specified tag.
+ *    create a new node of the specified size and tag the node with the
+ *    specified tag.
  *
  * !WARNING!: Avoid using newNode directly. You should be using the
- *	  macro makeNode.  eg. to create a Query node, use makeNode(Query)
+ *    macro makeNode.  eg. to create a Query node, use makeNode(Query)
  */
 static inline Node *
 newNode(size_t size, NodeTag tag)
 {
-	Node	   *result;
+  Node     *result;
 
-	Assert(size >= sizeof(Node));	/* need the tag, at least */
-	result = (Node *) palloc0(size);
-	result->type = tag;
+  Assert(size >= sizeof(Node));  /* need the tag, at least */
+  result = (Node *) palloc0(size);
+  result->type = tag;
 
-	return result;
+  return result;
 }
 
-#define makeNode(_type_)		((_type_ *) newNode(sizeof(_type_),T_##_type_))
-#define NodeSetTag(nodeptr,t)	(((Node*)(nodeptr))->type = (t))
+#define makeNode(_type_)    ((_type_ *) newNode(sizeof(_type_),T_##_type_))
+#define NodeSetTag(nodeptr,t)  (((Node*)(nodeptr))->type = (t))
 
-#define IsA(nodeptr,_type_)		(nodeTag(nodeptr) == T_##_type_)
+#define IsA(nodeptr,_type_)    (nodeTag(nodeptr) == T_##_type_)
 
 /*
  * castNode(type, ptr) casts ptr to "type *", and if assertions are enabled,
@@ -175,32 +174,32 @@ newNode(size_t size, NodeTag tag)
 static inline Node *
 castNodeImpl(NodeTag type, void *ptr)
 {
-	Assert(ptr == NULL || nodeTag(ptr) == type);
-	return (Node *) ptr;
+  Assert(ptr == NULL || nodeTag(ptr) == type);
+  return (Node *) ptr;
 }
 #define castNode(_type_, nodeptr) ((_type_ *) castNodeImpl(T_##_type_, nodeptr))
 #else
 #define castNode(_type_, nodeptr) ((_type_ *) (nodeptr))
-#endif							/* USE_ASSERT_CHECKING */
+#endif              /* USE_ASSERT_CHECKING */
 
 
 /* ----------------------------------------------------------------
- *					  extern declarations follow
+ *            extern declarations follow
  * ----------------------------------------------------------------
  */
 
 /*
  * nodes/{outfuncs.c,print.c}
  */
-struct Bitmapset;				/* not to include bitmapset.h here */
-struct StringInfoData;			/* not to include stringinfo.h here */
+struct Bitmapset;        /* not to include bitmapset.h here */
+struct StringInfoData;      /* not to include stringinfo.h here */
 
 extern void outNode(struct StringInfoData *str, const void *obj);
 extern void outToken(struct StringInfoData *str, const char *s);
 extern void outBitmapset(struct StringInfoData *str,
-						 const struct Bitmapset *bms);
+             const struct Bitmapset *bms);
 extern void outDatum(struct StringInfoData *str, uintptr_t value,
-					 int typlen, bool typbyval);
+           int typlen, bool typbyval);
 extern char *nodeToString(const void *obj);
 extern char *nodeToStringWithLocations(const void *obj);
 extern char *bmsToString(const struct Bitmapset *bms);
@@ -254,36 +253,36 @@ typedef int ParseLoc;
  * These could have gone into plannodes.h or some such, but many files
  * depend on them...
  */
-typedef double Selectivity;		/* fraction of tuples a qualifier will pass */
-typedef double Cost;			/* execution cost (in page-access units) */
-typedef double Cardinality;		/* (estimated) number of rows or other integer
-								 * count */
+typedef double Selectivity;    /* fraction of tuples a qualifier will pass */
+typedef double Cost;      /* execution cost (in page-access units) */
+typedef double Cardinality;    /* (estimated) number of rows or other integer
+                 * count */
 
 
 /*
  * CmdType -
- *	  enums for type of operation represented by a Query or PlannedStmt
+ *    enums for type of operation represented by a Query or PlannedStmt
  *
  * This is needed in both parsenodes.h and plannodes.h, so put it here...
  */
 typedef enum CmdType
 {
-	CMD_UNKNOWN,
-	CMD_SELECT,					/* select stmt */
-	CMD_UPDATE,					/* update stmt */
-	CMD_INSERT,					/* insert stmt */
-	CMD_DELETE,					/* delete stmt */
-	CMD_MERGE,					/* merge stmt */
-	CMD_UTILITY,				/* cmds like create, destroy, copy, vacuum,
-								 * etc. */
-	CMD_NOTHING,				/* dummy command for instead nothing rules
-								 * with qual */
+  CMD_UNKNOWN,
+  CMD_SELECT,          /* select stmt */
+  CMD_UPDATE,          /* update stmt */
+  CMD_INSERT,          /* insert stmt */
+  CMD_DELETE,          /* delete stmt */
+  CMD_MERGE,          /* merge stmt */
+  CMD_UTILITY,        /* cmds like create, destroy, copy, vacuum,
+                 * etc. */
+  CMD_NOTHING,        /* dummy command for instead nothing rules
+                 * with qual */
 } CmdType;
 
 
 /*
  * JoinType -
- *	  enums for types of relation joins
+ *    enums for types of relation joins
  *
  * JoinType determines the exact semantics of joining two relations using
  * a matching qualification.  For example, it tells what to do with a tuple
@@ -293,39 +292,39 @@ typedef enum CmdType
  */
 typedef enum JoinType
 {
-	/*
-	 * The canonical kinds of joins according to the SQL JOIN syntax. Only
-	 * these codes can appear in parser output (e.g., JoinExpr nodes).
-	 */
-	JOIN_INNER,					/* matching tuple pairs only */
-	JOIN_LEFT,					/* pairs + unmatched LHS tuples */
-	JOIN_FULL,					/* pairs + unmatched LHS + unmatched RHS */
-	JOIN_RIGHT,					/* pairs + unmatched RHS tuples */
+  /*
+   * The canonical kinds of joins according to the SQL JOIN syntax. Only
+   * these codes can appear in parser output (e.g., JoinExpr nodes).
+   */
+  JOIN_INNER,          /* matching tuple pairs only */
+  JOIN_LEFT,          /* pairs + unmatched LHS tuples */
+  JOIN_FULL,          /* pairs + unmatched LHS + unmatched RHS */
+  JOIN_RIGHT,          /* pairs + unmatched RHS tuples */
 
-	/*
-	 * Semijoins and anti-semijoins (as defined in relational theory) do not
-	 * appear in the SQL JOIN syntax, but there are standard idioms for
-	 * representing them (e.g., using EXISTS).  The planner recognizes these
-	 * cases and converts them to joins.  So the planner and executor must
-	 * support these codes.  NOTE: in JOIN_SEMI output, it is unspecified
-	 * which matching RHS row is joined to.  In JOIN_ANTI output, the row is
-	 * guaranteed to be null-extended.
-	 */
-	JOIN_SEMI,					/* 1 copy of each LHS row that has match(es) */
-	JOIN_ANTI,					/* 1 copy of each LHS row that has no match */
-	JOIN_RIGHT_SEMI,			/* 1 copy of each RHS row that has match(es) */
-	JOIN_RIGHT_ANTI,			/* 1 copy of each RHS row that has no match */
+  /*
+   * Semijoins and anti-semijoins (as defined in relational theory) do not
+   * appear in the SQL JOIN syntax, but there are standard idioms for
+   * representing them (e.g., using EXISTS).  The planner recognizes these
+   * cases and converts them to joins.  So the planner and executor must
+   * support these codes.  NOTE: in JOIN_SEMI output, it is unspecified
+   * which matching RHS row is joined to.  In JOIN_ANTI output, the row is
+   * guaranteed to be null-extended.
+   */
+  JOIN_SEMI,          /* 1 copy of each LHS row that has match(es) */
+  JOIN_ANTI,          /* 1 copy of each LHS row that has no match */
+  JOIN_RIGHT_SEMI,      /* 1 copy of each RHS row that has match(es) */
+  JOIN_RIGHT_ANTI,      /* 1 copy of each RHS row that has no match */
 
-	/*
-	 * These codes are used internally in the planner, but are not supported
-	 * by the executor (nor, indeed, by most of the planner).
-	 */
-	JOIN_UNIQUE_OUTER,			/* LHS path must be made unique */
-	JOIN_UNIQUE_INNER,			/* RHS path must be made unique */
+  /*
+   * These codes are used internally in the planner, but are not supported
+   * by the executor (nor, indeed, by most of the planner).
+   */
+  JOIN_UNIQUE_OUTER,      /* LHS path must be made unique */
+  JOIN_UNIQUE_INNER,      /* RHS path must be made unique */
 
-	/*
-	 * We might need additional join types someday.
-	 */
+  /*
+   * We might need additional join types someday.
+   */
 } JoinType;
 
 /*
@@ -343,100 +342,100 @@ typedef enum JoinType
  * quals attached to a semijoin can be treated the same as innerjoin quals.
  */
 #define IS_OUTER_JOIN(jointype) \
-	(((1 << (jointype)) & \
-	  ((1 << JOIN_LEFT) | \
-	   (1 << JOIN_FULL) | \
-	   (1 << JOIN_RIGHT) | \
-	   (1 << JOIN_ANTI) | \
-	   (1 << JOIN_RIGHT_ANTI))) != 0)
+  (((1 << (jointype)) & \
+    ((1 << JOIN_LEFT) | \
+     (1 << JOIN_FULL) | \
+     (1 << JOIN_RIGHT) | \
+     (1 << JOIN_ANTI) | \
+     (1 << JOIN_RIGHT_ANTI))) != 0)
 
 /*
  * AggStrategy -
- *	  overall execution strategies for Agg plan nodes
+ *    overall execution strategies for Agg plan nodes
  *
  * This is needed in both pathnodes.h and plannodes.h, so put it here...
  */
 typedef enum AggStrategy
 {
-	AGG_PLAIN,					/* simple agg across all input rows */
-	AGG_SORTED,					/* grouped agg, input must be sorted */
-	AGG_HASHED,					/* grouped agg, use internal hashtable */
-	AGG_MIXED,					/* grouped agg, hash and sort both used */
+  AGG_PLAIN,          /* simple agg across all input rows */
+  AGG_SORTED,          /* grouped agg, input must be sorted */
+  AGG_HASHED,          /* grouped agg, use internal hashtable */
+  AGG_MIXED,          /* grouped agg, hash and sort both used */
 } AggStrategy;
 
 /*
  * AggSplit -
- *	  splitting (partial aggregation) modes for Agg plan nodes
+ *    splitting (partial aggregation) modes for Agg plan nodes
  *
  * This is needed in both pathnodes.h and plannodes.h, so put it here...
  */
 
 /* Primitive options supported by nodeAgg.c: */
-#define AGGSPLITOP_COMBINE		0x01	/* substitute combinefn for transfn */
-#define AGGSPLITOP_SKIPFINAL	0x02	/* skip finalfn, return state as-is */
-#define AGGSPLITOP_SERIALIZE	0x04	/* apply serialfn to output */
-#define AGGSPLITOP_DESERIALIZE	0x08	/* apply deserialfn to input */
+#define AGGSPLITOP_COMBINE    0x01  /* substitute combinefn for transfn */
+#define AGGSPLITOP_SKIPFINAL  0x02  /* skip finalfn, return state as-is */
+#define AGGSPLITOP_SERIALIZE  0x04  /* apply serialfn to output */
+#define AGGSPLITOP_DESERIALIZE  0x08  /* apply deserialfn to input */
 
 /* Supported operating modes (i.e., useful combinations of these options): */
 typedef enum AggSplit
 {
-	/* Basic, non-split aggregation: */
-	AGGSPLIT_SIMPLE = 0,
-	/* Initial phase of partial aggregation, with serialization: */
-	AGGSPLIT_INITIAL_SERIAL = AGGSPLITOP_SKIPFINAL | AGGSPLITOP_SERIALIZE,
-	/* Final phase of partial aggregation, with deserialization: */
-	AGGSPLIT_FINAL_DESERIAL = AGGSPLITOP_COMBINE | AGGSPLITOP_DESERIALIZE,
+  /* Basic, non-split aggregation: */
+  AGGSPLIT_SIMPLE = 0,
+  /* Initial phase of partial aggregation, with serialization: */
+  AGGSPLIT_INITIAL_SERIAL = AGGSPLITOP_SKIPFINAL | AGGSPLITOP_SERIALIZE,
+  /* Final phase of partial aggregation, with deserialization: */
+  AGGSPLIT_FINAL_DESERIAL = AGGSPLITOP_COMBINE | AGGSPLITOP_DESERIALIZE,
 } AggSplit;
 
 /* Test whether an AggSplit value selects each primitive option: */
-#define DO_AGGSPLIT_COMBINE(as)		(((as) & AGGSPLITOP_COMBINE) != 0)
-#define DO_AGGSPLIT_SKIPFINAL(as)	(((as) & AGGSPLITOP_SKIPFINAL) != 0)
-#define DO_AGGSPLIT_SERIALIZE(as)	(((as) & AGGSPLITOP_SERIALIZE) != 0)
+#define DO_AGGSPLIT_COMBINE(as)    (((as) & AGGSPLITOP_COMBINE) != 0)
+#define DO_AGGSPLIT_SKIPFINAL(as)  (((as) & AGGSPLITOP_SKIPFINAL) != 0)
+#define DO_AGGSPLIT_SERIALIZE(as)  (((as) & AGGSPLITOP_SERIALIZE) != 0)
 #define DO_AGGSPLIT_DESERIALIZE(as) (((as) & AGGSPLITOP_DESERIALIZE) != 0)
 
 /*
  * SetOpCmd and SetOpStrategy -
- *	  overall semantics and execution strategies for SetOp plan nodes
+ *    overall semantics and execution strategies for SetOp plan nodes
  *
  * This is needed in both pathnodes.h and plannodes.h, so put it here...
  */
 typedef enum SetOpCmd
 {
-	SETOPCMD_INTERSECT,
-	SETOPCMD_INTERSECT_ALL,
-	SETOPCMD_EXCEPT,
-	SETOPCMD_EXCEPT_ALL,
+  SETOPCMD_INTERSECT,
+  SETOPCMD_INTERSECT_ALL,
+  SETOPCMD_EXCEPT,
+  SETOPCMD_EXCEPT_ALL,
 } SetOpCmd;
 
 typedef enum SetOpStrategy
 {
-	SETOP_SORTED,				/* input must be sorted */
-	SETOP_HASHED,				/* use internal hashtable */
+  SETOP_SORTED,        /* input must be sorted */
+  SETOP_HASHED,        /* use internal hashtable */
 } SetOpStrategy;
 
 /*
  * OnConflictAction -
- *	  "ON CONFLICT" clause type of query
+ *    "ON CONFLICT" clause type of query
  *
  * This is needed in both parsenodes.h and plannodes.h, so put it here...
  */
 typedef enum OnConflictAction
 {
-	ONCONFLICT_NONE,			/* No "ON CONFLICT" clause */
-	ONCONFLICT_NOTHING,			/* ON CONFLICT ... DO NOTHING */
-	ONCONFLICT_UPDATE,			/* ON CONFLICT ... DO UPDATE */
+  ONCONFLICT_NONE,      /* No "ON CONFLICT" clause */
+  ONCONFLICT_NOTHING,      /* ON CONFLICT ... DO NOTHING */
+  ONCONFLICT_UPDATE,      /* ON CONFLICT ... DO UPDATE */
 } OnConflictAction;
 
 /*
  * LimitOption -
- *	LIMIT option of query
+ *  LIMIT option of query
  *
  * This is needed in both parsenodes.h and plannodes.h, so put it here...
  */
 typedef enum LimitOption
 {
-	LIMIT_OPTION_COUNT,			/* FETCH FIRST... ONLY */
-	LIMIT_OPTION_WITH_TIES,		/* FETCH FIRST... WITH TIES */
+  LIMIT_OPTION_COUNT,      /* FETCH FIRST... ONLY */
+  LIMIT_OPTION_WITH_TIES,    /* FETCH FIRST... WITH TIES */
 } LimitOption;
 
-#endif							/* NODES_H */
+#endif              /* NODES_H */

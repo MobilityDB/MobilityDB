@@ -90,7 +90,7 @@ endif()
 
 # Options for including the various optional types
 option(CBUFFER "Set ON|OFF (default=OFF) to include circular buffers" OFF)
-option(JSON "Set ON|OFF (default=ON) to include json types" ON)
+option(JSON "Set ON|OFF (default=ON) to include json types" OFF)
 option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
 option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
 CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)

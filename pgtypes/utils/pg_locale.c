@@ -44,6 +44,8 @@
 #include "utils/memutils.h"
 #include "utils/pg_locale.h"
 
+#include "../../meos/include/meos_error.h"
+
 // #include "postgres.h"
 // #include <time.h>
 // #include "access/htup_details.h"

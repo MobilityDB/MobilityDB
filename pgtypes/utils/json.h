@@ -28,6 +28,6 @@ extern Datum json_build_object_worker(int nargs, const Datum *args, const bool *
 									  bool unique_keys);
 extern Datum json_build_array_worker(int nargs, const Datum *args, const bool *nulls,
 									 const Oid *types, bool absent_on_null);
-extern bool json_validate(text *json, bool check_unique_keys, bool throw_error);
+extern bool json_validate(text *js, bool check_unique_keys, bool throw_error);
 
 #endif							/* JSON_H */

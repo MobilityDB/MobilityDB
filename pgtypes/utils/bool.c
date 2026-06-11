@@ -20,6 +20,8 @@
 #include "common/hashfn.h"
 #include "utils/builtins.h"
 
+#include "../../meos/include/meos_error.h"
+
 /*****************************************************************************/
 bool
 parse_bool_with_len(const char *value, size_t len, bool *result)
@@ -149,7 +151,7 @@ bool_in(const char *str)
     return result;
 
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "boolean", str);
+    "invalid input syntax for type boolean: \"%s\"", str);
   return false;
 }
 
@@ -183,7 +185,7 @@ bool_to_text(bool b)
     str = "true";
   else
     str = "false";
-  return cstring_to_text(str);
+  return pg_cstring_to_text(str);
 }
 
 /*****************************************************************************

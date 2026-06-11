@@ -42,18 +42,11 @@ endif()
 #-------------------------------------
 
 # Find PostgreSQL
-# Minimum supported version is 16. Older versions (14, 15) carry an
-# accumulating maintenance burden (per-version conditional code, allocator
-# differences exposed by the PG14/15 backend in load_jsonb_tables) that no
-# longer pays off; PostgreSQL 14 reaches end-of-life on 2026-11-12. Build
-# fails clearly here rather than letting the host pretend to be supported
-# and crashing later in fixtures.
-set(PG_MIN_MAJOR_VERSION "16")
+set(PG_MIN_MAJOR_VERSION "14")
+set(PG_MAX_MAJOR_VERSION "18")
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
-if(POSTGRESQL_VERSION_MAJOR VERSION_LESS PG_MIN_MAJOR_VERSION)
-  message(FATAL_ERROR
-    "MobilityDB requires PostgreSQL ${PG_MIN_MAJOR_VERSION} or newer. "
-    "Found ${POSTGRESQL_VERSION_STRING} at ${POSTGRESQL_PG_CONFIG}.")
+if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
+  message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
 
 include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
@@ -162,6 +155,10 @@ endif()
   # message(STATUS "Including circular buffers")
   # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 # endif()
+# if(JSON)
+  # message(STATUS "Including JSON types")
+  # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:json>")
+# endif()
 # if(NPOINT)
   # message(STATUS "Including network points")
   # set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
@@ -181,6 +178,10 @@ set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_geo>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_cbuffer>")
+endif()
+if(JSON)
+  message(STATUS "Including JSON types")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_json>")
 endif()
 if(NPOINT)
   message(STATUS "Including network points")

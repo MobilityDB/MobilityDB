@@ -33,6 +33,7 @@
 #include "utils/jsonb.h"
 
 #include "pgtypes.h"
+#include "../../meos/include/meos_error.h"
 
 extern Numeric int64_div_fast_to_numeric(int64 val1, int log10val2);
 
@@ -86,6 +87,47 @@ static Timestamp timestamptz2timestamp(TimestampTz timestamp);
 static void EncodeSpecialInterval(const Interval *interval, char *str);
 static void interval_um_internal(const Interval *interval, Interval *result);
 
+/*****************************************************************************/
+
+/* common code for timestamptypmodin and timestamptztypmodin */
+// static int32
+// anytimestamp_typmodin(bool istz, int32 *tl, int n)
+// {
+  // /*
+   // * we're not too tense about good error message here because grammar
+   // * shouldn't allow wrong number of modifiers for TIMESTAMP
+   // */
+  // if (n != 1)
+  // {
+    // meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      // "invalid type modifier");
+    // return -1;
+  // }
+  // return anytimestamp_typmod_check(istz, tl[0]);
+// }
+
+/* exported so parse_expr.c can use it */
+int32
+anytimestamp_typmod_check(bool istz, int32 typmod)
+{
+  if (typmod < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "TIMESTAMP(%d)%s precision must not be negative",
+      typmod, (istz ? " WITH TIME ZONE" : ""));
+    return -1;
+  }
+  if (typmod > MAX_TIMESTAMP_PRECISION)
+  {
+    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
+      "TIMESTAMP(%d)%s precision reduced to maximum allowed, %d",
+            typmod, (istz ? " WITH TIME ZONE" : ""),
+            MAX_TIMESTAMP_PRECISION);
+    typmod = MAX_TIMESTAMP_PRECISION;
+  }
+  return typmod;
+}
+
 /* common code for timestamptypmodout and timestamptztypmodout */
 static char *
 anytimestamp_typmodout(bool istz, int32 typmod)
@@ -132,7 +174,7 @@ pg_timestamp_in(const char *str, int32 typmod)
   dterr = pg_ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
     MAXDATEFIELDS, &nf);
   if (dterr == 0)
-    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
+    dterr = pg_DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
   if (dterr != 0)
   {
     pg_DateTimeParseError(dterr, &extra, str, "timestamp", NULL);
@@ -286,8 +328,8 @@ AdjustTimestampForTypmod(Timestamp *time, int32 typmod, Node *escontext UNUSED)
     }
     else
     {
-      *time = -((((-*time) + TimestampOffsets[typmod]) / TimestampScales[typmod])
-            * TimestampScales[typmod]);
+      *time = -((((-*time) + TimestampOffsets[typmod]) / 
+        TimestampScales[typmod]) * TimestampScales[typmod]);
     }
   }
 
@@ -325,7 +367,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
   dterr = pg_ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
     MAXDATEFIELDS, &nf);
   if (dterr == 0)
-    dterr = DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
+    dterr = pg_DecodeDateTime(field, ftype, nf, &dtype, tm, &fsec, &tz, &extra);
   if (dterr != 0)
   {
     pg_DateTimeParseError(dterr, &extra, str, "timestamp with time zone", NULL);
@@ -377,14 +419,14 @@ static int
 parse_sane_timezone(struct pg_tm *tm, text *zone)
 {
   char tzname[TZ_STRLEN_MAX + 1];
-  text_to_cstring_buffer(zone, tzname, sizeof(tzname));
+  pg_text_to_cstring_buffer(zone, tzname, sizeof(tzname));
 
   /*
    * Look up the requested timezone.  First we try to interpret it as a
-   * numeric timezone specification; if DecodeTimezone decides it doesn't
+   * numeric timezone specification; if pg_DecodeTimezone decides it doesn't
    * like the format, we try timezone abbreviations and names.
    *
-   * Note pg_tzset happily parses numeric input that DecodeTimezone would
+   * Note pg_tzset happily parses numeric input that pg_DecodeTimezone would
    * reject.  To avoid having it accept input that would otherwise be seen
    * as invalid, it's enough to disallow having a digit in the first
    * position of our input string.
@@ -392,13 +434,12 @@ parse_sane_timezone(struct pg_tm *tm, text *zone)
   if (isdigit((unsigned char) *tzname))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "invalid input syntax for type %s: \"%s\"",
-      "numeric time zone", tzname);
+      "invalid input syntax for type numeric time zone: \"%s\"", tzname);
     return INT_MAX;
   }
 
   int tz;
-  int dterr = DecodeTimezone(tzname, &tz);
+  int dterr = pg_DecodeTimezone(tzname, &tz);
   if (dterr != 0)
   {
     if (dterr == DTERR_TZDISP_OVERFLOW)
@@ -416,7 +457,7 @@ parse_sane_timezone(struct pg_tm *tm, text *zone)
 
     int val;
     pg_tz *tzp;
-    int type = DecodeTimezoneName(tzname, &val, &tzp);
+    int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
     if (type == TZNAME_FIXED_OFFSET)
     {
       /* fixed-offset abbreviation */
@@ -440,14 +481,14 @@ parse_sane_timezone(struct pg_tm *tm, text *zone)
 /*
  * Look up the requested timezone, returning a pg_tz struct.
  *
- * This is the same as DecodeTimezoneNameToTz, but starting with a text Datum.
+ * This is the same as pg_DecodeTimezoneNameToTz, but starting with a text Datum.
  */
 static pg_tz *
 lookup_timezone(text *zone)
 {
   char tzname[TZ_STRLEN_MAX + 1];
-  text_to_cstring_buffer(zone, tzname, sizeof(tzname));
-  return DecodeTimezoneNameToTz(tzname);
+  pg_text_to_cstring_buffer(zone, tzname, sizeof(tzname));
+  return pg_DecodeTimezoneNameToTz(tzname);
 }
 
 /*
@@ -742,11 +783,11 @@ pg_interval_in(const char *str, int32 typmod)
   dterr = pg_ParseDateTime(str, workbuf, sizeof(workbuf), field, ftype,
     MAXDATEFIELDS, &nf);
   if (dterr == 0)
-    dterr = DecodeInterval(field, ftype, nf, range, &dtype, itm_in);
+    dterr = pg_DecodeInterval(field, ftype, nf, range, &dtype, itm_in);
 
   /* if those functions think it's a bad format, try ISO8601 style */
   if (dterr == DTERR_BAD_FORMAT)
-    dterr = DecodeISO8601Interval((char *) str, &dtype, itm_in);
+    dterr = pg_DecodeISO8601Interval((char *) str, &dtype, itm_in);
 
   if (dterr != 0)
   {
@@ -1262,13 +1303,10 @@ GetCurrentTimestamp(void)
 {
   TimestampTz result;
   struct timeval tp;
-
   gettimeofday(&tp, NULL);
-
   result = (TimestampTz) tp.tv_sec -
     ((POSTGRES_EPOCH_JDATE - UNIX_EPOCH_JDATE) * SECS_PER_DAY);
   result = (result * USECS_PER_SEC) + tp.tv_usec;
-
   return result;
 }
 
@@ -1288,7 +1326,7 @@ time_of_day(void)
   pg_strftime(templ, sizeof(templ), "%a %b %d %H:%M:%S.%%06d %Y %Z",
     pg_localtime(&tt, session_timezone));
   snprintf(buf, sizeof(buf), templ, tp.tv_usec);
-  return cstring_to_text(buf);
+  return pg_cstring_to_text(buf);
 }
 
 /*
@@ -1579,7 +1617,7 @@ tm2timestamp(struct pg_tm *tm, fsec_t fsec, int *tzp, Timestamp *result)
   TimeOffset time = time2t(tm->tm_hour, tm->tm_min, tm->tm_sec, fsec);
 
   if (unlikely(pg_mul_s64_overflow(date, USECS_PER_DAY, result) ||
-         pg_add_s64_overflow(*result, time, result)))
+      pg_add_s64_overflow(*result, time, result)))
   {
     *result = 0;      /* keep compiler quiet */
     return -1;
@@ -4040,7 +4078,7 @@ pg_timestamp_trunc(Timestamp ts, const text *units)
     VARSIZE_ANY_EXHDR(units), false);
 
   int val;
-  int type = DecodeUnits(0, lowunits, &val);
+  int type = pg_DecodeUnits(0, lowunits, &val);
   if (type == UNITS)
   {
     if (TIMESTAMP_NOT_FINITE(ts))
@@ -4292,7 +4330,7 @@ timestamptz_trunc_internal(TimestampTz ts, const text *units, pg_tz *tzp)
     VARSIZE_ANY_EXHDR(units), false);
 
   int val;
-  int type = DecodeUnits(0, lowunits, &val);
+  int type = pg_DecodeUnits(0, lowunits, &val);
 
   if (type == UNITS)
   {
@@ -4522,7 +4560,7 @@ pg_interval_trunc(const Interval *interv, const text *units)
     VARSIZE_ANY_EXHDR(units), false);
 
   int val;
-  int type = DecodeUnits(0, lowunits, &val);
+  int type = pg_DecodeUnits(0, lowunits, &val);
   if (type == UNITS)
   {
     if (INTERVAL_NOT_FINITE(interv))
@@ -4871,9 +4909,9 @@ timestamp_part_common(text *units, Timestamp timestamp, bool retnumeric)
     VARSIZE_ANY_EXHDR(units), false);
 
   int val;
-  int type = DecodeUnits(0, lowunits, &val);
+  int type = pg_DecodeUnits(0, lowunits, &val);
   if (type == UNKNOWN_FIELD)
-    type = DecodeSpecial(0, lowunits, &val);
+    type = pg_DecodeSpecial(0, lowunits, &val);
 
   if (TIMESTAMP_NOT_FINITE(timestamp))
   {
@@ -5154,9 +5192,9 @@ timestamptz_part_common(TimestampTz timestamp, text *units, bool retnumeric)
 
   char *lowunits = downcase_truncate_identifier(VARDATA_ANY(units),
     VARSIZE_ANY_EXHDR(units), false);
-  type = DecodeUnits(0, lowunits, &val);
+  type = pg_DecodeUnits(0, lowunits, &val);
   if (type == UNKNOWN_FIELD)
-    type = DecodeSpecial(0, lowunits, &val);
+    type = pg_DecodeSpecial(0, lowunits, &val);
 
   if (TIMESTAMP_NOT_FINITE(timestamp))
   {
@@ -5485,9 +5523,9 @@ interval_part_common(const Interval *interval, const text *units,
     VARSIZE_ANY_EXHDR(units), false);
 
   int val;
-  int type = DecodeUnits(0, lowunits, &val);
+  int type = pg_DecodeUnits(0, lowunits, &val);
   if (type == UNKNOWN_FIELD)
-    type = DecodeSpecial(0, lowunits, &val);
+    type = pg_DecodeSpecial(0, lowunits, &val);
 
   if (INTERVAL_NOT_FINITE(interval))
   {
@@ -5741,10 +5779,10 @@ pg_timestamp_zone(Timestamp ts, const text *zone)
   /*
    * Look up the requested timezone.
    */
-  text_to_cstring_buffer(zone, tzname, sizeof(tzname));
+  pg_text_to_cstring_buffer(zone, tzname, sizeof(tzname));
   int val, tz;
   pg_tz *tzp;
-  int type = DecodeTimezoneName(tzname, &val, &tzp);
+  int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
   if (type == TZNAME_FIXED_OFFSET)
   {
     /* fixed-offset abbreviation */
@@ -5983,13 +6021,13 @@ pg_timestamptz_zone(TimestampTz tstz, const text *zone)
 
   /* Look up the requested timezone */
   char tzname[TZ_STRLEN_MAX + 1];
-  text_to_cstring_buffer(zone, tzname, sizeof(tzname));
+  pg_text_to_cstring_buffer(zone, tzname, sizeof(tzname));
 
   Timestamp result;
   int val;
   pg_tz *tzp;
   int tz;
-  int type = DecodeTimezoneName(tzname, &val, &tzp);
+  int type = pg_DecodeTimezoneName(tzname, &val, &tzp);
   if (type == TZNAME_FIXED_OFFSET)
   {
     /* fixed-offset abbreviation */
@@ -6089,7 +6127,7 @@ pg_timestamptz_izone(TimestampTz tstz, const Interval *zone)
 TimestampTz
 timestamp_at_local(Timestamp ts)
 {
-  return timestamp_to_timestamptz(ts);
+  return pg_timestamp_at_local(ts);
 }
 #endif
 TimestampTz
@@ -6104,8 +6142,15 @@ pg_timestamp_at_local(Timestamp ts)
  * @return Returns a timestamp without time zone. On error return DT_NOEND
  * @note Derived from PostgreSQL function @p timestamptz_at_local()
  */
+#if MEOS
 TimestampTz
-timestamptz_at_local(TimestampTz tstz)
+timestamptz_at_local(Timestamp ts)
+{
+  return pg_timestamptz_at_local(ts);
+}
+#endif
+TimestampTz
+pg_timestamptz_at_local(TimestampTz tstz)
 {
   return timestamptz_to_timestamp(tstz);
 }

@@ -21,6 +21,8 @@
 #include "common/int.h"
 #include "utils/builtins.h"
 
+#include "../../meos/include/meos_error.h"
+
 /* Sign + the most decimal digits an 8-byte number could have */
 #define MAXINT8LEN 20
 
@@ -37,6 +39,7 @@
 /**
  * @ingroup meos_base_int
  * @brief Return an int64 number from its string representation
+ * @return On error return `LONG_MAX`
  * @note Derived from PostgreSQL function @p int8in()
  */
 int64
@@ -53,11 +56,9 @@ int64_in(const char *str)
 char *
 int64_out(int64 num)
 {
-  char    buf[MAXINT8LEN + 1];
-  char     *result;
-  int      len;
-
-  len = pg_lltoa(num, buf) + 1;
+  char buf[MAXINT8LEN + 1];
+  char *result;
+  int len = pg_lltoa(num, buf) + 1;
 
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()

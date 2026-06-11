@@ -40,6 +40,8 @@
 #include "../Unicode/utf8_to_iso8859_9.map"
 #include "../Unicode/iso8859_16_to_utf8.map"
 
+#include "../../meos/include/meos_error.h"
+
 /* ----------
  * conv_proc(
  *    INTEGER,  -- source encoding id

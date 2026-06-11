@@ -116,6 +116,12 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
+#if JSON
+  T_JSONB          = 63,  /**< base type for PostgreSQL jsonb */
+  T_JSONPATH       = 64,  /**< base type for PostgreSQL jsonpath */
+  T_JSONBSET       = 65,  /**< static set of JSONB values */
+  T_TJSONB         = 66,  /**< temporal JSONB value */
+#endif /* JSON */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;
@@ -169,6 +175,10 @@ typedef enum
   ALWAYSLE_OP     = 40, /**< Alwaysle `%<=` operator */
   ALWAYSGT_OP     = 41, /**< Alwaysgt `%>` operator */
   ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
+#if JSON
+  TEMPCONTAINS_OP  = 43, /**< Contains `#@>` operator for JSON */
+  TEMPCONTAINED_OP = 44, /**< Contained `<@#` operator for JSON */
+#endif /* JSON */
 } MeosOper;
 
 /**

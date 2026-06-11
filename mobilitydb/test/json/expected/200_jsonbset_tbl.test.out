@@ -1,0 +1,231 @@
+COPY tbl_jsonbset TO '/tmp/tbl_jsonbset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_jsonbset_tmp;
+NOTICE:  table "tbl_jsonbset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_jsonbset_tmp AS TABLE tbl_jsonbset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_jsonbset_tmp FROM '/tmp/tbl_jsonbset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_jsonbset_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_jsonbset WHERE jsonbsetFromHexWKB(asHexWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT numValues(set(array_agg(DISTINCT jb ORDER BY jb))) FROM tbl_jsonb WHERE jb IS NOT NULL;
+ numvalues 
+-----------
+       100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb WHERE jb::jsonbset IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MAX(memSize(s::textset)) FROM tbl_jsonbset;
+ max  
+------
+ 1544
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset WHERE s = (s::textset)::jsonbset;
+ count 
+-------
+    99
+(1 row)
+
+SELECT MAX(memSize(set(jb))) FROM tbl_jsonb;
+ max 
+-----
+ 184
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset WHERE s @> startValue(s);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset WHERE startValue(s) <@ s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s && t2.s;
+ count 
+-------
+  5614
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s << t2.s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MAX(memSize(s || jb)) FROM tbl_jsonbset, tbl_jsonb;
+ max 
+-----
+ 256
+(1 row)
+
+SELECT MAX(memSize(s - text 'timestamp')) FROM tbl_jsonbset;
+ max  
+------
+ 1624
+(1 row)
+
+SELECT MAX(memSize(s + jb)) FROM tbl_jsonbset, tbl_jsonb;
+ max  
+------
+ 1784
+(1 row)
+
+SELECT MAX(memSize(t1.s + t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
+ max  
+------
+ 3224
+(1 row)
+
+SELECT MAX(memSize(s - jb)) FROM tbl_jsonbset, tbl_jsonb;
+ max  
+------
+ 1624
+(1 row)
+
+SELECT MAX(memSize(t1.s - t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
+ max  
+------
+ 1624
+(1 row)
+
+SELECT MAX(memSize(t1.s * t2.s)) FROM tbl_jsonbset t1, tbl_jsonbset t2;
+ max  
+------
+ 1464
+(1 row)
+
+SELECT MAX(memSize(s)) FROM tbl_jsonbset;
+ max  
+------
+ 1624
+(1 row)
+
+SELECT MIN(numValues(s)) FROM tbl_jsonbset;
+ min 
+-----
+   1
+(1 row)
+
+SELECT MIN(length(startValue(s)::text)) FROM tbl_jsonbset;
+ min 
+-----
+ 133
+(1 row)
+
+SELECT MIN(length(endValue(s)::text)) FROM tbl_jsonbset;
+ min 
+-----
+ 133
+(1 row)
+
+SELECT MIN(length(valueN(s, 1)::text)) FROM tbl_jsonbset;
+ min 
+-----
+ 133
+(1 row)
+
+SELECT MIN(array_length(getValues(s), 1)) FROM tbl_jsonbset;
+ min 
+-----
+   1
+(1 row)
+
+SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
+ numvalues 
+-----------
+       100
+(1 row)
+
+WITH test1(k, s) AS (
+  SELECT k, unnest(s) FROM tbl_jsonbset ),
+test2 (k, s) AS (
+  SELECT k, setUnion(s) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_jsonbset t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+    35
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE set_cmp(t1.s, t2.s) = -1;
+ count 
+-------
+   557
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s = t2.s;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s <> t2.s;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s < t2.s;
+ count 
+-------
+   557
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s <= t2.s;
+ count 
+-------
+   718
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s > t2.s;
+ count 
+-------
+  9083
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >= t2.s;
+ count 
+-------
+  9244
+(1 row)
+
+SELECT MAX(set_hash(s)) FROM tbl_jsonbset;
+    max     
+------------
+ 2107504745
+(1 row)
+
+SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
+ numvalues 
+-----------
+       100
+(1 row)
+

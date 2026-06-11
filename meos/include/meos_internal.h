@@ -750,6 +750,9 @@ typedef enum
 typedef Datum (*datum_func1) (Datum);
 typedef Datum (*datum_func2) (Datum, Datum);
 typedef Datum (*datum_func3) (Datum, Datum, Datum);
+typedef Datum (*datum_func4) (Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func5) (Datum, Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func6) (Datum, Datum, Datum, Datum, Datum, Datum);
 
 /*****************************************************************************
  * Internal function accessing the Gnu Scientic Library (GSL)
