@@ -39,6 +39,11 @@
 #include <float.h>
 #include <math.h>
 #include <limits.h>
+/* <locale.h> (locale_t, setlocale, newlocale) and <string.h> (strcmp,
+ * strlen) are pulled in transitively via <postgres.h> below; including
+ * them again here would be redundant and would trip Codacy's cppcheck
+ * wrapper with cppcheck_missingIncludeSystem on every PR (it doesn't
+ * see compile_commands.json). */
 /* PostgreSQL */
 #include <postgres.h>
 #include <common/int.h>
@@ -310,6 +315,83 @@ int8_out(int64 val)
  * Functions adapted from float.c
  *****************************************************************************/
 
+/*
+ * Locale-safe wrapper for strtod(). MEOS reads doubles back from text in
+ * many parsers (WKT, sets, spans, temporal constants, ...). The libc
+ * strtod() honors LC_NUMERIC, so under e.g. de_DE.UTF-8 it expects a
+ * comma decimal separator and would silently mis-parse "1.5" — breaking
+ * the entire WKT round-trip.
+ *
+ * MEOS pins numeric I/O to the C locale regardless of the process locale.
+ * Two implementation strategies are tried in order:
+ *
+ *   1. POSIX 2008 strtod_l() against a private, lazily-initialised
+ *      locale_t. This is thread-safe.
+ *   2. Save / setlocale(LC_NUMERIC,"C") / strtod / restore. Portable
+ *      everywhere strtod_l is unavailable, but not thread-safe (the
+ *      restore window is observable to other threads). MEOS is not
+ *      yet thread-safe overall (see #404 / PR #815) so this is
+ *      acceptable as a fallback today.
+ *
+ * We do NOT call setlocale() at MEOS init time because downstream
+ * consumers (PyMEOS, JMEOS, ...) can legitimately want a non-C locale
+ * for their own code (display, message catalogs, ...).
+ *
+ * Issue #425 — see meos.h for the documented locale contract.
+ */
+#if defined(LC_NUMERIC_MASK) && defined(__GLIBC__)
+  #define MEOS_HAVE_STRTOD_L 1
+#elif defined(LC_NUMERIC_MASK) && (defined(__APPLE__) || defined(__FreeBSD__))
+  #define MEOS_HAVE_STRTOD_L 1
+#endif
+
+#if MEOS_HAVE_STRTOD_L
+/* Explicit forward declarations: strtod_l/newlocale require POSIX 2008
+ * feature test macros to appear in <stdlib.h>/<locale.h>, and the MEOS
+ * build doesn't set those globally (the postgres headers manage their
+ * own feature macros). Without a visible prototype the compiler treats
+ * strtod_l as returning int, which silently truncates the double — see
+ * #425 for the bug story. */
+extern double strtod_l(const char *str, char **endptr, locale_t loc);
+extern locale_t newlocale(int category_mask, const char *locale,
+  locale_t base);
+/* Note: freelocale's return type differs across platforms (POSIX/macOS
+ * declare it as int, glibc < 2.32 as void), so we don't forward-declare
+ * it. We never call it anyway: the C-locale handle lives for the
+ * process lifetime. */
+static locale_t meos_c_locale = (locale_t) 0;
+#endif
+
+double
+meos_strtod(const char *str, char **endptr)
+{
+#if MEOS_HAVE_STRTOD_L
+  if (meos_c_locale == (locale_t) 0)
+    meos_c_locale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  if (meos_c_locale != (locale_t) 0)
+    return strtod_l(str, endptr, meos_c_locale);
+#endif
+  /* Portable fallback: save the current LC_NUMERIC, switch to "C" for
+   * the parse, restore it. Not thread-safe (other threads could see the
+   * "C" value during the parse), but always correct.
+   *
+   * Skip the dance if we are already in a C-equivalent locale, which
+   * avoids two strdup/free pairs on the hot path. */
+  const char *cur = setlocale(LC_NUMERIC, NULL);
+  if (cur == NULL || strcmp(cur, "C") == 0 || strcmp(cur, "POSIX") == 0)
+    return strtod(str, endptr);
+  char *saved = strdup(cur);
+  setlocale(LC_NUMERIC, "C");
+  double val = strtod(str, endptr);
+  if (saved != NULL)
+  {
+    setlocale(LC_NUMERIC, saved);
+    free(saved);
+  }
+  return val;
+}
+
+
 /**
  * float8in_internal_opt_error - guts of float8in()
  * @return On error return @p DBL_MAX
@@ -351,7 +433,7 @@ float8_in_opt_error(char *num, const char *type_name, const char *orig_string)
   }
 
   errno = 0;
-  val = strtod(num, &endptr);
+  val = meos_strtod(num, &endptr);
 
   /* did we not see anything that looks like a double? */
   if (endptr == num || errno != 0)

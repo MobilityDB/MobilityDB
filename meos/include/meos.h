@@ -49,6 +49,22 @@
 #endif
 
 /*****************************************************************************
+ * Locale contract (issue #425)
+ *
+ * MEOS pins all numeric I/O to the C locale: textual representations of
+ * doubles always use '.' as the decimal separator, regardless of the
+ * calling process's LC_NUMERIC setting. This guarantees that WKT, set,
+ * span, and temporal-constant parsing produces stable results across
+ * environments (CI, downstream bindings such as PyMEOS / JMEOS, ...).
+ *
+ * MEOS does NOT call setlocale() at initialization; downstream consumers
+ * remain free to set whatever process locale they need for *their own*
+ * code (display, message catalogs, ...). Locale-aware text collation is
+ * intentionally not yet wired up; varstr_cmp() falls back to byte-wise
+ * memcmp pending the full collation work tracked in issue #425.
+ *****************************************************************************/
+
+/*****************************************************************************
  * Toolchain dependent definitions
  *****************************************************************************/
 
