@@ -847,6 +847,46 @@ SELECT round(distance, 6) FROM test;
  40.799855
 (3 rows)
 
+WITH test AS (
+  SELECT temp |=| geometry 'SRID=3812;Point(1 1)' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 6.265196
+ 7.507952
+ 9.033748
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+ 19.586468
+ 40.510493
+ 55.551683
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeography 'SRID=7844;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 1290835.878317
+ 1464882.971455
+ 2106194.521674
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round     
+---------------
+ 264041.061863
+ 694000.259746
+ 928935.040099
+(3 rows)
+
 DROP INDEX tbl_tgeometry_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeometry3D_rtree_idx;
@@ -879,6 +919,46 @@ SELECT round(distance, 6) FROM test;
  33.126948
  36.208515
  40.799855
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geometry 'SRID=3812;Point(1 1)' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 6.265196
+ 7.507952
+ 9.033748
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((1,1),(2,2)),[2001-06-01, 2001-07-01])' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+ 19.586468
+ 40.510493
+ 55.551683
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| tgeography 'SRID=7844;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round      
+----------------
+ 1290835.878317
+ 1464882.971455
+ 2106194.521674
+(3 rows)
+
+WITH test AS (
+  SELECT temp |=| geography 'SRID=7844;Point(1 1)' AS distance FROM tbl_tgeography ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+     round     
+---------------
+ 264041.061863
+ 694000.259746
+ 928935.040099
 (3 rows)
 
 DROP INDEX tbl_tgeometry_quadtree_idx;
