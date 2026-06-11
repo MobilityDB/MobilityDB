@@ -1236,6 +1236,8 @@ geo_num_points(const GSERIALIZED *gs)
   return(npoints);
 }
 
+#endif /* MEOS */
+
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of composing geometries of a geometry
@@ -1318,7 +1320,6 @@ geo_geo_n(const GSERIALIZED *gs, int n)
   lwgeom_free(lwgeom);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
