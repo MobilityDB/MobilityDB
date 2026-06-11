@@ -1293,6 +1293,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Outlier Detection</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geo_wlof"><varname>wlocalOutlierFactor</varname></link>: Return the weighted local outlier factor (WLOF) of an array of geometries</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>

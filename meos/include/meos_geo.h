@@ -375,6 +375,10 @@ extern double geom_perimeter(const GSERIALIZED *gs);
 extern int line_numpoints(const GSERIALIZED *gs);
 extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 
+/* Analytics functions */
+
+extern double *geo_wlof(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k, double epsilon, uint32_t *newcount, GSERIALIZED ***clusters);
+
 /* Transformation functions */
 
 extern GSERIALIZED *geo_reverse(const GSERIALIZED *gs);
