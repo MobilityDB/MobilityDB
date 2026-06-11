@@ -381,8 +381,7 @@ tsequenceset_make_exp(TSequence **sequences, int count, int maxcount,
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
-    memcpy(((char *) result) + pdata + pos, normseqs[i],
-      VARSIZE(normseqs[i]));
+    memcpy(((char *) result) + pdata + pos, normseqs[i], VARSIZE(normseqs[i]));
     (TSEQUENCESET_OFFSETS_PTR(result))[i] = pos;
     pos += DOUBLE_PAD(VARSIZE(normseqs[i]));
   }

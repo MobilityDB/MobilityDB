@@ -941,8 +941,8 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
   /* Iterate as in #tpointseq_linear_trajectory accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    GSERIALIZED *gs = tpointseq_linear_trajectory(seq, unary_union);
+    GSERIALIZED *gs = tpointseq_linear_trajectory(TSEQUENCESET_SEQ_N(ss, i),
+      unary_union);
     if (gserialized_get_type(gs) == POINTTYPE)
       points[npoints++] = gs;
     else
@@ -1100,12 +1100,11 @@ tpointinst_to_geomeas(const TInstant *inst, const TInstant *meas)
 static GSERIALIZED *
 tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
 {
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const TInstant *m = meas ? TSEQUENCE_INST_N(meas, 0) : NULL;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
-    return tpointinst_to_geomeas(inst, m);
+    return tpointinst_to_geomeas(TSEQUENCE_INST_N(seq, 0), m);
 
   /* General case */
   int32_t srid = tspatial_srid((Temporal *) seq);
@@ -1114,9 +1113,8 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    inst = TSEQUENCE_INST_N(seq, i);
     m = meas ? TSEQUENCE_INST_N(meas, i) : NULL;
-    points[i] = tpointinst_to_geomeas_iter(inst, m);
+    points[i] = tpointinst_to_geomeas_iter(TSEQUENCE_INST_N(seq, i), m);
   }
   LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
     NULL, (uint32_t) seq->count, points);
@@ -1154,16 +1152,14 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   LWGEOM **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Keep the first point */
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const TInstant *m = meas ? TSEQUENCE_INST_N(meas, 0) : NULL;
-  LWGEOM *value1 = tpointinst_to_geomeas_iter(inst, m);
+  LWGEOM *value1 = tpointinst_to_geomeas_iter(TSEQUENCE_INST_N(seq, 0), m);
   points[0] = value1;
   int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
-    inst = TSEQUENCE_INST_N(seq, i);
     m = meas ? TSEQUENCE_INST_N(meas, i) : NULL;
-    LWGEOM *value2 = tpointinst_to_geomeas_iter(inst, m);
+    LWGEOM *value2 = tpointinst_to_geomeas_iter(TSEQUENCE_INST_N(seq, i), m);
     /* Do not add a point if it is equal to the previous one */
     if (lwpoint_same((LWPOINT *) value1, (LWPOINT *) value2) != LW_TRUE)
     {
@@ -1301,16 +1297,14 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
   int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const TInstant *m = meas ? TSEQUENCE_INST_N(meas, 0) : NULL;
   LWGEOM **lines = palloc(sizeof(LWGEOM *) * (seq->count - 1));
   LWGEOM *points[2];
-  points[0] = tpointinst_to_geomeas_iter(inst, m);
+  points[0] = tpointinst_to_geomeas_iter(TSEQUENCE_INST_N(seq, 0), m);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    inst = TSEQUENCE_INST_N(seq, i + 1);
     m = meas ? TSEQUENCE_INST_N(meas, i + 1) : NULL;
-    points[1] = tpointinst_to_geomeas_iter(inst, m);
+    points[1] = tpointinst_to_geomeas_iter(TSEQUENCE_INST_N(seq, i + 1), m);
     lines[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, points);
     FLAGS_SET_Z(lines[i]->flags, hasz);
     FLAGS_SET_GEODETIC(lines[i]->flags, geodetic);
