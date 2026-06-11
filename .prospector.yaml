@@ -1,0 +1,50 @@
+# Prospector config for the Python dev scripts in this repo (under
+# `tools/` and `scripts/`). Codacy's Prospector wrapper picks this file
+# up from the repo root.
+#
+# pydocstyle leaves both D212 ("multi-line docstring summary should start
+# at the first line") and D213 ("…second line") active even though they
+# are mutually exclusive -- any multi-line docstring trips exactly one of
+# them. Disable D213 to enforce the PEP 257 first-line summary convention.
+#
+# The per-function design thresholds (locals, branches, statements,
+# arguments, cyclomatic complexity) are relaxed for the argparse-and-I/O
+# wiring `main` functions and the regex-driven source scanners: these are
+# inherently branchy by purpose and would lose readability if split.
+strictness: medium
+
+ignore-paths:
+  - postgis
+  - postgres
+  - pgtypes
+  - h3-pg
+  - meos/examples
+  - meos/test
+  - mobilitydb/test
+
+pydocstyle:
+  run: true
+  options:
+    add-ignore: D213
+
+pep257:
+  run: true
+  options:
+    add-ignore: D213
+
+pylint:
+  options:
+    max-line-length: 120
+  disable:
+    - too-many-locals
+    - too-many-branches
+    - too-many-statements
+    - too-many-arguments
+    - too-many-positional-arguments
+
+pep8:
+  options:
+    max-line-length: 120
+
+mccabe:
+  run: false
