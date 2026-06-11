@@ -308,7 +308,7 @@ int main(void)
     if (pos < 0)
     {
       skiplist_splice(list, NULL, (void **) &newrec_p, 1, NULL, false,
-        KEYVALUE);
+        SKIPLIST_KEYVALUE);
       pos = skiplist_search(list, NULL, (void *)(&newrec));
     }
     SkipListElem *e = (SkipListElem *) &list->elems[pos];
