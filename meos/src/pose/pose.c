@@ -392,13 +392,13 @@ pose_parse(const char **str, bool end)
   /* Determine whether the pose has a geometry */
   int32_t srid_geo;
   GSERIALIZED *geo = NULL;
-  if (strncasecmp(*str,"POSE",4) != 0)
+  if (pg_strncasecmp(*str, "POSE", 4) != 0)
   {
     if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
       return NULL;
   }
 
-  if (strncasecmp(*str, "POSE", 4) == 0)
+  if (pg_strncasecmp(*str, "POSE", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);

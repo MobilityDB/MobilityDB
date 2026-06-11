@@ -1,0 +1,108 @@
+name: Build MEOS on Windows (MSYS2/UCRT64)
+
+# Builds the standalone MEOS C library natively on Windows under MSYS2's
+# UCRT64 runtime.  This workflow gates issue #513 (native Windows MEOS support).
+#
+# What this job verifies:
+#   * cmake -DMEOS=ON resolves all dependencies under MSYS2 mingw-w64
+#     (json-c, geos, proj, gsl, tzdata).
+#   * The standalone libmeos.dll links cleanly.
+#   * A minimal smoke test (meos/test/temporal_test) builds and runs.
+#
+# Note: full MSVC support requires sweeping PGDLLEXPORT onto every public
+# extern declaration in meos.h / meos_*.h.  That is intentionally left as
+# a follow-up; MinGW-GCC under MSYS2 exports symbols by default
+# (--export-all-symbols) so this CI runs without that sweep.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/windows_msys2_meos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/windows_msys2_meos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'postgis/**'
+      - 'postgres/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+
+jobs:
+  build-meos:
+    name: meos-windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2 (UCRT64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-json-c
+            mingw-w64-ucrt-x86_64-geos
+            mingw-w64-ucrt-x86_64-proj
+            mingw-w64-ucrt-x86_64-gsl
+            mingw-w64-ucrt-x86_64-tzdata
+
+      - name: Resolve native timezone data path
+        run: |
+          # cygpath -m converts the MSYS2 POSIX path to a Windows-native path
+          # (forward slashes, e.g. C:/msys64/ucrt64/share/zoneinfo) that fopen()
+          # inside the compiled DLL can open at runtime.
+          TZDATA_WIN=$(cygpath -m "$MSYSTEM_PREFIX/share/zoneinfo")
+          echo "MEOS_TZDATA_WIN=$TZDATA_WIN" >> "$GITHUB_ENV"
+
+      - name: Configure (MEOS=ON, no PostgreSQL extension)
+        run: |
+          # POSE pulls in RGEO via CMAKE_DEPENDENT_OPTION; we leave RGEO off
+          # for now because rgeo's compilation on Windows depends on PostGIS
+          # build-tree generated headers that have not been verified there.
+          cmake -S . -B build-meos \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
+            -DMEOS=ON \
+            -DCBUFFER=ON -DNPOINT=ON -DPOSE=OFF -DRGEO=OFF \
+            -DMEOS_TZDATA_DIR="$MEOS_TZDATA_WIN"
+
+      - name: Build libmeos
+        run: cmake --build build-meos -j
+
+      - name: Install libmeos
+        run: cmake --install build-meos
+
+      - name: Show built artifacts
+        run: |
+          ls -la build-meos/
+          ls -la meos-install/bin meos-install/lib meos-install/include 2>/dev/null || true
+          # CMake on MSYS2/MinGW puts the .dll in the install bin/ dir and
+          # the .dll.a import lib in lib/. Confirm both exist.
+          test -f build-meos/meos/libmeos.dll || (echo "libmeos.dll not produced"; exit 1)
+
+      - name: Smoke test (build temporal_test against installed libmeos)
+        run: |
+          gcc -I meos-install/include \
+            -L meos-install/lib \
+            -o meos-install/temporal_test.exe \
+            meos/test/temporal_test.c \
+            -lmeos
+          PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PATH" ./meos-install/temporal_test.exe \
+            || (echo "temporal_test.exe failed at runtime"; exit 1)
