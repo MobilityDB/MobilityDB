@@ -189,6 +189,70 @@ tpoint_force2d(const Temporal *temp)
 /*****************************************************************************/
 
 /**
+ * @brief Return the timestamp at which a segment of a geodetic temporal point
+ * is equal to a 2D point, using planar (lon/lat-as-Cartesian) arithmetic
+ * @details GEOS intersection is computed in 2D planar space; the resulting
+ * point lies on the planar straight line but deviates from the geodetic
+ * great-circle arc by up to a few microradians, which exceeds MEOS_EPSILON
+ * when using spherical distance. This function uses 2D Cartesian arithmetic
+ * matching GEOS's computation, so the residual distance is essentially zero.
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] gs Intersection point (GSERIALIZED, may be geodetic or planar)
+ * @param[out] t Timestamp
+ * @return Return true if the point is found within the segment
+ */
+static bool
+tpointsegm_timestamp_at_value_2d_iter(const TInstant *inst1,
+  const TInstant *inst2, const GSERIALIZED *gs, TimestampTz *t)
+{
+  const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value_p(inst1));
+  const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value_p(inst2));
+  const POINT2D *p  = GSERIALIZED_POINT2D_P(gs);
+  if (MEOS_FP_EQ(p->x, p1->x) && MEOS_FP_EQ(p->y, p1->y))
+  {
+    *t = inst1->t;
+    return true;
+  }
+  if (MEOS_FP_EQ(p->x, p2->x) && MEOS_FP_EQ(p->y, p2->y))
+  {
+    *t = inst2->t;
+    return true;
+  }
+  POINT2D proj;
+  double fraction = (double) closest_point2d_on_segment_ratio(p, p1, p2, &proj);
+  double dist = distance2d_pt_pt(p, &proj);
+  if (fraction < 0.0 || fraction > 1.0 || fabs(dist) >= MEOS_EPSILON)
+    return false;
+  double duration = (double) (inst2->t - inst1->t);
+  *t = inst1->t + (TimestampTz) (duration * fraction);
+  return true;
+}
+
+/**
+ * @brief Return the timestamp at which a geodetic temporal point sequence
+ * is equal to a point, using planar (lon/lat-as-Cartesian) arithmetic
+ * @param[in] seq Temporal point sequence
+ * @param[in] gs Intersection point (serialized, may be geodetic or planar)
+ * @param[out] t Timestamp
+ */
+static bool
+tpointseq_timestamp_at_value_2d(const TSequence *seq, const GSERIALIZED *gs,
+  TimestampTz *t)
+{
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    if (tpointsegm_timestamp_at_value_2d_iter(inst1, inst2, gs, t))
+      return true;
+    inst1 = inst2;
+  }
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "The value has not been found due to roundoff errors");
+  return false;
+}
+
+/**
  * @brief Return the timestamp at which a segment of a temporal point takes a
  * base value (iterator function)
  * @details To take into account roundoff errors, the function considers that
@@ -1661,13 +1725,17 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
         line_inter = lwgeom_as_lwline(subgeom);
       type = subgeom->type;
     }
+    bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
     TimestampTz t1, t2;
     GSERIALIZED *gspoint;
     /* Each intersection is either a point or a linestring */
     if (type == POINTTYPE)
     {
       gspoint = geo_serialize((LWGEOM *) point_inter);
-      tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
+      if (geodetic)
+        tpointseq_timestamp_at_value_2d(seq, gspoint, &t1);
+      else
+        tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* If the intersection is not at an exclusive bound */
       if ((seq->period.lower_inc || t1 > start->t) &&
@@ -1681,13 +1749,19 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
       LWPOINT *point = lwline_get_lwpoint(line_inter, 0);
       gspoint = geo_serialize((LWGEOM *) point);
       lwpoint_free(point);
-      tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
+      if (geodetic)
+        tpointseq_timestamp_at_value_2d(seq, gspoint, &t1);
+      else
+        tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* Get the fraction of the end point of the intersecting line */
       point = lwline_get_lwpoint(line_inter, line_inter->points->npoints - 1);
       gspoint = geo_serialize((LWGEOM *) point);
       lwpoint_free(point);
-      tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2);
+      if (geodetic)
+        tpointseq_timestamp_at_value_2d(seq, gspoint, &t2);
+      else
+        tpointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2);
       pfree(gspoint);
       /* If t1 == t2 and the intersection is not at an exclusive bound */
       if (t1 == t2)
