@@ -75,19 +75,13 @@ jobs:
             --enable=warning,style,performance,portability \
             --inline-suppr \
             --suppress='*:*/postgres/*' \
-            --suppress='*:*/postgis/*' \
-            --suppress='*:*/pgtypes/*' \
-            --suppress='*:*/h3-pg/*' \
             --suppress='*:postgres/*' \
+            --suppress='*:*/postgis/*' \
             --suppress='*:postgis/*' \
+            --suppress='*:*/pgtypes/*' \
             --suppress='*:pgtypes/*' \
-            --suppress='*:h3-pg/*' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
-            --suppress='preprocessorErrorDirective:*/postgres/*' \
-            --suppress='preprocessorErrorDirective:postgres/*' \
-            -DUINT64_FORMAT='"%llu"' \
-            -DINT64_FORMAT='"%lld"' \
             --xml --xml-version=2 \
             -j "$(nproc)" \
             2> cppcheck.xml || true

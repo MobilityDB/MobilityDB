@@ -40,6 +40,7 @@
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+#include "utils/varlena.h"
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -49,7 +50,6 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -69,6 +69,10 @@
 #if RGEO
   #include "rgeo/trgeo_all.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")
 #define MEOS_WKT_INT4_SIZE sizeof("+2147483647")
@@ -94,23 +98,6 @@ extern bool string_escape(const char *str, int quotes, char **result);
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return the string representation of a text value
- * @param[in] txt Text
- */
-char *
-text_out(const text *txt)
-{
-  assert(txt);
-  char *str = text2cstring(txt);
-  size_t size = strlen(str) + 4;
-  char *result = palloc(size);
-  snprintf(result, size, "\"%s\"", str);
-  pfree(str);
-  return result;
-}
-
-/**
  * @brief Return the string representation of a base value
  * @return On error return @p NULL
  */
@@ -128,9 +115,9 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_BOOL:
       return bool_out(DatumGetBool(value));
     case T_INT4:
-      return int4_out(DatumGetInt32(value));
+      return int32_out(DatumGetInt32(value));
     case T_INT8:
-      return int8_out(DatumGetInt64(value));
+      return int64_out(DatumGetInt64(value));
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
@@ -207,7 +194,7 @@ double_as_mfjson_sb(stringbuffer_t *sb, double d, int precision)
 static void
 text_as_mfjson_sb(stringbuffer_t *sb, const text *txt)
 {
-  char *str = text2cstring(txt);
+  char *str = text_to_cstring(txt);
   stringbuffer_aprintf(sb, "\"%s\"", str);
   pfree(str);
   return;
@@ -819,15 +806,11 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   if (flags == 0)
     return result;
 
-  /* Convert to JSON and back to a C string to apply flags using json-c.
-   * Use pstrdup so the result is palloc-managed; mixing libc strdup with
-   * palloc/pfree corrupts PostgreSQL's memory bookkeeping (the workaround
-   * in the PG-extension caller had to comment out a pfree because of
-   * this). */
+  /* Convert to JSON and back to a C string to apply flags using json-c */
   json_tokener *jstok = json_tokener_new();
   struct json_object *jobj = json_tokener_parse_ex(jstok, result, -1);
   pfree(result);
-  result = pstrdup(json_object_to_json_string_ext(jobj, flags));
+  result = strdup(json_object_to_json_string_ext(jobj, flags));
   json_tokener_free(jstok);
   json_object_put(jobj);
   return result;
@@ -1441,7 +1424,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 
   /*
    * Get the text data directly from the varlena structure.
-   * This avoids the memory allocation of text2cstring.
+   * This avoids the memory allocation of text_to_cstring.
    */
   size_t size = VARSIZE_ANY_EXHDR(txt);
   char *str = VARDATA(txt);
@@ -2291,8 +2274,9 @@ datum_as_wkb(Datum value, MeosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    /* %zu (size_t) instead of UINT64_FORMAT — the latter is a
-     * postgres-internal macro cppcheck can't resolve. */
+    /* Use %zu (size_t) instead of UINT64_FORMAT — the latter is a
+     * postgres internal macro cppcheck can't resolve, and the value
+     * here is a size_t buf_size anyway. */
     meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
       "Unable to allocate %zu bytes for WKB output buffer.", buf_size);
     return NULL;

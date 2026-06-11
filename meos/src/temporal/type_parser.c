@@ -46,13 +46,11 @@
 #include "temporal/type_util.h"
 #include "geo/tspatial_parser.h"
 
-// #include <utils/jsonb.h>
-// #include <utils/numeric.h>
-// #include <pgtypes.h>
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
-/*****************************************************************************
- * Parsing functions
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @brief Ensure there is no more input excepted white spaces
