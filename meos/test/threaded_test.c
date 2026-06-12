@@ -44,6 +44,9 @@
  *     racing on shared library state;
  *   - WKT parsing (geometry_in / tgeompoint_in / ...) works concurrently
  *     because the lwgeom flex/bison globals are now MEOS_TLS;
+ *   - coordinate transforms (tspatial_transform) work concurrently because
+ *     each thread drives PROJ through its own per-thread PJ_CONTEXT, never
+ *     the shared global PJ_DEFAULT_CTX;
  *   - meos_errno reads/writes remain isolated per thread;
  *   - the GMT timezone bootstrap (postgres/timezone/localtime.c) is
  *     no longer racy under concurrent first-use.
@@ -87,14 +90,26 @@ worker(void *arg)
   /* Each thread uses a coordinate set that's unique to its id; if WKT
    * parsing were still process-shared, parse states would collide and
    * we'd see corrupted geometries or random parse failures. */
-  double base_x = (double) w->id;
-  double base_y = (double) w->id * 0.5;
+  /* Three geographic source CRS x 60 UTM zones x 2 hemispheres = 360 distinct
+   * (from,to) pairs, exceeding the 128-item per-thread transform cache so every
+   * iteration re-creates a PROJ transform and concurrent workers continually
+   * hammer the PJ context. Each source point sits at the central meridian of
+   * its target UTM zone, so the projection stays in-domain (no spurious
+   * errors). */
+  static const int src_srid[3] = { 4326, 4269, 4267 };
 
   for (int i = 0; i < w->iters; i++)
   {
+    int zone = (i + w->id) % 60 + 1;          /* UTM zone 1..60 */
+    bool north = ((i + w->id) & 1) != 0;
+    double lon = -177.0 + 6.0 * (zone - 1);   /* central meridian of the zone */
+    double lat = north ? 45.0 : -45.0;
+    int srid_from = src_srid[(i + w->id) % 3];
+    int srid_to = (north ? 32600 : 32700) + zone;
+
     snprintf(wkt, sizeof(wkt),
-      "[POINT(%.3f %.3f)@2024-01-01, POINT(%.3f %.3f)@2024-01-02]",
-      base_x, base_y, base_x + 1.0, base_y + 1.0);
+      "SRID=%d;[POINT(%.3f %.3f)@2024-01-01, POINT(%.3f %.3f)@2024-01-02]",
+      srid_from, lon, lat, lon + 0.1, lat + 0.1);
 
     Temporal *t = (Temporal *) tgeompoint_in(wkt);
     if (! t)
@@ -108,6 +123,14 @@ worker(void *arg)
       atomic_fetch_add(&w->errors, 1);
     if (temporal_num_instants(t) <= 0)
       atomic_fetch_add(&w->errors, 1);
+
+    /* Transform through PROJ on the per-thread PJ context. A shared global
+     * PJ context would race on its proj.db handle here. */
+    Temporal *tproj = tspatial_transform(t, srid_to);
+    if (! tproj)
+      atomic_fetch_add(&w->errors, 1);
+    else
+      free(tproj);
 
     free(t);
 

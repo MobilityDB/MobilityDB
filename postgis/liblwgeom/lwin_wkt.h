@@ -24,7 +24,7 @@
  **********************************************************************/
 
 #include "liblwgeom_internal.h"
-#include <meos_tls.h> /* MEOS: see issue #404 / lwin_wkt_lex.c */
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /*
 * Coordinate object to hold information about last coordinate temporarily.
@@ -41,18 +41,18 @@ typedef struct
 POINT;
 
 /*
-* Per-thread holder for the final output geometry of the WKT parser.
-* MEOS: thread-local — see lwin_wkt_lex.c rationale.
+* Global that holds the final output geometry for the WKT parser.
 */
+/* MEOS: per-thread (MEOS_TLS) in the standalone build so concurrent WKT
+ * parses on a host worker-thread pool each own their result; must match the
+ * definition in lwin_wkt_parse.y. The PG-extension build keeps the shared
+ * global (single-threaded backend). */
 extern MEOS_TLS LWGEOM_PARSER_RESULT global_parser_result;
 extern const char *parser_error_messages[];
 
-/*
-* Prototypes for the lexer
-*/
-extern void wkt_lexer_init(char *str);
-extern void wkt_lexer_close(void);
-extern int wkt_yylex_destroy(void);
+/* MEOS: the WKT lexer/parser is reentrant (per-thread yyscan_t); the scanner
+ * lifecycle is managed inside lwgeom_parse_wkt, so the old global lexer
+ * init/close/destroy prototypes are gone. */
 
 
 /*

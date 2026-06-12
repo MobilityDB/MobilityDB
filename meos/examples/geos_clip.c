@@ -42,7 +42,6 @@
 
 /* To print to stdout */
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 /* Input the GEOS headers */
@@ -54,31 +53,15 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 
-/*
-* GEOS requires two message handlers to return
-* error and notice message to the calling program.
-*
-*   typedef void(* GEOSMessageHandler) (const char *fmt,...)
-*
-* Here we stub out an example that just prints the
-* messages to stdout.
-*/
-static void
-geos_message_handler(const char* fmt, ...)
-{
-  va_list ap;
-  va_start(ap, fmt);
-  vprintf(fmt, ap);
-  va_end(ap);
-}
-
 int main()
 {
   /* Initialize MEOS */
   meos_initialize();
 
-  /* Send notice and error messages to our stdout handler */
-  initGEOS(geos_message_handler, geos_message_handler);
+  /* Retrieve the per-thread GEOS context handle owned by MEOS.  All GEOS
+   * operations use the reentrant GEOSXxx_r API with this handle so the
+   * example is thread-safe and consistent with the MEOS spatial helpers. */
+  GEOSContextHandle_t ctx = geos_get_context();
 
   /* A (normalized) temporal point */
   const char *tpoint_wkt = "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, "
@@ -89,7 +72,6 @@ int main()
   /* Check for parse success */
   if (! tpoint)
   {
-    finishGEOS();
     meos_finalize();
     return EXIT_FAILURE;
   }
@@ -97,20 +79,19 @@ int main()
   /* A polygon (actually a rectangle) */
   const char *poly_wkt = "POLYGON ((3 3,3 5,5 5,5 3,3 3))";
   /* Read the WKT into a geometry object */
-  GEOSWKTReader *reader = GEOSWKTReader_create();
-  GEOSGeometry *poly = GEOSWKTReader_read(reader, poly_wkt);
-  GEOSWKTReader_destroy(reader);
+  GEOSWKTReader *reader = GEOSWKTReader_create_r(ctx);
+  GEOSGeometry *poly = GEOSWKTReader_read_r(ctx, reader, poly_wkt);
+  GEOSWKTReader_destroy_r(ctx, reader);
 
   /* Check for parse success */
   if (! poly)
   {
-    finishGEOS();
     meos_finalize();
     return EXIT_FAILURE;
   }
 
   /* Prepare the geometry */
-  const GEOSPreparedGeometry *prep_poly = GEOSPrepare(poly);
+  const GEOSPreparedGeometry *prep_poly = GEOSPrepare_r(ctx, poly);
 
   /* Place to hold points to output */
   GEOSGeometry **geoms = (GEOSGeometry **) malloc(sizeof(GEOSGeometry *) *
@@ -129,24 +110,24 @@ int main()
     const TInstant *inst2 = TSEQUENCE_INST_N(tpoint, i);
     const POINT2D *pt2 = DATUM_POINT2D_P(&inst2->value);
     /* Make a GEOS point */
-    GEOSCoordSequence *seq = GEOSCoordSeq_create(2, 2);
-    GEOSCoordSeq_setXY(seq, 0, pt1->x, pt1->y);
-    GEOSCoordSeq_setXY(seq, 1, pt2->x, pt2->y);
-    GEOSGeometry *line = GEOSGeom_createLineString(seq);
+    GEOSCoordSequence *seq = GEOSCoordSeq_create_r(ctx, 2, 2);
+    GEOSCoordSeq_setXY_r(ctx, seq, 0, pt1->x, pt1->y);
+    GEOSCoordSeq_setXY_r(ctx, seq, 1, pt2->x, pt2->y);
+    GEOSGeometry *line = GEOSGeom_createLineString_r(ctx, seq);
     /* Check if the point and polygon intersect */
-    if (GEOSPreparedIntersects(prep_poly, line))
+    if (GEOSPreparedIntersects_r(ctx, prep_poly, line))
     {
       /* Save the ones that do */
-      GEOSGeometry *clip = GEOSIntersection(poly, line);
+      GEOSGeometry *clip = GEOSIntersection_r(ctx, poly, line);
       geoms[ngeoms++] = clip;
     }
     /* Clean up the ones that don't */
-    GEOSGeom_destroy(line);
+    GEOSGeom_destroy_r(ctx, line);
   }
 
   /* Put the successful geoms inside a geometry for WKT output */
-  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION,
-    geoms, ngeoms);
+  GEOSGeometry *result = GEOSGeom_createCollection_r(ctx,
+    GEOS_GEOMETRYCOLLECTION, geoms, ngeoms);
 
   /*
   * The GEOSGeom_createCollection() only takes ownership of the
@@ -156,12 +137,12 @@ int main()
   free(geoms);
 
   /* Convert result to WKT */
-  GEOSWKTWriter *writer = GEOSWKTWriter_create();
+  GEOSWKTWriter *writer = GEOSWKTWriter_create_r(ctx);
   /* Trim trailing zeros off output */
-  GEOSWKTWriter_setTrim(writer, 1);
-  GEOSWKTWriter_setRoundingPrecision(writer, 3);
-  char *wkt_result = GEOSWKTWriter_write(writer, result);
-  GEOSWKTWriter_destroy(writer);
+  GEOSWKTWriter_setTrim_r(ctx, writer, 1);
+  GEOSWKTWriter_setRoundingPrecision_r(ctx, writer, 3);
+  char *wkt_result = GEOSWKTWriter_write_r(ctx, writer, result);
+  GEOSWKTWriter_destroy_r(ctx, writer);
 
   /* Print answer */
   printf("Input Temporal Point:\n");
@@ -173,15 +154,12 @@ int main()
 
   /* Clean up everything we allocated */
   free(tpoint);
-  GEOSPreparedGeom_destroy(prep_poly);
-  GEOSGeom_destroy(poly);
-  GEOSGeom_destroy(result);
-  GEOSFree(wkt_result);
+  GEOSPreparedGeom_destroy_r(ctx, prep_poly);
+  GEOSGeom_destroy_r(ctx, poly);
+  GEOSGeom_destroy_r(ctx, result);
+  GEOSFree_r(ctx, wkt_result);
 
-  /* Clean up the global context */
-  finishGEOS();
-
-  /* Finalize MEOS */
+  /* Finalize MEOS, which releases the per-thread GEOS context */
   meos_finalize();
 
   /* Return */

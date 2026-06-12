@@ -28,6 +28,16 @@
 #include "lwgeom_log.h"
 #include <string.h>
 
+/* MEOS */
+/* PROJ documents PJ_CONTEXT as not thread-safe: concurrent calls sharing the
+ * global PJ_DEFAULT_CTX race on its proj.db/SQLite handle and cache. MEOS gives
+ * each thread its own context via proj_get_context() (declared in
+ * meos_internal_geo.h, defined in meos/src/temporal/meos.c); the transform
+ * helpers below use it instead of PJ_DEFAULT_CTX so MEOS is safe in
+ * multi-threaded hosts (JVM/Spark/Flink). Forward-declared here to avoid
+ * pulling a MEOS header into vendored liblwgeom. */
+extern PJ_CONTEXT *proj_get_context(void);
+
 /** convert decimal degrees to radians */
 static void
 to_rad(POINT4D *pt)
@@ -56,7 +66,7 @@ lwproj_from_str(const char* str_in, const char* str_out)
 	if (! (str_in && str_out))
 		return NULL;
 
-	PJ* pj = proj_create_crs_to_crs(PJ_DEFAULT_CTX, str_in, str_out, NULL);
+	PJ* pj = proj_create_crs_to_crs(proj_get_context() /* MEOS */, str_in, str_out, NULL);
 	if (!pj)
 		return NULL;
 
@@ -65,7 +75,7 @@ lwproj_from_str(const char* str_in, const char* str_out)
 	/* that info in the cache */
 	if (strcmp(str_in, str_out) == 0)
 	{
-		PJ *pj_source_crs = proj_get_source_crs(PJ_DEFAULT_CTX, pj);
+		PJ *pj_source_crs = proj_get_source_crs(proj_get_context() /* MEOS */, pj);
 		PJ *pj_ellps;
 		PJ_TYPE pj_type = proj_get_type(pj_source_crs);
 		if (pj_type == PJ_TYPE_UNKNOWN)
@@ -76,7 +86,7 @@ lwproj_from_str(const char* str_in, const char* str_out)
 		}
 		source_is_latlong = (pj_type == PJ_TYPE_GEOGRAPHIC_2D_CRS) || (pj_type == PJ_TYPE_GEOGRAPHIC_3D_CRS);
 
-		pj_ellps = proj_get_ellipsoid(PJ_DEFAULT_CTX, pj_source_crs);
+		pj_ellps = proj_get_ellipsoid(proj_get_context() /* MEOS */, pj_source_crs);
 		proj_destroy(pj_source_crs);
 		if (!pj_ellps)
 		{
@@ -84,7 +94,7 @@ lwproj_from_str(const char* str_in, const char* str_out)
 			lwerror("%s: unable to access source crs ellipsoid", __func__);
 			return NULL;
 		}
-		if (!proj_ellipsoid_get_parameters(PJ_DEFAULT_CTX,
+		if (!proj_ellipsoid_get_parameters(proj_get_context() /* MEOS */,
 						   pj_ellps,
 						   &semi_major_metre,
 						   &semi_minor_metre,
@@ -100,7 +110,7 @@ lwproj_from_str(const char* str_in, const char* str_out)
 	}
 
 	/* Add in an axis swap if necessary */
-	PJ* pj_norm = proj_normalize_for_visualization(PJ_DEFAULT_CTX, pj);
+	PJ* pj_norm = proj_normalize_for_visualization(proj_get_context() /* MEOS */, pj);
 	/* Swap failed for some reason? Fall back to coordinate operation */
 	if (!pj_norm)
 		pj_norm = pj;
@@ -125,7 +135,7 @@ lwproj_from_str_pipeline(const char* str_pipeline, bool is_forward)
 	if (!str_pipeline)
 		return NULL;
 
-	PJ* pj = proj_create(PJ_DEFAULT_CTX, str_pipeline);
+	PJ* pj = proj_create(proj_get_context() /* MEOS */, str_pipeline);
 	if (!pj)
 		return NULL;
 
@@ -134,7 +144,7 @@ lwproj_from_str_pipeline(const char* str_pipeline, bool is_forward)
 		return NULL;
 
 	/* Add in an axis swap if necessary */
-	PJ* pj_norm = proj_normalize_for_visualization(PJ_DEFAULT_CTX, pj);
+	PJ* pj_norm = proj_normalize_for_visualization(proj_get_context() /* MEOS */, pj);
 	if (!pj_norm)
 		pj_norm = pj;
 	/* Swap is not a copy of input? Clean up input */
@@ -159,7 +169,7 @@ lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr)
 	LWPROJ *lp = lwproj_from_str(instr, outstr);
 	if (!lp)
 	{
-		PJ *pj_in = proj_create(PJ_DEFAULT_CTX, instr);
+		PJ *pj_in = proj_create(proj_get_context() /* MEOS */, instr);
 		if (!pj_in)
 		{
 			proj_errno_reset(NULL);
@@ -167,7 +177,7 @@ lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr)
 		}
 		proj_destroy(pj_in);
 
-		PJ *pj_out = proj_create(PJ_DEFAULT_CTX, outstr);
+		PJ *pj_out = proj_create(proj_get_context() /* MEOS */, outstr);
 		if (!pj_out)
 		{
 			proj_errno_reset(NULL);
@@ -189,7 +199,7 @@ lwgeom_transform_pipeline(LWGEOM *geom, const char* pipelinestr, bool is_forward
 	LWPROJ *lp = lwproj_from_str_pipeline(pipelinestr, is_forward);
 	if (!lp)
 	{
-		PJ *pj_in = proj_create(PJ_DEFAULT_CTX, pipelinestr);
+		PJ *pj_in = proj_create(proj_get_context() /* MEOS */, pipelinestr);
 		if (!pj_in)
 		{
 			proj_errno_reset(NULL);

@@ -63,6 +63,8 @@ jobs:
           ./temporal_test
           gcc -Wall -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
+          gcc -Wall -g -I/usr/local/include -o parse_test parse_test.c -L/usr/local/lib -lmeos
+          ./parse_test
           gcc -Wall -g -I/usr/local/include -o npoint_test npoint_test.c -L/usr/local/lib -lmeos
           ./npoint_test
 
