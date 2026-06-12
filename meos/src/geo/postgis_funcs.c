@@ -936,6 +936,22 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
+ * @details Bare name for the planar (2D) distance-within test, the portable
+ * counterpart of @ref geog_dwithin() for geometry; equivalent to PostGIS
+ * @p ST_DWithin.
+ * @param[in] gs1,gs2 Geometries
+ * @param[in] tolerance Tolerance
+ * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
+ */
+inline bool
+geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
+{
+  return geom_dwithin2d(gs1, gs2, tolerance);
+}
+
+/**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if two geometries are within a distance
  * @param[in] gs1,gs2 Geometries
  * @param[in] tolerance Tolerance
  * @note PostGIS function: @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
@@ -1538,6 +1554,21 @@ inline bool
 geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, INTERSECTS);
+}
+
+/**
+ * @ingroup meos_geo_base_rel
+ * @brief Return true if two geometries intersect
+ * @details Bare name for the planar (2D) intersection test, the portable
+ * counterpart of @ref geog_intersects() for geometry; equivalent to PostGIS
+ * @p ST_Intersects.
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_Intersects(PG_FUNCTION_ARGS)
+ */
+inline bool
+geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  return geom_intersects2d(gs1, gs2);
 }
 
 #if MEOS
