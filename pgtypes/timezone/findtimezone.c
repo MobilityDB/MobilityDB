@@ -21,13 +21,15 @@
 #include <unistd.h>
 
 #include "pgtz.h"
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /* Ideally this would be in a .h file, but it hardly seems worth the trouble */
 extern const char *select_default_timezone(const char *share_path);
 
 
+/* MEOS: per-thread so concurrent default-timezone detection does not race. */
 #ifndef SYSTEMTZDIR
-static char tzdirpath[MAXPGPATH];
+static MEOS_TLS char tzdirpath[MAXPGPATH];
 #endif
 
 
@@ -93,7 +95,7 @@ pg_TZDIR(void)
 static pg_tz *
 pg_load_tz(const char *name)
 {
-	static pg_tz tz;
+	static MEOS_TLS pg_tz tz;  /* MEOS: per-thread (see meos_tls.h) */
 
 	if (strlen(name) > TZ_STRLEN_MAX)
 		return NULL;			/* not going to fit */
@@ -333,7 +335,7 @@ perfect_timezone_match(const char *tzname, struct tztry *tt)
 static const char *
 identify_system_timezone(void)
 {
-	static char resultbuf[TZ_STRLEN_MAX + 1];
+	static MEOS_TLS char resultbuf[TZ_STRLEN_MAX + 1];  /* MEOS: per-thread */
 	time_t		tnow;
 	time_t		t;
 	struct tztry tt;
