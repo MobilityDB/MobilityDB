@@ -888,42 +888,30 @@ tnumberseqset_avg_val(const TSequenceSet *ss)
 bool
 tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result)
 {
-  assert(ss);
-  assert(n >= 1 && n <= ss->totalcount);
-  if (n == 1)
-  {
-    *result = tinstant_value(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
-    return true;
-  }
-
-  /* Continue the search 0-based */
-  n--;
-  const TInstant *prev = NULL, *next = NULL; /* make compiler quiet */
-  bool first = true, found = false;
-  int i = 0, count = 0, prevcount = 0;
-  while (i < ss->count)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    count += seq->count;
-    if (! first && tinstant_eq(prev, TSEQUENCE_INST_N(seq, 0)))
-    {
-        prevcount --;
-        count --;
-    }
-    if (prevcount <= n && n < count)
-    {
-      next = TSEQUENCE_INST_N(seq, n - prevcount);
-      found = true;
-      break;
-    }
-    prevcount = count;
-    prev = TSEQUENCE_INST_N(seq, seq->count - 1);
-    first = false;
-    i++;
-  }
-  if (! found)
+  const TInstant *inst = tsequenceset_inst_n(ss, n);
+  if (! inst)
     return false;
-  *result = tinstant_value(next);
+  *result = tinstant_value(inst);
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return in the last argument a pointer to the n-th value of a temporal
+ * sequence set
+ * @details The returned value is borrowed from @p ss (no copy is made) and is
+ * valid for as long as @p ss lives; it must not be freed by the caller
+ * @param[in] ss Temporal sequence set
+ * @param[in] n Number
+ * @param[out] result Value
+ */
+bool
+tsequenceset_value_n_p(const TSequenceSet *ss, int n, Datum *result)
+{
+  const TInstant *inst = tsequenceset_inst_n(ss, n);
+  if (! inst)
+    return false;
+  *result = tinstant_value_p(inst);
   return true;
 }
 
