@@ -79,14 +79,14 @@
  * on malformed input or on a value that does not encode a valid H3
  * cell (libh3's `isValidCell`).
  */
-extern H3Index h3index_parse(const char *str);
+extern H3Index h3index_in(const char *str);
 
 /**
  * Format an H3Index into its canonical hex string (lowercase, no
  * "0x" prefix, no leading zeros — matches h3-pg's output). The
  * caller owns the returned `palloc`'d C string.
  */
-extern char *h3index_to_string(H3Index cell);
+extern char *h3index_out(H3Index cell);
 
 /*****************************************************************************
  * Comparison / ordering / hashing

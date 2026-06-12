@@ -64,7 +64,7 @@ Datum
 H3index_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_H3INDEX(h3index_parse(str));
+  PG_RETURN_H3INDEX(h3index_in(str));
 }
 
 PGDLLEXPORT Datum H3index_out(PG_FUNCTION_ARGS);
@@ -78,7 +78,7 @@ Datum
 H3index_out(PG_FUNCTION_ARGS)
 {
   H3Index cell = PG_GETARG_H3INDEX(0);
-  PG_RETURN_CSTRING(h3index_to_string(cell));
+  PG_RETURN_CSTRING(h3index_out(cell));
 }
 
 PGDLLEXPORT Datum H3index_recv(PG_FUNCTION_ARGS);

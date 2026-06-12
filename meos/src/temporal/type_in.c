@@ -159,7 +159,7 @@ basetype_in(const char *str, MeosType type,
 #if H3
     case T_H3INDEX:
     {
-      H3Index cell = h3index_parse(str);
+      H3Index cell = h3index_in(str);
       if (cell == (H3Index) 0)
         return false;
       *result = Int64GetDatum((int64) cell);

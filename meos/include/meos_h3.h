@@ -50,8 +50,8 @@
  *****************************************************************************/
 
 /* Input and output */
-extern H3Index h3index_parse(const char *str);
-extern char *h3index_to_string(H3Index cell);
+extern H3Index h3index_in(const char *str);
+extern char *h3index_out(H3Index cell);
 
 /* Comparisons */
 extern bool h3index_eq(H3Index a, H3Index b);
