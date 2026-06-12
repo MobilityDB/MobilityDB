@@ -419,8 +419,10 @@ extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool
 extern bool geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
+extern bool geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *patt);
