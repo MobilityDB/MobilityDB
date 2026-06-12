@@ -44,6 +44,8 @@
 #include "utils/memutils.h"
 #include "utils/pg_locale.h"
 
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
+
 // #include "postgres.h"
 // #include <time.h>
 // #include "access/htup_details.h"
@@ -142,11 +144,11 @@ char *localized_full_months[12 + 1];
 /* is the databases's LC_CTYPE the C locale? */
 bool database_ctype_is_c = false;
 
-static pg_locale_t default_locale = NULL;
+static MEOS_TLS pg_locale_t default_locale = NULL;
 
 /* indicates whether locale information cache is valid */
-static bool CurrentLocaleConvValid = false;
-static bool CurrentLCTimeValid = false;
+static MEOS_TLS bool CurrentLocaleConvValid = false;
+static MEOS_TLS bool CurrentLCTimeValid = false;
 
 // MEOS
 /**
@@ -196,7 +198,7 @@ typedef struct
 #define SH_DEFINE
 #include "lib/simplehash.h"
 
-static collation_cache_hash *CollationCache = NULL;
+static MEOS_TLS collation_cache_hash *CollationCache = NULL;
 
 // /**
  // * @brief Destroy function to free the memory allocated for the hash table
@@ -222,8 +224,8 @@ static collation_cache_hash *CollationCache = NULL;
  * The collation cache is often accessed repeatedly for the same collation, so
  * remember the last one used.
  */
-static Oid last_collation_cache_oid = InvalidOid;
-static pg_locale_t last_collation_cache_locale = NULL;
+static MEOS_TLS Oid last_collation_cache_oid = InvalidOid;
+static MEOS_TLS pg_locale_t last_collation_cache_locale = NULL;
 
 #if defined(WIN32) && defined(LC_MESSAGES)
 static char *IsoLocaleName(const char *);
@@ -370,7 +372,7 @@ pg_perm_setlocale(int category, const char *locale)
    */
   if (category == LC_CTYPE)
   {
-    static char save_lc_ctype[LOCALE_NAME_BUFLEN];
+    static MEOS_TLS char save_lc_ctype[LOCALE_NAME_BUFLEN];
 
     /* copy setlocale() return value before callee invokes it again */
     strlcpy(save_lc_ctype, result, sizeof(save_lc_ctype));
@@ -656,8 +658,8 @@ db_encoding_convert(int encoding, char **str)
 struct lconv *
 PGLC_localeconv(void)
 {
-  static struct lconv CurrentLocaleConv;
-  static bool CurrentLocaleConvAllocated = false;
+  static MEOS_TLS struct lconv CurrentLocaleConv;
+  static MEOS_TLS bool CurrentLocaleConvAllocated = false;
   struct lconv *extlconv;
   struct lconv tmp;
   struct lconv worklconv = {0};
@@ -1111,7 +1113,7 @@ get_iso_localename(const char *winlocname)
 {
   wchar_t    wc_locale_name[LOCALE_NAME_MAX_LENGTH];
   wchar_t    buffer[LOCALE_NAME_MAX_LENGTH];
-  static char iso_lc_messages[LOCALE_NAME_MAX_LENGTH];
+  static MEOS_TLS char iso_lc_messages[LOCALE_NAME_MAX_LENGTH];
   char     *period;
   int      len;
   int      ret_val;
@@ -1184,7 +1186,7 @@ get_iso_localename(const char *winlocname)
 static char *
 IsoLocaleName(const char *winlocname)
 {
-  static char iso_lc_messages[LOCALE_NAME_MAX_LENGTH];
+  static MEOS_TLS char iso_lc_messages[LOCALE_NAME_MAX_LENGTH];
 
   if (pg_strcasecmp("c", winlocname) == 0 ||
     pg_strcasecmp("posix", winlocname) == 0)
