@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_to_th3index);
  * @ingroup mobilitydb_h3_latlng
  * @brief Return the temporal H3 cell index of a temporal planar point at
  * the given resolution (SRID must be 4326)
- * @sqlfn tgeompoint_to_th3index()
+ * @sqlfn th3index()
  */
 Datum
 Tgeompoint_to_th3index(PG_FUNCTION_ARGS)
@@ -70,7 +70,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_to_th3index);
  * @ingroup mobilitydb_h3_latlng
  * @brief Return the temporal H3 cell index of a temporal geodetic point at
  * the given resolution
- * @sqlfn tgeogpoint_to_th3index()
+ * @sqlfn th3index()
  */
 Datum
 Tgeogpoint_to_th3index(PG_FUNCTION_ARGS)

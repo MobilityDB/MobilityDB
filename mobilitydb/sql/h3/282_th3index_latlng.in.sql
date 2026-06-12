@@ -42,15 +42,15 @@
  */
 
 /******************************************************************************
- * tgeompoint_to_th3index / tgeogpoint_to_th3index
+ * th3index (tgeompoint / tgeogpoint overloads)
  ******************************************************************************/
 
-CREATE FUNCTION tgeompoint_to_th3index(tgeompoint, integer)
+CREATE FUNCTION th3index(tgeompoint, integer)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeogpoint_to_th3index(tgeogpoint, integer)
+CREATE FUNCTION th3index(tgeogpoint, integer)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Tgeogpoint_to_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

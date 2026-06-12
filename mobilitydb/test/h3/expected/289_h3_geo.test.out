@@ -127,7 +127,7 @@ ERROR:  geo_to_h3index_set: resolution must be in [0..15]
 SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
 ERROR:  geo_to_h3index_set: resolution must be in [0..15]
 WITH t AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
                  POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
 )
@@ -142,7 +142,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
 (1 row)
 
 WITH t AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
                  POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
 )

@@ -33,7 +33,7 @@ SELECT h3_cell_to_latlng(th3index
 -- Round trip: latlng -> cell at the same resolution gives the original cell
 -- back. This holds because cellToLatLng yields the centroid, and
 -- latLngToCell maps the centroid to the same cell.
-SELECT tgeogpoint_to_th3index(
+SELECT th3index(
   h3_cell_to_latlng(th3index '622236750694711295@2001-01-01'), 10)
   = th3index '622236750694711295@2001-01-01';
 
@@ -45,12 +45,12 @@ SELECT h3_cell_to_latlng_tgeompoint(th3index
   '590464338553208831@2001-01-01') IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- tgeogpoint_to_th3index(tgeogpoint, integer)
+-- th3index(tgeogpoint, integer)
 -------------------------------------------------------------------------------
 
 -- A geodetic point indexed at resolution R yields a cell whose
 -- resolution is R.
-SELECT h3_get_resolution(tgeogpoint_to_th3index(
+SELECT h3_get_resolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence form. The densifying conversion resamples the trajectory into the
@@ -60,7 +60,7 @@ SELECT h3_get_resolution(tgeogpoint_to_th3index(
 -- preserves the endpoint cells (equal to the direct per-point conversion) and
 -- inserts the intermediate cells the path traverses.
 WITH densified AS (
-  SELECT tgeogpoint_to_th3index(
+  SELECT th3index(
     tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
     9) AS t
 )
@@ -70,20 +70,20 @@ SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 9) 
 FROM densified;
 
 -------------------------------------------------------------------------------
--- tgeompoint_to_th3index(tgeompoint, integer)
+-- th3index(tgeompoint, integer)
 --
 -- The tgeompoint overload requires SRID 4326; the adapter is
 -- expected to raise on mismatch.
 -------------------------------------------------------------------------------
 
-SELECT h3_get_resolution(tgeompoint_to_th3index(
+SELECT h3_get_resolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence input on the planar (SRID 4326) overload exercises the densify
 -- walker through the SRID-guarded first lookup; assert the build-stable
 -- endpoint cells equal the direct per-point conversion.
 WITH d AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7) AS t
 )
 SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
@@ -92,12 +92,12 @@ FROM d;
 
 -- Mismatched SRID — must error once the adapter validates
 /* Errors */
-SELECT tgeompoint_to_th3index(
+SELECT th3index(
   tgeompoint 'SRID=3857;POINT(-73.96 40.78)@2001-01-01', 9);
 
 -- Mismatched SRID on the densify (sequence) path must error too
 /* Errors */
-SELECT tgeompoint_to_th3index(
+SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 
 -------------------------------------------------------------------------------

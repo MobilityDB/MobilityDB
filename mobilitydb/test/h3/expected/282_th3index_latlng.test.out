@@ -24,7 +24,7 @@ SELECT h3_cell_to_latlng(th3index
  t
 (1 row)
 
-SELECT tgeogpoint_to_th3index(
+SELECT th3index(
   h3_cell_to_latlng(th3index '622236750694711295@2001-01-01'), 10)
   = th3index '622236750694711295@2001-01-01';
  ?column? 
@@ -39,7 +39,7 @@ SELECT h3_cell_to_latlng_tgeompoint(th3index
  t
 (1 row)
 
-SELECT h3_get_resolution(tgeogpoint_to_th3index(
+SELECT h3_get_resolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
        h3_get_resolution        
 --------------------------------
@@ -47,7 +47,7 @@ SELECT h3_get_resolution(tgeogpoint_to_th3index(
 (1 row)
 
 WITH densified AS (
-  SELECT tgeogpoint_to_th3index(
+  SELECT th3index(
     tgeogpoint '[POINT(-73.96 40.78)@2001-01-01, POINT(2.35 48.86)@2001-01-02]',
     9) AS t
 )
@@ -60,7 +60,7 @@ FROM densified;
  t                    | t                  | t
 (1 row)
 
-SELECT h3_get_resolution(tgeompoint_to_th3index(
+SELECT h3_get_resolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
        h3_get_resolution        
 --------------------------------
@@ -68,7 +68,7 @@ SELECT h3_get_resolution(tgeompoint_to_th3index(
 (1 row)
 
 WITH d AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7) AS t
 )
 SELECT startValue(t) = geoToH3Cell(geometry 'SRID=4326;POINT(-73.96 40.78)', 7) AS start_cell_preserved,
@@ -80,11 +80,11 @@ FROM d;
 (1 row)
 
 /* Errors */
-SELECT tgeompoint_to_th3index(
+SELECT th3index(
   tgeompoint 'SRID=3857;POINT(-73.96 40.78)@2001-01-01', 9);
 ERROR:  Only lon/lat coordinate systems are supported in geography
 /* Errors */
-SELECT tgeompoint_to_th3index(
+SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 ERROR:  Only lon/lat coordinate systems are supported in geography
 SELECT h3_cell_to_boundary(th3index '590464338553208831@2001-01-01') IS NOT NULL;

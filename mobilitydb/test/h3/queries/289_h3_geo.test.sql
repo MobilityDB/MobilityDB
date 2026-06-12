@@ -133,7 +133,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POINT(4.35 50.85)', 16);
 
 -- Build a th3index covering Brussels at resolution 7
 WITH t AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
                  POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
 )
@@ -145,7 +145,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;POLYGON((4.30 50.80, 4.45 50.80,
 
 -- Set covering a polygon that contains neither endpoint → prefilter false
 WITH t AS (
-  SELECT tgeompoint_to_th3index(
+  SELECT th3index(
     tgeompoint 'SRID=4326;[POINT(4.35 50.85)@2024-01-01,
                  POINT(4.40 50.90)@2024-01-02]', 7) AS th3idx
 )
