@@ -646,6 +646,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_same);
  * @brief Return true if two circular buffers are approximately equal with 
  * respect to an epsilon value
  * @sqlfn same()
+ * @sqlop @p ~=
  */
 Datum
 Cbuffer_same(PG_FUNCTION_ARGS)
