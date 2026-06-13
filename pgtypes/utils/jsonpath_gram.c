@@ -2287,7 +2287,10 @@ makeItemList(List *list)
   head = end = (JsonPathParseItem *) linitial(list);
 
   if (list_length(list) == 1)
+  {
+    list_free(list);
     return head;
+  }
 
   /* append items to the end of already existing list */
   while (end->next)
@@ -2301,6 +2304,9 @@ makeItemList(List *list)
     end->next = c;
     end = c;
   }
+  /* the items are now chained through ->next; only the list container, which
+   * MEOS does not reclaim via a memory context, is no longer needed */
+  list_free(list);
   return head;
 }
 
@@ -2322,7 +2328,11 @@ makeIndexArray(List *list)
     Assert(jpi->type == jpiSubscript);
     v->value.array.elems[i].from = jpi->value.args.left;
     v->value.array.elems[i++].to = jpi->value.args.right;
+    /* the subscript wrapper's operands are kept in elems; the wrapper node
+     * itself is no longer referenced and MEOS has no context to reclaim it */
+    pfree(jpi);
   }
+  list_free(list);
   return v;
 }
 

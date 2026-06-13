@@ -331,7 +331,7 @@ static JsonPathExecResult getArrayIndex(JsonPathExecContext *cxt,
   JsonPathItem *jsp, JsonbValue *jb, int32 *index);
 static JsonBaseObjectInfo setBaseObject(JsonPathExecContext *cxt,
   JsonbValue *jbv, int32 id);
-// static void JsonValueListClear(JsonValueList *jvl);
+static void JsonValueListClear(JsonValueList *jvl);
 static void JsonValueListAppend(JsonValueList *jvl, JsonbValue *jbv);
 static int  JsonValueListLength(const JsonValueList *jvl);
 static bool JsonValueListIsEmpty(JsonValueList *jvl);
@@ -455,20 +455,24 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
+  bool result = false, got = false;
   if (JsonValueListLength(&found) == 1)
   {
     JsonbValue *jbv = JsonValueListHead(&found);
     if (jbv->type == jbvBool)
-      return (jbv->val.boolean);
-    if (jbv->type == jbvNull)
-      return false;
+    {
+      result = jbv->val.boolean; got = true;
+    }
+    else if (jbv->type == jbvNull)
+      got = true;
   }
-  if (! silent)
+  JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
+  if (! got && ! silent)
   {
     meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
       "single boolean result is expected");
   }
-  return false;
+  return result;
 }
 
 /**
@@ -501,7 +505,9 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
   (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
-  return JsonbValueToJsonb(wrapItemsInArray(&found));
+  Jsonb *result = JsonbValueToJsonb(wrapItemsInArray(&found));
+  JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
+  return result;
 }
 
 /**
@@ -534,10 +540,10 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
   (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
-  if (JsonValueListLength(&found) >= 1)
-    return (JsonbValueToJsonb(JsonValueListHead(&found)));
-  else
-    return NULL;
+  Jsonb *result = (JsonValueListLength(&found) >= 1) ?
+    JsonbValueToJsonb(JsonValueListHead(&found)) : NULL;
+  JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
+  return result;
 }
 
 /**
@@ -586,6 +592,7 @@ pg_jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   int i = 0;
   while ((jbv = JsonValueListNext(&found, &it)))
     result[i++] = JsonbValueToJsonb(jbv);
+  JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
   return result;
 }
 
@@ -920,6 +927,10 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           /* free value if it was not added to found list */
           if (jspHasNext(jsp) || ! found)
             pfree(v);
+          else
+            /* v (palloc'd here) was appended to found; track it so the
+             * jsonb_path_* caller reclaims it via json_reset_tofree() */
+            json_add_tofree(v);
         }
         else if (! jspIgnoreStructuralErrors(cxt))
         {
@@ -3104,18 +3115,17 @@ setBaseObject(JsonPathExecContext *cxt, JsonbValue *jbv, int32 id)
   return baseObject;
 }
 
-/*********************/
-#if 0 /* NOT USED */
-/*********************/
+/* Free the List structure backing a result value list (the JsonbValue items
+ * are reclaimed separately via json_reset_tofree(), since some are borrowed
+ * pointers into the source jsonb that must not be freed). */
 static void
 JsonValueListClear(JsonValueList *jvl)
 {
+  if (jvl->list != NIL)
+    list_free(jvl->list);
   jvl->singleton = NULL;
   jvl->list = NIL;
 }
-/*********************/
-#endif /* NOT USED */
-/*********************/
 
 static void
 JsonValueListAppend(JsonValueList *jvl, JsonbValue *jbv)

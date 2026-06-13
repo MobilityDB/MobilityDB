@@ -989,6 +989,11 @@ stringarr_to_string(char **strings, int count, char *prefix, char open,
   *p++ = close;
   *p = '\0';
 
+  /* Free the input strings (the contract documented above), not only the
+   * arrays -- otherwise every set/spanset/tsequence(set) _out leaks the
+   * element strings in standalone MEOS (no memory-context reclaim). */
+  for (int i = 0; i < count; i++)
+    pfree(strings[i]);
   pfree(escaped); pfree(needquotes); pfree(strings);
   return result;
 }

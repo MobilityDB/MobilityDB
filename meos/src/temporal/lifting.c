@@ -275,7 +275,10 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
     resvalue = (lfinfo->restype == T_TTEXT) ?
       PointerGetDatum(pg_json_in(str)) : PointerGetDatum(pg_jsonb_in(str));
   }
-  return tinstant_make(resvalue, lfinfo->restype, inst->t);
+  /* Free the per-instant result after the instant copies it (the non-JSON
+   * branch below does the same via tinstant_make_free) -- otherwise every
+   * lifted jsonb/text per-instant value leaks. */
+  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 #else
   Datum resvalue = tfunc_base(tinstant_value_p(inst), lfinfo);
   return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
@@ -2915,9 +2918,11 @@ lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
     {
       lower_inc = upper_inc = true;
     }
-    result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, upper_inc,
-      interp, NORMALIZE);
+    result[nseqs++] = tsequence_make_free(instants, ninsts, lower_inc,
+      upper_inc, interp, NORMALIZE);
   }
+  else
+    pfree(instants);
   return nseqs;
 }
 
@@ -3071,6 +3076,17 @@ lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
     /* If the function does not return NULL */
     if (! lfinfo->resnull)
     {
+      /* A non-byvalue result that is unexpectedly NULL means the lifted
+       * function failed without flagging resnull (e.g. it raised a non-fatal
+       * meos_error and returned NULL); abort cleanly instead of feeding a
+       * NULL element to set_make. */
+      if (! typbyval && ! resvalue)
+      {
+        for (int j = 0; j < count; j++)
+          DATUM_FREE(values[j], basetype);
+        pfree(values);
+        return NULL;
+      }
       values[count++] = resvalue;
     }
     else
@@ -3112,6 +3128,22 @@ lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
 #endif /* JSON */
     }
   }
-  return set_make_free(values, count, basetype, ORDER);
+  /* A path query matching nothing (or every element deleted via NULL_DELETE)
+   * leaves no values; sets must be non-empty, so there is no result. */
+  if (count == 0)
+  {
+    pfree(values);
+    return NULL;
+  }
+  /* set_make_exp copies the element data into the set inline; the per-element
+   * results are freshly computed (owned -- the error paths above DATUM_FREE
+   * them), so free the by-reference ones here. set_make_free would free only
+   * the array, leaking the values. */
+  Set *result = set_make_exp(values, count, count, basetype, ORDER);
+  if (! typbyval)
+    for (int i = 0; i < count; i++)
+      DATUM_FREE(values[i], basetype);
+  pfree(values);
+  return result;
 }
 #endif /* JSON */

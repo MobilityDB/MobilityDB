@@ -62,9 +62,10 @@ pg_jsonb_exists(const Jsonb *jb, const text *key)
   kval.val.string.val = VARDATA_ANY(key);
   kval.val.string.len = VARSIZE_ANY_EXHDR(key);
 
-  v = findJsonbValueFromContainer(&((Jsonb *) jb)->root, 
+  v = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
     JB_FOBJECT | JB_FARRAY, &kval);
   bool result = (v != NULL); // MEOS
+  if (v) pfree(v); /* findJsonbValueFromContainer palloc's the result */
   return result;
 }
 
@@ -95,8 +96,10 @@ pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len,
     /* We rely on the array elements not being toasted */
     strVal.val.string.val = VARDATA_ANY(keys_elems[i]);
     strVal.val.string.len = VARSIZE_ANY_EXHDR(keys_elems[i]);
-    bool res = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
-      JB_FOBJECT | JB_FARRAY, &strVal) != NULL;
+    JsonbValue *fv = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
+      JB_FOBJECT | JB_FARRAY, &strVal);
+    bool res = (fv != NULL);
+    if (fv) pfree(fv); /* palloc'd by findJsonbValueFromContainer */
     if ((any && res) || (! any && ! res))
       return any ? true : false;
   }
@@ -131,7 +134,10 @@ pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
   JsonbIterator *it1 = JsonbIteratorInit(&((Jsonb *)jb1)->root);
   JsonbIterator *it2 = JsonbIteratorInit(&((Jsonb *)jb2)->root);
   bool result = JsonbDeepContains(&it1, &it2); // MEOS
-  // pfree(it1); pfree(it2);
+  /* JsonbDeepContains may stop early, leaving the iterators partially
+   * consumed; free whatever remains of each chain (no memory context). */
+  while (it1) { JsonbIterator *p = it1->parent; pfree(it1); it1 = p; }
+  while (it2) { JsonbIterator *p = it2->parent; pfree(it2); it2 = p; }
   return result;
 }
 

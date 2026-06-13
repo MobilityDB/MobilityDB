@@ -783,6 +783,7 @@ tjsonb_delete_index(const Temporal *temp, int idx)
   lfinfo.numparam = 1;
   lfinfo.param[0] = DatumGetInt32(idx);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -807,6 +808,7 @@ tjsonb_delete(const Temporal *temp, const text *key)
   lfinfo.numparam = 1;
   lfinfo.param[0] = PointerGetDatum(key);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -833,6 +835,7 @@ tjsonb_delete_array(const Temporal *temp, text **keys, int count)
   lfinfo.param[0] = PointerGetDatum(keys);
   lfinfo.param[1] = Int32GetDatum(count);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -925,6 +928,7 @@ tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
   if (lax)
     lfinfo.param[4] = PointerGetDatum(null_handle);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1125,6 +1129,7 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
     lfinfo.reserror = Int32GetDatum(INT_MAX); 
   else if (resbasetype == T_FLOAT8)
     lfinfo.reserror = Float8GetDatum(DBL_MAX); 
+    lfinfo.resnull = null_handle; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1142,7 +1147,7 @@ Temporal *
 tjsonb_to_tbool(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
-  return tjsonb_to_talphanum(temp, key, T_BOOL, STEP, null_handle);
+  return tjsonb_to_talphanum(temp, key, T_TBOOL, STEP, null_handle);
 }
 
 /**
@@ -1158,7 +1163,7 @@ Temporal *
 tjsonb_to_tint(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
-  return tjsonb_to_talphanum(temp, key, T_INT4, STEP, null_handle);
+  return tjsonb_to_talphanum(temp, key, T_TINT, STEP, null_handle);
 }
 
 /**
@@ -1175,7 +1180,7 @@ Temporal *
 tjsonb_to_tfloat(const Temporal *temp, const char *key, interpType interp,
   nullHandleType null_handle)
 {
-  return tjsonb_to_talphanum(temp, key, T_FLOAT8, interp, null_handle);
+  return tjsonb_to_talphanum(temp, key, T_TFLOAT, interp, null_handle);
 }
 
 /**
@@ -1191,7 +1196,7 @@ Temporal *
 tjsonb_to_ttext_key(const Temporal *temp, const char *key,
   nullHandleType null_handle)
 {
-  return tjsonb_to_talphanum(temp, key, T_TEXT, STEP, null_handle);
+  return tjsonb_to_talphanum(temp, key, T_TTEXT, STEP, null_handle);
 }
 #endif /* MEOS */
 
@@ -1240,6 +1245,7 @@ tjsonb_strip_nulls(const Temporal *temp, bool strip_in_arrays)
   lfinfo.numparam = 1;
   lfinfo.param[0] = BoolGetDatum(strip_in_arrays);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1262,6 +1268,7 @@ tjsonb_pretty(const Temporal *temp)
   lfinfo.func = (varfunc) &datum_jsonb_pretty;
   lfinfo.argtype[0] = T_TJSONB;
   lfinfo.restype = T_TTEXT;
+    lfinfo.resnull = NULL_RETURN; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1292,6 +1299,7 @@ tjsonb_delete_path(const Temporal *temp, text **path_elems, int path_len)
   lfinfo.param[0] = PointerGetDatum(path_elems);
   lfinfo.param[1] = Int32GetDatum(path_len);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1399,6 +1407,7 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
   lfinfo.param[2] = PointerGetDatum(newjb);
   lfinfo.param[3] = BoolGetDatum(after);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1505,6 +1514,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
   lfinfo.restype = T_TJSONB;
+    lfinfo.resnull = NULL_RETURN; /* per-instant result may be NULL */
   return tfunc_temporal(temp, &lfinfo);
 }
 

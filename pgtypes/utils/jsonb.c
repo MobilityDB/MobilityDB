@@ -159,7 +159,9 @@ pg_jsonb_to_text(const Jsonb *jb)
   StringInfo out = makeStringInfo();
   char *str = JsonbToCString(out, (JsonbContainer *) &jb->root, VARSIZE(jb));
   text *result = pg_cstring_to_text_with_len(str, out->len);
-  destroyStringInfo(out); pfree(str);
+  /* str aliases out->data (JsonbToCString returns the StringInfo buffer), so
+   * destroyStringInfo() already frees it -- do not pfree(str) again. */
+  destroyStringInfo(out);
   return result;
 }
 
@@ -279,7 +281,12 @@ jsonb_from_cstring(char *js, int len, bool unique_keys, Node *escontext)
   makeJsonLexContextCstringLen(&lex, js, len, GetDatabaseEncoding(), true);
 
   if (! pg_parse_json_or_errsave(&lex, &sem, escontext))
+  {
+    /* On a parse error free the lexer/scratch too (early-return leak) */
+    json_reset_tofree();
+    freeJsonLexContext(&lex);
     return NULL;
+  }
 
   /* after parsing, the item member has the composed jsonb structure */
   Jsonb *result = JsonbValueToJsonb(state.res);
@@ -409,8 +416,10 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
       if (! num)
         return JSON_SEM_ACTION_FAILED;
       v.val.numeric = num;
-      /* Add num to the values that need to be freed */
-      // json_add_tofree((void *) num);
+      /* Add num to the values freed by json_reset_tofree() after parsing --
+       * JsonbValueToJsonb serialises a copy, so the intermediate Numeric must
+       * be reclaimed or every numeric in a parsed jsonb leaks. */
+      json_add_tofree((void *) num);
       break;
     case JSON_TOKEN_TRUE:
       v.type = jbvBool;
@@ -517,7 +526,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
   if (! out)
   {
     out = makeStringInfo();
-    tofree = false;
+    tofree = true;
   }
 
   enlargeStringInfo(out, (estimated_len >= 0) ? estimated_len : 64);
@@ -617,7 +626,13 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
 
   Assert(level == 0);
   if (tofree)
-    destroyStringInfo(out);
+  {
+    /* The StringInfo was allocated here; free the struct but keep out->data,
+     * which is the returned string (caller owns it). */
+    char *result = out->data;
+    pfree(out);
+    return result;
+  }
   return out->data;
 }
 
@@ -1039,7 +1054,8 @@ JsonbUnquote(Jsonb *jb)
     StringInfo out = makeStringInfo(); // MEOS
     char *str = JsonbToCString(out, (JsonbContainer *) &jb->root, VARSIZE(jb));
     char *result = pstrdup(str);
-    destroyStringInfo(out); pfree(str);
+    /* str aliases out->data, freed by destroyStringInfo -- no extra pfree */
+    destroyStringInfo(out);
     return (void *) result;
   }
   return JsonbToCString(NULL, &jb->root, VARSIZE(jb));

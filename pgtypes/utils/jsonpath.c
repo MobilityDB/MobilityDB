@@ -87,6 +87,7 @@ static bool flattenJsonPathParseItem(StringInfo buf, int *result,
   bool insideArraySubscript);
 static void alignStringInfoInt(StringInfo buf);
 static int32 reserveSpaceForItemPointer(StringInfo buf);
+static void freeJsonPathParseItem(JsonPathParseItem *item);
 static void printJsonPathItem(StringInfo buf, JsonPathItem *v, bool inKey,
   bool printBracketes);
 static int  operationPriority(JsonPathItemType op);
@@ -153,6 +154,90 @@ pg_jsonpath_copy(const JsonPath *jp)
   memcpy(result, jp, sizeof(JsonPath));
   return result;
 }
+
+/*
+ * Recursively free a jsonpath parse-tree item and everything it owns.
+ *
+ * In PostgreSQL the parse tree lives in a short-lived memory context that is
+ * reset after flattening, so it is never freed explicitly.  MEOS has no such
+ * context reclaim, so jsonPathFromCstring() must free the tree itself once it
+ * has been flattened into the binary representation.  The per-type child map
+ * mirrors flattenJsonPathParseItem() exactly; the scalar payloads
+ * (string.val, numeric, like_regex.pattern) are each a distinct palloc made by
+ * the scanner/parser (see resizeString() and the makeItem* helpers), so they
+ * are owned and must be freed too.
+ */
+static void
+freeJsonPathParseItem(JsonPathParseItem *item)
+{
+  if (item == NULL)
+    return;
+  switch (item->type)
+  {
+    case jpiString:
+    case jpiVariable:
+    case jpiKey:
+      if (item->value.string.val)
+        pfree(item->value.string.val);
+      break;
+    case jpiNumeric:
+      if (item->value.numeric)
+        pfree(item->value.numeric);
+      break;
+    case jpiAnd:
+    case jpiOr:
+    case jpiEqual:
+    case jpiNotEqual:
+    case jpiLess:
+    case jpiGreater:
+    case jpiLessOrEqual:
+    case jpiGreaterOrEqual:
+    case jpiAdd:
+    case jpiSub:
+    case jpiMul:
+    case jpiDiv:
+    case jpiMod:
+    case jpiStartsWith:
+    case jpiDecimal:
+      freeJsonPathParseItem(item->value.args.left);
+      freeJsonPathParseItem(item->value.args.right);
+      break;
+    case jpiLikeRegex:
+      freeJsonPathParseItem(item->value.like_regex.expr);
+      if (item->value.like_regex.pattern)
+        pfree(item->value.like_regex.pattern);
+      break;
+    case jpiFilter:
+    case jpiIsUnknown:
+    case jpiNot:
+    case jpiPlus:
+    case jpiMinus:
+    case jpiExists:
+    case jpiDatetime:
+    case jpiTime:
+    case jpiTimeTz:
+    case jpiTimestamp:
+    case jpiTimestampTz:
+      freeJsonPathParseItem(item->value.arg);
+      break;
+    case jpiIndexArray:
+      for (int i = 0; i < item->value.array.nelems; i++)
+      {
+        freeJsonPathParseItem(item->value.array.elems[i].from);
+        freeJsonPathParseItem(item->value.array.elems[i].to);
+      }
+      if (item->value.array.elems)
+        pfree(item->value.array.elems);
+      break;
+    default:
+      /* jpiBool, jpiNull, jpiRoot, jpiAny*, jpiCurrent, jpiLast and the
+       * argument-less item methods (jpiType, jpiSize, ...) own no children */
+      break;
+  }
+  freeJsonPathParseItem(item->next);
+  pfree(item);
+}
+
 /*
  * Converts C-string to a jsonpath value.
  *
@@ -179,7 +264,12 @@ jsonPathFromCstring(char *str, int len, struct Node *escontext)
 
   if (! flattenJsonPathParseItem(&buf, NULL, escontext, jsonpath->expr, 0,
       false))
+  {
+    freeJsonPathParseItem(jsonpath->expr);
+    pfree(jsonpath);
+    pfree(buf.data);
     return NULL;
+  }
 
   JsonPath *result = (JsonPath *) buf.data;
   SET_VARSIZE(result, buf.len);
@@ -187,6 +277,8 @@ jsonPathFromCstring(char *str, int len, struct Node *escontext)
   if (jsonpath->lax)
     result->header |= JSONPATH_LAX;
 
+  freeJsonPathParseItem(jsonpath->expr);
+  pfree(jsonpath);
   return result;
 }
 

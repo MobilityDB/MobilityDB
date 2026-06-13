@@ -1228,7 +1228,11 @@ JsonbDeepContains(JsonbIterator **val, JsonbIterator **mContained)
          * of containment (plus of course the mapped nodes must be
          * equal).
          */
-        if (!JsonbDeepContains(&nestval, &nestContained))
+        bool nc = JsonbDeepContains(&nestval, &nestContained);
+        /* free whatever remains of the nested iterator chains (no context) */
+        while (nestval) { JsonbIterator *p = nestval->parent; pfree(nestval); nestval = p; }
+        while (nestContained) { JsonbIterator *p = nestContained->parent; pfree(nestContained); nestContained = p; }
+        if (! nc)
           return false;
       }
     }
@@ -1271,9 +1275,11 @@ JsonbDeepContains(JsonbIterator **val, JsonbIterator **mContained)
 
       if (IsAJsonbScalar(&vcontained))
       {
-        if (!findJsonbValueFromContainer((*val)->container, JB_FARRAY,
-            &vcontained))
+        JsonbValue *fv = findJsonbValueFromContainer((*val)->container,
+          JB_FARRAY, &vcontained);
+        if (! fv)
           return false;
+        pfree(fv); /* palloc'd by findJsonbValueFromContainer */
       }
       else
       {
@@ -1317,10 +1323,8 @@ JsonbDeepContains(JsonbIterator **val, JsonbIterator **mContained)
           JsonbIterator *nestContained = 
             JsonbIteratorInit(vcontained.val.binary.data);
           bool contains = JsonbDeepContains(&nestval, &nestContained);
-          if (nestval)
-            pfree(nestval);
-          if (nestContained)
-            pfree(nestContained);
+          while (nestval) { JsonbIterator *p = nestval->parent; pfree(nestval); nestval = p; }
+          while (nestContained) { JsonbIterator *p = nestContained->parent; pfree(nestContained); nestContained = p; }
           if (contains)
             break;
         }

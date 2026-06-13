@@ -957,7 +957,13 @@ get_worker(text *js, char **tpath, int *ipath, int path_len,
   pg_parse_json_or_ereport(state->lex, sem);
   freeJsonLexContext(state->lex);
   pfree(sem);
-  return state->tresult;
+  /* Reclaim the parse state (no memory context in standalone MEOS); tresult
+   * is the returned value, path_names/path_indexes belong to the caller. */
+  text *result = state->tresult;
+  pfree(state->pathok);
+  pfree(state->array_cur_index);
+  pfree(state);
+  return result;
 }
 
 static JsonParseErrorType
