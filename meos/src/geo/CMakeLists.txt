@@ -1,4 +1,4 @@
-set(GEO_SRCS
+set(GEO_SOURCES
   geo_round.c
   postgis_funcs.c
   stbox.c
@@ -21,7 +21,7 @@ set(GEO_SRCS
 )
 
 if(MEOS)
-  list(APPEND GEO_SRCS
+  list(APPEND GEO_SOURCES
   geoset_meos.c
   tgeo_meos.c
   tspatial_transform_meos.c
@@ -31,6 +31,6 @@ if(MEOS)
 )
 endif()
 
-add_library(geo OBJECT ${GEO_SRCS})
+add_library(geo OBJECT ${GEO_SOURCES})
 
 

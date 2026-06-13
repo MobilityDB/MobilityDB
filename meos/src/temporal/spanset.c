@@ -47,12 +47,15 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Parameter tests
@@ -170,20 +173,11 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
     else
       first = middle + 1;
   }
-  assert(s);
   if (datum_ge(v, s->upper, s->basetype))
     middle++;
   *loc = middle;
   return false;
 }
-
-#if MEOS
-inline bool
-tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
-{
-  return spanset_find_value(ss, TimestampTzGetDatum(t), loc);
-}
-#endif /* MEOS */
 
 #if DEBUG_BUILD
 /**
@@ -234,13 +228,9 @@ spanset_out(const SpanSet *ss, int maxdd)
     return NULL;
 
   char **strings = palloc(sizeof(char *) * ss->count);
-  size_t outlen = 0;
   for (int i = 0; i < ss->count; i++)
-  {
     strings[i] = span_out(SPANSET_SP_N(ss, i), maxdd);
-    outlen += strlen(strings[i]) + 1;
-  }
-  return stringarr_to_string(strings, ss->count, outlen, "", '{', '}',
+  return stringarr_to_string(strings, ss->count, "", '{', '}',
     QUOTES_NO, SPACES);
 }
 

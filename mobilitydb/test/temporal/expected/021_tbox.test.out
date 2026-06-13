@@ -68,11 +68,9 @@ ERROR:  invalid input syntax for type double precision: "AA"
 LINE 1: SELECT tbox 'TBOXFLOAT X((1, AA))';
                     ^
 SELECT tbox 'TBOXFLOAT X((1, 2000-01-01))';
-          tbox          
-------------------------
- TBOXFLOAT X((1, 2000))
-(1 row)
-
+ERROR:  invalid input syntax for type double precision: "2000-01-01"
+LINE 1: SELECT tbox 'TBOXFLOAT X((1, 2000-01-01))';
+                    ^
 SELECT tbox 'TBOXFLOAT X((1, 2), 2, 2))';
 ERROR:  Could not parse tbox value: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOXFLOAT X((1, 2), 2, 2))';
@@ -90,7 +88,7 @@ ERROR:  Could not parse tbox value: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOXFLOAT X((1, 2),(2000-01-01, 2000-01-02)';
                     ^
 SELECT tbox 'TBOXFLOAT X((2,2000-01-02),(1,2000-01-01))XXXX';
-ERROR:  Could not parse tbox value: Missing closing parenthesis
+ERROR:  invalid input syntax for type double precision: "2000-01-02"
 LINE 1: SELECT tbox 'TBOXFLOAT X((2,2000-01-02),(1,2000-01-01))XXXX'...
                     ^
 COPY tbl_tboxfloat TO '/tmp/tbl_tboxfloat' (FORMAT BINARY);

@@ -137,7 +137,7 @@ extern GSERIALIZED *npoint_to_geompoint(const Npoint *np);
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 extern STBox *npoint_to_stbox(const Npoint *np);
 extern GSERIALIZED *nsegment_to_geom(const Nsegment *ns);
-extern STBox *nsegment_to_stbox(const Nsegment *np);
+extern STBox *nsegment_to_stbox(const Nsegment *ns);
 
 /* Accessor functions */
 

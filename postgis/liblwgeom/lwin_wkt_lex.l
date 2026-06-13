@@ -57,14 +57,6 @@ static void wkt_lexer_unknown()
 /* Suppress the default implementations. */
 %option noyyalloc noyyrealloc noyyfree
 
-/* MEOS — thread-safety, see issue #404.
- * If you regenerate this file, the canonical fix is `%option reentrant`
- * (and `%define api.pure full` in lwin_wkt_parse.y) which threads a
- * yyscan_t through the lexer and parser, eliminating all globals.
- * Until that regeneration happens, the committed lwin_wkt_lex.c has
- * MEOS_TLS qualifiers sprinkled on each static; preserve them or
- * switch to %option reentrant in one go. */
-
 %%
 
 -?(([0-9]+\.?)|([0-9]*\.?[0-9]+)([eE][-+]?[0-9]+)?)[ \,\)\t\n\r] {

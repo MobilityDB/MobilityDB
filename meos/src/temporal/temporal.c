@@ -50,7 +50,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_tile.h"
 #include "temporal/tinstant.h"

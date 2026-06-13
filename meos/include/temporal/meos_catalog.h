@@ -116,6 +116,12 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
+#if JSON
+  T_JSONB          = 63,  /**< base type for PostgreSQL jsonb */
+  T_JSONPATH       = 64,  /**< base type for PostgreSQL jsonpath */
+  T_JSONBSET       = 65,  /**< static set of JSONB values */
+  T_TJSONB         = 66,  /**< temporal JSONB value */
+#endif /* JSON */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;
@@ -169,7 +175,11 @@ typedef enum
   ALWAYSLE_OP     = 40, /**< Alwaysle `%<=` operator */
   ALWAYSGT_OP     = 41, /**< Alwaysgt `%>` operator */
   ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
-} meosOper;
+#if JSON
+  TEMPCONTAINS_OP  = 43, /**< Contains `#@>` operator for JSON */
+  TEMPCONTAINED_OP = 44, /**< Contained `<@#` operator for JSON */
+#endif /* JSON */
+} MeosOper;
 
 /**
  * Structure to represent the temporal type cache array.
@@ -215,8 +225,8 @@ extern bool temptype_subtype_all(tempSubtype subtype);
 #endif
 extern const char *tempsubtype_name(tempSubtype subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
-extern const char *meosoper_name(meosOper oper);
-extern meosOper meosoper_from_string(const char *name);
+extern const char *meosoper_name(MeosOper oper);
+extern MeosOper meosoper_from_string(const char *name);
 extern const char *interptype_name(interpType interp);
 extern interpType interptype_from_string(const char *interp_str);
 

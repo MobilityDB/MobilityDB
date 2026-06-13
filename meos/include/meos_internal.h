@@ -750,6 +750,9 @@ typedef enum
 typedef Datum (*datum_func1) (Datum);
 typedef Datum (*datum_func2) (Datum, Datum);
 typedef Datum (*datum_func3) (Datum, Datum, Datum);
+typedef Datum (*datum_func4) (Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func5) (Datum, Datum, Datum, Datum, Datum);
+typedef Datum (*datum_func6) (Datum, Datum, Datum, Datum, Datum, Datum);
 
 /*****************************************************************************
  * Internal function accessing the Gnu Scientic Library (GSL)
@@ -761,11 +764,6 @@ extern gsl_rng *gsl_get_aggregation_rng(void);
 /*****************************************************************************
  * Generic type functions
  *****************************************************************************/
-
-#if MEOS
-#define TimestampTzGetDatum(X) Int64GetDatum(X)
-#define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
-#endif /* MEOS */
 
 extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);

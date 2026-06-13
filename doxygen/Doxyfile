@@ -935,7 +935,8 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @CMAKE_SOURCE_DIR@/meos \
+INPUT                  = @CMAKE_SOURCE_DIR@/pgtypes \
+                         @CMAKE_SOURCE_DIR@/meos \
                          @CMAKE_SOURCE_DIR@/mobilitydb
 
 # This tag can be used to specify the character encoding of the source files

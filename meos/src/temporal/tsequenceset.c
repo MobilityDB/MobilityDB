@@ -45,7 +45,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
 #include "temporal/tsequence.h"
@@ -58,6 +57,10 @@
   #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_distance.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * General functions
@@ -166,8 +169,7 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
 /**
  * @brief Return the distance between two datums
  * @param[in] value1,value2 Values
- * @param[in] basetype Base type of the values
- * @param[in] temptype Temporal type of the values
+ * @param[in] type Type of the values
  * @param[in] flags Flags
  * @return On error return -1.0
  */
@@ -485,7 +487,7 @@ ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
     {
       Interval *duration = minus_timestamptz_timestamptz(instants[i]->t,
         instants[i - 1]->t);
-      if (pg_interval_cmp(duration, maxt) > 0)
+      if (pg_interval_cmp((Interval *) duration, (Interval *) maxt) > 0)
         split = true;
       pfree(duration);
     }
@@ -2014,7 +2016,6 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   assert(ss); assert(maxdd >= 0);
 
   char **strings = palloc(sizeof(char *) * ss->count);
-  size_t outlen = 0;
   char prefix[13];
   if (MEOS_FLAGS_GET_CONTINUOUS(ss->flags) &&
       ! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
@@ -2025,9 +2026,8 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   {
     strings[i] = tsequence_to_string(TSEQUENCESET_SEQ_N(ss, i), maxdd, true,
       value_out);
-    outlen += strlen(strings[i]) + 1;
   }
-  return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}',
+  return stringarr_to_string(strings, ss->count, prefix, '{', '}',
     QUOTES_NO, SPACES);
 }
 

@@ -38,6 +38,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <funcapi.h>
 #include <access/heaptoast.h>
 #include <access/detoast.h>
@@ -192,18 +193,18 @@ Temporal_typmod_in(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Empty temporal type modifier")));
 
-  int16 tempsubtype = ANYTEMPSUBTYPE;
+  int16_t tempsubtype = ANYTEMPSUBTYPE;
   if (! tempsubtype_from_string(s, &tempsubtype))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid temporal type modifier: %s", s)));
 
   /* Set the typmod */
-  uint32 typmod = 0;
+  uint32_t typmod = 0;
   if (tempsubtype != ANYTEMPSUBTYPE)
     TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype);
 
   pfree(elem_values);
-  PG_RETURN_INT32((int32) typmod);
+  PG_RETURN_INT32((int32_t) typmod);
 }
 
 PGDLLEXPORT Datum Temporal_typmod_out(PG_FUNCTION_ARGS);
@@ -215,8 +216,8 @@ Datum
 Temporal_typmod_out(PG_FUNCTION_ARGS)
 {
   char *str = palloc(TYPMOD_MAXLEN);
-  int32 typmod = PG_GETARG_INT32(0);
-  int16 subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
+  int32_t typmod = PG_GETARG_INT32(0);
+  int16_t subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   /* No type? Then no typmod at all. Return empty string.  */
   if (typmod < 0 || ! subtype)
   {
@@ -236,7 +237,7 @@ Datum
 Temporal_enforce_typmod(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int32 typmod = PG_GETARG_INT32(1);
+  int32_t typmod = PG_GETARG_INT32(1);
   /* Check if temporal typmod is consistent with the supplied one */
   temp = temporal_valid_typmod(temp, typmod);
   PG_RETURN_TEMPORAL_P(temp);
@@ -285,7 +286,7 @@ Datum
 Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
-  text *result = cstring2text(version);
+  text *result = pg_cstring_to_text(version);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -300,7 +301,7 @@ Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_full_version();
-  text *result = cstring2text(version);
+  text *result = pg_cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
 }
@@ -513,15 +514,16 @@ Temporal_send(PG_FUNCTION_ARGS)
  ****************************************************************************/
 
 /**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Return a temporal instant from a value and a timestamptz
- * @sqlfn tint(), tfloat(), ...
+ * @brief Get an interpolation text
+ * @pre The text CANNOT be null. This is usually achieved by setting a default
+ * interpolation in the SQL definition, e.g., `interp text DEFAULT 'linear'`
  */
 interpType
 input_interp_string(FunctionCallInfo fcinfo, int argno)
 {
   text *interp_txt = PG_GETARG_TEXT_P(argno);
-  char *interp_str = text2cstring(interp_txt);
+  assert(interp_txt);
+  char *interp_str = pg_text_to_cstring(interp_txt);
   interpType result = interptype_from_string(interp_str);
   pfree(interp_str);
   PG_FREE_IF_COPY(interp_txt, argno);
@@ -704,6 +706,30 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
  * Conversion functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_from_text);
+/**
+ * @ingroup mobilitydb_geo_inout
+ * @brief Return a temporal value from its Well-Known Text (WKT) representation
+ * @note This just does the same thing as the SQL function #Temporal_in, except
+ * it has to handle a 'text' input. First, unwrap the text into a cstring, then
+ * do as Temporal_in
+ * @sqlfn tboolFromText(), tintFromText(),
+ */
+Datum
+Temporal_from_text(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = pg_text_to_cstring(wkt_text);
+  /* Copy the pointer since it will be advanced during parsing */
+  const char *wkt_ptr = wkt;
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Temporal *result = temporal_in(wkt_ptr, oid_meostype(temptypid));
+  pfree(wkt);
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tbool_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_to_tint);
 /**
@@ -824,7 +850,7 @@ Temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   const char *str = temporal_subtype(temp);
-  text *result = cstring2text(str);
+  text *result = pg_cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -841,7 +867,7 @@ Temporal_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   const char *str = temporal_interp(temp);
-  text *result = cstring2text(str);
+  text *result = pg_cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -2912,14 +2938,14 @@ PGDLLEXPORT Datum Temporal_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the hash value of a temporal value
+ * @brief Return the 32-bit hash value of a temporal value
  * @sqlfn tint_hash(), tfloat_hash(), ...
  */
 Datum
 Temporal_hash(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  uint32 result = temporal_hash(temp);
+  uint32_t result = temporal_hash(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_UINT32(result);
 }

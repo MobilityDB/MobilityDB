@@ -24,7 +24,6 @@
  **********************************************************************/
 
 #include "liblwgeom_internal.h"
-#include <meos_tls.h> /* MEOS: see issue #404 / lwin_wkt_lex.c */
 
 /*
 * Coordinate object to hold information about last coordinate temporarily.
@@ -41,10 +40,9 @@ typedef struct
 POINT;
 
 /*
-* Per-thread holder for the final output geometry of the WKT parser.
-* MEOS: thread-local — see lwin_wkt_lex.c rationale.
+* Global that holds the final output geometry for the WKT parser.
 */
-extern MEOS_TLS LWGEOM_PARSER_RESULT global_parser_result;
+extern LWGEOM_PARSER_RESULT global_parser_result;
 extern const char *parser_error_messages[];
 
 /*

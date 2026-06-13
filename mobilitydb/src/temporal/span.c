@@ -40,6 +40,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <catalog/pg_type_d.h>
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
@@ -145,7 +146,7 @@ Span_as_text(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = span_out(s, Int32GetDatum(dbl_dig_for_wkt));
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
 }
@@ -181,7 +182,7 @@ Datum
 Span_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
+  char *hexwkb = text_to_cstring(hexwkb_text);
   Span *result = span_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
@@ -780,7 +781,7 @@ Float_round(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   int maxdd = PG_GETARG_INT32(1);
-  PG_RETURN_FLOAT8(float_round(d, maxdd));
+  PG_RETURN_FLOAT8(float8_round(d, maxdd));
 }
 
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);

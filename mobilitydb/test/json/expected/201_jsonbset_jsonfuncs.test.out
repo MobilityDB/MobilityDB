@@ -1,0 +1,288 @@
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - text 'geom';
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - text 'geom';
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - text 'xxx';
+            ?column?            
+--------------------------------
+ {"{\"geom\": \"Point(1 1)\"}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - text 'xxx';
+                                          ?column?                                          
+--------------------------------------------------------------------------------------------
+ {"{\"geom\": \"Point(3 3)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(1 1)\"}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - ARRAY[text 'geom'];
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - ARRAY[text 'geom'];
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset '{"[\"Point(1 1)\", \"Point(2 2)\"]"}' - 0;
+       ?column?       
+----------------------
+ {"[\"Point(2 2)\"]"}
+(1 row)
+
+SELECT jsonbset '{"[\"Point(1 1)\", \"Point(2 2)\"]", "[\"Point(2 2)\", \"Point(3 3)\"]", "[\"Point(1 1)\", \"Point(2 2)\"]"}' - 0;
+                 ?column?                 
+------------------------------------------
+ {"[\"Point(3 3)\"]", "[\"Point(2 2)\"]"}
+(1 row)
+
+/* Errors */
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' - 0;
+ERROR:  cannot delete from object using integer index
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' - 0;
+ERROR:  cannot delete from object using integer index
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}"}' #- ARRAY[text 'geom'];
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{\"geom\": \"Point(3 3)\"}"}' #- ARRAY[text 'geom'];
+ ?column? 
+----------
+ {"{}"}
+(1 row)
+
+SELECT jsonbset_set(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+               jsonbset_set               
+------------------------------------------
+ {"{\"speed\": 10, \"units\": \"km/h\"}"}
+(1 row)
+
+SELECT jsonbset_set(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+                                                       jsonbset_set                                                       
+--------------------------------------------------------------------------------------------------------------------------
+ {"{\"speed\": 30, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}
+(1 row)
+
+SELECT jsonbset_insert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+   jsonbset_insert   
+---------------------
+ {"{\"speed\": 10}"}
+(1 row)
+
+SELECT jsonbset_insert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+                      jsonbset_insert                      
+-----------------------------------------------------------
+ {"{\"speed\": 30}", "{\"speed\": 20}", "{\"speed\": 10}"}
+(1 row)
+
+SELECT jsonbset_extract_path(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+ jsonbset_extract_path 
+-----------------------
+ {10}
+(1 row)
+
+SELECT jsonbset_extract_path(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+ jsonbset_extract_path 
+-----------------------
+ {20, 10}
+(1 row)
+
+/* Null handling */
+SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'raise_exception');
+ERROR:  The lifted operation returned NULL
+SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'use_json_null');
+ jsonbset_extract_path 
+-----------------------
+ {20, 10, "null"}
+(1 row)
+
+SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'delete_key');
+ jsonbset_extract_path 
+-----------------------
+ {20, 10}
+(1 row)
+
+SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'return_null');
+ jsonbset_extract_path 
+-----------------------
+ 
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+ ?column? 
+----------
+ {10}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+ ?column? 
+----------
+ {20, 10}
+(1 row)
+
+/* Null handling */
+SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
+     ?column?     
+------------------
+ {20, 10, "null"}
+(1 row)
+
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+ jsonbset_extract_path_text 
+----------------------------
+ {"10"}
+(1 row)
+
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+ jsonbset_extract_path_text 
+----------------------------
+ {"10", "20"}
+(1 row)
+
+/* Null handling */
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'raise_exception');
+ERROR:  The lifted operation returned NULL
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'use_json_null');
+ jsonbset_extract_path_text 
+----------------------------
+ {"km/h", "null"}
+(1 row)
+
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'delete_key');
+ jsonbset_extract_path_text 
+----------------------------
+ {"km/h"}
+(1 row)
+
+SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'return_null');
+ jsonbset_extract_path_text 
+----------------------------
+ 
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+ ?column? 
+----------
+ {"10"}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+   ?column?   
+--------------
+ {"10", "20"}
+(1 row)
+
+/* Null handling: 'use_json_null' by default */
+SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
+       ?column?       
+----------------------
+ {"10", "20", "null"}
+(1 row)
+
+SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'raise_exception');
+ERROR:  The lifted operation returned NULL
+SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'use_json_null');
+ jsonbset_extract_path_text 
+----------------------------
+ {"10", "20", "null"}
+(1 row)
+
+SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'delete_key');
+ jsonbset_extract_path_text 
+----------------------------
+ {"10", "20"}
+(1 row)
+
+SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+  ARRAY['speed'], 'return_null');
+ jsonbset_extract_path_text 
+----------------------------
+ 
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' -> 'speed';
+ ?column? 
+----------
+ {10}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' -> 'speed';
+ ?column? 
+----------
+ {20, 10}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
+ ?column? 
+----------
+ {"10"}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' ->> 'speed';
+   ?column?   
+--------------
+ {"10", "20"}
+(1 row)
+
+SELECT intset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
+ intset 
+--------
+ {1}
+(1 row)
+
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
+ intset 
+--------
+ {1}
+(1 row)
+
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
+ intset 
+--------
+ {2}
+(1 row)
+
+SELECT intset(jsonbset '{"{\"a\":\"1\", \"b\":2.5}"}', text 'a');
+ intset 
+--------
+ {1}
+(1 row)
+
+SELECT floatset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
+ floatset 
+----------
+ {1}
+(1 row)
+
+SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
+ floatset 
+----------
+ {1}
+(1 row)
+
+SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
+ floatset 
+----------
+ {2.5}
+(1 row)
+
+/* Errors */
+SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
+ERROR:  The lifted operation returned NULL
+SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
+ERROR:  Invalid numeric string for key "a": xxx
