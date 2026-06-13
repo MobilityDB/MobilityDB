@@ -235,7 +235,10 @@ if(MEOS)
   file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
   if(JSON)
-    # Generate meos_json_export.h
+    # Generate meos_json_export.h. The library build pulls the Jsonb / JsonPath
+    # types from the internal <pgtypes.h> umbrella; for the installed PUBLIC
+    # header replace it with the public type headers <pg_numeric.h> (Numeric)
+    # and <pg_json.h> (the opaque Jsonb / JsonPath types).
     string(REGEX REPLACE "#include <pgtypes.h>\n" "#include <pg_numeric.h>\n#include <pg_json.h>\n" MEOS_JSON_EXP_H "${MEOS_JSON_H}")
     file(WRITE "${CMAKE_BINARY_DIR}/meos_json_export.h" "${MEOS_JSON_EXP_H}")
   endif()
@@ -267,6 +270,10 @@ if(MEOS)
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_numeric.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  if(JSON)
+    install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_json.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_text.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   install(FILES "${CMAKE_SOURCE_DIR}/pgtypes/pg_time.h"

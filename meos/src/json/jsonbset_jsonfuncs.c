@@ -45,6 +45,7 @@
 #include <meos_internal.h>
 #include <pgtypes.h>
 #include "temporal/meos_catalog.h"
+#include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/type_parser.h"

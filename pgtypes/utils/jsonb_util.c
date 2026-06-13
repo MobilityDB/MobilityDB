@@ -1575,7 +1575,12 @@ convertToJsonb(JsonbValue *val)
    * JsonbContainer struct must contain enough information to tell what kind
    * of value it is.
    */
-  Jsonb *res = (Jsonb *) pstrdup(buffer.data);
+  /* The buffer is binary (the reserved VARHDRSZ header is zero-filled and
+   * the serialized container contains embedded NUL bytes), so it must be
+   * copied by length, not as a NUL-terminated string -- pstrdup() would
+   * stop at the first zero byte and leave the result uninitialised. */
+  Jsonb *res = (Jsonb *) palloc(buffer.len);
+  memcpy(res, buffer.data, buffer.len);
   SET_VARSIZE(res, buffer.len);
   pfree(buffer.data);
   return res;

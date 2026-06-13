@@ -118,6 +118,14 @@ jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 {
+  /* Guard the public entry: a NULL argument would otherwise be dereferenced
+   * (root inspection / iteration) and fault. Raise a clean MEOS error. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb_contains: NULL argument");
+    return false;
+  }
   if (JB_ROOT_IS_OBJECT(jb1) != JB_ROOT_IS_OBJECT(jb2))
     return false;
   JsonbIterator *it1 = JsonbIteratorInit(&((Jsonb *)jb1)->root);
@@ -161,7 +169,15 @@ jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) == 0;
 }
@@ -182,7 +198,15 @@ jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) != 0;
 }
@@ -203,7 +227,15 @@ jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) < 0;
 }
@@ -224,7 +256,15 @@ jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) > 0;
 }
@@ -246,7 +286,15 @@ jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) <= 0;
 }
@@ -268,7 +316,15 @@ jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) >= 0;
 }
@@ -290,7 +346,15 @@ jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 int
 pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) <= 0;
 }
