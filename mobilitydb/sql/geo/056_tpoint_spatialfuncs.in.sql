@@ -51,6 +51,21 @@ CREATE FUNCTION round(geography, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Geo_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Base geometry/geography SRID reprojection. In the PostgreSQL extension this
+-- delegates to PostGIS ST_Transform (its SPI-backed proj cache); the standalone
+-- MEOS library and the generated bindings provide the same transform(geometry,
+-- integer) surface backed by the MEOS geo_transform() kernel. Exposing it under
+-- the MobilityDB transform() name (matching transform(geomset)/transform(tgeometry)/
+-- ...) lets portable SQL call one name across PostgreSQL, DuckDB and Spark.
+CREATE FUNCTION transform(geometry, integer)
+  RETURNS geometry
+  AS 'SELECT @extschema@.ST_Transform($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(geography, integer)
+  RETURNS geography
+  AS 'SELECT @extschema@.ST_Transform($1::geometry, $2)::geography'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(stbox)
