@@ -36,6 +36,9 @@
 
 #include "cbuffer/tcbuffer_boxops.h"
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -110,14 +113,13 @@ tcbufferseq_expand_stbox(const TSequence *seq, const TInstant *inst)
  * @param[in] t Timestamp
  * @param[out] box Spatiotemporal box
  */
-bool
+void
 cbuffer_timestamptz_set_stbox(const Cbuffer *cb, TimestampTz t, STBox *box)
 {
   cbuffer_set_stbox(cb, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
-  return true;
 }
 
 /**
@@ -134,8 +136,7 @@ cbuffer_timestamptz_to_stbox(const Cbuffer *cb, TimestampTz t)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL);
   STBox box;
-  if (! cbuffer_timestamptz_set_stbox(cb, t, &box))
-    return NULL;
+  cbuffer_timestamptz_set_stbox(cb, t, &box);
   return stbox_copy(&box);
 }
 
@@ -147,13 +148,12 @@ cbuffer_timestamptz_to_stbox(const Cbuffer *cb, TimestampTz t)
  * @param[in] s Timestamptz span
  * @param[out] box Spatiotemporal box
  */
-bool
+void
 cbuffer_tstzspan_set_stbox(const Cbuffer *cb, const Span *s, STBox *box)
 {
   cbuffer_set_stbox(cb, box);
   memcpy(&box->period, s, sizeof(Span));
   MEOS_FLAGS_SET_T(box->flags, true);
-  return true;
 }
 
 /**
@@ -170,8 +170,7 @@ cbuffer_tstzspan_to_stbox(const Cbuffer *cb, const Span *s)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL); VALIDATE_TSTZSPAN(s, NULL);
   STBox box;
-  if (! cbuffer_tstzspan_set_stbox(cb, s, &box))
-    return NULL;
+  cbuffer_tstzspan_set_stbox(cb, s, &box);
   return stbox_copy(&box);
 }
 

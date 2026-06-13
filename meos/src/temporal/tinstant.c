@@ -50,12 +50,15 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/meos_catalog.h"
-#include "temporal/postgres_types.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * General functions
@@ -202,14 +205,16 @@ tinstant_out(const TInstant *inst, int maxdd)
 TInstant *
 tinstant_make(Datum value, MeosType temptype, TimestampTz t)
 {
+  /* Ensure validity of arguments */
+  int32_t tspatial_srid;
   // TODO Should we bypass the tests on tnpoint ?
   if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
     MeosType basetype = temptype_basetype(temptype);
-    int32_t value_srid = spatial_srid(value, basetype);
+    tspatial_srid = spatial_srid(value, basetype);
     /* Ensure that the SRID is geodetic for geography */
-    if (tgeodetic_type(temptype) && value_srid != SRID_UNKNOWN &&
-        ! ensure_srid_is_latlong(value_srid))
+    if (tgeodetic_type(temptype) && tspatial_srid != SRID_UNKNOWN && 
+        ! ensure_srid_is_latlong(tspatial_srid))
       return NULL;
     /* Ensure that a geometry/geography is not empty */
     if (tgeo_type_all(temptype) && 
@@ -528,7 +533,7 @@ tinstant_shift_time(const TInstant *inst, const Interval *interv)
 {
   assert(inst); assert(interv);
   TInstant *result = tinstant_copy(inst);
-  result->t = add_timestamptz_interval(inst->t, interv);
+  result->t = add_timestamptz_interval(inst->t, (Interval *) interv);
   return result;
 }
 
@@ -640,7 +645,7 @@ tinstant_hash(const TInstant *inst)
   /* Apply the hash function to the base type */
   uint32 value_hash = datum_hash(tinstant_value_p(inst), basetype);
   /* Apply the hash function to the timestamp */
-  uint32 time_hash = pg_hashint8(inst->t);
+  uint32 time_hash = int64_hash(inst->t);
   /* Merge hashes of value and timestamp */
   uint32 result = value_hash;
 #if POSTGRESQL_VERSION_NUMBER >= 150000

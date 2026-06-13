@@ -38,6 +38,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
@@ -351,7 +352,7 @@ strarr_to_textarray(char **strarr, int count)
   assert(count > 0);
   text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    textarr[i] = cstring2text(strarr[i]);
+    textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
   for (int i = 0; i < count; i++)

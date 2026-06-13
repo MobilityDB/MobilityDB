@@ -44,9 +44,9 @@
 
 extern bool cbuffer_set_stbox(const Cbuffer *cb, STBox *box);
 extern void cbufferarr_set_stbox(const Datum *values, int count, STBox *box);
-extern bool cbuffer_timestamptz_set_stbox(const Cbuffer *cb, TimestampTz t,
+extern void cbuffer_timestamptz_set_stbox(const Cbuffer *cb, TimestampTz t,
   STBox *box);
-extern bool cbuffer_tstzspan_set_stbox(const Cbuffer *cb, const Span *s,
+extern void cbuffer_tstzspan_set_stbox(const Cbuffer *cb, const Span *s,
   STBox *box);
 
 extern void tcbufferinst_set_stbox(const TInstant *inst, STBox *box);

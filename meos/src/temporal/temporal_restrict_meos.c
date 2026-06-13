@@ -34,6 +34,9 @@
 
 #include "temporal/temporal.h"
 
+/* PostgreSQL */
+#include "utils/varlena.h"
+
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

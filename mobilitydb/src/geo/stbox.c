@@ -39,6 +39,7 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <lib/stringinfo.h>
 /* MEOS */
 #include <meos.h>
@@ -149,7 +150,7 @@ Stbox_as_text(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
   char *str = stbox_out(box, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
 }
@@ -219,7 +220,7 @@ Datum
 Stbox_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
-  char *hexwkb = text2cstring(hexwkb_text);
+  char *hexwkb = text_to_cstring(hexwkb_text);
   STBox *result = stbox_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
@@ -1149,7 +1150,7 @@ Stbox_transform_pipeline(PG_FUNCTION_ARGS)
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
   int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
-  char *pipelinestr = text2cstring(pipelinetxt);
+  char *pipelinestr = text_to_cstring(pipelinetxt);
   STBox *result = stbox_transform_pipeline(box, pipelinestr, srid, is_forward);
   pfree(pipelinestr);
   PG_FREE_IF_COPY(pipelinetxt, 1);
@@ -1593,15 +1594,13 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   STBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
 
   /* Can't do anything with null inputs */
-  if (! box1 || ! box2)
-  {
-    if (! box1 && ! box2)
-      PG_RETURN_NULL();
-    if (! box1)
-      PG_RETURN_STBOX_P(stbox_copy(box2));
-    else
-      PG_RETURN_STBOX_P(stbox_copy(box1));
-  }
+  if (! box1 && ! box2)
+    PG_RETURN_NULL();
+  /* One of the boxes is null, return the other one */
+  if (! box1)
+    PG_RETURN_STBOX_P(stbox_copy(box2));
+  if (! box2)
+    PG_RETURN_STBOX_P(stbox_copy(box1));
 
   /* Both boxes are not null */
   ensure_same_dimensionality(box1->flags, box2->flags);

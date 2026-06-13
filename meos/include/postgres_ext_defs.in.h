@@ -42,15 +42,15 @@ typedef struct varlena bytea;
 /* The following functions have the same name as external PostgreSQL functions */
 
 extern DateADT date_in(const char *str);
-extern char *date_out(DateADT d);
+extern char *date_out(DateADT date);
 extern int interval_cmp(const Interval *interv1, const Interval *interv2);
 extern Interval *interval_in(const char *str, int32 typmod);
 extern char *interval_out(const Interval *interv);
 extern TimeADT time_in(const char *str, int32 typmod);
-extern char *time_out(TimeADT t);
+extern char *time_out(TimeADT time);
 extern Timestamp timestamp_in(const char *str, int32 typmod);
-extern char *timestamp_out(Timestamp t);
+extern char *timestamp_out(Timestamp ts);
 extern TimestampTz timestamptz_in(const char *str, int32 typmod);
-extern char *timestamptz_out(TimestampTz t);
+extern char *timestamptz_out(TimestampTz tstz);
 
 #endif /* POSTGRES_H */

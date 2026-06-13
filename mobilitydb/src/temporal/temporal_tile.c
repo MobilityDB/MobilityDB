@@ -41,6 +41,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <utils/array.h>
 #include <funcapi.h>
 /* MEOS */
