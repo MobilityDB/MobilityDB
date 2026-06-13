@@ -1853,7 +1853,7 @@ tbox_hash(const TBox *box)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_box_accessor
  * @brief Return the 64-bit hash of a temporal box using a seed
  * @param[in] box Temporal box
  * @param[in] seed Seed
