@@ -46,6 +46,7 @@
 #include <utils/float.h>
 #include "utils/formatting.h"
 #include "utils/timestamp.h"
+#include "utils/timestamp_def.h"
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -232,3 +233,90 @@ datum_initcap(Datum value)
 
 /*****************************************************************************/
 
+
+/**
+ * @ingroup meos_base_types
+ * @brief Return the multiplication of an interval and a factor
+ * @param[in] interv Interval
+ * @param[in] factor Factor
+ * @note PostgreSQL function: @p interval_mul(PG_FUNCTION_ARGS) taken from
+ * PG version 17.2
+ */
+Interval *
+mul_interval_double(const Interval *interv, double factor)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, NULL);
+
+  double month_remainder_days, sec_remainder, result_double;
+  int32 orig_month = interv->month,
+    orig_day = interv->day;
+  Interval *result;
+
+  result = palloc(sizeof(Interval));
+
+  result_double = interv->month * factor;
+  if (isnan(result_double) ||
+    result_double > INT_MAX || result_double < INT_MIN)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
+  result->month = (int32) result_double;
+
+  result_double = interv->day * factor;
+  if (isnan(result_double) ||
+    result_double > INT_MAX || result_double < INT_MIN)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
+  result->day = (int32) result_double;
+
+  /*
+   * The above correctly handles the whole-number part of the month and day
+   * products, but we have to do something with any fractional part
+   * resulting when the factor is non-integral.  We cascade the fractions
+   * down to lower units using the conversion factors DAYS_PER_MONTH and
+   * SECS_PER_DAY.  Note we do NOT cascade up, since we are not forced to do
+   * so by the representation.  The user can choose to cascade up later,
+   * using justify_hours and/or justify_days.
+   */
+
+  /*
+   * Fractional months full days into days.
+   *
+   * Floating point calculation are inherently imprecise, so these
+   * calculations are crafted to produce the most reliable result possible.
+   * TSROUND() is needed to more accurately produce whole numbers where
+   * appropriate.
+   */
+  month_remainder_days = (orig_month * factor - result->month) * DAYS_PER_MONTH;
+  month_remainder_days = TSROUND(month_remainder_days);
+  sec_remainder = (orig_day * factor - result->day +
+           month_remainder_days - (int) month_remainder_days) * SECS_PER_DAY;
+  sec_remainder = TSROUND(sec_remainder);
+
+  /*
+   * Might have 24:00:00 hours due to rounding, or >24 hours because of time
+   * cascade from months and days.  It might still be >24 if the combination
+   * of cascade and the seconds factor operation itself.
+   */
+  if (fabs(sec_remainder) >= SECS_PER_DAY)
+  {
+    result->day += (int) (sec_remainder / SECS_PER_DAY);
+    sec_remainder -= (int) (sec_remainder / SECS_PER_DAY) * SECS_PER_DAY;
+  }
+
+  /* cascade units down */
+  result->day += (int32) month_remainder_days;
+  result_double = rint(interv->time * factor + sec_remainder * USECS_PER_SEC);
+  if (isnan(result_double) || !FLOAT8_FITS_IN_INT64(result_double))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
+    return NULL;
+  }
+  result->time = (int64) result_double;
+
+  return result;
+}

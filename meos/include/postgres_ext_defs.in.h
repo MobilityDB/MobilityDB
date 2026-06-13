@@ -52,5 +52,20 @@ extern Timestamp timestamp_in(const char *str, int32 typmod);
 extern char *timestamp_out(Timestamp ts);
 extern TimestampTz timestamptz_in(const char *str, int32 typmod);
 extern char *timestamptz_out(TimestampTz tstz);
+/* Base-type operations (comparison, arithmetic, math, conversion) — the public
+ * MEOS API must provide all operations over the base types; impls in pgtypes/ */
+extern int int32_cmp(int32 l, int32 r);
+extern int int64_cmp(int64 l, int64 r);
+extern double float8_exp(double num);
+extern double float8_ln(double num);
+extern double float8_log10(double num);
+extern Interval *add_interval_interval(const Interval *interv1, const Interval *interv2);
+extern Interval *mul_interval_double(const Interval *interv, double factor);
+extern int32 minus_date_date(DateADT date1, DateADT date2);
+extern DateADT minus_date_int(DateADT date, int32 days);
+extern TimestampTz minus_timestamptz_interval(TimestampTz tstz, const Interval *interv);
+extern Interval *minus_timestamptz_timestamptz(TimestampTz tstz1, TimestampTz tstz2);
+extern Timestamp date_to_timestamp(DateADT date);
+extern TimestampTz date_to_timestamptz(DateADT date);
 
 #endif /* POSTGRES_H */

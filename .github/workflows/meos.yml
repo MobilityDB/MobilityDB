@@ -62,10 +62,17 @@ jobs:
           ./bool_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cbuffer_test cbuffer_test.c -L/usr/local/lib -lmeos
           ./cbuffer_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o date_test date_test.c -L/usr/local/lib -lmeos
+          ./date_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o float_test float_test.c -L/usr/local/lib -lmeos
+          ./float_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o int_test int_test.c -L/usr/local/lib -lmeos
+          ./int_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o interval_test interval_test.c -L/usr/local/lib -lmeos
+          ./interval_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
-          ./numeric_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
           ./setspan_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbox_test tbox_test.c -L/usr/local/lib -lmeos
@@ -76,3 +83,5 @@ jobs:
           ./text_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o time_test time_test.c -L/usr/local/lib -lmeos
           ./time_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o timestamp_test timestamp_test.c -L/usr/local/lib -lmeos
+          ./timestamp_test
