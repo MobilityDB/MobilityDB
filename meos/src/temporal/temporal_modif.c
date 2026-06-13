@@ -45,7 +45,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -61,6 +60,10 @@
   #include "npoint/tnpoint_distance.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * General functions
@@ -339,10 +342,12 @@ tcontseq_merge_array_iter(TSequence **sequences, int count, int *totalcount)
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
     const TSequence *seq2 = sequences[i];
     const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
+    char *str1;
     if (inst1->t > inst2->t)
     {
-      char *str1 = pg_timestamptz_out(inst1->t);
-      char *str2 = pg_timestamptz_out(inst2->t);
+      char *str2;
+      str1 = pg_timestamptz_out(inst1->t);
+      str2 = pg_timestamptz_out(inst2->t);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "The temporal values cannot overlap on time: %s, %s", str1, str2);
       pfree(str1); pfree(str2);
@@ -1700,7 +1705,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     if (maxt && ! split)
     {
       Interval *duration = minus_timestamptz_timestamptz(inst->t, last->t);
-      if (pg_interval_cmp(duration, maxt) > 0)
+      if (pg_interval_cmp((Interval *) duration, (Interval *) maxt) > 0)
         split = true;
       pfree(duration);
     }

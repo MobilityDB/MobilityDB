@@ -128,7 +128,7 @@ static const char *MEOS_TYPE_NAMES[] =
 
 /**
  * @brief Global constant array containing the operator names corresponding to
- * the enumeration meosOper defined in file `meos_catalog.h`
+ * the enumeration MeosOper defined in file `meos_catalog.h`
  */
 static const char *MEOS_OPER_NAMES[] =
 {
@@ -387,7 +387,7 @@ temptype_subtype_all(tempSubtype subtype)
  * @brief Return the string name from a MEOS operator number
  */
 inline const char *
-meosoper_name(meosOper oper)
+meosoper_name(MeosOper oper)
 {
   return MEOS_OPER_NAMES[oper];
 }
@@ -396,7 +396,7 @@ meosoper_name(meosOper oper)
  * @brief Fetch the operator number from its name
  * @arg[in] str Name of the type
  */
-meosOper
+MeosOper
 meosoper_from_string(const char *str)
 {
   int n = sizeof(MEOS_OPER_NAMES) / sizeof(char *);

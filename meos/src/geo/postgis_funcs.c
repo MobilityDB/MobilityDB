@@ -41,9 +41,11 @@
 /* GEOS */
 #include <geos_c.h>
 /* PostgreSQL */
+#include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+#include <pgtypes.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
@@ -52,7 +54,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/postgres_types.h"
 #include "temporal/type_util.h"
 #include "geo/meos_transform.h"
 #include "geo/tgeo.h"
@@ -78,26 +79,25 @@ extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
  *****************************************************************************/
 
 #if MEOS
-#define MAXBOX3DLEN    255
-#define MAXGBOXLEN     255
+#define MAX_LEN_BOX3D    255
+#define MAX_LEN_GBOX     255
 
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a PostGIS GBOX from the arguments
  * @param[in] hasz True if there is a Z dimension
- * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
- * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
+ * @param[in] hasm True if there is a M dimension
+ * @param[in] geodetic True if geodetic
+ * @param[in] xmin,ymin,zmin,mmin Minimum bounds for the spatial dimensions
+ * @param[in] xmax,ymax,zmax,mmax Maximum bounds for the spatial dimensions
  */
 GBOX *
-gbox_make(bool hasz, double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax)
+gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax, 
+  double ymin, double ymax, double zmin, double zmax, double mmin,
+  double mmax)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  GBOX *result = palloc0(sizeof(GBOX));
-  FLAGS_SET_Z(result->flags, hasz);
-  FLAGS_SET_GEODETIC(result->flags, false);
-
-  /* Process X/Y min/max */
+  GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
+  /* Process X min/max */
   result->xmin = Min(xmin, xmax);
   result->xmax = Max(xmin, xmax);
   /* Process Y min/max */
@@ -109,7 +109,12 @@ gbox_make(bool hasz, double xmin, double xmax, double ymin, double ymax,
     result->zmin = Min(zmin, zmax);
     result->zmax = Max(zmin, zmax);
   }
-
+  if (hasm)
+  {
+    /* Process M min/max */
+    result->mmin = Min(mmin, mmax);
+    result->mmax = Max(mmin, mmax);
+  }
   return result;
 }
 
@@ -127,36 +132,7 @@ gbox_out(const GBOX *box, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAXGBOXLEN + 1;
-  char buf[MAXGBOXLEN + 1];
-  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
-    *zmax = NULL;
-  bool hasz = FLAGS_GET_Z(box->flags);
-
-  xmin = float8_out(box->xmin, maxdd);
-  xmax = float8_out(box->xmax, maxdd);
-  ymin = float8_out(box->ymin, maxdd);
-  ymax = float8_out(box->ymax, maxdd);
-  if (hasz)
-  {
-    zmin = float8_out(box->zmin, maxdd);
-    zmax = float8_out(box->zmax, maxdd);
-    snprintf(buf, size, "GBOX Z((%s,%s,%s),(%s,%s,%s))",
-      xmin, ymin, zmin, xmax, ymax, zmax);
-  }
-  else
-  {
-    snprintf(buf, size, "GBOX X((%s,%s),(%s,%s))",
-      xmin, ymin, xmax, ymax);
-  }
-
-  pfree(xmin); pfree(xmax);
-  pfree(ymin); pfree(ymax);
-  if (hasz)
-  {
-    pfree(zmin); pfree(zmax);
-  }
-  return strdup(buf);
+  return gbox_to_string(box);
 }
 
 /**
@@ -167,8 +143,8 @@ gbox_out(const GBOX *box, int maxdd)
  * @param[in] srid SRID
  */
 BOX3D *
-box3d_make(double xmin, double xmax, double ymin, double ymax,
-  double zmin, double zmax, int32 srid)
+box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, int32 srid)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   BOX3D *result = palloc0(sizeof(BOX3D));
@@ -202,8 +178,8 @@ box3d_out(const BOX3D *box, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAXBOX3DLEN + 1;
-  char buf[MAXBOX3DLEN + 1];
+  static size_t size = MAX_LEN_BOX3D + 1;
+  char buf[MAX_LEN_BOX3D + 1];
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL;
 
@@ -228,7 +204,6 @@ box3d_out(const BOX3D *box, int maxdd)
   pfree(zmin); pfree(zmax);
   return strdup(buf);
 }
-
 #endif /* MEOS */
 
 /*****************************************************************************
@@ -242,8 +217,7 @@ box3d_out(const BOX3D *box, int maxdd)
  * at least one fully contained member and no members
  * outside the polygon to be contained.
  */
-bool
-itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -288,8 +262,7 @@ itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
  * If any point in the point/multipoint is outside
  * the polygon, then the polygon does not cover the point/multipoint.
  */
-bool
-itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -322,8 +295,7 @@ itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
  * A.intersects(B) implies if any member of the point/multipoint
  * is not outside, then they intersect.
  */
-bool
-itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -1165,7 +1137,7 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   if (ngeoms == 0)
   {
     /* TODO: should we return LINESTRING EMPTY here ? */
-    meos_error(NOTICE, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE,
       "No points or linestrings in input array");
     for (int i = 0; i < ngeoms; i++)
       lwgeom_free(geoms[i]);
@@ -1179,7 +1151,6 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   pfree(geoms); lwgeom_free(outlwg);
   return result;
 }
-
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -1482,7 +1453,7 @@ bool
 geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
 {
   if (! ensure_valid_geo_geo(gs1, gs2))
-    return false;
+    return NULL;
 
   /* A.Intersects(Empty) == FALSE */
   if ( gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
@@ -2037,7 +2008,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
       return NULL;
     }
   }
-  pfree(params1); // TODO
+  pfree(params1);
 
   /* Empty.Buffer() == Empty[polygon] */
   if (gserialized_is_empty(gs))
@@ -2468,10 +2439,12 @@ geography_centroid_from_wpoints(const int32_t srid, const POINT3DM *points,
   double_t y_sum = 0;
   double_t z_sum = 0;
   double_t weight_sum = 0;
+  double_t weight = 1;
+  POINT3D* point;
   for (uint32_t i = 0; i < size; i++ )
   {
-    POINT3D *point = lonlat_to_cart(points[i].x, points[i].y);
-    double_t weight = points[i].m;
+    point = lonlat_to_cart(points[i].x, points[i].y);
+    weight = points[i].m;
     x_sum += point->x * weight;
     y_sum += point->y * weight;
     z_sum += point->z * weight;
@@ -3317,9 +3290,7 @@ geo_from_text(const char *wkt, int32_t srid)
 
   geo_result = geo_serialize(lwgeom);
   /* Clean up */
-  lwgeom_free(lwg_parser_result.geom);
-  // lwgeom_parser_result_free(&lwg_parser_result);
-
+  lwgeom_parser_result_free(&lwg_parser_result);
   return geo_result;
 }
 #endif /* MEOS */
@@ -4076,8 +4047,8 @@ mec_circle3(POINT2D a, POINT2D b, POINT2D c)
   double G = 2.0 * (A * (c.y - b.y) - B * (c.x - b.x));
 
   /* Zero-init so the early-exit return doesn't leave circ.center
-   * uninitialised — same fix pattern as the sibling at the top of
-   * this file (mec_circle3 around line 4040). */
+   * uninitialised — cppcheck flags this as `uninitvar`, and a downstream
+   * caller that ignored circ.radius == -1 would read garbage. */
   Circle circ = { .center = {0.0, 0.0}, .radius = 0.0 };
   if (fabs(G) < 1e-12)
   {

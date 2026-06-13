@@ -1,4 +1,4 @@
-set(CBUFFER_SRCS
+set(CBUFFER_SOURCES
   cbuffer.c
   tcbuffer.c
   # tcbuffer_aggfuncs.c
@@ -11,9 +11,9 @@ set(CBUFFER_SRCS
 )
 
 if(MEOS)
-  list(APPEND CBUFFER_SRCS
+  list(APPEND CBUFFER_SOURCES
   cbufferset_meos.c
 )
 endif()
 
-add_library(cbuffer OBJECT ${CBUFFER_SRCS})
+add_library(cbuffer OBJECT ${CBUFFER_SOURCES})

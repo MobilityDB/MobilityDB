@@ -48,6 +48,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <pgtypes.h>
 #include "temporal/span.h"
 #include "temporal/span_index.h"
 #include "temporal/stratnum.h"
@@ -317,7 +318,7 @@ interval_cmp_lower(const void *i1, const void *i2)
   double lower1 = ((const SplitInterval *) i1)->lower,
          lower2 = ((const SplitInterval *) i2)->lower;
 
-  return float8_cmp_internal(lower1, lower2);
+  return pg_float8_cmp(lower1, lower2);
 }
 
 /**
@@ -329,7 +330,7 @@ interval_cmp_upper(const void *i1, const void *i2)
   double upper1 = ((const SplitInterval *) i1)->upper,
          upper2 = ((const SplitInterval *) i2)->upper;
 
-  return float8_cmp_internal(upper1, upper2);
+  return pg_float8_cmp(upper1, upper2);
 }
 
 /**

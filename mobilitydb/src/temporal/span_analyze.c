@@ -95,7 +95,11 @@ void
 span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   SpanBound *lowers, SpanBound *uppers, float8 *lengths, bool valuedim)
 {
-  int num_hist;
+#if POSTGRESQL_VERSION_NUMBER >= 170000
+  int num_hist, num_bins = stats->attstattarget;
+#else
+  int num_hist, num_bins = stats->attr->attstattarget;
+#endif
   Datum *bound_hist_values, *length_hist_values;
 
   /* Must copy the target values into anl_context */
@@ -115,11 +119,6 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     qsort(uppers, (size_t) non_null_cnt, sizeof(SpanBound),
       span_bound_qsort_cmp);
 
-#if POSTGRESQL_VERSION_NUMBER >= 170000
-    int num_bins = stats->attstattarget;
-#else
-    int num_bins = stats->attr->attstattarget;
-#endif
     num_hist = non_null_cnt;
     if (num_hist > num_bins)
       num_hist = num_bins + 1;

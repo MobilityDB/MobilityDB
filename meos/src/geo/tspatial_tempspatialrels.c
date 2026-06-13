@@ -103,9 +103,9 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
 -- "GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(3 1,4 1))"
 */
 
-/******************************************************************************
+/*****************************************************************************
  * `tintersects` and `tdisjoint` functions
- * The case for a temporal point and a geometry allows a fast implementation by
+ * The case for a temporal point and a geometry allow a fast implementation by
  * (1) using bounding box tests, and (2) splitting temporal point sequences
  * into an array of simple (that is, not self-intersecting) fragments where
  * the answer is computed for each fragment with a single call to PostGIS.

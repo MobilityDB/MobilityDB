@@ -76,11 +76,8 @@ typedef struct struct_MEOSPROJSRSCache
  */
 #define PROJ_BACKEND_HASH_SIZE 256
 
-/* Per-thread PROJ object cache. Each entry owns LWPROJ structures created
- * inside the per-thread PJ_CONTEXT; the cache must therefore live in the
- * same thread as the context, otherwise PROJ objects from one context
- * would leak across into another. */
-static MEOS_TLS MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
+/* Global variable to hold the Proj object cache */
+MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
 
 /**
  * @brief Utility structure to get many potential string representations
@@ -256,14 +253,14 @@ GetProjStringsSPI(int32_t srid)
   }
 
   /* Read the first line of the file with the headers */
-  (void) fscanf(file, "%1023s\n", header_buffer);
+  int read = fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   bool found = false;
   do
   {
     /* Read each line from the file */
-    int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
+    read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
       auth_name, &auth_srid, proj4text, srtext);
 
     if (ferror(file))
@@ -550,13 +547,16 @@ static LWPROJ *
 AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   int32_t srid_to)
 {
+  PjStrs from_strs, to_strs;
+  char *pj_from_str, *pj_to_str;
+
   /* Turn the SRID number into a proj4 string, by reading from spatial_ref_sys
    * or instantiating a magical value from a negative srid */
-  PjStrs from_strs = GetProjStrings(srid_from);
+  from_strs = GetProjStrings(srid_from);
   if (! pjstrs_has_entry(&from_strs))
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_from);
-  PjStrs to_strs = GetProjStrings(srid_to);
+  to_strs = GetProjStrings(srid_to);
   if (! pjstrs_has_entry(&to_strs))
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "got NULL for SRID (%d)", srid_to);
@@ -569,8 +569,8 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   uint32_t i;
   for (i = 0; i < 9; i++)
   {
-    char *pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
-    char *pj_to_str = pgstrs_get_entry(&to_strs, i % 3);
+    pj_from_str = pgstrs_get_entry(&from_strs, i / 3);
+    pj_to_str = pgstrs_get_entry(&to_strs, i % 3);
     if (! (pj_from_str && pj_to_str))
       continue;
 

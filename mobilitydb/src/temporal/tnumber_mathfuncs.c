@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
@@ -431,7 +432,7 @@ Float_angular_difference(PG_FUNCTION_ARGS)
 {
   double degrees1 = PG_GETARG_FLOAT8(0);
   double degrees2 = PG_GETARG_FLOAT8(1);
-  PG_RETURN_FLOAT8(float_angular_difference(degrees1, degrees2));
+  PG_RETURN_FLOAT8(float8_angular_difference(degrees1, degrees2));
 }
 
 /*****************************************************************************
