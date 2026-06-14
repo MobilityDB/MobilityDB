@@ -44,6 +44,14 @@
  * @ingroup meos_internal_rgeo
  * @brief Restriction functions for temporal rigid geometries
  *
+ * @defgroup meos_internal_rgeo_rel Spatial relationship functions
+ * @ingroup meos_internal_rgeo
+ * @brief Spatial relationship functions for temporal rigid geometries
+ *
+ *   @defgroup meos_internal_rgeo_rel_ever Ever/always relationship functions
+ *   @ingroup meos_internal_rgeo_rel
+ *   @brief Ever/always relationship functions for temporal rigid geometries
+ *
  * @defgroup meos_internal_rgeo_comp Comparison functions
  * @ingroup meos_internal_rgeo
  * @brief Comparison functions for temporal rigid geometries
