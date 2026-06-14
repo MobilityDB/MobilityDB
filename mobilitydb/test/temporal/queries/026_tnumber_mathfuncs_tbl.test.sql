@@ -107,6 +107,10 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE exp(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE ln(abs(temp)) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE log10(abs(temp)) IS NOT NULL;
 
+SELECT COUNT(*) FROM tbl_tfloat WHERE sin(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE cos(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat WHERE tan(temp) IS NOT NULL;
+
 SELECT COUNT(*) FROM tbl_tint WHERE deltaValue(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
 
