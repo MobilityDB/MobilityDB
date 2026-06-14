@@ -85,7 +85,7 @@ CREATE TYPE th3index (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = temporal_analyze
+  analyze = tspatial_analyze
 );
 
 /******************************************************************************
