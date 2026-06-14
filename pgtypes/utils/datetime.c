@@ -24,7 +24,7 @@
 #include "parser/scansup.h"
 #include "utils/builtins.h"
 #include "utils/date.h"
-#include "../../meos/include/meos.h"
+#include "meos.h"
 #include "utils/datetime.h"
 #include "utils/tzparser.h"
 
