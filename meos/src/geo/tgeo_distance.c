@@ -79,8 +79,8 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
     double max_dist = FLT_MAX;
     GEOGRAPHIC_POINT closest1, closest2;
     GEOGRAPHIC_EDGE e;
-    CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(geom1);
-    CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(geom2);
+    const CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(geom1);
+    const CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(geom2);
     circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
       &min_dist, &max_dist, &closest1, &closest2);
     result = sphere_distance(&closest1, &closest2);

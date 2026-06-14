@@ -436,10 +436,10 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     }
     /* We cannot lwgeom_free((LWGEOM *) coll); */
     if (result)
-      return result ? 1 : 0;
+      return 1;
   }
   pfree(trav1); pfree(trav2);
-  return result ? 1 : 0;
+  return 0;
 }
 
 /*****************************************************************************/

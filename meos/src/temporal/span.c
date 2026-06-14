@@ -200,8 +200,8 @@ span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
 int
 span_bound_qsort_cmp(const void *a1, const void *a2)
 {
-  SpanBound *b1 = (SpanBound *) a1;
-  SpanBound *b2 = (SpanBound *) a2;
+  const SpanBound *b1 = (SpanBound *) a1;
+  const SpanBound *b2 = (SpanBound *) a2;
   return span_bound_cmp(b1, b2);
 }
 

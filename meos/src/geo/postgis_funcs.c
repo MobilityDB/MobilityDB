@@ -1258,7 +1258,7 @@ geo_num_geos(const GSERIALIZED *gs)
     result = 1;
   else
   {
-    LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
+    const LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
     result = col->ngeoms;
   }
   lwgeom_free(lwgeom);
@@ -1800,7 +1800,7 @@ geom_array_union(GSERIALIZED **gsarr, int count)
     if (empty_type > 0)
     {
       LWGEOM *geom = lwgeom_construct_empty(empty_type, srid, is3d, 0);
-      GSERIALIZED *result = geo_serialize(geom);
+      result = geo_serialize(geom);
       lwgeom_free(geom);
       return result;
     }
@@ -2701,7 +2701,7 @@ geog_centroid(const GSERIALIZED *g, bool use_spheroid)
     }
     case MULTILINETYPE:
     {
-      LWMLINE* mline = lwgeom_as_lwmline(lwgeom);
+      const LWMLINE* mline = lwgeom_as_lwmline(lwgeom);
       lwpoint_out = geography_centroid_from_mline(mline, &s);
       break;
     }
@@ -2717,7 +2717,7 @@ geog_centroid(const GSERIALIZED *g, bool use_spheroid)
     }
     case MULTIPOLYGONTYPE:
     {
-      LWMPOLY* mpoly = lwgeom_as_lwmpoly(lwgeom);
+      const LWMPOLY* mpoly = lwgeom_as_lwmpoly(lwgeom);
       lwpoint_out = geography_centroid_from_mpoly(mpoly, use_spheroid, &s);
       break;
     }

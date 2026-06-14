@@ -102,7 +102,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
    * defined by a matrix where rows and columns are ordered by side road (S),
    * main road (M), freeway (F). The OSM highway types must be mapped to one
    * of these categories using the function berlinmod_roadCategory */
-  double P_DEST_STOPPROB[3][3] =
+  const double P_DEST_STOPPROB[3][3] =
     {{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}};
   /* Mean waiting time in seconds using an exponential distribution.
    * Increasing/decreasing this parameter allows us to slow down or speed up

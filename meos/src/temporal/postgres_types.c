@@ -2323,8 +2323,8 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
 int
 text_cmp(const text *txt1, const text *txt2)
 {
-  char *t1p = VARDATA_ANY(txt1);
-  char *t2p = VARDATA_ANY(txt2);
+  const char *t1p = VARDATA_ANY(txt1);
+  const char *t2p = VARDATA_ANY(txt2);
   int len1 = (int) VARSIZE_ANY_EXHDR(txt1);
   int len2 = (int) VARSIZE_ANY_EXHDR(txt2);
   return varstr_cmp(t1p, len1, t2p, len2, DEFAULT_COLLATION_OID);

@@ -718,7 +718,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
     spans = palloc(sizeof(Span) * ss->count);
     for (i = 0; i < ss->count; i++)
     {
-      TBox *box = TSEQUENCE_BBOX_PTR(TSEQUENCESET_SEQ_N(ss, i));
+      const TBox *box = TSEQUENCE_BBOX_PTR(TSEQUENCESET_SEQ_N(ss, i));
       memcpy(&spans[i], &box->span, sizeof(Span));
     }
     return spanset_make_free(spans, ss->count, NORMALIZE, ORDER);

@@ -56,7 +56,7 @@
  * @csqlfn #Tnpoint_tcentroid_transfn()
  */
 SkipList *
-tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
+tnpoint_tcentroid_transfn(SkipList *state, const Temporal *temp)
 {
   /* Null temporal: return state */
   if (! temp)

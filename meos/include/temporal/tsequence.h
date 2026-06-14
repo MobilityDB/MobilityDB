@@ -81,7 +81,7 @@ extern bool ensure_valid_tinstarr_common(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
 extern TSequence *tsequence_make_exp1(TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
-  bool normalize, void *bbox);
+  bool normalize, const void *bbox);
 
 /* Synchronization functions */
 

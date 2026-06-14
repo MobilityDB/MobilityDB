@@ -872,7 +872,7 @@ extern double mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2
 /* Aggregates */
 
 extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
-extern SkipList *tpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tpoint_tcentroid_transfn(SkipList *state, const Temporal *temp);
 extern STBox *tspatial_extent_transfn(STBox *box, const Temporal *temp);
 
 /* Tile functions */

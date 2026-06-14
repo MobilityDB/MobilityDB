@@ -1684,7 +1684,7 @@ geomeas_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
       int ngeoms1 = coll1->ngeoms;
       for (int j = 0; j < ngeoms1; j++)
       {
-        LWGEOM *geom2 = coll1->geoms[j];
+        const LWGEOM *geom2 = coll1->geoms[j];
         if (geom2->type == POINTTYPE)
         {
           TInstant *inst2 = geomeas_tpointinst(geom2);
@@ -2111,10 +2111,11 @@ tpointseq_decouple_iter(const TSequence *seq, int64 *times)
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count, interp);
   if (interp == LINEAR)
+  {
     for (int i = 0; i < seq->count; i++)
       lwpoint_free((LWPOINT *) points[i]);
-  if (interp == LINEAR)
     pfree(points);
+  }
   return result;
 }
 

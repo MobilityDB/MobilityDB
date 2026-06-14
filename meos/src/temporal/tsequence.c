@@ -404,7 +404,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 2);
   Datum last2value = ! last2 ? 0 : tinstant_value_p(last2);
-  TInstant *last1 = (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 1);
+  const TInstant *last1 = (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 1);
   Datum last1value = tinstant_value_p(last1);
   TInstant *first1 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   Datum first1value = tinstant_value_p(first1);
@@ -802,7 +802,7 @@ TSEQUENCE_INST_N(const TSequence *seq, int i)
 TSequence *
 tsequence_make_exp1(TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize,
-  void *bbox)
+  const void *bbox)
 {
   assert(instants); assert(maxcount >= count);
   /* Normalize the array of instants */
