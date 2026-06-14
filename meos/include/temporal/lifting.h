@@ -64,7 +64,14 @@ typedef struct
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
   bool ever;                  /**< True/false when computing the ever/always semantics */
-  tpfunc_unary tpfn_unary;    /**< Turning point function for unary lifts */
+  tpfunc_unary tpfn_unary;    /**< Turning point function for unary lifts (closed
+                                 form, at most two turning points per segment) */
+  bool tpfn_adaptive;         /**< True if the unary lifted function may have more
+                                 than two turning points per segment (e.g. the
+                                 oscillatory sin/cos/tan). The result sequence is
+                                 densified by adaptive recursive bisection
+                                 (#tfunc_tlinearseq_adaptive) rather than by the
+                                 closed-form #tpfn_unary path. */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;

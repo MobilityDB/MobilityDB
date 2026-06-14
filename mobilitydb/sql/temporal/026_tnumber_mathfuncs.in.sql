@@ -421,4 +421,19 @@ CREATE FUNCTION log10(tfloat)
   AS 'MODULE_PATHNAME', 'Tfloat_log10'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION sin(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_sin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cos(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_cos'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tan(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_tan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/

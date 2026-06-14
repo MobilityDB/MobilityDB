@@ -989,3 +989,126 @@ tfloat_log10(const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Trigonometric functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the sine of a double
+ * @param[in] d Value (in radians)
+ */
+static Datum
+datum_sin(Datum d)
+{
+  return Float8GetDatum(sin(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the sine of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note sin is oscillatory and can have more than two turning points within a
+ * single linear segment, so the closed-form two-point densification does not
+ * apply. The result is densified by adaptive recursive bisection (the method
+ * the trgeometry distance kernel uses); see #tfunc_tlinearseq_adaptive.
+ * @csqlfn #Tfloat_sin()
+ */
+Temporal *
+tfloat_sin(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_sin;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_adaptive = true;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the cosine of a double
+ * @param[in] d Value (in radians)
+ */
+static Datum
+datum_cos(Datum d)
+{
+  return Float8GetDatum(cos(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the cosine of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note cos is oscillatory and can have more than two turning points within a
+ * single linear segment, so the closed-form two-point densification does not
+ * apply. The result is densified by adaptive recursive bisection (the method
+ * the trgeometry distance kernel uses); see #tfunc_tlinearseq_adaptive.
+ * @csqlfn #Tfloat_cos()
+ */
+Temporal *
+tfloat_cos(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_cos;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_adaptive = true;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the tangent of a double
+ * @param[in] d Value (in radians)
+ * @note tan is undefined at π/2 + kπ where cos(d) = 0; per-instant
+ * errors are not raised here since cos is never exactly 0 in floating-point
+ * for finite inputs, and the C library returns ±Inf naturally.
+ */
+static Datum
+datum_tan(Datum d)
+{
+  return Float8GetDatum(tan(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the tangent of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note tan is monotone within each branch (π/2 + kπ poles) but its curvature
+ * grows without bound near a pole, so it is densified by the same adaptive
+ * recursive bisection as sin/cos (see #tfunc_tlinearseq_adaptive): the
+ * bisection refines the steep near-pole regions, and the C library yields
+ * ±Inf for an argument landing exactly on a pole (see #datum_tan). No bespoke
+ * pole detection is needed.
+ * @csqlfn #Tfloat_tan()
+ */
+Temporal *
+tfloat_tan(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_tan;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_adaptive = true;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
