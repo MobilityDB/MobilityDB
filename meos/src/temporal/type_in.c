@@ -1627,9 +1627,18 @@ span_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spantype = int16_from_wkb_state(s);
+  Span result;
+  /* Ensure the WKB type code belongs to the span family before trusting it;
+   * a valid-hex buffer of another family would otherwise corrupt memory */
+  if (! span_type(wkb_spantype))
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Invalid span type code in WKB string: %d", wkb_spantype);
+    memset(&result, 0, sizeof(Span));
+    return result;
+  }
   s->spantype = (uint8_t) wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
-  Span result;
   span_from_wkb_state_iter(s, &result);
   return result;
 }
@@ -1644,6 +1653,13 @@ spanset_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spansettype = int16_from_wkb_state(s);
+  /* Ensure the WKB type code belongs to the span set family before trusting it */
+  if (! spanset_type(wkb_spansettype))
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Invalid span set type code in WKB string: %d", wkb_spansettype);
+    return NULL;
+  }
   /* For template classes it is necessary to store the specific type */
   s->type = (uint8_t) wkb_spansettype;
   s->spantype = spansettype_spantype(s->type);
@@ -1693,6 +1709,13 @@ set_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the set type */
   uint16_t wkb_settype = int16_from_wkb_state(s);
+  /* Ensure the WKB type code belongs to the set family before trusting it */
+  if (! set_type(wkb_settype))
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Invalid set type code in WKB string: %d", wkb_settype);
+    return NULL;
+  }
   /* For template classes it is necessary to store the specific type */
   s->type = (uint8_t) wkb_settype;
   s->basetype = settype_basetype(s->type);
@@ -1959,6 +1982,15 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the temporal type */
   uint16_t wkb_temptype = int16_from_wkb_state(s);
+  /* Ensure the WKB type code is a temporal type before trusting it; a valid-hex
+   * buffer of another family (e.g. a tstzspan) would otherwise be parsed as a
+   * temporal structure and corrupt memory */
+  if (! temporal_type(wkb_temptype))
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Invalid temporal type code in WKB string: %d", wkb_temptype);
+    return NULL;
+  }
   s->temptype = (uint8_t) wkb_temptype;
   s->basetype = temptype_basetype(s->temptype);
 
