@@ -534,4 +534,56 @@ Tfloat_log10(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************
+ * Trigonometric functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tfloat_sin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_sin);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the sine of a temporal float
+ * @sqlfn sin()
+ */
+Datum
+Tfloat_sin(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_sin(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_cos(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_cos);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the cosine of a temporal float
+ * @sqlfn cos()
+ */
+Datum
+Tfloat_cos(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_cos(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_tan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_tan);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the tangent of a temporal float
+ * @sqlfn tan()
+ */
+Datum
+Tfloat_tan(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_tan(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/

@@ -535,10 +535,28 @@ SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02],
   [1@2001-01-04, 1@2001-01-05]}');
-/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02], 
+/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02],
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
 SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tnumber_sin">
+				<indexterm significance="normal"><primary><varname>sin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cos</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tan</varname></primary></indexterm>
+				<para>Return the sine, cosine, or tangent of a temporal float (argument in radians)</para>
+				<para><varname>sin(tfloat) → tfloat</varname></para>
+				<para><varname>cos(tfloat) → tfloat</varname></para>
+				<para><varname>tan(tfloat) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
+-- [0@2001-01-01, -0.000000@2001-01-02]
+SELECT round(cos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
+-- [1@2001-01-01, -1@2001-01-02]
+SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
+-- {0@2001-01-01, 1@2001-01-02}
 </programlisting>
 			</listitem>
 		</itemizedlist>
