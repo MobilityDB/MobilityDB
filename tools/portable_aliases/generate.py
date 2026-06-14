@@ -74,7 +74,8 @@ SYM_RE = re.compile(r"'MODULE_PATHNAME',\s*'([A-Za-z0-9_]+)'")
 # Numeric prefix per subdir: sorts AFTER that group's type/operator defs
 # under the top-level list(SORT) (aliases depend only on argument types).
 GROUP_PREFIX = {"temporal": "048", "geo": "079", "npoint": "399",
-                "pose": "115", "rgeo": "199", "cbuffer": "299"}
+                "pose": "115", "rgeo": "199", "cbuffer": "299",
+                "h3": "298"}
 
 HEADER = (
     "/*****************************************************************************\n"
