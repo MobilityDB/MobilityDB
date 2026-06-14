@@ -1,0 +1,58 @@
+\pset tuples_only on
+
+-- neighbouring indexes (one hexagon, one pentagon) at resolution 3
+\set geo POINT(-144.52399108028, 49.7165031828995)
+\set hexagon '\'831c02fffffffff\'::h3index'
+\set pentagon '\'831c00fffffffff\'::h3index'
+\set edgecross '\'8003fffffffffff\'::h3index'
+\set resolution 3
+
+--
+-- TEST h3_cell_to_latlng and h3_latlng_to_cell
+--
+
+-- convertion to geo works
+SELECT h3_cell_to_latlng(:hexagon) ~= :geo;
+
+-- convertion to h3 index works
+SELECT h3_latlng_to_cell(:geo, :resolution) = :hexagon;
+
+-- h3_cell_to_latlng is inverse of h3_latlng_to_cell
+SELECT h3_cell_to_latlng(i) ~= :geo AND h3_get_resolution(i) = :resolution FROM (
+    SELECT h3_latlng_to_cell(:geo, :resolution) AS i
+) AS q;
+-- h3_latlng_to_cell is inverse of h3_cell_to_latlng
+SELECT h3_latlng_to_cell(g, r) = :hexagon FROM (
+    SELECT h3_cell_to_latlng(:hexagon) AS g, h3_get_resolution(:hexagon) AS r
+) AS q;
+-- same for pentagon
+SELECT h3_latlng_to_cell(g, r) = :pentagon FROM (
+    SELECT h3_cell_to_latlng(:pentagon) AS g, h3_get_resolution(:pentagon) AS r
+) AS q;
+
+--
+-- TEST h3_cell_to_boundary
+--
+
+-- polyfill of geo boundary returns original index
+SELECT h3_polygon_to_cells(h3_cell_to_boundary(:hexagon), null, :resolution) = :hexagon;
+
+-- same for pentagon
+SELECT h3_polygon_to_cells(h3_cell_to_boundary(:pentagon), null, :resolution) = :pentagon;
+
+-- the boundary of an edgecrossing index is different with flag set to true
+SELECT h3_cell_to_boundary(:hexagon) ~= h3_cell_to_boundary(:hexagon, true)
+AND NOT h3_cell_to_boundary(:edgecross) ~= h3_cell_to_boundary(:edgecross, true);
+
+-- cell to parent RES_MISMATCH
+CREATE FUNCTION h3_fail_indexing_cell_to_parent() RETURNS boolean LANGUAGE PLPGSQL
+    AS $$
+        BEGIN
+            PERFORM h3_cell_to_parent('831c02fffffffff', 10);
+            RETURN false;
+        EXCEPTION WHEN OTHERS THEN
+            RETURN true;
+        END;
+    $$;
+SELECT h3_fail_indexing_cell_to_parent();
+DROP FUNCTION h3_fail_indexing_cell_to_parent;

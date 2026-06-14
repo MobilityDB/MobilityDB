@@ -148,6 +148,21 @@ tintseq_from_base_tstzset(int i, const Set *s)
 
 /**
  * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer discrete sequence from a big integer
+ * and a timestamptz set
+ * @param[in] i Value
+ * @param[in] s Set
+ */
+TSequence *
+tbigintseq_from_base_tstzset(int64 i, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(Int64GetDatum(i), T_TBIGINT, s);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
  * @brief Return a temporal float discrete sequence from a float and a
  * timestamptz set
  * @param[in] d Value
@@ -206,6 +221,21 @@ tintseq_from_base_tstzspan(int i, const Span *s)
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   return tsequence_from_base_tstzspan(Int32GetDatum(i), T_TINT, s, STEP);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer sequence from a big integer and a
+ * timestamptz span
+ * @param[in] i Value
+ * @param[in] s Span
+ */
+TSequence *
+tbigintseq_from_base_tstzspan(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(Int64GetDatum(i), T_TBIGINT, s, STEP);
 }
 
 /**
