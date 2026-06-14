@@ -295,6 +295,13 @@ typedef Datum (*varfunc) (Datum, ...);
 typedef int (*tpfunc_unary)(Datum, Datum, TimestampTz, TimestampTz,
   TimestampTz *, TimestampTz *);
 
+/* Definition of an exact turning point function for a unary temporal lift that
+ * may have an arbitrary number of turning points per segment (e.g. the extrema
+ * of sin/cos). It pallocs into its last argument an ordered array of the exact
+ * critical timestamps strictly inside the segment and returns their count. */
+typedef int (*tpfunc_set)(Datum, Datum, TimestampTz, TimestampTz,
+  TimestampTz **);
+
 /* Definition of a turning point function for a temporal and a base types */
 typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
   TimestampTz *, TimestampTz *);
