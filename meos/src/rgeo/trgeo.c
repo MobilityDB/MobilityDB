@@ -1370,7 +1370,7 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 /**
  * @ingroup meos_rgeo_modif
  * @brief Return the value of a temporal rigid geometry at a timestamptz
- * @csqlfn #Temporal_delete_timestamptz
+ * @csqlfn #Temporal_delete_timestamptz()
  */
 Temporal *
 trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
