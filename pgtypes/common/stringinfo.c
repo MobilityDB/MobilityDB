@@ -22,7 +22,7 @@
 #include "utils/datetime.h"
 #if MEOS
   #define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
-  #include "../../meos/include/meos.h"
+  #include "meos.h"
 #else
   #include <utils/memutils.h>
 #endif

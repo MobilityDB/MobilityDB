@@ -71,7 +71,7 @@
 #endif
 #define EXIT_FAILURE 1
 
-#include "../../meos/include/meos_error.h"
+#include "meos_error.h"
 
 // /* MEOS: redefining palloc0, palloc, and pfree */
 // #if MEOS
