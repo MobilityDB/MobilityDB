@@ -136,6 +136,9 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   if(CBUFFER)
     target_compile_options(cbuffer PRIVATE "/W4")
   endif()
+  if(H3)
+    target_compile_options(h3 PRIVATE "/W4")
+  endif()
   if(NPOINT)
     target_compile_options(npoint PRIVATE "/W4")
   endif()
@@ -174,6 +177,10 @@ set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
+endif()
+if(H3)
+  message(STATUS "Including temporal H3 index objects")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:h3>")
 endif()
 if(NPOINT)
   message(STATUS "Including network points")
@@ -214,6 +221,9 @@ target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 target_link_libraries(${MEOS_LIB_NAME} ${GSL_LIBRARY})
 target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
+if(H3)
+  target_link_libraries(${MEOS_LIB_NAME} ${H3_LIBRARY})
+endif()
 
 #--------------------------------
 # Belongs to MEOS
@@ -243,6 +253,11 @@ install(
 if(CBUFFER)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(H3)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 if(NPOINT)

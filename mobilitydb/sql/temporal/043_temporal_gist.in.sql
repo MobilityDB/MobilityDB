@@ -79,6 +79,15 @@ CREATE FUNCTION tint_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'Tnumber_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tbigint_gist_consistent(internal, tbigint, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbigint_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
@@ -104,54 +113,67 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   -- strictly left
   OPERATOR  1    << (tbox, tbox),
   OPERATOR  1    << (tbox, tint),
+  OPERATOR  1    << (tbox, tbigint),
   OPERATOR  1    << (tbox, tfloat),
    -- overlaps or left
   OPERATOR  2    &< (tbox, tbox),
   OPERATOR  2    &< (tbox, tint),
+  OPERATOR  2    &< (tbox, tbigint),
   OPERATOR  2    &< (tbox, tfloat),
   -- overlaps
   OPERATOR  3    && (tbox, tbox),
   OPERATOR  3    && (tbox, tint),
+  OPERATOR  3    && (tbox, tbigint),
   OPERATOR  3    && (tbox, tfloat),
   -- overlaps or right
   OPERATOR  4    &> (tbox, tbox),
   OPERATOR  4    &> (tbox, tint),
+  OPERATOR  4    &> (tbox, tbigint),
   OPERATOR  4    &> (tbox, tfloat),
   -- strictly right
   OPERATOR  5    >> (tbox, tbox),
   OPERATOR  5    >> (tbox, tint),
+  OPERATOR  5    >> (tbox, tbigint),
   OPERATOR  5    >> (tbox, tfloat),
     -- same
   OPERATOR  6    ~= (tbox, tbox),
   OPERATOR  6    ~= (tbox, tint),
+  OPERATOR  6    ~= (tbox, tbigint),
   OPERATOR  6    ~= (tbox, tfloat),
   -- contains
   OPERATOR  7    @> (tbox, tbox),
   OPERATOR  7    @> (tbox, tint),
+  OPERATOR  7    @> (tbox, tbigint),
   OPERATOR  7    @> (tbox, tfloat),
   -- contained by
   OPERATOR  8    <@ (tbox, tbox),
   OPERATOR  8    <@ (tbox, tint),
+  OPERATOR  8    <@ (tbox, tbigint),
   OPERATOR  8    <@ (tbox, tfloat),
   -- adjacent
   OPERATOR  17    -|- (tbox, tbox),
   OPERATOR  17    -|- (tbox, tint),
+  OPERATOR  17    -|- (tbox, tbigint),
   OPERATOR  17    -|- (tbox, tfloat),
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
+  OPERATOR  28    &<# (tbox, tbigint),
   OPERATOR  28    &<# (tbox, tfloat),
   -- strictly before
   OPERATOR  29    <<# (tbox, tbox),
   OPERATOR  29    <<# (tbox, tint),
+  OPERATOR  29    <<# (tbox, tbigint),
   OPERATOR  29    <<# (tbox, tfloat),
   -- strictly after
   OPERATOR  30    #>> (tbox, tbox),
   OPERATOR  30    #>> (tbox, tint),
+  OPERATOR  30    #>> (tbox, tbigint),
   OPERATOR  30    #>> (tbox, tfloat),
   -- overlaps or after
   OPERATOR  31    #&> (tbox, tbox),
   OPERATOR  31    #&> (tbox, tint),
+  OPERATOR  31    #&> (tbox, tbigint),
   OPERATOR  31    #&> (tbox, tfloat),
   -- functions
   FUNCTION  1  tbox_gist_consistent(internal, tbox, smallint, oid, internal),
@@ -270,6 +292,80 @@ CREATE OPERATOR CLASS tint_rtree_ops
   FUNCTION  1  tint_gist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2  tbox_gist_union(internal, internal),
   FUNCTION  3  tint_gist_compress(internal),
+  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6  tbox_gist_picksplit(internal, internal),
+  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS tbigint_rtree_ops
+  DEFAULT FOR TYPE tbigint USING gist AS
+  STORAGE tbox,
+  -- strictly left
+  OPERATOR  1    << (tbigint, bigintspan),
+  OPERATOR  1    << (tbigint, tbox),
+  OPERATOR  1    << (tbigint, tbigint),
+   -- overlaps or left
+  OPERATOR  2    &< (tbigint, bigintspan),
+  OPERATOR  2    &< (tbigint, tbox),
+  OPERATOR  2    &< (tbigint, tbigint),
+  -- overlaps
+  OPERATOR  3    && (tbigint, bigintspan),
+  OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, tbox),
+  OPERATOR  3    && (tbigint, tbigint),
+  -- overlaps or right
+  OPERATOR  4    &> (tbigint, bigintspan),
+  OPERATOR  4    &> (tbigint, tbox),
+  OPERATOR  4    &> (tbigint, tbigint),
+  -- strictly right
+  OPERATOR  5    >> (tbigint, bigintspan),
+  OPERATOR  5    >> (tbigint, tbox),
+  OPERATOR  5    >> (tbigint, tbigint),
+    -- same
+  OPERATOR  6    ~= (tbigint, bigintspan),
+  OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, tbox),
+  OPERATOR  6    ~= (tbigint, tbigint),
+  -- contains
+  OPERATOR  7    @> (tbigint, bigintspan),
+  OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, tbox),
+  OPERATOR  7    @> (tbigint, tbigint),
+  -- contained by
+  OPERATOR  8    <@ (tbigint, bigintspan),
+  OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, tbox),
+  OPERATOR  8    <@ (tbigint, tbigint),
+  -- adjacent
+  OPERATOR  17    -|- (tbigint, bigintspan),
+  OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, tbox),
+  OPERATOR  17    -|- (tbigint, tbigint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tbigint, tstzspan),
+  OPERATOR  28    &<# (tbigint, tbox),
+  OPERATOR  28    &<# (tbigint, tbigint),
+  -- strictly before
+  OPERATOR  29    <<# (tbigint, tstzspan),
+  OPERATOR  29    <<# (tbigint, tbox),
+  OPERATOR  29    <<# (tbigint, tbigint),
+  -- strictly after
+  OPERATOR  30    #>> (tbigint, tstzspan),
+  OPERATOR  30    #>> (tbigint, tbox),
+  OPERATOR  30    #>> (tbigint, tbigint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbigint, tstzspan),
+  OPERATOR  31    #&> (tbigint, tbox),
+  OPERATOR  31    #&> (tbigint, tbigint),
+  -- functions
+  FUNCTION  1  tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
+  FUNCTION  2  tbox_gist_union(internal, internal),
+  FUNCTION  3  tbigint_gist_compress(internal),
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),

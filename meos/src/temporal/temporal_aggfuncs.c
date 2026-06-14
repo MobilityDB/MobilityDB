@@ -88,6 +88,24 @@ datum_max_int32(Datum l, Datum r)
  * @brief Return the minimum value of the two arguments
  */
 Datum
+datum_min_int64(Datum l, Datum r)
+{
+  return DatumGetInt64(l) < DatumGetInt64(r) ? l : r;
+}
+
+/**
+ * @brief Return the maximum value of the two arguments
+ */
+Datum
+datum_max_int64(Datum l, Datum r)
+{
+  return DatumGetInt64(l) > DatumGetInt64(r) ? l : r;
+}
+
+/**
+ * @brief Return the minimum value of the two arguments
+ */
+Datum
 datum_min_float8(Datum l, Datum r)
 {
   return DatumGetFloat8(l) < DatumGetFloat8(r) ? l : r;
@@ -127,6 +145,15 @@ Datum
 datum_sum_int32(Datum l, Datum r)
 {
   return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+}
+
+/**
+ * @brief Return the sum of the two arguments
+ */
+Datum
+datum_sum_int64(Datum l, Datum r)
+{
+  return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
 }
 
 /**

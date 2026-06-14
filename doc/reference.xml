@@ -63,7 +63,7 @@
 						<entry><varname>bigintset</varname></entry>
 						<entry><varname>bigintspan</varname></entry>
 						<entry><varname>bigintspanset</varname></entry>
-						<entry><varname/></entry>
+						<entry><varname>tbigint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
@@ -120,6 +120,13 @@
 					<entry><varname/></entry>
 					<entry><varname/></entry>
 					<entry><varname>tcbuffer</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>h3index</varname></emphasis></entry>
+					<entry><varname>h3indexset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>th3index</varname></entry>
 				</row>
 			</tbody>
 			</tgroup>

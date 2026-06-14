@@ -77,6 +77,18 @@ tintinst_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tbigintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal float instant from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @csqlfn #Temporal_from_mfjson()
@@ -123,6 +135,19 @@ inline TSequence *
 tintseq_from_mfjson(json_object *mfjson)
 {
   return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tbigintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
 }
 
 /**
@@ -180,6 +205,19 @@ tintseqset_from_mfjson(json_object *mfjson)
 
 /**
  * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tbigintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal float sequence set from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @param[in] interp Interpolation
@@ -229,6 +267,19 @@ inline Temporal *
 tint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal big integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #temporal_from_mfjson()
+ */
+inline Temporal *
+tbigint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBIGINT);
 }
 
 /**

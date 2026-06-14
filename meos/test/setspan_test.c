@@ -838,7 +838,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("bigintset_value_n(%s, 1, %ld): %c\n", bset1_out, int64_result, bool_result ? 't' : 'n');
 
   /* int64 *bigintset_values(const Set *s); */
-  int64array_result = bigintset_values(bset1);
+  int64array_result = bigintset_values(bset1, &count);
   printf("bigintset_values(%s): {", bset1_out);
   for (int i = 0; i < bset1->count; i++)
   {
@@ -893,7 +893,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(char_result);
 
   /* DateADT *dateset_values(const Set *s); */
-  datearray_result = dateset_values(dset1);
+  datearray_result = dateset_values(dset1, &count);
   printf("bigintset_values(%s): {", dset1_out);
   for (int i = 0; i < dset1->count; i++)
   {
@@ -972,7 +972,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("floatset_value_n(%s, 1, %lf): %c\n", fset1_out, float8_result, bool_result ? 't' : 'n');
 
   /* double *floatset_values(const Set *s); */
-  float8array_result = floatset_values(fset1);
+  float8array_result = floatset_values(fset1, &count);
   printf("floatset_values(%s): {", fset1_out);
   for (int i = 0; i < fset1->count; i++)
   {
@@ -1021,7 +1021,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("intset_value_n(%s, 1, %d): %c\n", iset1_out, int32_result, bool_result ? 't' : 'n');
 
   /* int *intset_values(const Set *s); */
-  int32array_result = intset_values(iset1);
+  int32array_result = intset_values(iset1, &count);
   printf("intset_values(%s): {", iset1_out);
   for (int i = 0; i < iset1->count; i++)
   {
@@ -1164,7 +1164,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(text_result); free(char_result);
 
   /* text **textset_values(const Set *s); */
-  textarray_result = textset_values(textset1);
+  textarray_result = textset_values(textset1, &count);
   printf("textset_values(%s): {", textset1_out);
   for (int i = 0; i < textset1->count; i++)
   {
@@ -1198,7 +1198,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(char_result);
 
   /* TimestampTz *tstzset_values(const Set *s); */
-  tstzarray_result = tstzset_values(tstzset1);
+  tstzarray_result = tstzset_values(tstzset1, &count);
   printf("tstzset_values(%s): {", tstzset1_out);
   for (int i = 0; i < tstzset1->count; i++)
   {

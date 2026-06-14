@@ -1,0 +1,13 @@
+\pset tuples_only on
+-- neighbouring indexes (one hexagon, one pentagon) at resolution 3
+\set geo POINT(-144.52399108028, 49.7165031828995)
+\set hexagon '\'831c02fffffffff\'::h3index'
+\set resolution 3
+SELECT h3_cell_to_lat_lng(:hexagon) ~= :geo;
+WARNING:  Deprecation notice: h3_cell_to_lat_lng will be deprecated in favor of h3_cell_to_latlng next major release
+ t
+
+SELECT h3_lat_lng_to_cell(:geo, :resolution) = :hexagon;
+WARNING:  Deprecation notice: h3_lat_lng_to_cell will be deprecated in favor of h3_latlng_to_cell next major release
+ t
+

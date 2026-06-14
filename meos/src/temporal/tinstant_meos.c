@@ -82,6 +82,18 @@ tintinst_in(const char *str)
 
 /**
  * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer instant from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+TInstant *
+tbigintinst_in(const char *str)
+{
+  return tinstant_in(str, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal float instant from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -132,6 +144,20 @@ TInstant *
 tintinst_make(int i, TimestampTz t)
 {
   return tinstant_make(Int32GetDatum(i), T_TINT, t);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer instant from a big integer and a
+ * timestamptz
+ * @param[in] i Value
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tbigintinst_make(int64 i, TimestampTz t)
+{
+  return tinstant_make(Int64GetDatum(i), T_TBIGINT, t);
 }
 
 /**

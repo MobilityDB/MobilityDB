@@ -135,7 +135,8 @@ tbox_out(const TBox *box, int maxdd)
   /* Print the box */
   if (hasx)
   {
-    char *spantype = (box->span.basetype == T_INT4) ? "INT" : "FLOAT";
+    const char *spantype = (box->span.basetype == T_INT4) ? "INT" :
+      (box->span.basetype == T_INT8) ? "BIGINT" : "FLOAT";
     if (hast)
       snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
     else
@@ -257,6 +258,19 @@ int_timestamptz_to_tbox(int i, TimestampTz t)
 
 /**
  * @ingroup meos_box_constructor
+ * @brief Return a temporal box from a big integer and a timestamptz
+ * @param[in] i Value
+ * @param[in] t Timestamp
+ * @csqlfn #Number_timestamptz_to_tbox()
+ */
+inline TBox *
+bigint_timestamptz_to_tbox(int64 i, TimestampTz t)
+{
+  return number_timestamptz_to_tbox(Int64GetDatum(i), T_INT8, t);
+}
+
+/**
+ * @ingroup meos_box_constructor
  * @brief Return a temporal box from a float and a timestamptz
  * @param[in] d Value
  * @param[in] t Timestamp
@@ -301,6 +315,21 @@ int_tstzspan_to_tbox(int i, const Span *s)
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   return number_tstzspan_to_tbox(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup meos_box_constructor
+ * @brief Return a temporal box from a big integer and a timestamptz span
+ * @param[in] i Value
+ * @param[in] s Time span
+ * @csqlfn #Number_tstzspan_to_tbox()
+ */
+TBox *
+bigint_tstzspan_to_tbox(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return number_tstzspan_to_tbox(Int64GetDatum(i), T_INT8, s);
 }
 
 /**
@@ -420,6 +449,35 @@ int_to_tbox(int i)
 {
   TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument a temporal box constructed from a big
+ * integer
+ * @param[in] i Value
+ * @param[out] box Result
+ */
+void
+bigint_set_tbox(int64 i, TBox *box)
+{
+  assert(box);
+  number_set_tbox(Int64GetDatum(i), T_INT8, box);
+  return;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a big integer into a temporal box
+ * @param[in] i Value
+ * @csqlfn #Number_to_tbox()
+ */
+TBox *
+bigint_to_tbox(int64 i)
+{
+  TBox *result = palloc(sizeof(TBox));
+  bigint_set_tbox(i, result);
   return result;
 }
 
@@ -664,6 +722,44 @@ spanset_to_tbox(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_box_conversion
+ * @brief Convert a temporal box into a big integer span
+ * @param[in] box Temporal box
+ * @csqlfn #Tbox_to_bigintspan()
+ */
+Span *
+tbox_bigintspan(const TBox *box)
+{
+  assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
+  MeosType basetype = box->span.basetype;
+  if (basetype == T_INT8)
+    return span_copy(&box->span);
+  /* Convert the span to a big integer span */
+  Span *result = palloc(sizeof(Span));
+  if (basetype == T_INT4)
+    intspan_set_bigintspan(&box->span, result);
+  else /* basetype == T_FLOAT8 */
+    floatspan_set_bigintspan(&box->span, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a temporal box into a big integer span
+ * @param[in] box Temporal box
+ * @csqlfn #Tbox_to_bigintspan()
+ */
+Span *
+tbox_to_bigintspan(const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_TBOX, box->flags))
+    return NULL;
+  return tbox_bigintspan(box);
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a temporal box into an integer span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_intspan()
@@ -674,9 +770,12 @@ tbox_intspan(const TBox *box)
   assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
   if (box->span.basetype == T_INT4)
     return span_copy(&box->span);
-  /* Convert the integer span to a float span */
+  /* Convert the span to an integer span */
   Span *result = palloc(sizeof(Span));
-  floatspan_set_intspan(&box->span, result);
+  if (box->span.basetype == T_INT8)
+    bigintspan_set_intspan(&box->span, result);
+  else
+    floatspan_set_intspan(&box->span, result);
   return result;
 }
 
@@ -710,7 +809,10 @@ tbox_floatspan(const TBox *box)
     return span_copy(&box->span);
   /* Convert the integer span to a float span */
   Span *result = palloc(sizeof(Span));
-  intspan_set_floatspan(&box->span, result);
+  if (box->span.basetype == T_INT4)
+    intspan_set_floatspan(&box->span, result);
+  else /* box->span.basetype == T_INT8 */
+    bigintspan_set_floatspan(&box->span, result);
   return result;
 }
 
@@ -841,6 +943,26 @@ tboxint_xmin(const TBox *box, int *result)
  * @csqlfn #Tbox_xmin()
  */
 bool
+tboxbigint_xmin(const TBox *box, int64 *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return false;
+  *result = DatumGetInt64(box->span.lower);
+  return true;
+}
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return in the last argument the minimum X value of a temporal box
+ * @param[in] box Box
+ * @param[out] result Result
+ * @return On error return false, otherwise return true
+ * @csqlfn #Tbox_xmin()
+ */
+bool
 tboxfloat_xmin(const TBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
@@ -892,6 +1014,9 @@ tbox_xmax(const TBox *box, double *result)
   if (box->span.basetype == T_INT4)
     /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
     *result = (double) (DatumGetInt32(box->span.upper) - 1);
+  else if (box->span.basetype == T_INT8)
+    /* Integer spans are canonicalized, i.e., the upper bound is exclusive */
+    *result = (double) (DatumGetInt64(box->span.upper) - 1);
   else
     *result = DatumGetFloat8(box->span.upper);
   return true;
@@ -915,6 +1040,26 @@ tboxint_xmax(const TBox *box, int *result)
       ! ensure_span_isof_type(&box->span, T_INTSPAN))
     return false;
   *result = DatumGetInt32(box->span.upper) - 1;
+  return true;
+}
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return in the last argument the maximum X value of a temporal box
+ * @param[in] box Box
+ * @param[out] result Result
+ * @return On error return false, otherwise return true
+ * @csqlfn #Tbox_xmax()
+ */
+bool
+tboxbigint_xmax(const TBox *box, int64 *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
+      ! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return false;
+  *result = DatumGetInt64(box->span.upper) - 1;
   return true;
 }
 
@@ -1129,6 +1274,28 @@ tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift,
 /**
  * @ingroup meos_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
+ * two values
+ * @param[in] box Temporal box
+ * @param[in] shift Value for shifting the value span
+ * @param[in] width Width of the result
+ * @param[in] hasshift,haswidth True when the corresponding argument is given
+ * @csqlfn #Tbox_shift_value(), #Tbox_scale_value(), #Tbox_shift_scale_value()
+ */
+TBox *
+tbigintbox_shift_scale(const TBox *box, int64 shift, int64 width,
+  bool hasshift, bool haswidth)
+{
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return NULL;
+
+  return tbox_shift_scale_value(box, Int64GetDatum(shift),
+    Int64GetDatum(width), hasshift, haswidth);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
  * @param[in] box Temporal box
  * @param[in] shift Value to shift the value span
@@ -1197,6 +1364,35 @@ tbox_expand(const TBox *box1, TBox *box2)
   if (MEOS_FLAGS_GET_T(box2->flags))
     span_expand(&box1->period, &box2->period);
   return;
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal box with the value span expanded/decreased by a big
+ * integer
+ * @param[in] box Temporal box
+ * @param[in] i Value
+ * @csqlfn #Tbox_expand_value()
+ */
+TBox *
+tbigintbox_expand(const TBox *box, const int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_TBOX, box->flags) ||
+      ! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
+    return NULL;
+  /* When the value is negative, ensure that its absolute value is less than
+   * the width of the span */
+  if (i < 0 && llabs(i) >=
+        /* Integer spans are always canonicalized */
+        (DatumGetInt64(box->span.upper) - DatumGetInt64(box->span.lower) - 1))
+    return NULL;
+
+  TBox *result = tbox_copy(box);
+  result->span.lower = Int64GetDatum(DatumGetInt64(result->span.lower) - i);
+  result->span.upper = Int64GetDatum(DatumGetInt64(result->span.upper) + i);
+  return result;
 }
 
 /**
@@ -1275,6 +1471,18 @@ tbox_expand_value(const TBox *box, Datum value, MeosType basetype)
     /* If it is a temporal integer box */
     if (basetype == T_INT4)
       return tintbox_expand(box, DatumGetInt32(value));
+    else /* basetype == T_FLOAT8 */
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid value to expand box: %lf", DatumGetFloat8(value));
+      return NULL;
+    }
+  }
+  else if (box->span.basetype == T_INT8)
+  {
+    /* If it is a temporal big integer box */
+    if (basetype == T_INT8)
+      return tbigintbox_expand(box, DatumGetInt64(value));
     else /* basetype == T_FLOAT8 */
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
