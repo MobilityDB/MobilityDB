@@ -1,0 +1,99 @@
+SELECT startValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+    startvalue    
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT endValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+     endvalue     
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 2);
+      valuen      
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT getValues(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                getvalues                 
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT valueAtTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', '2001-01-01');
+ valueattimestamp 
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT quadbin_get_resolution(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                      quadbin_get_resolution                      
+------------------------------------------------------------------
+ {0@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT quadbin_is_valid_cell(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                      quadbin_is_valid_cell                       
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT quadbin_cell_to_parent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0);
+                                     quadbin_cell_to_parent                                     
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT getValues(quadbin_cell_to_parent(
+  tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0))
+  = quadbinset '{480fffffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_point(tquadbin '{48a6227affffffff@2001-01-01}');
+                               quadbin_cell_to_point                               
+-----------------------------------------------------------------------------------
+ {0101000020E61000000000000000941140727542457D6C4940@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(quadbin_cell_to_point(tquadbin '{48a6227affffffff@2001-01-01}'), 6);
+                          astext                          
+----------------------------------------------------------
+ {POINT(4.394531 50.847573)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT quadbin_cell_to_boundary(tquadbin '{48a6227affffffff@2001-01-01}') IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(startValue(quadbin_cell_area(tquadbin '{480fffffffffffff@2001-01-01}'))::numeric, 1);
+       round       
+-------------------
+ 508164135963886.0
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                        quadbin_cell_to_quadkey                         
+------------------------------------------------------------------------
+ {""@Mon Jan 01 00:00:00 2001 PST, "0213"@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT (tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint
+  = quadbin_cell_to_point(tquadbin '{48a6227affffffff@2001-01-01}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText((tquadbin '{48a6227affffffff@2001-01-01}')::tgeompoint, 6);
+                          astext                          
+----------------------------------------------------------
+ {POINT(4.394531 50.847573)@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+

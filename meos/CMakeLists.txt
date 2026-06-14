@@ -175,13 +175,25 @@ if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
+if(H3)
+  message(STATUS "Including temporal H3 index objects")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:h3>")
+endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud temporal types")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 if(POSE)
   message(STATUS "Including geoposes")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
+endif()
+if(QUADBIN)
+  message(STATUS "Including temporal QUADBIN index objects")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:quadbin>")
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
@@ -245,6 +257,11 @@ if(CBUFFER)
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
+if(H3)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
 if(NPOINT)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
@@ -256,9 +273,25 @@ if(NPOINT)
     FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways1000.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
 endif()
+if(POINTCLOUD)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pointcloud.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  # The pgPointCloud serialization shim header is part of the public
+  # point-cloud surface a standalone consumer needs to build a patch
+  # value (meos_pc_patch_serialize, SERIALIZED_PATCH); install it under
+  # install prefix without adding the source tree to the include path.
+  install(
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
+endif()
 if(POSE)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(QUADBIN)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_quadbin.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 if(RGEO)

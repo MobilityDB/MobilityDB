@@ -43,6 +43,9 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
+#if QUADBIN
+#include "quadbin/quadbin_meos.h"
+#endif
 #include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -152,6 +155,16 @@ basetype_in(const char *str, MeosType type,
       *result = Int64GetDatum(i);
       return true;
     }
+#if QUADBIN
+    case T_QUADBIN:
+    {
+      Quadbin cell = quadbin_parse(str);
+      if (cell == (Quadbin) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
+      return true;
+    }
+#endif
     case T_FLOAT8:
     {
       double d = float8_in(str, "double precision", str);
@@ -1560,6 +1573,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
+#if QUADBIN
+    case T_QUADBIN:
+      /* quadbin is a uint64 cell id, wire-format identical to int8. */
+      return Int64GetDatum(int64_from_wkb_state(s));
+#endif /* QUADBIN */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));

@@ -85,6 +85,14 @@ option(CBUFFER
   OFF
   )
 
+# Option for including temporal H3 index (`th3index`), which depends
+# on libh3 and the embedded h3-pg subtree under `h3-pg/`.
+option(H3
+  "Set ON|OFF (default=OFF) to include the temporal H3 index type
+  (th3index). Requires libh3 on the build path."
+  OFF
+  )
+
 # Option for including network points
 option(NPOINT
   "Set ON|OFF (default=ON) to include network points
@@ -92,10 +100,30 @@ option(NPOINT
   ON
   )
 
+# Requires pgpointcloud (libpointcloud-dev on Debian/Ubuntu) installed
+# alongside PostGIS on the user's machine. The embedded
+# `pointcloud-pg/` subtree provides the source MEOS imports a minimal
+# subset of, but the runtime still links against the system library.
+option(POINTCLOUD
+  "Set ON|OFF (default=OFF) to include pgpointcloud temporal types
+  "
+  OFF
+  )
+
 # Option for including geoposes
 option(POSE
   "Set ON|OFF (default=OFF) to include geoposes
   "
+  OFF
+  )
+
+# Option for including the temporal CARTO QUADBIN index type (`tquadbin`).
+# Unlike H3, quadbin has no external dependency: its cell algebra is
+# implemented first-party in meos/src/quadbin/ (libm only), so no
+# find_library / vendored subtree is needed.
+option(QUADBIN
+  "Set ON|OFF (default=OFF) to include the temporal QUADBIN index type
+  (tquadbin). First-party, no external library required."
   OFF
   )
 
@@ -115,12 +143,37 @@ else()
   add_definitions(-DCBUFFER=0)
 endif()
 
+if(H3)
+  message(STATUS "Including temporal H3 index (th3index)")
+  find_library(H3_LIBRARY NAMES h3)
+  # find_path catches both layouts.
+  if(NOT H3_LIBRARY OR NOT H3_INCLUDE_DIR)
+    message(FATAL_ERROR
+      "H3=ON was requested but libh3 was not found.\n"
+      "Install libh3 (https://github.com/uber/h3) or pass\n"
+      "to cmake.")
+  endif()
+  add_definitions(-DH3=1)
+  include_directories(${H3_INCLUDE_DIR})
+else()
+  message(STATUS "Excluding temporal H3 index")
+  add_definitions(-DH3=0)
+endif()
+
 if(NPOINT)
   message(STATUS "Including network points")
   add_definitions(-DNPOINT=1)
 else()
   message(STATUS "Excluding network points")
   add_definitions(-DNPOINT=0)
+endif()
+
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=1)
+else()
+  message(STATUS "Excluding pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=0)
 endif()
 
 if(POSE)
@@ -131,12 +184,31 @@ else()
   add_definitions(-DPOSE=0)
 endif()
 
+if(QUADBIN)
+  message(STATUS "Including temporal QUADBIN index (tquadbin)")
+  add_definitions(-DQUADBIN=1)
+else()
+  message(STATUS "Excluding temporal QUADBIN index")
+  add_definitions(-DQUADBIN=0)
+endif()
+
 if(RGEO)
   message(STATUS "Including rigid geometries")
   add_definitions(-DRGEO=1)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
+endif()
+
+# Build the 'requires =' clause for the generated mobilitydb.control file
+# from the same flags that gate C compilation and SQL inclusion. PostGIS
+# is always required; pgPointCloud is required only when POINTCLOUD=ON,
+# because that is the only flag that maps to an external extension.
+# CBUFFER / NPOINT / POSE / RGEO add internal types that live inside
+# libMobilityDB itself with no extra CREATE EXTENSION dependency.
+set(MOBILITYDB_REQUIRES "postgis")
+if(POINTCLOUD)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file

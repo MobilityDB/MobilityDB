@@ -1,0 +1,163 @@
+SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+/* Errors */
+SELECT tquadbin 'ABC@2012-01-01 08:00:00';
+ERROR:  quadbin value "ABC" does not encode a valid quadbin cell
+LINE 2: SELECT tquadbin 'ABC@2012-01-01 08:00:00';
+                        ^
+SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
+ERROR:  Could not parse tquadbin value: Extraneous characters at the end
+LINE 1: SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
+                        ^
+SELECT tquadbin ' { 480fffffffffffff@2001-01-01 08:00:00 , 48427fffffffffff@2001-01-01 08:05:00 , 48a6227affffffff@2001-01-01 08:06:00 } ';
+                                                                   tquadbin                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST, 48a6227affffffff@Mon Jan 01 08:06:00 2001 PST}
+(1 row)
+
+SELECT tquadbin '{480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00}';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST}
+(1 row)
+
+/* Errors */
+SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02';
+ERROR:  Could not parse tquadbin value: Missing closing brace
+LINE 2: SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427ffffffff...
+                        ^
+SELECT tquadbin '[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST]
+(1 row)
+
+SELECT tquadbin 'Interp=Step;[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST]
+(1 row)
+
+SELECT tquadbin '{[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00],[48a6227affffffff@2001-01-01 08:10:00]}';
+                                                                     tquadbin                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST], [48a6227affffffff@Mon Jan 01 08:10:00 2001 PST]}
+(1 row)
+
+SELECT tquadbin(Instant) '480fffffffffffff@2012-01-01 08:00:00';
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT tquadbin(Sequence) '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+                                             tquadbin                                             
+--------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+/* Errors */
+SELECT tquadbin(Instant) '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:00';
+ERROR:  Invalid temporal type modifier: garbage
+LINE 1: SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:...
+               ^
+SELECT (tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint;
+                     tbigint                      
+--------------------------------------------------
+ 5192650370358181887@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
+  = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tquadbin_assign;
+NOTICE:  table "tbl_tquadbin_assign" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_assign(k int, temp tquadbin);
+CREATE TABLE
+INSERT INTO tbl_tquadbin_assign VALUES (1, tbigint '5192650370358181887@2012-01-01 08:00:00');
+INSERT 0 1
+SELECT * FROM tbl_tquadbin_assign;
+ k |                     temp                      
+---+-----------------------------------------------
+ 1 | 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+DROP TABLE tbl_tquadbin_assign;
+DROP TABLE
+/* Errors */
+SELECT tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+ERROR:  operator does not exist: tbigint = tquadbin
+LINE 2: ...tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT tquadbin '480fffffffffffff@2012-01-01' = tquadbin '480fffffffffffff@2012-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2012-01-01' <> tquadbin '48427fffffffffff@2012-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT temporal_cmp(tquadbin '480fffffffffffff@2012-01-01', tquadbin '480fffffffffffff@2012-01-01');
+ temporal_cmp 
+--------------
+            0
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tquadbin_binio;
+NOTICE:  table "tbl_tquadbin_binio" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_binio(k int, temp tquadbin);
+CREATE TABLE
+INSERT INTO tbl_tquadbin_binio VALUES
+  (1, tquadbin '480fffffffffffff@2012-01-01 08:00:00'),
+  (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
+  (3, tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+INSERT 0 3
+COPY tbl_tquadbin_binio TO '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY 3
+DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
+NOTICE:  table "tbl_tquadbin_binio_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tquadbin_binio_tmp FROM '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY 3
+SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
+  WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tquadbin_binio;
+DROP TABLE
+DROP TABLE tbl_tquadbin_binio_tmp;
+DROP TABLE

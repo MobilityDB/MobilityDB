@@ -117,6 +117,9 @@ typedef enum
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
   T_TBIGINT        = 63,  /**< temporal big integer type */
+  T_QUADBIN        = 78,  /**< static CARTO quadbin cell index type (uint64) */
+  T_QUADBINSET     = 79,  /**< quadbin set type */
+  T_TQUADBIN       = 80,  /**< temporal quadbin index type (cell index over time) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

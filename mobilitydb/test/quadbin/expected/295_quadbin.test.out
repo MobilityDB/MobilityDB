@@ -1,0 +1,134 @@
+SELECT quadbin '480fffffffffffff';
+     quadbin      
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT quadbin '0x480fffffffffffff';
+     quadbin      
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT quadbin '48427fffffffffff';
+     quadbin      
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT (5192650370358181887::bigint::quadbin)::bigint = 5192650370358181887;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT quadbin '0';
+ERROR:  quadbin value "0" does not encode a valid quadbin cell
+LINE 2: SELECT quadbin '0';
+                       ^
+SELECT quadbin 'not-a-hex-cell';
+ERROR:  quadbin value "not-a-hex-cell" does not encode a valid quadbin cell
+LINE 1: SELECT quadbin 'not-a-hex-cell';
+                       ^
+SELECT quadbin '12345';
+ERROR:  quadbin value "12345" does not encode a valid quadbin cell
+LINE 1: SELECT quadbin '12345';
+                       ^
+SELECT quadbin '0x480fffffffffffff' = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin '480fffffffffffff' = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin '480fffffffffffff' <> quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin '480fffffffffffff' < quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin '48427fffffffffff' >= quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT (quadbin '480fffffffffffff' = quadbin '48427fffffffffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 5192650370358181887::bigint::quadbin;
+     quadbin      
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT (quadbin '480fffffffffffff')::bigint;
+        int8         
+---------------------
+ 5192650370358181887
+(1 row)
+
+/* Errors */
+SELECT 5192650370358181887::bigint = quadbin '480fffffffffffff';
+ERROR:  operator does not exist: bigint = quadbin
+LINE 2: SELECT 5192650370358181887::bigint = quadbin '480fffffffffff...
+                                           ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT quadbin_is_valid_index(quadbin '480fffffffffffff');
+ quadbin_is_valid_index 
+------------------------
+ t
+(1 row)
+
+SELECT quadbin_is_valid_cell(quadbin '480fffffffffffff');
+ quadbin_is_valid_cell 
+-----------------------
+ t
+(1 row)
+
+SELECT quadbin_is_valid_cell(quadbin '48427fffffffffff');
+ quadbin_is_valid_cell 
+-----------------------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_quadbin_test;
+NOTICE:  table "tbl_quadbin_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_quadbin_test(k int, c quadbin);
+CREATE TABLE
+INSERT INTO tbl_quadbin_test VALUES
+  (1, quadbin '480fffffffffffff'),
+  (2, quadbin '48427fffffffffff'),
+  (3, quadbin '480fffffffffffff'),  -- duplicate of row 1
+  (4, quadbin '48a6227affffffff');
+INSERT 0 4
+SELECT COUNT(DISTINCT c) FROM tbl_quadbin_test;
+ count 
+-------
+     3
+(1 row)
+
+SELECT (SELECT MAX(cnt) FROM (SELECT COUNT(*) AS cnt FROM tbl_quadbin_test GROUP BY c) sub);
+ max 
+-----
+   2
+(1 row)
+
+DROP TABLE tbl_quadbin_test;
+DROP TABLE
