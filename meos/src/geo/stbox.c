@@ -2656,7 +2656,7 @@ stbox_hash(const STBox *box)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_geo_box_accessor
  * @brief Return the 64-bit hash of a spatiotemporal box using a seed
  * @param[in] box Spatiotemporal box
  * @param[in] seed Seed
