@@ -2083,7 +2083,18 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (span_type(type))
   {
     Span *span = palloc(sizeof(Span));
+    /* Unlike the pointer-returning readers, span_from_wkb_state returns a
+     * Span by value, so on a foreign type code it can only return a zeroed
+     * struct (non-NULL once wrapped). Honour the same NULL contract as the
+     * other families: reset the error state, parse, and fail if the reader
+     * raised an error (the type-code guard in span_from_wkb_state). */
+    meos_errno_reset();
     *span = span_from_wkb_state(&s);
+    if (meos_errno() != 0)
+    {
+      pfree(span);
+      return (Datum) 0;
+    }
     return PointerGetDatum(span);
   }
   if (spanset_type(type))
