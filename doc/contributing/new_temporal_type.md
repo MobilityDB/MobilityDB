@@ -512,12 +512,12 @@ These bite contributors who didn't read this doc. Worth reading even if you're n
   The rule: any C function that **returns** a TInstant, TSequence, or TSequenceSet of a type with auxiliary embedded data must use the type-specific constructors:
   ```c
   /* trgeometry example */
-  outinsts[i] = trgeoinst_make(ref_geom, DatumGetPoseP(value), t);
+  outinsts[i] = trgeometryinst_make(ref_geom, DatumGetPoseP(value), t);
   result = trgeoseq_make_free(ref_geom, outinsts, n, lower_inc, upper_inc, interp, NORMALIZE);
   ```
   Internal intermediate computations that only read the bare value datum (never touching bbox or type-specific accessors) may still use `tinstant_make` — but only if those instants are never returned to a caller. The typical pattern is an intermediate `TSequence *seq1` built inside an analytics helper (`tsequence_tprecision`, `tsequence_tsample`) solely to extract a scalar result via generic lifting; as soon as it is reused for output, switch to the type-specific path.
 
-  This pitfall recurs when porting analytics functions (tprecision, tsample, temporal_simplify) and aggregate finalizers from generic temporal machinery to a type-specific implementation. When adding a type that follows this pattern, add a constructor helper analogous to `trgeoinst_make` / `trgeoseq_make_free` before wiring up any analytics.
+  This pitfall recurs when porting analytics functions (tprecision, tsample, temporal_simplify) and aggregate finalizers from generic temporal machinery to a type-specific implementation. When adding a type that follows this pattern, add a constructor helper analogous to `trgeometryinst_make` / `trgeoseq_make_free` before wiring up any analytics.
 
 ---
 
