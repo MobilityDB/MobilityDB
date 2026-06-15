@@ -345,7 +345,7 @@ geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
-  return trgeoinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
+  return trgeometryinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
 /**
