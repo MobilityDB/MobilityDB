@@ -55,23 +55,23 @@
  * contains @>
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(h3indexset, h3index)
+CREATE FUNCTION contains(h3indexset, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(h3indexset, h3indexset)
+CREATE FUNCTION contains(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = h3indexset, RIGHTARG = h3index,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -81,23 +81,23 @@ CREATE OPERATOR @> (
  * contained by <@
  ******************************************************************************/
 
-CREATE FUNCTION set_contained(h3index, h3indexset)
+CREATE FUNCTION contained(h3index, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(h3indexset, h3indexset)
+CREATE FUNCTION contained(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = h3index, RIGHTARG = h3indexset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -107,13 +107,13 @@ CREATE OPERATOR <@ (
  * overlaps &&
  ******************************************************************************/
 
-CREATE FUNCTION set_overlaps(h3indexset, h3indexset)
+CREATE FUNCTION overlaps(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -123,31 +123,31 @@ CREATE OPERATOR && (
  * set union +
  ******************************************************************************/
 
-CREATE FUNCTION set_union(h3index, h3indexset)
+CREATE FUNCTION setUnion(h3index, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(h3indexset, h3index)
+CREATE FUNCTION setUnion(h3indexset, h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(h3indexset, h3indexset)
+CREATE FUNCTION setUnion(h3indexset, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = h3index, RIGHTARG = h3indexset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = h3indexset, RIGHTARG = h3index,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = +
 );
@@ -156,29 +156,29 @@ CREATE OPERATOR + (
  * set difference -
  ******************************************************************************/
 
-CREATE FUNCTION set_minus(h3index, h3indexset)
+CREATE FUNCTION setMinus(h3index, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(h3indexset, h3index)
+CREATE FUNCTION setMinus(h3indexset, h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(h3indexset, h3indexset)
+CREATE FUNCTION setMinus(h3indexset, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = h3index, RIGHTARG = h3indexset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = h3indexset, RIGHTARG = h3index
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = h3indexset, RIGHTARG = h3indexset
 );
 
@@ -186,31 +186,31 @@ CREATE OPERATOR - (
  * set intersection *
  ******************************************************************************/
 
-CREATE FUNCTION set_intersection(h3index, h3indexset)
+CREATE FUNCTION setIntersection(h3index, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(h3indexset, h3index)
+CREATE FUNCTION setIntersection(h3indexset, h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(h3indexset, h3indexset)
+CREATE FUNCTION setIntersection(h3indexset, h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = h3index, RIGHTARG = h3indexset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = h3indexset, RIGHTARG = h3index,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = h3indexset, RIGHTARG = h3indexset,
   COMMUTATOR = *
 );
