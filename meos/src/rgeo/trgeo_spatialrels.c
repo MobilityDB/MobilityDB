@@ -171,7 +171,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
- * @csqlfn #Acontains_geo_trgeometry()
+ * @csqlfn #Econtains_geo_trgeometry()
  */
 inline int
 econtains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)

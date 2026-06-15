@@ -1117,7 +1117,7 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * geometry, 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @csqlfn #Aintersects_tgeo_geo()
+ * @csqlfn #Eintersects_tgeo_geo()
  */
 inline int
 eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1277,7 +1277,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #Atouches_tpoint_geo()
+ * @csqlfn #Etouches_tpoint_geo()
  */
 int
 etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
