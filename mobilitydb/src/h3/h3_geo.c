@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Geo_gs_point_to_h3index);
 /**
  * @ingroup mobilitydb_h3_conversion
  * @brief Single H3 cell covering a POINT geometry at the given resolution
- * @sqlfn geoToH3Cell(geometry, integer)
+ * @sqlfn geoToH3Cell()
  */
 Datum
 Geo_gs_point_to_h3index(PG_FUNCTION_ARGS)
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Geo_to_h3indexset);
  * Accepts POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
  * combinations.  Returns NULL when the geometry produces no valid cells.
  *
- * @sqlfn geoToH3IndexSet(geometry, integer)
+ * @sqlfn geoToH3IndexSet()
  */
 Datum
 Geo_to_h3indexset(PG_FUNCTION_ARGS)
