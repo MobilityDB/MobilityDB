@@ -44,6 +44,7 @@
 #endif /* ! MEOS */
 /* MEOS */
 #include <meos.h>
+#include <meos_tls.h>     /* MEOS_TLS — per-thread error number (restore #815) */
 
 /*****************************************************************************
  * Global variables
@@ -52,7 +53,7 @@
 /**
  * @brief Global variable that keeps the last error number
  */
-static int MEOS_ERR_NO = 0;
+static MEOS_TLS int MEOS_ERR_NO = 0;
 
 /**
  * @brief Read an error number
@@ -137,7 +138,7 @@ int meos_errno_reset(void)
 /**
  * @brief Global variable that keeps the error handler function
  */
-void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
+static void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
 
 #if MEOS
 /**
@@ -172,10 +173,12 @@ error_handler_errno(int errlevel pg_attribute_unused(), int errcode,
 void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
-  if (err_handler)
-    MEOS_ERROR_HANDLER = err_handler;
-  else
-    MEOS_ERROR_HANDLER = &default_error_handler;
+  /* Publish with release semantics so a thread that acquire-loads the handler
+   * (in meos_error) sees a fully-published value — concurrent host worker
+   * threads each call meos_initialize() (restore #815's thread-safety, which the
+   * pgtypes vendoring reverted). */
+  __atomic_store_n(&MEOS_ERROR_HANDLER,
+    err_handler ? err_handler : &default_error_handler, __ATOMIC_RELEASE);
   return;
 }
 #endif /* MEOS */
@@ -206,9 +209,12 @@ meos_error(int errlevel, int errcode, const char *format, ...)
   /* TODO: maybe check if the error message was truncated */
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
-  /* Execute the error handler function */
-  if (MEOS_ERROR_HANDLER)
-    MEOS_ERROR_HANDLER(errlevel, errcode, buffer);
+  /* Execute the error handler function (acquire-load, paired with the
+   * release-store in meos_initialize_error_handler — restore #815) */
+  void (*handler)(int, int, const char *) =
+    __atomic_load_n(&MEOS_ERROR_HANDLER, __ATOMIC_ACQUIRE);
+  if (handler)
+    handler(errlevel, errcode, buffer);
   else
 #if MEOS
   {
