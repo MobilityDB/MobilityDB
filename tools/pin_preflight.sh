@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
+# (SC2016 is intentional file-wide: the `run "label" bash -c '...'` guards pass
+#  single-quoted script bodies on purpose — the $vars/$(...) inside are expanded
+#  by the inner `bash -c` at run time, not by this outer shell at definition
+#  time. The labels that DO need expansion use double quotes.)
 # Pin preflight gate — run BEFORE pushing evidence/assembly-s5 or tagging a pin.
 #
 # Mirrors the locally-reproducible MobilityDB CI workflows so a pin is never
