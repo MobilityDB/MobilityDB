@@ -64,6 +64,13 @@
  * Static adapters — lat/lng ↔ cell / cell ↔ boundary
  *****************************************************************************/
 
+/**
+ * @ingroup meos_h3_conversion
+ * @brief Single H3 cell covering a POINT geometry at the given resolution
+ * @param[in] point      The POINT geometry.
+ * @param[in] resolution H3 resolution (0..15).
+ * @csqlfn #Geo_gs_point_to_h3index()
+ */
 H3Index
 h3_gs_point_to_cell(const GSERIALIZED *point, int32 resolution)
 {
