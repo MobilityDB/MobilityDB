@@ -100,7 +100,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_h3indexset_th3index);
  * `geoToH3IndexSet(p.geom, 7) ?= t.trip_h3`
  * before the exact spatial predicate.
  *
- * @sqlfn ever_eq(h3indexset, th3index)
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 Datum

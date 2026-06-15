@@ -26,22 +26,16 @@ from collections import defaultdict
 
 # RFC operator -> portable bare name (doc/rfc/sql-portability/README.md).
 OP_TO_NAME = {
-    "&&": "overlaps", "@>": "contains", "<@": "contained", "-|-": "adjacent",
     "<<#": "before", "#>>": "after", "&<#": "overbefore", "#&>": "overafter",
     "<<": "left", ">>": "right", "&<": "overleft", "&>": "overright",
     "<<|": "below", "|>>": "above", "&<|": "overbelow", "|&>": "overabove",
     "<</": "front", "/>>": "back", "&</": "overfront", "/&>": "overback",
     # The three comparison families — temp / ever / always — use one consistent
-    # camelCase shape: <prefix>{Eq,Ne,Lt,Le,Gt,Ge}. temporal #= (lifted, returns a
-    # temporal bool) is tempEq…; ever ?= and always %= (reduced, return bool) are
-    # everEq…/alwaysEq…. This replaces the older lowercase teq/tne and the snake
-    # ever_*/always_* exclusion so the dialect is uniform across all engines.
-    "#=": "tempEq", "#<>": "tempNe", "#<": "tempLt", "#<=": "tempLe",
-    "#>": "tempGt", "#>=": "tempGe", "~=": "same",
-    "?=": "everEq", "?<>": "everNe", "?<": "everLt", "?<=": "everLe",
-    "?>": "everGt", "?>=": "everGe",
-    "%=": "alwaysEq", "%<>": "alwaysNe", "%<": "alwaysLt", "%<=": "alwaysLe",
-    "%>": "alwaysGt", "%>=": "alwaysGe",
+    # camelCase shape: <prefix>{Eq,Ne,Lt,Le,Gt,Ge} with a single-letter prefix.
+    # temporal #= (lifted, returns a temporal bool) is tEq…; ever ?= and always
+    # %= (reduced, return bool) are eEq…/aEq…. These are renamed directly on the
+    # operator's backing CREATE FUNCTION (PG-only names), so no generated alias
+    # is needed — they are excluded here and audited via TEMP/EVER/ALWAYS below.
 }
 
 # Operators whose backing PROCEDURE is itself a callable named function
@@ -53,8 +47,17 @@ ALREADY_NAMED = {
 }
 
 # Coverage-audit buckets: operators that need no bare alias (standard SQL
-# operators, the ever/always families, the distance family).
+# operators, the topological / temp / ever / always comparison families named
+# directly, the distance family).
 SCALAR_SQL = {"+", "-", "*", "/", "=", "<>", "<", "<=", ">", ">=", "@"}
+# Topological operators whose backing functions are themselves named directly
+# by the portable bare name (overlaps/contains/contained/adjacent/same): a
+# one-to-one rename, so no generated alias is needed (unlike the positional
+# operators where one backing function, e.g. span_left, serves both a value-op
+# and a time-op). ~= bases (temporal_same/...) were unified to the bare name
+# same(), so ~= is named directly like the other topological operators.
+TOPO = {"&&", "@>", "<@", "-|-", "~="}
+TEMP = {"#=", "#<>", "#<", "#<=", "#>", "#>="}
 EVER = {"?=", "?<>", "?<", "?<=", "?>", "?>="}
 ALWAYS = {"%=", "%<>", "%<", "%<=", "%>", "%>="}
 DIST = {"<->", "|=|", "<#>", "|=|>"}
@@ -282,8 +285,10 @@ def main():
     for s, cnt in sorted(allops.items()):
         if s in OP_TO_NAME:
             cls = f"ALIASED -> {OP_TO_NAME[s]}()"
-        elif s in EVER or s in ALWAYS:
-            cls = "ALREADY BARE (ever_*/always_* functions exist natively)"
+        elif s in TOPO:
+            cls = "ALREADY BARE (overlaps/contains/contained/adjacent/same functions named directly)"
+        elif s in TEMP or s in EVER or s in ALWAYS:
+            cls = "ALREADY BARE (temp/ever/always comparison functions named directly)"
         elif s in DIST:
             cls = "ALREADY BARE (tdistance / nearestApproachDistance exist)"
         elif s in SCALAR_SQL:

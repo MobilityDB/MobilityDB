@@ -146,7 +146,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if an H3 cell is ever equal to a temporal H3 cell
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if a temporal H3 cell is ever equal to an H3 cell
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -171,7 +171,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if two temporal H3 cells are ever equal at a shared
  * instant
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -187,7 +187,7 @@ PG_FUNCTION_INFO_V1(Always_eq_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if an H3 cell is always equal to a temporal H3 cell
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -199,7 +199,7 @@ PG_FUNCTION_INFO_V1(Always_eq_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if a temporal H3 cell is always equal to an H3 cell
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -212,7 +212,7 @@ PG_FUNCTION_INFO_V1(Always_eq_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if two temporal H3 cells are always equal across
  * their shared time axis
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -228,7 +228,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if an H3 cell is ever different from a temporal H3 cell
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -240,7 +240,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if a temporal H3 cell is ever different from an H3 cell
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -253,7 +253,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if two temporal H3 cells are ever different at a shared
  * instant
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -269,7 +269,7 @@ PG_FUNCTION_INFO_V1(Always_ne_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if an H3 cell is always different from a temporal H3 cell
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -281,7 +281,7 @@ PG_FUNCTION_INFO_V1(Always_ne_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if a temporal H3 cell is always different from an H3 cell
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Always_ne_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_ever
  * @brief Return true if two temporal H3 cells are always different across
  * their shared time axis
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(Teq_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal equality of an H3 cell and a temporal H3 cell
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Teq_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal equality of a temporal H3 cell and an H3 cell
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Teq_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal equality of two temporal H3 cells across their
  * shared time axis
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -351,7 +351,7 @@ PG_FUNCTION_INFO_V1(Tne_h3index_th3index);
 /**
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal inequality of an H3 cell and a temporal H3 cell
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
@@ -363,7 +363,7 @@ PG_FUNCTION_INFO_V1(Tne_th3index_h3index);
 /**
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal inequality of a temporal H3 cell and an H3 cell
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
@@ -376,7 +376,7 @@ PG_FUNCTION_INFO_V1(Tne_th3index_th3index);
  * @ingroup mobilitydb_h3_comp_temp
  * @brief Return the temporal inequality of two temporal H3 cells across
  * their shared time axis
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
