@@ -101,7 +101,7 @@ int main(void)
 
   BOX3D *box3d1 = box3d_make(1, 5, 1, 5, 1, 5, 5676);
   char *box3d1_out = box3d_out(box3d1, 6);
-  GBOX *gbox1 = gbox_make(false, 1, 5, 1, 5, 1, 5);
+  GBOX *gbox1 = gbox_make(false, false, false, 1, 5, 1, 5, 1, 5, 0, 0);
   char *gbox1_out = gbox_out(gbox1, 6);
 
   char *geom1_in = "SRID=5676;Point(1 1)";

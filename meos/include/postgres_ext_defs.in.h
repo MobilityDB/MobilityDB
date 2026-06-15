@@ -39,8 +39,13 @@ typedef struct varlena
 typedef varlena text;
 typedef struct varlena bytea;
 
+typedef unsigned int Oid;
+
 /* The following functions have the same name as external PostgreSQL functions */
 
+extern bool bool_in(const char *str);
+extern char *bool_out(bool b);
+extern char *float8_out(double num, int maxdd);
 extern DateADT date_in(const char *str);
 extern char *date_out(DateADT date);
 extern int interval_cmp(const Interval *interv1, const Interval *interv2);
@@ -67,5 +72,15 @@ extern TimestampTz minus_timestamptz_interval(TimestampTz tstz, const Interval *
 extern Interval *minus_timestamptz_timestamptz(TimestampTz tstz1, TimestampTz tstz2);
 extern Timestamp date_to_timestamp(DateADT date);
 extern TimestampTz date_to_timestamptz(DateADT date);
+extern text *cstring_to_text(const char *str);
+extern char *text_to_cstring(const text *txt);
+extern text *text_in(const char *str);
+extern char *text_out(const text *txt);
+extern int text_cmp(const text *txt1, const text *txt2, Oid collid);
+extern text *text_copy(const text *txt);
+extern text *text_initcap(const text *txt);
+extern text *text_lower(const text *txt);
+extern text *text_upper(const text *txt);
+extern text *textcat_text_text(const text *txt1, const text *txt2);
 
 #endif /* POSTGRES_H */
