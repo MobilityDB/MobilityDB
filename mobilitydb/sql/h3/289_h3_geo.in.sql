@@ -64,22 +64,22 @@ CREATE FUNCTION geoToH3IndexSet(geometry, integer)
  * a real intersection, and the exact predicate confirms the survivors.
  ******************************************************************************/
 
-CREATE FUNCTION ever_eq(h3indexset, th3index)
+CREATE FUNCTION everEq(h3indexset, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_h3indexset_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_eq(th3index, h3indexset)
+CREATE FUNCTION everEq(th3index, h3indexset)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT ever_eq($2, $1) $$;
+  AS $$ SELECT everEq($2, $1) $$;
 
 CREATE OPERATOR ?= (
   LEFTARG = h3indexset, RIGHTARG = th3index,
-  PROCEDURE = ever_eq,
+  PROCEDURE = everEq,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = h3indexset,
-  PROCEDURE = ever_eq,
+  PROCEDURE = everEq,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );

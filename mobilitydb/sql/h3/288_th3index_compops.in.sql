@@ -50,70 +50,70 @@
  ******************************************************************************/
 
 -- (h3index, th3index)
-CREATE FUNCTION ever_eq(h3index, th3index)
+CREATE FUNCTION everEq(h3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_h3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(h3index, th3index)
+CREATE FUNCTION alwaysEq(h3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_h3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = h3index, RIGHTARG = th3index,
-  PROCEDURE = ever_eq,
+  PROCEDURE = everEq,
   NEGATOR = %<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = h3index, RIGHTARG = th3index,
-  PROCEDURE = always_eq,
+  PROCEDURE = alwaysEq,
   NEGATOR = ?<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 -- (th3index, h3index)
-CREATE FUNCTION ever_eq(th3index, h3index)
+CREATE FUNCTION everEq(th3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_th3index_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(th3index, h3index)
+CREATE FUNCTION alwaysEq(th3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_th3index_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = h3index,
-  PROCEDURE = ever_eq,
+  PROCEDURE = everEq,
   NEGATOR = %<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = th3index, RIGHTARG = h3index,
-  PROCEDURE = always_eq,
+  PROCEDURE = alwaysEq,
   NEGATOR = ?<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 -- (th3index, th3index)
-CREATE FUNCTION ever_eq(th3index, th3index)
+CREATE FUNCTION everEq(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_th3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(th3index, th3index)
+CREATE FUNCTION alwaysEq(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_th3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = th3index,
-  PROCEDURE = ever_eq,
+  PROCEDURE = everEq,
   NEGATOR = %<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = th3index, RIGHTARG = th3index,
-  PROCEDURE = always_eq,
+  PROCEDURE = alwaysEq,
   NEGATOR = ?<>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -123,70 +123,70 @@ CREATE OPERATOR %= (
  ******************************************************************************/
 
 -- (h3index, th3index)
-CREATE FUNCTION ever_ne(h3index, th3index)
+CREATE FUNCTION everNe(h3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_h3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_ne(h3index, th3index)
+CREATE FUNCTION alwaysNe(h3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_h3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = h3index, RIGHTARG = th3index,
-  PROCEDURE = ever_ne,
+  PROCEDURE = everNe,
   NEGATOR = %=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = h3index, RIGHTARG = th3index,
-  PROCEDURE = always_ne,
+  PROCEDURE = alwaysNe,
   NEGATOR = ?=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 -- (th3index, h3index)
-CREATE FUNCTION ever_ne(th3index, h3index)
+CREATE FUNCTION everNe(th3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_th3index_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_ne(th3index, h3index)
+CREATE FUNCTION alwaysNe(th3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_th3index_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = th3index, RIGHTARG = h3index,
-  PROCEDURE = ever_ne,
+  PROCEDURE = everNe,
   NEGATOR = %=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = th3index, RIGHTARG = h3index,
-  PROCEDURE = always_ne,
+  PROCEDURE = alwaysNe,
   NEGATOR = ?=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 -- (th3index, th3index)
-CREATE FUNCTION ever_ne(th3index, th3index)
+CREATE FUNCTION everNe(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_th3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_ne(th3index, th3index)
+CREATE FUNCTION alwaysNe(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_ne_th3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = th3index, RIGHTARG = th3index,
-  PROCEDURE = ever_ne,
+  PROCEDURE = everNe,
   NEGATOR = %=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = th3index, RIGHTARG = th3index,
-  PROCEDURE = always_ne,
+  PROCEDURE = alwaysNe,
   NEGATOR = ?=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
