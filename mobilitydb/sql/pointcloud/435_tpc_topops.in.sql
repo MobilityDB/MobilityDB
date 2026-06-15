@@ -36,68 +36,68 @@
  ******************************************************************************/
 
 -- tpcpoint
-CREATE FUNCTION temporal_overlaps(tstzspan, tpcpoint) RETURNS boolean
+CREATE FUNCTION overlaps(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpoint, tstzspan) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpoint, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcbox, tpcpoint) RETURNS boolean
+CREATE FUNCTION overlaps(tpcbox, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpoint, tpcbox) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpoint, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpoint, tpcpoint) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpoint, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
 -- tpcpatch
-CREATE FUNCTION temporal_overlaps(tstzspan, tpcpatch) RETURNS boolean
+CREATE FUNCTION overlaps(tstzspan, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpatch, tstzspan) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpatch, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcbox, tpcpatch) RETURNS boolean
+CREATE FUNCTION overlaps(tpcbox, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpatch, tpcbox) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpatch, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tpcpatch, tpcpatch) RETURNS boolean
+CREATE FUNCTION overlaps(tpcpatch, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
+CREATE OPERATOR && (PROCEDURE = overlaps,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
@@ -106,68 +106,68 @@ CREATE OPERATOR && (PROCEDURE = temporal_overlaps,
  ******************************************************************************/
 
 -- tpcpoint
-CREATE FUNCTION temporal_contains(tstzspan, tpcpoint) RETURNS boolean
+CREATE FUNCTION contains(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpoint, tstzspan) RETURNS boolean
+CREATE FUNCTION contains(tpcpoint, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcbox, tpcpoint) RETURNS boolean
+CREATE FUNCTION contains(tpcbox, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpoint, tpcbox) RETURNS boolean
+CREATE FUNCTION contains(tpcpoint, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpoint, tpcpoint) RETURNS boolean
+CREATE FUNCTION contains(tpcpoint, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
 -- tpcpatch
-CREATE FUNCTION temporal_contains(tstzspan, tpcpatch) RETURNS boolean
+CREATE FUNCTION contains(tstzspan, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpatch, tstzspan) RETURNS boolean
+CREATE FUNCTION contains(tpcpatch, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcbox, tpcpatch) RETURNS boolean
+CREATE FUNCTION contains(tpcbox, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpatch, tpcbox) RETURNS boolean
+CREATE FUNCTION contains(tpcpatch, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tpcpatch, tpcpatch) RETURNS boolean
+CREATE FUNCTION contains(tpcpatch, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR @> (PROCEDURE = temporal_contains,
+CREATE OPERATOR @> (PROCEDURE = contains,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
@@ -176,68 +176,68 @@ CREATE OPERATOR @> (PROCEDURE = temporal_contains,
  ******************************************************************************/
 
 -- tpcpoint
-CREATE FUNCTION temporal_contained(tstzspan, tpcpoint) RETURNS boolean
+CREATE FUNCTION contained(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpoint, tstzspan) RETURNS boolean
+CREATE FUNCTION contained(tpcpoint, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcbox, tpcpoint) RETURNS boolean
+CREATE FUNCTION contained(tpcbox, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpoint, tpcbox) RETURNS boolean
+CREATE FUNCTION contained(tpcpoint, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpoint, tpcpoint) RETURNS boolean
+CREATE FUNCTION contained(tpcpoint, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
 -- tpcpatch
-CREATE FUNCTION temporal_contained(tstzspan, tpcpatch) RETURNS boolean
+CREATE FUNCTION contained(tstzspan, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpatch, tstzspan) RETURNS boolean
+CREATE FUNCTION contained(tpcpatch, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcbox, tpcpatch) RETURNS boolean
+CREATE FUNCTION contained(tpcbox, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpatch, tpcbox) RETURNS boolean
+CREATE FUNCTION contained(tpcpatch, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tpcpatch, tpcpatch) RETURNS boolean
+CREATE FUNCTION contained(tpcpatch, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
+CREATE OPERATOR <@ (PROCEDURE = contained,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
@@ -246,68 +246,68 @@ CREATE OPERATOR <@ (PROCEDURE = temporal_contained,
  ******************************************************************************/
 
 -- tpcpoint
-CREATE FUNCTION temporal_same(tstzspan, tpcpoint) RETURNS boolean
+CREATE FUNCTION same(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpoint, tstzspan) RETURNS boolean
+CREATE FUNCTION same(tpcpoint, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcbox, tpcpoint) RETURNS boolean
+CREATE FUNCTION same(tpcbox, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpoint, tpcbox) RETURNS boolean
+CREATE FUNCTION same(tpcpoint, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpoint, tpcpoint) RETURNS boolean
+CREATE FUNCTION same(tpcpoint, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
 -- tpcpatch
-CREATE FUNCTION temporal_same(tstzspan, tpcpatch) RETURNS boolean
+CREATE FUNCTION same(tstzspan, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpatch, tstzspan) RETURNS boolean
+CREATE FUNCTION same(tpcpatch, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcbox, tpcpatch) RETURNS boolean
+CREATE FUNCTION same(tpcbox, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpatch, tpcbox) RETURNS boolean
+CREATE FUNCTION same(tpcpatch, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tpcpatch, tpcpatch) RETURNS boolean
+CREATE FUNCTION same(tpcpatch, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR ~= (PROCEDURE = temporal_same,
+CREATE OPERATOR ~= (PROCEDURE = same,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
@@ -316,68 +316,68 @@ CREATE OPERATOR ~= (PROCEDURE = temporal_same,
  ******************************************************************************/
 
 -- tpcpoint
-CREATE FUNCTION temporal_adjacent(tstzspan, tpcpoint) RETURNS boolean
+CREATE FUNCTION adjacent(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpoint, tstzspan) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpoint, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcbox, tpcpoint) RETURNS boolean
+CREATE FUNCTION adjacent(tpcbox, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpoint, tpcbox) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpoint, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpoint, tpcpoint) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpoint, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 
 -- tpcpatch
-CREATE FUNCTION temporal_adjacent(tstzspan, tpcpatch) RETURNS boolean
+CREATE FUNCTION adjacent(tstzspan, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpatch, tstzspan) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpatch, tstzspan) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcbox, tpcpatch) RETURNS boolean
+CREATE FUNCTION adjacent(tpcbox, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpatch, tpcbox) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpatch, tpcbox) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpcbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tpcpatch, tpcpatch) RETURNS boolean
+CREATE FUNCTION adjacent(tpcpatch, tpcpatch) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tpointcloud_tpointcloud'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
-CREATE OPERATOR -|- (PROCEDURE = temporal_adjacent,
+CREATE OPERATOR -|- (PROCEDURE = adjacent,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel);
 

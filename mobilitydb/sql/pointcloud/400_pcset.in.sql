@@ -363,86 +363,86 @@ CREATE OPERATOR && (
   COMMUTATOR = &&
 );
 
-CREATE FUNCTION set_union(pcpoint, pcpointset)
+CREATE FUNCTION setUnion(pcpoint, pcpointset)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(pcpointset, pcpoint)
+CREATE FUNCTION setUnion(pcpointset, pcpoint)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(pcpointset, pcpointset)
+CREATE FUNCTION setUnion(pcpointset, pcpointset)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpoint, RIGHTARG = pcpointset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpointset, RIGHTARG = pcpoint,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = +
 );
 
-CREATE FUNCTION set_minus(pcpoint, pcpointset)
+CREATE FUNCTION setMinus(pcpoint, pcpointset)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(pcpointset, pcpoint)
+CREATE FUNCTION setMinus(pcpointset, pcpoint)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(pcpointset, pcpointset)
+CREATE FUNCTION setMinus(pcpointset, pcpointset)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpoint, RIGHTARG = pcpointset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpointset, RIGHTARG = pcpoint
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpointset, RIGHTARG = pcpointset
 );
 
-CREATE FUNCTION set_intersection(pcpoint, pcpointset)
+CREATE FUNCTION setIntersection(pcpoint, pcpointset)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(pcpointset, pcpoint)
+CREATE FUNCTION setIntersection(pcpointset, pcpoint)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(pcpointset, pcpointset)
+CREATE FUNCTION setIntersection(pcpointset, pcpointset)
   RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpoint, RIGHTARG = pcpointset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpointset, RIGHTARG = pcpoint,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = *
 );
@@ -720,86 +720,86 @@ CREATE OPERATOR && (
   COMMUTATOR = &&
 );
 
-CREATE FUNCTION set_union(pcpatch, pcpatchset)
+CREATE FUNCTION setUnion(pcpatch, pcpatchset)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(pcpatchset, pcpatch)
+CREATE FUNCTION setUnion(pcpatchset, pcpatch)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(pcpatchset, pcpatchset)
+CREATE FUNCTION setUnion(pcpatchset, pcpatchset)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpatch, RIGHTARG = pcpatchset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpatchset, RIGHTARG = pcpatch,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = +
 );
 
-CREATE FUNCTION set_minus(pcpatch, pcpatchset)
+CREATE FUNCTION setMinus(pcpatch, pcpatchset)
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(pcpatchset, pcpatch)
+CREATE FUNCTION setMinus(pcpatchset, pcpatch)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(pcpatchset, pcpatchset)
+CREATE FUNCTION setMinus(pcpatchset, pcpatchset)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpatch, RIGHTARG = pcpatchset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpatchset, RIGHTARG = pcpatch
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset
 );
 
-CREATE FUNCTION set_intersection(pcpatch, pcpatchset)
+CREATE FUNCTION setIntersection(pcpatch, pcpatchset)
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(pcpatchset, pcpatch)
+CREATE FUNCTION setIntersection(pcpatchset, pcpatch)
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(pcpatchset, pcpatchset)
+CREATE FUNCTION setIntersection(pcpatchset, pcpatchset)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpatch, RIGHTARG = pcpatchset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpatchset, RIGHTARG = pcpatch,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = *
 );

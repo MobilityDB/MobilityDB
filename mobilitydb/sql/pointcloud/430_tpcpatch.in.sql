@@ -395,22 +395,22 @@ CREATE FUNCTION points(tpcpatch)
  * Ever / always
  ******************************************************************************/
 
-CREATE FUNCTION ever_eq(tpcpatch, pcpatch)
+CREATE FUNCTION eEq(tpcpatch, pcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(tpcpatch, pcpatch)
+CREATE FUNCTION aEq(tpcpatch, pcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpatch, RIGHTARG = pcpatch,
-  PROCEDURE = ever_eq
+  PROCEDURE = eEq
 );
 CREATE OPERATOR %= (
   LEFTARG = tpcpatch, RIGHTARG = pcpatch,
-  PROCEDURE = always_eq
+  PROCEDURE = aEq
 );
 
 /******************************************************************************

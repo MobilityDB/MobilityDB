@@ -389,22 +389,22 @@ CREATE FUNCTION minusTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)
  * Ever / always predicates
  ******************************************************************************/
 
-CREATE FUNCTION ever_eq(tpcpoint, pcpoint)
+CREATE FUNCTION eEq(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(tpcpoint, pcpoint)
+CREATE FUNCTION aEq(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = ever_eq
+  PROCEDURE = eEq
 );
 CREATE OPERATOR %= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = always_eq
+  PROCEDURE = aEq
 );
 
 /******************************************************************************
