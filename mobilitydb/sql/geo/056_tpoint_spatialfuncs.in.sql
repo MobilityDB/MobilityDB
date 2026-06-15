@@ -214,11 +214,11 @@ CREATE FUNCTION convexHull(tgeompoint)
 
 CREATE FUNCTION speed(tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_derivative'
+  AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION speed(tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_derivative'
+  AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION twCentroid(tgeompoint)

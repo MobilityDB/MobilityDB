@@ -2915,7 +2915,7 @@ tsequenceset_segm_duration(const TSequenceSet *ss, int64 tunits,
  * @param[in] atleast True when the operator is at least, false for at most
  * @param[in] strict True when the duration is strictly smaller or greater
  * @param[in] duration Duration
- * @csqlfn #Temporal_segm_duration
+ * @csqlfn #Temporal_segm_duration()
  */
 TSequenceSet *
 temporal_segm_duration(const Temporal *temp, const Interval *duration, 

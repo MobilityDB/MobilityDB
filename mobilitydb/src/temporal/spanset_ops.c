@@ -141,7 +141,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a value
- * @sqlfn span_contains()
+ * @sqlfn contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set contains a span
- * @sqlfn span_contains()
+ * @sqlfn contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -169,7 +169,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a span set
- * @sqlfn span_contains()
+ * @sqlfn contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span set contains the second one
- * @sqlfn span_contains()
+ * @sqlfn contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(Contained_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value is contained in a span set
- * @sqlfn span_contained()
+ * @sqlfn contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -215,7 +215,7 @@ PG_FUNCTION_INFO_V1(Contained_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span is contained in a span set
- * @sqlfn span_contained()
+ * @sqlfn contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -229,7 +229,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set is contained in a span
- * @sqlfn span_contained()
+ * @sqlfn contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -243,7 +243,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span set is contained in the second one
- * @sqlfn span_contained()
+ * @sqlfn contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -261,7 +261,7 @@ PG_FUNCTION_INFO_V1(Overlaps_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span and a span set overlap
- * @sqlfn span_overlaps()
+ * @sqlfn overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -275,7 +275,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set and a span overlap
- * @sqlfn span_overlaps()
+ * @sqlfn overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -289,7 +289,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two span sets overlap
- * @sqlfn span_overlaps()
+ * @sqlfn overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -307,7 +307,7 @@ PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a value and a span set are adjacent
- * @sqlfn span_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p span_adjacent
  */
 inline Datum
@@ -321,7 +321,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set and a value are adjacent
- * @sqlfn span_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span and a span set are adjacent
- * @sqlfn span_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -349,7 +349,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set and a span are adjacent
- * @sqlfn span_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -363,7 +363,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if two span sets are adjacent
- * @sqlfn span_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p -|-
  */
 inline Datum
