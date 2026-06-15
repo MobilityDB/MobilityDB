@@ -531,7 +531,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_contains);
 /**
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if two circular buffers are disjoint
- * @sqlfn cbuffer_contains()
+ * @sqlfn contains()
  */
 Datum
 Cbuffer_contains(PG_FUNCTION_ARGS)
