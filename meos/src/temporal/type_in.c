@@ -2087,8 +2087,13 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
      * Span by value, so on a foreign type code it can only return a zeroed
      * struct (non-NULL once wrapped). Honour the same NULL contract as the
      * other families: reset the error state, parse, and fail if the reader
-     * raised an error (the type-code guard in span_from_wkb_state). */
+     * raised an error (the type-code guard in span_from_wkb_state). The
+     * meos_errno reset API is only built under MEOS; in the PostgreSQL
+     * extension a foreign type code is raised via ereport (longjmp), so the
+     * reset is unnecessary there and meos_errno() stays 0. */
+#if MEOS
     meos_errno_reset();
+#endif /* MEOS */
     *span = span_from_wkb_state(&s);
     if (meos_errno() != 0)
     {
