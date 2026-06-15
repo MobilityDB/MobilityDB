@@ -28,6 +28,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>   /* GSERIALIZED — needed by tpcpoint × geometry bridge */
 
 /*****************************************************************************
  * Type definitions
@@ -388,6 +389,15 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 /* Validity helpers */
 
 extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
+
+/*****************************************************************************
+ * tpcpoint constructor and spatial predicates
+ *****************************************************************************/
+
+extern TInstant *tpointcloudinst_make(const Pcpoint *pt, TimestampTz t);
+extern bool eintersects_tpcpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern double nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************/
 

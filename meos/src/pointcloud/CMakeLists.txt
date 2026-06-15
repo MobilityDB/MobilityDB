@@ -42,6 +42,10 @@ if(POINTCLOUD)
     # foundation per-point operators (atTpcbox per-point, eIntersects,
     # fast points(tpcpatch) SRF) delegate into.
     pcpatch_decompose.c
+
+    # Instant constructor and per-point geo-spatial predicates for tpcpoint:
+    # tpointcloudinst_make, eintersects_tpcpoint_geo, nad_tpcpoint_geo.
+    tpcpoint_spatialfuncs.c
   )
 
   # Probe whether the linked libpc.a already declares pc_patch_deserialize
