@@ -622,8 +622,8 @@ meos_basetype(MeosType type)
 inline bool
 basetype_byvalue(MeosType type)
 {
-  return (type == T_BOOL || type == T_INT4 || type == T_INT8 ||
-    type == T_FLOAT8 || type == T_DATE || type == T_TIMESTAMPTZ
+  return (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+    type == T_DATE || type == T_TIMESTAMPTZ
 #if QUADBIN
     || type == T_QUADBIN
 #endif
