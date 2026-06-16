@@ -209,6 +209,10 @@
  * @ingroup meos_internal_temporal_spatial
  * @brief Spatial transformation functions for temporal geos
  *
+ * @defgroup meos_internal_temporal_spatial_rel_ever Ever/always spatial relationship functions
+ * @ingroup meos_internal_temporal_spatial
+ * @brief Ever/always spatial relationship functions for temporal points
+ *
  * @defgroup meos_internal_temporal_agg Aggregate functions
  * @ingroup meos_internal_temporal
  * @brief Aggregate functions for temporal types

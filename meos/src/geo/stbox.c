@@ -137,6 +137,7 @@ stbox_expand(const STBox *box1, STBox *box2)
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  * @param[in] str String
+ * @csqlfn #Stbox_in()
  */
 STBox *
 stbox_in(const char *str)
@@ -153,6 +154,7 @@ stbox_in(const char *str)
  * box
  * @param[in] box Spatiotemporal box
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Stbox_out()
  */
 char *
 stbox_out(const STBox *box, int maxdd)
@@ -323,7 +325,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
  * @param[in] s Span, may be `NULL`
- * @csqlfn #Stbox_constructor()
+ * @csqlfn #Stbox_constructor_x()
  */
 STBox *
 stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
@@ -418,7 +420,7 @@ stbox_copy(const STBox *box)
  * timestamptz
  * @param[in] gs Geometry/geography
  * @param[in] t Timestamp
- * @csqlfn #Stbox_constructor()
+ * @csqlfn #Geo_timestamptz_to_stbox()
  */
 STBox *
 geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
@@ -442,7 +444,7 @@ geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * timestamptz span
  * @param[in] gs Geometry/geography
  * @param[in] s Span
- * @csqlfn #Stbox_constructor()
+ * @csqlfn #Geo_tstzspan_to_stbox()
  */
 STBox *
 geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
@@ -710,6 +712,7 @@ gbox_to_stbox(const GBOX *box)
  * @ingroup meos_geo_box_conversion
  * @brief Convert a `BOX3D` into a spatiotemporal box
  * @param[in] box BOX3D
+ * @csqlfn #Box3d_to_stbox()
  */
 STBox *
 box3d_to_stbox(const BOX3D *box)
@@ -1670,6 +1673,7 @@ stbox_transf_pj(const STBox *box, int32_t srid_to, const LWPROJ *pj)
  * @brief Return a spatiotemporal box transformed to another SRID
  * @param[in] box Spatiotemporal box
  * @param[in] srid_to Target SRID
+ * @csqlfn #Stbox_transform()
  */
 STBox *
 stbox_transform(const STBox *box, int32_t srid_to)
@@ -1700,6 +1704,7 @@ stbox_transform(const STBox *box, int32_t srid_to)
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
+ * @csqlfn #Stbox_transform_pipeline()
  */
 STBox *
 stbox_transform_pipeline(const STBox *box, const char *pipeline,
@@ -2573,6 +2578,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
  * @param[in] box Spatiotemporal box
  * @return On error return @p INT_MAX
  * @sqlfn stbox_hash()
+ * @csqlfn #Stbox_hash()
  */
 uint32
 stbox_hash(const STBox *box)
@@ -2650,7 +2656,7 @@ stbox_hash(const STBox *box)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_geo_box_accessor
  * @brief Return the 64-bit hash of a spatiotemporal box using a seed
  * @param[in] box Spatiotemporal box
  * @param[in] seed Seed

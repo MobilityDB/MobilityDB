@@ -351,6 +351,7 @@ spanarr_normalize(Span *spans, int count, bool order, int *newcount)
  * @brief Return a span from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] spantype Span type
+ * @csqlfn #Span_in()
  */
 Span *
 span_in(const char *str, MeosType spantype)
@@ -387,6 +388,7 @@ unquote(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Span_out()
  */
 char *
 span_out(const Span *s, int maxdd)
@@ -685,6 +687,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
  * @brief Convert an integer span into a float span
  * @param[in] s Span
  * @return On error return @p NULL
+ * @csqlfn #Intspan_to_floatspan()
  */
 Span *
 intspan_to_floatspan(const Span *s)
@@ -780,6 +783,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
  * @brief Convert a float span into an integer span
  * @param[in] s Span
  * @return On error return @p NULL
+ * @csqlfn #Floatspan_to_intspan()
  */
 Span *
 floatspan_to_intspan(const Span *s)
@@ -814,6 +818,7 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
  * @brief Convert a date span into a timestamptz span
  * @param[in] s Span
  * @return On error return @p NULL
+ * @csqlfn #Datespan_to_tstzspan()
  */
 Span *
 datespan_to_tstzspan(const Span *s)
@@ -856,6 +861,7 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
  * @brief Convert a timestamptz span into a date span
  * @param[in] s Span
  * @return On error return @p NULL
+ * @csqlfn #Tstzspan_to_datespan()
  */
 Span *
 tstzspan_to_datespan(const Span *s)
@@ -956,6 +962,7 @@ floatspan_round_set(const Span *s, int maxdd, Span *result)
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  * @return On error return @p NULL
+ * @csqlfn #Floatspan_round()
  */
 Span *
 floatspan_round(const Span *s, int maxdd)

@@ -1389,6 +1389,7 @@ extern int tint_min_value(const Temporal *temp);
 extern int64 tbigint_min_value(const Temporal *temp);
 extern int tint_start_value(const Temporal *temp);
 extern int64 tbigint_start_value(const Temporal *temp);
+extern bool tbigint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, int64 *value);
 extern bool tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, int *value);
 extern bool tint_value_n(const Temporal *temp, int n, int *result);
 extern bool tbigint_value_n(const Temporal *temp, int64 n, int64 *result);
