@@ -94,7 +94,9 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
+          # Coverage build enables RASTER so its sources get instrumented.
+          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
+            ${{ matrix.coverage == '1' && '-DRASTER=ON' || '' }} ..
 
       - name: Build
         run: |
