@@ -56,6 +56,14 @@
  * @ingroup meos_internal_cbuffer
  * @brief Restriction functions for temporal circular buffers
  *
+ * @defgroup meos_internal_cbuffer_rel Spatial relationship functions
+ * @ingroup meos_internal_cbuffer
+ * @brief Spatial relationship functions for temporal circular buffers
+ *
+ *   @defgroup meos_internal_cbuffer_rel_ever Ever/always relationship functions
+ *   @ingroup meos_internal_cbuffer_rel
+ *   @brief Ever/always relationship functions for temporal circular buffers
+ *
  * @defgroup meos_internal_cbuffer_comp Comparison functions
  * @ingroup meos_internal_cbuffer
  * @brief Comparison functions for temporal circular buffers
