@@ -265,7 +265,7 @@ Trgeometry_inst_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty(gs);
   ensure_has_not_M_geo(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(2);
-  TInstant *result = trgeoinst_make(gs, pose, t);
+  TInstant *result = trgeometryinst_make(gs, pose, t);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

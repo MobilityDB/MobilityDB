@@ -171,7 +171,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @sqlfn #Tpose_at_stbox()
+ * @csqlfn #Tpose_at_stbox()
  */
 inline Temporal *
 tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
@@ -185,7 +185,7 @@ tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @sqlfn #Tpose_minus_stbox()
+ * @csqlfn #Tpose_minus_stbox()
  */
 inline Temporal *
 tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)

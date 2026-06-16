@@ -1389,6 +1389,7 @@ geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
  * @brief Return an array of N spatial boxes from the segments of a 
  * (multi)linestring
  * @sqlfn splitNStboxes()
+ * @csqlfn #Geo_split_n_stboxes()
  */
 STBox *
 geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)

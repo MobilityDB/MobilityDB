@@ -195,6 +195,7 @@ tnpoint_trajectory(const Temporal *temp)
  * @details Two network points may be have different route identifier but
  * represent the same spatial point at the intersection of the two route
  * identifiers
+ * @csqlfn #Npoint_same()
  */
 bool
 npoint_same(const Npoint *np1, const Npoint *np2)
@@ -567,7 +568,7 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] temp Temporal network point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @sqlfn #Tnpoint_at_stbox()
+ * @csqlfn #Tnpoint_at_stbox()
  */
 inline Temporal *
 tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
@@ -581,7 +582,7 @@ tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] temp Temporal network point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @sqlfn #Tnpoint_minus_stbox()
+ * @csqlfn #Tnpoint_minus_stbox()
  */
 inline Temporal *
 tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)

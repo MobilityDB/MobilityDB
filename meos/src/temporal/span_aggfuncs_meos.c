@@ -253,6 +253,7 @@ span_union_transfn(SpanSet *state, const Span *s)
  * @code
  * state = spanset_union_transfn(state, spanset);
  * @endcode
+ * @csqlfn #Spanset_union_transfn()
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)

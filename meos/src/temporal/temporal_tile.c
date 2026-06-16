@@ -532,6 +532,7 @@ spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Temporal_time_bins()
  */
 Span *
 temporal_time_bins(const Temporal *temp, const Interval *duration,
@@ -889,7 +890,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
  * @param[out] count Number of elements in the output array
  * @note The check for parameter validity is done in function
  * #tnumber_value_time_tile_init to be shared for both MEOS and MobilityDB
- * @csqlfn #Tnumber_value_time_boxes
+ * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,

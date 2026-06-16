@@ -763,6 +763,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_misc
  * @brief Return the version of the MobilityDB extension
+ * @csqlfn #Mobilitydb_version()
  */
 char *
 mobilitydb_version(void)
@@ -773,6 +774,7 @@ mobilitydb_version(void)
 /**
  * @ingroup meos_misc
  * @brief Return the versions of the MobilityDB extension and its dependencies
+ * @csqlfn #Mobilitydb_full_version()
  */
 char *
 mobilitydb_full_version(void)
@@ -806,6 +808,7 @@ mobilitydb_full_version(void)
  * @brief Return a temporal value from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @param[in] temptype Temporal type
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 temporal_in(const char *str, MeosType temptype)
@@ -820,6 +823,7 @@ temporal_in(const char *str, MeosType temptype)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Temporal_out()
  */
 char *
 temporal_out(const Temporal *temp, int maxdd)
@@ -1355,6 +1359,7 @@ round_fn(MeosType basetype)
  * @brief Return a temporal value rounded to a given number of decimal places
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits to output
+ * @csqlfn #Temporal_round()
  */
 Temporal *
 temporal_round(const Temporal *temp, int maxdd)
@@ -1403,6 +1408,7 @@ temparr_round(Temporal **temparr, int count, int maxdd)
 /**
  * @ingroup meos_base_types
  * @brief Return a float number rounded to a given number of decimal places
+ * @csqlfn #Float_round()
  */
 double
 float_round(double d, int maxdd)
@@ -2117,6 +2123,7 @@ temporal_start_value(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a copy of the end base value of a temporal value
  * @param[in] temp Temporal value
+ * @csqlfn #Temporal_end_value()
  */
 Datum
 temporal_end_value(const Temporal *temp)
@@ -2142,6 +2149,7 @@ temporal_end_value(const Temporal *temp)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a copy of the minimum base value of a temporal value
  * @param[in] temp Temporal value
+ * @csqlfn #Temporal_min_value()
  */
 Datum
 temporal_min_value(const Temporal *temp)
@@ -3056,7 +3064,7 @@ tsequenceset_segm_duration(const TSequenceSet *ss, int64 tunits,
  * @param[in] atleast True when the operator is at least, false for at most
  * @param[in] strict True when the duration is strictly smaller or greater
  * @param[in] duration Duration
- * @csqlfn #Temporal_segm_duration
+ * @csqlfn #Temporal_segm_duration()
  */
 TSequenceSet *
 temporal_segm_duration(const Temporal *temp, const Interval *duration, 
@@ -3332,6 +3340,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
  * @param[in] temp Temporal value
  * @param[in] maxdist Maximum distance
  * @param[in] minduration Minimum duration
+ * @csqlfn #Temporal_stops()
  */
 TSequenceSet *
 temporal_stops(const Temporal *temp, double maxdist,
@@ -3376,6 +3385,7 @@ temporal_stops(const Temporal *temp, double maxdist,
  * @brief Return the integral (area under the curve) of a temporal number
  * @param[in] temp Temporal value
  * @return On error return -1.0
+ * @csqlfn #Tnumber_integral()
  */
 double
 tnumber_integral(const Temporal *temp)

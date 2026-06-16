@@ -80,7 +80,7 @@ extern char *trgeometry_out(const Temporal *temp);
  * Constructor functions
  *****************************************************************************/
 
-extern TInstant *trgeoinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t);
+extern TInstant *trgeometryinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t);
 extern Temporal *geo_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp);
 
 /*****************************************************************************
