@@ -82,6 +82,7 @@ tinstant_value_p(const TInstant *inst)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return a copy of the base value of a temporal instant
  * @param[in] inst Temporal instant
+ * @csqlfn #Tinstant_value()
  */
 Datum
 tinstant_value(const TInstant *inst)

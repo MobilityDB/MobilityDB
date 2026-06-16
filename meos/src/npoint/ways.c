@@ -103,8 +103,6 @@ get_srid_ways()
   return result;
 }
 
-#define SQL_ROUTE_MAXLEN 64
-
 /**
  * @ingroup meos_npoint_base_route
  * @brief Return true if the edge table contains a route with the route

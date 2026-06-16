@@ -14,14 +14,14 @@
 -- ever_eq / ?= : at least one instant equals the probe
 -------------------------------------------------------------------------------
 
--- (bigint, th3index)
-SELECT ever_eq(590464338553208831::h3index,
+-- (h3index, th3index)
+SELECT eEq(590464338553208831::h3index,
   th3index '590464338553208831@2001-01-01');
-SELECT 590464338553208831::bigint ?=
+SELECT 590464338553208831::h3index ?=
   th3index '590464338553208831@2001-01-01';
 
 -- Cell not present in the trajectory → false
-SELECT 0::bigint ?= th3index '590464338553208831@2001-01-01';
+SELECT 612544986753269759::h3index ?= th3index '590464338553208831@2001-01-01';
 
 -- (th3index, bigint) — same as above, commuted
 SELECT th3index '590464338553208831@2001-01-01' ?= 590464338553208831::h3index;

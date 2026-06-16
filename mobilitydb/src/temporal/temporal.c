@@ -1630,7 +1630,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal instant
- * @sqlfn  tintInst(), tfloatInst(), ...
+ * @sqlfn tintInst(), tfloatInst(), ...
  */
 Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
@@ -2551,6 +2551,7 @@ PG_FUNCTION_INFO_V1(Temporal_before_timestamptz);
 /**
  * @brief Return a temporal value restricted to the instants before or equal to
  * a timestamptz
+ * @sqlfn beforeTimestamp()
  */
 Datum
 Temporal_before_timestamptz(PG_FUNCTION_ARGS)
@@ -2576,6 +2577,7 @@ PG_FUNCTION_INFO_V1(Temporal_after_timestamptz);
 /**
  * @brief Return a temporal value restricted to the instants after or equal to
  * a timestamptz
+ * @sqlfn afterTimestamp()
  */
 Datum
 Temporal_after_timestamptz(PG_FUNCTION_ARGS)
@@ -2602,7 +2604,7 @@ Temporal_after_timestamptz(PG_FUNCTION_ARGS)
 
 /**
  * @brief Return the segments that have at least/at most a given duration
- * @csqlfn #Temporal_segm_duration
+ * @csqlfn #Temporal_segm_duration()
  * @sqlfn segmentMinDuration(), segmentMaxDuration()
  */
 Datum
@@ -2624,7 +2626,7 @@ PG_FUNCTION_INFO_V1(Temporal_segm_min_duration);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the segments that have at least a given duration
- * @csqlfn #Temporal_segm_min_duration
+ * @csqlfn #Temporal_segm_min_duration()
  * @sqlfn segmentMinDuration()
  */
 Datum

@@ -1,21 +1,23 @@
-SELECT ever_eq(590464338553208831::h3index,
+SELECT eEq(590464338553208831::h3index,
   th3index '590464338553208831@2001-01-01');
- ever_eq 
----------
+ eeq 
+-----
  t
 (1 row)
 
-SELECT 590464338553208831::bigint ?=
+SELECT 590464338553208831::h3index ?=
   th3index '590464338553208831@2001-01-01';
-ERROR:  operator does not exist: bigint ?= th3index
-LINE 1: SELECT 590464338553208831::bigint ?=
-                                          ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT 0::bigint ?= th3index '590464338553208831@2001-01-01';
-ERROR:  operator does not exist: bigint ?= th3index
-LINE 1: SELECT 0::bigint ?= th3index '590464338553208831@2001-01-01'...
-                         ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 612544986753269759::h3index ?= th3index '590464338553208831@2001-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT th3index '590464338553208831@2001-01-01' ?= 590464338553208831::h3index;
  ?column? 
 ----------

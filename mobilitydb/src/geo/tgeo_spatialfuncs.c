@@ -471,6 +471,24 @@ Tpoint_cumulative_length(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tpoint_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_speed);
+/**
+ * @ingroup mobilitydb_geo_accessor
+ * @brief Return the speed of a temporal sequence (set) point
+ * @sqlfn speed()
+ */
+Datum
+Tpoint_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpoint_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tgeo_convex_hull(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_convex_hull);
 /**
