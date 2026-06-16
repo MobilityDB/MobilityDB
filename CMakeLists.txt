@@ -102,6 +102,10 @@ CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometrie
 # vendored subtree is needed.
 option(QUADBIN "Set ON|OFF (default=OFF) to include the temporal QUADBIN index type (tquadbin)" OFF)
 
+# Option for sampling PostGIS raster bands along trajectories.
+# Requires the postgis_raster extension (ships with postgresql-N-postgis-3).
+option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF)
+
 # The JSON types are derived from PostgreSQL 18 and require a PostgreSQL 18
 # server. For the MobilityDB extension, detect the server version and disable
 # JSON on older PostgreSQL. The standalone MEOS library vendors PostgreSQL 18,
@@ -165,6 +169,13 @@ else()
   message(STATUS "Excluding temporal QUADBIN index")
   add_definitions(-DQUADBIN=0)
 endif()
+if(RASTER)
+  message(STATUS "Including PostGIS raster sampling operators")
+  add_definitions(-DRASTER=1)
+else()
+  message(STATUS "Excluding PostGIS raster sampling operators")
+  add_definitions(-DRASTER=0)
+endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
   add_definitions(-DRGEO=1)
@@ -182,6 +193,9 @@ endif()
 set(MOBILITYDB_REQUIRES "postgis")
 if(POINTCLOUD)
   set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
+endif()
+if(RASTER)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, postgis_raster")
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file
@@ -234,13 +248,6 @@ set(MOBILITYDB_VERSION_STRING "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT
 add_definitions(-DMOBILITYDB_VERSION_STRING="${MOBILITYDB_VERSION_STRING}")
 message(STATUS "MOBILITYDB_VERSION_STRING = '${MOBILITYDB_VERSION_STRING}'")
 
-# PostGIS is always required by the MobilityDB extension; pgPointCloud is
-# required only when POINTCLOUD=ON, so the control file's `requires` line is
-# assembled from this variable.
-set(MOBILITYDB_REQUIRES "postgis")
-if(POINTCLOUD)
-  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
-endif()
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -444,6 +451,7 @@ if(ICU_FOUND)
 else()
   message(STATUS "ICU NOT found")
 endif()
+
 
 #-------------------------------------
 # Build either MobilityDB or MEOS
