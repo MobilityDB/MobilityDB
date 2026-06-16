@@ -1827,6 +1827,7 @@ dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
  * @param[in] temp Temporal
  * @param[in] gs Geometry
  * @sqlop @p <->
+ * @csqlfn #Tdistance_trgeometry_geo()
  */
 Temporal *
 tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1859,6 +1860,7 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the temporal distance between two
  * temporal rigid geometries.
  * @sqlop @p <->
+ * @csqlfn #Tdistance_trgeometry_tpoint()
  */
 Temporal *
 tdistance_trgeometry_tpoint(const Temporal *temp1 UNUSED,
@@ -1878,6 +1880,7 @@ tdistance_trgeometry_tpoint(const Temporal *temp1 UNUSED,
  * @ingroup meos_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
  * @sqlop @p <->
+ * @csqlfn #Tdistance_trgeometry_trgeometry()
  */
 Temporal *
 tdistance_trgeometry_trgeometry(const Temporal *temp1 UNUSED,
@@ -1923,7 +1926,7 @@ nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
       /* The closest point may be at an exclusive bound. */
       Datum value;
       temporal_value_at_timestamptz(temp, min->t, false, &value);
-      result = trgeoinst_make(trgeo_geom_p(temp), DatumGetPoseP(value), 
+      result = trgeometryinst_make(trgeo_geom_p(temp), DatumGetPoseP(value), 
         min->t);
       pfree(dist); pfree(DatumGetPointer(value));
     }
@@ -1952,7 +1955,7 @@ nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
     /* The closest point may be at an exclusive bound */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
-    result = trgeoinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
+    result = trgeometryinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
       min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
@@ -1980,7 +1983,7 @@ nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
     /* The closest point may be at an exclusive bound. */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
-      result = trgeoinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
+      result = trgeometryinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
         min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
@@ -2099,6 +2102,7 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a geometry
  * @sqlfn shortestLine()
+ * @csqlfn #Shortestline_trgeometry_geo()
  */
 GSERIALIZED *
 shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2123,6 +2127,7 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a temporal geometry point
  * @sqlfn shortestLine()
+ * @csqlfn #Shortestline_trgeometry_tpoint()
  */
 GSERIALIZED *
 shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -2150,6 +2155,7 @@ shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
+ * @csqlfn #Shortestline_trgeometry_trgeometry()
  */
 GSERIALIZED *
 shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)

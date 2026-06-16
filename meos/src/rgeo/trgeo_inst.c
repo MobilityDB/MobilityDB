@@ -194,7 +194,7 @@ trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
  * @param t Timestamp
  */
 TInstant *
-trgeoinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
+trgeometryinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 {
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(pose, NULL);
   if (! trgeoinst_make_valid(geom, pose))
@@ -222,7 +222,7 @@ trgeoseq_to_tinstant(const TSequence *seq)
     return NULL;
   }
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  return trgeoinst_make(trgeoseq_geom_p(seq),
+  return trgeometryinst_make(trgeoseq_geom_p(seq),
     DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
@@ -243,7 +243,7 @@ trgeoseqset_to_tinstant(const TSequenceSet *ss)
   }
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, 0);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  return trgeoinst_make(trgeoseqset_geom_p(ss),
+  return trgeometryinst_make(trgeoseqset_geom_p(ss),
     DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 

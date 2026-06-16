@@ -698,6 +698,7 @@ tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal geometries
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
+ * @csqlfn #Tcontains_tgeo_tgeo()
  */
 Temporal *
 tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
@@ -764,6 +765,7 @@ tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal geometries
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
+ * @csqlfn #Tcovers_tgeo_tgeo()
  */
 Temporal *
 tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
