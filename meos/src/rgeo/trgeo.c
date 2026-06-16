@@ -166,6 +166,7 @@ trgeo_from_mfjson(const char *mfjson)
  * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_out()
  */
 char *
 trgeometry_out(const Temporal *temp)
@@ -247,6 +248,7 @@ trgeo_as_ewkt(const Temporal *temp, int maxdd)
  * @brief Return a temporal pose obtained by removing the reference geometry
  * of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tpose()
  */
 Temporal *
 trgeometry_to_tpose(const Temporal *temp)
@@ -270,6 +272,7 @@ trgeometry_to_tpose(const Temporal *temp)
  * @brief Return a temporal point obtained from the points of the temporal
  * pose of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_tpoint()
  */
 Temporal *
 trgeometry_to_tpoint(const Temporal *temp)
@@ -342,7 +345,7 @@ geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
-  return trgeoinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
+  return trgeometryinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
 /**
@@ -470,6 +473,7 @@ trgeometry_start_value(const Temporal *temp)
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the end base value of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_end_value()
  */
 GSERIALIZED *
 trgeometry_end_value(const Temporal *temp)
@@ -1366,7 +1370,7 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 /**
  * @ingroup meos_rgeo_modif
  * @brief Return the value of a temporal rigid geometry at a timestamptz
- * @csqlfn #Temporal_delete_timestamptz
+ * @csqlfn #Temporal_delete_timestamptz()
  */
 Temporal *
 trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)

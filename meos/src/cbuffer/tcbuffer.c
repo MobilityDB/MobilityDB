@@ -318,6 +318,7 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * @brief Return a temporal circular buffer from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
+ * @csqlfn #Tcbuffer_in()
  */
 Temporal *
 tcbuffer_in(const char *str)

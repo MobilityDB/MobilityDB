@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
  * @ingroup mobilitydb_temporal_analytics_simplify
  * @brief Return a temporal sequence (set) float or point simplified using a
  * single-pass Douglas-Peucker line simplification algorithm
- * @sqlfn maxDistSimplify
+ * @sqlfn maxDistSimplify()
  */
 Datum
 Temporal_simplify_max_dist(PG_FUNCTION_ARGS)

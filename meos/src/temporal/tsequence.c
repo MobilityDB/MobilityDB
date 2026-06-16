@@ -1507,7 +1507,7 @@ tcontseq_to_linear(const TSequence *seq)
  * @brief Return a temporal value transformed to the given interpolation
  * @param[in] seq Temporal sequence
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_set_interp
+ * @csqlfn #Temporal_set_interp()
  */
 Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)

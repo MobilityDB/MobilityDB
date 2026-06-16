@@ -26,11 +26,12 @@
 #include <pc_api.h>             /* PCSCHEMA (struct body with .srid) */
 
 #include <meos.h>
-#include <meos_geo.h>           /* GSERIALIZED, geompoint_make2d, geom_* */
+#include <meos_geo.h>           /* GSERIALIZED, geom_* */
 #include <meos_internal.h>      /* tinstant_make, tinstant_value_p,
                                    VALIDATE_NOT_NULL */
 #include <meos_pointcloud.h>    /* Pcpoint (typedef), PCSCHEMA (typedef),
                                    meos_pc_schema, pcpoint_get_x/y */
+#include "geo/tgeo_spatialfuncs.h"   /* geopoint_make (both-targets symbol) */
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
@@ -70,7 +71,9 @@ pcpoint_to_geompoint2d(const Pcpoint *pt)
   double x = 0.0, y = 0.0;
   if (!pcpoint_get_x(pt, schema, &x) || !pcpoint_get_y(pt, schema, &y))
     return NULL;
-  return geompoint_make2d((int32_t) schema->srid, x, y);
+  /* Planar 2D point; geopoint_make is available in the MEOS=OFF extension
+   * build, unlike the MEOS-only geompoint_make2d. */
+  return geopoint_make(x, y, 0.0, false, false, (int32_t) schema->srid);
 }
 
 /**

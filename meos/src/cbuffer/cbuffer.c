@@ -749,6 +749,7 @@ cbuffer_radius(const Cbuffer *cb)
  * @ingroup meos_cbuffer_base_transf
  * @brief Return a circular buffer with the precision of the values set to a
  * number of decimal places
+ * @csqlfn #Cbuffer_round()
  */
 Cbuffer *
 cbuffer_round(const Cbuffer *cb, int maxdd)
@@ -868,6 +869,7 @@ cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj)
  * @brief Return a circular buffer transformed to another SRID
  * @param[in] cb Circular buffer
  * @param[in] srid_to Target SRID
+ * @csqlfn #Cbuffer_transform()
  */
 Cbuffer *
 cbuffer_transform(const Cbuffer *cb, int32_t srid_to)
@@ -899,6 +901,7 @@ cbuffer_transform(const Cbuffer *cb, int32_t srid_to)
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
+ * @csqlfn #Cbuffer_transform_pipeline()
  */
 Cbuffer *
 cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipeline,
@@ -1160,6 +1163,7 @@ cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @param[in] dist Distance
  * @note The function assumes that all validity tests have been previously done
+ * @csqlfn #Cbuffer_dwithin()
  */
 int
 cbuffer_dwithin(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
@@ -1214,7 +1218,7 @@ covers_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_rel
  * @brief Return true if two circular buffers are disjoint in 2D
  * @param[in] cb1,cb2 Circular buffers
- * @csqlfn #Cbuffer_intersects()
+ * @csqlfn #Cbuffer_disjoint()
  */
 int
 disjoint_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
@@ -1377,6 +1381,7 @@ cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if two circular buffers are approximately equal with
  * respect to an epsilon value
+ * @csqlfn #Cbuffer_same()
  */
 bool
 cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2)
@@ -1504,6 +1509,7 @@ cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the 32-bit hash value of a circular buffer
  * @param[in] cb Circular buffer
+ * @csqlfn #Cbuffer_hash()
  */
 uint32
 cbuffer_hash(const Cbuffer *cb)
@@ -1533,6 +1539,7 @@ cbuffer_hash(const Cbuffer *cb)
  * @param[in] cb Circular buffer
  * @param[in] seed Seed
  * csqlfn hash_extended
+ * @csqlfn #Cbuffer_hash_extended()
  */
 uint64
 cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)

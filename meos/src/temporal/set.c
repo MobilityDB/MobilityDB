@@ -693,6 +693,7 @@ set_num_values(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the start value of a set
  * @param[in] s Set
+ * @csqlfn #Set_start_value()
  */
 Datum
 set_start_value(const Set *s)
@@ -706,6 +707,7 @@ set_start_value(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the end value of a set
  * @param[in] s Set
+ * @csqlfn #Set_end_value()
  */
 Datum
 set_end_value(const Set *s)
@@ -779,6 +781,7 @@ set_values(const Set *s, int *count)
  * decimal places
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Set_round()
  */
 Set *
 set_round(const Set *s, int maxdd)
@@ -1240,7 +1243,7 @@ set_ge(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash of a set
  * @param[in] s Set
- * @csqlfn #Set_hash
+ * @csqlfn #Set_hash()
  */
 uint32
 set_hash(const Set *s)
@@ -1261,7 +1264,7 @@ set_hash(const Set *s)
  * @brief Return the 64-bit hash of a set using a seed
  * @param[in] s Set
  * @param[in] seed Seed
- * @csqlfn #Set_hash_extended
+ * @csqlfn #Set_hash_extended()
  */
 uint64
 set_hash_extended(const Set *s, uint64 seed)
