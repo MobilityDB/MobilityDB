@@ -157,6 +157,8 @@ tcellindex_get_resolution(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->get_resolution, "getResolution",
     T_TINT);
 }
@@ -171,6 +173,8 @@ tcellindex_is_valid_cell(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->is_valid_cell, "isValidCell",
     T_TBOOL);
 }
@@ -184,6 +188,8 @@ tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_param1(temp, ops->cell_to_parent, "cellToParent",
     Int32GetDatum(resolution), temp->temptype);
 }
@@ -198,6 +204,8 @@ tcellindex_cell_to_point(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->cell_to_point, "cellToPoint",
     ops->point_temptype);
 }
@@ -211,6 +219,8 @@ tcellindex_cell_to_boundary(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   MeosType restype = (ops->point_temptype == T_TGEOGPOINT) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tcellindex_lift_unary(temp, ops->cell_to_boundary, "cellToBoundary",
@@ -226,6 +236,8 @@ tcellindex_cell_area(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->cell_area, "cellArea", T_TFLOAT);
 }
 
