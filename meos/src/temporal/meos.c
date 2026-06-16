@@ -54,9 +54,9 @@ extern void json_destroy_tofree();
 
 /* Global variables */
 
-static bool MEOS_GSL_INITIALIZED = false;
-static gsl_rng *MEOS_GENERATION_RNG = NULL;
-static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
+static MEOS_TLS bool MEOS_GSL_INITIALIZED = false;
+static MEOS_TLS gsl_rng *MEOS_GENERATION_RNG = NULL;
+static MEOS_TLS gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -116,7 +116,7 @@ gsl_get_aggregation_rng(void)
 
 /* Global variables keeping Proj context */
 
-PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+static MEOS_TLS PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
 
 /**
  * @brief Initialize the PROJ library
