@@ -34,8 +34,6 @@
 #include <meos.h>
 #include "temporal/meos_catalog.h"
 
-#define MAXDIMS 4
-
 /*****************************************************************************/
 
 /**

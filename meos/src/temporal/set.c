@@ -638,6 +638,7 @@ set_num_values(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the start value of a set
  * @param[in] s Set
+ * @csqlfn #Set_start_value()
  */
 Datum
 set_start_value(const Set *s)
@@ -651,6 +652,7 @@ set_start_value(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return a copy of the end value of a set
  * @param[in] s Set
+ * @csqlfn #Set_end_value()
  */
 Datum
 set_end_value(const Set *s)
@@ -724,6 +726,7 @@ set_values(const Set *s, int *count)
  * decimal places
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Set_round()
  */
 Set *
 set_round(const Set *s, int maxdd)

@@ -67,6 +67,7 @@
  * @param[in] t Time value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
+ * @csqlfn #Timestamptz_tprecision()
  */
 TimestampTz
 timestamptz_tprecision(TimestampTz t, const Interval *duration,
@@ -85,6 +86,7 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
  * @param[in] s Timestamptz set
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
+ * @csqlfn #Tstzset_tprecision()
  */
 Set *
 tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
@@ -107,6 +109,7 @@ tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
  * @param[in] s Time value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
+ * @csqlfn #Tstzspan_tprecision()
  */
 Span *
 tstzspan_tprecision(const Span *s, const Interval *duration,
@@ -134,6 +137,7 @@ tstzspan_tprecision(const Span *s, const Interval *duration,
  * @param[in] ss Time value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
+ * @csqlfn #Tstzspanset_tprecision()
  */
 SpanSet *
 tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
@@ -1198,6 +1202,7 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
  * @brief Return the Hausdorf distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @return On error return `DBL_MAX`
+ * @csqlfn #Temporal_hausdorff_distance()
  */
 double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
