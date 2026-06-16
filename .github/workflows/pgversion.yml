@@ -92,10 +92,12 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage build enables all opt-in subsystems so their sources get instrumented.
+          # Coverage build enables this PR's opt-in subsystems so their sources get instrumented.
+          # QUADBIN is first-party (no external lib); H3/POINTCLOUD are owned by other PRs and
+          # are not part of this quadbin PR, so they are not enabled here.
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1} -DPOINTCLOUD=ON -DQUADBIN=ON', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
+            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON' || '' }} \
             ..
 
       - name: Build
