@@ -505,6 +505,24 @@ meos_initialize_timezone(const char *tz_str)
 }
 
 /*
+ * Lazily initialize the session timezone if it has not been set yet.
+ *
+ * The PostgreSQL extension cannot call meos_initialize_timezone() from
+ * _PG_init(): session_timezone is a thread-local (MEOS_TLS) whose dynamic
+ * TLS block is not yet usable inside the dlopen() that runs _PG_init(), so
+ * touching it there segfaults.  Instead the datetime input/output entry
+ * points call this idempotent guard, which runs once on first use (well
+ * after the module is fully loaded) and is a no-op afterwards.
+ */
+void
+meos_ensure_timezone(void)
+{
+  if (session_timezone == NULL)
+    meos_initialize_timezone(NULL);
+  return;
+}
+
+/*
  * Free the timezone cache
  */
 void

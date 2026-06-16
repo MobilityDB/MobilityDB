@@ -85,6 +85,10 @@ extern MEOS_TLS PGDLLIMPORT pg_tz *session_timezone;
 extern PGDLLIMPORT pg_tz *log_timezone;
 
 extern void pg_timezone_initialize(void);
+/* Idempotent lazy init of session_timezone; safe to call from the PG
+ * extension's datetime entry points (unlike at _PG_init, where the
+ * thread-local TLS block is not yet usable -- see pgtz.c). */
+extern void meos_ensure_timezone(void);
 extern pg_tz *pg_tzset(const char *tzname);
 extern pg_tz *pg_tzset_offset(long gmtoffset);
 

@@ -2020,3 +2020,31 @@ pg_tz_acceptable(pg_tz *tz)
 
   return true;
 }
+
+#ifdef PG_EXT_NO_BACKEND_DUPS
+/* MEOS
+ * Extension-safe meos_ensure_timezone().
+ *
+ * pgtz.c -- which holds the real (standalone-library) definition together
+ * with session_timezone and pg_tzset() -- is NOT compiled into the
+ * MobilityDB PostgreSQL extension on macOS/Windows: the backend already
+ * exports those symbols and re-defining them clashes (Windows) or shadows
+ * the backend pointer (macOS).  But the datetime input/output entry points
+ * in date.c / timestamp.c (which ARE compiled into the extension) call
+ * meos_ensure_timezone(), so a definition must exist on the extension link
+ * line too; otherwise dlopen() of the extension fails on macOS's strict
+ * flat namespace with "_meos_ensure_timezone not found".
+ *
+ * In the extension session_timezone is the backend's own GUC-driven global,
+ * already initialized long before any MobilityDB code runs, so the lazy
+ * guard has nothing to do: it is a no-op.  localtime.c is compiled into both
+ * targets, so guarding the body with PG_EXT_NO_BACKEND_DUPS keeps it out of
+ * the standalone library (where pgtz.c provides the real implementation) and
+ * avoids a duplicate-symbol error.
+ */
+void
+meos_ensure_timezone(void)
+{
+  return;
+}
+#endif /* PG_EXT_NO_BACKEND_DUPS */
