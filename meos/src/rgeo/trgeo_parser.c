@@ -76,7 +76,7 @@ trgeoinst_parse(const char **str, MeosType temptype, bool end,
     return NULL;
   }
 
-  TInstant *result = trgeoinst_make(geom, pose, t);
+  TInstant *result = trgeometryinst_make(geom, pose, t);
   pfree(pose);
   return result;
 }

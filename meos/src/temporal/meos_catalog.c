@@ -124,6 +124,7 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TGEOMETRY] = "tgeometry",
   [T_TGEOGRAPHY] = "tgeography",
   [T_TRGEOMETRY] = "trgeometry",
+  [T_TBIGINT] = "tbigint",
 };
 
 /**
@@ -267,6 +268,7 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TDOUBLE3,   T_DOUBLE3},
   {T_TDOUBLE4,   T_DOUBLE4},
   {T_TBOOL,      T_BOOL},
+  {T_TBIGINT,    T_INT8},
   {T_TINT,       T_INT4},
   {T_TFLOAT,     T_FLOAT8},
   {T_TTEXT,      T_TEXT},
@@ -685,8 +687,8 @@ alphanum_basetype(MeosType type)
 inline bool
 alphanum_temptype(MeosType type)
 {
-  return (type == T_TBOOL || type == T_TINT || type == T_TFLOAT ||
-    type == T_TTEXT);
+  return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
+    type == T_TFLOAT || type == T_TTEXT);
 }
 #endif
 
@@ -953,7 +955,8 @@ type_span_bbox(MeosType type)
 inline bool
 span_tbox_type(MeosType type)
 {
-  return (type == T_INTSPAN || type == T_FLOATSPAN || type == T_TSTZSPAN);
+  return (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
+    type == T_TSTZSPAN);
 }
 
 /**
@@ -1067,9 +1070,9 @@ ensure_timespanset_type(MeosType type)
 inline bool
 temporal_type(MeosType type)
 {
-  return (type == T_TBOOL || type == T_TINT || type == T_TFLOAT ||
-    type == T_TTEXT || type == T_TGEOMPOINT || type == T_TGEOGPOINT ||
-    type == T_TGEOMETRY || type == T_TGEOGRAPHY ||
+  return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
+    type == T_TFLOAT || type == T_TTEXT || type == T_TGEOMPOINT ||
+    type == T_TGEOGPOINT || type == T_TGEOMETRY || type == T_TGEOGRAPHY ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4
 #if CBUFFER
@@ -1095,8 +1098,8 @@ temporal_type(MeosType type)
 inline bool
 temporal_basetype(MeosType type)
 {
-  return (type == T_BOOL || type == T_INT4 || type == T_FLOAT8 ||
-    type == T_TEXT ||
+  return (type == T_BOOL || type == T_INT4 || type == T_INT8 ||
+    type == T_FLOAT8 || type == T_TEXT ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
     type == T_GEOMETRY || type == T_GEOGRAPHY
@@ -1149,8 +1152,8 @@ temptype_supports_linear(MeosType type)
 inline bool
 talphanum_type(MeosType type)
 {
-  return (type == T_TBOOL || type == T_TINT || type == T_TFLOAT ||
-    type == T_TTEXT);
+  return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
+    type == T_TFLOAT || type == T_TTEXT);
 }
 #endif
 
@@ -1171,7 +1174,7 @@ talpha_type(MeosType type)
 inline bool
 tnumber_type(MeosType type)
 {
-  return (type == T_TINT || type == T_TFLOAT);
+  return (type == T_TINT || type == T_TBIGINT || type == T_TFLOAT);
 }
 
 /**
@@ -1193,7 +1196,7 @@ ensure_tnumber_type(MeosType type)
 bool
 tnumber_basetype(MeosType type)
 {
-  return (type == T_INT4 || type == T_FLOAT8);
+  return (type == T_INT4 || type == T_INT8 || type == T_FLOAT8);
 }
 
 /**
@@ -1217,7 +1220,7 @@ ensure_tnumber_basetype(MeosType type)
 bool
 tnumber_spantype(MeosType type)
 {
-  return (type == T_INTSPAN || type == T_FLOATSPAN);
+  return (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN);
 }
 
 /*****************************************************************************

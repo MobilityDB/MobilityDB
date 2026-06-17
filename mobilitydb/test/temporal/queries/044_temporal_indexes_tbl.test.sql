@@ -1716,14 +1716,69 @@ DROP INDEX tbl_tfloat_big_quadtree_idx;
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
+CREATE TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE INDEX tbl_tint_big_allthesame_quadtree_idx ON tbl_tint_big_allthesame USING SPGIST(temp);
+ANALYZE tbl_tint_big_allthesame;
+
+-- EXPLAIN ANALYZE
+
+DROP TABLE tbl_tint_big_allthesame;
+
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
+CREATE INDEX tbl_tbigint_big_allthesame_quadtree_idx ON tbl_tbigint_big_allthesame USING SPGIST(temp);
+ANALYZE tbl_tbigint_big_allthesame;
+
+-- EXPLAIN ANALYZE
+
+DROP TABLE tbl_tbigint_big_allthesame;
+
+-------------------------------------------------------------------------------
+
 CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tfloat_big_allthesame;
 
--- TODO
--- SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
--- SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
+-- EXPLAIN ANALYZE
 
 DROP TABLE tbl_tfloat_big_allthesame;
+
+-------------------------------------------------------------------------------
+-- Big integer temporal type SP-GiST (quad-tree and k-d tree) index coverage
+-------------------------------------------------------------------------------
+
+ANALYZE tbl_tbigint_big;
+
+CREATE INDEX tbl_tbigint_big_quadtree_idx ON tbl_tbigint_big USING SPGIST(temp);
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp @> bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <@ bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp ~= bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp << bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &< bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp >> bigintspan '[97,100]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &> bigintspan '[97,100]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp #>> tstzspan '[2001-11-01,2001-12-01]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp #&> tstzspan '[2001-11-01,2001-12-01]';
+SELECT temp |=| bigintspan '[50,50]'::tbox FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+
+DROP INDEX tbl_tbigint_big_quadtree_idx;
+
+CREATE INDEX tbl_tbigint_big_kdtree_idx ON tbl_tbigint_big USING SPGIST(temp tbigint_kdtree_ops);
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp @> bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <@ bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp << bigintspan '[1,3]';
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp >> bigintspan '[97,100]';
+SELECT temp |=| bigintspan '[50,50]'::tbox FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+
+DROP INDEX tbl_tbigint_big_kdtree_idx;
 
 -------------------------------------------------------------------------------

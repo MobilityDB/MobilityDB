@@ -1219,7 +1219,7 @@ covers_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_rel
  * @brief Return true if two circular buffers are disjoint in 2D
  * @param[in] cb1,cb2 Circular buffers
- * @csqlfn #Cbuffer_intersects()
+ * @csqlfn #Cbuffer_disjoint()
  */
 int
 disjoint_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)

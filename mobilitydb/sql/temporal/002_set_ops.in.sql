@@ -1030,15 +1030,15 @@ CREATE FUNCTION set_union(intset, intset)
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_union(bigint, bigintset)
+CREATE FUNCTION setUnion(bigint, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(bigintset, bigint)
+CREATE FUNCTION setUnion(bigintset, bigint)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(bigintset, bigintset)
+CREATE FUNCTION setUnion(bigintset, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1112,17 +1112,17 @@ CREATE OPERATOR + (
 );
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = bigintset, RIGHTARG = bigint,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = +
 );
@@ -1206,15 +1206,15 @@ CREATE FUNCTION set_minus(intset, intset)
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_minus(bigint, bigintset)
+CREATE FUNCTION setMinus(bigint, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(bigintset, bigint)
+CREATE FUNCTION setMinus(bigintset, bigint)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(bigintset, bigintset)
+CREATE FUNCTION setMinus(bigintset, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1285,15 +1285,15 @@ CREATE OPERATOR - (
 );
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = bigint, RIGHTARG = bigintset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = bigintset, RIGHTARG = bigint
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = bigintset, RIGHTARG = bigintset
 );
 
@@ -1364,15 +1364,15 @@ CREATE FUNCTION set_intersection(intset, intset)
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_intersection(bigint, bigintset)
+CREATE FUNCTION setIntersection(bigint, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(bigintset, bigint)
+CREATE FUNCTION setIntersection(bigintset, bigint)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(bigintset, bigintset)
+CREATE FUNCTION setIntersection(bigintset, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1446,17 +1446,17 @@ CREATE OPERATOR * (
 );
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = bigintset, RIGHTARG = bigint,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = *
 );

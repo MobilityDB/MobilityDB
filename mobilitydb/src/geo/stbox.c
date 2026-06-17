@@ -1166,7 +1166,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one
- * @sqlfn stbox_contains()
+ * @sqlfn contains()
  * @sqlop @p \@>
  */
 Datum
@@ -1183,7 +1183,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if the first spatiotemporal box is contained in the
  * second one
- * @sqlfn stbox_contained()
+ * @sqlfn contained()
  * @sqlop @p <@
  */
 Datum
@@ -1199,7 +1199,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes overlap
- * @sqlfn stbox_overlaps()
+ * @sqlfn overlaps()
  * @sqlop @p &&
  */
 Datum
@@ -1216,7 +1216,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_stbox);
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes are equal in the common
  * dimensions
- * @sqlfn stbox_same()
+ * @sqlfn same()
  * @sqlop @p ~=
  */
 Datum
@@ -1232,7 +1232,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
  * @brief Return true if two spatiotemporal boxes are adjacent
- * @sqlfn stbox_adjacent()
+ * @sqlfn adjacent()
  * @sqlop @p -|-
  */
 Datum
@@ -1253,7 +1253,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is to the left of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn left()
  * @sqlop @p >>
  */
 Datum
@@ -1270,7 +1270,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
- * @sqlfn temporal_below()
+ * @sqlfn overleft()
  * @sqlop @p &>
  */
 Datum
@@ -1287,7 +1287,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is to the right of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn right()
  * @sqlop @p <<
  */
 Datum
@@ -1304,7 +1304,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one
- * @sqlfn temporal_below()
+ * @sqlfn overright()
  * @sqlop @p &<
  */
 Datum
@@ -1321,7 +1321,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is below the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn below()
  * @sqlop @p <<|
  */
 Datum
@@ -1338,7 +1338,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one
- * @sqlfn temporal_below()
+ * @sqlfn overbelow()
  * @sqlop @p &<|
  */
 Datum
@@ -1355,7 +1355,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is above of the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn above()
  * @sqlop @p |>>
  */
 Datum
@@ -1372,7 +1372,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one
- * @sqlfn temporal_below()
+ * @sqlfn overabove()
  * @sqlop @p |&>
  */
 Datum
@@ -1389,7 +1389,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is in front of the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn front()
  * @sqlop @p <</
  */
 Datum
@@ -1406,7 +1406,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one
- * @sqlfn temporal_below()
+ * @sqlfn overfront()
  * @sqlop @p &</
  */
 Datum
@@ -1423,7 +1423,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is at the back of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn back()
  * @sqlop @p />>
  */
 Datum
@@ -1440,7 +1440,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one
- * @sqlfn temporal_below()
+ * @sqlfn overback()
  * @sqlop @p /&>
  */
 Datum
@@ -1456,7 +1456,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is before the second one
- * @sqlfn temporal_below()
+ * @sqlfn before()
  * @sqlop @p <<#
  */
 Datum
@@ -1472,7 +1472,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first temporal box is not after the second one
- * @sqlfn temporal_below()
+ * @sqlfn overbefore()
  * @sqlop @p &<#
  */
 Datum
@@ -1488,7 +1488,7 @@ PG_FUNCTION_INFO_V1(After_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is after the second one
- * @sqlfn temporal_below()
+ * @sqlfn after()
  * @sqlop @p #>>
  */
 Datum
@@ -1504,7 +1504,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first temporal box is not before the second one
- * @sqlfn temporal_below()
+ * @sqlfn overafter()
  * @sqlop @p #&>
  */
 Datum

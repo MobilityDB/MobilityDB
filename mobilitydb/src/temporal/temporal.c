@@ -722,6 +722,23 @@ Tbool_to_tint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tint_to_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tint_to_tbigint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal integer into a temporal big integer
+ * @sqlfn tbigint()
+ * @sqlop @p ::
+ */
+Datum
+Tint_to_tbigint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tint_to_tbigint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
@@ -739,6 +756,40 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tbigint_to_tint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_to_tint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal big integer into a temporal integer
+ * @sqlfn tint()
+ * @sqlop @p ::
+ */
+Datum
+Tbigint_to_tint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tbigint_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tbigint_to_tfloat(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_to_tfloat);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal big integer into a temporal float
+ * @sqlfn tfloat()
+ * @sqlop @p ::
+ */
+Datum
+Tbigint_to_tfloat(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tbigint_to_tfloat(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
@@ -752,6 +803,23 @@ Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_to_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_to_tbigint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Convert a temporal float into a temporal big integer
+ * @sqlfn tbigint()
+ * @sqlop @p ::
+ */
+Datum
+Tfloat_to_tbigint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_to_tbigint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -1563,7 +1631,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal instant
- * @sqlfn  tintInst(), tfloatInst(), ...
+ * @sqlfn tintInst(), tfloatInst(), ...
  */
 Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
@@ -2484,6 +2552,7 @@ PG_FUNCTION_INFO_V1(Temporal_before_timestamptz);
 /**
  * @brief Return a temporal value restricted to the instants before or equal to
  * a timestamptz
+ * @sqlfn beforeTimestamp()
  */
 Datum
 Temporal_before_timestamptz(PG_FUNCTION_ARGS)
@@ -2509,6 +2578,7 @@ PG_FUNCTION_INFO_V1(Temporal_after_timestamptz);
 /**
  * @brief Return a temporal value restricted to the instants after or equal to
  * a timestamptz
+ * @sqlfn afterTimestamp()
  */
 Datum
 Temporal_after_timestamptz(PG_FUNCTION_ARGS)
@@ -2535,7 +2605,7 @@ Temporal_after_timestamptz(PG_FUNCTION_ARGS)
 
 /**
  * @brief Return the segments that have at least/at most a given duration
- * @csqlfn #Temporal_segm_duration
+ * @csqlfn #Temporal_segm_duration()
  * @sqlfn segmentMinDuration(), segmentMaxDuration()
  */
 Datum
@@ -2557,7 +2627,7 @@ PG_FUNCTION_INFO_V1(Temporal_segm_min_duration);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the segments that have at least a given duration
- * @csqlfn #Temporal_segm_min_duration
+ * @csqlfn #Temporal_segm_min_duration()
  * @sqlfn segmentMinDuration()
  */
 Datum

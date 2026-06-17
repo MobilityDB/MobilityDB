@@ -896,7 +896,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
  * @param[out] count Number of elements in the output array
  * @note The check for parameter validity is done in function
  * #tnumber_value_time_tile_init to be shared for both MEOS and MobilityDB
- * @csqlfn #Tnumber_value_time_boxes
+ * @csqlfn #Tnumber_value_time_boxes()
  */
 TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,

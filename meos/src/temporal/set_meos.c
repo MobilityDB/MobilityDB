@@ -755,17 +755,19 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of an integer set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 int *
-intset_values(const Set *s)
+intset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_INTSET(s, NULL);
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt32(SET_VAL_N(s, i));
+  *count = s->count;
   return result;
 }
 
@@ -773,17 +775,19 @@ intset_values(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of a big integer set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 int64 *
-bigintset_values(const Set *s)
+bigintset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSET(s, NULL);
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetInt64(SET_VAL_N(s, i));
+  *count = s->count;
   return result;
 }
 
@@ -791,17 +795,19 @@ bigintset_values(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of a float set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 double *
-floatset_values(const Set *s)
+floatset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetFloat8(SET_VAL_N(s, i));
+  *count = s->count;
   return result;
 }
 
@@ -809,17 +815,19 @@ floatset_values(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of copies of the values of a text set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 text **
-textset_values(const Set *s)
+textset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TEXTSET(s, NULL);
   text **result = palloc(sizeof(text *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTextP(datum_copy(SET_VAL_N(s, i), s->basetype));
+  *count = s->count;
   return result;
 }
 
@@ -827,17 +835,19 @@ textset_values(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of a date set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 DateADT *
-dateset_values(const Set *s)
+dateset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESET(s, NULL);
   DateADT *result = palloc(sizeof(DateADT) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetDateADT(SET_VAL_N(s, i));
+  *count = s->count;
   return result;
 }
 
@@ -845,17 +855,19 @@ dateset_values(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the array of values of a timestamptz set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 TimestampTz *
-tstzset_values(const Set *s)
+tstzset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
   TimestampTz *result = palloc(sizeof(TimestampTz) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetTimestampTz(SET_VAL_N(s, i));
+  *count = s->count;
   return result;
 }
 

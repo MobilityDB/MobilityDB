@@ -1950,49 +1950,49 @@ CREATE OPERATOR + (
   COMMUTATOR = +
 );
 
-CREATE FUNCTION span_union(bigint, bigintspanset)
+CREATE FUNCTION spanUnion(bigint, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Union_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(bigintspan, bigintspanset)
+CREATE FUNCTION spanUnion(bigintspan, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Union_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(bigintspanset, bigint)
+CREATE FUNCTION spansetUnion(bigintspanset, bigint)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Union_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(bigintspanset, bigintspan)
+CREATE FUNCTION spansetUnion(bigintspanset, bigintspan)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Union_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(bigintspanset, bigintspanset)
+CREATE FUNCTION spansetUnion(bigintspanset, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Union_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = span_union,
+  PROCEDURE = spanUnion,
   LEFTARG = bigint, RIGHTARG = bigintspanset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = span_union,
+  PROCEDURE = spanUnion,
   LEFTARG = bigintspan, RIGHTARG = bigintspanset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = span_union,
+  PROCEDURE = spansetUnion,
   LEFTARG = bigintspanset, RIGHTARG = bigint,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = span_union,
+  PROCEDURE = spansetUnion,
   LEFTARG = bigintspanset, RIGHTARG = bigintspan,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = span_union,
+  PROCEDURE = spansetUnion,
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
   COMMUTATOR = +
 );
@@ -2182,45 +2182,45 @@ CREATE OPERATOR - (
   LEFTARG = intspanset, RIGHTARG = intspanset
 );
 
-CREATE FUNCTION span_minus(bigint, bigintspanset)
+CREATE FUNCTION spanMinus(bigint, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(bigintspan, bigintspanset)
+CREATE FUNCTION spanMinus(bigintspan, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(bigintspanset, bigint)
+CREATE FUNCTION spansetMinus(bigintspanset, bigint)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(bigintspanset, bigintspan)
+CREATE FUNCTION spansetMinus(bigintspanset, bigintspan)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(bigintspanset, bigintspanset)
+CREATE FUNCTION spansetMinus(bigintspanset, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = span_minus,
+  PROCEDURE = spanMinus,
   LEFTARG = bigint, RIGHTARG = bigintspanset
 );
 CREATE OPERATOR - (
-  PROCEDURE = span_minus,
+  PROCEDURE = spanMinus,
   LEFTARG = bigintspan, RIGHTARG = bigintspanset
 );
 CREATE OPERATOR - (
-  PROCEDURE = span_minus,
+  PROCEDURE = spansetMinus,
   LEFTARG = bigintspanset, RIGHTARG = bigint
 );
 CREATE OPERATOR - (
-  PROCEDURE = span_minus,
+  PROCEDURE = spansetMinus,
   LEFTARG = bigintspanset, RIGHTARG = bigintspan
 );
 CREATE OPERATOR - (
-  PROCEDURE = span_minus,
+  PROCEDURE = spansetMinus,
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset
 );
 
@@ -2399,49 +2399,49 @@ CREATE OPERATOR * (
   COMMUTATOR = *
 );
 
-CREATE FUNCTION span_intersection(bigint, bigintspanset)
+CREATE FUNCTION spanIntersection(bigint, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Intersection_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(bigintspan, bigintspanset)
+CREATE FUNCTION spanIntersection(bigintspan, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Intersection_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(bigintspanset, bigint)
+CREATE FUNCTION spansetIntersection(bigintspanset, bigint)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(bigintspanset, bigintspan)
+CREATE FUNCTION spansetIntersection(bigintspanset, bigintspan)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(bigintspanset, bigintspanset)
+CREATE FUNCTION spansetIntersection(bigintspanset, bigintspanset)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = span_intersection,
+  PROCEDURE = spanIntersection,
   LEFTARG = bigint, RIGHTARG = bigintspanset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = span_intersection,
+  PROCEDURE = spanIntersection,
   LEFTARG = bigintspan, RIGHTARG = bigintspanset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = span_intersection,
+  PROCEDURE = spansetIntersection,
   LEFTARG = bigintspanset, RIGHTARG = bigint,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = span_intersection,
+  PROCEDURE = spansetIntersection,
   LEFTARG = bigintspanset, RIGHTARG = bigintspan,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = span_intersection,
+  PROCEDURE = spansetIntersection,
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
   COMMUTATOR = *
 );

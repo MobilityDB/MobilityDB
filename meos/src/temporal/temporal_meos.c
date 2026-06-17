@@ -96,6 +96,20 @@ tint_in(const char *str)
 
 /**
  * @ingroup meos_temporal_inout
+ * @brief Return a temporal big integer from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+Temporal *
+tbigint_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return temporal_parse(&str, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation
  * @param[in] str String
  */
@@ -145,6 +159,20 @@ tint_out(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); 
+  return temporal_out(temp, 0);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal big
+ * integer
+ * @param[in] temp Temporal big integer
+ */
+char *
+tbigint_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
   return temporal_out(temp, 0);
 }
 
@@ -211,6 +239,21 @@ tint_from_base_temp(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer from an big integer and the time frame
+ * of another temporal value
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tbigint_from_base_temp(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(Int64GetDatum(i), T_TBIGINT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
  * @brief Return a temporal float from a float and the time frame of
  * another temporal value
  * @param[in] d Value
@@ -260,6 +303,22 @@ tint_shift_value(const Temporal *temp, int shift)
 
 /**
  * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is shifted by a
+ * value
+ * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ */
+Temporal *
+tbigint_shift_value(const Temporal *temp, int64 shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, Int64GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_temporal_transf
  * @brief Return a temporal integer whose value dimension is shifted by a value
  * @csqlfn #Tnumber_shift_value()
  * @param[in] temp Temporal value
@@ -286,6 +345,22 @@ tint_scale_value(const Temporal *temp, int width)
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); 
   return tnumber_shift_scale_value(temp, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is scaled by a
+ * value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tbigint_scale_value(const Temporal *temp, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, 0, Int64GetDatum(width), false, true);
 }
 
 /**
@@ -319,6 +394,24 @@ tint_shift_scale_value(const Temporal *temp, int shift, int width)
   VALIDATE_TINT(temp, NULL); 
   return tnumber_shift_scale_value(temp, Int32GetDatum(shift),
     Int32GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is shifted and
+ * scaled by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tbigint_shift_scale_value(const Temporal *temp, int64 shift, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, Int64GetDatum(shift),
+    Int64GetDatum(width), true, true);
 }
 
 /**
@@ -379,6 +472,26 @@ tint_values(const Temporal *temp, int *count)
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal big integer
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+int64 *
+tbigint_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  int64 *result = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetInt64(datumarr[i]);
   pfree(datumarr);
   return result;
 }
@@ -456,6 +569,21 @@ tint_start_value(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT64_MAX
+ * @csqlfn #Temporal_start_value()
+ */
+int64
+tbigint_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the start value of a temporal float
  * @param[in] temp Temporal value
  * @return On error return @p DBL_MAX
@@ -517,6 +645,21 @@ tint_end_value(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT64_MAX
+ * @csqlfn #Temporal_end_value()
+ */
+int64
+tbigint_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the end value of a temporal float
  * @param[in] temp Temporal value
  * @return On error return @p DBL_MAX
@@ -564,6 +707,21 @@ tint_min_value(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT64_MAX
+ * @csqlfn #Temporal_min_value()
+ */
+int64
+tbigint_min_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the minimum value of a temporal float
  * @param[in] temp Temporal value
  * @return On error return @p DBL_MAX
@@ -607,6 +765,21 @@ tint_max_value(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, INT_MAX);
   return DatumGetInt32(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT64_MAX
+ * @csqlfn #Temporal_max_value()
+ */
+int64
+tbigint_max_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_max_value(temp));
 }
 
 /**
@@ -678,6 +851,26 @@ tint_value_n(const Temporal *temp, int n, int *result)
   if (! temporal_value_n(temp, n, &dresult))
     return false;
   *result = DatumGetInt32(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tbigint_value_n(const Temporal *temp, int64 n, int64 *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetInt64(dresult);
   return true;
 }
 

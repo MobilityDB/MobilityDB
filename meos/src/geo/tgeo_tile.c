@@ -948,7 +948,7 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tgeo_space_time_boxes_common
+ * @csqlfn #Tgeo_space_time_boxes()
  */
 STBox *
 tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,

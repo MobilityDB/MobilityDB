@@ -635,6 +635,7 @@ PG_FUNCTION_INFO_V1(Pose_same);
  * @brief Return true if two poses are approximately equal with respect to an
  * epsilon value
  * @sqlfn same()
+ * @sqlop @p ~=
  */
 Datum
 Pose_same(PG_FUNCTION_ARGS)

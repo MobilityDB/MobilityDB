@@ -2183,6 +2183,22 @@ DROP INDEX tbl_tint_big_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_tfloat_big_quadtree_idx;
 DROP INDEX
+CREATE TABLE tbl_tint_big_allthesame AS SELECT k, tint(5, t) AS temp FROM tbl_tstzspan_big;
+SELECT 12500
+CREATE INDEX tbl_tint_big_allthesame_quadtree_idx ON tbl_tint_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tint_big_allthesame;
+ANALYZE
+DROP TABLE tbl_tint_big_allthesame;
+DROP TABLE
+CREATE TABLE tbl_tbigint_big_allthesame AS SELECT k, tbigint(5, t) AS temp FROM tbl_tstzspan_big;
+SELECT 12500
+CREATE INDEX tbl_tbigint_big_allthesame_quadtree_idx ON tbl_tbigint_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tbigint_big_allthesame;
+ANALYZE
+DROP TABLE tbl_tbigint_big_allthesame;
+DROP TABLE
 CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, t) AS temp FROM tbl_tstzspan_big;
 SELECT 12500
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
@@ -2191,3 +2207,147 @@ ANALYZE tbl_tfloat_big_allthesame;
 ANALYZE
 DROP TABLE tbl_tfloat_big_allthesame;
 DROP TABLE
+ANALYZE tbl_tbigint_big;
+ANALYZE
+CREATE INDEX tbl_tbigint_big_quadtree_idx ON tbl_tbigint_big USING SPGIST(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
+ count 
+-------
+   159
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp @> bigintspan '[1,3]';
+ count 
+-------
+    66
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <@ bigintspan '[1,3]';
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp ~= bigintspan '[1,3]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp << bigintspan '[1,3]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &< bigintspan '[1,3]';
+ count 
+-------
+     8
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp >> bigintspan '[97,100]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &> bigintspan '[97,100]';
+ count 
+-------
+    11
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <<# tstzspan '[2001-01-01,2001-02-01]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp &<# tstzspan '[2001-01-01,2001-02-01]';
+ count 
+-------
+    75
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp #>> tstzspan '[2001-11-01,2001-12-01]';
+ count 
+-------
+    74
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp #&> tstzspan '[2001-11-01,2001-12-01]';
+ count 
+-------
+   175
+(1 row)
+
+SELECT temp |=| bigintspan '[50,50]'::tbox FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+DROP INDEX tbl_tbigint_big_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tbigint_big_kdtree_idx ON tbl_tbigint_big USING SPGIST(temp tbigint_kdtree_ops);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp && bigintspan '[1,3]';
+ count 
+-------
+   159
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp @> bigintspan '[1,3]';
+ count 
+-------
+    66
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp <@ bigintspan '[1,3]';
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp << bigintspan '[1,3]';
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbigint_big WHERE temp >> bigintspan '[97,100]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT temp |=| bigintspan '[50,50]'::tbox FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
+(3 rows)
+
+DROP INDEX tbl_tbigint_big_kdtree_idx;
+DROP INDEX

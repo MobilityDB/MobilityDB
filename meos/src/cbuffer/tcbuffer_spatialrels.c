@@ -1234,7 +1234,7 @@ ea_touches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
- * @csqlfn #Atouches_tcbuffer_geo()
+ * @csqlfn #Etouches_tcbuffer_geo()
  */
 int
 etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1296,7 +1296,7 @@ ea_touches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool ever)
  * buffer, 0 if not, and -1 on error
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Atouches_tcbuffer_cbuffer()
+ * @csqlfn #Etouches_tcbuffer_cbuffer()
  */
 inline int
 etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)

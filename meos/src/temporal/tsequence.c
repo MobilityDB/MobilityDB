@@ -1503,7 +1503,7 @@ tcontseq_to_linear(const TSequence *seq)
  * @brief Return a temporal value transformed to the given interpolation
  * @param[in] seq Temporal sequence
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_set_interp
+ * @csqlfn #Temporal_set_interp()
  */
 Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
@@ -1846,6 +1846,8 @@ tsequence_max_val(const TSequence *seq)
     MeosType basetype = temptype_basetype(seq->temptype);
     if (basetype == T_INT4)
       max = Int32GetDatum(DatumGetInt32(max) - 1);
+    else if (basetype == T_INT8)
+      max = Int64GetDatum(DatumGetInt64(max) - 1);
     return max;
   }
 
