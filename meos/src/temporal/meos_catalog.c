@@ -646,14 +646,11 @@ basetype_byvalue(MeosType type)
 {
   return (type == T_BOOL || type == T_INT4 || type == T_INT8 ||
     type == T_FLOAT8 || type == T_DATE || type == T_TIMESTAMPTZ
-#if QUADBIN
-    || type == T_QUADBIN
-#endif
-    );
-  return (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
-    type == T_DATE || type == T_TIMESTAMPTZ
 #if H3
     || type == T_H3INDEX
+#endif
+#if QUADBIN
+    || type == T_QUADBIN
 #endif
     );
 }
@@ -732,8 +729,6 @@ alphanum_basetype(MeosType type)
 #if QUADBIN
     || type == T_QUADBIN
 #endif
-    );
-    type == T_TIMESTAMPTZ
 #if H3
     || type == T_H3INDEX
 #endif

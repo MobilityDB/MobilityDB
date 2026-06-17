@@ -137,7 +137,6 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-            ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DPOINTCLOUD=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
             ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DPOINTCLOUD=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
@@ -164,8 +163,11 @@ jobs:
         if: matrix.coverage == '1'
         run: |
           cd build
-          # Excluding MEOS-specific and other miscellaneous files
-          lcov --capture --directory . --include */mobilitydb/* --include */meos/* --exclude */mobilitydb/postgis/* --exclude */geo_constructors.c --exclude */tpoint_datagen.c --output-file=lcov.info
+          # Excluding MEOS-specific and other miscellaneous files. --ignore-errors unused:
+          # lcov 2.x makes an exclude/include pattern that matches no file a fatal error;
+          # with the optional-type families enabled the captured file set varies, so a
+          # pattern can legitimately match nothing. Keep the patterns, don't make it fatal.
+          lcov --capture --directory . --include */mobilitydb/* --include */meos/* --exclude */mobilitydb/postgis/* --exclude */geo_constructors.c --exclude */tpoint_datagen.c --ignore-errors unused --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'

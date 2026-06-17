@@ -47,6 +47,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <fmgr.h>
 #include <utils/array.h>
 #include <catalog/pg_type_d.h>
@@ -133,7 +134,7 @@ Quadbin_cell_sibling(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
   text *dir = PG_GETARG_TEXT_P(1);
-  char *direction = text2cstring(dir);
+  char *direction = text_to_cstring(dir);
   Quadbin result = quadbin_cell_sibling(cell, direction);
   pfree(direction);
   PG_FREE_IF_COPY(dir, 1);
@@ -342,7 +343,7 @@ Quadbin_cell_to_quadkey(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
   char *str = quadbin_cell_to_quadkey(cell);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
 }

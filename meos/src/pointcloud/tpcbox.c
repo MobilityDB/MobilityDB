@@ -567,14 +567,14 @@ tpcbox_round(const TPCBox *box, int maxdd)
   TPCBox *result = tpcbox_copy(box);
   if (MEOS_FLAGS_GET_X(box->flags))
   {
-    result->xmin = float_round(box->xmin, maxdd);
-    result->xmax = float_round(box->xmax, maxdd);
-    result->ymin = float_round(box->ymin, maxdd);
-    result->ymax = float_round(box->ymax, maxdd);
+    result->xmin = float8_round(box->xmin, maxdd);
+    result->xmax = float8_round(box->xmax, maxdd);
+    result->ymin = float8_round(box->ymin, maxdd);
+    result->ymax = float8_round(box->ymax, maxdd);
     if (MEOS_FLAGS_GET_Z(box->flags))
     {
-      result->zmin = float_round(box->zmin, maxdd);
-      result->zmax = float_round(box->zmax, maxdd);
+      result->zmin = float8_round(box->zmin, maxdd);
+      result->zmax = float8_round(box->zmax, maxdd);
     }
   }
   return result;

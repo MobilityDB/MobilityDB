@@ -34,6 +34,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
@@ -58,7 +59,7 @@ Th3index_cell_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *unit_txt = PG_GETARG_TEXT_P(1);
-  char *unit = text2cstring(unit_txt);
+  char *unit = text_to_cstring(unit_txt);
   Temporal *result = th3index_cell_area(temp, unit);
   pfree(unit);
   PG_FREE_IF_COPY(temp, 0);
@@ -82,7 +83,7 @@ Th3index_edge_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *unit_txt = PG_GETARG_TEXT_P(1);
-  char *unit = text2cstring(unit_txt);
+  char *unit = text_to_cstring(unit_txt);
   Temporal *result = th3index_edge_length(temp, unit);
   pfree(unit);
   PG_FREE_IF_COPY(temp, 0);
@@ -107,7 +108,7 @@ Tgeogpoint_great_circle_distance(PG_FUNCTION_ARGS)
   Temporal *a = PG_GETARG_TEMPORAL_P(0);
   Temporal *b = PG_GETARG_TEMPORAL_P(1);
   text *unit_txt = PG_GETARG_TEXT_P(2);
-  char *unit = text2cstring(unit_txt);
+  char *unit = text_to_cstring(unit_txt);
   Temporal *result = tgeogpoint_great_circle_distance(a, b, unit);
   pfree(unit);
   PG_FREE_IF_COPY(a, 0);

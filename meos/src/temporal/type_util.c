@@ -38,6 +38,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/hashfn.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
