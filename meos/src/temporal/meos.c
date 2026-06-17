@@ -574,6 +574,12 @@ meos_initialize(void)
   proj_initialize();
   /* Initialize GSL */
   gsl_initialize();
+#if POINTCLOUD
+  /* Install the bundled libpc.a handlers so standalone MEOS programs
+   * touching a pgPointCloud schema-aware path do not dereference a
+   * NULL handler (symmetric with the PG backend's mobilitydb_init). */
+  meos_initialize_pointcloud();
+#endif
   return;
 }
 

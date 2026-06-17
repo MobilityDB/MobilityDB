@@ -1,0 +1,119 @@
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb ->> 'type' = 'MovingPCPatch';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb ->> 'type' = 'MovingPCPatch';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatchSeqSet(ARRAY[
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz)]),
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)])]))::jsonb ->> 'type' = 'MovingPCPatch';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 ->> 'pcid')::int = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 ->> 'npoints')::int = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz))::jsonb -> 'values' -> 0 ->> 'npoints')::int = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonb_array_length(asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 -> 'bounds') = 4;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb -> 'values' -> 0 -> 'bounds') = '[1, 4, 2, 5]'::jsonb;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonb_array_length(asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb -> 'values') = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb -> 'values' -> 1 ->> 'npoints')::int = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb ->> 'pcid')::int = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb ? 'bbox';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonb_array_length(asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb -> 'bbox') = 2;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb ? 'period';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb -> 'period' ? 'begin';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), options := 1)::jsonb -> 'period' ? 'end';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz))::jsonb ->> 'interpolation' = 'None';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb ->> 'interpolation' = 'Step';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT jsonb_array_length(
+  asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb -> 'datetimes') =
+  jsonb_array_length(
+  asMFJSON(tpcpatchSeq(ARRAY[tpcpatch(pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0), pcpoint(1, 4.0, 5.0, 6.0)), '2024-01-01'::timestamptz), tpcpatch(pcpatch(1, pcpoint(1, 7.0, 8.0, 9.0)), '2024-01-02'::timestamptz)]))::jsonb -> 'values');
+ ?column? 
+----------
+ t
+(1 row)
+

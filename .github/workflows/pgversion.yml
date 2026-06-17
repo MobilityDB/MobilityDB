@@ -85,7 +85,16 @@ jobs:
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
-          sudo apt-get -y install lcov libh3-dev
+          # postgresql-N-pointcloud so the coverage build can compile
+          # -DPOINTCLOUD=ON; without it, meos/src/pointcloud/* (the
+          # consumer of pgPointCloud's libpc.a) plus the cross-cutting
+          # #if POINTCLOUD blocks in temporal/* are stripped at preprocess
+          # time and never get instrumented. The runtime regression tests
+          # also need the 'pointcloud' PG extension available (CREATE
+          # EXTENSION pointcloud, pulled in before mobilitydb), provided by
+          # postgresql-${VER}-pointcloud for the supported PG versions.
+          sudo apt-get -y install lcov libh3-dev \
+            postgresql-${{ matrix.psql }}-pointcloud
 
       - name: Locate libh3 on disk and pin its paths
         if: matrix.coverage == '1'
@@ -104,17 +113,34 @@ jobs:
           echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
           echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
 
+      - name: Build pgPointCloud from source (for libpc.a)
+        if: matrix.coverage == '1'
+        run: |
+          # MobilityDB's POINTCLOUD=ON build links against pgPointCloud's
+          # static lib (pointcloud-pg/lib/libpc.a, produced as a side-
+          # effect of the pgPointCloud build) but does not redistribute
+          # the .so. So build the vendored pgPointCloud here just to
+          # harvest the libpc.a that meos/src/pointcloud/CMakeLists.txt
+          # links against.
+          sudo apt-get -y install autoconf automake libtool \
+            libxml2-dev zlib1g-dev
+          cd pointcloud-pg
+          ./autogen.sh
+          ./configure \
+            --with-pgconfig=/usr/lib/postgresql/${{ matrix.psql }}/bin/pg_config
+          make -j$(nproc)
+          # Sanity: libpc.a must land where MobilityDB's CMake will look.
+          ls -la lib/libpc.a
+
       - name: Configure for gcc
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # Coverage build enables this PR's opt-in subsystems so their sources get instrumented.
-          # QUADBIN is first-party (no external lib); H3/POINTCLOUD are owned by other PRs and
-          # are not part of tquadbin, so they are not enabled here.
+            ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DPOINTCLOUD=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
+            ${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DPOINTCLOUD=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
             ..
 
       - name: Build

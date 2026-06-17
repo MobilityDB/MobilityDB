@@ -1,0 +1,206 @@
+SELECT tpcbox(0, 0, 10, 10, 1, 0);
+             tpcbox              
+---------------------------------
+ TPCBOX X(0, 0), (10, 10) PCID=1
+(1 row)
+
+SELECT tpcbox_z(0, 0, 0, 10, 10, 10, 1, 0);
+                tpcbox_z                
+----------------------------------------
+ TPCBOX Z(0, 0, 0), (10, 10, 10) PCID=1
+(1 row)
+
+SELECT tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1);
+                                  tpcbox_t                                   
+-----------------------------------------------------------------------------
+ TPCBOX T[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST] PCID=1
+(1 row)
+
+SELECT tpcbox_xt(0, 0, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+                                            tpcbox_xt                                            
+-------------------------------------------------------------------------------------------------
+ TPCBOX XT((0, 0), (10, 10),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]) PCID=1
+(1 row)
+
+SELECT tpcbox_zt(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+                                               tpcbox_zt                                                
+--------------------------------------------------------------------------------------------------------
+ TPCBOX ZT((0, 0, 0), (10, 10, 10),[Mon Jan 01 00:00:00 2024 PST, Tue Jan 02 00:00:00 2024 PST]) PCID=1
+(1 row)
+
+SELECT hasX(tpcbox_zt(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+ hasx 
+------
+ t
+(1 row)
+
+SELECT hasZ(tpcbox_zt(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+ hasz 
+------
+ t
+(1 row)
+
+SELECT hasT(tpcbox_zt(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 0));
+ hast 
+------
+ t
+(1 row)
+
+SELECT hasZ(tpcbox(0, 0, 10, 10, 1, 0));
+ hasz 
+------
+ f
+(1 row)
+
+SELECT hasT(tpcbox(0, 0, 10, 10, 1, 0));
+ hast 
+------
+ f
+(1 row)
+
+SELECT xmin(tpcbox(0, 0, 10, 10, 1, 0));
+ xmin 
+------
+    0
+(1 row)
+
+SELECT xmax(tpcbox(0, 0, 10, 10, 1, 0));
+ xmax 
+------
+   10
+(1 row)
+
+SELECT ymin(tpcbox(0, 0, 10, 10, 1, 0));
+ ymin 
+------
+    0
+(1 row)
+
+SELECT ymax(tpcbox(0, 0, 10, 10, 1, 0));
+ ymax 
+------
+   10
+(1 row)
+
+SELECT zmin(tpcbox_z(0, 0, 1, 10, 10, 9, 1, 0));
+ zmin 
+------
+    1
+(1 row)
+
+SELECT zmax(tpcbox_z(0, 0, 1, 10, 10, 9, 1, 0));
+ zmax 
+------
+    9
+(1 row)
+
+SELECT zmin(tpcbox(0, 0, 10, 10, 1, 0));
+ zmin 
+------
+     
+(1 row)
+
+SELECT pcid(tpcbox(0, 0, 10, 10, 7, 0));
+ pcid 
+------
+    7
+(1 row)
+
+SELECT SRID(tpcbox(0, 0, 10, 10, 1, 4326));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+            ?column?             
+---------------------------------
+ TPCBOX X(0, 0), (10, 10) PCID=1
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+           ?column?            
+-------------------------------
+ TPCBOX X(3, 3), (5, 5) PCID=1
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(50, 50, 60, 60, 1, 0);
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 1, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 20, 20, 1, 0);
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcbox(2, 2, 8, 8, 1, 0)   <@ tpcbox(0, 0, 10, 10, 1, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(3, 3, 10, 10, 1, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(50, 50, 60, 60, 1, 0);
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 1, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0)  -|- tpcbox(5, 0, 10, 5, 1, 0);
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 2, 0);
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
+SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(0, 0, 5, 5, 2, 0);
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
+SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 2, 0);
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) =  tpcbox(0, 0, 5, 5, 1, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) <> tpcbox(0, 0, 5, 5, 2, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tpcbox(0, 0, 5, 5, 1, 0) <  tpcbox(0, 0, 5, 5, 2, 0);
+ ?column? 
+----------
+ t
+(1 row)
+
