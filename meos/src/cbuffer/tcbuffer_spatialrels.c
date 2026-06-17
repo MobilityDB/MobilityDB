@@ -294,10 +294,9 @@ ea_spatialrel_tcbufferseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
     return ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, 0), gs, 
       param, func, numparam, ever, invert);
 
-  int result;
   for (int i = 0; i < ss->count; i++)
   {
-    result = ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs,
+    int result = ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs,
       param, func, numparam, ever, invert);
     if (result == 1 && ever)
       return 1;

@@ -287,7 +287,6 @@ tnumberseq_linear_abs(const TSequence *seq)
     }
     instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
-    value1 = value2;
     dvalue1 = dvalue2;
   }
   /* We are sure that ninsts > 0 */
@@ -515,7 +514,6 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
       result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
-    inst1 = inst2;
     value1 = value2;
   }
   return ninsts;
@@ -822,6 +820,8 @@ float_ln(double d)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "cannot take logarithm of a negative number");
 
+  /* cppcheck-suppress invalidFunctionArg ; the d <= 0 cases above raise an
+   * ERROR (the handler aborts/longjmps), so d is positive here */
   result = log(d);
   if (unlikely(isinf(result)) && !isinf(d))
     float_overflow_error();
@@ -926,6 +926,8 @@ float_log10(double d)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot take logarithm of a negative number");
 
+  /* cppcheck-suppress invalidFunctionArg ; the d <= 0 cases above raise an
+   * ERROR (the handler aborts/longjmps), so d is positive here */
   result = log10(d);
   if (unlikely(isinf(result)) && !isinf(d))
     float_overflow_error();

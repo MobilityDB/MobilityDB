@@ -81,7 +81,7 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
     return NULL;
 
   GSERIALIZED *geom = pose_to_point(pose);
-  Temporal *tpoint = tpose_to_tpoint(temp);
+  const Temporal *tpoint = tpose_to_tpoint(temp);
   Temporal *result = tdistance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
@@ -229,7 +229,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
     return -1.0;
 
   GSERIALIZED *traj = tpose_trajectory(temp);
-  GSERIALIZED *geo = stbox_geo(box);
+  const GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(traj, geo);
   pfree(traj);
   return result;
@@ -270,7 +270,7 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tpose_tpose(temp1, temp2))
     return -1.0;
 
-  Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
+  const Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
     return -1.0;
   return DatumGetFloat8(temporal_min_value(dist));

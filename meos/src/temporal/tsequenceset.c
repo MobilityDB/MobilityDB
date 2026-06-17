@@ -623,7 +623,7 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @pre The arguments @p count and @p totalseqs are greater than 0
  */
 TSequenceSet *
-tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
+tseqsetarr_to_tseqset(TSequenceSet * const *seqsets, int count, int totalseqs)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * totalseqs);
   int nseqs = 0;
@@ -718,7 +718,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
     spans = palloc(sizeof(Span) * ss->count);
     for (i = 0; i < ss->count; i++)
     {
-      TBox *box = TSEQUENCE_BBOX_PTR(TSEQUENCESET_SEQ_N(ss, i));
+      const TBox *box = TSEQUENCE_BBOX_PTR(TSEQUENCESET_SEQ_N(ss, i));
       memcpy(&spans[i], &box->span, sizeof(Span));
     }
     return spanset_make_free(spans, ss->count, NORMALIZE, ORDER);

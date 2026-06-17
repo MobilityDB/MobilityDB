@@ -60,7 +60,7 @@ ensure_geoaggstate(const SkipList *state, int32_t srid, bool hasz)
 {
   if (! state)
     return true;
-  struct GeoAggregateState *extra = state->extra;
+  const struct GeoAggregateState *extra = state->extra;
   if (extra && extra->srid != srid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -84,7 +84,7 @@ ensure_geoaggstate_state(const SkipList *state1, const SkipList *state2)
 {
   if(! state2)
     return true;
-  struct GeoAggregateState *extra2 = state2->extra;
+  const struct GeoAggregateState *extra2 = state2->extra;
   if (extra2)
     return ensure_geoaggstate(state1, extra2->srid, extra2->hasz);
   return true;
@@ -207,7 +207,9 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_tcentroid_transfn()
  */
+/* public transfn signature — kept non-const for binding-surface consistency */
 SkipList *
+/* cppcheck-suppress constParameterPointer */
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
   /* Null temporal: return state */
@@ -291,7 +293,7 @@ doublen_to_point(const TInstant *inst, int32_t srid)
   LWPOINT *point;
   if (inst->temptype == T_TDOUBLE3)
   {
-    double3 *value3 = (double3 *) DatumGetPointer(tinstant_value_p(inst));
+    const double3 *value3 = (const double3 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value3->c != 0);
     double valuea = value3->a / value3->c;
     double valueb = value3->b / value3->c;
@@ -299,7 +301,7 @@ doublen_to_point(const TInstant *inst, int32_t srid)
   }
   else /* inst->temptype == T_TDOUBLE4 */
   {
-    double4 *value4 = (double4 *) DatumGetPointer(tinstant_value_p(inst));
+    const double4 *value4 = (const double4 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value4->d != 0);
     double valuea = value4->a / value4->d;
     double valueb = value4->b / value4->d;
@@ -341,7 +343,8 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int32_t srid)
  * @param[in] srid SRID of the values
  */
 TSequenceSet *
-tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int32_t srid)
+tpointseq_tcentroid_finalfn(TSequence * const *sequences, int count,
+  int32_t srid)
 {
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)

@@ -1059,7 +1059,7 @@ extern TSequence *tsequence_from_base_tstzspan(Datum value, MeosType temptype, c
 extern TSequence *tsequence_make_exp(TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
-extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
+extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet * const *seqsets, int count, int totalseqs);
 extern TSequenceSet *tsequenceset_from_base_temp(Datum value, MeosType temptype, const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, MeosType temptype, const SpanSet *ss, interpType interp);
 extern TSequenceSet *tsequenceset_make_exp(TSequence **sequences, int count, int maxcount, bool normalize);

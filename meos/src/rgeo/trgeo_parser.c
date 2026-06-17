@@ -90,7 +90,7 @@ trgeoinst_parse(const char **str, MeosType temptype, bool end,
  */
 TSequence *
 trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
-  GSERIALIZED *geom)
+  const GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -284,18 +284,16 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
   ensure_has_not_M_geo(result);
   /* If one of the SRID of the temporal rigid geometry and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */
-  int32_t geo_srid = gserialized_get_srid(result);
-  if (temp_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
-    temp_srid = geo_srid;
-  else if (temp_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
+  int32_t geom_srid = gserialized_get_srid(result);
+  if (temp_srid != SRID_UNKNOWN && geom_srid == SRID_UNKNOWN)
     gserialized_set_srid(result, temp_srid);
   /* If the SRID of the temporal rigid geometry and of the geometry do not match */
-  else if (temp_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
-    temp_srid != geo_srid)
+  else if (temp_srid != SRID_UNKNOWN && geom_srid != SRID_UNKNOWN &&
+    temp_srid != geom_srid)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Geometry SRID (%d) does not match temporal type SRID (%d)",
-      geo_srid, temp_srid);
+      geom_srid, temp_srid);
     pfree(result);
     return NULL;
   }
@@ -326,7 +324,7 @@ trgeo_parse(const char **str, MeosType temptype)
   }
 
   /* Parse the reference geometry */
-  GSERIALIZED *geom = NULL;
+  const GSERIALIZED *geom = NULL;
   if (temptype == T_TRGEOMETRY)
   {
     geom = trgeo_parse_geom(str, temp_srid);

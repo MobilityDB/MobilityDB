@@ -154,10 +154,10 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 {
   assert(t1); assert(t2); assert(lower < upper);
   /* Extract the circular buffers and the distance */
-  Cbuffer *sv1 = DatumGetCbufferP(start1);
-  Cbuffer *ev1 = DatumGetCbufferP(end1);
-  Cbuffer *sv2 = DatumGetCbufferP(start2);
-  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
 
   /* Extract the points */
@@ -767,6 +767,8 @@ Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
+  /* cppcheck-suppress CastIntegerToAddressAtReturn ; VALIDATE_TCBUFFER macro
+   * validation-failure return idiom */
   VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(count, false);
 
   Datum *datumarr = temporal_values_p(temp, count);
@@ -930,10 +932,10 @@ tcbuffer_expand(const Temporal *temp, double dist)
   assert(temp); assert(temp->temptype == T_TCBUFFER);
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
   Temporal *tfloat = tcbuffer_to_tfloat(temp);
-  Temporal *tfloat_exp = arithop_tnumber_number(tfloat, Float8GetDatum(dist),
+  Temporal *tfloat_expand = arithop_tnumber_number(tfloat, Float8GetDatum(dist),
     ADD, &datum_add, INVERT_NO);
-  Temporal *result = tcbuffer_make(tpoint, tfloat_exp);
-  pfree(tpoint); pfree(tfloat); pfree(tfloat_exp);
+  Temporal *result = tcbuffer_make(tpoint, tfloat_expand);
+  pfree(tpoint); pfree(tfloat); pfree(tfloat_expand);
   return result;
 }
 

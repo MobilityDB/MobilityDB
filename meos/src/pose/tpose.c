@@ -261,7 +261,7 @@ tposeinst_make(const TInstant *inst1, const TInstant *inst2)
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst1));
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   double radius = DatumGetFloat8(tinstant_value_p(inst2));
   Pose *pose = pose_make_2d(p->x, p->y, radius, gserialized_get_srid(gs));
   TInstant *result = tinstant_make(PointerGetDatum(pose), T_TPOSE, inst1->t);
@@ -527,7 +527,7 @@ tpose_values(const Temporal *temp, int *count)
 Set *
 tposeinst_points(const TInstant *inst)
 {
-  Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+  const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
   Datum value = PointerGetDatum(pose_to_point(pose));
   return set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
 }
@@ -563,7 +563,7 @@ tposeseqset_points(const TSequenceSet *ss)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+      const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
       values[nvalues++] = PointerGetDatum(pose_to_point(pose));
     }
   }

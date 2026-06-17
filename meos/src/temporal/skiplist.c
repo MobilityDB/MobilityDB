@@ -157,7 +157,7 @@ temporal_skiplist_make()
  * @param[in] size Size of the structure
  */
 void
-skiplist_set_extra(SkipList *list, void *data, size_t size)
+skiplist_set_extra(SkipList *list, const void *data, size_t size)
 {
 #if ! MEOS
   MemoryContext ctx;
@@ -427,8 +427,9 @@ skiplist_print(const SkipList *list)
  * values, on error return -1
  */
 int
-keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
-  int *lower, int *upper, int update[SKIPLIST_MAXLEVEL])
+keyval_skiplist_common(const SkipList *list, void * const *keys,
+  void * const *values, int count, int *lower, int *upper,
+  int update[SKIPLIST_MAXLEVEL])
 {
   /* Compute the min and max of the new values */
   void *min_key = NULL, *max_key = NULL;
@@ -486,8 +487,9 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
  * @param[out] nfree Number of values that must be freed
  */
 void **
-keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
-  int count1, void **keys2, void **values2, int count2, int *newcount,
+keyval_skiplist_merge(const SkipList *list, void * const *keys1,
+  void * const *values1, int count1, void * const *keys2,
+  void * const *values2, int count2, int *newcount,
   void ***newkeys, void ***tofree, int *nfree)
 {
   void **result = palloc(sizeof(void *) * (count1 + count2));

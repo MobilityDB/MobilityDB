@@ -306,6 +306,9 @@ pose_interpolate_2d(Pose *pose1, Pose *pose2, double ratio, double *x,
   if (fabs(theta_delta) < MEOS_EPSILON)
     *theta = pose1->data[2];
   else if (theta_delta > 0 && fabs(theta_delta) <= M_PI)
+    /* cppcheck-suppress uninitvar ; theta_delta is initialized above from the
+     * pose parameters; cppcheck's whole-project flow cannot prove the flexible
+     * pose->data member is initialized, a false positive */
     *theta = pose1->data[2] + theta_delta*ratio;
   else if (theta_delta > 0 && fabs(theta_delta) > M_PI)
     *theta = pose2->data[2] + (2*M_PI - theta_delta)*(1 - ratio);
@@ -330,6 +333,9 @@ pose_diff_2d(Pose *pose1, Pose *pose2, double *x, double *y, double *theta)
   if (fabs(theta_delta) < MEOS_EPSILON)
     *theta = theta_delta;
   else if (theta_delta > 0 && fabs(theta_delta) <= M_PI)
+    /* cppcheck-suppress uninitvar ; theta_delta is initialized above from the
+     * pose parameters; cppcheck's whole-project flow cannot prove the flexible
+     * pose->data member is initialized, a false positive */
     *theta = theta_delta;
   else if (theta_delta > 0 && fabs(theta_delta) > M_PI)
     *theta = 2*M_PI - theta_delta;
@@ -873,7 +879,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
     append_cfp_elem(&cfpa, next_cfp);
     if (next_cfp.cf_1 != cfp.cf_1)
     {
-      printf("Problem, cfp changed from %d to %d at end of temporal segment\n",
+      printf("Problem, cfp changed from %u to %u at end of temporal segment\n",
         cfp.cf_1, next_cfp.cf_1);
       fflush(stdout);
     }
@@ -1323,13 +1329,13 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else if (ratio_3 <= ratio_4)
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
+    uint32_t n1_a = poly1->rings[0]->npoints - 1;
+    uint32_t n2_a = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
+    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1_a), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2_a), &pe);
     Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
@@ -1345,7 +1351,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next vertex of poly1
        * - current edge of poly2*/
       // *dir1 = MEOS_RIGHT;
-      *poly1_feature = uint_mod_add(*poly1_feature, 2, 2 * n1);
+      *poly1_feature = uint_mod_add(*poly1_feature, 2, 2 * n1_a);
     }
     else if (0 < s2 && s2 < 1)
     {
@@ -1353,9 +1359,9 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next edge of poly1
        * - previous vertex of poly2*/
       // *dir1 = MEOS_RIGHT;
-      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1_a);
       // *dir2 = MEOS_LEFT;
-      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2_a);
     }
     else
     {
@@ -1364,9 +1370,9 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next vertex of poly1
        * - previous vertex of poly2*/
       // *dir1 = MEOS_RIGHT;
-      *poly1_feature = uint_mod_add(*poly1_feature, 2, 2 * n1);
+      *poly1_feature = uint_mod_add(*poly1_feature, 2, 2 * n1_a);
       // *dir2 = MEOS_LEFT;
-      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2_a);
     }
     *ratio = ratio_3;
     return MEOS_CONTINUE;
@@ -1375,13 +1381,13 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
+    uint32_t n1_b = poly1->rings[0]->npoints - 1;
+    uint32_t n2_b = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
-    getPoint4d_p(poly1->rings[0], uint_mod_sub(i1, 1, n1), &qs);
+    getPoint4d_p(poly1->rings[0], uint_mod_sub(i1, 1, n1_b), &qs);
     getPoint4d_p(poly1->rings[0], i1, &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2_b), &pe);
     Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
@@ -1397,7 +1403,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous vertex of poly1
        * - current edge of poly2*/
       // *dir1 = MEOS_LEFT;
-      *poly1_feature = uint_mod_sub(*poly1_feature, 2, 2 * n1);
+      *poly1_feature = uint_mod_sub(*poly1_feature, 2, 2 * n1_b);
     }
     else if (0 < s2 && s2 < 1)
     {
@@ -1405,9 +1411,9 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous edge of poly1
        * - next vertex of poly2*/
       // *dir1 = MEOS_LEFT;
-      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1_b);
       // *dir2 = MEOS_RIGHT;
-      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2_b);
     }
     else
     {
@@ -1416,9 +1422,9 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous vertex of poly1
        * - next vertex of poly2*/
       // *dir1 = MEOS_LEFT;
-      *poly1_feature = uint_mod_sub(*poly1_feature, 2, 2 * n1);
+      *poly1_feature = uint_mod_sub(*poly1_feature, 2, 2 * n1_b);
       // *dir2 = MEOS_RIGHT;
-      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2_b);
     }
     *ratio = ratio_4;
     return MEOS_CONTINUE;
@@ -1486,13 +1492,13 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else if (ratio_3 <= ratio_4)
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
+    uint32_t n1_a = poly1->rings[0]->npoints - 1;
+    uint32_t n2_a = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
+    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1_a), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
-    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
+    getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2_a), &pe);
     Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
@@ -1508,7 +1514,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next vertex of poly2
        * - current edge of poly1 */
       // *dir2 = MEOS_RIGHT;
-      *poly2_feature = uint_mod_add(*poly2_feature, 2, 2 * n2);
+      *poly2_feature = uint_mod_add(*poly2_feature, 2, 2 * n2_a);
     }
     else if (0 < s2 && s2 < 1)
     {
@@ -1516,9 +1522,9 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next edge of poly2
        * - previous vertex of poly1 */
       // *dir2 = MEOS_RIGHT;
-      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_add(*poly2_feature, 1, 2 * n2_a);
       // *dir1 = MEOS_LEFT;
-      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1_a);
     }
     else
     {
@@ -1527,9 +1533,9 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - next vertex of poly2
        * - previous vertex of poly1 */
       // *dir2 = MEOS_RIGHT;
-      *poly2_feature = uint_mod_add(*poly2_feature, 2, 2 * n2);
+      *poly2_feature = uint_mod_add(*poly2_feature, 2, 2 * n2_a);
       // *dir1 = MEOS_LEFT;
-      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_sub(*poly1_feature, 1, 2 * n1_a);
     }
     *ratio = ratio_3;
     return MEOS_CONTINUE;
@@ -1538,12 +1544,12 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   else
   {
     /* Determine how to update closest feature */
-    uint32_t n1 = poly1->rings[0]->npoints - 1;
-    uint32_t n2 = poly2->rings[0]->npoints - 1;
+    uint32_t n1_b = poly1->rings[0]->npoints - 1;
+    uint32_t n2_b = poly2->rings[0]->npoints - 1;
     POINT4D ps, pe, qs, qe;
     getPoint4d_p(poly1->rings[0], i1, &qs);
-    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
-    getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &ps);
+    getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1_b), &qe);
+    getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2_b), &ps);
     getPoint4d_p(poly2->rings[0], i2, &pe);
     Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
@@ -1560,7 +1566,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous vertex of poly2
        * - current edge of poly1 */
       // *dir2 = MEOS_LEFT;
-      *poly2_feature = uint_mod_sub(*poly2_feature, 2, 2 * n2);
+      *poly2_feature = uint_mod_sub(*poly2_feature, 2, 2 * n2_b);
     }
     else if (0 < s2 && s2 < 1)
     {
@@ -1568,9 +1574,9 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous edge of poly2
        * - next vertex of poly1 */
       // *dir2 = MEOS_LEFT;
-      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2);
+      *poly2_feature = uint_mod_sub(*poly2_feature, 1, 2 * n2_b);
       // *dir1 = MEOS_RIGHT;
-      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1_b);
     }
     else
     {
@@ -1579,9 +1585,9 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
        * - previous vertex of poly2
        * - next vertex of poly1 */
       // *dir2 = MEOS_LEFT;
-      *poly2_feature = uint_mod_sub(*poly2_feature, 2, 2 * n2);
+      *poly2_feature = uint_mod_sub(*poly2_feature, 2, 2 * n2_b);
       // *dir1 = MEOS_RIGHT;
-      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1);
+      *poly1_feature = uint_mod_add(*poly1_feature, 1, 2 * n1_b);
     }
     *ratio = ratio_4;
     return MEOS_CONTINUE;
@@ -1751,7 +1757,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
     append_cfp_elem(&cfpa, next_cfp);
     if (next_cfp.cf_1 != cfp.cf_1 || next_cfp.cf_2 != cfp.cf_2)
     {
-      printf("Problem, cfp changed from (%d, %d) to (%d, %d) at end of temporal segment\n",
+      printf("Problem, cfp changed from (%u, %u) to (%u, %u) at end of temporal segment\n",
         cfp.cf_1, cfp.cf_2, next_cfp.cf_1, next_cfp.cf_2);
       fflush(stdout);
     }
@@ -1949,6 +1955,8 @@ nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 
   TInstant *result = NULL;
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
@@ -1977,6 +1985,8 @@ nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 
   TInstant *result = NULL;
   Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
@@ -2041,7 +2051,7 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
     temporal_restrict_tstzspan(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
-  Temporal *dist = tdistance_trgeometry_geo(temp, geo);
+  const Temporal *dist = tdistance_trgeometry_geo(temp, geo);
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(geo);
   if (hast)
@@ -2063,6 +2073,8 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist == NULL)
     return DBL_MAX;
 
@@ -2085,6 +2097,8 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist == NULL)
     return DBL_MAX;
 
@@ -2111,11 +2125,12 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   
-  Temporal *dist = tdistance_trgeometry_geo(temp, gs);
+  const Temporal *dist = tdistance_trgeometry_geo(temp, gs);
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value;
-  trgeo_value_at_timestamptz(temp, inst->t, false, &value);
+  if (! trgeo_value_at_timestamptz(temp, inst->t, false, &value))
+    return NULL;
   LWGEOM *line = (LWGEOM *) lwline_make(value, PointerGetDatum(gs));
   GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
@@ -2136,14 +2151,17 @@ shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
-  Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
+  const Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
-  temporal_value_at_timestamptz(temp2, inst->t, false, &value2);
+  if (! trgeo_value_at_timestamptz(temp1, inst->t, false, &value1) ||
+      ! temporal_value_at_timestamptz(temp2, inst->t, false, &value2))
+    return NULL;
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
@@ -2164,14 +2182,17 @@ shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
 
-  Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
+  const Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
+  /* cppcheck-suppress knownConditionTrueFalse */
+  /* guard is live once the tdistance TODO stub is implemented */
   if (dist == NULL)
     return NULL;
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
-  trgeo_value_at_timestamptz(temp2, inst->t, false, &value2);
+  if (! trgeo_value_at_timestamptz(temp1, inst->t, false, &value1) ||
+      ! trgeo_value_at_timestamptz(temp2, inst->t, false, &value2))
+    return NULL;
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);

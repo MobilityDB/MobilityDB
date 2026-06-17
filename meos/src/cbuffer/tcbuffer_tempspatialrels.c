@@ -317,7 +317,6 @@ tinterrel_tcbufferseq_step_geom(const TSequence *seq, const GSERIALIZED *gs,
       {}
     }
     pfree(circle);
-    inst = next;
   }
   pfree_array((void *) points, npoints);
   /* If there is no intersection */

@@ -174,8 +174,8 @@ trgeometry_out(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  char *geom = geo_out(trgeo_geom_p(temp));
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
+  const char *geom = geo_out(trgeo_geom_p(temp));
+  const char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(geom) + strlen(pose) + 2;
   char *result = palloc(len);
@@ -205,7 +205,7 @@ trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
     maxdd, NULL);
   lwgeom_free(geom);
   /* Write the pose */
-  char *wkt_pose = tspatial_as_text(temp, maxdd);
+  const char *wkt_pose = tspatial_as_text(temp, maxdd);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(wkt_geom) + strlen(wkt_pose) + 2;
   char *result = palloc(len);
@@ -624,7 +624,7 @@ trgeometry_instant_n(const Temporal *temp, int n)
   if (! ensure_positive(n))
     return NULL;
 
-  TInstant *inst = temporal_instant_n(temp, n);
+  const TInstant *inst = temporal_instant_n(temp, n);
   if (! inst)
     return NULL;
   TInstant *res = trgeoinst_tposeinst(inst);

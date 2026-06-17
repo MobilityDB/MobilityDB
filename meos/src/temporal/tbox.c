@@ -135,7 +135,7 @@ tbox_out(const TBox *box, int maxdd)
   /* Print the box */
   if (hasx)
   {
-    char *spantype = (box->span.basetype == T_INT4) ? "INT" : "FLOAT";
+    const char *spantype = (box->span.basetype == T_INT4) ? "INT" : "FLOAT";
     if (hast)
       snprintf(result, size, "TBOX%s XT(%s,%s)", spantype, span, period);
     else

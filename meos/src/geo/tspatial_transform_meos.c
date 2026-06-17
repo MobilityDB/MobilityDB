@@ -117,9 +117,13 @@ meos_set_spatial_ref_sys_csv(const char* path)
 
 typedef struct
 {
+  /* cppcheck-suppress unusedStructMember ; mirrors spatial_ref_sys columns */
   char auth_name[256];
+  /* cppcheck-suppress unusedStructMember ; mirrors spatial_ref_sys columns */
   int32_t auth_srid;
+  /* cppcheck-suppress unusedStructMember ; mirrors spatial_ref_sys columns */
   char proj4text[2048];
+  /* cppcheck-suppress unusedStructMember ; mirrors spatial_ref_sys columns */
   char srtext[2048];
 } spatial_ref_sys_record;
 #endif /* MEOS */
@@ -592,12 +596,12 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   {
     cache_position = 0;
     hits = PROJCache->MEOSPROJSRSCache[0].hits;
-    for (uint32_t i = 1; i < PROJ_CACHE_ITEMS; i++)
+    for (uint32_t j = 1; j < PROJ_CACHE_ITEMS; j++)
     {
-      if (PROJCache->MEOSPROJSRSCache[i].hits < hits)
+      if (PROJCache->MEOSPROJSRSCache[j].hits < hits)
       {
-        cache_position = i;
-        hits = PROJCache->MEOSPROJSRSCache[i].hits;
+        cache_position = j;
+        hits = PROJCache->MEOSPROJSRSCache[j].hits;
       }
     }
     DeleteFromMEOSPROJSRSCache(PROJCache, cache_position);

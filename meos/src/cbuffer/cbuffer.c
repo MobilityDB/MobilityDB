@@ -555,7 +555,7 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   /* CURVEPOLYTYPE */
   GSERIALIZED *gscenter;
   double radius;
-  if (type == POINTTYPE)
+  if (type == CURVEPOLYTYPE)
   {
     int32_t srid = gserialized_get_srid(gs);
     LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
