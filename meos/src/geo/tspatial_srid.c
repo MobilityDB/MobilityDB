@@ -53,8 +53,15 @@
   #include <meos_cbuffer.h>
   #include "cbuffer/cbuffer.h"
 #endif
+#if H3
+  #include <h3api.h>
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
+#endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/meos_schema_hook.h"
 #endif
 #if POSE
   #include <meos_pose.h>
@@ -98,6 +105,12 @@ spatial_srid(Datum d, MeosType basetype)
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
 #endif
+#if QUADBIN
+    case T_QUADBIN:
+      /* Quadbin cells are emitted as planar lon/lat (EPSG:4326) */
+      (void) d;
+      return SRID_DEFAULT;
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown SRID function for type: %s", meostype_name(basetype));
@@ -128,6 +141,12 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
     case T_POSE:
       pose_set_srid(DatumGetPoseP(d), srid);
       return true;
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      /* Quadbin cells are planar lon/lat; only SRID 4326 is accepted */
+      (void) d;
+      return (srid == SRID_DEFAULT);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

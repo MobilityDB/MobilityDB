@@ -159,17 +159,25 @@ if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
-# if(JSON)
-  # message(STATUS "Including JSON types")
-  # set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
-# endif()
+if(H3)
+  message(STATUS "Including temporal H3 index objects")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:h3>")
+endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud temporal types")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 if(POSE)
   message(STATUS "Including geoposes")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pose>")
+endif()
+if(QUADBIN)
+  message(STATUS "Including temporal QUADBIN index objects")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:quadbin>")
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
@@ -220,13 +228,53 @@ target_link_libraries(${MEOS_LIB_NAME} postgis)
 if(MEOS)
   # Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
 
-  # Read files
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_error.h" MEOS_ERROR_H)
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
-  file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
+if(CBUFFER)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(H3)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(NPOINT)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways.csv"
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/examples/data/ways1000.csv"
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
+endif()
+if(POINTCLOUD)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pointcloud.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  # The pgPointCloud serialization shim header is part of the public
+  # point-cloud surface a standalone consumer needs to build a patch
+  # value (meos_pc_patch_serialize, SERIALIZED_PATCH); install it under
+  # install prefix without adding the source tree to the include path.
+  install(
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
+endif()
+if(POSE)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(QUADBIN)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_quadbin.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(RGEO)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
 
   # Generate meos_export.h
   string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")

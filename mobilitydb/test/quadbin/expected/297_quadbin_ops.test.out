@@ -1,0 +1,200 @@
+SELECT quadbin_get_resolution(quadbin '480fffffffffffff');
+ quadbin_get_resolution 
+------------------------
+                      0
+(1 row)
+
+SELECT quadbin_get_resolution(quadbin '48427fffffffffff');
+ quadbin_get_resolution 
+------------------------
+                      4
+(1 row)
+
+SELECT quadbin_get_resolution(quadbin '48a6227affffffff');
+ quadbin_get_resolution 
+------------------------
+                     10
+(1 row)
+
+SELECT quadbin_cell_to_parent(quadbin '48427fffffffffff', 0) = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_get_resolution(quadbin_cell_to_parent(quadbin '48427fffffffffff', 2));
+ quadbin_get_resolution 
+------------------------
+                      2
+(1 row)
+
+SELECT numValues(quadbin_cell_to_children(quadbin '480fffffffffffff', 1));
+ numvalues 
+-----------
+         4
+(1 row)
+
+SELECT quadbin_cell_to_children(quadbin '480fffffffffffff', 1);
+                             quadbin_cell_to_children                             
+----------------------------------------------------------------------------------
+ {"4813ffffffffffff", "4817ffffffffffff", "481bffffffffffff", "481fffffffffffff"}
+(1 row)
+
+SELECT bool_and(quadbin_cell_to_parent(c, 0) = quadbin '480fffffffffffff')
+  FROM unnest(quadbin_cell_to_children(quadbin '480fffffffffffff', 1)) AS c;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_sibling(quadbin_cell_sibling(quadbin '48427fffffffffff', 'right'), 'left')
+  = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_get_resolution(quadbin_cell_sibling(quadbin '48427fffffffffff', 'up'));
+ quadbin_get_resolution 
+------------------------
+                      4
+(1 row)
+
+SELECT numValues(quadbin_grid_disk(quadbin '48a6227affffffff', 0));
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT numValues(quadbin_grid_disk(quadbin '48a6227affffffff', 1));
+ numvalues 
+-----------
+         9
+(1 row)
+
+SELECT numValues(quadbin_grid_disk(quadbin '48a6227affffffff', 2));
+ numvalues 
+-----------
+        25
+(1 row)
+
+SELECT quadbin_point_to_cell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
+  = quadbin '48a6227affffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_point_to_cell(geometry 'SRID=4326;POINT(4.35 50.85)', 0)
+  = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_point_to_cell(quadbin_cell_to_point(quadbin '48a6227affffffff'), 10)
+  = quadbin '48a6227affffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_X(quadbin_cell_to_point(quadbin '48a6227affffffff'))::numeric, 6);
+  round   
+----------
+ 4.394531
+(1 row)
+
+SELECT round(ST_Y(quadbin_cell_to_point(quadbin '48a6227affffffff'))::numeric, 6);
+   round   
+-----------
+ 50.847573
+(1 row)
+
+SELECT ST_SRID(quadbin_cell_to_point(quadbin '48a6227affffffff'));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_GeometryType(quadbin_cell_to_boundary(quadbin '48a6227affffffff'));
+ st_geometrytype 
+-----------------
+ ST_Polygon
+(1 row)
+
+SELECT ST_GeometryType(quadbin_cell_to_bounding_box(quadbin '48a6227affffffff'));
+ st_geometrytype 
+-----------------
+ ST_Polygon
+(1 row)
+
+SELECT ST_SRID(quadbin_cell_to_boundary(quadbin '48a6227affffffff'));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_Contains(
+  quadbin_cell_to_boundary(quadbin '48a6227affffffff'),
+  quadbin_cell_to_point(quadbin '48a6227affffffff'));
+ st_contains 
+-------------
+ t
+(1 row)
+
+SELECT round(quadbin_cell_area(quadbin '480fffffffffffff')::numeric, 1);
+       round       
+-------------------
+ 508164135963886.0
+(1 row)
+
+SELECT quadbin_cell_area(quadbin '48a6227affffffff')
+  < quadbin_cell_area(quadbin '48427fffffffffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_tile_to_cell(0, 0, 0) = quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (quadbin_tile_to_cell(0, 0, 0))::bigint;
+ quadbin_tile_to_cell 
+----------------------
+  5192650370358181887
+(1 row)
+
+SELECT quadbin_tile_to_cell(3, 5, 4) = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_tile(quadbin '48427fffffffffff');
+ quadbin_cell_to_tile 
+----------------------
+ {3,5,4}
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '480fffffffffffff');
+ quadbin_cell_to_quadkey 
+-------------------------
+ 
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '48427fffffffffff');
+ quadbin_cell_to_quadkey 
+-------------------------
+ 0213
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '48a6227affffffff');
+ quadbin_cell_to_quadkey 
+-------------------------
+ 1202021322
+(1 row)
+
