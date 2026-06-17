@@ -46,6 +46,10 @@
 #if QUADBIN
 #include "quadbin/quadbin_meos.h"
 #endif
+#if H3
+#include <h3api.h>
+#include "h3/h3index.h"
+#endif
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
@@ -162,6 +166,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       Quadbin cell = quadbin_parse(str);
       if (cell == (Quadbin) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
+      return true;
+    }
+#endif
+#if H3
+    case T_H3INDEX:
+    {
+      H3Index cell = h3index_in(str);
+      if (cell == (H3Index) 0)
         return false;
       *result = Int64GetDatum((int64) cell);
       return true;
@@ -387,6 +401,7 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
         break;
       case T_TBIGINT:
+      case T_TH3INDEX:
         if (json_object_get_type(jvalue) != json_type_int)
         {
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -978,6 +993,9 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
       strcmp(typestr, "MovingPose") != 0 &&
+#if H3
+      strcmp(typestr, "MovingH3Index") != 0 &&
+#endif
       strcmp(typestr, "MovingRigidGeometry") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1043,6 +1061,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TINT;
   else if (strcmp(typestr, "MovingBigInteger") == 0)
     jtemptype = T_TBIGINT;
+#if H3
+  else if (strcmp(typestr, "MovingH3Index") == 0)
+    jtemptype = T_TH3INDEX;
+#endif
   else if (strcmp(typestr, "MovingFloat") == 0)
     jtemptype = T_TFLOAT;
   else if (strcmp(typestr, "MovingText") == 0)
@@ -1582,6 +1604,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
       return Int64GetDatum(int64_from_wkb_state(s));
 #endif /* QUADBIN */
+#if H3
+    case T_H3INDEX:
+      /* h3index is a uint64 cell id, wire-format identical to int8. */
+      return Int64GetDatum(int64_from_wkb_state(s));
+#endif /* H3 */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -u
+
+VERSION=$(sed -rnE 's/  VERSION ([0-9\.]+)/\1/p' CMakeLists.txt)
+echo $VERSION
+
+# Set `INSTALL_VERSION` to `unreleased` in root `CMakeLists.txt`.
+sed -i '/set(INSTALL_VERSION "unreleased/s/^#//g' CMakeLists.txt
+sed -i '/set(INSTALL_VERSION "${PROJECT_VERSION}")/s/^/#/g' CMakeLists.txt
+
+# Create new update files with `--unreleased` suffix.
+cp h3/sql/updates/h3--4.2.1--4.2.2.sql h3/sql/updates/h3--$VERSION--unreleased.sql
+sed -i "s/4.2.2/unreleased/g" h3/sql/updates/h3--$VERSION--unreleased.sql
+
+cp h3_postgis/sql/updates/h3_postgis--4.2.1--4.2.2.sql h3_postgis/sql/updates/h3_postgis--$VERSION--unreleased.sql
+sed -i "s/4.2.2/unreleased/g" h3_postgis/sql/updates/h3_postgis--$VERSION--unreleased.sql
+
+# Add them to relevant `CMakeLists.txt` files.
+sed -i "/--$VERSION.sql/a\ \ \ \ sql/updates/h3--$VERSION--unreleased.sql" h3/CMakeLists.txt
+sed -i "/--$VERSION.sql/a\ \ \ \ sql/updates/h3_postgis--$VERSION--unreleased.sql" h3_postgis/CMakeLists.txt

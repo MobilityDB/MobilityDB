@@ -1,0 +1,37 @@
+name: test-windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  windows:
+    strategy:
+      matrix:
+        config: [Release, Debug]
+
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fix default PostgreSQL version on Windows Runner
+        run: $env:PGBIN >> $env:GITHUB_PATH
+
+      - name: Generate
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }}
+
+      - name: Install
+        run: cmake --install build --component h3-pg --config ${{ matrix.config }}
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --build-config ${{ matrix.config }}
+
+      - name: Print regression diffs
+        if: ${{ failure() }}
+        run: cat build/*/test/regression.diffs

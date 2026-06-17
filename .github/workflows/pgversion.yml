@@ -85,7 +85,24 @@ jobs:
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
-          sudo apt-get -y install lcov
+          sudo apt-get -y install lcov libh3-dev
+
+      - name: Locate libh3 on disk and pin its paths
+        if: matrix.coverage == '1'
+        # The pgdg libh3-dev package layout differs between releases. Find the
+        # header and library at runtime and pin -DH3_INCLUDE_DIR / -DH3_LIBRARY
+        # explicitly so CMake's find_path / find_library defaults cannot miss it.
+        run: |
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null
+            find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"
+            exit 1
+          fi
+          echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
 
       - name: Configure for gcc
         run: |
@@ -97,7 +114,7 @@ jobs:
           # are not part of tquadbin, so they are not enabled here.
           cmake -DCMAKE_BUILD_TYPE=Release \
             -DWITH_COVERAGE=${{ matrix.coverage }} \
-            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON' || '' }} \
+${{ matrix.coverage == '1' && format('-DCBUFFER=ON -DPOSE=ON -DRGEO=ON -DNPOINT=ON -DQUADBIN=ON -DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
             ..
 
       - name: Build

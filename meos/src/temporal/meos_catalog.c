@@ -128,6 +128,9 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TQUADBIN] = "tquadbin",
   [T_QUADBIN] = "quadbin",
   [T_QUADBINSET] = "quadbinset",
+  [T_TH3INDEX] = "th3index",
+  [T_H3INDEX] = "h3index",
+  [T_H3INDEXSET] = "h3indexset",
 };
 
 /**
@@ -233,6 +236,7 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
 #if QUADBIN
   {T_QUADBINSET,    T_QUADBIN},
 #endif
+  {T_H3INDEXSET,    T_H3INDEX},
 };
 
 /**
@@ -278,6 +282,7 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
 #if QUADBIN
   {T_TQUADBIN,   T_QUADBIN},
 #endif
+  {T_TH3INDEX,   T_H3INDEX},
   {T_TINT,       T_INT4},
   {T_TFLOAT,     T_FLOAT8},
   {T_TTEXT,      T_TEXT},
@@ -612,6 +617,9 @@ meos_basetype(MeosType type)
 #if QUADBIN
     || type == T_QUADBIN
 #endif
+#if H3
+    || type == T_H3INDEX
+#endif
     );
 }
 #endif
@@ -626,6 +634,12 @@ basetype_byvalue(MeosType type)
     type == T_FLOAT8 || type == T_DATE || type == T_TIMESTAMPTZ
 #if QUADBIN
     || type == T_QUADBIN
+#endif
+    );
+  return (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+    type == T_DATE || type == T_TIMESTAMPTZ
+#if H3
+    || type == T_H3INDEX
 #endif
     );
 }
@@ -698,6 +712,11 @@ alphanum_basetype(MeosType type)
     || type == T_QUADBIN
 #endif
     );
+    type == T_TIMESTAMPTZ
+#if H3
+    || type == T_H3INDEX
+#endif
+    );
 }
 
 /**
@@ -710,6 +729,9 @@ alphanum_temptype(MeosType type)
   return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
 #if QUADBIN
     type == T_TQUADBIN ||
+#endif
+#if H3
+    type == T_TH3INDEX ||
 #endif
     type == T_TFLOAT || type == T_TTEXT);
 }
@@ -730,7 +752,7 @@ geo_basetype(MeosType type)
 inline bool
 spatial_basetype(MeosType type)
 {
-  return (type == T_GEOMETRY || type == T_GEOGRAPHY 
+  return (type == T_GEOMETRY || type == T_GEOGRAPHY
 #if CBUFFER
     || type == T_CBUFFER
 #endif
@@ -742,6 +764,9 @@ spatial_basetype(MeosType type)
 #endif
 #if QUADBIN
     || type == T_QUADBIN
+#endif
+#if H3
+    || type == T_H3INDEX
 #endif
     );
 }
@@ -781,6 +806,9 @@ set_basetype(MeosType type)
 #if POSE || RGEO
       || type == T_POSE
 #endif
+#if H3
+      || type == T_H3INDEX
+#endif
       );
 }
 #endif
@@ -806,7 +834,10 @@ set_type(MeosType type)
 #if QUADBIN
     || type == T_QUADBINSET
 #endif
-    );
+#if H3
+      || type == T_H3INDEXSET
+#endif
+      );
 }
 
 /**
@@ -877,6 +908,9 @@ alphanumset_type(MeosType type)
     type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET
 #if QUADBIN
     || type == T_QUADBINSET
+#endif
+#if H3
+    || type == T_H3INDEXSET
 #endif
     );
 }
@@ -1123,6 +1157,9 @@ temporal_type(MeosType type)
 #if QUADBIN
     || type == T_TQUADBIN
 #endif
+#if H3
+    || type == T_TH3INDEX
+#endif
     );
 }
 
@@ -1289,6 +1326,9 @@ tspatial_type(MeosType type)
 #if QUADBIN
     || type == T_TQUADBIN
 #endif
+#if H3
+    || type == T_TH3INDEX
+#endif
     );
 }
 
@@ -1408,7 +1448,11 @@ ensure_tgeometry_type(MeosType type)
 inline bool
 tgeodetic_type(MeosType type)
 {
-  return (type == T_TGEOGPOINT || type == T_TGEOGRAPHY);
+  return (type == T_TGEOGPOINT || type == T_TGEOGRAPHY
+#if H3
+    || type == T_TH3INDEX
+#endif
+    );
 }
 
 #if MEOS
