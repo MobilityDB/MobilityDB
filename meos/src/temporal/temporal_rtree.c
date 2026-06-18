@@ -720,7 +720,10 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
     if (node->node_type == RTREE_LEAF)
     {
       if (leaf_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
-        meos_array_add(result, &node->ids[i]);
+      {
+        int id = node->ids[i];
+        meos_array_add(result, &id);
+      }
     }
     else
     {

@@ -1973,7 +1973,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
     s->srid = SRID_DEFAULT;
 
 #if RGEO
-  GSERIALIZED *gs;
+  GSERIALIZED *gs = NULL;
   MeosType temptype_orig = SRID_UNKNOWN;
   if (s->temptype == T_TRGEOMETRY)
   {
