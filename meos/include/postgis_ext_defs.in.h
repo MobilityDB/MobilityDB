@@ -393,10 +393,6 @@ typedef struct
 }
 LWTIN;
 
-/* Functions */
-
-extern int32 geo_get_srid(const GSERIALIZED *g);
-
 /* PROJ */
 
 struct PJconsts;
