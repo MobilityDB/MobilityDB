@@ -348,7 +348,6 @@ extern float8 float8_abs(float8 num);
 extern float8 float8_acos(float8 num);
 extern float8 float8_acosd(float8 num);
 extern float8 float8_acosh(float8 num);
-extern double float8_angular_difference(float8 degrees1, float8 degrees2);
 extern float8 float8_asin(float8 num);
 extern float8 float8_asind(float8 num);
 extern float8 float8_asinh(float8 num);

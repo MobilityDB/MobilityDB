@@ -490,7 +490,7 @@ angular_difference(Datum degrees1, Datum degrees2)
  * @csqlfn #Float_angular_difference()
  */
 double
-float8_angular_difference(float8 degrees1, float8 degrees2)
+float_angular_difference(double degrees1, double degrees2)
 {
   return DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
