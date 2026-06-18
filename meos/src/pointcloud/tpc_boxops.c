@@ -32,6 +32,7 @@
 #include <meos_internal.h>
 #include "temporal/span.h"
 #include "temporal/temporal.h"
+#include <utils/timestamp.h>   /* TimestampTzGetDatum */
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
