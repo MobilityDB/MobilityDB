@@ -1908,6 +1908,10 @@ temporal_values(const Temporal *temp, int *count)
   Datum *result = palloc(sizeof(Datum) * newcount);
   for (int i = 0; i < newcount; i++)
     result[i] = datum_copy(values[i], basetype);
+  /* temporal_values_p returns a palloc'd array of borrowed value pointers (the
+   * elements are views into temp). result holds owned copies, so free the
+   * array only — never its elements. */
+  pfree(values);
   *count = newcount;
   return result;
 }
