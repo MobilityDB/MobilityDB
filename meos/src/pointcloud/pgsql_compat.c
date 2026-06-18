@@ -188,7 +188,7 @@ pc_patch_stats_deserialize(const PCSCHEMA *schema, const uint8_t *buf)
 static SERIALIZED_PATCH *
 pc_patch_dimensional_serialize(const PCPATCH *patch_in)
 {
-  int i;
+  uint32_t i;
   uint8_t *buf;
   size_t serpch_size = meos_pc_patch_serialized_size(patch_in);
   size_t stats_size = pc_stats_size(patch_in->schema);
@@ -337,7 +337,7 @@ meos_pc_patch_serialize(const PCPATCH *patch_in, void *userdata)
     pcerror("%s: patch is missing stats", __func__);
     return NULL;
   }
-  if (patch->type != patch->schema->compression)
+  if ((uint32_t) patch->type != patch->schema->compression)
   {
     patch = pc_patch_compress(patch_in, userdata);
   }
