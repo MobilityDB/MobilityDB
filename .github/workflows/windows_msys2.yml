@@ -10,7 +10,8 @@ on:
       - 'mobilitydb/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
-    branch_ignore: gh-pages
+    branches-ignore:
+      - gh-pages
   pull_request:
     paths:
       - '.github/workflows/windows_msys2.yml'
@@ -19,7 +20,8 @@ on:
       - 'mobilitydb/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
-    branch_ignore: gh-pages
+    branches-ignore:
+      - gh-pages
 
 jobs:
   build:
