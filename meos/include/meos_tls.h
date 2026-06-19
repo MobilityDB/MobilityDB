@@ -43,8 +43,21 @@
  * Clang, and MSVC 2019 16.10+; older compilers fall back to vendor
  * extensions. If none of these is available the macro expands to
  * nothing and MEOS state remains process-global (legacy behaviour).
+ *
+ * In the MobilityDB PostgreSQL extension (MEOS=0) the macro MUST expand to
+ * nothing: a PG backend is a single-threaded process, so per-thread state is
+ * unnecessary, and -- more importantly -- the vendored pgtypes
+ * `session_timezone` is declared PGDLLIMPORT to bind the backend's own
+ * symbol, which PostgreSQL exports as a PLAIN (non-TLS) global.  Marking it
+ * __thread in the extension makes the loaded module access that non-TLS
+ * symbol through a TLS relocation, which resolves to a bogus address and
+ * segfaults on the first timestamp parse.  Only the standalone MEOS library
+ * (MEOS=1), which is genuinely multi-threaded, uses real TLS.
  */
-#if defined(__cplusplus) && __cplusplus >= 201103L
+#if defined(MEOS) && ! MEOS
+#define MEOS_TLS  /* PG extension: process-global, must match the backend's
+                     non-TLS session_timezone */
+#elif defined(__cplusplus) && __cplusplus >= 201103L
 #define MEOS_TLS thread_local
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && \
     !defined(__STDC_NO_THREADS__)

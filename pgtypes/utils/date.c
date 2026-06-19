@@ -127,6 +127,8 @@ pg_date_in(const char *str)
   char workbuf[MAXDATELEN + 1];
   DateTimeErrorExtra extra;
 
+  /* pg_DecodeDateTime dereferences session_timezone for unqualified inputs */
+  meos_ensure_timezone();
   dterr = pg_ParseDateTime((char *) str, workbuf, sizeof(workbuf), field,
     ftype, MAXDATEFIELDS, &nf);
   if (dterr == 0)
@@ -2679,7 +2681,7 @@ time_to_timetz(TimeADT time)
 {
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
-
+  meos_ensure_timezone();
   GetCurrentDateTime(tm);
   time2tm(time, tm, &fsec);
   int tz = DetermineTimeZoneOffset(tm, session_timezone);

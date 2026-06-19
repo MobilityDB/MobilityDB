@@ -110,7 +110,7 @@ typedef struct struct_WaysCache
 } WaysCache;
 
 /* Global variable to hold the ways cache */
-WaysCache *MEOS_WAYS_CACHE = NULL;
+static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
 
 /*****************************************************************************
  * Cache management functions

@@ -254,6 +254,9 @@ if(MEOS)
     FILES "${CMAKE_BINARY_DIR}/meos_geo_export.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     RENAME "meos_geo.h")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_tls.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   # Files from ${CMAKE_SOURCE_DIR}
 

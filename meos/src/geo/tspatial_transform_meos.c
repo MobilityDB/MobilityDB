@@ -77,7 +77,7 @@ typedef struct struct_MEOSPROJSRSCache
 #define PROJ_BACKEND_HASH_SIZE 256
 
 /* Global variable to hold the Proj object cache */
-MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
+static MEOS_TLS MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
 
 /**
  * @brief Utility structure to get many potential string representations
