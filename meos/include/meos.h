@@ -1726,6 +1726,8 @@ extern SkipList *tnumber_wavg_transfn(SkipList *state, const Temporal *temp, con
 extern SkipList *tstzset_tcount_transfn(SkipList *state, const Set *s);
 extern SkipList *tstzspan_tcount_transfn(SkipList *state, const Span *s);
 extern SkipList *tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss);
+extern SkipList *temporal_merge_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *temporal_merge_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
 
