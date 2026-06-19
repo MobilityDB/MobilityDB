@@ -48,6 +48,17 @@ CREATE AGGREGATE tcount(tpose) (
   PARALLEL = SAFE
 );
 
+CREATE FUNCTION tspatial_extent_transfn(stbox, tpose)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Tspatial_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE extent(tpose) (
+  SFUNC = tspatial_extent_transfn,
+  STYPE = stbox,
+  COMBINEFUNC = stbox_extent_combinefn,
+  PARALLEL = safe
+);
+
 -- The function is not strict
 CREATE FUNCTION wcount_transfn(internal, tpose, interval)
   RETURNS internal
