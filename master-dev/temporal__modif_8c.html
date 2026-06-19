@@ -88,7 +88,6 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;temporal/spanset.h&quot;</code><br />
@@ -100,6 +99,9 @@ $(function() {
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tspatial__parser_8h_source.html">geo/tspatial_parser.h</a>&quot;</code><br />
+<code>#include &lt;utils/jsonb.h&gt;</code><br />
+<code>#include &lt;utils/numeric.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -184,7 +186,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gae589b7e63d858275b5f63a1e7942c424"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__modif_gae589b7e63d858275b5f63a1e7942c424.html#gae589b7e63d858275b5f63a1e7942c424">tsequence_append_tinstant</a> (<a class="el" href="structTSequence.html">TSequence</a> *seq, const <a class="el" href="structTInstant.html">TInstant</a> *inst, double maxdist, const <a class="el" href="structInterval.html">Interval</a> *maxt, bool expand)</td></tr>
 <tr class="memdesc:gae589b7e63d858275b5f63a1e7942c424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append an instant to a temporal sequence accounting for potential gaps.  <a href="group__meos__internal__temporal__modif_gae589b7e63d858275b5f63a1e7942c424.html#gae589b7e63d858275b5f63a1e7942c424">More...</a><br /></td></tr>
 <tr class="separator:gae589b7e63d858275b5f63a1e7942c424"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga50fd45ed5d55c36a3637148eced8c0a1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__modif_ga50fd45ed5d55c36a3637148eced8c0a1.html#ga50fd45ed5d55c36a3637148eced8c0a1">tsequence_append_tsequence</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq1, const <a class="el" href="structTSequence.html">TSequence</a> *seq2, bool expand <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>)</td></tr>
+<tr class="memitem:ga50fd45ed5d55c36a3637148eced8c0a1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__modif_ga50fd45ed5d55c36a3637148eced8c0a1.html#ga50fd45ed5d55c36a3637148eced8c0a1">tsequence_append_tsequence</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq1, const <a class="el" href="structTSequence.html">TSequence</a> *seq2, bool expand UNUSED)</td></tr>
 <tr class="memdesc:ga50fd45ed5d55c36a3637148eced8c0a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a sequence to a temporal sequence.  <a href="group__meos__internal__temporal__modif_ga50fd45ed5d55c36a3637148eced8c0a1.html#ga50fd45ed5d55c36a3637148eced8c0a1">More...</a><br /></td></tr>
 <tr class="separator:ga50fd45ed5d55c36a3637148eced8c0a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga793e7c3d3d62cb20f8f616afd51a3d66"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__modif_ga793e7c3d3d62cb20f8f616afd51a3d66.html#ga793e7c3d3d62cb20f8f616afd51a3d66">tsequence_delete_timestamptz</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, bool connect)</td></tr>

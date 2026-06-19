@@ -93,7 +93,6 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;temporal/doublen.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;temporal/spanset.h&quot;</code><br />
@@ -104,6 +103,9 @@ $(function() {
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tspatial__parser_8h_source.html">geo/tspatial_parser.h</a>&quot;</code><br />
+<code>#include &lt;utils/jsonb.h&gt;</code><br />
+<code>#include &lt;utils/numeric.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -122,7 +124,7 @@ Functions</h2></td></tr>
 <tr class="memitem:af686b9d58cfbd3f457235685f0dba9b6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_af686b9d58cfbd3f457235685f0dba9b6.html#af686b9d58cfbd3f457235685f0dba9b6">ensure_increasing_timestamps</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst1, const <a class="el" href="structTInstant.html">TInstant</a> *inst2, bool merge)</td></tr>
 <tr class="memdesc:af686b9d58cfbd3f457235685f0dba9b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the timestamp of the first temporal instant is smaller (or equal if the merge parameter is true) than the one of the second temporal instant.  <a href="tsequence_8c_af686b9d58cfbd3f457235685f0dba9b6.html#af686b9d58cfbd3f457235685f0dba9b6">More...</a><br /></td></tr>
 <tr class="separator:af686b9d58cfbd3f457235685f0dba9b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1754bd6c791c9727861ea8de89280177"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_a1754bd6c791c9727861ea8de89280177.html#a1754bd6c791c9727861ea8de89280177">ensure_valid_tinstarr</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, bool merge, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>)</td></tr>
+<tr class="memitem:a1754bd6c791c9727861ea8de89280177"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_a1754bd6c791c9727861ea8de89280177.html#a1754bd6c791c9727861ea8de89280177">ensure_valid_tinstarr</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, bool merge, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp UNUSED)</td></tr>
 <tr class="memdesc:a1754bd6c791c9727861ea8de89280177"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that all temporal instants of the array are valid.  <a href="tsequence_8c_a1754bd6c791c9727861ea8de89280177.html#a1754bd6c791c9727861ea8de89280177">More...</a><br /></td></tr>
 <tr class="separator:a1754bd6c791c9727861ea8de89280177"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ecf017d12a31b0f1def37e6c287d0d7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tsequence_8c_a4ecf017d12a31b0f1def37e6c287d0d7.html#a4ecf017d12a31b0f1def37e6c287d0d7">ensure_valid_tinstarr_common</a> (<a class="el" href="structTInstant.html">TInstant</a> **instants, int count, bool lower_inc, bool upper_inc, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp)</td></tr>

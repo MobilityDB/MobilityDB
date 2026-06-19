@@ -85,8 +85,8 @@ $(function() {
 
 <p>Spatial functions for temporal points.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
-<code>#include &lt;assert.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;utils/float.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;liblwgeom_internal.h&gt;</code><br />
@@ -95,7 +95,6 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="lifting_8h_source.html">temporal/lifting.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="temporal__compops_8h_source.html">temporal/temporal_compops.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tnumber__mathfuncs_8h_source.html">temporal/tnumber_mathfuncs.h</a>&quot;</code><br />
@@ -105,6 +104,10 @@ $(function() {
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo_8h_source.html">geo/tgeo.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__distance_8h_source.html">geo/tgeo_distance.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
+<code>#include &lt;utils/jsonb.h&gt;</code><br />
+<code>#include &lt;utils/numeric.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -357,7 +360,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a565ee4702c30a31dccfdad8071ff7df5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__spatialfuncs_8c_a565ee4702c30a31dccfdad8071ff7df5.html#a565ee4702c30a31dccfdad8071ff7df5">tpointinst_to_geomeas_iter</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, const <a class="el" href="structTInstant.html">TInstant</a> *meas)</td></tr>
 <tr class="memdesc:a565ee4702c30a31dccfdad8071ff7df5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a geometry/geography with M measure from the temporal point instant and optionally a temporal float (iterator function)  <a href="tpoint__spatialfuncs_8c_a565ee4702c30a31dccfdad8071ff7df5.html#a565ee4702c30a31dccfdad8071ff7df5">More...</a><br /></td></tr>
 <tr class="separator:a565ee4702c30a31dccfdad8071ff7df5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2be12e58b6c28b125faad6fc84710bfd"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__spatialfuncs_8c_a2be12e58b6c28b125faad6fc84710bfd.html#a2be12e58b6c28b125faad6fc84710bfd">tpointsegm_bearing_turnpt</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> param <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> lower, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> upper, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *t1, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *t2)</td></tr>
+<tr class="memitem:a2be12e58b6c28b125faad6fc84710bfd"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__spatialfuncs_8c_a2be12e58b6c28b125faad6fc84710bfd.html#a2be12e58b6c28b125faad6fc84710bfd">tpointsegm_bearing_turnpt</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> start2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> end2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> param UNUSED, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> lower, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> upper, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *t1, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *t2)</td></tr>
 <tr class="memdesc:a2be12e58b6c28b125faad6fc84710bfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 or 2 if two temporal point segments are at the minimum bearing during the period defined by the output timestamps, return 0 otherwise.  <a href="tpoint__spatialfuncs_8c_a2be12e58b6c28b125faad6fc84710bfd.html#a2be12e58b6c28b125faad6fc84710bfd">More...</a><br /></td></tr>
 <tr class="separator:a2be12e58b6c28b125faad6fc84710bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9aadb6663cabb3b1aed96834c287cd99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__accessor_ga9aadb6663cabb3b1aed96834c287cd99.html#ga9aadb6663cabb3b1aed96834c287cd99">tpointseq_azimuth</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq)</td></tr>

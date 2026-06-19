@@ -89,6 +89,9 @@ $(function() {
 <code>#include &lt;limits.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;common/hashfn.h&gt;</code><br />
+<code>#include &quot;utils/numeric.h&quot;</code><br />
+<code>#include &lt;utils/date.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &quot;port/pg_bitutils.h&quot;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
@@ -96,7 +99,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__npoint_8h_source.html">meos_npoint.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;temporal/tsequence.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__inout_8h_source.html">temporal/type_inout.h</a>&quot;</code><br />
@@ -205,7 +208,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gaddbbfb0dc33af9f1026255394809f103"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__constructor_gaddbbfb0dc33af9f1026255394809f103.html#gaddbbfb0dc33af9f1026255394809f103">npoint_set_stbox</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:gaddbbfb0dc33af9f1026255394809f103"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the spatiotemporal box of a network point.  <a href="group__meos__internal__box__constructor_gaddbbfb0dc33af9f1026255394809f103.html#gaddbbfb0dc33af9f1026255394809f103">More...</a><br /></td></tr>
 <tr class="separator:gaddbbfb0dc33af9f1026255394809f103"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0645ea25b39da2a22d105ffd920c90c4"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_ga0645ea25b39da2a22d105ffd920c90c4.html#ga0645ea25b39da2a22d105ffd920c90c4">npoint_srid</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>)</td></tr>
+<tr class="memitem:ga0645ea25b39da2a22d105ffd920c90c4"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_ga0645ea25b39da2a22d105ffd920c90c4.html#ga0645ea25b39da2a22d105ffd920c90c4">npoint_srid</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np UNUSED)</td></tr>
 <tr class="memdesc:ga0645ea25b39da2a22d105ffd920c90c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a network point.  <a href="group__meos__npoint__base__srid_ga0645ea25b39da2a22d105ffd920c90c4.html#ga0645ea25b39da2a22d105ffd920c90c4">More...</a><br /></td></tr>
 <tr class="separator:ga0645ea25b39da2a22d105ffd920c90c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4516be08c7cb09392cb555138e50291c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a4516be08c7cb09392cb555138e50291c.html#a4516be08c7cb09392cb555138e50291c">npoint_timestamptz_set_stbox</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
@@ -295,7 +298,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a2e9f5b06932061f00ff1371663ecd526"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2npoint_8c_a2e9f5b06932061f00ff1371663ecd526.html#a2e9f5b06932061f00ff1371663ecd526">nsegment_sort_cmp</a> (<a class="el" href="structNsegment.html">Nsegment</a> **l, <a class="el" href="structNsegment.html">Nsegment</a> **r)</td></tr>
 <tr class="memdesc:a2e9f5b06932061f00ff1371663ecd526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparator function for network segments.  <a href="meos_2src_2npoint_2npoint_8c_a2e9f5b06932061f00ff1371663ecd526.html#a2e9f5b06932061f00ff1371663ecd526">More...</a><br /></td></tr>
 <tr class="separator:a2e9f5b06932061f00ff1371663ecd526"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8e8f14d5a71372d3c41160b0203be628"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_ga8e8f14d5a71372d3c41160b0203be628.html#ga8e8f14d5a71372d3c41160b0203be628">nsegment_srid</a> (const <a class="el" href="structNsegment.html">Nsegment</a> *ns <a class="el" href="meos_2include_2temporal_2temporal_8h_addf5ec070e9499d36b7f2009ce736076.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>)</td></tr>
+<tr class="memitem:ga8e8f14d5a71372d3c41160b0203be628"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_ga8e8f14d5a71372d3c41160b0203be628.html#ga8e8f14d5a71372d3c41160b0203be628">nsegment_srid</a> (const <a class="el" href="structNsegment.html">Nsegment</a> *ns UNUSED)</td></tr>
 <tr class="memdesc:ga8e8f14d5a71372d3c41160b0203be628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a network segment.  <a href="group__meos__npoint__base__srid_ga8e8f14d5a71372d3c41160b0203be628.html#ga8e8f14d5a71372d3c41160b0203be628">More...</a><br /></td></tr>
 <tr class="separator:ga8e8f14d5a71372d3c41160b0203be628"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaef515b82020de00209cc86df460026df"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__accessor_gaef515b82020de00209cc86df460026df.html#gaef515b82020de00209cc86df460026df">nsegment_start_position</a> (const <a class="el" href="structNsegment.html">Nsegment</a> *ns)</td></tr>

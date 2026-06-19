@@ -86,6 +86,7 @@ $(function() {
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;common/hashfn.h&gt;</code><br />
 <code>#include &quot;port/pg_bitutils.h&quot;</code><br />
 <code>#include &lt;utils/float.h&gt;</code><br />
@@ -93,13 +94,15 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tnumber__mathfuncs_8h_source.html">temporal/tnumber_mathfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__inout_8h_source.html">temporal/type_inout.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &lt;utils/jsonb.h&gt;</code><br />
+<code>#include &lt;utils/numeric.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -277,8 +280,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ab78d59a3c94abf3ebeaf256fc8168a54"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSpan.html">Span</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2temporal_2span_8c_ab78d59a3c94abf3ebeaf256fc8168a54.html#ab78d59a3c94abf3ebeaf256fc8168a54">spanarr_normalize</a> (<a class="el" href="structSpan.html">Span</a> *spans, int count, bool order, int *newcount)</td></tr>
 <tr class="memdesc:ab78d59a3c94abf3ebeaf256fc8168a54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalize an array of spans.  <a href="meos_2src_2temporal_2span_8c_ab78d59a3c94abf3ebeaf256fc8168a54.html#ab78d59a3c94abf3ebeaf256fc8168a54">More...</a><br /></td></tr>
 <tr class="separator:ab78d59a3c94abf3ebeaf256fc8168a54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf5a10f96544514e207c27d0eb29ec23d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__base__types_gaf5a10f96544514e207c27d0eb29ec23d.html#gaf5a10f96544514e207c27d0eb29ec23d">timestamptz_shift</a> (<a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, const <a class="el" href="structInterval.html">Interval</a> *interv)</td></tr>
-<tr class="memdesc:gaf5a10f96544514e207c27d0eb29ec23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a timestamptz shifted by an interval.  <a href="group__meos__base__types_gaf5a10f96544514e207c27d0eb29ec23d.html#gaf5a10f96544514e207c27d0eb29ec23d">More...</a><br /></td></tr>
+<tr class="memitem:gaf5a10f96544514e207c27d0eb29ec23d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__base__timestamp_gaf5a10f96544514e207c27d0eb29ec23d.html#gaf5a10f96544514e207c27d0eb29ec23d">timestamptz_shift</a> (<a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, const <a class="el" href="structInterval.html">Interval</a> *interv)</td></tr>
+<tr class="memdesc:gaf5a10f96544514e207c27d0eb29ec23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a timestamptz shifted by an interval.  <a href="group__meos__base__timestamp_gaf5a10f96544514e207c27d0eb29ec23d.html#gaf5a10f96544514e207c27d0eb29ec23d">More...</a><br /></td></tr>
 <tr class="separator:gaf5a10f96544514e207c27d0eb29ec23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9910be1cf8970c5b7258ff779aaba3f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2temporal_2span_8c_a9910be1cf8970c5b7258ff779aaba3f9.html#a9910be1cf8970c5b7258ff779aaba3f9">tstzspan_delta_scale_iter</a> (<a class="el" href="structSpan.html">Span</a> *s, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> origin, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> delta, double scale)</td></tr>
 <tr class="memdesc:a9910be1cf8970c5b7258ff779aaba3f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shift and/or scale a timestamptz span by a delta and a scale.  <a href="meos_2src_2temporal_2span_8c_a9910be1cf8970c5b7258ff779aaba3f9.html#a9910be1cf8970c5b7258ff779aaba3f9">More...</a><br /></td></tr>

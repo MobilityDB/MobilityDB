@@ -89,13 +89,14 @@ $(function() {
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;geos_c.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;lwgeom_log.h&gt;</code><br />
 <code>#include &lt;intervaltree.h&gt;</code><br />
 <code>#include &lt;lwgeom_geos.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="postgres__types_8h_source.html">temporal/postgres_types.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__transform_8h_source.html">geo/meos_transform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo_8h_source.html">geo/tgeo.h</a>&quot;</code><br />
@@ -109,10 +110,10 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a1a38946956e9c81cdeb44f0449bf09b0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a1a38946956e9c81cdeb44f0449bf09b0.html#a1a38946956e9c81cdeb44f0449bf09b0">MAXBOX3DLEN</a>&#160;&#160;&#160;255</td></tr>
-<tr class="separator:a1a38946956e9c81cdeb44f0449bf09b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a150de4c339494f58e8c5e8821007a27a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a150de4c339494f58e8c5e8821007a27a.html#a150de4c339494f58e8c5e8821007a27a">MAXGBOXLEN</a>&#160;&#160;&#160;255</td></tr>
-<tr class="separator:a150de4c339494f58e8c5e8821007a27a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3547f02bc4ce55e1e6d8d43626036369"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a>&#160;&#160;&#160;255</td></tr>
+<tr class="separator:a3547f02bc4ce55e1e6d8d43626036369"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3444e9732902eede17476a05b72d2fd5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a3444e9732902eede17476a05b72d2fd5.html#a3444e9732902eede17476a05b72d2fd5">MAX_LEN_GBOX</a>&#160;&#160;&#160;255</td></tr>
+<tr class="separator:a3444e9732902eede17476a05b72d2fd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb5e820c58dec63ccdf40981c110cd3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_adb5e820c58dec63ccdf40981c110cd3f.html#adb5e820c58dec63ccdf40981c110cd3f">PG_PARSER_ERROR</a>(lwg_parser_result)</td></tr>
 <tr class="separator:adb5e820c58dec63ccdf40981c110cd3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02e63c9764b1fa97b1db257c6a77ea2a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a02e63c9764b1fa97b1db257c6a77ea2a.html#a02e63c9764b1fa97b1db257c6a77ea2a">PGIS_FP_TOLERANCE</a>&#160;&#160;&#160;1e-12</td></tr>
@@ -137,9 +138,9 @@ Functions</h2></td></tr>
 <tr class="memitem:af4c5c27795db151e3d74b2a556c42c08"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_af4c5c27795db151e3d74b2a556c42c08.html#af4c5c27795db151e3d74b2a556c42c08">distance_point2d</a> (<a class="el" href="structPOINT2D.html">POINT2D</a> a, <a class="el" href="structPOINT2D.html">POINT2D</a> b)</td></tr>
 <tr class="memdesc:af4c5c27795db151e3d74b2a556c42c08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between two points.  <a href="postgis__funcs_8c_af4c5c27795db151e3d74b2a556c42c08.html#af4c5c27795db151e3d74b2a556c42c08">More...</a><br /></td></tr>
 <tr class="separator:af4c5c27795db151e3d74b2a556c42c08"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6114bdee0513fd0b7dd839ae3f4d1c41"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGBOX.html">GBOX</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__base__inout_ga6114bdee0513fd0b7dd839ae3f4d1c41.html#ga6114bdee0513fd0b7dd839ae3f4d1c41">gbox_make</a> (bool hasz, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax)</td></tr>
-<tr class="memdesc:ga6114bdee0513fd0b7dd839ae3f4d1c41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a PostGIS <a class="el" href="structGBOX.html">GBOX</a> from the arguments.  <a href="group__meos__geo__base__inout_ga6114bdee0513fd0b7dd839ae3f4d1c41.html#ga6114bdee0513fd0b7dd839ae3f4d1c41">More...</a><br /></td></tr>
-<tr class="separator:ga6114bdee0513fd0b7dd839ae3f4d1c41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25f17a8aa694050180826528d80e825d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGBOX.html">GBOX</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__base__inout_ga25f17a8aa694050180826528d80e825d.html#ga25f17a8aa694050180826528d80e825d">gbox_make</a> (bool hasz, bool hasm, bool geodetic, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, double mmin, double mmax)</td></tr>
+<tr class="memdesc:ga25f17a8aa694050180826528d80e825d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a PostGIS <a class="el" href="structGBOX.html">GBOX</a> from the arguments.  <a href="group__meos__geo__base__inout_ga25f17a8aa694050180826528d80e825d.html#ga25f17a8aa694050180826528d80e825d">More...</a><br /></td></tr>
+<tr class="separator:ga25f17a8aa694050180826528d80e825d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab2b7f79b9772a38b6f402d55add45f65"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__base__inout_gab2b7f79b9772a38b6f402d55add45f65.html#gab2b7f79b9772a38b6f402d55add45f65">gbox_out</a> (const <a class="el" href="structGBOX.html">GBOX</a> *box, int maxdd)</td></tr>
 <tr class="memdesc:gab2b7f79b9772a38b6f402d55add45f65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the string representation of a PostGIS <a class="el" href="structGBOX.html">GBOX</a>.  <a href="group__meos__geo__base__inout_gab2b7f79b9772a38b6f402d55add45f65.html#gab2b7f79b9772a38b6f402d55add45f65">More...</a><br /></td></tr>
 <tr class="separator:gab2b7f79b9772a38b6f402d55add45f65"><td class="memSeparator" colspan="2">&#160;</td></tr>
