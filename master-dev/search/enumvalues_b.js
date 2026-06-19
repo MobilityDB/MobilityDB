@@ -30,6 +30,6 @@ var searchData=
   ['meos_5fwkb_5ftsequence_27',['MEOS_WKB_TSEQUENCE',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a62e525eaa210b4717f78516920c91153',1,'temporal.h']]],
   ['meos_5fwkb_5ftsequenceset_28',['MEOS_WKB_TSEQUENCESET',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a5486d9d556dae3c052c0d2a20ecf011f',1,'temporal.h']]],
   ['minus_29',['MINUS',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97baf613d73b4e7b570ffd967df4a13c4225',1,'temporal.h']]],
-  ['minus_5fop_30',['MINUS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a70e3b26ad7f7ab25c44fc4b0a48c4417',1,'meos_catalog.h']]],
+  ['minus_5fop_30',['MINUS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dba70e3b26ad7f7ab25c44fc4b0a48c4417',1,'meos_catalog.h']]],
   ['mul_31',['MUL',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a086ab1f2f4dac104b6826ebe0eaba8fd',1,'tnumber_mathfuncs.h']]]
 ];
