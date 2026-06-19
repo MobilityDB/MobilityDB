@@ -399,10 +399,26 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func)
       {
-        result[count++] = tinstant_make(func(tinstant_value_p(inst1),
-          tinstant_value_p(inst2)), inst1->temptype, inst1->t);
+        Datum v1 = tinstant_value_p(inst1);
+        Datum v2 = tinstant_value_p(inst2);
+        Datum value = func(v1, v2);
+        result[count++] = tinstant_make(value, inst1->temptype, inst1->t);
         if (tofree)
           tofree1[nfree1++] = result[count - 1];
+        /* tinstant_make copies value into the result instant, so when func
+         * returns a freshly allocated by-reference value that allocation is
+         * orphaned and leaks unless it is freed here. The by-reference sum
+         * callbacks (e.g. datum_sum_double2, which calls double2_add) are this
+         * allocating case. Other callbacks borrow rather than allocate:
+         * datum_min_text and datum_max_text return one of their arguments
+         * unchanged, following the _p accessor convention, so their result is a
+         * pointer still owned by an input instant -- freeing it would corrupt
+         * that instant. A borrowed result is precisely one that aliases v1 or
+         * v2; free only a by-reference result that is neither input. */
+        if (! basetype_byvalue(temptype_basetype(inst1->temptype)) &&
+            DatumGetPointer(value) != DatumGetPointer(v1) &&
+            DatumGetPointer(value) != DatumGetPointer(v2))
+          pfree(DatumGetPointer(value));
       }
       else
       {
