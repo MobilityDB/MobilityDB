@@ -44,6 +44,8 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_npoint.h>
+#include <pg_bool.h>
+#include <pg_text.h>
 
 /* Main program */
 int main(void)
@@ -158,6 +160,7 @@ int main(void)
   printf("****************************************************************\n");
 
   /* Input and output functions */
+  printf("****************************************************************\n");
 
   /* char *npoint_as_ewkt(const Npoint *np, int maxdd); */
   char_result = npoint_as_ewkt(npoint1, 6);

@@ -63,20 +63,34 @@ jobs:
           # Create a new PostgreSQL database cluster
           export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
           initdb
-          # Configure PostgreSQL for MobilityDB
+          # Configure PostgreSQL for MobilityDB (verbose logging to catch crashes)
           {
             echo "port = 5432"
             echo "shared_preload_libraries = 'postgis-3.dll'"
             echo "max_locks_per_transaction = 128"
+            echo "log_statement = 'all'"
+            echo "log_min_messages = 'debug1'"
+            echo "log_min_error_statement = 'debug1'"
+            echo "logging_collector = on"
+            echo "log_directory = 'log'"
           } >> "${PGDATA}/postgresql.conf"
           # Start PostgreSQL
           pg_ctl start
           # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
-          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
-          # Stop the cluster cleanly so the runner's post-job step doesn't
-          # see orphan postgres processes (those non-zero-exit on cleanup).
-          pg_ctl stop -m fast
+          psql -p 5432 -U runneradmin -d mydb -v ON_ERROR_STOP=1 -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
+      - name: Dump postgres log
+        if: always()
+        shell: msys2 {0}
+        run: |
+          export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
+          echo "======= postgres log ======="
+          if [ -d "${PGDATA}/log" ]; then
+            for f in "${PGDATA}/log"/*; do
+              echo "--- $f ---"
+              cat "$f"
+            done
+          fi
 
       # - name: Run tests
         # run: |

@@ -38,6 +38,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>
 #include <funcapi.h>
 #include <access/heaptoast.h>
 #include <access/detoast.h>
@@ -285,7 +286,7 @@ Datum
 Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
-  text *result = cstring2text(version);
+  text *result = cstring_to_text(version);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -300,7 +301,7 @@ Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_full_version();
-  text *result = cstring2text(version);
+  text *result = cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
 }
@@ -521,7 +522,7 @@ interpType
 input_interp_string(FunctionCallInfo fcinfo, int argno)
 {
   text *interp_txt = PG_GETARG_TEXT_P(argno);
-  char *interp_str = text2cstring(interp_txt);
+  char *interp_str = text_to_cstring(interp_txt);
   interpType result = interptype_from_string(interp_str);
   pfree(interp_str);
   PG_FREE_IF_COPY(interp_txt, argno);
@@ -824,7 +825,7 @@ Temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   const char *str = temporal_subtype(temp);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -841,7 +842,7 @@ Temporal_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   const char *str = temporal_interp(temp);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }

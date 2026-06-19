@@ -307,7 +307,7 @@ SELECT tboxes(tfloat '1@2000-01-01');
 SELECT tboxes(tfloat '{1@2000-01-01}');
 SELECT tboxes(tfloat '[1@2000-01-01]');
 SELECT tboxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT tboxes(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3 3)@2000-01-04, 3 3)@2000-01-05]}');
+SELECT tboxes(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 
 -- Instantantaneous temporal value
 SELECT splitNTboxes(tfloat '1@2000-01-01', 1);

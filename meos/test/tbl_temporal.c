@@ -74,10 +74,10 @@ int main(void)
   // FILE *file = fopen("csv/tbl_tbool.csv", "r");
   // FILE *file = fopen("csv/tbl_tint.csv", "r");
   // FILE *file = fopen("csv/tbl_tfloat.csv", "r");
-  // FILE *file = fopen("csv/tbl_ttext.csv", "r");
+  FILE *file = fopen("csv/tbl_ttext.csv", "r");
   // FILE *file = fopen("csv/tbl_tgeompoint.csv", "r");
   // FILE *file = fopen("csv/tbl_tgeogpoint.csv", "r");
-  FILE *file = fopen("csv/tbl_tgeometry.csv", "r");
+  // FILE *file = fopen("csv/tbl_tgeometry.csv", "r");
   // FILE *file = fopen("csv/tbl_tgeography.csv", "r");
   // FILE *file = fopen("csv/tbl_tcbuffer.csv", "r");
   // FILE *file = fopen("csv/tbl_tnpoint.csv", "r");
@@ -116,10 +116,10 @@ int main(void)
     // Temporal *temp = tbool_in(temporal_buffer);
     // Temporal *temp = tint_in(temporal_buffer);
     // Temporal *temp = tfloat_in(temporal_buffer);
-    // Temporal *temp = ttext_in(temporal_buffer);
+    Temporal *temp = ttext_in(temporal_buffer);
     // Temporal *temp = tgeompoint_in(temporal_buffer);
     // Temporal *temp = tgeogpoint_in(temporal_buffer);
-    Temporal *temp = tgeometry_in(temporal_buffer);
+    // Temporal *temp = tgeometry_in(temporal_buffer);
     // Temporal *temp = tgeography_in(temporal_buffer);
     // Temporal *temp = tcbuffer_in(temporal_buffer);
     // Temporal *temp = tnpoint_in(temporal_buffer);
@@ -135,7 +135,8 @@ int main(void)
     // Temporal *rest = temporal_tsample(temp, interv, start, "linear");
     // Temporal *rest = temporal_tprecision(temp, interv, start);
     // Temporal *rest = tfloat_shift_scale_value(temp, 5, 10);
-    Temporal *rest = tgeometry_to_tcbuffer(temp);
+    Temporal *rest = ttext_initcap(temp);
+    // Temporal *rest = tgeometry_to_tcbuffer(temp);
     if (rest)
     {
       /* Get the number of instants of the result */

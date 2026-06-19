@@ -34,8 +34,6 @@
  * ...) for temporal numbers
  */
 
-#include "temporal/tnumber_mathfuncs.h"
-
 /* C */
 #include <assert.h>
 #include <math.h>
@@ -47,8 +45,13 @@
 #include <meos_internal.h>
 #include "temporal/lifting.h"
 #include "temporal/tinstant.h"
+#include "temporal/tnumber_mathfuncs.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <pgtypes.h>
 
 /*****************************************************************************
  * General functions on datums
@@ -168,10 +171,12 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
+  SpanSet *ss;
+  Temporal * projtemp2;
   if (oper == DIV)
   {
-    SpanSet *ss = temporal_time(temp1);
-    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
+    ss = temporal_time(temp1);
+    projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
     if (! projtemp2)
     {
       pfree(ss);
@@ -478,14 +483,14 @@ angular_difference(Datum degrees1, Datum degrees2)
 }
 
 /**
- * @ingroup meos_base_types
+ * @ingroup meos_base_float
  * @brief Return the angular difference, i.e., the smaller angle between the
  * two degree values
  * @param[in] degrees1,degrees2 Values
  * @csqlfn #Float_angular_difference()
  */
 double
-float_angular_difference(double degrees1, double degrees2)
+float8_angular_difference(float8 degrees1, float8 degrees2)
 {
   return DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
@@ -688,51 +693,6 @@ tnumber_trend(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return the exponential of a double
- * @param[in] d Value
- * @note PostgreSQL function: dexp(PG_FUNCTION_ARGS)
- */
-double
-float_exp(double d)
-{
-  double result;
-  /*
-   * Handle NaN and Inf cases explicitly.  This avoids needing to assume
-   * that the platform's exp() conforms to POSIX for these cases, and it
-   * removes some edge cases for the overflow checks below.
-   */
-  if (isnan(d))
-    result = d;
-  else if (isinf(d))
-  {
-    /* Per POSIX, exp(-Inf) is 0 */
-    result = (d > 0.0) ? d : 0;
-  }
-  else
-  {
-    /*
-     * On some platforms, exp() will not set errno but just return Inf or
-     * zero to report overflow/underflow; therefore, test both cases.
-     */
-    errno = 0;
-    result = exp(d);
-    if (unlikely(errno == ERANGE))
-    {
-      if (result != 0.0)
-        float_overflow_error();
-      else
-        float_underflow_error();
-    }
-    else if (unlikely(isinf(result)))
-      float_overflow_error();
-    else if (unlikely(result == 0.0))
-      float_underflow_error();
-  }
-  return result;
-}
-
-/**
  * @brief Return the exponential of a double
  * @param[in] d Value
  * @note Function used for lifting
@@ -740,7 +700,7 @@ float_exp(double d)
 static Datum
 datum_exp(Datum d)
 {
-  return Float8GetDatum(float_exp(DatumGetFloat8(d)));
+  return Float8GetDatum(float8_exp(DatumGetFloat8(d)));
 }
 
 /**
@@ -801,37 +761,6 @@ tfloat_exp(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return the natural logarithm of a double
- * @param[in] d Value
- * @note PostgreSQL function: dlog1(PG_FUNCTION_ARGS)
- */
-double
-float_ln(double d)
-{
-  double result;
-
-  /*
-   * Emit particular SQLSTATE error codes for ln(). This is required by the
-   * SQL standard.
-   */
-  if (d == 0.0)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "cannot take logarithm of zero");
-  if (d < 0)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "cannot take logarithm of a negative number");
-
-  result = log(d);
-  if (unlikely(isinf(result)) && !isinf(d))
-    float_overflow_error();
-  if (unlikely(result == 0.0) && d != 1.0)
-    float_underflow_error();
-
-  return result;
-}
-
-/**
  * @brief Return the natural logarithm of a double
  * @param[in] d Value
  * @note Function used for lifting
@@ -839,7 +768,7 @@ float_ln(double d)
 static Datum
 datum_ln(Datum d)
 {
-  return Float8GetDatum(float_ln(DatumGetFloat8(d)));
+  return Float8GetDatum(float8_ln(DatumGetFloat8(d)));
 }
 
 /**
@@ -904,38 +833,6 @@ tfloat_ln(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_types
- * @brief Return the logarithm base 10 of a double
- * @param[in] d Value
- * @note PostgreSQL function: dlog10(PG_FUNCTION_ARGS)
- */
-double
-float_log10(double d)
-{
-  double result;
-
-  /*
-   * Emit particular SQLSTATE error codes for log(). The SQL spec doesn't
-   * define log(), but it does define ln(), so it makes sense to emit the
-   * same error code for an analogous error condition.
-   */
-  if (d == 0.0)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot take logarithm of zero");
-  if (d < 0)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot take logarithm of a negative number");
-
-  result = log10(d);
-  if (unlikely(isinf(result)) && !isinf(d))
-    float_overflow_error();
-  if (unlikely(result == 0.0) && d != 1.0)
-    float_underflow_error();
-
-  return result;
-}
-
-/**
  * @brief Return the logarithm base 10 of a double
  * @param[in] d Value
  * @note Function used for lifting
@@ -943,7 +840,7 @@ float_log10(double d)
 static Datum
 datum_log10(Datum d)
 {
-  return Float8GetDatum(float_log10(DatumGetFloat8(d)));
+  return Float8GetDatum(float8_log10(DatumGetFloat8(d)));
 }
 
 /**

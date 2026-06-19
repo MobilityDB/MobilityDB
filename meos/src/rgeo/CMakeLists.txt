@@ -1,4 +1,4 @@
-set(RGEO_SRCS
+set(RGEO_SOURCES
   trgeo.c
   trgeo_boxops.c
   trgeo_compops.c
@@ -12,4 +12,4 @@ set(RGEO_SRCS
   trgeo_vclip.c
   )
 
-add_library(rgeo OBJECT ${RGEO_SRCS})
+add_library(rgeo OBJECT ${RGEO_SOURCES})
