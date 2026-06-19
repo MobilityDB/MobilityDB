@@ -35,6 +35,7 @@
 #define __MEOS_INTERNAL_H__
 
 /* C */
+#include <assert.h>
 #include <stddef.h>
 /* JSON-C */
 #include <json-c/json.h>
