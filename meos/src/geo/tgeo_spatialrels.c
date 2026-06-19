@@ -1433,7 +1433,7 @@ etouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
+  return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
 #endif /* MEOS */
 
