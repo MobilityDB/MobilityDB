@@ -22,11 +22,20 @@ map, and the SKIP_REASON map. Add a new type by appending a config; no
 generator change needed.
 """
 
+import glob
+import json
 import os
 import re
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Self-contained, family-local smoke configs live here: a family ships
+# meos/test/smoke/<family>.json and is DISCOVERED by glob (in main) — the
+# generator never enumerates families. This mirrors the established
+# append_portable_aliases() file(GLOB ...) model on the SQL side, so a new
+# family adds zero edits to any central registry.
+SMOKE_DIR = os.path.join(ROOT, "smoke")
 
 # Generate against the *installed* MEOS headers — the contract the
 # resulting test will link against. Override with $MEOS_INCLUDE_DIR if
@@ -90,7 +99,8 @@ GLOBAL_SKIP = {
 }
 
 
-def emit_call(fname, ret, args, arg_map, skip_map, override_args):
+def emit_call(fname, ret, args, arg_map, skip_map, override_args,
+              no_free=(), value_returns=()):
     # Direct-name skip
     if fname in skip_map:
         return f"  /* SKIP {fname}: {skip_map[fname]} */\n"
@@ -128,6 +138,13 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args):
     if ret == "double":
         return (f"  {{ double r = {call};\n"
                 f"    printf(\"{fname}: %.6f\\n\", r); }}\n")
+    # By-value scalar returns the CONFIG declares (e.g. a cell index like
+    # Quadbin = uint64, or a uint32_t resolution): call and discard — a value
+    # return owns no storage, so there is nothing to free. Opt-in per config
+    # (default empty) so the existing suites' output is unchanged.
+    if ret in value_returns:
+        return (f"  {{ {ret} r = {call}; (void) r;\n"
+                f"    printf(\"{fname}: ok\\n\"); }}\n")
     # Double-pointer returns (T **) need element-by-element free using
     # the n_out count populated by the function's int* arg. The generator
     # only uses this shape when the call signature contains an `int *`
@@ -156,6 +173,12 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args):
                     f"      free(r);\n"
                     f"    }} }}\n")
     if "*" in ret:
+        # no_free: the function returns a borrowed pointer (e.g. a view into
+        # the MEOS ways cache) that the caller must NOT free.
+        if fname in no_free:
+            return (f"  {{ {ret} r = {call};\n"
+                    f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
+                    f"    /* {fname} returns a borrowed pointer; do NOT free */ }}\n")
         return (f"  {{ {ret} r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
                 f"    if (r) free(r); }}\n")
@@ -290,18 +313,18 @@ TRGEO_CONFIG = dict(
         "Datum":               "geom1_datum",
     },
     override_args={
-        "geo_tpose_to_trgeo":          {1: "tpose1"},
-        "tdistance_trgeo_tpoint":      {1: "tpoint1"},
-        "nad_trgeo_tpoint":            {1: "tpoint1"},
-        "nai_trgeo_tpoint":            {1: "tpoint1"},
-        "shortestline_trgeo_tpoint":   {1: "tpoint1"},
+        "geo_tpose_to_trgeometry":          {1: "tpose1"},
+        "tdistance_trgeometry_tpoint":      {1: "tpoint1"},
+        "nad_trgeometry_tpoint":            {1: "tpoint1"},
+        "nai_trgeometry_tpoint":            {1: "tpoint1"},
+        "shortestline_trgeometry_tpoint":   {1: "tpoint1"},
     },
     skip={
-        "trgeo_value_n":         "out-param GSERIALIZED ** is exercised manually below",
-        "trgeo_traversed_area":  "pending union-of-swept-polygons implementation",
+        "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
+        "trgeometry_traversed_area":  "pending union-of-swept-polygons implementation",
     },
     common_inputs="""\
-  TimestampTz tstz1 = pg_timestamptz_in("2001-01-02", -1);
+  TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
@@ -312,24 +335,24 @@ TRGEO_CONFIG = dict(
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum geom1_datum = (Datum) geom1;
 
-  TInstant *trgeo_inst1 = trgeoinst_make(geom1, pose1, tstz1);
-  TInstant *trgeo_inst2 = trgeoinst_make(geom1, pose1,
-    pg_timestamptz_in("2001-01-03", -1));
+  TInstant *trgeo_inst1 = trgeometryinst_make(geom1, pose1, tstz1);
+  TInstant *trgeo_inst2 = trgeometryinst_make(geom1, pose1,
+    timestamptz_in("2001-01-03", -1));
   Temporal *trgeo_seq1 = (Temporal *) trgeo_inst1;
-  trgeo_seq1 = trgeo_append_tinstant(trgeo_seq1, trgeo_inst2,
+  trgeo_seq1 = trgeometry_append_tinstant(trgeo_seq1, trgeo_inst2,
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
-  Temporal *tpoint1 = trgeo_to_tgeompoint(trgeo_seq1);
-  Temporal *tpose1 = trgeo_to_tpose(trgeo_seq1);
+  Temporal *tpoint1 = trgeometry_to_tpoint(trgeo_seq1);
+  Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
   int n_out = 0;
 """,
     cleanup="""\
   /* Manually exercise trgeo_value_n (out-param GSERIALIZED **). */
   {
     GSERIALIZED *out_geom = NULL;
-    bool ok = trgeo_value_n(trgeo_seq1, 1, &out_geom);
-    printf("trgeo_value_n: ok=%d ptr=%s\\n", (int) ok, out_geom ? "OK" : "NULL");
+    bool ok = trgeometry_value_n(trgeo_seq1, 1, &out_geom);
+    printf("trgeometry_value_n: ok=%d ptr=%s\\n", (int) ok, out_geom ? "OK" : "NULL");
     if (out_geom) free(out_geom);
   }
 
@@ -390,7 +413,7 @@ TPOSE_CONFIG = dict(
             "out-param Pose ** has no clean canned site; covered manually",
     },
     common_inputs="""\
-  TimestampTz tstz1 = pg_timestamptz_in("2001-01-02", -1);
+  TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
@@ -476,9 +499,17 @@ TCBUFFER_CONFIG = dict(
         "re:^ttouches_(tcbuffer|cbuffer|geo)_":    "MEOS bug: spanset path issue",
         "re:^tcontains_(tcbuffer|cbuffer|geo)_":   "MEOS bug: spanset path issue",
         "re:^tcovers_(tcbuffer|cbuffer|geo)_":     "MEOS bug: spanset path issue",
+        # The geometry-covers/contains-a-tcbuffer direction is intentionally
+        # only defined for the ALWAYS semantics (the traversed-area test);
+        # the EVER public wrappers assert(! ever). The SQL surface mirrors
+        # this (212_tcbuffer_spatialrels.test.sql never calls the geo,tcbuffer
+        # ever direction). Skip the ever wrappers so the smoke suite does not
+        # abort on a documented-unsupported path.
+        "ecovers_geo_tcbuffer":   "ever geo-covers-tcbuffer intentionally unsupported (assert !ever)",
+        "econtains_geo_tcbuffer": "ever geo-contains-tcbuffer intentionally unsupported (assert !ever)",
     },
     common_inputs="""\
-  TimestampTz tstz1 = pg_timestamptz_in("2001-01-02", -1);
+  TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
   Interval *interv1 = NULL;
@@ -493,16 +524,14 @@ TCBUFFER_CONFIG = dict(
 
   Temporal *tcbuffer1 = tcbuffer_in(
     "[Cbuffer(Point(0 0), 0.5)@2001-01-02, Cbuffer(Point(1 0), 0.5)@2001-01-03]");
-  TInstant *tcbuffer_inst1 = (TInstant *) temporal_start_instant(tcbuffer1);
+  TInstant *tcbuffer_inst1 = (TInstant *) temporal_start_inst(tcbuffer1);
   TSequence    *tcbuffer_tseq1    = (TSequence *) tcbuffer1;
   TSequenceSet *tcbuffer_tseqset1 = NULL;
   Temporal *tpoint1 = tcbuffer_to_tgeompoint(tcbuffer1);
   int n_out = 0;
 """,
     cleanup="""\
-  /* tcbuffer_inst1 is a fresh tinstant_copy() alloc but glibc's tcache
-   * detects a double-free when freeing it after the suite runs — some
-   * function in the chain releases its storage. Leave it alone here. */
+  /* tcbuffer_inst1 is a VIEW into tcbuffer1 (temporal_start_inst); do NOT free */
   if (tcbuffer1) free(tcbuffer1);
   if (tpoint1) free(tpoint1);
   free(stbox1);
@@ -555,6 +584,10 @@ TNPOINT_CONFIG = dict(
         "nai_tnpoint_tpoint":           {1: "tpoint1"},
         "shortestline_tnpoint_tpoint":  {1: "tpoint1"},
     },
+    # route_geom(rid) returns a borrowed pointer into the MEOS ways cache,
+    # NOT a fresh allocation — freeing it corrupts the cache (use-after-free
+    # cascades through every later route lookup).
+    no_free={"route_geom"},
     skip={
         # The MEOS ways cache is empty in a standalone test (it is
         # populated only at runtime in the PG-extension build, via
@@ -586,7 +619,7 @@ TNPOINT_CONFIG = dict(
         "re:^npoint_to_set$":                  "needs ways cache",
     },
     common_inputs="""\
-  TimestampTz tstz1 = pg_timestamptz_in("2001-01-02", -1);
+  TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
   Interval *interv1 = NULL;
@@ -601,7 +634,7 @@ TNPOINT_CONFIG = dict(
 
   Temporal *tnpoint1 = tnpoint_in(
     "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]");
-  TInstant *tnpoint_inst1 = (TInstant *) temporal_start_instant(tnpoint1);
+  TInstant *tnpoint_inst1 = (TInstant *) temporal_start_inst(tnpoint1);
   TSequence    *tnpoint_tseq1    = (TSequence *) tnpoint1;
   TSequenceSet *tnpoint_tseqset1 = NULL;
   /* tpoint1 stays a parsed tgeompoint literal (NOT tnpoint_to_tgeompoint),
@@ -612,8 +645,7 @@ TNPOINT_CONFIG = dict(
   int n_out = 0;
 """,
     cleanup="""\
-  /* tnpoint_inst1 is a fresh tinstant_copy() but freeing it triggers
-   * tcache double-free (same pattern as tcbuffer_inst1). */
+  /* tnpoint_inst1 is a VIEW into tnpoint1 (temporal_start_inst); do NOT free */
   if (tnpoint1) free(tnpoint1);
   if (tpoint1) free(tpoint1);
   free(stbox1);
@@ -691,9 +723,16 @@ TGEOMETRY_CONFIG = dict(
         "re:^tgeoseqset_from_base":  "needs STEP interp on multi-span input",
         "re:^tgeoseq_from_base":     "needs STEP interp on multi-span input",
         "re:^tpoint_from_base":      "needs hand-constructed Temporal input",
+        # Time-tiling functions take an Interval* duration; the canned
+        # interv1 is NULL, which trips assert(xsize > 0 || duration) in
+        # stbox_tile_state_make. They need a real duration to exercise.
+        "stbox_get_space_time_tile": "interv1=NULL triggers assert(xsize>0||duration)",
+        "stbox_get_time_tile":       "interv1=NULL triggers assert(xsize>0||duration)",
+        "stbox_space_time_tiles":    "interv1=NULL triggers assert(xsize>0||duration)",
+        "stbox_time_tiles":          "interv1=NULL triggers assert(xsize>0||duration)",
     },
     common_inputs="""\
-  TimestampTz tstz1 = pg_timestamptz_in("2001-01-02", -1);
+  TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
   Interval *interv1 = NULL;
@@ -836,6 +875,17 @@ def write_test(name, cfg):
     label = cfg["type_label"]
     pad = max(0, 60 - len(label) - len(" MEOS smoke test"))
 
+    # A config's header is only installed when its feature was compiled in
+    # (e.g. meos_json.h needs -DJSON=on). The valgrind smoke job builds MEOS
+    # WITHOUT JSON, so meos_json.h is absent there; skip the config instead of
+    # crashing the whole regeneration with FileNotFoundError. The suite list in
+    # run_smoketests.sh only runs the always-present families, so a skipped
+    # tjsonb here is harmless.
+    if not os.path.exists(header_path):
+        print(f"Skipping {name}: {header_path} not installed "
+              "(feature not compiled in)")
+        return
+
     with open(header_path) as f:
         src = f.read()
 
@@ -852,7 +902,9 @@ def write_test(name, cfg):
 
     body = "".join(emit_call(fname, ret, args,
                              cfg["arg_map"], cfg["skip"],
-                             cfg["override_args"])
+                             cfg["override_args"],
+                             cfg.get("no_free", ()),
+                             cfg.get("value_returns", ()))
                    for fname, ret, args in decls)
     head = HEADER_TEMPLATE.format(
         type_label=label, header_relpath=cfg["header"],
@@ -866,12 +918,45 @@ def write_test(name, cfg):
     print(f"Wrote {out_path}: {len(decls)} declarations parsed.")
 
 
+def load_sidecar(path):
+    """Load a self-contained, family-local smoke config (data-only JSON) that a
+    family ships in meos/test/smoke/<family>.json. The schema mirrors the legacy
+    in-file CONFIG dicts, with two ergonomic differences for JSON:
+      - common_inputs / cleanup are arrays of lines (no C-newline escaping);
+      - override_args integer indices arrive as strings and are restored to int.
+    Everything else (header/out/arg_map/skip/value_returns/extra_includes) is
+    passed straight through to write_test()."""
+    with open(path) as f:
+        raw = json.load(f)
+    cfg = dict(raw)
+    cfg["common_inputs"] = "".join(line + "\n" for line in raw.get("common_inputs", []))
+    cfg["cleanup"] = "\n".join(raw.get("cleanup", []))
+    cfg.setdefault("extra_includes", "")
+    cfg.setdefault("arg_map", {})
+    cfg.setdefault("skip", {})
+    cfg.setdefault("value_returns", [])
+    cfg["override_args"] = {
+        fn: {int(k): v for k, v in ov.items()}
+        for fn, ov in raw.get("override_args", {}).items()
+    }
+    return cfg
+
+
 def main():
     target = sys.argv[1] if len(sys.argv) > 1 else None
     for name, cfg in CONFIGS.items():
         if target and name != target:
             continue
         write_test(name, cfg)
+    # Discovered, self-contained family sidecars: a new family drops
+    # meos/test/smoke/<family>.json and is generated here without the generator
+    # ever naming it (the append_portable_aliases file(GLOB ...) model). The
+    # legacy in-file CONFIGS above stay as-is and migrate to sidecars later.
+    for path in sorted(glob.glob(os.path.join(SMOKE_DIR, "*.json"))):
+        name = os.path.splitext(os.path.basename(path))[0]
+        if target and name != target:
+            continue
+        write_test(name, load_sidecar(path))
 
 
 if __name__ == "__main__":
