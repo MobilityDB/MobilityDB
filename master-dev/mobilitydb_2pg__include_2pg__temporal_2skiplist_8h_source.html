@@ -125,33 +125,35 @@ $(function() {
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="comment">/*****************************************************************************/</span></div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a87b143b1efc3e9c0c9494d8cc5a9fca5.html#a87b143b1efc3e9c0c9494d8cc5a9fca5">   56</a></span><span class="preprocessor">#define INPUT_AGG_TRANS_STATE(fcinfo, state)  \</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a7fae75a5c4d57896e5f04a3bb22439cd.html#a7fae75a5c4d57896e5f04a3bb22439cd">   56</a></span><span class="preprocessor">#define INPUT_AGG_TRANS_STATE(fcinfo, state, ctx)  \</span></div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">  do {  \</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">    MemoryContext ctx = set_aggregation_context(fcinfo); \</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">    ctx = set_aggregation_context(fcinfo); \</span></div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">    state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \</span></div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">    if (PG_ARGISNULL(1))  \</span></div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">    {  \</span></div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">      if (state)  \</span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">        PG_RETURN_POINTER(state);  \</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">      else  \</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">        PG_RETURN_NULL();  \</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">    }  \</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">    unset_aggregation_context(ctx); \</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">      unset_aggregation_context(ctx); \</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">      if (state)  \</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">        PG_RETURN_POINTER(state);  \</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">      else  \</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">        PG_RETURN_NULL();  \</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">    }  \</span></div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">  } while (0)</span></div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a6bfd7a484d7d83f5989e35592275ae06.html#a6bfd7a484d7d83f5989e35592275ae06">   70</a></span><span class="preprocessor">#define INPUT_AGG_COMB_STATE(fcinfo, state1, state2)  \</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_af473e42a5268c4bd6f2c89e172f2bcaf.html#af473e42a5268c4bd6f2c89e172f2bcaf">   70</a></span><span class="preprocessor">#define INPUT_AGG_COMB_STATE(fcinfo, state1, state2, ctx)  \</span></div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">  do {  \</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">    MemoryContext ctx = set_aggregation_context(fcinfo); \</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">    ctx = set_aggregation_context(fcinfo); \</span></div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">    state1 = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \</span></div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">    state2 = PG_ARGISNULL(1) ? NULL : (SkipList *) PG_GETARG_POINTER(1);  \</span></div>
 <div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="preprocessor">    if (! state1 &amp;&amp; ! state2)  \</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">      PG_RETURN_NULL();  \</span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">    unset_aggregation_context(ctx); \</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">  } while (0)</span></div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">    {  \</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">      unset_aggregation_context(ctx); \</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">      PG_RETURN_NULL();  \</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">    }  \</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="preprocessor">  } while (0)</span></div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="comment">/*****************************************************************************/</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="ameos_8h_html"><div class="ttname"><a href="meos_8h.html">meos.h</a></div><div class="ttdoc">External API of the Mobility Engine Open Source (MEOS) library.</div></div>
 <div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a07f639990b8eeb1363347b0caab4875e_html_a07f639990b8eeb1363347b0caab4875e"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a07f639990b8eeb1363347b0caab4875e.html#a07f639990b8eeb1363347b0caab4875e">fetch_fcinfo</a></div><div class="ttdeci">FunctionCallInfo fetch_fcinfo(void)</div><div class="ttdoc">Skiplist data structure used for performing aggregates.</div><div class="ttdef"><b>Definition:</b> temporal.c:105</div></div>
 <div class="ttc" id="amobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a8094da2a89c7c623e367b780d318bc2c_html_a8094da2a89c7c623e367b780d318bc2c"><div class="ttname"><a href="mobilitydb_2pg__include_2pg__temporal_2skiplist_8h_a8094da2a89c7c623e367b780d318bc2c.html#a8094da2a89c7c623e367b780d318bc2c">set_aggregation_context</a></div><div class="ttdeci">MemoryContext set_aggregation_context(FunctionCallInfo fcinfo)</div><div class="ttdoc">Switch to the memory context for aggregation.</div><div class="ttdef"><b>Definition:</b> skiplist.c:55</div></div>
