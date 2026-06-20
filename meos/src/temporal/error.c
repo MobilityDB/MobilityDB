@@ -199,6 +199,17 @@ pg_error(int errlevel, const char *errmsg)
 
 /**
  * @brief Function handling error messages
+ *
+ * @note Return-or-not contract is *undefined*: depending on the
+ * installed handler this function MAY return to the caller. The
+ * default handler `exit(EXIT_FAILURE)`s on `ERROR` (safe for one-shot
+ * CLI use); any custom handler installed via
+ * `meos_initialize_error_handler` may return. Code in MEOS that calls
+ * `meos_error(ERROR, ...)` MUST be immediately followed by a `return`,
+ * `goto`, `break`, or sentinel assignment -- NEVER let execution fall
+ * through and assume the call did not return. See the corresponding
+ * doc comment on the public declaration of `meos_error` in
+ * `meos/include/meos_error.h`.
  */
 void
 meos_error(int errlevel, int errcode, const char *format, ...)
