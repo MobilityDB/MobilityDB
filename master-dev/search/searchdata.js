@@ -8,7 +8,7 @@ var indexSectionsWithContent =
   5: "$_abcdefghijklmnoprstuvwxyz",
   6: "_bcdefilmnopqrstuvw",
   7: "ceimnrst",
-  8: "abcdefghiklmnorstu",
+  8: "abcdefghilmnorstu",
   9: "abcdefgijlmnopqrstuvwxyz",
   10: "abcdefimprst",
   11: "m"

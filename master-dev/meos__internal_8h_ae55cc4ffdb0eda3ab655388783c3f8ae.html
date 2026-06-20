@@ -599,10 +599,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Enumeration for the relative position of a given element into a skiplist. </p>
+<p>Skiplist mode discriminator. </p>
+<p >SKIPLIST_TEMPORAL is the mode used by every production aggregate (temporal_aggfuncs.c, tgeo_aggfuncs.c, tnpoint_aggfuncs.c); elements are Temporal* values and merging routes through tsequence_tagg.</p>
+<p >SKIPLIST_KEYVALUE is the (key, value)-pair mode used by MEOS-direct streaming consumers (see <a class="el" href="ais__expand__skiplist_8c.html" title="A simple program that reads AIS data from a CSV file containing one full day of observations provided...">meos/examples/ais_expand_skiplist.c</a>). The supported pattern is search-then-splice-on-miss with caller-managed in-place mutation via the user-supplied merge_fn. The batch-merge code path inside keyval_skiplist_merge is unvalidated and contains known correctness bugs. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae55cc4ffdb0eda3ab655388783c3f8aea595a759e93543e08875d64f4dbf08e9c" name="ae55cc4ffdb0eda3ab655388783c3f8aea595a759e93543e08875d64f4dbf08e9c"></a>TEMPORAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ae55cc4ffdb0eda3ab655388783c3f8aeae4b80d6b56c45a3437f9bab61962d580" name="ae55cc4ffdb0eda3ab655388783c3f8aeae4b80d6b56c45a3437f9bab61962d580"></a>KEYVALUE&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae55cc4ffdb0eda3ab655388783c3f8aeabf45c14c1890f3a1feb197d1e8ce893e" name="ae55cc4ffdb0eda3ab655388783c3f8aeabf45c14c1890f3a1feb197d1e8ce893e"></a>SKIPLIST_TEMPORAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ae55cc4ffdb0eda3ab655388783c3f8aeaa3f6428e7facfe90d62cf79a83470fb9" name="ae55cc4ffdb0eda3ab655388783c3f8aeaa3f6428e7facfe90d62cf79a83470fb9"></a>SKIPLIST_KEYVALUE&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
