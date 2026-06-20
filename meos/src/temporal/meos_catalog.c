@@ -304,6 +304,13 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
 const char *
 meostype_name(MeosType type)
 {
+  /* Defensive: an out-of-range or unmapped MeosType returns NULL from
+   * the designated-initializer array, and propagating that through to
+   * meos_error's %s segfaults inside __strlen_avx2. Return a sentinel
+   * string instead so the caller's error message survives. */
+  const int n = (int) (sizeof(MEOS_TYPE_NAMES) / sizeof(MEOS_TYPE_NAMES[0]));
+  if ((int) type < 0 || (int) type >= n || MEOS_TYPE_NAMES[type] == NULL)
+    return "unknown";
   return MEOS_TYPE_NAMES[type];
 }
 
