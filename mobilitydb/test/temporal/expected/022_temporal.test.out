@@ -2549,6 +2549,12 @@ SELECT tempSubtype(tbool 't@2000-01-01');
  Instant
 (1 row)
 
+SELECT tempBasetype(tbool 't@2000-01-01');
+ tempbasetype 
+--------------
+ bool
+(1 row)
+
 SELECT tempSubtype(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
  tempsubtype 
 -------------

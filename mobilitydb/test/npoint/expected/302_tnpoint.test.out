@@ -588,6 +588,12 @@ SELECT tempSubtype(tnpoint 'Npoint(1, 0.5)@2000-01-01');
  Instant
 (1 row)
 
+SELECT tempBasetype(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tempbasetype 
+--------------
+ npoint
+(1 row)
+
 SELECT tempSubtype(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  tempsubtype 
 -------------

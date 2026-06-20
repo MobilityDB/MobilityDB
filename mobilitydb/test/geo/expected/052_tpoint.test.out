@@ -1725,6 +1725,12 @@ SELECT tempSubtype(tgeompoint 'Point(1 1)@2000-01-01');
  Instant
 (1 row)
 
+SELECT tempBasetype(tgeompoint 'Point(1 1)@2000-01-01');
+ tempbasetype 
+--------------
+ geometry
+(1 row)
+
 SELECT tempSubtype(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  tempsubtype 
 -------------
