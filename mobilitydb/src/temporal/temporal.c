@@ -866,7 +866,7 @@ Temporal_basetype_name(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   const char *str = temporal_basetype_name(temp);
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
