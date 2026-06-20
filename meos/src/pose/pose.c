@@ -557,7 +557,7 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
     X = float8_out(pose->data[4], maxdd);
     Y = float8_out(pose->data[5], maxdd);
     Z = float8_out(pose->data[6], maxdd);
-    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 3; // Three ','
+    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 4; // Four ','
   }
   else
   {
