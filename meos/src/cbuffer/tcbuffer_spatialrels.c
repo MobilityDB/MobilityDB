@@ -196,6 +196,7 @@ ea_spatialrel_tcbufferseq_discstep_geo(const TSequence *seq,
   assert(seq); assert(gs); assert(seq->temptype == T_TCBUFFER);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   assert(interp == DISCRETE || interp == STEP);
+  (void) interp;
   bool result;
   for (int i = 0; i < seq->count; i++)
   {
