@@ -328,10 +328,12 @@ typedef enum
 extern BOX3D *box3d_from_gbox(const GBOX *box);
 extern BOX3D *box3d_make(double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, int32_t srid);
+extern BOX3D *box3d_in(const char *str);
 extern char *box3d_out(const BOX3D *box, int maxdd);
 extern GBOX *gbox_make(bool hasz, bool hasm, bool geodetic, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax);
+extern GBOX *gbox_in(const char *str);
 extern char *gbox_out(const GBOX *box, int maxdd);
 extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size);
 extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);

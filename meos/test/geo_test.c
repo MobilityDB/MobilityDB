@@ -1523,6 +1523,18 @@ int main(void)
   printf("gbox_to_stbox(%s): %s\n", gbox1_out, char_result);
   free(stbox_result); free(char_result);
 
+  /* BOX3D *box3d_in(const char *str); */
+  box3d_result = box3d_in(box3d1_out);
+  char_result = box3d_out(box3d_result, 6);
+  printf("box3d_in(%s): %s\n", box3d1_out, char_result);
+  free(box3d_result); free(char_result);
+
+  /* GBOX *gbox_in(const char *str); */
+  gbox_result = gbox_in(gbox1_out);
+  char_result = gbox_out(gbox_result, 6);
+  printf("gbox_in(%s): %s\n", gbox1_out, char_result);
+  free(gbox_result); free(char_result);
+
   /* Temporal *geomeas_to_tpoint(const GSERIALIZED *gs); */
   (void) tpoint_tfloat_to_geomeas(tgeompt1_step, tfloat1, true, &geom_result);
   tgeompt_result = geomeas_to_tpoint(geom_result);

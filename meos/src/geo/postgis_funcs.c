@@ -138,6 +138,32 @@ gbox_out(const GBOX *box, int maxdd)
 
 /**
  * @ingroup meos_geo_base_inout
+ * @brief Return a PostGIS GBOX from its string representation
+ * @param[in] str String
+ * @details The format is `GBOX((xmin,ymin),(xmax,ymax))` for two dimensions
+ * or `GBOX((xmin,ymin,zmin),(xmax,ymax,zmax))` for three dimensions, the
+ * inverse of #gbox_out
+ */
+GBOX *
+gbox_in(const char *str)
+{
+  VALIDATE_NOT_NULL(str, NULL);
+
+  double xmin, ymin, zmin, xmax, ymax, zmax;
+  if (sscanf(str, " GBOX((%lf,%lf,%lf),(%lf,%lf,%lf))",
+      &xmin, &ymin, &zmin, &xmax, &ymax, &zmax) == 6)
+    return gbox_make(true, false, false, xmin, xmax, ymin, ymax, zmin, zmax,
+      0, 0);
+  if (sscanf(str, " GBOX((%lf,%lf),(%lf,%lf))",
+      &xmin, &ymin, &xmax, &ymax) == 4)
+    return gbox_make(false, false, false, xmin, xmax, ymin, ymax, 0, 0, 0, 0);
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+    "Could not parse GBOX value: %s", str);
+  return NULL;
+}
+
+/**
+ * @ingroup meos_geo_base_inout
  * @brief Return a PostGIS BOX3D from the arguments
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
@@ -204,6 +230,45 @@ box3d_out(const BOX3D *box, int maxdd)
   pfree(ymin); pfree(ymax);
   pfree(zmin); pfree(zmax);
   return strdup(buf);
+}
+
+/**
+ * @ingroup meos_geo_base_inout
+ * @brief Return a PostGIS BOX3D from its string representation
+ * @param[in] str String
+ * @details The format is `[SRID=#;]BOX3D((xmin,ymin,zmin),(xmax,ymax,zmax))`,
+ * the inverse of #box3d_out
+ */
+BOX3D *
+box3d_in(const char *str)
+{
+  VALIDATE_NOT_NULL(str, NULL);
+
+  int32 srid = SRID_UNKNOWN;
+  const char *ptr = str;
+  /* Optional "SRID=#;" prefix */
+  if (pg_strncasecmp(ptr, "SRID=", 5) == 0)
+  {
+    char *end;
+    srid = (int32) strtol(ptr + 5, &end, 10);
+    if (end == ptr + 5 || *end != ';')
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse BOX3D value: %s", str);
+      return NULL;
+    }
+    ptr = end + 1;
+  }
+
+  double xmin, ymin, zmin, xmax, ymax, zmax;
+  if (sscanf(ptr, " BOX3D((%lf,%lf,%lf),(%lf,%lf,%lf))",
+      &xmin, &ymin, &zmin, &xmax, &ymax, &zmax) != 6)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse BOX3D value: %s", str);
+    return NULL;
+  }
+  return box3d_make(xmin, xmax, ymin, ymax, zmin, zmax, srid);
 }
 #endif /* MEOS */
 
