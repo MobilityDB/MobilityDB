@@ -778,6 +778,53 @@ POLYHEDRALSURFACE Z (
   ((1 1 1, 1 1 0, 0 1 0, 0 1 1, 1 1 1))
 ))', 1);
 ERROR:  Unsupported geometry type in round function: PolyhedralSurface
+SELECT ST_AsText(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3812)) =
+       ST_AsText(ST_Transform(geometry 'SRID=4326;Point(4.35 50.85)', 3812));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsText(transform(geometry 'SRID=4326;Linestring(4.35 50.85,4.40 50.90)', 3812)) =
+       ST_AsText(ST_Transform(geometry 'SRID=4326;Linestring(4.35 50.85,4.40 50.90)', 3812));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_SRID(transform(geometry 'SRID=3812;Point(150000 170000)', 4326));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_SRID(transform(geography 'SRID=4326;Point(4.35 50.85)', 4326));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT asEWKT(geometry 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsEWKT(geometry 'SRID=4326;Point(4.35 50.85)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asEWKT(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 2) =
+       ST_AsEWKT(geometry 'SRID=3812;Linestring(150000 170000,160000 180000)', 2);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asEWKT(geography 'SRID=4326;Point(4.35 50.85)') =
+       ST_AsEWKT(geography 'SRID=4326;Point(4.35 50.85)');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(round(tgeometry 'Point(1.12345 1.12345)@2000-01-01', 2));
                     astext                     
 -----------------------------------------------

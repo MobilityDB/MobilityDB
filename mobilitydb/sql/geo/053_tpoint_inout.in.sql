@@ -140,6 +140,20 @@ CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Single base geometry/geography EWKT. In the PostgreSQL extension this rewrites
+-- to PostGIS ST_AsEWKT; the standalone MEOS library and the generated bindings
+-- back the same asEWKT(geometry) surface with the geo_as_ewkt() kernel. Together
+-- with transform(geometry, integer) this lets one portable generator/suite use
+-- MobilityDB names (asEWKT, transform) instead of PostGIS-only ST_AsEWKT/ST_Transform.
+CREATE FUNCTION asEWKT(geometry, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(geography, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asEWKT(geometry[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
