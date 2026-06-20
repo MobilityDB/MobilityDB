@@ -441,7 +441,7 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
   void *max_value = values[count - 1];
 
   /* Find the list values that are strictly before the span of new values */
-  memset(update, 0, sizeof(&update));
+  memset(update, 0, sizeof(int) * SKIPLIST_MAXLEVEL);
   int height = list->elems[0].height;
   SkipListElem *elem = &list->elems[0];
   int cur = 0;
