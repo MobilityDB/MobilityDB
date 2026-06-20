@@ -386,7 +386,7 @@ IsValidJsonNumber(const char *str, size_t len)
  * of use; this function is guaranteed to return a valid JsonLexContext.
  */
 JsonLexContext *
-makeJsonLexContextCstringLen(JsonLexContext *lex, const char *json,
+makeJsonLexContextCstringLen(JsonLexContext *lex, const char *js,
   size_t len, int encoding, bool need_escapes)
 {
   if (lex == NULL)
@@ -400,7 +400,7 @@ makeJsonLexContextCstringLen(JsonLexContext *lex, const char *json,
     memset(lex, 0, sizeof(JsonLexContext));
 
   lex->errormsg = NULL;
-  lex->input = lex->token_terminator = lex->line_start = json;
+  lex->input = lex->token_terminator = lex->line_start = js;
   lex->line_number = 1;
   lex->input_length = len;
   lex->input_encoding = encoding;
@@ -735,10 +735,11 @@ pg_parse_json(JsonLexContext *lex, const JsonSemAction *sem)
    * still need to init the partial token string so that freeJsonLexContext
    * works, so perform the full incremental initialization.
    */
-  if (!allocate_incremental_state(lex))
+  if (! allocate_incremental_state(lex))
     return JSON_OUT_OF_MEMORY;
 
-  return pg_parse_json_incremental(lex, sem, lex->input, lex->input_length, true);
+  return pg_parse_json_incremental(lex, sem, lex->input, lex->input_length,
+    true);
 
 #else
 
@@ -847,7 +848,7 @@ json_count_array_elements(JsonLexContext *lex, int *elements)
  */
 JsonParseErrorType
 pg_parse_json_incremental(JsonLexContext *lex, const JsonSemAction *sem,
-  const char *json, size_t len, bool is_last)
+  const char *js, size_t len, bool is_last)
 {
   JsonTokenType tok;
   JsonParseErrorType result;
@@ -859,7 +860,7 @@ pg_parse_json_incremental(JsonLexContext *lex, const JsonSemAction *sem,
   if (!lex->incremental)
     return JSON_INVALID_LEXER_TYPE;
 
-  lex->input = lex->token_terminator = lex->line_start = json;
+  lex->input = lex->token_terminator = lex->line_start = js;
   lex->input_length = len;
   lex->inc_state->is_last_chunk = is_last;
   lex->inc_state->started = true;
@@ -2137,9 +2138,9 @@ json_lex_string(JsonLexContext *lex)
        * can batch calls to jsonapi_appendBinaryStringInfo.
        */
       while (p < end - sizeof(Vector8) &&
-           !pg_lfind8('\\', (uint8 *) p, sizeof(Vector8)) &&
-           !pg_lfind8('"', (uint8 *) p, sizeof(Vector8)) &&
-           !pg_lfind8_le(31, (uint8 *) p, sizeof(Vector8)))
+             ! pg_lfind8('\\', (uint8 *) p, sizeof(Vector8)) &&
+             ! pg_lfind8('"', (uint8 *) p, sizeof(Vector8)) &&
+             ! pg_lfind8_le(31, (uint8 *) p, sizeof(Vector8)))
         p += sizeof(Vector8);
 
       for (; p < end; p++)

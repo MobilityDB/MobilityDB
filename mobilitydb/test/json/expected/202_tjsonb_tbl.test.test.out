@@ -1,0 +1,476 @@
+COPY tbl_tjsonb TO '/tmp/tbl_tjsonb' (FORMAT BINARY);
+COPY 0
+DROP TABLE IF EXISTS tbl_tjsonb_tmp;
+NOTICE:  table "tbl_tjsonb_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tjsonb_tmp AS TABLE tbl_tjsonb WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tjsonb_tmp FROM '/tmp/tbl_tjsonb' (FORMAT BINARY);
+COPY 0
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tjsonb_tmp;
+DROP TABLE
+SELECT DISTINCT tempSubtype(tjsonbInst(inst)) FROM tbl_tjsonb_inst;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tjsonb_inst;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(tjsonbSeq(inst)) FROM tbl_tjsonb_inst;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(inst)) FROM tbl_tjsonb_inst;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tjsonb_discseq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeq(seq)) FROM tbl_tjsonb_discseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_discseq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbInst(seq)) FROM tbl_tjsonb_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tjsonb_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeq(seq)) FROM tbl_tjsonb_seq;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(seq)) FROM tbl_tjsonb_seq;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbInst(ss)) FROM tbl_tjsonb_seqset WHERE numInstants(ss) = 1;
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tjsonb_seqset WHERE duration(ss) = '00:00:00';
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeq(ss)) FROM tbl_tjsonb_seqset WHERE numSequences(ss) = 1;
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT DISTINCT tempSubtype(tjsonbSeqSet(ss)) FROM tbl_tjsonb_seqset;
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numInstants(appendSequence(temp, tjsonbSeq(shiftTime(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tjsonb ORDER BY 1;
+ tempsubtype 
+-------------
+(0 rows)
+
+SELECT MAX(memSize(temp)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(lower(timeSpan(temp))) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(length(startValue(temp)::text)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tjsonb_inst;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(numSequences(seq)) FROM tbl_tjsonb_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tjsonb_seq;
+   max    
+----------
+ 01:00:00
+(1 row)
+
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tjsonb_seq;
+   max    
+----------
+ 01:00:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tjsonb_seq;
+   max    
+----------
+ 01:00:00
+(1 row)
+
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tjsonb_seq;
+ max 
+-----
+   1
+(1 row)
+
+SELECT MAX(numSequences(ss)) FROM tbl_tjsonb_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tjsonb_seqset;
+   max    
+----------
+ 01:03:00
+(1 row)
+
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tjsonb_seqset;
+   max    
+----------
+ 01:03:00
+(1 row)
+
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tjsonb_seqset;
+   max    
+----------
+ 01:03:00
+(1 row)
+
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tjsonb_seqset;
+ max 
+-----
+  10
+(1 row)
+
+SELECT MAX(numInstants(temp)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT COUNT(startInstant(temp)) FROM tbl_tjsonb;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(endInstant(temp)) FROM tbl_tjsonb;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_tjsonb;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MAX(array_length(instants(temp),1)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numTimestamps(temp)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(startTimestamp(temp)) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(endTimestamp(temp)) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tjsonb;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tjsonb;
+ max 
+-----
+    
+(1 row)
+
+SELECT COUNT(shiftTime(temp, i)) FROM tbl_tjsonb, tbl_interval;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(scaleTime(temp, i)) FROM tbl_tjsonb, tbl_interval;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(shiftScaleTime(temp, i, i)) FROM tbl_tjsonb, tbl_interval;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tjsonb_inst;
+ max 
+-----
+ 
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tjsonb_discseq;
+             max              
+------------------------------
+ Sun Dec 16 10:15:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tjsonb_seq;
+             max              
+------------------------------
+ Mon Dec 24 17:15:00 2001 PST
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tjsonb_seqset;
+             max              
+------------------------------
+ Mon Dec 24 02:30:00 2001 PST
+(1 row)
+
+SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_inst;
+ max 
+-----
+    
+(1 row)
+
+SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_discseq;
+ max 
+-----
+   2
+(1 row)
+
+SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_seq;
+ max 
+-----
+   4
+(1 row)
+
+SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tjsonb_seqset;
+ max 
+-----
+  20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb WHERE temp ?= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb WHERE temp %= startValue(temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValues(temp, jb), minusValues(temp, jb));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, (
+  SELECT set(array_agg(jb)) AS s FROM tbl_jsonb WHERE jb IS NOT NULL) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+ count 
+-------
+     0
+(1 row)
+
+SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.k < t2.k;
+ sum 
+-----
+    
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp = t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp < t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp <= t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp > t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp >= t2.temp;
+ count 
+-------
+     0
+(1 row)
+

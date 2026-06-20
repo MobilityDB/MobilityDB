@@ -20,17 +20,19 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include "catalog/pg_type.h"
-#include <common/hashfn.h>
-#include <common/int.h>
-#include <common/jsonapi.h>
-#include <nodes/nodes.h>
-#include <utils/date.h>
-#include <utils/json.h>
-#include <utils/jsonb.h>
+#include "common/hashfn.h"
+#include "common/int.h"
+#include "common/jsonapi.h"
+#include "nodes/nodes.h"
+#include "utils/builtins.h"
+#include "utils/date.h"
+#include "utils/json.h"
+#include "utils/jsonb.h"
 #include "utils/jsonfuncs.h"
-#include <utils/varlena.h> /* For DatumGetTextP */
+#include "utils/varlena.h" /* For DatumGetTextP */
 
 #include <pgtypes.h>
+#include "../../meos/include/meos_error.h"
 
 extern void escape_json_with_len(StringInfo buf, const char *str, int len);
 
@@ -48,7 +50,7 @@ extern void escape_json_with_len(StringInfo buf, const char *str, int len);
 // #include "utils/lsyscache.h"
 // #include "utils/typcache.h"
 
-static inline Jsonb *jsonb_from_cstring(char *json, int len, bool unique_keys,
+static inline Jsonb *jsonb_from_cstring(char *js, int len, bool unique_keys,
   Node *escontext);
 static bool checkStringLen(size_t len, Node *escontext);
 static JsonParseErrorType jsonb_in_object_start(void *pstate);
@@ -115,7 +117,8 @@ pg_jsonb_out(const Jsonb *jb)
   StringInfo out = makeStringInfo(); // MEOS
   char *str = JsonbToCString(out, &((Jsonb *)jb)->root, VARSIZE(jb));
   char *result = pstrdup(str);
-  pfree(out); pfree(str);
+  destroyStringInfo(out); 
+  // pfree(str);
   return (void *) result;
 }
 
@@ -139,6 +142,31 @@ pg_jsonb_from_text(const text *txt, bool unique_keys)
     unique_keys, NULL);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Return the text representation of a JSONB value
+ */
+#if MEOS
+text *
+jsonb_to_text(const Jsonb *jb)
+{
+  return pg_jsonb_to_text(jb);
+}
+#endif /* MEOS */
+text *
+pg_jsonb_to_text(const Jsonb *jb)
+{
+  StringInfo out = makeStringInfo();
+  char *str = JsonbToCString(out, (JsonbContainer *) &jb->root, VARSIZE(jb));
+  text *result = pg_cstring_to_text_with_len(str, out->len);
+  /* str aliases out->data (JsonbToCString returns the StringInfo buffer), so
+   * destroyStringInfo() already frees it -- do not pfree(str) again. */
+  destroyStringInfo(out);
+  return result;
+}
+
+/*****************************************************************************/
+
 /*
  * Get the type name of a jsonb container.
  */
@@ -161,7 +189,7 @@ JsonbContainerTypeName(JsonbContainer *jbc)
 }
 
 /*
- * Get the type name of a jsonb value.
+ * Get the type name of a JSONB value
  */
 const char *
 JsonbTypeName(JsonbValue *val)
@@ -218,7 +246,7 @@ text *
 jsonb_typeof_internal(Jsonb *in)
 {
   const char *result = JsonbContainerTypeName(&in->root);
-  return cstring_to_text(result);
+  return pg_cstring_to_text(result);
 }
 
 /*
@@ -232,7 +260,7 @@ jsonb_typeof_internal(Jsonb *in)
  * instead of being thrown.
  */
 static inline Jsonb *
-jsonb_from_cstring(char *json, int len, bool unique_keys, Node *escontext)
+jsonb_from_cstring(char *js, int len, bool unique_keys, Node *escontext)
 {
   JsonbInState state;
   memset(&state, 0, sizeof(state));
@@ -250,10 +278,15 @@ jsonb_from_cstring(char *json, int len, bool unique_keys, Node *escontext)
   sem.object_field_start = jsonb_in_object_field_start;
 
   JsonLexContext lex;
-  makeJsonLexContextCstringLen(&lex, json, len, GetDatabaseEncoding(), true);
+  makeJsonLexContextCstringLen(&lex, js, len, GetDatabaseEncoding(), true);
 
-  if (!pg_parse_json_or_errsave(&lex, &sem, escontext))
+  if (! pg_parse_json_or_errsave(&lex, &sem, escontext))
+  {
+    /* On a parse error free the lexer/scratch too (early-return leak) */
+    json_reset_tofree();
+    freeJsonLexContext(&lex);
     return NULL;
+  }
 
   /* after parsing, the item member has the composed jsonb structure */
   Jsonb *result = JsonbValueToJsonb(state.res);
@@ -368,7 +401,7 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
       Assert(token != NULL);
       v.type = jbvString;
       v.val.string.len = strlen(token);
-      if (!checkStringLen(v.val.string.len, _state->escontext))
+      if (! checkStringLen(v.val.string.len, _state->escontext))
         return JSON_SEM_ACTION_FAILED;
       v.val.string.val = token;
       break;
@@ -383,7 +416,9 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
       if (! num)
         return JSON_SEM_ACTION_FAILED;
       v.val.numeric = num;
-      /* Add num to the values that need to be freed */
+      /* Add num to the values freed by json_reset_tofree() after parsing --
+       * JsonbValueToJsonb serialises a copy, so the intermediate Numeric must
+       * be reclaimed or every numeric in a parsed jsonb leaks. */
       json_add_tofree((void *) num);
       break;
     case JSON_TOKEN_TRUE:
@@ -486,9 +521,13 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
   bool use_indent = false;
   bool raw_scalar = false;
   bool last_was_key = false;
+  bool tofree = false;
 
   if (! out)
+  {
     out = makeStringInfo();
+    tofree = true;
+  }
 
   enlargeStringInfo(out, (estimated_len >= 0) ? estimated_len : 64);
   JsonbIterator *it = JsonbIteratorInit(in);
@@ -499,7 +538,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
     switch (type)
     {
       case WJB_BEGIN_ARRAY:
-        if (!first)
+        if (! first)
           appendBinaryStringInfo(out, ", ", ispaces);
 
         if (!v.val.array.rawScalar)
@@ -514,7 +553,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
         level++;
         break;
       case WJB_BEGIN_OBJECT:
-        if (!first)
+        if (! first)
           appendBinaryStringInfo(out, ", ", ispaces);
 
         add_indent(out, use_indent && !last_was_key, level);
@@ -524,7 +563,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
         level++;
         break;
       case WJB_KEY:
-        if (!first)
+        if (! first)
           appendBinaryStringInfo(out, ", ", ispaces);
         first = true;
 
@@ -553,7 +592,7 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
         }
         break;
       case WJB_ELEM:
-        if (!first)
+        if (! first)
           appendBinaryStringInfo(out, ", ", ispaces);
         first = false;
 
@@ -586,7 +625,14 @@ JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len,
   }
 
   Assert(level == 0);
-  /* pfree(out); // WE CANNOT pfree */
+  if (tofree)
+  {
+    /* The StringInfo was allocated here; free the struct but keep out->data,
+     * which is the returned string (caller owns it). */
+    char *result = out->data;
+    pfree(out);
+    return result;
+  }
   return out->data;
 }
 
@@ -600,11 +646,15 @@ add_indent(StringInfo out, bool indent, int level)
   }
 }
 
+/*****************************************************************************
+ * Constructors 
+ *****************************************************************************/
+
 /**
  * @ingroup meos_json_base_constructor
- * @brief Return a JSONB value constructed from an array of alternating keys
- * and values
- * @param[in] keys_vals Array of alternating keys and vals 
+ * @brief Return a JSONB value constructed from a text array of alternating
+ * keys and values
+ * @param[in] keys_vals Array of alternating keys and values 
  * @param[in] count Number of elements in the input array 
  * @note Derived from PostgreSQL function @p jsonb_object()
  */
@@ -634,7 +684,7 @@ pg_jsonb_make(text **keys_vals, int count)
   for (int i = 0; i < count; ++i)
   {
     if (keys_vals[i])
-      keys_vals_str[i] = text_to_cstring(keys_vals[i]);
+      keys_vals_str[i] = pg_text_to_cstring(keys_vals[i]);
   }
   /* Iterate for half of the count */
   int count1 = count / 2;
@@ -685,10 +735,10 @@ pg_jsonb_make(text **keys_vals, int count)
 
 /**
  * @ingroup meos_json_base_constructor
- * @brief Return a JSONB value constructed from separate key and value arrays
- * of text values
+ * @brief Return a JSONB value constructed from separate key and value text
+ * arrays
  * @param[in] keys Keys
- * @param[in] values Keys
+ * @param[in] values Values
  * @param[in] count Number of elements in the input arrays
  * @note Derived from PostgreSQL function @p jsonb_object_two_arg()
  */
@@ -717,9 +767,9 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
         "null value not allowed for object key");
       return NULL;
     }
-    keys_str[i] = text_to_cstring(keys[i]);
+    keys_str[i] = pg_text_to_cstring(keys[i]);
     if (values[i])
-      values_str[i] = text_to_cstring(values[i]);
+      values_str[i] = pg_text_to_cstring(values[i]);
   }
   /* Convert the keys and the values into strings */
   for (int i = 0; i < count; ++i)
@@ -754,15 +804,33 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
   return result;
 }
 
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into a C string
+ * @param[in] jb JSONB object
+ */
+char *
+jsonb_to_cstring(const Jsonb *jb)
+{
+  assert(jb);
+  return JsonbToCString(NULL, &((Jsonb *) jb)->root, VARSIZE(jb));
+}
+
 /*
  * Extract scalar value from raw-scalar pseudo-array jsonb.
  */
 bool
 JsonbExtractScalar(JsonbContainer *jbc, JsonbValue *res)
 {
+  JsonbIterator *it;
   JsonbIteratorToken tok PG_USED_FOR_ASSERTS_ONLY;
+  JsonbValue  tmp;
 
-  if (!JsonContainerIsArray(jbc) || !JsonContainerIsScalar(jbc))
+  if (! JsonContainerIsArray(jbc) || ! JsonContainerIsScalar(jbc))
   {
     /* inform caller about actual type of container */
     res->type = (JsonContainerIsArray(jbc)) ? jbvArray : jbvObject;
@@ -773,8 +841,8 @@ JsonbExtractScalar(JsonbContainer *jbc, JsonbValue *res)
    * A root scalar is stored as an array of one element, so we get the array
    * and then its first (and only) member.
    */
-  JsonbIterator *it = JsonbIteratorInit(jbc);
-  JsonbValue tmp;
+  it = JsonbIteratorInit(jbc);
+
   tok = JsonbIteratorNext(&it, &tmp, true);
   Assert(tok == WJB_BEGIN_ARRAY);
   Assert(tmp.val.array.nElems == 1 && tmp.val.array.rawScalar);
@@ -825,11 +893,16 @@ cannotCastJsonbValue(enum jbvType type, const char *sqltype)
       "unknown jsonb type: %d", (int) type);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into a boolean
+ * @param[in] jb JSONB object
+ */
 bool
-jsonb_to_bool(Jsonb *in)
+jsonb_to_bool(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&in->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "boolean");
   if (v.type == jbvNull)
     return NULL;
@@ -838,11 +911,16 @@ jsonb_to_bool(Jsonb *in)
   return v.val.boolean;
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into a numeric
+ * @param[in] jb JSONB object
+ */
 Numeric
-jsonb_to_numeric(Jsonb *in)
+jsonb_to_numeric(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&in->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "numeric");
   if (v.type == jbvNull)
     return NULL;
@@ -856,11 +934,16 @@ jsonb_to_numeric(Jsonb *in)
   return retValue;
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into an int16
+ * @param[in] jb JSONB object
+ */
 int16
-jsonb_int16(Jsonb *in)
+jsonb_to_int16(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&in->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "smallint");
   if (v.type == jbvNull)
     return SHRT_MAX;
@@ -869,11 +952,16 @@ jsonb_int16(Jsonb *in)
   return numeric_to_int16(v.val.numeric);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into an int32
+ * @param[in] jb JSONB object
+ */
 int32
-jsonb_to_int32(Jsonb *in)
+jsonb_to_int32(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&in->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "integer");
   if (v.type == jbvNull)
     return INT_MAX;
@@ -882,11 +970,16 @@ jsonb_to_int32(Jsonb *in)
   return numeric_to_int32(v.val.numeric);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into an int64
+ * @param[in] jb JSONB object
+ */
 int64
-jsonb_to_int64(Jsonb *in)
+jsonb_to_int64(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&in->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "bigint");
   if (v.type == jbvNull)
     return LONG_MAX;
@@ -895,11 +988,16 @@ jsonb_to_int64(Jsonb *in)
   return numeric_to_int64(v.val.numeric);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into a float4
+ * @param[in] jb JSONB object
+ */
 float4
-jsonb_to_float4(Jsonb *jb)
+jsonb_to_float4(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&jb->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "real");
   if (v.type == jbvNull)
     return FLT_MAX;
@@ -908,11 +1006,16 @@ jsonb_to_float4(Jsonb *jb)
   return numeric_to_float4(v.val.numeric);
 }
 
+/**
+ * @ingroup meos_json_base_conversion
+ * @brief Convert a JSONB value into a float8
+ * @param[in] jb JSONB object
+ */
 float8
-jsonb_to_float8(Jsonb *jb)
+jsonb_to_float8(const Jsonb *jb)
 {
   JsonbValue v;
-  if (!JsonbExtractScalar(&jb->root, &v))
+  if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
     cannotCastJsonbValue(v.type, "double precision");
   if (v.type == jbvNull)
     return DBL_MAX;
@@ -949,12 +1052,13 @@ JsonbUnquote(Jsonb *jb)
   else
   {
     StringInfo out = makeStringInfo(); // MEOS
-    char *str = JsonbToCString(out, &jb->root, VARSIZE(jb));
+    char *str = JsonbToCString(out, (JsonbContainer *) &jb->root, VARSIZE(jb));
     char *result = pstrdup(str);
-    pfree(out); pfree(str);
+    /* str aliases out->data, freed by destroyStringInfo -- no extra pfree */
+    destroyStringInfo(out);
     return (void *) result;
   }
-  // return JsonbToCString(NULL, &jb->root, VARSIZE(jb));
+  return JsonbToCString(NULL, &jb->root, VARSIZE(jb));
 }
 
 /*****************************************************************************/

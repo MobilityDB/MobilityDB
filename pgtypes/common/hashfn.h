@@ -16,47 +16,45 @@
  * This works, though.
  */
 #define ROTATE_HIGH_AND_LOW_32BITS(v) \
-	((((v) << 1) & UINT64CONST(0xfffffffefffffffe)) | \
-	(((v) >> 31) & UINT64CONST(0x100000001)))
+  ((((v) << 1) & UINT64CONST(0xfffffffefffffffe)) | \
+  (((v) >> 31) & UINT64CONST(0x100000001)))
 
 
 extern uint32 hash_bytes(const unsigned char *k, int keylen);
 extern uint64 hash_bytes_extended(const unsigned char *k,
-								  int keylen, uint64 seed);
+                  int keylen, uint64 seed);
 extern uint32 hash_bytes_uint32(uint32 k);
 extern uint64 hash_bytes_uint32_extended(uint32 k, uint64 seed);
 
-#ifndef FRONTEND
-static inline Datum
+static inline uint32_t
 hash_any(const unsigned char *k, int keylen)
 {
-	return UInt32GetDatum(hash_bytes(k, keylen));
+  return hash_bytes(k, keylen);
 }
 
-static inline Datum
+static inline uint64_t
 hash_any_extended(const unsigned char *k, int keylen, uint64 seed)
 {
-	return UInt64GetDatum(hash_bytes_extended(k, keylen, seed));
+  return hash_bytes_extended(k, keylen, seed);
 }
 
-static inline Datum
+static inline uint32_t
 hash_uint32(uint32 k)
 {
-	return UInt32GetDatum(hash_bytes_uint32(k));
+  return hash_bytes_uint32(k);
 }
 
 static inline Datum
 hash_uint32_extended(uint32 k, uint64 seed)
 {
-	return UInt64GetDatum(hash_bytes_uint32_extended(k, seed));
+  return hash_bytes_uint32_extended(k, seed);
 }
-#endif
 
 extern uint32 string_hash(const void *key, Size keysize);
 extern uint32 tag_hash(const void *key, Size keysize);
 extern uint32 uint32_hash(const void *key, Size keysize);
 
-#define oid_hash uint32_hash	/* Remove me eventually */
+#define oid_hash uint32_hash  /* Remove me eventually */
 
 /*
  * Combine two 32-bit hash values, resulting in another hash value, with
@@ -67,8 +65,8 @@ extern uint32 uint32_hash(const void *key, Size keysize);
 static inline uint32
 hash_combine(uint32 a, uint32 b)
 {
-	a ^= b + 0x9e3779b9 + (a << 6) + (a >> 2);
-	return a;
+  a ^= b + 0x9e3779b9 + (a << 6) + (a >> 2);
+  return a;
 }
 
 /*
@@ -79,9 +77,9 @@ hash_combine(uint32 a, uint32 b)
 static inline uint64
 hash_combine64(uint64 a, uint64 b)
 {
-	/* 0x49a0f4dd15e5a8e3 is 64bit random data */
-	a ^= b + UINT64CONST(0x49a0f4dd15e5a8e3) + (a << 54) + (a >> 7);
-	return a;
+  /* 0x49a0f4dd15e5a8e3 is 64bit random data */
+  a ^= b + UINT64CONST(0x49a0f4dd15e5a8e3) + (a << 54) + (a >> 7);
+  return a;
 }
 
 /*
@@ -91,29 +89,29 @@ hash_combine64(uint64 a, uint64 b)
 static inline uint32
 murmurhash32(uint32 data)
 {
-	uint32		h = data;
+  uint32    h = data;
 
-	h ^= h >> 16;
-	h *= 0x85ebca6b;
-	h ^= h >> 13;
-	h *= 0xc2b2ae35;
-	h ^= h >> 16;
-	return h;
+  h ^= h >> 16;
+  h *= 0x85ebca6b;
+  h ^= h >> 13;
+  h *= 0xc2b2ae35;
+  h ^= h >> 16;
+  return h;
 }
 
 /* 64-bit variant */
 static inline uint64
 murmurhash64(uint64 data)
 {
-	uint64		h = data;
+  uint64    h = data;
 
-	h ^= h >> 33;
-	h *= 0xff51afd7ed558ccd;
-	h ^= h >> 33;
-	h *= 0xc4ceb9fe1a85ec53;
-	h ^= h >> 33;
+  h ^= h >> 33;
+  h *= 0xff51afd7ed558ccd;
+  h ^= h >> 33;
+  h *= 0xc4ceb9fe1a85ec53;
+  h ^= h >> 33;
 
-	return h;
+  return h;
 }
 
-#endif							/* HASHFN_H */
+#endif              /* HASHFN_H */

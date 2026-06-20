@@ -21,6 +21,8 @@
 #include <postgres.h>
 #include "nodes/nodes.h"
 
+#include "../../meos/include/meos_error.h"
+
 /* X/Open (XSI) requires <math.h> to provide M_PI, but core POSIX does not */
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

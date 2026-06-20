@@ -1152,15 +1152,11 @@
 			<title>Restrictions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tgeo_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+					<para><link linkend="tgeo_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry, a span in Z and/or a period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minuStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeo_atElevation"><varname>atElevation</varname>, <varname>minuElevation</varname></link>: Restrict to (the complement of) an elevation span</para>
+					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1347,7 +1343,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box or a temporal point with tiles of the same size and/or duration</para>
+						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
 					</listitem>
 
 					<listitem>
@@ -2262,7 +2258,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Temporal JSONB</title>
+		<title>Temporal JSON</title>
 
 		<sect2>
 		<title>Input and Output</title>
@@ -2354,7 +2350,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tjson_object_field"><varname>-></varname>, <varname>->></varname></link>: Extract a field from a temporal JSON value specified by a key</para>
+					<para><link linkend="tjson_object_field"><varname>-></varname>, <varname>->></varname>, <varname>tjson_object_field</varname>, <varname>tjsonb_object_field</varname>, <varname>tjsonb_object_field_text</varname></link>: Extract a field from a temporal JSON value specified by a key</para>
 				</listitem>
 
 				<listitem>
@@ -2392,6 +2388,22 @@
 
 				<listitem>
 					<para><link linkend="tjson_strip_nulls"><varname>tjson_strip_nulls</varname>, <varname>tjsonb_strip_nulls</varname></link>: Return a temporal JSON value without nulls</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_path_exists"><varname>@?</varname>, <varname>tjsonb_path_exists</varname>, <varname>tjsonb_path_exists_tz</varname></link>: Does the JSON path expression return any item from the JSONB value?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_path_match"><varname>@@</varname>, <varname>tjsonb_path_match</varname>, <varname>tjsonb_path_match_tz</varname></link>: Return the result of a JSON path expression check for a temporal JSONB value.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_path_query"><varname>tjsonb_path_query</varname>, <varname>tjsonb_path_query_tz</varname></link>: Return all items returned by a JSON path expression from a temporal JSONB value, as a JSON array</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tjsonb_path_query_first"><varname>tjsonb_path_query_first</varname>, <varname>tjsonb_path_query_first_tz</varname></link>: Return the first item returned by a JSON path expression from a temporal JSONB value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

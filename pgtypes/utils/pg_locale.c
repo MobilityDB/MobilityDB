@@ -46,6 +46,8 @@
 
 #include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
+#include "../../meos/include/meos_error.h"
+
 // #include "postgres.h"
 // #include <time.h>
 // #include "access/htup_details.h"

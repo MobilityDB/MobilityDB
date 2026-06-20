@@ -51,6 +51,10 @@
 #include <pgtypes.h>
 
 /*****************************************************************************/
+/* Function defined in formatting.c */
+extern bool scanner_isspace(char ch);
+
+/*****************************************************************************/
 
 /**
  * @brief Ensure there is no more input excepted white spaces
@@ -288,33 +292,46 @@ bool
 basetype_parse(const char **str, MeosType basetype, char delim, Datum *result)
 {
   p_whitespace(str);
-  int pos = 0;
+  size_t pos = 0;
   /* Save the original string for error handling */
   char *origstr = (char *) *str;
+  char *str1;
 
   /* ttext values must be enclosed between double quotes */
   if (**str == '"')
   {
-    /* Consume the double quote */
-    *str += 1;
-    while ( ( (*str)[pos] != '"' || (*str)[pos - 1] == '\\' )  &&
-      (*str)[pos] != '\0' )
+    /* Unescape the quoted value (inverse of #string_escape) and require the
+     * delimiter to follow it, possibly after some whitespace */
+    size_t consumed = string_unescape(*str, &str1);
+    if (! consumed)
+      return false;
+    pos += consumed;
+    while ((*str)[pos] != '\0' && (*str)[pos] != delim &&
+        scanner_isspace((*str)[pos]))
       pos++;
+    if ((*str)[pos] != delim)
+    {
+      pfree(str1);
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Missing delimeter character '%c': %s", delim, origstr);
+      return false;
+    }
   }
   else
   {
     while ((*str)[pos] != delim && (*str)[pos] != '\0')
       pos++;
+    if ((*str)[pos] == '\0')
+    {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Missing delimeter character '%c': %s", delim, origstr);
+      return false;
+    }
+    str1 = (char *) palloc(sizeof(char) * (pos + 1));
+    for (size_t i = 0; i < pos; i++)
+      str1[i] = (*str)[i];
+    str1[pos] = '\0';
   }
-  if ((*str)[pos] == '\0')
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Missing delimeter character '%c': %s", delim, origstr);
-    return false;
-  }
-  char *str1 = palloc(sizeof(char) * (pos + 1));
-  strncpy(str1, *str, pos);
-  str1[pos] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
   if (! success)
@@ -455,31 +472,33 @@ bool
 elem_parse(const char **str, MeosType basetype, Datum *result)
 {
   p_whitespace(str);
-  int pos = 0, dquote = 0;
+  char *str1;
+  size_t consumed;
   /* ttext and geometry/geography values must be enclosed between double quotes */
   if (**str == '"')
   {
-    /* Consume the double quote */
-    *str += 1;
-    while ( ( (*str)[pos] != '"' || (*str)[pos - 1] == '\\' )  &&
-      (*str)[pos] != '\0' )
-      pos++;
-    dquote = 1;
+    /* Unescape the quoted value (inverse of #string_escape); the set parser
+     * consumes the delimiter (',' or '}') that follows */
+    consumed = string_unescape(*str, &str1);
+    if (! consumed)
+      return false;
   }
   else
   {
-    while ((*str)[pos] != ',' && (*str)[pos] != '}' && 
+    size_t pos = 0;
+    while ((*str)[pos] != ',' && (*str)[pos] != '}' &&
         (*str)[pos] != '\0')
       pos++;
+    str1 = palloc(sizeof(char) * (pos + 1));
+    strncpy(str1, *str, pos);
+    str1[pos] = '\0';
+    consumed = pos;
   }
-  char *str1 = palloc(sizeof(char) * (pos + 1));
-  strncpy(str1, *str, pos);
-  str1[pos] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
   if (! success)
     return false;
-  *str += pos + dquote;
+  *str += consumed;
   return true;
 }
 

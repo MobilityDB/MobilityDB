@@ -18,6 +18,7 @@
 
 #include "utils/mb/pg_wchar.h"
 #include "parser/scansup.h"
+#include "../../meos/include/meos_error.h"
 
 extern int cliplen(const char *str, int len, int limit);
 

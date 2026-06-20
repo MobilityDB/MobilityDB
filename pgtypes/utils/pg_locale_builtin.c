@@ -16,6 +16,8 @@
 #include "common/unicode_category.h"
 #include "utils/pg_locale.h"
 
+#include "../../meos/include/meos_error.h"
+
 // #include "catalog/pg_database.h"
 // #include "catalog/pg_collation.h"
 // #include "common/unicode_case.h"

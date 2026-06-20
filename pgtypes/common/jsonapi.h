@@ -175,7 +175,7 @@ extern JsonParseErrorType pg_parse_json(JsonLexContext *lex,
   const JsonSemAction *sem);
 
 extern JsonParseErrorType pg_parse_json_incremental(JsonLexContext *lex,
-  const JsonSemAction *sem, const char *json, size_t len, bool is_last);
+  const JsonSemAction *sem, const char *js, size_t len, bool is_last);
 
 /* the null action object used for pure validation */
 extern PGDLLIMPORT const JsonSemAction nullSemAction;
@@ -213,7 +213,7 @@ extern JsonParseErrorType json_count_array_elements(JsonLexContext *lex,
  * freeJsonLexContext() or (in backends) via memory context cleanup.
  */
 extern JsonLexContext *makeJsonLexContextCstringLen(JsonLexContext *lex,
-  const char *json, size_t len, int encoding, bool need_escapes);
+  const char *js, size_t len, int encoding, bool need_escapes);
 
 /*
  * make a JsonLexContext suitable for incremental parsing.

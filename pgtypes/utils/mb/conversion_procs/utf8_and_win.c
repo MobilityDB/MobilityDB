@@ -36,6 +36,8 @@
 #include "../Unicode/win874_to_utf8.map"
 #include "../Unicode/win1258_to_utf8.map"
 
+#include "../../meos/include/meos_error.h"
+
 /* ----------
  * conv_proc(
  *    INTEGER,  -- source encoding id

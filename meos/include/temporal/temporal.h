@@ -80,8 +80,9 @@
 #define ORDER_NO        false
 
 /** Symbolic constants for the output of string elements */
-#define QUOTES          true
-#define QUOTES_NO       false
+#define QUOTES_ESCAPE   2
+#define QUOTES          1
+#define QUOTES_NO       0
 
 /** Symbolic constants for the output of string elements */
 #define SPACES          true

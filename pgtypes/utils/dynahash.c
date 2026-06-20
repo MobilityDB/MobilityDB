@@ -101,6 +101,8 @@
 #include "utils/hsearch.h"
 #include "utils/memutils.h"
 
+#include "../../meos/include/meos_error.h"
+
 // #include "access/xact.h"
 // #include "common/hashfn.h"
 // #include "port/pg_bitutils.h"

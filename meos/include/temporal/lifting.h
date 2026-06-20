@@ -50,7 +50,7 @@
  * that apply the lifted function to two base values.
  */
 
-#define MAX_PARAMS 1
+#define MAX_PARAMS 5
 #define MAX_ARGS   2
 
 typedef struct
@@ -60,6 +60,9 @@ typedef struct
   Datum param[MAX_PARAMS];    /**< Datum array for the parameters of the function */
   MeosType argtype[MAX_ARGS]; /**< Type of the arguments of the function */
   MeosType restype;           /**< Type of the result of the function */
+  Datum reserror;             /**< Resulting value error (e.g., INT_MAX or NULL pointer) */
+  int resnull;                /**< NULL handling if the resulting value may be 
+           * possible values are NULL_ERROR, NULL_JSON_NULL, NULL_DELETE, or NULL_RETURN */
   bool reslinear;             /**< True if the result has linear interpolation */
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
@@ -106,6 +109,10 @@ extern int eafunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo);
 extern int eafunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
+
+/*****************************************************************************/
+
+extern Set *lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/
 

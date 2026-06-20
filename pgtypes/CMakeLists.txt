@@ -139,8 +139,28 @@ set(PGTYPES_SOURCES "")
 add_subdirectory(access)
 add_subdirectory(catalog)
 add_subdirectory(common)
+# pgtypes/libpq pulls in BSD socket headers (<netinet/in.h>, <netdb.h>)
+# that don't exist in MSYS2/MinGW's UCRT64 toolchain. The MEOS-side
+# code that consumes JSON paths uses jsonpath grammar from
+# pgtypes/utils, not libpq, so libpq is unnecessary on Windows.
+if(NOT WIN32)
+  add_subdirectory(libpq)
+endif()
+# The vendored PostgreSQL node helpers (list/copy/equal/...) and regex engine
+# duplicate symbols the PostgreSQL backend already provides. The MobilityDB
+# extension requires PostgreSQL 18, whose backend exposes them, so it resolves
+# these against the server (at load on Linux/macOS, against libpostgres.a on
+# Windows). Only the standalone MEOS library, which has no server, needs the
+# vendored copies; building them into the extension causes a multiple-definition
+# link failure on the statically-linked MinGW/UCRT64 toolchain.
+if(MEOS)
+  add_subdirectory(nodes)
+endif()
 add_subdirectory(parser)
 add_subdirectory(port)
+if(MEOS)
+  add_subdirectory(regex)
+endif()
 # add_subdirectory(storage)
 add_subdirectory(timezone)
 add_subdirectory(utils)

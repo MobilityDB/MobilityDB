@@ -22,6 +22,8 @@
 #include "port/pg_bitutils.h"
 #include "utils/builtins.h"
 
+#include "../../meos/include/meos_error.h"
+
 /*
  * A table of all two-digit numbers. This is used to speed up decimal digit
  * generation by copying pairs of digits into the final output.
@@ -340,12 +342,12 @@ slow:
 
 out_of_range:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "value \"%s\" is out of range for type %s", s, "smallint");
+    "value \"%s\" is out of range for type smallint", s);
   return SHRT_MAX;
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "smallint", s);
+    "invalid input syntax for type smallint: \"%s\"", s);
   return SHRT_MAX;
 }
 
@@ -606,12 +608,12 @@ slow:
 
 out_of_range:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "value \"%s\" is out of range for type %s", s, "integer");
+    "value \"%s\" is out of range for type integer", s);
   return INT_MAX;
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "integer", s);
+    "invalid input syntax for type integer: \"%s\"", s);
   return INT_MAX;
 }
 
@@ -859,12 +861,12 @@ slow:
 
 out_of_range:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "value \"%s\" is out of range for type %s", s, "bigint");
+    "value \"%s\" is out of range for type bigint", s);
   return LONG_MAX;
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "bigint", s);
+    "invalid input syntax for type bigint: \"%s\"", s);
   return LONG_MAX;
 }
 

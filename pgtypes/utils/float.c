@@ -30,6 +30,7 @@
 #include "utils/float.h"
 
 #include "pgtypes.h"
+#include "../../meos/include/meos_error.h"
 
 /*****************************************************************************
  * Definitions taken from the file liblwgeom_internal.h
@@ -374,7 +375,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
   /* did we not see anything that looks like a double? */
   if (endptr == num || errno != 0)
   {
-    int      save_errno = errno;
+    int save_errno = errno;
 
     /*
      * C99 requires that strtod() accept NaN, [+-]Infinity, and [+-]Inf,
@@ -475,7 +476,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
 /**
  * @ingroup meos_base_float
  * @brief Return a float8 number from its string representation
- * @return On error return `DBL_MAX`
+ * @return On error return @p DBL_MAX
  * @note Derived from PostgreSQL function @p float8in()
  */
 float8
@@ -508,23 +509,22 @@ float8out_internal(double num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_base_types
  * @brief Return the string representation of a float8 number
  * @details This function uses the PostGIS function lwprint_double to print an
  * ordinate value using at most **maxdd** number of decimal digits. The actual 
  * number of printed decimal digits may be less than the requested ones if out 
- * of significant digits.
- *
+ * of significant digits. 
  * The function will write at most OUT_DOUBLE_BUFFER_SIZE bytes, including the
  * terminating NULL.
  */
 char *
-float8_out(float8 num, int maxdd)
+float8_out(double num, int maxdd)
 {
   assert(maxdd >= 0);
-  char *ascii = palloc(OUT_DOUBLE_BUFFER_SIZE);
-  lwprint_double(num, maxdd, ascii);
-  return ascii;
+  char *str = palloc(OUT_DOUBLE_BUFFER_SIZE);
+  lwprint_double(num, maxdd, str);
+  return str;
 }
 
 /* ========== PUBLIC ROUTINES ========== */

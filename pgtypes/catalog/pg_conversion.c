@@ -20,6 +20,7 @@
 #include "utils/builtins.h"
 #include "utils/mb/conversion_procs.h"
 #include "utils/mb/pg_wchar.h"
+#include "../../meos/include/meos_error.h"
 
 // #include "access/htup_details.h"
 // #include "access/table.h"
