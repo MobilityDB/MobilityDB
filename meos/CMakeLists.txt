@@ -155,6 +155,8 @@ file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_D
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
+set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clip_clipper2>")
+set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clipper2>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")

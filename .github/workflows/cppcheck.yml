@@ -80,6 +80,8 @@ jobs:
             --suppress='*:postgis/*' \
             --suppress='*:*/pgtypes/*' \
             --suppress='*:pgtypes/*' \
+            --suppress='*:*/clipper2/*' \
+            --suppress='*:clipper2/*' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
             --xml --xml-version=2 \
