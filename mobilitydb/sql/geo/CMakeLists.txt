@@ -12,6 +12,7 @@ SET(LOCAL_FILES
   066_tpoint_similarity
   068_tpoint_aggfuncs
   070_tpoint_spatialrels
+  071_tpoint_setset
   072_tpoint_tempspatialrels
   073_tpoint_gist
   074_tpoint_spgist
@@ -32,6 +33,7 @@ list(APPEND LOCAL_FILES
   064_tgeo_distance
   068_tgeo_aggfuncs
   070_tgeo_spatialrels
+  071_tgeo_setset
   072_tgeo_tempspatialrels
   073_tgeo_gist
   074_tgeo_spgist
