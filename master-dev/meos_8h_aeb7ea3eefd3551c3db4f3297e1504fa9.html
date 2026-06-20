@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_initialize</title>
+<title>MobilityDB: meos_initialize_noexit_error_handler</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -567,10 +567,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a48375cdf2e1f9241f167724255f9981b.html#a48375cdf2e1f9241f167724255f9981b">meos_finalize_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a4aec42a072108791c5a6fcbd09da20bf.html#a4aec42a072108791c5a6fcbd09da20bf">meos_get_datestyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_aa30a083e08860451ba92a1966939c82e.html#aa30a083e08860451ba92a1966939c82e">meos_get_intervalstyle</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_8h_afc68cec9996f8934343c9d9a2174e14b.html#afc68cec9996f8934343c9d9a2174e14b">meos_initialize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_afc68cec9996f8934343c9d9a2174e14b.html#afc68cec9996f8934343c9d9a2174e14b">meos_initialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a2be03426519c7a853ba1ab289cc58f61.html#a2be03426519c7a853ba1ab289cc58f61">meos_initialize_collation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a79b411cce6b7a6993dee33dff2d2d018.html#a79b411cce6b7a6993dee33dff2d2d018">meos_initialize_error_handler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_aeb7ea3eefd3551c3db4f3297e1504fa9.html#aeb7ea3eefd3551c3db4f3297e1504fa9">meos_initialize_noexit_error_handler</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_8h_aeb7ea3eefd3551c3db4f3297e1504fa9.html#aeb7ea3eefd3551c3db4f3297e1504fa9">meos_initialize_noexit_error_handler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a8869ea7c6db1f048206b14c8c8c3038a.html#a8869ea7c6db1f048206b14c8c8c3038a">meos_initialize_timezone</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a3298919e87e1827b68ac074b2bd65866.html#a3298919e87e1827b68ac074b2bd65866">meos_set_datestyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a497788e4d514f24789558b11980ab553.html#a497788e4d514f24789558b11980ab553">meos_set_intervalstyle</a></td></tr>
@@ -1342,14 +1342,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afc68cec9996f8934343c9d9a2174e14b" name="afc68cec9996f8934343c9d9a2174e14b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afc68cec9996f8934343c9d9a2174e14b">&#9670;&#160;</a></span>meos_initialize()</h2>
+<a id="aeb7ea3eefd3551c3db4f3297e1504fa9" name="aeb7ea3eefd3551c3db4f3297e1504fa9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb7ea3eefd3551c3db4f3297e1504fa9">&#9670;&#160;</a></span>meos_initialize_noexit_error_handler()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void meos_initialize </td>
+          <td class="memname">void meos_initialize_noexit_error_handler </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1357,6 +1357,9 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Install the no-exit error handler. </p>
+<p >Safe to call from multiple threads &ndash; the underlying atomic store is idempotent and always sets the same function pointer. </p>
 
 </div>
 </div>
