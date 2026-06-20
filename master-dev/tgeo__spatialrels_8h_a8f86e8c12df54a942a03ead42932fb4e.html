@@ -152,6 +152,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a Datum true if two geographies intersect. </p>
+<p >Uses a <code>0.0</code> distance ε to match PostGIS's <code>geography_intersects</code> semantics and MEOS's own static <code>geog_intersects</code> wrapper. lwgeom's internal convergence epsilon (<code>PGIS_FP_TOLERANCE</code>, 1e-12) remains the implementation detail of <code>geog_dwithin</code> and is unchanged. See #1091. </p>
 
 </div>
 </div>

@@ -83,11 +83,14 @@ $(function() {
 <p>Ever and always spatial relationships for temporal geometries.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tgeo__spatialrels_8h_source.html">geo/tgeo_spatialrels.h</a>&quot;</code><br />
+<code>#include &lt;funcapi.h&gt;</code><br />
+<code>#include &lt;utils/array.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis_8h_source.html">pg_geo/postgis.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__geo_2tspatial_8h_source.html">pg_geo/tspatial.h</a>&quot;</code><br />
 </div><table class="memberdecls">
@@ -102,15 +105,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga0ef2400783f9355bc450335c203f3aca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__rel__ever_ga0ef2400783f9355bc450335c203f3aca.html#ga0ef2400783f9355bc450335c203f3aca">Acontains_tgeo_tgeo</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga0ef2400783f9355bc450335c203f3aca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a temporal geometry always contains another one @sqlfn aContains()  <a href="group__mobilitydb__geo__rel__ever_ga0ef2400783f9355bc450335c203f3aca.html#ga0ef2400783f9355bc450335c203f3aca">More...</a><br /></td></tr>
 <tr class="separator:ga0ef2400783f9355bc450335c203f3aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf1744095e6ff125fa2c5b2c79781b239"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__rel__ever_gaf1744095e6ff125fa2c5b2c79781b239.html#gaf1744095e6ff125fa2c5b2c79781b239">Acovers_geo_tgeo</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:gaf1744095e6ff125fa2c5b2c79781b239"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a geometry always covers a temporal geometry @sqlfn aCovers()  <a href="group__mobilitydb__geo__rel__ever_gaf1744095e6ff125fa2c5b2c79781b239.html#gaf1744095e6ff125fa2c5b2c79781b239">More...</a><br /></td></tr>
-<tr class="separator:gaf1744095e6ff125fa2c5b2c79781b239"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6cef2f4f7f0de8b74500ded79c4f602b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__rel__ever_ga6cef2f4f7f0de8b74500ded79c4f602b.html#ga6cef2f4f7f0de8b74500ded79c4f602b">Acovers_tgeo_geo</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:ga6cef2f4f7f0de8b74500ded79c4f602b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a temporal geometry always covers a geometry @sqlfn aCovers()  <a href="group__mobilitydb__geo__rel__ever_ga6cef2f4f7f0de8b74500ded79c4f602b.html#ga6cef2f4f7f0de8b74500ded79c4f602b">More...</a><br /></td></tr>
-<tr class="separator:ga6cef2f4f7f0de8b74500ded79c4f602b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafccb6ec3af5bd0e88e03d72a196dd549"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__rel__ever_gafccb6ec3af5bd0e88e03d72a196dd549.html#gafccb6ec3af5bd0e88e03d72a196dd549">Acovers_tgeo_tgeo</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:gafccb6ec3af5bd0e88e03d72a196dd549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a temporal geometry always covers another one @sqlfn eCovers()  <a href="group__mobilitydb__geo__rel__ever_gafccb6ec3af5bd0e88e03d72a196dd549.html#gafccb6ec3af5bd0e88e03d72a196dd549">More...</a><br /></td></tr>
-<tr class="separator:gafccb6ec3af5bd0e88e03d72a196dd549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga58fb2b9f3f4b99405982fcfd82f5b1b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__geo__rel__ever_ga58fb2b9f3f4b99405982fcfd82f5b1b8.html#ga58fb2b9f3f4b99405982fcfd82f5b1b8">Adisjoint_geo_tgeo</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga58fb2b9f3f4b99405982fcfd82f5b1b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a geometry/geography and a temporal geometry are always disjoint @sqlfn aDisjoint()  <a href="group__mobilitydb__geo__rel__ever_ga58fb2b9f3f4b99405982fcfd82f5b1b8.html#ga58fb2b9f3f4b99405982fcfd82f5b1b8">More...</a><br /></td></tr>
 <tr class="separator:ga58fb2b9f3f4b99405982fcfd82f5b1b8"><td class="memSeparator" colspan="2">&#160;</td></tr>

@@ -105,7 +105,8 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Functions for temporal geos. </p>
-<p >Functions for temporal geos. </p>
+<p >Functions for temporal geos.</p>
+<dl class="section note"><dt>Note</dt><dd>When both libMobilityDB-1.4.so and pointcloud-1.2.so are loaded in the same backend, both bundle their own copy of libpc.a; ELF's global symbol interposition chooses one copy for the whole process. If our copy wins and we never called <code>pc_set_handlers</code>, the first time any libpc entry point (pc_schema_from_xml, pc_point_get_x, …) hits an error or warning it dereferences a NULL handler pointer and the backend crashes. Calling <code>pc_set_handlers</code> here makes us symmetric with pgpointcloud's own <code>_PG_init</code> so either copy is safe. </dd></dl>
 
 </div>
 </div>
