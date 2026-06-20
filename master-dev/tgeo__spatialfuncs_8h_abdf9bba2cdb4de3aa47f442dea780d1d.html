@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_tspatial_base</title>
+<title>MobilityDB: ensure_srid_reconcile</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -122,7 +122,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a2e33adba41482ede98d9c0157dbfc7b7.html#a2e33adba41482ede98d9c0157dbfc7b7">ensure_spatial_validity</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a1edf2b6761d7b8ba3c0f1cfe73109137.html#a1edf2b6761d7b8ba3c0f1cfe73109137">ensure_srid_is_latlong</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a28d681a379f94dc2f2527afcabe5d7a7.html#a28d681a379f94dc2f2527afcabe5d7a7">ensure_srid_known</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_abdf9bba2cdb4de3aa47f442dea780d1d.html#abdf9bba2cdb4de3aa47f442dea780d1d">ensure_srid_reconcile</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_abdf9bba2cdb4de3aa47f442dea780d1d.html#abdf9bba2cdb4de3aa47f442dea780d1d">ensure_srid_reconcile</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a538d95fb98b4fd8883556e331bc55a61.html#a538d95fb98b4fd8883556e331bc55a61">ensure_valid_geo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_af316651217a8c43f79aade8188760504.html#af316651217a8c43f79aade8188760504">ensure_valid_spatial_stbox_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_aa07c70523ccaabd8e64e51d5950678b1.html#aa07c70523ccaabd8e64e51d5950678b1">ensure_valid_stbox_geo</a></td></tr>
@@ -131,7 +131,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a8b562045080e74f88c40e8cbd5b2f774.html#a8b562045080e74f88c40e8cbd5b2f774">ensure_valid_tgeo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a83026e01a3d568199875a2658da36531.html#a83026e01a3d568199875a2658da36531">ensure_valid_tpoint_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_a25fa252c915df1bacae27d8bbdcb29b6.html#a25fa252c915df1bacae27d8bbdcb29b6">ensure_valid_tpoint_tpoint</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__spatialfuncs_8h_aefa0cf746a5b160ad4f8c6b9a8d2618a.html#aefa0cf746a5b160ad4f8c6b9a8d2618a">ensure_valid_tspatial_base</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_aefa0cf746a5b160ad4f8c6b9a8d2618a.html#aefa0cf746a5b160ad4f8c6b9a8d2618a">ensure_valid_tspatial_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_ad5742fca8d6d62660fc77506cd718d23.html#ad5742fca8d6d62660fc77506cd718d23">ensure_valid_tspatial_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_ae7b34ef924aa1a95c6197e9f62ffdef8.html#ae7b34ef924aa1a95c6197e9f62ffdef8">ensure_valid_tspatial_tspatial</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__spatialfuncs_8h_aeabf85dc58a96cf963b88696aee96b20.html#aeabf85dc58a96cf963b88696aee96b20">geo_distance_fn</a></td></tr>
@@ -171,23 +171,29 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aefa0cf746a5b160ad4f8c6b9a8d2618a" name="aefa0cf746a5b160ad4f8c6b9a8d2618a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aefa0cf746a5b160ad4f8c6b9a8d2618a">&#9670;&#160;</a></span>ensure_valid_tspatial_base()</h2>
+<a id="abdf9bba2cdb4de3aa47f442dea780d1d" name="abdf9bba2cdb4de3aa47f442dea780d1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdf9bba2cdb4de3aa47f442dea780d1d">&#9670;&#160;</a></span>ensure_srid_reconcile()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_valid_tspatial_base </td>
+          <td class="memname">bool ensure_srid_reconcile </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>base</em>&#160;</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -197,8 +203,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Ensure the validity of a spatiotemporal value and a geometry/geography. </p>
-<dl class="section note"><dt>Note</dt><dd>The geometry can be empty since some functions such atGeometry or minusGeometry return different result on empty geometries. </dd></dl>
+<p>Reconcile the SRID of two spatial components: copy the known SRID onto the one that is unknown, and ensure that two known SRIDs are equal. </p>
+<p >This is the single construction-time SRID resolution used by the parsers and the constructors: an unknown (<code>SRID_UNKNOWN</code>) component adopts the SRID of the other, while two known but different SRIDs are rejected. By convention <code>srid1</code> is the geometry SRID and <code>srid2</code> the temporal type SRID. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid1,srid2</td><td>SRIDs to reconcile </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Common SRID (the known one, or <code>SRID_UNKNOWN</code> if both are unknown) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On error (two different known SRIDs) return false </dd></dl>
 
 </div>
 </div>
