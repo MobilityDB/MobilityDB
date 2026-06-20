@@ -829,6 +829,20 @@ ecovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 
 /**
  * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry always covers a temporal geo,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal geo
+ * @csqlfn #Acovers_geo_tgeo()
+ */
+int
+acovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return ea_covers_tgeo_geo_int(temp, gs, ALWAYS, INVERT);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever covers a geo, 0 if not, and
  * -1 on error or if the geometry is empty
  * @param[in] temp Temporal geo
@@ -839,6 +853,20 @@ int
 ecovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_covers_tgeo_geo_int(temp, gs, EVER, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry always covers a temporal geo,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Acovers_tgeo_geo()
+ */
+int
+acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_covers_tgeo_geo_int(temp, gs, ALWAYS, INVERT_NO);
 }
 #endif /* MEOS */
 
@@ -880,6 +908,19 @@ inline int
 ecovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_covers_tgeo_tgeo(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal geometry always covers another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Acovers_tgeo_tgeo()
+ */
+inline int
+acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_covers_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
 #endif /* MEOS */
 
