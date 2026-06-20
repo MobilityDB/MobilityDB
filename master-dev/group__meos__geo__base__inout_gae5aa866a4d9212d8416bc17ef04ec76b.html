@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: box3d_out</title>
+<title>MobilityDB: box3d_in</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,9 +79,9 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gae5aa866a4d9212d8416bc17ef04ec76b.html#gae5aa866a4d9212d8416bc17ef04ec76b">box3d_in</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__inout_gae5aa866a4d9212d8416bc17ef04ec76b.html#gae5aa866a4d9212d8416bc17ef04ec76b">box3d_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga367fb338c1b8aa35197cbc9cb1bbd7dc.html#ga367fb338c1b8aa35197cbc9cb1bbd7dc">box3d_make</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268">box3d_out</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268">box3d_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga271a5a7161444390c12e4d4b089c7783.html#ga271a5a7161444390c12e4d4b089c7783">gbox_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga25f17a8aa694050180826528d80e825d.html#ga25f17a8aa694050180826528d80e825d">gbox_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gab2b7f79b9772a38b6f402d55add45f65.html#gab2b7f79b9772a38b6f402d55add45f65">gbox_out</a></td></tr>
@@ -102,40 +102,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6a9bdabd59ba858f695b275a43542268" name="ga6a9bdabd59ba858f695b275a43542268"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6a9bdabd59ba858f695b275a43542268">&#9670;&#160;</a></span>box3d_out()</h2>
+<a id="gae5aa866a4d9212d8416bc17ef04ec76b" name="gae5aa866a4d9212d8416bc17ef04ec76b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae5aa866a4d9212d8416bc17ef04ec76b">&#9670;&#160;</a></span>box3d_in()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * box3d_out </td>
+          <td class="memname"><a class="el" href="structBOX3D.html">BOX3D</a> * box3d_in </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structBOX3D.html">BOX3D</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxdd</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the string representation of a PostGIS <a class="el" href="structBOX3D.html">BOX3D</a>. </p>
+<p>Return a PostGIS <a class="el" href="structBOX3D.html">BOX3D</a> from its string representation. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String</td></tr>
   </table>
   </dd>
 </dl>
+<p>The format is <code>[SRID=#;]<a class="el" href="structBOX3D.html">BOX3D</a>((xmin,ymin,zmin),(xmax,ymax,zmax))</code>, the inverse of <a class="el" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268" title="Return the string representation of a PostGIS BOX3D.">box3d_out</a> </p>
 
 </div>
 </div>
