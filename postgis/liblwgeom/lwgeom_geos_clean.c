@@ -306,7 +306,7 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 	 *          otherwise (adding only duplicates of existing points)
 	 */
 
-	initGEOS(lwgeom_geos_error, lwgeom_geos_error);
+	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 
 	lwgeom_out = lwgeom_make_geos_friendly(lwgeom_in);
 	if (!lwgeom_out) lwerror("Could not make a geos friendly geometry out of input");
@@ -328,10 +328,10 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 	}
 
 #if POSTGIS_GEOS_VERSION < 31000
-	geosout = GEOSMakeValid(geosgeom);
+	geosout = GEOSMakeValid_r(ctx, geosgeom);
 #else
 	if (!make_valid_params) {
-		geosout = GEOSMakeValid(geosgeom);
+		geosout = GEOSMakeValid_r(ctx, geosgeom);
 	}
 	else {
 		/*
@@ -346,44 +346,44 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 		param_list_text[OPTION_LIST_SIZE-1] = '\0'; /* ensure null-termination */
 		memset(param_list, 0, sizeof(param_list));
 		option_list_parse(param_list_text, param_list);
-		GEOSMakeValidParams *params = GEOSMakeValidParams_create();
+		GEOSMakeValidParams *params = GEOSMakeValidParams_create_r(ctx);
 		value = option_list_search(param_list, "method");
 		if (value) {
 			if (strcasecmp(value, "linework") == 0) {
-				GEOSMakeValidParams_setMethod(params, GEOS_MAKE_VALID_LINEWORK);
+				GEOSMakeValidParams_setMethod_r(ctx, params, GEOS_MAKE_VALID_LINEWORK);
 			}
 			else if (strcasecmp(value, "structure") == 0) {
-				GEOSMakeValidParams_setMethod(params, GEOS_MAKE_VALID_STRUCTURE);
+				GEOSMakeValidParams_setMethod_r(ctx, params, GEOS_MAKE_VALID_STRUCTURE);
 			}
 			else
 			{
-				GEOSMakeValidParams_destroy(params);
+				GEOSMakeValidParams_destroy_r(ctx, params);
 				lwerror("Unsupported value for 'method', '%s'. Use 'linework' or 'structure'.", value);
 			}
 		}
 		value = option_list_search(param_list, "keepcollapsed");
 		if (value) {
 			if (strcasecmp(value, "true") == 0) {
-				GEOSMakeValidParams_setKeepCollapsed(params, 1);
+				GEOSMakeValidParams_setKeepCollapsed_r(ctx, params, 1);
 			}
 			else if (strcasecmp(value, "false") == 0) {
-				GEOSMakeValidParams_setKeepCollapsed(params, 0);
+				GEOSMakeValidParams_setKeepCollapsed_r(ctx, params, 0);
 			}
 			else
 			{
-				GEOSMakeValidParams_destroy(params);
+				GEOSMakeValidParams_destroy_r(ctx, params);
 				lwerror("Unsupported value for 'keepcollapsed', '%s'. Use 'true' or 'false'", value);
 			}
 		}
-		geosout = GEOSMakeValidWithParams(geosgeom, params);
-		GEOSMakeValidParams_destroy(params);
+		geosout = GEOSMakeValidWithParams_r(ctx, geosgeom, params);
+		GEOSMakeValidParams_destroy_r(ctx, params);
 	}
 #endif
-	GEOSGeom_destroy(geosgeom);
+	GEOSGeom_destroy_r(ctx, geosgeom);
 	if (!geosout) return NULL;
 
 	lwgeom_out = GEOS2LWGEOM(geosout, is3d);
-	GEOSGeom_destroy(geosout);
+	GEOSGeom_destroy_r(ctx, geosout);
 
 	if (lwgeom_is_collection(lwgeom_in) && !lwgeom_is_collection(lwgeom_out))
 	{

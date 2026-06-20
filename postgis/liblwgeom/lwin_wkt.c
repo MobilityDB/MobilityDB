@@ -49,10 +49,13 @@ const char *parser_error_messages[] =
 	"parse error - invalid geometry"
 };
 
+/* MEOS: the reentrant parser has no global yylloc; these helper-set errors
+ * report errcode/message (the precise column, when available, is recorded at
+ * the lexer level via the per-scanner location). */
 #define SET_PARSER_ERROR(errno) { \
 		global_parser_result.message = parser_error_messages[(errno)]; \
 		global_parser_result.errcode = (errno); \
-		global_parser_result.errlocation = wkt_yylloc.last_column; \
+		global_parser_result.errlocation = 0; \
 	}
 
 /**

@@ -85,7 +85,7 @@ extern int wkt_yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 112 "lwin_wkt_parse.y"
+#line 129 "lwin_wkt_parse.y"
 
 	int integervalue;
 	double doublevalue;
@@ -117,10 +117,9 @@ struct YYLTYPE
 #endif
 
 
-extern YYSTYPE wkt_yylval;
-extern YYLTYPE wkt_yylloc;
 
-int wkt_yyparse (void);
+
+int wkt_yyparse (void *scanner);
 
 
 #endif /* !YY_WKT_YY_LWIN_WKT_PARSE_H_INCLUDED  */
