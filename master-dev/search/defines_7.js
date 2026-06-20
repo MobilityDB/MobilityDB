@@ -14,5 +14,8 @@ var searchData=
   ['intstyle_5fsql_5fstandard_11',['INTSTYLE_SQL_STANDARD',['../meos_8c_a3880988e56548d39bd8be4fffde4d2a8.html#a3880988e56548d39bd8be4fffde4d2a8',1,'meos.c']]],
   ['invert_12',['INVERT',['../meos_2include_2temporal_2temporal_8h_a95febca84b9b6b5b9cfd278e44ffc56f.html#a95febca84b9b6b5b9cfd278e44ffc56f',1,'temporal.h']]],
   ['invert_5fno_13',['INVERT_NO',['../meos_2include_2temporal_2temporal_8h_a0f175497f6345122d6436c3ec25bd8c0.html#a0f175497f6345122d6436c3ec25bd8c0',1,'temporal.h']]],
-  ['invert_5fresult_14',['INVERT_RESULT',['../tgeo__spatialrels_8h_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'tgeo_spatialrels.h']]]
+  ['invert_5fresult_14',['INVERT_RESULT',['../tgeo__spatialrels_8h_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'tgeo_spatialrels.h']]],
+  ['itree_5fpip_5fcontains_15',['itree_pip_contains',['../postgis__funcs_8h_a4c248a979573236a391f86bfc5e1ac85.html#a4c248a979573236a391f86bfc5e1ac85',1,'postgis_funcs.h']]],
+  ['itree_5fpip_5fcovers_16',['itree_pip_covers',['../postgis__funcs_8h_a13e8d3499108a98469548f9ee8e01a0d.html#a13e8d3499108a98469548f9ee8e01a0d',1,'postgis_funcs.h']]],
+  ['itree_5fpip_5fintersects_17',['itree_pip_intersects',['../postgis__funcs_8h_abaec5ab87f0c6dd1adcac819139381bd.html#abaec5ab87f0c6dd1adcac819139381bd',1,'postgis_funcs.h']]]
 ];

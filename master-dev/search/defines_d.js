@@ -41,6 +41,8 @@ var searchData=
   ['place_5fright_38',['PLACE_RIGHT',['../span__gist_8c_ae944aae4cfbcdf8f63b06d3ae731b6bd.html#ae944aae4cfbcdf8f63b06d3ae731b6bd',1,'PLACE_RIGHT():&#160;span_gist.c'],['../tnumber__gist_8c_a4eaa7b84019150e9aaa3ad9e484f15f6.html#a4eaa7b84019150e9aaa3ad9e484f15f6',1,'PLACE_RIGHT():&#160;tnumber_gist.c']]],
   ['posepgetdatum_39',['PosePGetDatum',['../pose_8h_ac597580cb92025a2b1753cf4c90e6d4e.html#ac597580cb92025a2b1753cf4c90e6d4e',1,'pose.h']]],
   ['posix_5fcollation_5foid_40',['POSIX_COLLATION_OID',['../meos_2include_2temporal_2temporal_8h_a28a28f1cadb41ac7e09269cf709db0d9.html#a28a28f1cadb41ac7e09269cf709db0d9',1,'temporal.h']]],
-  ['proj_5fbackend_5fhash_5fsize_41',['PROJ_BACKEND_HASH_SIZE',['../tspatial__transform__meos_8c_ad8e31c7538ca2209879225906e91c2e4.html#ad8e31c7538ca2209879225906e91c2e4',1,'tspatial_transform_meos.c']]],
-  ['proj_5fcache_5fitems_42',['PROJ_CACHE_ITEMS',['../tspatial__transform__meos_8c_a71e496f86477ddfc96590abdef724dbd.html#a71e496f86477ddfc96590abdef724dbd',1,'tspatial_transform_meos.c']]]
+  ['postgis2geos_41',['POSTGIS2GEOS',['../postgis__funcs_8h_a0e566151a82de5bfa016b7205025d4c3.html#a0e566151a82de5bfa016b7205025d4c3',1,'postgis_funcs.h']]],
+  ['postgis_5fvalid_5ftypmod_42',['postgis_valid_typmod',['../postgis__funcs_8h_af4a9e9fdcc920976e550b4f80989be08.html#af4a9e9fdcc920976e550b4f80989be08',1,'postgis_funcs.h']]],
+  ['proj_5fbackend_5fhash_5fsize_43',['PROJ_BACKEND_HASH_SIZE',['../tspatial__transform__meos_8c_ad8e31c7538ca2209879225906e91c2e4.html#ad8e31c7538ca2209879225906e91c2e4',1,'tspatial_transform_meos.c']]],
+  ['proj_5fcache_5fitems_44',['PROJ_CACHE_ITEMS',['../tspatial__transform__meos_8c_a71e496f86477ddfc96590abdef724dbd.html#a71e496f86477ddfc96590abdef724dbd',1,'tspatial_transform_meos.c']]]
 ];
