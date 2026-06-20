@@ -100,6 +100,7 @@ extern bool ensure_same_geodetic_tspatial_base(const Temporal *temp,
   Datum base);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
+extern bool ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result);
 extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern bool ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);

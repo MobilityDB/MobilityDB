@@ -282,23 +282,18 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
   GSERIALIZED *result = DatumGetGserializedP(geom);
   ensure_not_empty(result);
   ensure_has_not_M_geo(result);
-  /* If one of the SRID of the temporal rigid geometry and of the geometry
-   * is SRID_UNKNOWN and the other not, copy the SRID */
+  /* Reconcile the SRID of the geometry and the temporal rigid geometry: copy
+   * the known SRID onto the one that is unknown, and error if both are known and
+   * differ */
   int32_t geo_srid = gserialized_get_srid(result);
-  if (temp_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
-    temp_srid = geo_srid;
-  else if (temp_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
-    gserialized_set_srid(result, temp_srid);
-  /* If the SRID of the temporal rigid geometry and of the geometry do not match */
-  else if (temp_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
-    temp_srid != geo_srid)
+  int32_t srid;
+  if (! ensure_srid_reconcile(geo_srid, temp_srid, &srid))
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Geometry SRID (%d) does not match temporal type SRID (%d)",
-      geo_srid, temp_srid);
     pfree(result);
     return NULL;
   }
+  if (geo_srid == SRID_UNKNOWN && srid != SRID_UNKNOWN)
+    gserialized_set_srid(result, srid);
   return result;
 }
 
