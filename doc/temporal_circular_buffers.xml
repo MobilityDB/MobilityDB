@@ -556,6 +556,46 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tcbuffer_modifications">
+		<title>Modifications</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Append a temporal instant or a temporal sequence</para>
+				<para><varname>appendInstant(tcbuffer,tcbufferInst) → tcbuffer</varname></para>
+				<para><varname>appendSequence(tcbuffer,tcbufferSeq) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01', 'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01]
+SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));
+-- {[Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01], [Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge the temporal circular buffers</para>
+				<para><varname>merge(tcbuffer,tcbuffer) → tcbuffer</varname></para>
+				<para><varname>merge(tcbuffer[]) → tcbuffer</varname></para>
+				<para><varname>mergeAgg(tcbuffer) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03]',
+  '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'));
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(1 1),0.5)@2001-01-05 00:00:00+01]
+SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-02]',
+  '[Cbuffer(Point(1 1), 0.2)@2001-01-02, Cbuffer(Point(1 1), 0.3)@2001-01-03]']));
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(1 1),0.3)@2001-01-03 00:00:00+01]
+WITH temp(inst) AS (
+  SELECT tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01' UNION
+  SELECT tcbuffer 'Cbuffer(Point(2 2), 0.2)@2001-01-02' )
+SELECT asText(mergeAgg(inst)) FROM temp;
+-- {Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tcbuffer_spatial">
 		<title>Spatial Operations</title>
 		<itemizedlist>

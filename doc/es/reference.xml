@@ -1577,6 +1577,19 @@
 				</itemizedlist>
 			</sect3>
 
+				<sect3>
+					<title>Modifications</title>
+					<itemizedlist>
+						<listitem>
+							<para><link linkend="tnpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agregar un instante temporal o una secuencia temporal</para>
+						</listitem>
+
+						<listitem>
+							<para><link linkend="tnpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Fusionar los puntos de red temporales</para>
+						</listitem>
+					</itemizedlist>
+				</sect3>
+
 			<sect3>
 				<title>Restricciones</title>
 				<itemizedlist>

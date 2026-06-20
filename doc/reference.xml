@@ -1884,6 +1884,19 @@
 				</itemizedlist>
 			</sect3>
 
+				<sect3>
+					<title>Modifications</title>
+					<itemizedlist>
+						<listitem>
+							<para><link linkend="tnpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
+						</listitem>
+
+						<listitem>
+							<para><link linkend="tnpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal network points</para>
+						</listitem>
+					</itemizedlist>
+				</sect3>
+
 			<sect3>
 				<title>Restrictions</title>
 				<itemizedlist>
@@ -2144,6 +2157,19 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+
+				<sect3>
+					<title>Modifications</title>
+					<itemizedlist>
+						<listitem>
+							<para><link linkend="tcbuffer_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
+						</listitem>
+
+						<listitem>
+							<para><link linkend="tcbuffer_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge the temporal circular buffers</para>
+						</listitem>
+					</itemizedlist>
+				</sect3>
 
 			<sect3>
 				<title>Restrictions</title>
