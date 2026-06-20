@@ -142,7 +142,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Difference(PG_FUNCTION_ARGS)</code>. With respect to the original function we do not use the <code>prec</code> argument. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_Difference(PG_FUNCTION_ARGS)</code>. With respect to the original function we do not use the <code>prec</code> argument.</dd></dl>
+<p>Same Clipper2 fast-path as <a class="el" href="group__meos__geo__base__spatial_ga843ba29fe8423477ab828192ac5b818c.html#ga843ba29fe8423477ab828192ac5b818c" title="Return the intersection of two geometries.">geom_intersection2d</a> for 2D polygonal inputs; other types fall through to GEOS. </p>
 
 </div>
 </div>

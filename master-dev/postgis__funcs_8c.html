@@ -98,6 +98,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="geo__poly__clip_8h_source.html">geo/geo_poly_clip.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__transform_8h_source.html">geo/meos_transform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo_8h_source.html">geo/tgeo.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
@@ -389,6 +390,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">GEOS2POSTGIS</a> (GEOSGeom geom, char want3d)</td></tr>
 <tr class="memdesc:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tranform a GEOS geometry to a PostGIS one.  <a href="postgis__funcs_8c_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">More...</a><br /></td></tr>
 <tr class="separator:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f843cd1e601e302898a34cfd7ec40ce"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a3f843cd1e601e302898a34cfd7ec40ce.html#a3f843cd1e601e302898a34cfd7ec40ce">gs_is_planar_polygonal</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="el" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)</td></tr>
+<tr class="memdesc:a3f843cd1e601e302898a34cfd7ec40ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return <code>true</code> iff <code>gs</code> is a 2D POLYGON or MULTIPOLYGON.  <a href="postgis__funcs_8c_a3f843cd1e601e302898a34cfd7ec40ce.html#a3f843cd1e601e302898a34cfd7ec40ce">More...</a><br /></td></tr>
+<tr class="separator:a3f843cd1e601e302898a34cfd7ec40ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ade9b89fcbff53e1fc14a20dcbca128"><td class="memItemLeft" align="right" valign="top">static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__funcs_8c_a2ade9b89fcbff53e1fc14a20dcbca128.html#a2ade9b89fcbff53e1fc14a20dcbca128">gserialized_is_point</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *<a class="el" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)</td></tr>
 <tr class="memdesc:a2ade9b89fcbff53e1fc14a20dcbca128"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a geometry is a point.  <a href="postgis__funcs_8c_a2ade9b89fcbff53e1fc14a20dcbca128.html#a2ade9b89fcbff53e1fc14a20dcbca128">More...</a><br /></td></tr>
 <tr class="separator:a2ade9b89fcbff53e1fc14a20dcbca128"><td class="memSeparator" colspan="2">&#160;</td></tr>

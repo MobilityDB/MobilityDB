@@ -142,7 +142,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a107574ddb1eece9a8470ae7b793d6742.html#a107574ddb1eece9a8470ae7b793d6742">ST_Intersection(PG_FUNCTION_ARGS)</a></code>. With respect to the original function we do not use the <code>prec</code> argument. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a107574ddb1eece9a8470ae7b793d6742.html#a107574ddb1eece9a8470ae7b793d6742">ST_Intersection(PG_FUNCTION_ARGS)</a></code>. With respect to the original function we do not use the <code>prec</code> argument.</dd></dl>
+<p>When both inputs are 2D POLYGON / MULTIPOLYGON the call routes through the Clipper2-backed <a class="el" href="geo__poly__clip_8h_a9f588501d8ce3faf2f92592d11fbc6c0.html#a9f588501d8ce3faf2f92592d11fbc6c0" title="Clip the two polygons using the given Boolean operation.">clip_poly_poly</a>. Other type combinations fall through to PostGIS's GEOS-backed <code>lwgeom_intersection_prec</code>. </p>
 
 </div>
 </div>
