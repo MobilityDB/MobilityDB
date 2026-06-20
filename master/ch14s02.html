@@ -1,0 +1,33 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Temporal JSONB values</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. JSON Types in MobilityDB"><link rel="prev" href="ch14.html" title="Chapter 14. JSON Types in MobilityDB"><link rel="next" href="ch14s03.html" title="Validity of temporal JSONB values"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Temporal JSONB values</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14.html">Prev</a> </td><th width="60%" align="center">Chapter 14. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch14s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_jsonb"></a>Temporal JSONB values</h2></div></div></div><p>The temporal type <code class="varname">tjsonb</code> allows to represent the evolution in time of <code class="varname">jsonb</code> values. As all temporal types, it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <code class="varname">tjsonb</code> values in these subtypes are given next.</p><pre class="programlisting">
+-- Instant
+SELECT tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+-- Sequence with discrete interpolation
+SELECT tjsonb '{{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02}';
+-- Sequence with step interpolation
+SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]';
+-- Sequence set
+SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02],
+  [{"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
+  {"vehicleId": 1, "location": "Point(3 3)"}@2001-01-04]}';
+</pre><p>As can be seen above, for the <code class="varname">Instant</code> subtype we need to enclose the JSONB value between quotes and escape the inner quotes, otherwise the opening brace of the JSONB value would be interpreted as the beginning of a <code class="varname">Sequence</code> subtype with discrete interpolation.</p><p>The <code class="varname">tjsonb</code> type accepts type modifiers (or <code class="varname">typmod</code> in PostgreSQL terminology) to specify the subtype. The possible values for the subtype are <code class="varname">Instant</code>, <code class="varname">Sequence</code>, and <code class="varname">SequenceSet</code>. The argument is optional and if not specified for a column, values of any subtype are allowed.</p><pre class="programlisting">
+SELECT tjsonb(Instant) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+--  {"location": "Point(1 1)", "vehicleId": 1}@2001-01-01
+SELECT tjsonb(Sequence) '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+</pre><p>Temporal JSONB values of sequence or sequence set subtype are converted into a normal form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. Three consecutive instant values can be merged into two if their JSONB values are equal. Also, two consecutive sequences that are adjacent and have the same end and start JSONB value can be merged into a single one. Examples of transformation into a normal form are as follows.</p><pre class="programlisting">
+SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
+  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]');
+/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
+   {"location": "Point(1 1)", "vehicleId": 1}@2001-01-03] */
+SELECT asText(tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03],
+  ({"vehicleId": 1, "location": "Point(2 2)"}@2001-01-03,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-04]}');
+/* {[{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
+   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02,
+   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-04]} */
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 14. JSON Types in MobilityDB </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Validity of temporal JSONB values</td></tr></table></div></body></html>
