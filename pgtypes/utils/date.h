@@ -98,7 +98,8 @@ TimeTzADTPGetDatum(const TimeTzADT *X)
 /* date.c */
 extern int32 anytime_typmod_check(bool istz, int32 typmod);
 extern double date2timestamp_no_overflow(DateADT dateVal);
-extern Timestamp date2timestamp_opt_overflow(DateADT dateVal, int *overflow);
+/* MEOS: prefixed to avoid interposition by a host backend symbol */
+extern Timestamp meos_date2timestamp_opt_overflow(DateADT dateVal, int *overflow);
 extern TimestampTz date2timestamptz_opt_overflow(DateADT dateVal, int *overflow);
 extern int32 date_cmp_timestamp_internal(DateADT dateVal, Timestamp dt2);
 extern int32 date_cmp_timestamptz_internal(DateADT dateVal, TimestampTz dt2);

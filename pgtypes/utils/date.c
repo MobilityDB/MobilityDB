@@ -535,7 +535,7 @@ minus_date_int(DateADT date, int32 days)
  * datatypes have the same lower bound, Julian day zero.
  */
 Timestamp
-date2timestamp_opt_overflow(DateADT date, int *overflow)
+meos_date2timestamp_opt_overflow(DateADT date, int *overflow)
 {
   if (overflow)
     *overflow = 0;
@@ -576,7 +576,7 @@ date2timestamp_opt_overflow(DateADT date, int *overflow)
 static TimestampTz
 date2timestamp(DateADT date)
 {
-  return date2timestamp_opt_overflow(date, NULL);
+  return meos_date2timestamp_opt_overflow(date, NULL);
 }
 
 /*
@@ -712,7 +712,7 @@ int32
 date_cmp_timestamp_internal(DateADT date, Timestamp dt2)
 {
   int overflow;
-  Timestamp dt1 = date2timestamp_opt_overflow(date, &overflow);
+  Timestamp dt1 = meos_date2timestamp_opt_overflow(date, &overflow);
   if (overflow > 0)
   {
     /* dt1 is larger than any finite timestamp, but less than infinity */
