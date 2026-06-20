@@ -2073,6 +2073,18 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
 
 /**
  * @ingroup meos_rgeo_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal rigid geometry
+ * @sqlop @p |=|
+ */
+double
+nad_stbox_trgeometry(const STBox *box, const Temporal *temp)
+{
+  return nad_trgeometry_stbox(temp, box);
+}
+
+/**
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between two temporal rigid
  * geometries
  * @sqlop @p |=|
