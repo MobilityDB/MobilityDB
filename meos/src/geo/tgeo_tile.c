@@ -60,7 +60,7 @@
  * @brief Create a bit matrix
  */
 BitMatrix *
-bitmatrix_make(int *count, int ndims)
+bitmatrix_make(const int *count, int ndims)
 {
   /* Calculate the needed number of bits and bytes */
   int i, bitCount = 1;
@@ -85,7 +85,7 @@ bitmatrix_make(int *count, int ndims)
  * @brief Get the value of the bit in the bit matrix
  */
 static bool
-bitmatrix_get(const BitMatrix *bm, int *coords)
+bitmatrix_get(const BitMatrix *bm, const int *coords)
 {
   int i, j;
   for (i = 0; i < bm->ndims; i++)
@@ -109,7 +109,7 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
  * @brief Set the value of the bit in the bit matrix
  */
 static void
-bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
+bitmatrix_set_cell(BitMatrix *bm, const int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->ndims; i++)
@@ -275,7 +275,7 @@ bitmatrix_print(const BitMatrix *bm)
  * @return Number of tiles set
  */
 static int
-fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
+fastvoxel_bm(int *coords1, const double *eps1, int *coords2, const double *eps2,
   int ndims, BitMatrix *bm)
 {
   int i, k, coords[MAXDIMS], next[MAXDIMS], result = 0;
@@ -1361,19 +1361,17 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_bins Array of space bins
- * @param[out] time_bins Array of time bins
- * @param[out] count Number of elements in the output arrays
+ * @return Structure with the fragments, the parallel arrays of space and
+ * time bins, and the number of fragments
  * @note This function in MEOS corresponds to the MobilityDB function
  * #Tgeo_space_time_split_common. Note that the test for the validity of the
  * arguments is done in #tgeo_space_time_tile_init
  * @csqlfn #Tgeo_space_time_split()
  */
-Temporal **
+SpaceTimeSplit
 tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
-  TimestampTz torigin, bool bitmatrix, bool border_inc,
-  GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
+  TimestampTz torigin, bool bitmatrix, bool border_inc)
 {
   /* Ensure the validity of the arguments */
   if (! tgeo_type_all(temp->temptype) ||
@@ -1386,14 +1384,14 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) &&
         ! ensure_has_not_Z(temp->temptype, temp->flags)))
-    return NULL;
+    return (SpaceTimeSplit) {NULL, NULL, NULL, 0};
 
   /* Initialize state */
   int ntiles;
   STboxGridState *state = tgeo_space_time_tile_init(temp, xsize, ysize,
     zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
   if (! state)
-    return NULL;
+    return (SpaceTimeSplit) {NULL, NULL, NULL, 0};
 
   GSERIALIZED **spaces = palloc(sizeof(GSERIALIZED *) * ntiles);
   TimestampTz *times = NULL;
@@ -1441,12 +1439,7 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
       times[i] = DatumGetTimestampTz(box.period.lower);
     result[i++] = atstbox;
   }
-  *count = i;
-  if (space_bins)
-    *space_bins = spaces;
-  if (time_bins)
-    *time_bins = times;
-  return result;
+  return (SpaceTimeSplit) {result, spaces, times, i};
 }
 
 /**
@@ -1459,17 +1452,17 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_bins Array of space bins
- * @param[out] count Number of elements in the output arrays
+ * @return Structure with the fragments, the parallel array of space bins,
+ * and the number of fragments
  * @csqlfn #Tgeo_space_split()
  */
-inline Temporal **
+inline SpaceSplit
 tgeo_space_split(const Temporal *temp, double xsize, double ysize,
-  double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
-  GSERIALIZED ***space_bins, int *count)
+  double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc)
 {
-  return tgeo_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
-    bitmatrix, border_inc, space_bins, NULL, count);
+  SpaceTimeSplit sts = tgeo_space_time_split(temp, xsize, ysize, zsize, NULL,
+    sorigin, 0, bitmatrix, border_inc);
+  return (SpaceSplit) {sts.fragments, sts.space_bins, sts.count};
 }
 #endif /* MEOS */
 

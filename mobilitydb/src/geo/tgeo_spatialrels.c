@@ -48,6 +48,9 @@
 
 #include "geo/tgeo_spatialrels.h"
 
+/* PostgreSQL */
+#include <funcapi.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -55,6 +58,7 @@
 #include "temporal/temporal.h" /* For varfunc */
 #include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
 
@@ -260,19 +264,6 @@ Ecovers_geo_tgeo(PG_FUNCTION_ARGS)
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_tgeo, EVER);
 }
 
-PGDLLEXPORT Datum Acovers_geo_tgeo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Acovers_geo_tgeo);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry always covers a temporal geometry
- * @sqlfn aCovers()
- */
-inline Datum
-Acovers_geo_tgeo(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_tgeo, ALWAYS);
-}
-
 PGDLLEXPORT Datum Ecovers_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_tgeo_geo);
 /**
@@ -286,19 +277,6 @@ Ecovers_tgeo_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_tgeo_geo, EVER);
 }
 
-PGDLLEXPORT Datum Acovers_tgeo_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Acovers_tgeo_geo);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal geometry always covers a geometry
- * @sqlfn aCovers()
- */
-inline Datum
-Acovers_tgeo_geo(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_tgeo_geo, ALWAYS);
-}
-
 PGDLLEXPORT Datum Ecovers_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_tgeo_tgeo);
 /**
@@ -310,19 +288,6 @@ inline Datum
 Ecovers_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tgeo_tgeo, EVER);
-}
-
-PGDLLEXPORT Datum Acovers_tgeo_tgeo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Acovers_tgeo_tgeo);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal geometry always covers another one
- * @sqlfn eCovers()
- */
-inline Datum
-Acovers_tgeo_tgeo(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tgeo_tgeo, ALWAYS);
 }
 
 /*****************************************************************************

@@ -1301,6 +1301,7 @@ extern int ever_lt_temporal_base(const Temporal *temp, Datum value);
 /* Mathematical functions for temporal types */
 
 extern TInstant *tnumberinst_abs(const TInstant *inst);
+extern double tnumberinst_distance(const TInstant *inst1, const TInstant *inst2);
 extern TSequence *tnumberseq_abs(const TSequence *seq);
 extern TSequence *tnumberseq_angular_difference(const TSequence *seq);
 extern TSequence *tnumberseq_delta_value(const TSequence *seq);

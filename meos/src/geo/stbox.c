@@ -185,7 +185,7 @@ stbox_out(const STBox *box, int maxdd)
     snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
     srid[0] = '\0';
-  char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
+  const char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
   if (hast)
     /* The second argument is not used for periods */
     period = span_out(&box->period, maxdd);
@@ -362,41 +362,41 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
  * @param[in] s Span
- * @param[out] box Resulting box
+ * @param[out] result Resulting box
  * @note This function is equivalent to #stbox_make without memory allocation
  */
 void
 stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Span *s, STBox *box)
+  const Span *s, STBox *result)
 {
-  assert(box);
+  assert(result);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
-  MEOS_FLAGS_SET_X(box->flags, hasx);
-  MEOS_FLAGS_SET_Z(box->flags, hasz);
-  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
-  box->srid = srid;
+  memset(result, 0, sizeof(STBox));
+  MEOS_FLAGS_SET_X(result->flags, hasx);
+  MEOS_FLAGS_SET_Z(result->flags, hasz);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
+  result->srid = srid;
 
   if (s)
   {
     /* Process T min/max */
-    memcpy(&box->period, s, sizeof(Span));
-    MEOS_FLAGS_SET_T(box->flags, true);
+    memcpy(&result->period, s, sizeof(Span));
+    MEOS_FLAGS_SET_T(result->flags, true);
   }
   if (hasx)
   {
     /* Process X/Y min/max */
-    box->xmin = Min(xmin, xmax);
-    box->xmax = Max(xmin, xmax);
+    result->xmin = Min(xmin, xmax);
+    result->xmax = Max(xmin, xmax);
     /* Process Y min/max */
-    box->ymin = Min(ymin, ymax);
-    box->ymax = Max(ymin, ymax);
+    result->ymin = Min(ymin, ymax);
+    result->ymax = Max(ymin, ymax);
     if (hasz)
     {
       /* Process Z min/max */
-      box->zmin = Min(zmin, zmax);
-      box->zmax = Max(zmin, zmax);
+      result->zmin = Min(zmin, zmax);
+      result->zmax = Max(zmin, zmax);
     }
   }
   return;
@@ -476,27 +476,27 @@ geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
  * @brief Return in the last argument a `GBOX` constructed from a 
  * spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @param[out] gbox GBOX
+ * @param[out] result GBOX
  */
 void
-stbox_set_gbox(const STBox *box, GBOX *gbox)
+stbox_set_gbox(const STBox *box, GBOX *result)
 {
-  assert(box); assert(gbox); assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(box); assert(result); assert(MEOS_FLAGS_GET_X(box->flags));
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(gbox, 0, sizeof(GBOX));
+  memset(result, 0, sizeof(GBOX));
   /* Initialize existing dimensions */
-  gbox->xmin = box->xmin;
-  gbox->xmax = box->xmax;
-  gbox->ymin = box->ymin;
-  gbox->ymax = box->ymax;
+  result->xmin = box->xmin;
+  result->xmax = box->xmax;
+  result->ymin = box->ymin;
+  result->ymax = box->ymax;
   if (MEOS_FLAGS_GET_Z(box->flags))
   {
-    gbox->zmin = box->zmin;
-    gbox->zmax = box->zmax;
+    result->zmin = box->zmin;
+    result->zmax = box->zmax;
   }
-  FLAGS_SET_Z(gbox->flags, MEOS_FLAGS_GET_Z(box->flags));
-  FLAGS_SET_M(gbox->flags, false);
-  FLAGS_SET_GEODETIC(gbox->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(box->flags));
+  FLAGS_SET_M(result->flags, false);
+  FLAGS_SET_GEODETIC(result->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
   return;
 }
 
@@ -505,26 +505,26 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
  * @brief Return in the last argument a `BOX3D` constructed from a
  * spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @param[out] box3d BOX3D
+ * @param[out] result BOX3D
  */
 void
-stbox_set_box3d(const STBox *box, BOX3D *box3d)
+stbox_set_box3d(const STBox *box, BOX3D *result)
 {
-  assert(box); assert(box3d); assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(box); assert(result); assert(MEOS_FLAGS_GET_X(box->flags));
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box3d, 0, sizeof(BOX3D));
+  memset(result, 0, sizeof(BOX3D));
   /* Initialize existing dimensions */
-  box3d->xmin = box->xmin;
-  box3d->xmax = box->xmax;
-  box3d->ymin = box->ymin;
-  box3d->ymax = box->ymax;
+  result->xmin = box->xmin;
+  result->xmax = box->xmax;
+  result->ymin = box->ymin;
+  result->ymax = box->ymax;
   if (MEOS_FLAGS_GET_Z(box->flags))
   {
-    box3d->zmin = box->zmin;
-    box3d->zmax = box->zmax;
+    result->zmin = box->zmin;
+    result->zmax = box->zmax;
   }
-  box3d->srid = box->srid;
-  /* box3d does not have a flags attribute */
+  result->srid = box->srid;
+  /* result does not have a flags attribute */
   return;
 }
 
@@ -771,34 +771,34 @@ point_get_coords(const GSERIALIZED *point, bool hasz, double *x, double *y,
  * @brief Return in the last argument the spatiotemporal box of a
  * geometry/geography
  * @param[in] gs Geometry/geography
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 bool
-geo_set_stbox(const GSERIALIZED *gs, STBox *box)
+geo_set_stbox(const GSERIALIZED *gs, STBox *result)
 {
-  assert(gs); assert(box);
+  assert(gs); assert(result);
   if (gserialized_is_empty(gs))
     return false;
 
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
+  memset(result, 0, sizeof(STBox));
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  box->srid = gserialized_get_srid(gs);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_Z(box->flags, hasz);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  result->srid = gserialized_get_srid(gs);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, hasz);
+  MEOS_FLAGS_SET_T(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
 
   /* Short-circuit the case where the geometry/geography is a point */
   if (gserialized_get_type(gs) == POINTTYPE)
   {
     double x, y, z;
     point_get_coords(gs, hasz, &x, &y, &z);
-    box->xmin = box->xmax = x;
-    box->ymin = box->ymax = y;
+    result->xmin = result->xmax = x;
+    result->ymin = result->ymax = y;
     if (hasz)
-      box->zmin = box->zmax = z;
+      result->zmin = result->zmax = z;
     return true;
   }
 
@@ -808,18 +808,18 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   memset(&gbox, 0, sizeof(GBOX));
   /* We are sure that the geometry/geography is not empty
    * We cannot use `lwgeom_calculate_gbox` since for geography it calculates
-   * a geodetic box where the coordinates are expressed in the unit sphere
+   * a geodetic result where the coordinates are expressed in the unit sphere
    */
   lwgeom_calculate_gbox_cartesian(geom, &gbox);
   lwgeom_free(geom);
-  box->xmin = gbox.xmin;
-  box->xmax = gbox.xmax;
-  box->ymin = gbox.ymin;
-  box->ymax = gbox.ymax;
+  result->xmin = gbox.xmin;
+  result->xmax = gbox.xmax;
+  result->ymin = gbox.ymin;
+  result->ymax = gbox.ymax;
   if (hasz)
   {
-    box->zmin = gbox.zmin;
-    box->zmax = gbox.zmax;
+    result->zmin = gbox.zmin;
+    result->zmax = gbox.zmax;
   }
   return true;
 }
@@ -862,18 +862,18 @@ geo_to_stbox(const GSERIALIZED *gs)
  * an array of geometries/geographies
  * @param[in] values Values
  * @param[in] count Number of elements in the array
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-geoarr_set_stbox(const Datum *values, int count, STBox *box)
+geoarr_set_stbox(const Datum *values, int count, STBox *result)
 {
-  assert(values); assert(box);
-  geo_set_stbox(DatumGetGserializedP(values[0]), box);
+  assert(values); assert(result);
+  geo_set_stbox(DatumGetGserializedP(values[0]), result);
   for (int i = 1; i < count; i++)
   {
     STBox box1;
     geo_set_stbox(DatumGetGserializedP(values[i]), &box1);
-    stbox_expand(&box1, box);
+    stbox_expand(&box1, result);
   }
   return;
 }
@@ -916,16 +916,16 @@ timestamptz_to_stbox(TimestampTz t)
  * @brief Return in the last argument a spatiotemporal box constructed from a 
  * timestamptz set
  * @param[in] s Set
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-tstzset_set_stbox(const Set *s, STBox *box)
+tstzset_set_stbox(const Set *s, STBox *result)
 {
-  assert(s); assert(box); assert(s->settype == T_TSTZSET);
+  assert(s); assert(result); assert(s->settype == T_TSTZSET);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
-  set_set_span(s, &box->period);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  memset(result, 0, sizeof(STBox));
+  set_set_span(s, &result->period);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return;
 }
 
@@ -952,16 +952,16 @@ tstzset_to_stbox(const Set *s)
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * timestamptz span
  * @param[in] s Span
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-tstzspan_set_stbox(const Span *s, STBox *box)
+tstzspan_set_stbox(const Span *s, STBox *result)
 {
-  assert(s); assert(box); assert(s->spantype == T_TSTZSPAN);
+  assert(s); assert(result); assert(s->spantype == T_TSTZSPAN);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
-  memcpy(&box->period, s, sizeof(Span));
-  MEOS_FLAGS_SET_T(box->flags, true);
+  memset(result, 0, sizeof(STBox));
+  memcpy(&result->period, s, sizeof(Span));
+  MEOS_FLAGS_SET_T(result->flags, true);
   return;
 }
 
@@ -986,16 +986,16 @@ tstzspan_to_stbox(const Span *s)
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * timestamptz span set
  * @param[in] ss Span set
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 void
-tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
+tstzspanset_set_stbox(const SpanSet *ss, STBox *result)
 {
-  assert(ss); assert(box); assert(ss->spansettype == T_TSTZSPANSET);
+  assert(ss); assert(result); assert(ss->spansettype == T_TSTZSPANSET);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBox));
-  memcpy(&box->period, &ss->span, sizeof(Span));
-  MEOS_FLAGS_SET_T(box->flags, true);
+  memset(result, 0, sizeof(STBox));
+  memcpy(&result->period, &ss->span, sizeof(Span));
+  MEOS_FLAGS_SET_T(result->flags, true);
   return;
 }
 
@@ -1027,28 +1027,28 @@ tstzspanset_to_stbox(const SpanSet *ss)
  * spatial base value
  * @param[in] d Value
  * @param[in] basetype Type of the value
- * @param[out] box Spatiotemporal box
+ * @param[out] result Spatiotemporal box
  */
 bool
-spatial_set_stbox(Datum d, MeosType basetype, STBox *box)
+spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
   {
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return geo_set_stbox(DatumGetGserializedP(d), box);
+      return geo_set_stbox(DatumGetGserializedP(d), result);
 #if CBUFFER
     case T_CBUFFER:
-      return cbuffer_set_stbox(DatumGetCbufferP(d), box);
+      return cbuffer_set_stbox(DatumGetCbufferP(d), result);
 #endif
 #if NPOINT
     case T_NPOINT:
-      return npoint_set_stbox(DatumGetNpointP(d), box);
+      return npoint_set_stbox(DatumGetNpointP(d), result);
 #endif
 #if POSE || RGEO
     case T_POSE:
-      return pose_set_stbox(DatumGetPoseP(d), box);
+      return pose_set_stbox(DatumGetPoseP(d), result);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -2364,7 +2364,7 @@ stbox_quad_split(const STBox *box, int *count)
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-  Span *period = hast ? (Span *) &box->period : NULL;
+  const Span *period = hast ? &box->period : NULL;
   *count = hasz ? 8 : 4;
   STBox *result = palloc(sizeof(STBox) * (*count));
   double deltax = (box->xmax - box->xmin) / 2.0;

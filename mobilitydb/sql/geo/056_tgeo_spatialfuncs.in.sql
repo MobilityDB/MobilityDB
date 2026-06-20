@@ -152,10 +152,6 @@ CREATE FUNCTION convexHull(tgeometry)
   AS 'MODULE_PATHNAME', 'Tgeo_convex_hull'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION tCentroid(tgeometry)
-  -- RETURNS tgeometry
-  -- AS 'MODULE_PATHNAME', 'Tgeo_tcentroid'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

@@ -186,7 +186,7 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
+  const STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
@@ -465,6 +465,21 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
     /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
+
+  /* tintersects is tdwithin with a zero distance and tdisjoint is its
+   * negation (as in the static case, geog_intersects =
+   * geog_dwithin(., ., 0.0)). For geodetic coordinates the planar
+   * intersects below is not applicable; route through the
+   * geodetic-capable tdwithin kernel. */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  {
+    Temporal *dw = tdwithin_tgeo_geo(temp, gs, 0.0);
+    if (! dw || tinter)
+      return dw;
+    Temporal *result = tnot_tbool(dw);
+    pfree(dw);
+    return result;
+  }
 
   /* 3D only if both arguments are 3D */
   datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
@@ -1303,7 +1318,6 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
     }
-    start = end;
     startvalue = endvalue;
     lower = upper;
     lower_inc = true;
@@ -1440,18 +1454,34 @@ Temporal *
 tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
+  /* Ensure the validity of the arguments. ensure_valid_tspatial_geo
+   * already enforces that the temporal geo and the geometry have the
+   * same geodetic flag, so geodetic coordinates are supported here the
+   * same way as in #Tdistance_tgeo_geo. A temporal point against a
+   * geodetic geometry is rejected; non-point geometries are routed
+   * through the polygonal buffer below. */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      (tpoint_type(temp->temptype) &&
-        (! ensure_point_type(gs) || ! ensure_not_geodetic_geo(gs))) ||
+      (tpoint_type(temp->temptype) && ! ensure_not_geodetic_geo(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  /* Determine the distance and the turning point functions to be applied */
-  datum_func3 func =
-    /* 3D only if both arguments are 3D */
-    MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
-    &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+  /* For a temporal point against a non-point geometry, route through
+   * tIntersects on a polygonal d-expanded buffer of gs. This mirrors the
+   * polygonal approximation that the always-quantifier branch of
+   * ea_dwithin_tgeo_geo already uses internally via geom_buffer. */
+  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE)
+  {
+    GSERIALIZED *buffer = geom_buffer(gs, dist, "");
+    Temporal *result = tinterrel_tgeo_geo(temp, buffer, TINTERSECTS);
+    pfree(buffer);
+    return result;
+  }
+
+  /* Determine the distance and the turning point functions to be applied.
+   * geo_dwithin_fn_geo selects the geodetic dwithin for geodetic
+   * coordinates and the 2D/3D planar dwithin otherwise, mirroring how
+   * Tdistance_tgeo_geo selects its distance function. */
+  datum_func3 func = geo_dwithin_fn_geo(temp->flags, gs->gflags);
   tpfunc_temp tpfn = &tpointsegm_tdwithin_turnpt;
   /* Call the generic function passing the two functions as arguments */
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs),

@@ -342,7 +342,7 @@ extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t s
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
 extern char *geo_out(const GSERIALIZED *gs);
-extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
+// extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
 extern GSERIALIZED *geog_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geog_in(const char *str, int32 typmod);
 extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
@@ -469,7 +469,7 @@ extern Set *geo_to_set(const GSERIALIZED *gs);
 extern GSERIALIZED *geoset_end_value(const Set *s);
 extern GSERIALIZED *geoset_start_value(const Set *s);
 extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
-extern GSERIALIZED **geoset_values(const Set *s);
+extern GSERIALIZED **geoset_values(const Set *s, int *count);
 
 /* Set operations */
 
@@ -648,7 +648,14 @@ extern Temporal *tgeography_to_tgeometry(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeography(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeometry(const Temporal *temp);
-extern bool tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, TimestampTz **timesarr, int *count);
+typedef struct
+{
+  GSERIALIZED *geom;     /**< Geometry encoding the temporal point */
+  int64       *times;    /**< Array of count timestamps in Unix time */
+  int          count;    /**< Number of timestamps */
+} MvtGeom;
+
+extern MvtGeom tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom);
 extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 extern STBox *tspatial_to_stbox(const Temporal *temp);
 
@@ -662,7 +669,7 @@ extern GSERIALIZED *tgeo_convex_hull(const Temporal *temp);
 extern GSERIALIZED *tgeo_end_value(const Temporal *temp);
 extern GSERIALIZED *tgeo_start_value(const Temporal *temp);
 extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp, bool unary_union);
-extern bool tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value);
+extern bool tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **result);
 extern bool tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED **tgeo_values(const Temporal *temp, int *count);
 extern Temporal *tpoint_angular_difference(const Temporal *temp);
@@ -889,12 +896,27 @@ extern STBox *stbox_get_time_tile(TimestampTz t, const Interval *duration, Times
 extern STBox *stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool border_inc, int *count);
 extern STBox *stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool border_inc, int *count);
 extern STBox *stbox_time_tiles(const STBox *bounds, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
-extern Temporal **tgeo_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
-extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count);
+typedef struct
+{
+  Temporal    **fragments;   /**< Array of count temporal fragments */
+  GSERIALIZED **bins;        /**< Parallel array of count space bins */
+  int           count;       /**< Number of fragments */
+} SpaceSplit;
+
+typedef struct
+{
+  Temporal    **fragments;
+  GSERIALIZED **space_bins;
+  TimestampTz  *time_bins;
+  int           count;
+} SpaceTimeSplit;
+
+extern SpaceSplit tgeo_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc);
+extern SpaceTimeSplit tgeo_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc);
 
 /* Clustering functions */
 
-extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k);
+extern int *geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t ngeoms, uint32_t k, int *count);
 extern uint32_t *geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int minpoints, int *count);
 extern GSERIALIZED **geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms, int *count);
 extern GSERIALIZED **geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms, double tolerance, int *count);
