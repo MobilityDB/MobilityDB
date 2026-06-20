@@ -1,9 +1,12 @@
 var searchData=
 [
-  ['skiplist_0',['SkipList',['../meos_8h_a858adc77f7cd174c10775a2fbde9db0b.html#a858adc77f7cd174c10775a2fbde9db0b',1,'meos.h']]],
-  ['sortedspan_1',['SortedSpan',['../span__spgist_8c_acf5c1ab3bbaa9c32e3050cfc3d729c59.html#acf5c1ab3bbaa9c32e3050cfc3d729c59',1,'span_spgist.c']]],
-  ['sortedstbox_2',['SortedSTbox',['../tspatial__spgist_8c_a43c01ae31cdf120e7ee3e8874ac9a62d.html#a43c01ae31cdf120e7ee3e8874ac9a62d',1,'tspatial_spgist.c']]],
-  ['sortedtbox_3',['SortedTbox',['../tnumber__spgist_8c_ab1a422b8ed01b47432d699799c93e735.html#ab1a422b8ed01b47432d699799c93e735',1,'tnumber_spgist.c']]],
-  ['spanbinstate_4',['SpanBinState',['../temporal__tile_8h_a9071c4f5008bf99bdddb32174095b44a.html#a9071c4f5008bf99bdddb32174095b44a',1,'temporal_tile.h']]],
-  ['stboxgridstate_5',['STboxGridState',['../tgeo__tile_8h_a7d93e4a3fe1eb5f6dd67ee98ba5c127e.html#a7d93e4a3fe1eb5f6dd67ee98ba5c127e',1,'tgeo_tile.h']]]
+  ['tboxgridstate_0',['TboxGridState',['../temporal__tile_8h_ac535cd7c14f21ac0c5784dd467856e5d.html#ac535cd7c14f21ac0c5784dd467856e5d',1,'temporal_tile.h']]],
+  ['text_1',['text',['../postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1',1,'postgres_ext_defs.in.h']]],
+  ['timeadt_2',['TimeADT',['../postgres__ext__defs_8in_8h_ac855d2530925e3123cb4be1a069b8b6a.html#ac855d2530925e3123cb4be1a069b8b6a',1,'postgres_ext_defs.in.h']]],
+  ['timeoffset_3',['TimeOffset',['../postgres__ext__defs_8in_8h_afeeec9fef4965fff91ab315ec70c1e9b.html#afeeec9fef4965fff91ab315ec70c1e9b',1,'postgres_ext_defs.in.h']]],
+  ['timestamp_4',['Timestamp',['../postgres__ext__defs_8in_8h_a073f186f9dddbefc6d819f25c6ccaa00.html#a073f186f9dddbefc6d819f25c6ccaa00',1,'postgres_ext_defs.in.h']]],
+  ['timestamptz_5',['TimestampTz',['../postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe',1,'postgres_ext_defs.in.h']]],
+  ['tpfunc_5fbase_6',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a14e8d51921d33d20867929767d50f51d.html#a14e8d51921d33d20867929767d50f51d',1,'temporal.h']]],
+  ['tpfunc_5ftemp_7',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_a73d8710f730e73a0865d3d6200b6910c.html#a73d8710f730e73a0865d3d6200b6910c',1,'temporal.h']]],
+  ['tpfunc_5funary_8',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_adf54be09a1497705df4940d4bab7ecd5.html#adf54be09a1497705df4940d4bab7ecd5',1,'temporal.h']]]
 ];

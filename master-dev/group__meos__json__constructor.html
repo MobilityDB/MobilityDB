@@ -70,12 +70,34 @@ $(function() {
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">Constructor functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__api.html">External API</a> &raquo; <a class="el" href="group__meos__json.html">Functions for temporal JSON types</a></div></div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Constructor functions for temporal JSON.  
-</p>
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga9686d46cada7c367917e65de503e9aa8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__constructor_ga9686d46cada7c367917e65de503e9aa8.html#ga9686d46cada7c367917e65de503e9aa8">tjsonb_from_base_temp</a> (const Jsonb *jb, const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga9686d46cada7c367917e65de503e9aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal JSONB from a JSONB and the time frame of another temporal value.  <a href="group__meos__json__constructor_ga9686d46cada7c367917e65de503e9aa8.html#ga9686d46cada7c367917e65de503e9aa8">More...</a><br /></td></tr>
+<tr class="separator:ga9686d46cada7c367917e65de503e9aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga795915494dc8007c530ce9c104fbdf37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__constructor_ga795915494dc8007c530ce9c104fbdf37.html#ga795915494dc8007c530ce9c104fbdf37">tjsonbinst_make</a> (const Jsonb *jb, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
+<tr class="memdesc:ga795915494dc8007c530ce9c104fbdf37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal JSONB instant from a JSONB and a timestamptz.  <a href="group__meos__json__constructor_ga795915494dc8007c530ce9c104fbdf37.html#ga795915494dc8007c530ce9c104fbdf37">More...</a><br /></td></tr>
+<tr class="separator:ga795915494dc8007c530ce9c104fbdf37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf98c36633b97d7e38e5ecc4de1b1d3e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__constructor_gadf98c36633b97d7e38e5ecc4de1b1d3e.html#gadf98c36633b97d7e38e5ecc4de1b1d3e">tjsonbseq_from_base_tstzset</a> (const Jsonb *jb, const <a class="el" href="structSet.html">Set</a> *s)</td></tr>
+<tr class="memdesc:gadf98c36633b97d7e38e5ecc4de1b1d3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal JSONB discrete sequence from a JSONB value and a timestamptz set.  <a href="group__meos__json__constructor_gadf98c36633b97d7e38e5ecc4de1b1d3e.html#gadf98c36633b97d7e38e5ecc4de1b1d3e">More...</a><br /></td></tr>
+<tr class="separator:gadf98c36633b97d7e38e5ecc4de1b1d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga854bd596dab8adc2847e42d60cee35aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__constructor_ga854bd596dab8adc2847e42d60cee35aa.html#ga854bd596dab8adc2847e42d60cee35aa">tjsonbseq_from_base_tstzspan</a> (const Jsonb *jb, const <a class="el" href="structSpan.html">Span</a> *sp)</td></tr>
+<tr class="memdesc:ga854bd596dab8adc2847e42d60cee35aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal JSONB sequence from a JSONB value and a timestamptz span.  <a href="group__meos__json__constructor_ga854bd596dab8adc2847e42d60cee35aa.html#ga854bd596dab8adc2847e42d60cee35aa">More...</a><br /></td></tr>
+<tr class="separator:ga854bd596dab8adc2847e42d60cee35aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2386ab913c885b810c2f885f9d167f9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__json__constructor_ga2386ab913c885b810c2f885f9d167f9f.html#ga2386ab913c885b810c2f885f9d167f9f">tjsonbseqset_from_base_tstzspanset</a> (const Jsonb *jb, const <a class="el" href="structSpanSet.html">SpanSet</a> *ss)</td></tr>
+<tr class="memdesc:ga2386ab913c885b810c2f885f9d167f9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal JSONB sequence set from a JSONB value and a timestamptz span set.  <a href="group__meos__json__constructor_ga2386ab913c885b810c2f885f9d167f9f.html#ga2386ab913c885b810c2f885f9d167f9f">More...</a><br /></td></tr>
+<tr class="separator:ga2386ab913c885b810c2f885f9d167f9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p >Constructor functions for temporal JSON. </p>
 </div><!-- contents -->
 <!-- start footer part -->

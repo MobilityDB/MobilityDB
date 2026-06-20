@@ -4,7 +4,7 @@ var searchData=
   ['functions_20for_20box_20types_1',['Functions for box types',['../group__mobilitydb__box.html',1,'']]],
   ['functions_20for_20circular_20buffer_20sets_2',['Functions for circular buffer sets',['../group__meos__cbuffer__set.html',1,'(Global Namespace)'],['../group__meos__internal__cbuffer__set.html',1,'(Global Namespace)'],['../group__mobilitydb__cbuffer__set.html',1,'(Global Namespace)']]],
   ['functions_20for_20geometry_20sets_3',['Functions for geometry sets',['../group__meos__internal__geo__set.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__set.html',1,'(Global Namespace)']]],
-  ['functions_20for_20json_20sets_4',['Functions for JSON sets',['../group__meos__json__set.html',1,'']]],
+  ['functions_20for_20json_20sets_4',['Functions for JSON sets',['../group__meos__json__set.html',1,'(Global Namespace)'],['../group__mobilitydb__json__set.html',1,'(Global Namespace)']]],
   ['functions_20for_20network_20point_20sets_5',['Functions for network point sets',['../group__meos__internal__npoint__set.html',1,'(Global Namespace)'],['../group__meos__npoint__set.html',1,'(Global Namespace)'],['../group__mobilitydb__npoint__set.html',1,'(Global Namespace)']]],
   ['functions_20for_20pose_20sets_6',['Functions for pose sets',['../group__meos__internal__pose__set.html',1,'(Global Namespace)'],['../group__meos__pose__set.html',1,'(Global Namespace)'],['../group__mobilitydb__pose__set.html',1,'(Global Namespace)']]],
   ['functions_20for_20set_20and_20span_20types_7',['Functions for set and span types',['../group__meos__internal__setspan.html',1,'(Global Namespace)'],['../group__meos__setspan.html',1,'(Global Namespace)'],['../group__mobilitydb__setspan.html',1,'(Global Namespace)']]],
