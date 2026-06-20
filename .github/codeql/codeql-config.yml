@@ -1,0 +1,8 @@
+name: "MobilityDB CodeQL config"
+
+paths-ignore:
+  - postgres/**
+  - postgis/**
+  - pgtypes/**
+  - h3-pg/**
+  - meos/postgis/**
