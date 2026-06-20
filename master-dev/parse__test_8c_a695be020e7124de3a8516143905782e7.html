@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geos_message_handler</title>
+<title>MobilityDB: quiet_error_handler</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_12121c49f044f6afa0e21d8cd2ea7508.html">examples</a></li><li class="navelem"><a class="el" href="geos__clip_8c.html">geos_clip.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="parse__test_8c.html">parse_test.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,14 +79,21 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="geos__clip_8c_a4127c4480c12e0ab2f3d17d70196f561.html#a4127c4480c12e0ab2f3d17d70196f561">geos_message_handler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geos__clip_8c_ae66f6b31b5ad750f1fe042a706a4e3d4.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a20fec2adbe0b4927f5889bcf889ce1a3.html#a20fec2adbe0b4927f5889bcf889ce1a3">CHECK</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a6cd2627f3bf03fb67a7bcb3b36b199c8.html#a6cd2627f3bf03fb67a7bcb3b36b199c8">check_invalid_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a67c3a4ab1cc3adf8146c8ec2cb5542cb.html#a67c3a4ab1cc3adf8146c8ec2cb5542cb">check_valid_geog</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_ac147cd96761465de5ef3239257afed3b.html#ac147cd96761465de5ef3239257afed3b">check_valid_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a5c7ba59d434acf5dafb8ec5fd28e9a1e.html#a5c7ba59d434acf5dafb8ec5fd28e9a1e">failures</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2">invalid_geoms</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="parse__test_8c_a695be020e7124de3a8516143905782e7.html#a695be020e7124de3a8516143905782e7">quiet_error_handler</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="parse__test_8c_a5633d1c0027e2fdaaec284535f3e3b14.html#a5633d1c0027e2fdaaec284535f3e3b14">valid_geoms</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4127c4480c12e0ab2f3d17d70196f561" name="a4127c4480c12e0ab2f3d17d70196f561"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4127c4480c12e0ab2f3d17d70196f561">&#9670;&#160;</a></span>geos_message_handler()</h2>
+<a id="a695be020e7124de3a8516143905782e7" name="a695be020e7124de3a8516143905782e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a695be020e7124de3a8516143905782e7">&#9670;&#160;</a></span>quiet_error_handler()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -95,16 +102,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void geos_message_handler </td>
+          <td class="memname">static void quiet_error_handler </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>fmt</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>errlevel</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>errcode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>errmsg</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

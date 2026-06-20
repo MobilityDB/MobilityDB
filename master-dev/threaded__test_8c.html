@@ -109,6 +109,7 @@ Functions</h2></td></tr>
 <p >Verifies:</p><ul>
 <li>meos_initialize/finalize can be called concurrently without racing on shared library state;</li>
 <li>WKT parsing (geometry_in / tgeompoint_in / ...) works concurrently because the lwgeom flex/bison globals are now MEOS_TLS;</li>
+<li>coordinate transforms (tspatial_transform) work concurrently because each thread drives PROJ through its own per-thread PJ_CONTEXT, never the shared global PJ_DEFAULT_CTX;</li>
 <li>meos_errno reads/writes remain isolated per thread;</li>
 <li>the GMT timezone bootstrap (postgres/timezone/localtime.c) is no longer racy under concurrent first-use.</li>
 </ul>

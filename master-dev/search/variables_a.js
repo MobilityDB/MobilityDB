@@ -1,7 +1,7 @@
 var searchData=
 [
   ['i_0',['i',['../structMatch_ade2eefc726750f487e5881dd7ada9f02.html#ade2eefc726750f487e5881dd7ada9f02',1,'Match::i()'],['../structSetUnnestState_a03b037d3a236cc5777567a8ce3b30c01.html#a03b037d3a236cc5777567a8ce3b30c01',1,'SetUnnestState::i()'],['../structSimilarityPathState_a76a2140587f36a6155f63dda7efce9a9.html#a76a2140587f36a6155f63dda7efce9a9',1,'SimilarityPathState::i()'],['../structSpanBinState_af76be5bdfe96a5b8b63d74e4286fd4ee.html#af76be5bdfe96a5b8b63d74e4286fd4ee',1,'SpanBinState::i()'],['../structTboxGridState_aaa5f4d1e376c211d770956061dc125ba.html#aaa5f4d1e376c211d770956061dc125ba',1,'TboxGridState::i()'],['../structTgeoarrPair_a6d81bf07a58703fbec2853edf3f30b0f.html#a6d81bf07a58703fbec2853edf3f30b0f',1,'TgeoarrPair::i()'],['../structTempUnnestState_abd9be4a246cfcaef564d8c57cac980e1.html#abd9be4a246cfcaef564d8c57cac980e1',1,'TempUnnestState::i()'],['../structSortedSTbox_a3482a5cb4ed0fd8746d2b411ae1df073.html#a3482a5cb4ed0fd8746d2b411ae1df073',1,'SortedSTbox::i()'],['../structSortedSpan_a4c1c3771f81b96257e9927b7e3990205.html#a4c1c3771f81b96257e9927b7e3990205',1,'SortedSpan::i()'],['../structSortedTbox_a7dea2dc792c788c2ccfbea90274813fb.html#a7dea2dc792c788c2ccfbea90274813fb',1,'SortedTbox::i()'],['../structSTboxGridState_a95f4f8e95f68cadb3cf21527c5eb9385.html#a95f4f8e95f68cadb3cf21527c5eb9385',1,'STboxGridState::i()']]],
-  ['id_1',['id',['../structworker__arg_acd2110a354ff903c0071472356c16cf6.html#acd2110a354ff903c0071472356c16cf6',1,'worker_arg::id()'],['../structcommune__record_ab2c3b9615ed4cbfa330f196b003dc2c8.html#ab2c3b9615ed4cbfa330f196b003dc2c8',1,'commune_record::id()']]],
+  ['id_1',['id',['../structcommune__record_ab2c3b9615ed4cbfa330f196b003dc2c8.html#ab2c3b9615ed4cbfa330f196b003dc2c8',1,'commune_record::id()'],['../structworker__arg_acd2110a354ff903c0071472356c16cf6.html#acd2110a354ff903c0071472356c16cf6',1,'worker_arg::id()']]],
   ['ids_2',['ids',['../structRTreeNode_accb759016d0a2cc004c31fb358007e5d.html#accb759016d0a2cc004c31fb358007e5d',1,'RTreeNode']]],
   ['idx_3',['idx',['../structSegBox_ab2f198c1484dcd45f6f0a1cbab02a2bd.html#ab2f198c1484dcd45f6f0a1cbab02a2bd',1,'SegBox']]],
   ['ifac_4',['ifac',['../structAFFINE_a6756b2de17f97d5301eb434ecc17c82e.html#a6756b2de17f97d5301eb434ecc17c82e',1,'AFFINE']]],
@@ -11,6 +11,7 @@ var searchData=
   ['interp_8',['interp',['../structmeos__wkb__parse__state_ab7078221407e8512699d39fa61766a69.html#ab7078221407e8512699d39fa61766a69',1,'meos_wkb_parse_state']]],
   ['intervals_9',['intervals',['../tpoint__geom__clip_8c_a64202e8121143ed79dd5ea7145cbe49e.html#a64202e8121143ed79dd5ea7145cbe49e',1,'tpoint_geom_clip.c']]],
   ['intervalstyle_10',['IntervalStyle',['../meos_8c_abc75cb539277c7cfa814b8755690cb1d.html#abc75cb539277c7cfa814b8755690cb1d',1,'meos.c']]],
-  ['invert_11',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
-  ['iters_12',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
+  ['invalid_5fgeoms_11',['invalid_geoms',['../parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2',1,'parse_test.c']]],
+  ['invert_12',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
+  ['iters_13',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];
