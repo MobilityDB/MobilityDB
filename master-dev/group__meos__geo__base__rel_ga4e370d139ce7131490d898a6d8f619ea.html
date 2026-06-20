@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_intersects3d</title>
+<title>MobilityDB: geom_dwithin</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,26 +84,29 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gabdddabbac6830ffdc98a4fd98a79075d.html#gabdddabbac6830ffdc98a4fd98a79075d">geom_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga2448e79006b40a02efcfcf151343303e.html#ga2448e79006b40a02efcfcf151343303e">geom_covers</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaf36cfbd72f603112f8782375b46c1a69.html#gaf36cfbd72f603112f8782375b46c1a69">geom_disjoint2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga4e370d139ce7131490d898a6d8f619ea.html#ga4e370d139ce7131490d898a6d8f619ea">geom_dwithin</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga4e370d139ce7131490d898a6d8f619ea.html#ga4e370d139ce7131490d898a6d8f619ea">geom_dwithin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga3f306b295cbca018ce74fa93f9e95c81.html#ga3f306b295cbca018ce74fa93f9e95c81">geom_dwithin2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaada21edfdb5feded6b20d0c044c881c9.html#gaada21edfdb5feded6b20d0c044c881c9">geom_dwithin3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga1c91cbc35b697ebfecea28149a2d469f.html#ga1c91cbc35b697ebfecea28149a2d469f">geom_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_gaa785f0800293d68a7883434ba9684544.html#gaa785f0800293d68a7883434ba9684544">geom_intersects2d</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__rel_ga92ee6e2f8934c05d5c25127ea0213f8b.html#ga92ee6e2f8934c05d5c25127ea0213f8b">geom_intersects3d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga92ee6e2f8934c05d5c25127ea0213f8b.html#ga92ee6e2f8934c05d5c25127ea0213f8b">geom_intersects3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga03c25b0533ce2ec1c3676d3a31a52834.html#ga03c25b0533ce2ec1c3676d3a31a52834">geom_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__rel_ga13458da7bc846a1cb07c7218a5f21bd8.html#ga13458da7bc846a1cb07c7218a5f21bd8">geom_touches</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga92ee6e2f8934c05d5c25127ea0213f8b" name="ga92ee6e2f8934c05d5c25127ea0213f8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga92ee6e2f8934c05d5c25127ea0213f8b">&#9670;&#160;</a></span>geom_intersects3d()</h2>
+<a id="ga4e370d139ce7131490d898a6d8f619ea" name="ga4e370d139ce7131490d898a6d8f619ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e370d139ce7131490d898a6d8f619ea">&#9670;&#160;</a></span>geom_dwithin()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool geom_intersects3d </td>
+          <td class="memname">bool geom_dwithin </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs1</em>, </td>
@@ -112,7 +115,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs2</em>&#160;</td>
+          <td class="paramname"><em>gs2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tolerance</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -120,16 +129,22 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return true if the 3D geometries intersect. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if two geometries are within a distance. </p>
+<p >Bare name for the planar (2D) distance-within test, the portable counterpart of <a class="el" href="group__meos__geo__base__rel_gad02c83b0140d8fdca6503018a19c9fc9.html#gad02c83b0140d8fdca6503018a19c9fc9">geog_dwithin()</a> for geometry; equivalent to PostGIS <code>ST_DWithin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tolerance</td><td>Tolerance </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a11f5542b9979e0c0827406b1966c635f.html#a11f5542b9979e0c0827406b1966c635f">ST_3DIntersects(PG_FUNCTION_ARGS)</a></code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_afa7cea4e1235b557fbb9dcebc3152403.html#afa7cea4e1235b557fbb9dcebc3152403">LWGEOM_dwithin(PG_FUNCTION_ARGS)</a></code> </dd></dl>
 
 </div>
 </div>
