@@ -28,6 +28,15 @@ jobs:
           python3 tools/portable_aliases/generate.py --insrc
           git diff --exit-code -- mobilitydb/sql tools/portable_aliases/verify_equivalence.sql
 
+  int64_check:
+    name: int64 vs int64_t header convention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject int64_t / uint64_t in MobilityDB public headers
+        run: ./tools/scripts/check_int64_in_headers.sh
+
   license_check:
     runs-on: ubuntu-latest
     steps:
