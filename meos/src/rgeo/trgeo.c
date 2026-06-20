@@ -180,6 +180,7 @@ trgeometry_out(const Temporal *temp)
   size_t len = strlen(geom) + strlen(pose) + 2;
   char *result = palloc(len);
   snprintf(result, len, "%s;%s", geom, pose);
+  pfree(geom); pfree(pose);
   return result;
 }
 
@@ -457,15 +458,17 @@ trgeometry_start_value(const Temporal *temp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      pose = tinstant_value((TInstant *) temp);
+      pose = tinstant_value_p((TInstant *) temp);
       break;
     case TSEQUENCE:
-      pose = tinstant_value(TSEQUENCE_INST_N((TSequence *) temp, 0));
+      pose = tinstant_value_p(TSEQUENCE_INST_N((TSequence *) temp, 0));
       break;
     default: /* TSEQUENCESET */
-      pose = tinstant_value(
+      pose = tinstant_value_p(
         TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0), 0));
   }
+  /* pose is a borrowed pointer into temp (tinstant_value_p); geom_apply_pose
+   * only reads it, so there is nothing to free here */
   return geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
 }
 
@@ -486,19 +489,21 @@ trgeometry_end_value(const Temporal *temp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      pose = tinstant_value((TInstant *) temp);
+      pose = tinstant_value_p((TInstant *) temp);
       break;
     case TSEQUENCE:
-      pose = tinstant_value(TSEQUENCE_INST_N((TSequence *) temp,
+      pose = tinstant_value_p(TSEQUENCE_INST_N((TSequence *) temp,
         ((TSequence *) temp)->count - 1));
       break;
     default: /* TSEQUENCESET */
     {
       const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp,
         ((TSequenceSet *) temp)->count - 1);
-      pose = tinstant_value(TSEQUENCE_INST_N(seq, seq->count - 1));
+      pose = tinstant_value_p(TSEQUENCE_INST_N(seq, seq->count - 1));
     }
   }
+  /* pose is a borrowed pointer into temp (tinstant_value_p); geom_apply_pose
+   * only reads it, so there is nothing to free here */
   return geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
 }
 
@@ -528,20 +533,22 @@ trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result)
     {
       if (n != 1)
         return false;
-      pose = tinstant_value((TInstant *) temp);
+      pose = tinstant_value_p((TInstant *) temp);
       break;
     }
     case TSEQUENCE:
     {
       if (n < 1 || n > ((TSequence *) temp)->count)
         return false;
-      pose = tinstant_value(TSEQUENCE_INST_N((TSequence *) temp, n - 1));
+      pose = tinstant_value_p(TSEQUENCE_INST_N((TSequence *) temp, n - 1));
       break;
     }
     default: /* TSEQUENCESET */
-      if (! tsequenceset_value_n((TSequenceSet *) temp, n, &pose))
+      if (! tsequenceset_value_n_p((TSequenceSet *) temp, n, &pose))
         return false;
-  } 
+  }
+  /* pose is a borrowed pointer into temp; geom_apply_pose only reads it, so
+   * there is nothing to free here */
   *result = geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
   return true;
 }
@@ -562,6 +569,11 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
     /* Apply pose to reference geometry */
     GSERIALIZED *gs = geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
     *result = PointerGetDatum(gs);
+    /* temporal_value_at_timestamptz returns a copy of the pose value (via
+     * datum_copy); it is consumed by geom_apply_pose above and must be freed
+     * here, otherwise every distance/comparison kernel that probes a trgeometry
+     * value leaks one pose per timestamp. */
+    pfree(DatumGetPointer(pose));
   }
   return found;
 }
@@ -624,9 +636,27 @@ trgeometry_instant_n(const Temporal *temp, int n)
   if (! ensure_positive(n))
     return NULL;
 
-  TInstant *inst = temporal_instant_n(temp, n);
-  if (! inst)
-    return NULL;
+  const TInstant *inst;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      if (n != 1)
+        return NULL;
+      inst = (const TInstant *) temp;
+      break;
+    case TSEQUENCE:
+      if (n < 1 || n > ((TSequence *) temp)->count)
+        return NULL;
+      inst = TSEQUENCE_INST_N((TSequence *) temp, n - 1);
+      break;
+    default: /* TSEQUENCESET */
+      inst = tsequenceset_inst_n((TSequenceSet *) temp, n);
+      if (! inst)
+        return NULL;
+  }
+  /* inst is borrowed from temp (TSEQUENCE_INST_N / tsequenceset_inst_n);
+   * trgeoinst_tposeinst only reads it, so there is nothing to free here */
   TInstant *res = trgeoinst_tposeinst(inst);
   TInstant *result = geo_tposeinst_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res);
@@ -656,6 +686,7 @@ trgeometry_instants(const Temporal *temp, int *count)
     result[i] = geo_tposeinst_to_trgeo(geo, inst);
     pfree(inst);
   }
+  pfree(instants);
   return result;
 }
 
@@ -1329,8 +1360,12 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
   Temporal *res = temporal_append_tinstant(tpose, tpose_inst, interp, maxdist,
     maxt, expand);
   if (! res)
+  {
+    /* temporal_append_tinstant returns NULL without consuming its inputs
+     * (e.g. when the appended instant violates the ordering); free them */
+    pfree(tpose); pfree(tpose_inst);
     return NULL;
-  
+  }
   Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_inst);
   return result;
@@ -1359,7 +1394,12 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
   Temporal *res = temporal_append_tsequence(tpose, tpose_seq, expand);
   if (! res)
+  {
+    /* temporal_append_tsequence returns NULL without consuming its inputs;
+     * free them */
+    pfree(tpose); pfree(tpose_seq);
     return NULL;
+  }
   Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_seq);
   return result;

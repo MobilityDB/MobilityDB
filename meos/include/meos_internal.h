@@ -1145,6 +1145,7 @@ extern bool tsequenceset_timestamptz_n(const TSequenceSet *ss, int n, TimestampT
 extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ss, int *count);
 extern bool tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t, bool strict, Datum *result);
 extern bool tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result);
+extern bool tsequenceset_value_n_p(const TSequenceSet *ss, int n, Datum *result);
 extern Datum *tsequenceset_values_p(const TSequenceSet *ss, int *count);
 
 /*****************************************************************************/
