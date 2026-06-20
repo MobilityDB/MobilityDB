@@ -35,6 +35,25 @@ typedef enum
   MEOS_ERR_INVALID_REGULAR_EXPRESSION = 29, // Regular expression error
 } errorCode;
 
+/**
+ * Report an error at the given level/code with a printf-style message.
+ *
+ * @note Return-or-not contract is **undefined**: this function MAY
+ * return control to the caller, depending on the installed error
+ * handler. The default handler `exit(EXIT_FAILURE)`s on `ERROR` (safe
+ * for one-shot CLI use), but any custom handler an embedder installs
+ * via `meos_initialize_error_handler` may return. Code that assumes
+ * `meos_error(ERROR, ...)` never returns dereferences freed or
+ * uninitialized state on the fall-through path.
+ *
+ * **Convention** (enforced by a static-analysis CI check): every
+ * `meos_error(ERROR, ...)` callsite MUST be immediately followed by a
+ * `return` (with a sentinel value if the function has a non-void
+ * return type), `goto cleanup_label`, `break`, or equivalent
+ * control-transfer. NEVER let execution fall through and assume the
+ * call did not return. This makes every callsite safe regardless of
+ * which handler an embedder installs.
+ */
 extern void meos_error(int errlevel, int errcode, const char *format, ...);
 
 /* Set or read error level */
