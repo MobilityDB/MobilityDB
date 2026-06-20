@@ -232,6 +232,7 @@ extern interpType interptype_from_string(const char *interp_str);
 
 /* Type conversion functions */
 
+extern MeosType meos_typeof_hexwkb(const char *hexwkb);
 extern const char *meostype_name(MeosType type);
 extern MeosType temptype_basetype(MeosType type);
 extern MeosType settype_basetype(MeosType type);

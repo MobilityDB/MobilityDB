@@ -82,3 +82,5 @@ jobs:
           ./text_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o time_test time_test.c -L/usr/local/lib -lmeos
           ./time_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o typeof_test typeof_test.c -L/usr/local/lib -lmeos
+          ./typeof_test
