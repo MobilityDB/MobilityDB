@@ -237,30 +237,6 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeo_minDistance">
-				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
-				<para>Return the minimum spatial distance between two temporal geometries over the union of their temporal extents</para>
-				<para><varname>minDistance({tgeo,geo},{tgeo,geo}) → float</varname></para>
-				<para><varname>minDistance(tgeo[],tgeo[]) → float</varname></para>
-				<para><varname>minDistance(tgeo,tgeo) → float</varname> (aggregate)</para>
-				<para>The scalar form returns the minimum distance reached between the two arguments over the intersection of their temporal extents, equivalent to the minimum value of the temporal distance <varname>&lt;-&gt;</varname>. The array form generalises this to two sets of temporal geometries and returns the minimum across all pairs. The aggregate form, used with <varname>GROUP BY</varname>, returns the minimum distance reached over all aggregated pairs in the group.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT minDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-  geometry 'Point(0 1)');
--- 0.707106781186548
-SELECT minDistance(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)',
-        tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03)'],
-  ARRAY[tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)']);
--- 0
-SELECT g, minDistance(t1.Trip, t2.Trip)
-FROM Trips t1, Trips t2, Groups g
-WHERE t1.GroupId = g AND t2.GroupId = g AND t1.TripId &lt; t2.TripId
-GROUP BY g;
-</programlisting>
-				<para>The aggregate form is well suited to BerlinMOD-style queries that compute the minimum approach distance between trip pairs grouped by license or vehicle class. On a single-row group the aggregate degenerates to the scalar minimum distance between the pair.</para>
-			</listitem>
-
 			<listitem xml:id="tgeo_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Return the line connecting the nearest approach point &Z_support; &geography_support;</para>
