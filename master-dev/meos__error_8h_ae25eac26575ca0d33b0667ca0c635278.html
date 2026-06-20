@@ -127,7 +127,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Function handling error messages. </p>
+<p>Report an error at the given level/code with a printf-style message. </p>
+<dl class="section note"><dt>Note</dt><dd>Return-or-not contract is <b>undefined</b>: this function MAY return control to the caller, depending on the installed error handler. The default handler <code>exit(EXIT_FAILURE)</code>s on <code>ERROR</code> (safe for one-shot CLI use), but any custom handler an embedder installs via <code>meos_initialize_error_handler</code> may return. Code that assumes <code>meos_error(ERROR, ...)</code> never returns dereferences freed or uninitialized state on the fall-through path.</dd></dl>
+<p><b>Convention</b> (enforced by a static-analysis CI check): every <code>meos_error(ERROR, ...)</code> callsite MUST be immediately followed by a <code>return</code> (with a sentinel value if the function has a non-void return type), <code>goto cleanup_label</code>, <code>break</code>, or equivalent control-transfer. NEVER let execution fall through and assume the call did not return. This makes every callsite safe regardless of which handler an embedder installs.</p>
+<p >Report an error at the given level/code with a printf-style message.</p>
+<dl class="section note"><dt>Note</dt><dd>Return-or-not contract is <em>undefined</em>: depending on the installed handler this function MAY return to the caller. The default handler <code>exit(EXIT_FAILURE)</code>s on <code>ERROR</code> (safe for one-shot CLI use); any custom handler installed via <code>meos_initialize_error_handler</code> may return. Code in MEOS that calls <code>meos_error(ERROR, ...)</code> MUST be immediately followed by a <code>return</code>, <code>goto</code>, <code>break</code>, or sentinel assignment &ndash; NEVER let execution fall through and assume the call did not return. See the corresponding doc comment on the public declaration of <code>meos_error</code> in <code><a class="el" href="meos__error_8h.html">meos/include/meos_error.h</a></code>. </dd></dl>
 
 </div>
 </div>
