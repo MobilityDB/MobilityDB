@@ -19,6 +19,8 @@ engines:
       - "postgis/**"
       - "postgres/**"
       - "pgtypes/**"
+      - "h3-pg/**"
+      - "contrib/**"
     config:
       languages:
         - "c"
@@ -28,3 +30,13 @@ exclude_paths:
   - "pgtypes/**"
   - "meos/test/**"
   - "meos/examples/**"
+  # h3-pg is a vendored copy of the Apache-2.0 h3-pg project; its
+  # cyclomatic complexity should not count against MobilityDB's gate.
+  - "h3-pg/**"
+  # contrib/ contains optional PCL/PDAL integration plugins; they are
+  # not part of the core codebase and pull in large generated files.
+  - "contrib/**"
+  # scripts/ and tools/ hold developer utilities (Python); exclude to
+  # prevent style issues in helper scripts from blocking PR analysis.
+  - "scripts/**"
+  - "tools/**"
