@@ -215,12 +215,20 @@ add_compile_definitions(_USE_MATH_DEFINES)
 
 # Set default compile flags and code coverage for GCC
 if(CMAKE_COMPILER_IS_GNUCC)
-  # MobilityDB compiler flags
-  add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter -Wno-strict-aliasing)
-  # Treat an implicit function declaration as an error: it silently assumes an
-  # int return, truncating any 64-bit pointer the callee actually returns and
-  # producing a hard-to-trace crash at runtime rather than at build time.
-  add_definitions(-Werror=implicit-function-declaration -Werror=implicit-int)
+  # MobilityDB compiler flags valid for both C and C++
+  add_compile_options(-Wall -Wextra -Wunused-parameter -Wno-strict-aliasing)
+  # The following flags are C-only: the C++ compiler rejects -std=gnu1x and an
+  # implicit function declaration is a C-specific construct. Gating them to the
+  # C language keeps the C++ translation units (PostGIS/GEOS wrappers and the
+  # linked shared module) free of cc1plus command-line option warnings.
+  # Treating an implicit function declaration as an error matters because it
+  # silently assumes an int return, truncating any 64-bit pointer the callee
+  # actually returns and producing a hard-to-trace crash at runtime rather than
+  # at build time.
+  add_compile_options(
+    "$<$<COMPILE_LANGUAGE:C>:-std=gnu1x>"
+    "$<$<COMPILE_LANGUAGE:C>:-Werror=implicit-function-declaration>"
+    "$<$<COMPILE_LANGUAGE:C>:-Werror=implicit-int>")
   # -Wno-strict-aliasing was removed to access directly PostGIS points
   # See file tpoint_spatialfuncs.h
   # add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)

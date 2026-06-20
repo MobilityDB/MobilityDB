@@ -182,6 +182,7 @@ get_timezone_offset(struct tm *tm)
 #if defined(HAVE_STRUCT_TM_TM_ZONE)
 	return tm->tm_gmtoff;
 #elif defined(HAVE_INT_TIMEZONE)
+	(void) tm; /* MEOS: tm is unused on this branch; silence -Wunused-parameter */
 	return -TIMEZONE_GLOBAL;
 #else
 #error No way to determine TZ? Can this happen?
