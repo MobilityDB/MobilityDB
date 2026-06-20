@@ -41,8 +41,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
-#include <pg_bool.h>
-#include <pg_text.h>
 
 /* Main program */
 int main(void)
@@ -622,7 +620,7 @@ int main(void)
   tstzarray[1] = tstz2;
   tstzset_result = tstzset_make(tstzarray, 2);
   char_result = tstzset_out(tstzset_result);
-  printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
+printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(tstzset_result); free(char_result);
 
   /* Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc); */
@@ -840,7 +838,7 @@ int main(void)
   printf("bigintset_value_n(%s, 1, %ld): %c\n", bset1_out, int64_result, bool_result ? 't' : 'n');
 
   /* int64 *bigintset_values(const Set *s); */
-  int64array_result = bigintset_values(bset1);
+  int64array_result = bigintset_values(bset1, &count);
   printf("bigintset_values(%s): {", bset1_out);
   for (int i = 0; i < bset1->count; i++)
   {
@@ -895,7 +893,7 @@ int main(void)
   free(char_result);
 
   /* DateADT *dateset_values(const Set *s); */
-  datearray_result = dateset_values(dset1);
+  datearray_result = dateset_values(dset1, &count);
   printf("bigintset_values(%s): {", dset1_out);
   for (int i = 0; i < dset1->count; i++)
   {
@@ -974,7 +972,7 @@ int main(void)
   printf("floatset_value_n(%s, 1, %lf): %c\n", fset1_out, float8_result, bool_result ? 't' : 'n');
 
   /* double *floatset_values(const Set *s); */
-  float8array_result = floatset_values(fset1);
+  float8array_result = floatset_values(fset1, &count);
   printf("floatset_values(%s): {", fset1_out);
   for (int i = 0; i < fset1->count; i++)
   {
@@ -1023,7 +1021,7 @@ int main(void)
   printf("intset_value_n(%s, 1, %d): %c\n", iset1_out, int32_result, bool_result ? 't' : 'n');
 
   /* int *intset_values(const Set *s); */
-  int32array_result = intset_values(iset1);
+  int32array_result = intset_values(iset1, &count);
   printf("intset_values(%s): {", iset1_out);
   for (int i = 0; i < iset1->count; i++)
   {
@@ -1166,7 +1164,7 @@ int main(void)
   free(text_result); free(char_result);
 
   /* text **textset_values(const Set *s); */
-  textarray_result = textset_values(textset1);
+  textarray_result = textset_values(textset1, &count);
   printf("textset_values(%s): {", textset1_out);
   for (int i = 0; i < textset1->count; i++)
   {
@@ -1200,7 +1198,7 @@ int main(void)
   free(char_result);
 
   /* TimestampTz *tstzset_values(const Set *s); */
-  tstzarray_result = tstzset_values(tstzset1);
+  tstzarray_result = tstzset_values(tstzset1, &count);
   printf("tstzset_values(%s): {", tstzset1_out);
   for (int i = 0; i < tstzset1->count; i++)
   {
@@ -2577,7 +2575,8 @@ int main(void)
   /* Set *intersection_bigint_set(int64 i, const Set *s); */
   bset_result = intersection_bigint_set(int64_in1, bset1);
   char_result = bset_result ? bigintset_out(bset_result) : text_out(text_null);
-  printf("intersection_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);  if (bset_result)
+  printf("intersection_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);
+  if (bset_result)
     free(bset_result);
   free(char_result);
 
