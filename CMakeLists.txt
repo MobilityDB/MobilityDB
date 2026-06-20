@@ -262,7 +262,26 @@ int main() {
 #--------------------------------
 
 # GEOS geometry library
-find_package(GEOS REQUIRED)
+# Prefer GEOS's own CMake CONFIG package (shipped by upstream GEOS, and by vcpkg)
+# when available: it exposes the GEOS::geos_c imported target with correct
+# per-platform library handling. The bundled FindGEOS module resolves libgeos_c
+# by absolute path, which ninja cannot satisfy under vcpkg manifest mode on macOS
+# (the .dylib is reported as a missing, unbuildable input). Fall back to the
+# module for system installs that ship no CMake config.
+find_package(GEOS CONFIG QUIET)
+if(GEOS_FOUND AND TARGET GEOS::geos_c)
+  set(GEOS_LIBRARY GEOS::geos_c)
+  get_target_property(GEOS_INCLUDE_DIR GEOS::geos_c INTERFACE_INCLUDE_DIRECTORIES)
+  if(NOT GEOS_INCLUDE_DIR)
+    set(GEOS_INCLUDE_DIR "")
+  endif()
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3" GEOS_VERSION_MICRO "${GEOS_VERSION}")
+  message(STATUS "Found GEOS ${GEOS_VERSION} via CONFIG (GEOS::geos_c)")
+else()
+  find_package(GEOS MODULE REQUIRED)
+endif()
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
 math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10000 + ${GEOS_VERSION_MINOR} * 100 + ${GEOS_VERSION_MICRO}")
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
