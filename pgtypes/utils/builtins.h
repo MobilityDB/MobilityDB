@@ -53,14 +53,18 @@ extern char *pg_ultostr(char *str, uint32 value);
 /* varchar.c */
 extern int  bpchartruelen(char *s, int len);
 
+// MEOS added the "pg_" prefix in the functions below to avoid the functions
+// with the same name are called in the server which performs detoasting
 /* popular functions from varlena.c */
-extern text *cstring_to_text(const char *s);
-extern text *cstring_to_text_with_len(const char *s, int len);
-extern char *text_to_cstring(const text *t);
-extern void text_to_cstring_buffer(const text *src, char *dst, size_t dst_len);
+extern text *pg_cstring_to_text(const char *s);
+extern text *pg_cstring_to_text_with_len(const char *s, size_t len);
+// extern char *text_to_cstring(const text *t);
+// extern void text_to_cstring_buffer(const text *src, char *dst, size_t dst_len);
+extern char *pg_text_to_cstring(const text *t);
+extern void pg_text_to_cstring_buffer(const text *src, char *dst, size_t dst_len);
 
-#define CStringGetTextDatum(s) PointerGetDatum(cstring_to_text(s))
-#define TextDatumGetCString(d) text_to_cstring((text *) DatumGetPointer(d))
+#define CStringGetTextDatum(s) PointerGetDatum(pg_cstring_to_text(s))
+#define TextDatumGetCString(d) pg_text_to_cstring((text *) DatumGetPointer(d))
 
 /* numeric.c */
 // extern Datum numeric_float8_no_overflow(PG_FUNCTION_ARGS);

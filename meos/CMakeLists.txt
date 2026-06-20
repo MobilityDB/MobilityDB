@@ -159,10 +159,10 @@ if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
 endif()
-# if(JSON)
-  # message(STATUS "Including JSON types")
-  # set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
-# endif()
+if(JSON)
+  message(STATUS "Including JSON types")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:json>")
+endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
@@ -225,6 +225,7 @@ if(MEOS)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_error.h" MEOS_ERROR_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h" MEOS_JSON_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 
@@ -241,6 +242,15 @@ if(MEOS)
   # Generate meos_geo_export.h
   string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
   file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
+
+  if(JSON)
+    # Generate meos_json_export.h. The library build pulls the Jsonb / JsonPath
+    # types from the internal <pgtypes.h> umbrella; for the installed PUBLIC
+    # header replace it with the public type headers <pg_numeric.h> (Numeric)
+    # and <pg_json.h> (the opaque Jsonb / JsonPath types).
+    string(REGEX REPLACE "#include <pgtypes.h>\n" "#include <pg_numeric.h>\n#include <pg_json.h>\n" MEOS_JSON_EXP_H "${MEOS_JSON_H}")
+    file(WRITE "${CMAKE_BINARY_DIR}/meos_json_export.h" "${MEOS_JSON_EXP_H}")
+  endif()
 
   # Files from ${CMAKE_BINARY_DIR}
   install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
@@ -298,8 +308,9 @@ if(MEOS)
   endif()
   if(JSON)
     install(
-      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+      FILES "${CMAKE_BINARY_DIR}/meos_json_export.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      RENAME "meos_json.h")
   endif()
   if(NPOINT)
     install(

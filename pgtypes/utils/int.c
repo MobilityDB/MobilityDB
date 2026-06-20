@@ -70,6 +70,7 @@ int16_out(int16 num)
 /**
  * @ingroup meos_base_int
  * @brief Return an int32 number from its string representation
+ * @return On error return `INT_MAX`
  * @note Derived from PostgreSQL function @p int4in()
  */
 int32

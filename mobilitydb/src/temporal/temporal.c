@@ -705,6 +705,30 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
  * Conversion functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_from_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_from_text);
+/**
+ * @ingroup mobilitydb_geo_inout
+ * @brief Return a temporal value from its Well-Known Text (WKT) representation
+ * @note This just does the same thing as the SQL function #Temporal_in, except
+ * it has to handle a 'text' input. First, unwrap the text into a cstring, then
+ * do as Temporal_in
+ * @sqlfn tboolFromText(), tintFromText(),
+ */
+Datum
+Temporal_from_text(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = pg_text_to_cstring(wkt_text);
+  /* Copy the pointer since it will be advanced during parsing */
+  const char *wkt_ptr = wkt;
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Temporal *result = temporal_in(wkt_ptr, oid_meostype(temptypid));
+  pfree(wkt);
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tbool_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_to_tint);
 /**

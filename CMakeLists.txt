@@ -95,6 +95,18 @@ option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
 option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
 CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)
 
+# The JSON types are derived from PostgreSQL 18 and require a PostgreSQL 18
+# server. For the MobilityDB extension, detect the server version and disable
+# JSON on older PostgreSQL. The standalone MEOS library vendors PostgreSQL 18,
+# so JSON stays available there.
+if(NOT MEOS AND JSON)
+  find_package(POSTGRESQL QUIET)
+  if(DEFINED POSTGRESQL_VERSION_MAJOR AND POSTGRESQL_VERSION_MAJOR LESS 18)
+    message(STATUS "JSON types require PostgreSQL 18; disabling JSON for PostgreSQL ${POSTGRESQL_VERSION_MAJOR}")
+    set(JSON OFF)
+  endif()
+endif()
+
 # Set the compilation flags when including the various optional types
 if(CBUFFER)
   message(STATUS "Including circular buffers")

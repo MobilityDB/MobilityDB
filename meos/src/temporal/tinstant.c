@@ -161,10 +161,24 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
   char *t = pg_timestamptz_out(inst->t);
   MeosType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(tinstant_value_p(inst), basetype, maxdd);
-  size_t size = strlen(value) + strlen(t) + 2;
+  const char *out = value;
+#if JSON
+  /* A tjsonb value starts with '{' and contains characters that conflict with
+   * the temporal grammar, so it is wrapped in quotes to round-trip through the
+   * input parser. ttext values are already escaped by the base type output
+   * function #basetype_out. */
+  char *quoted = NULL;
+  if (inst->temptype == T_TJSONB && string_escape(value, QUOTES, &quoted))
+    out = quoted;
+#endif /* JSON */
+  size_t size = strlen(out) + strlen(t) + 2;
   char *result = palloc(size);
-  snprintf(result, size, "%s@%s", value, t);
+  snprintf(result, size, "%s@%s", out, t);
   pfree(t); pfree(value);
+#if JSON
+  if (quoted)
+    pfree(quoted);
+#endif /* JSON */
   return result;
 }
 

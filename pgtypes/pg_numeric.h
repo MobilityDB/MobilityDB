@@ -62,6 +62,7 @@ typedef struct NumericData *Numeric;
 extern Numeric float4_to_numeric(float4 num);
 extern Numeric float8_to_numeric(float8 num);
 extern Numeric int16_to_numeric(int16 num);
+extern Numeric int32_to_numeric(int32 num);
 extern Numeric int64_to_numeric(int64 num);
 extern Numeric numeric(Numeric num, int32 typmod);
 extern Numeric numeric_abs(Numeric num);

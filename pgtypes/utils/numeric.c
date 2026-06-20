@@ -40,6 +40,7 @@
 #include <utils/jsonb.h>
 
 #include <pgtypes.h>
+#include "../../meos/include/meos_error.h"
 
 #if POSTGRESQL_VERSION_NUMBER < 160000
 /*
@@ -705,7 +706,7 @@ pg_numeric_in(const char *str, int32 typmod)
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "numeric", str);
+    "invalid input syntax for type numeric: \"%s\"", str);
   return NULL; // TODO
 }
 
@@ -1002,13 +1003,13 @@ numeric(Numeric num, int32 typmod)
 Numeric
 pg_numeric(Numeric num, int32 typmod)
 {
-  Numeric    new;
-  int      precision;
-  int      scale;
-  int      ddigits;
-  int      maxdigits;
-  int      dscale;
-  NumericVar  var;
+  Numeric new;
+  int precision;
+  int scale;
+  int ddigits;
+  int maxdigits;
+  int dscale;
+  NumericVar var;
 
   /*
    * Handle NaN and infinities: if apply_typmod_special doesn't complain,
@@ -1076,20 +1077,66 @@ pg_numeric(Numeric num, int32 typmod)
 }
 
 /**
+ * @brief Return the integer that represents a typmod string
+ * @note Derived from PostgreSQL function @p numerictypmodin()
+ */
+int32
+pg_numeric_typmodin(int32 *tl, int n)
+{
+  int32 result;
+  if (n == 2)
+  {
+    if (tl[0] < 1 || tl[0] > NUMERIC_MAX_PRECISION)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "NUMERIC precision %d must be between 1 and %d",
+        tl[0], NUMERIC_MAX_PRECISION);
+      return INT_MAX;
+    }
+    if (tl[1] < NUMERIC_MIN_SCALE || tl[1] > NUMERIC_MAX_SCALE)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "NUMERIC scale %d must be between %d and %d",
+        tl[1], NUMERIC_MIN_SCALE, NUMERIC_MAX_SCALE);
+      return INT_MAX;
+    }
+    result = make_numeric_typmod(tl[0], tl[1]);
+  }
+  else if (n == 1)
+  {
+    if (tl[0] < 1 || tl[0] > NUMERIC_MAX_PRECISION)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "NUMERIC precision %d must be between 1 and %d",
+        tl[0], NUMERIC_MAX_PRECISION);
+      return INT_MAX;
+    }
+    /* scale defaults to zero */
+    result = make_numeric_typmod(tl[0], 0);
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+     "invalid NUMERIC type modifier");
+    return INT_MAX;
+  }
+  return result;
+}
+
+/**
  * @brief Return the character string that represents a typmod value
  * @note Derived from PostgreSQL function @p numerictypmodout()
  */
 char *
-numeric_typmodout(int32 typmod)
+pg_numeric_typmodout(int32 typmod)
 {
-  char *res = (char *) palloc(64);
+  char *result = (char *) palloc(64);
   if (is_valid_numeric_typmod(typmod))
-    snprintf(res, 64, "(%d,%d)", numeric_typmod_precision(typmod),
+    snprintf(result, 64, "(%d,%d)", numeric_typmod_precision(typmod),
       numeric_typmod_scale(typmod));
   else
-    *res = '\0';
-
-  return res;
+    *result = '\0';
+  return result;
 }
 
 /* ----------------------------------------------------------------------
@@ -1171,15 +1218,13 @@ pg_numeric_uminus(Numeric num)
    * Do it the easy way directly on the packed format
    */
   Numeric res = duplicate_numeric(num);
-
   if (NUMERIC_IS_SPECIAL(num))
   {
     /* Flip the sign, if it's Inf or -Inf */
-    if (!NUMERIC_IS_NAN(num))
+    if (! NUMERIC_IS_NAN(num))
       res->choice.n_short.n_header =
         num->choice.n_short.n_header ^ NUMERIC_INF_SIGN_MASK;
   }
-
   /*
    * The packed format is known to be totally zero digit trimmed always. So
    * once we've eliminated specials, we can identify a zero by the fact that
@@ -1192,13 +1237,10 @@ pg_numeric_uminus(Numeric num)
       res->choice.n_short.n_header =
         num->choice.n_short.n_header ^ NUMERIC_SHORT_SIGN_MASK;
     else if (NUMERIC_SIGN(num) == NUMERIC_POS)
-      res->choice.n_long.n_sign_dscale =
-        NUMERIC_NEG | NUMERIC_DSCALE(num);
+      res->choice.n_long.n_sign_dscale = NUMERIC_NEG | NUMERIC_DSCALE(num);
     else
-      res->choice.n_long.n_sign_dscale =
-        NUMERIC_POS | NUMERIC_DSCALE(num);
+      res->choice.n_long.n_sign_dscale = NUMERIC_POS | NUMERIC_DSCALE(num);
   }
-
   return res;
 }
 
@@ -1311,18 +1353,14 @@ pg_numeric_round(Numeric num, int32 scale)
   NumericVar arg;
   init_var(&arg);
   set_var_from_num(num, &arg);
-
   round_var(&arg, scale);
-
   /* We don't allow negative output dscale */
   if (scale < 0)
     arg.dscale = 0;
-
   /*
    * Return the rounded result
    */
   Numeric res = make_result(&arg);
-
   free_var(&arg);
   return res;
 }
@@ -1344,39 +1382,28 @@ numeric_trunc(Numeric num, int32 scale)
 Numeric
 pg_numeric_trunc(Numeric num, int32 scale)
 {
-  /*
-   * Handle NaN and infinities
-   */
+  /* Handle NaN and infinities */
   if (NUMERIC_IS_SPECIAL(num))
     return duplicate_numeric(num);
 
   /*
    * Limit the scale value to avoid possible overflow in calculations.
-   *
    * These limits are based on the maximum number of digits a Numeric value
    * can have before and after the decimal point.
    */
   scale = Max(scale, -(NUMERIC_WEIGHT_MAX + 1) * DEC_DIGITS);
   scale = Min(scale, NUMERIC_DSCALE_MAX);
 
-  /*
-   * Unpack the argument and truncate it at the proper digit position
-   */
+  /* Unpack the argument and truncate it at the proper digit position */
   NumericVar arg;
   init_var(&arg);
   set_var_from_num(num, &arg);
-
   trunc_var(&arg, scale);
-
   /* We don't allow negative output dscale */
   if (scale < 0)
     arg.dscale = 0;
-
-  /*
-   * Return the truncated result
-   */
+  /* Return the truncated result */
   Numeric res = make_result(&arg);
-
   free_var(&arg);
   return res;
 }
@@ -1396,19 +1423,14 @@ numeric_ceil(Numeric num)
 Numeric
 pg_numeric_ceil(Numeric num)
 {
-  /*
-   * Handle NaN and infinities
-   */
+  /* Handle NaN and infinities */
   if (NUMERIC_IS_SPECIAL(num))
     return duplicate_numeric(num);
-
   NumericVar result;
   init_var_from_num(num, &result);
   ceil_var(&result, &result);
-
   Numeric res = make_result(&result);
   free_var(&result);
-
   return res;
 }
 
@@ -1432,14 +1454,11 @@ pg_numeric_floor(Numeric num)
    */
   if (NUMERIC_IS_SPECIAL(num))
     return duplicate_numeric(num);
-
   NumericVar result;
   init_var_from_num(num, &result);
   floor_var(&result, &result);
-
   Numeric res = make_result(&result);
   free_var(&result);
-
   return res;
 }
 
@@ -1486,10 +1505,8 @@ numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2,
   NumericVar result_var;
   init_var(&result_var);
   init_var(&count_var);
-
   /* Convert 'count' to a numeric, for ease of use later */
   int64_to_numericvar((int64) count, &count_var);
-
   switch (cmp_numerics(bound1, bound2))
   {
     case 0:
@@ -1520,16 +1537,14 @@ numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2,
 
   /* if result exceeds the range of a legal int4, we meos_error here */
   int32 result;
-  if (!numericvar_to_int32(&result_var, &result))
+  if (! numericvar_to_int32(&result_var, &result))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "integer out of range");
     return INT_MAX;
   }
-
   free_var(&count_var);
   free_var(&result_var);
-
   return result;
 }
 
@@ -1562,12 +1577,10 @@ compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
    */
   sub_var(&operand_var, &bound1_var, &operand_var);
   sub_var(&bound2_var, &bound1_var, &bound2_var);
-
   mul_var(&operand_var, count_var, &operand_var,
       operand_var.dscale + count_var->dscale);
   div_var(&operand_var, &bound2_var, result_var, 0, false, true);
   add_var(result_var, &const_one, result_var);
-
   free_var(&bound1_var);
   free_var(&bound2_var);
   free_var(&operand_var);
@@ -1785,11 +1798,9 @@ cmp_numerics(Numeric num1, Numeric num2)
   else
   {
     result = cmp_var_common(NUMERIC_DIGITS(num1), NUMERIC_NDIGITS(num1),
-                NUMERIC_WEIGHT(num1), NUMERIC_SIGN(num1),
-                NUMERIC_DIGITS(num2), NUMERIC_NDIGITS(num2),
-                NUMERIC_WEIGHT(num2), NUMERIC_SIGN(num2));
+      NUMERIC_WEIGHT(num1), NUMERIC_SIGN(num1), NUMERIC_DIGITS(num2),
+      NUMERIC_NDIGITS(num2), NUMERIC_WEIGHT(num2), NUMERIC_SIGN(num2));
   }
-
   return result;
 }
 
@@ -1801,13 +1812,12 @@ cmp_numerics(Numeric num1, Numeric num2)
 uint32
 numeric_hash(Numeric num)
 {
-  Datum    digit_hash;
-  Datum    result;
-  int      weight;
-  int      start_offset;
-  int      end_offset;
-  int      i;
-  int      hash_len;
+  uint32_t digit_hash;
+  int weight;
+  int start_offset;
+  int end_offset;
+  int i;
+  int hash_len;
   NumericDigit *digits;
 
   /* If it's NaN or infinity, don't try to hash the rest of the fields */
@@ -1829,9 +1839,7 @@ numeric_hash(Numeric num)
   {
     if (digits[i] != (NumericDigit) 0)
       break;
-
     start_offset++;
-
     /*
      * The weight is effectively the # of digits before the decimal point,
      * so decrement it for each leading zero we skip.
@@ -1867,9 +1875,7 @@ numeric_hash(Numeric num)
     hash_len * sizeof(NumericDigit));
 
   /* Mix in the weight, via XOR */
-  result = digit_hash ^ weight;
-
-  return DatumGetInt32(result);
+  return digit_hash ^ weight;
 }
 
 /**
@@ -1880,13 +1886,12 @@ numeric_hash(Numeric num)
 uint64
 numeric_hash_extended(Numeric num, uint64 seed)
 {
-  Datum    digit_hash;
-  Datum    result;
-  int      weight;
-  int      start_offset;
-  int      end_offset;
-  int      i;
-  int      hash_len;
+  uint32_t digit_hash;
+  int weight;
+  int start_offset;
+  int end_offset;
+  int i;
+  int hash_len;
   NumericDigit *digits;
 
   /* If it's NaN or infinity, don't try to hash the rest of the fields */
@@ -1896,39 +1901,30 @@ numeric_hash_extended(Numeric num, uint64 seed)
   weight = NUMERIC_WEIGHT(num);
   start_offset = 0;
   end_offset = 0;
-
   digits = NUMERIC_DIGITS(num);
   for (i = 0; i < (int) NUMERIC_NDIGITS(num); i++)
   {
     if (digits[i] != (NumericDigit) 0)
       break;
-
     start_offset++;
-
     weight--;
   }
 
   if ((int) NUMERIC_NDIGITS(num) == start_offset)
     return (seed - 1);
-
   for (i = (int) NUMERIC_NDIGITS(num) - 1; i >= 0; i--)
   {
     if (digits[i] != (NumericDigit) 0)
       break;
-
     end_offset++;
   }
 
   Assert(start_offset + end_offset < NUMERIC_NDIGITS(num));
-
   hash_len = NUMERIC_NDIGITS(num) - start_offset - end_offset;
-  digit_hash = hash_any_extended((unsigned char *) (NUMERIC_DIGITS(num)
-                            + start_offset),
-                   hash_len * sizeof(NumericDigit),
-                   seed);
+  digit_hash = hash_any_extended((unsigned char *) (NUMERIC_DIGITS(num) +
+    start_offset),  hash_len * sizeof(NumericDigit), seed);
 
-  result = DatumGetUInt64(digit_hash) ^ weight;
-  return result;
+  return DatumGetUInt64(digit_hash) ^ weight;
 }
 
 /* ----------------------------------------------------------------------
@@ -1959,10 +1955,10 @@ numeric_add(Numeric num1, Numeric num2)
 Numeric
 numeric_add_opt_error(Numeric num1, Numeric num2, bool *have_error)
 {
-  NumericVar  arg1;
-  NumericVar  arg2;
-  NumericVar  result;
-  Numeric    res;
+  NumericVar arg1;
+  NumericVar arg2;
+  NumericVar result;
+  Numeric res;
 
   /*
    * Handle NaN and infinities
@@ -1997,14 +1993,10 @@ numeric_add_opt_error(Numeric num1, Numeric num2, bool *have_error)
    */
   init_var_from_num(num1, &arg1);
   init_var_from_num(num2, &arg2);
-
   init_var(&result);
   add_var(&arg1, &arg2, &result);
-
   res = make_result_opt_error(&result, have_error);
-
   free_var(&result);
-
   return res;
 }
 
@@ -2029,10 +2021,10 @@ numeric_minus(Numeric num1, Numeric num2)
 Numeric
 numeric_sub_opt_error(Numeric num1, Numeric num2, bool *have_error)
 {
-  NumericVar  arg1;
-  NumericVar  arg2;
-  NumericVar  result;
-  Numeric    res;
+  NumericVar arg1;
+  NumericVar arg2;
+  NumericVar result;
+  Numeric res;
 
   /*
    * Handle NaN and infinities
@@ -2067,14 +2059,10 @@ numeric_sub_opt_error(Numeric num1, Numeric num2, bool *have_error)
    */
   init_var_from_num(num1, &arg1);
   init_var_from_num(num2, &arg2);
-
   init_var(&result);
   sub_var(&arg1, &arg2, &result);
-
   res = make_result_opt_error(&result, have_error);
-
   free_var(&result);
-
   return res;
 }
 
@@ -2106,10 +2094,10 @@ pg_numeric_mul(Numeric num1, Numeric num2)
 Numeric
 numeric_mul_opt_error(Numeric num1, Numeric num2, bool *have_error)
 {
-  NumericVar  arg1;
-  NumericVar  arg2;
-  NumericVar  result;
-  Numeric    res;
+  NumericVar arg1;
+  NumericVar arg2;
+  NumericVar result;
+  Numeric res;
 
   /*
    * Handle NaN and infinities
@@ -2184,17 +2172,12 @@ numeric_mul_opt_error(Numeric num1, Numeric num2, bool *have_error)
    */
   init_var_from_num(num1, &arg1);
   init_var_from_num(num2, &arg2);
-
   init_var(&result);
   mul_var(&arg1, &arg2, &result, arg1.dscale + arg2.dscale);
-
   if (result.dscale > NUMERIC_DSCALE_MAX)
     round_var(&result, NUMERIC_DSCALE_MAX);
-
   res = make_result_opt_error(&result, have_error);
-
   free_var(&result);
-
   return res;
 }
 
@@ -2227,10 +2210,10 @@ Numeric
 numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
 {
   NumericVar  arg1;
-  NumericVar  arg2;
-  NumericVar  result;
-  Numeric    res;
-  int      rscale;
+  NumericVar arg2;
+  NumericVar result;
+  Numeric res;
+  int rscale;
 
   if (have_error)
     *have_error = false;
@@ -3102,7 +3085,7 @@ numeric_pow(Numeric num1, Numeric num2)
         "zero raised to a negative power is undefined");
       return NULL;
     }
-    if (sign1 < 0 && !numeric_is_integral(num2))
+    if (sign1 < 0 && ! numeric_is_integral(num2))
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "a negative number raised to a non-integer power yields a complex result");
@@ -3368,34 +3351,7 @@ pg_numeric_trim_scale(Numeric num)
   return res;
 }
 
-/* ----------------------------------------------------------------------
- *
- * Type conversion functions
- *
- * ----------------------------------------------------------------------
- */
-
-/**
- * @ingroup meos_base_numeric
- * @brief Transform an int64 number into a numeric value
- * @note Existing PostgreSQL function
- */
-Numeric
-int64_to_numeric(int64 num)
-{
-  Numeric    res;
-  NumericVar  result;
-
-  init_var(&result);
-
-  int64_to_numericvar(num, &result);
-
-  res = make_result(&result);
-
-  free_var(&result);
-
-  return res;
-}
+/* ---------------------------------------------------------------------- */
 
 /*
  * Convert val1/(10**log10val2) to numeric.  This is much faster than normal
@@ -3404,12 +3360,11 @@ int64_to_numeric(int64 num)
 Numeric
 int64_div_fast_to_numeric(int64 val1, int log10val2)
 {
-  Numeric    res;
-  NumericVar  result;
-  int      rscale;
-  int      w;
-  int      m;
-
+  Numeric res;
+  NumericVar result;
+  int rscale;
+  int w;
+  int m;
   init_var(&result);
 
   /* result scale */
@@ -3457,14 +3412,11 @@ int64_div_fast_to_numeric(int64 val1, int log10val2)
       int128_to_numericvar(tmp, &result);
 #else
       /* do the multiplication using numerics */
-      NumericVar  tmp;
-
+      NumericVar tmp;
       init_var(&tmp);
-
       int64_to_numericvar(val1, &result);
       int64_to_numericvar(factor, &tmp);
       mul_var(&result, &tmp, &result, 0);
-
       free_var(&tmp);
 #endif
     }
@@ -3484,19 +3436,120 @@ int64_div_fast_to_numeric(int64 val1, int log10val2)
   return res;
 }
 
+/* ----------------------------------------------------------------------
+ *
+ * Type conversion functions
+ *
+ * ----------------------------------------------------------------------
+ */
+
 /**
  * @ingroup meos_base_numeric
- * @brief Transform an int4 value into a numeric value 
- * @note Derived from PostgreSQL function @p numeric_int4()
+ * @brief Transform an int64 number into a numeric value
+ * @note Existing PostgreSQL function
  */
-int32
-numeric_to_int32(Numeric num)
+Numeric
+int64_to_numeric(int64 num)
 {
-  return numeric_int4_opt_error(num, NULL);
+  Numeric res;
+  NumericVar result;
+  init_var(&result);
+  int64_to_numericvar(num, &result);
+  res = make_result(&result);
+  free_var(&result);
+  return res;
+}
+
+/**
+ * @brief Transform a numeric value into a int64 number
+ */
+int64
+pg_numeric_int8_opt_error(Numeric num, bool *have_error)
+{
+  NumericVar x;
+  int64 result;
+  if (have_error)
+    *have_error = false;
+  if (NUMERIC_IS_SPECIAL(num))
+  {
+    if (have_error)
+    {
+      *have_error = true;
+      return 0;
+    }
+    else
+    {
+      if (NUMERIC_IS_NAN(num))
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "cannot convert NaN to bigint");
+      else
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "cannot convert infinity to bigint");
+      return LONG_MAX;
+    }
+  }
+
+  /* Convert to variable format, then convert to int8 */
+  init_var_from_num(num, &x);
+  if (! numericvar_to_int64(&x, &result))
+  {
+    if (have_error)
+    {
+      *have_error = true;
+      return 0;
+    }
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "bigint out of range");
+      return LONG_MAX;
+    }
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_base_numeric
+ * @brief Transform a numeric value into an int64 number
+ * @note Derived from PostgreSQL function @p numeric_int8()
+ */
+int64
+numeric_to_int64(Numeric num)
+{
+  return pg_numeric_int8_opt_error(num, NULL);
+}
+
+/**
+ * @ingroup meos_base_numeric
+ * @brief Transform an int32 number into a numeric value
+ * @note Existing PostgreSQL function
+ */
+Numeric
+int32_to_numeric(int32 num)
+{
+  return int64_to_numeric((int64) num);
+}
+
+/*
+ * Given a NumericVar, convert it to an int32. If the NumericVar exceeds the
+ * range of an int32, false is returned, otherwise true is returned.
+ * The input NumericVar is *not* free'd.
+ */
+static bool
+numericvar_to_int32(const NumericVar *var, int32 *result)
+{
+  int64 val;
+  if (! numericvar_to_int64(var, &val))
+    return false;
+  if (unlikely(val < PG_INT32_MIN) || unlikely(val > PG_INT32_MAX))
+    return false;
+  /* Down-convert to int4 */
+  *result = (int32) val;
+  return true;
 }
 
 int32
-numeric_int4_opt_error(Numeric num, bool *have_error)
+pg_numeric_int4_opt_error(Numeric num, bool *have_error)
 {
   NumericVar  x;
   int32    result;
@@ -3526,7 +3579,7 @@ numeric_int4_opt_error(Numeric num, bool *have_error)
   /* Convert to variable format, then convert to int4 */
   init_var_from_num(num, &x);
 
-  if (!numericvar_to_int32(&x, &result))
+  if (! numericvar_to_int32(&x, &result))
   {
     if (have_error)
     {
@@ -3544,87 +3597,15 @@ numeric_int4_opt_error(Numeric num, bool *have_error)
   return result;
 }
 
-/*
- * Given a NumericVar, convert it to an int32. If the NumericVar
- * exceeds the range of an int32, false is returned, otherwise true is returned.
- * The input NumericVar is *not* free'd.
- */
-static bool
-numericvar_to_int32(const NumericVar *var, int32 *result)
-{
-  int64    val;
-
-  if (!numericvar_to_int64(var, &val))
-    return false;
-
-  if (unlikely(val < PG_INT32_MIN) || unlikely(val > PG_INT32_MAX))
-    return false;
-
-  /* Down-convert to int4 */
-  *result = (int32) val;
-
-  return true;
-}
-
-
-int64
-numeric_int8_opt_error(Numeric num, bool *have_error)
-{
-  NumericVar  x;
-  int64    result;
-
-  if (have_error)
-    *have_error = false;
-
-  if (NUMERIC_IS_SPECIAL(num))
-  {
-    if (have_error)
-    {
-      *have_error = true;
-      return 0;
-    }
-    else
-    {
-      if (NUMERIC_IS_NAN(num))
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-          "cannot convert NaN to %s", "bigint");
-      else
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-          "cannot convert infinity to %s", "bigint");
-      return LONG_MAX;
-    }
-  }
-
-  /* Convert to variable format, then convert to int8 */
-  init_var_from_num(num, &x);
-
-  if (!numericvar_to_int64(&x, &result))
-  {
-    if (have_error)
-    {
-      *have_error = true;
-      return 0;
-    }
-    else
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "bigint out of range");
-      return LONG_MAX;
-    }
-  }
-
-  return result;
-}
-
 /**
  * @ingroup meos_base_numeric
- * @brief Transform a numeric value into an int64 number
- * @note Derived from PostgreSQL function @p numeric_int8()
+ * @brief Transform a numeric value into an int32 number
+ * @note Derived from PostgreSQL function @p numeric_int4()
  */
-int64
-numeric_to_int64(Numeric num)
+int32
+numeric_to_int32(Numeric num)
 {
-  return numeric_int8_opt_error(num, NULL);
+  return pg_numeric_int4_opt_error(num, NULL);
 }
 
 /**
@@ -3635,7 +3616,7 @@ numeric_to_int64(Numeric num)
 Numeric
 int16_to_numeric(int16 num)
 {
-  return int64_to_numeric(num);
+  return int64_to_numeric((int64) num);
 }
 
 /**
@@ -3647,9 +3628,8 @@ int16
 numeric_to_int16(Numeric num)
 {
   NumericVar  x;
-  int64    val;
-  int16    result;
-
+  int64 val;
+  int16 result;
   if (NUMERIC_IS_SPECIAL(num))
   {
     if (NUMERIC_IS_NAN(num))
@@ -3660,27 +3640,22 @@ numeric_to_int16(Numeric num)
         "cannot convert infinity to %s", "smallint");
     return INT16_MAX;
   }
-
   /* Convert to variable format and thence to int8 */
   init_var_from_num(num, &x);
-
-  if (!numericvar_to_int64(&x, &val))
+  if (! numericvar_to_int64(&x, &val))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "smallint out of range");
     return INT16_MAX;
   }
-
   if (unlikely(val < PG_INT16_MIN) || unlikely(val > PG_INT16_MAX))
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "smallint out of range");
     return INT16_MAX;
   }
-
   /* Down-convert to int2 */
   result = (int16) val;
-
   return result;
 }
 
@@ -3692,11 +3667,10 @@ numeric_to_int16(Numeric num)
 Numeric
 float8_to_numeric(float8 num)
 {
-  Numeric    res;
+  Numeric res;
   NumericVar  result;
-  char    buf[DBL_DIG + 100];
+  char buf[DBL_DIG + 100];
   const char *endptr;
-
   if (isnan(num))
     return make_result(&const_nan);
 
@@ -3709,16 +3683,11 @@ float8_to_numeric(float8 num)
   }
 
   snprintf(buf, sizeof(buf), "%.*g", DBL_DIG, num);
-
   init_var(&result);
-
   /* Assume we need not worry about leading/trailing spaces */
   (void) set_var_from_str(buf, buf, &result, &endptr);
-
   res = make_result(&result);
-
   free_var(&result);
-
   return res;
 }
 
@@ -3739,10 +3708,8 @@ numeric_to_float8(Numeric num)
     else
       return get_float8_nan();
   }
-
   char *tmp = pg_numeric_out(num);
   double result = float8_in(tmp);
-
   pfree(tmp);
   return result;
 }
@@ -3755,7 +3722,7 @@ numeric_to_float8(Numeric num)
 float8 
 numeric_float8_no_overflow_internal(Numeric num)
 {
-  double    val;
+  double val;
   if (NUMERIC_IS_SPECIAL(num))
   {
     if (NUMERIC_IS_PINF(num))
@@ -3768,11 +3735,9 @@ numeric_float8_no_overflow_internal(Numeric num)
   else
   {
     NumericVar  x;
-
     init_var_from_num(num, &x);
     val = numericvar_to_double_no_overflow(&x);
   }
-
   return val;
 }
 
@@ -3788,10 +3753,8 @@ float4_to_numeric(float4 num)
   NumericVar  result;
   char buf[FLT_DIG + 100];
   const char *endptr;
-
   if (isnan(num))
     return make_result(&const_nan);
-
   if (isinf(num))
   {
     if (num < 0)
@@ -3799,18 +3762,12 @@ float4_to_numeric(float4 num)
     else
       return make_result(&const_pinf);
   }
-
   snprintf(buf, sizeof(buf), "%.*g", FLT_DIG, num);
-
   init_var(&result);
-
   /* Assume we need not worry about leading/trailing spaces */
   (void) set_var_from_str(buf, buf, &result, &endptr);
-
   res = make_result(&result);
-
   free_var(&result);
-
   return res;
 }
 
@@ -3831,7 +3788,6 @@ numeric_to_float4(Numeric num)
     else
       return get_float4_nan();
   }
-
   char *tmp = pg_numeric_out(num);
   float4 result = float4_in(tmp);
   pfree(tmp);
@@ -4103,7 +4059,7 @@ out_of_range:
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "numeric", str);
+    "invalid input syntax for type numeric: \"%s\"", str);
   return false;
 }
 
@@ -4304,7 +4260,7 @@ out_of_range:
 
 invalid_syntax:
   meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "invalid input syntax for type %s: \"%s\"", "numeric", str);
+    "invalid input syntax for type numeric: \"%s\"", str);
   return false;
 }
 
@@ -4865,7 +4821,7 @@ numericvar_to_int64(const NumericVar *var, int64 *result)
   int      ndigits;
   int      weight;
   int      i;
-  int64    val;
+  int64 val;
   bool    neg;
   NumericVar  rounded;
 
@@ -5040,7 +4996,7 @@ numericvar_to_double_no_overflow(const NumericVar *var)
   {
     /* shouldn't happen ... */
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-      "invalid input syntax for type %s: \"%s\"", "double precision", tmp);
+      "invalid input syntax for type double precision: \"%s\"", tmp);
     return get_float8_infinity();
   }
 
@@ -8152,8 +8108,7 @@ power_var_int(const NumericVar *base, int exp, int exp_dscale,
    * Now we can proceed with the multiplications.
    */
   neg = (exp < 0);
-  // mask = pg_abs_s32(exp);
-  mask = abs(exp);
+  mask = pg_abs_s32(exp);
 
   init_var(&base_prod);
   set_var_from_var(base, &base_prod);

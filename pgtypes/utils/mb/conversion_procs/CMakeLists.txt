@@ -1,4 +1,3 @@
-
 set(CONVERSION_PROCS_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/big5.c
   ${CMAKE_CURRENT_SOURCE_DIR}/cyrillic_and_mic.c
@@ -37,4 +36,3 @@ set(ALL_SOURCES
 
 # Push once to parent
 set(PGTYPES_SOURCES ${ALL_SOURCES} PARENT_SCOPE)
-

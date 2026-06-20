@@ -102,6 +102,8 @@
 // #include "utils/resowner.h"
 #include "utils/varlena.h"
 
+#include "../../meos/include/meos_error.h"
+
 /* Define PG_FLUSH_DATA_WORKS if we have an implementation for pg_flush_data */
 #if defined(HAVE_SYNC_FILE_RANGE)
 #define PG_FLUSH_DATA_WORKS 1

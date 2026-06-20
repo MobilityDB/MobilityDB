@@ -102,6 +102,12 @@
 
 typedef uintptr_t Datum;
 
+// #if MEOS
+/* MEOS Definition of a variadic function type  */
+typedef Datum (*PGFunction) (Datum, ...);
+// #endif /* MEOS */
+
+
 /*
  * A NullableDatum is used in places where both a Datum and its nullness needs
  * to be stored. This can be more efficient than storing datums and nullness

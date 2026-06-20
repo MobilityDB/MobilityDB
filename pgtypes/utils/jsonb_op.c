@@ -62,32 +62,33 @@ pg_jsonb_exists(const Jsonb *jb, const text *key)
   kval.val.string.val = VARDATA_ANY(key);
   kval.val.string.len = VARSIZE_ANY_EXHDR(key);
 
-  v = findJsonbValueFromContainer(&((Jsonb *) jb)->root, 
+  v = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
     JB_FOBJECT | JB_FARRAY, &kval);
   bool result = (v != NULL); // MEOS
-  pfree(v);
+  if (v) pfree(v); /* findJsonbValueFromContainer palloc's the result */
   return result;
 }
 
 /**
- * @brief Return true if the text string exist as a top-level key or array
- * element within the JSON value
- */
-Datum
-datum_jsonb_exists(Datum l, Datum r)
-{
-  return BoolGetDatum(pg_jsonb_exists(DatumGetJsonbP(l), DatumGetTextP(r)));
-}
-
-/**
- * @brief Return true if the text string exist as a top-level key or array
+ * @ingroup meos_json_base_accessor
+ * @brief Return true if the text string exists as a top-level key or array
  * element within the JSONB value
- * @note Derived from PostgreSQL function @p jsonb_delete_array()
+ * @note Derived from PostgreSQL function @p jsonb_exists_array()
  */
+#if MEOS
 bool
-jsonb_exists_array(const Jsonb *jb, const text **keys_elems,
-  int keys_len, bool any)
+jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len, bool any)
 {
+  return pg_jsonb_exists_array(jb, keys_elems, keys_len, any);
+}
+#endif /* MEOS */
+bool
+pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len,
+  bool any)
+{
+  /* Ensure the validity of the arguments */
+  assert(jb); assert(keys_elems); assert(keys_len > 0);
+
   for (int i = 0; i < keys_len; i++)
   {
     JsonbValue strVal;
@@ -95,8 +96,10 @@ jsonb_exists_array(const Jsonb *jb, const text **keys_elems,
     /* We rely on the array elements not being toasted */
     strVal.val.string.val = VARDATA_ANY(keys_elems[i]);
     strVal.val.string.len = VARSIZE_ANY_EXHDR(keys_elems[i]);
-    bool res = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
-        JB_FOBJECT | JB_FARRAY, &strVal) != NULL;
+    JsonbValue *fv = findJsonbValueFromContainer(&((Jsonb *) jb)->root,
+      JB_FOBJECT | JB_FARRAY, &strVal);
+    bool res = (fv != NULL);
+    if (fv) pfree(fv); /* palloc'd by findJsonbValueFromContainer */
     if ((any && res) || (! any && ! res))
       return any ? true : false;
   }
@@ -118,12 +121,23 @@ jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2)
 {
+  /* Guard the public entry: a NULL argument would otherwise be dereferenced
+   * (root inspection / iteration) and fault. Raise a clean MEOS error. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb_contains: NULL argument");
+    return false;
+  }
   if (JB_ROOT_IS_OBJECT(jb1) != JB_ROOT_IS_OBJECT(jb2))
     return false;
   JsonbIterator *it1 = JsonbIteratorInit(&((Jsonb *)jb1)->root);
   JsonbIterator *it2 = JsonbIteratorInit(&((Jsonb *)jb2)->root);
   bool result = JsonbDeepContains(&it1, &it2); // MEOS
-  pfree(it1); pfree(it2);
+  /* JsonbDeepContains may stop early, leaving the iterators partially
+   * consumed; free whatever remains of each chain (no memory context). */
+  while (it1) { JsonbIterator *p = it1->parent; pfree(it1); it1 = p; }
+  while (it2) { JsonbIterator *p = it2->parent; pfree(it2); it2 = p; }
   return result;
 }
 
@@ -146,26 +160,8 @@ pg_jsonb_contained(const Jsonb *jb1, const Jsonb *jb2)
 }
 
 /**
- * @brief Return true if the first JSON value contains the second one
- */
-Datum
-datum_jsonb_contains(Datum l, Datum r)
-{
-  return BoolGetDatum(pg_jsonb_contains(DatumGetJsonbP(l), DatumGetJsonbP(r)));
-}
-
-/**
- * @brief Return true if the first JSON value is contained into the second one
- */
-Datum
-datum_jsonb_contained(Datum l, Datum r)
-{
-  return BoolGetDatum(pg_jsonb_contains(DatumGetJsonbP(r), DatumGetJsonbP(l)));
-}
-
-/**
  * @ingroup meos_json_base_comp
- * @brief Return true if the two JSONB values are equal
+ * @brief Return true if two JSONB values are equal
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_eq()
  */
@@ -179,14 +175,22 @@ jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) == 0;
 }
 
 /**
  * @ingroup meos_json_base_comp
- * @brief Return true if the two JSONB values are not equal
+ * @brief Return true if two JSONB values are not equal
  * @param[in] jb1,jb2 JSONB values
  * @note Derived from PostgreSQL function @p jsonb_ne()
  */
@@ -200,7 +204,15 @@ jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_ne(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) != 0;
 }
@@ -221,7 +233,15 @@ jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_lt(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) < 0;
 }
@@ -242,7 +262,15 @@ jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_gt(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) > 0;
 }
@@ -264,7 +292,15 @@ jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_le(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) <= 0;
 }
@@ -286,7 +322,15 @@ jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
 bool
 pg_jsonb_ge(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) >= 0;
 }
@@ -308,14 +352,22 @@ jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 int
 pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2)
 {
-  assert(jb1); assert(jb2);
+  /* Guard the public comparison entry: a NULL argument would otherwise be
+   * dereferenced when its container is iterated and fault. Raise a clean
+   * MEOS error so bindings get an exception rather than a SIGSEGV. */
+  if (jb1 == NULL || jb2 == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "jsonb comparison: NULL argument");
+    return 0;
+  }
   return compareJsonbContainers((JsonbContainer *) &jb1->root,
     (JsonbContainer *) &jb2->root) <= 0;
 }
 
 /**
  * @ingroup meos_json_base_accessor
- * @brief Return the hash value of a temporal value
+ * @brief Return the 32-bit hash value of a JSONB value
  * @note Derived from PostgreSQL function @p jsonb_hash()
  */
 #if MEOS

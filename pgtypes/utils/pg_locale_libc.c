@@ -26,6 +26,8 @@
 #include "utils/memutils.h"
 #include "utils/pg_locale.h"
 
+#include "../../meos/include/meos_error.h"
+
 // #include "access/htup_details.h"
 // #include "catalog/pg_database.h"
 // #include "catalog/pg_collation.h"

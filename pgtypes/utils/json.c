@@ -37,6 +37,7 @@
 #include "utils/varlena.h" /* For DatumGetTextP */
 
 #include <pgtypes.h>
+#include "../../meos/include/meos_error.h"
 
 // #include "postgres.h"
 // #include "catalog/pg_proc.h"
@@ -137,7 +138,7 @@ json_in(const char *str)
 text *
 pg_json_in(const char *str)
 {
-  text *result = cstring_to_text(str);
+  text *result = pg_cstring_to_text(str);
 
   /* validate it */
   JsonLexContext lex;
@@ -152,20 +153,20 @@ pg_json_in(const char *str)
 /**
  * @ingroup meos_json_base_inout
  * @brief Return the string representation of a JSON value
- * @param[in] json JSON value
+ * @param[in] js JSON value
  * @note Derived from PostgreSQL function @p json_out()
  */
 #if MEOS
 char *
-json_out(const text *json)
+json_out(const text *js)
 {
-  return text_to_cstring(json);
+  return pg_text_to_cstring(js);
 }
 #endif /* MEOS */
 char *
-pg_json_out(const text *json)
+pg_json_out(const text *js)
 {
-  return text_to_cstring(json);
+  return pg_text_to_cstring(js);
 }
 
 /*
@@ -364,8 +365,8 @@ json_unique_check_key(JsonUniqueCheckState *cxt, const char *key,
 
 /**
  * @ingroup meos_json_base_constructor
- * @brief Construct a JSON value from an array of alternating keys
- * and values
+ * @brief Construct a JSON value from a text array of alternating keys and
+ * values
  * @param[in] keys_vals Array of alternating keys and vals 
  * @param[in] count Number of elements in the input array 
  * @note Derived from PostgreSQL function @p json_object()
@@ -381,9 +382,9 @@ text *
 pg_json_make(text **keys_vals, int count)
 {
   StringInfoData res;
-  int count1 = count / 2;
   initStringInfo(&res);
   appendStringInfoChar(&res, '{');
+  int count1 = count / 2;
   for (int i = 0; i < count1; ++i)
   {
     if (! keys_vals[i * 2])
@@ -403,15 +404,14 @@ pg_json_make(text **keys_vals, int count)
       escape_json_text(&res, keys_vals[i * 2 + 1]);
   }
   appendStringInfoChar(&res, '}');
-  text *result = cstring_to_text_with_len(res.data, res.len);
+  text *result = pg_cstring_to_text_with_len(res.data, res.len);
   pfree(res.data);
   return result;
 }
 
 /**
  * @ingroup meos_json_base_constructor
- * @brief Construct a JSON value from separate key and value arrays of text
- * values
+ * @brief Construct a JSON value from separate key and value text arrays
  * @param[in] keys Keys
  * @param[in] values Keys
  * @param[in] count Number of elements in the input arrays
@@ -450,7 +450,7 @@ pg_json_make_two_arg(text **keys, text **values, int count)
   }
 
   appendStringInfoChar(&res, '}');
-  text *result = cstring_to_text_with_len(res.data, res.len);
+  text *result = pg_cstring_to_text_with_len(res.data, res.len);
   pfree(res.data);
   return result;
 }
@@ -621,7 +621,7 @@ done:
  * escape_json_text
  *    Append 'txt' onto 'buf' and escape using escape_json_with_len.
  *
- * This is more efficient than calling text_to_cstring and appending the
+ * This is more efficient than calling pg_text_to_cstring and appending the
  * result as that could require an additional palloc and memcpy.
  */
 void
@@ -690,13 +690,13 @@ json_unique_object_field_start(void *_state, char *field, bool isnull UNUSED)
 
 /* Validate JSON text and additionally check key uniqueness */
 bool
-json_validate(text *json, bool check_unique_keys, bool throw_error)
+json_validate(text *js, bool check_unique_keys, bool throw_error)
 {
   JsonLexContext lex;
   JsonSemAction uniqueSemAction = {0};
   JsonUniqueParsingState state;
   JsonParseErrorType result;
-  makeJsonLexContext(&lex, json, check_unique_keys);
+  makeJsonLexContext(&lex, js, check_unique_keys);
 
   if (check_unique_keys)
   {
@@ -736,33 +736,33 @@ json_validate(text *json, bool check_unique_keys, bool throw_error)
 
 /**
  * @ingroup meos_json_base_accessor
- * @brief Returns the type of the outermost JSON value as `text`
+ * @brief Returns the type of the outermost JSON value as text
  * @details Possible types are "object", "array", "string", "number",
  * "boolean", and "null".
  * @details Performs a single call to json_lex() to get the first token of the
- * supplied value.  This initial token uniquely determines the value's type.
+ * supplied value. This initial token uniquely determines the value's type.
  * As our input must already have been validated by json_in() or json_recv(),
- * theinitial token should never be JSON_TOKEN_OBJECT_END,
+ * the initial token should never be JSON_TOKEN_OBJECT_END,
  * JSON_TOKEN_ARRAY_END, JSON_TOKEN_COLON, JSON_TOKEN_COMMA, or JSON_TOKEN_END.
- * @param[in] json JSON value 
+ * @param[in] js JSON value 
  * @note Derived from PostgreSQL function @p json_typeof()
  */
 #if MEOS
 text *
-json_typeof(const text *json)
+json_typeof(const text *js)
 {
-  return pg_json_typeof(json);
+  return pg_json_typeof(js);
 }
 #endif /* MEOS */
 text *
-pg_json_typeof(const text *json)
+pg_json_typeof(const text *js)
 {
   JsonLexContext lex;
   char *type;
   JsonParseErrorType result;
 
   /* Lex exactly one token from the input and check its type. */
-  makeJsonLexContext(&lex, (text *) json, false);
+  makeJsonLexContext(&lex, (text *) js, false);
   result = json_lex(&lex);
   if (result != JSON_SUCCESS)
     json_errsave_error(result, &lex, NULL);
@@ -794,7 +794,7 @@ pg_json_typeof(const text *json)
       return NULL;
   }
 
-  return cstring_to_text(type);
+  return pg_cstring_to_text(type);
 }
 
 /*****************************************************************************/

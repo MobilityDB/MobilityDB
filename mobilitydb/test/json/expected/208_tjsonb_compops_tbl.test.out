@@ -1,0 +1,108 @@
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb ?= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp ?= t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp ?= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb ?<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp ?<> t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp ?<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb %= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp %= t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp %= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb %<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp %<> t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp %<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb #= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp #= t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_jsonb t1, tbl_tjsonb t2 WHERE t1.jb #<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_jsonb t2 WHERE t1.temp #<> t2.jb IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+

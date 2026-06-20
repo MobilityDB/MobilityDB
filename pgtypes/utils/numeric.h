@@ -84,17 +84,17 @@ extern Numeric int64_to_numeric(int64 val);
 extern Numeric int64_div_fast_to_numeric(int64 val1, int log10val2);
 
 extern Numeric numeric_add_opt_error(Numeric num1, Numeric num2,
-                   bool *have_error);
+  bool *have_error);
 extern Numeric numeric_sub_opt_error(Numeric num1, Numeric num2,
-                   bool *have_error);
+  bool *have_error);
 extern Numeric numeric_mul_opt_error(Numeric num1, Numeric num2,
-                   bool *have_error);
+  bool *have_error);
 extern Numeric numeric_div_opt_error(Numeric num1, Numeric num2,
-                   bool *have_error);
+  bool *have_error);
 extern Numeric numeric_mod_opt_error(Numeric num1, Numeric num2,
-                   bool *have_error);
-extern int32 numeric_int4_opt_error(Numeric num, bool *have_error);
-extern int64 numeric_int8_opt_error(Numeric num, bool *have_error);
+  bool *have_error);
+extern int32 pg_numeric_int4_opt_error(Numeric num, bool *have_error);
+extern int64 pg_numeric_int8_opt_error(Numeric num, bool *have_error);
 
 /* MEOS functions for numeric */
 
@@ -142,14 +142,16 @@ extern Numeric numeric_pow(Numeric num1, Numeric num2);
 extern int32 pg_numeric_scale(Numeric num);
 extern int32 pg_numeric_min_scale(Numeric num);
 extern Numeric pg_numeric_trim_scale(Numeric num);
+
+extern Numeric int16_to_numeric(int16 num);
+extern int16 numeric_to_int16(Numeric num);
 extern Numeric int32_to_numeric(int32 num);
 extern int32 numeric_to_int32(Numeric num);
 extern Numeric int64_to_numeric(int64 num);
 extern int64 numeric_to_int64(Numeric num);
-extern Numeric int16_to_numeric(int16 num);
-extern int16 numeric_to_int16(Numeric num);
-extern float8 numeric_to_float8(Numeric num);
 extern Numeric float4_to_numeric(float4 num);
+extern float4 numeric_to_float4(Numeric num);
 extern Numeric float8_to_numeric(float8 num);
+extern float8 numeric_to_float8(Numeric num);
 
 #endif              /* _PG_NUMERIC_H_ */
