@@ -292,12 +292,13 @@ pose_tprecision_value(const Temporal *temp)
     if (td <= 0)
       return datum_copy(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)), T_POSE);
     return PointerGetDatum(pose_make_2d(sx / td, sy / td,
-      atan2(ssin / td, scos / td), srid));
+      atan2(ssin / td, scos / td), MEOS_FLAGS_GET_GEODETIC(p0->flags), srid));
   }
   /* TSEQUENCESET: combine the step-weighted sums over component sequences */
   const TSequenceSet *ss = (const TSequenceSet *) temp;
   const TInstant *first = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0);
-  int32_t srid = pose_srid(DatumGetPoseP(tinstant_value_p(first)));
+  const Pose *pfirst = DatumGetPoseP(tinstant_value_p(first));
+  int32_t srid = pose_srid(pfirst);
   double sx = 0, sy = 0, ssin = 0, scos = 0, td = 0;
   for (int i = 0; i < ss->count; i++)
     poseseq_tprecision_accum(TSEQUENCESET_SEQ_N(ss, i), &sx, &sy, &ssin, &scos,
@@ -305,7 +306,7 @@ pose_tprecision_value(const Temporal *temp)
   if (td <= 0)
     return datum_copy(tinstant_value_p(first), T_POSE);
   return PointerGetDatum(pose_make_2d(sx / td, sy / td,
-    atan2(ssin / td, scos / td), srid));
+    atan2(ssin / td, scos / td), MEOS_FLAGS_GET_GEODETIC(pfirst->flags), srid));
 }
 #endif /* POSE */
 
