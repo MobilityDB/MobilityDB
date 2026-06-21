@@ -12,6 +12,7 @@ SET(LOCAL_FILES
   115_tpose_spatialrels
   116_tpose_tempspatialrels
   118_tpose_analytics
+  119_tpose_tile
   120_geopose_frames
   )
 
