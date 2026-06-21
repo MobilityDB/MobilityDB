@@ -435,7 +435,7 @@ cbuffer_from_hexwkb(const char *hexwkb)
  * @param[in] cb Circular buffer
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Cbuffer_recv(), #Cbuffer_as_wkb()
+ * @csqlfn #Cbuffer_send(), #Cbuffer_as_wkb()
  */
 uint8_t *
 cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
