@@ -120,8 +120,8 @@ extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
 /* Constructor functions */
 
 extern Pose *pose_copy(const Pose *pose);
-extern Pose *pose_make_2d(double x, double y, double theta, int32_t srid);
-extern Pose *pose_make_3d(double x, double y, double z, double W, double X, double Y, double Z, int32_t srid);
+extern Pose *pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid);
+extern Pose *pose_make_3d(double x, double y, double z, double W, double X, double Y, double Z, bool geodetic, int32_t srid);
 extern Pose *pose_make_point2d(const GSERIALIZED *gs, double theta);
 extern Pose *pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y, double Z);
 

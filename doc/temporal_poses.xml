@@ -78,6 +78,11 @@ SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
 SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 </programlisting>
+		<para>As for other spatial types, a <varname>pose</varname> can be either planar (geometric) or geodetic (geographic). A geodetic pose is denoted by the <varname>GeodPose</varname> keyword, in the same way that a geodetic <varname>stbox</varname> is denoted by <varname>GEODSTBOX</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'GeodPose(Point(1 1), 0.5)';
+SELECT pose 'SRID=4326;GeodPose(Point Z(1 1 1), 1, 0, 0, 0)';
+</programlisting>
 
 		<para>Values of the pose type must satisfy several constraints so that they are well defined. Examples of incorrect pose type values are as follows.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">

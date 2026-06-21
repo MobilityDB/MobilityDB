@@ -398,3 +398,39 @@ SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0),
  t
 (1 row)
 
+SELECT asText(pose 'GeodPose(Point(1 1),0.5)');
+          astext          
+--------------------------
+ GeodPose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(pose 'SRID=4326;GeodPose(Point(1 1),0.5)');
+          astext          
+--------------------------
+ GeodPose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(pose 'GeodPose(Point(1 1 1),1,0,0,0)');
+              astext               
+-----------------------------------
+ GeodPose(POINT Z (1 1 1),1,0,0,0)
+(1 row)
+
+SELECT pose 'GeodPose(Point(1 1),0.5)';
+                            pose                            
+------------------------------------------------------------
+ GEODPOSE (0101000000000000000000F03F000000000000F03F, 0.5)
+(1 row)
+
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1),0.5)'));
+                       posefrombinary                       
+------------------------------------------------------------
+ GEODPOSE (0101000000000000000000F03F000000000000F03F, 0.5)
+(1 row)
+
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
+                                  posefrombinary                                  
+----------------------------------------------------------------------------------
+ GEODPOSE(0101000080000000000000F03F000000000000F03F000000000000F03F, 1, 0, 0, 0)
+(1 row)
+

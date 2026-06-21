@@ -188,3 +188,14 @@ SELECT poseFromBinary(asBinary(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)'
 SELECT pose_hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
      = pose_hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
 SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS approx_canonical;
+
+-------------------------------------------------------------------------------
+-- Geodetic poses (planar/geodetic support, uniform with the stbox GEODSTBOX form)
+-------------------------------------------------------------------------------
+
+SELECT asText(pose 'GeodPose(Point(1 1),0.5)');
+SELECT asText(pose 'SRID=4326;GeodPose(Point(1 1),0.5)');
+SELECT asText(pose 'GeodPose(Point(1 1 1),1,0,0,0)');
+SELECT pose 'GeodPose(Point(1 1),0.5)';
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1),0.5)'));
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
