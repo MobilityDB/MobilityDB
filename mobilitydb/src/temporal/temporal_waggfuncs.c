@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
@@ -132,6 +132,20 @@ Tint_wmin_transfn(PG_FUNCTION_ARGS)
   return Temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tbigint_wmin_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wmin_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window minimun aggregation for
+ * temporal integers
+ * @sqlfn wMin()
+ */
+inline Datum
+Tbigint_wmin_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_min_int64, GET_MIN, CROSSINGS);
+}
+
 PGDLLEXPORT Datum Tfloat_wmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
 /**
@@ -160,6 +174,20 @@ Tint_wmax_transfn(PG_FUNCTION_ARGS)
   return Temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tbigint_wmax_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wmax_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window maximun aggregation for
+ * temporal integers
+ * @sqlfn wMax()
+ */
+inline Datum
+Tbigint_wmax_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_max_int64, GET_MAX, CROSSINGS);
+}
+
 PGDLLEXPORT Datum Tfloat_wmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
 /**
@@ -186,6 +214,20 @@ inline Datum
 Tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
+}
+
+PGDLLEXPORT Datum Tbigint_wsum_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbigint_wsum_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for moving window sum aggregation for temporal
+ * integers
+ * @sqlfn wSum()
+ */
+inline Datum
+Tbigint_wsum_transfn(PG_FUNCTION_ARGS)
+{
+  return Temporal_wagg_transfn(fcinfo, &datum_sum_int64, GET_MIN, CROSSINGS_NO);
 }
 
 PGDLLEXPORT Datum Tfloat_wsum_transfn(PG_FUNCTION_ARGS);
