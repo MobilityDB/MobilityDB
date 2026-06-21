@@ -118,3 +118,51 @@ SELECT raster_value(r,
   tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00}'
 )::text AS result
 FROM rast;
+
+-------------------------------------------------------------------------------
+-- trajectory_quadbins
+-------------------------------------------------------------------------------
+
+-- Three distinct longitudes at zoom 3 produce three distinct QUADBIN cells.
+SELECT array_length(
+  trajectory_quadbins(
+    tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(0.0 45.0)@2024-01-02 00:00:00+00, Point(60.0 45.0)@2024-01-03 00:00:00+00}'),
+    3
+  ), 1
+) AS num_distinct_tiles;
+
+-- Two instants in the same tile → deduplicated to 1 cell.
+SELECT array_length(
+  trajectory_quadbins(
+    tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(-61.0 44.0)@2024-01-02 00:00:00+00}'),
+    3
+  ), 1
+) AS num_distinct_tiles;
+
+-- Invalid zoom level raises an error.
+SELECT trajectory_quadbins(
+  tgeompointFromText('SRID=4326;{Point(0.0 0.0)@2024-01-01 00:00:00+00}'),
+  16
+);
+
+-------------------------------------------------------------------------------
+-- raster_tile_value_quadbin
+-------------------------------------------------------------------------------
+
+-- A 2×2 UINT8 chip for tile (x=1, y=0, zoom=1): lon 0°..180°, lat 0°..85°.
+-- Mercator midpoint ≈ 66.5° separates row 0 (upper) from row 1 (lower).
+-- Pixel layout (row-major):  [1, 2]   row 0 (lat > 66.5°)
+--                             [3, 4]   row 1 (lat < 66.5°)
+-- POINT(45  75) → col=0, row=0 → 1
+-- POINT(135 75) → col=1, row=0 → 2
+-- POINT(45  10) → col=0, row=1 → 3
+-- POINT(-45 75) → lon outside 0..180 → dropped
+SELECT raster_tile_value_quadbin(
+  '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
+  2::integer,                  -- width
+  2::integer,                  -- height
+  5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
+  'UINT8',
+  0.0, false,
+  tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}')
+)::text AS result;
