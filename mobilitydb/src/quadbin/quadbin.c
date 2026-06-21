@@ -124,6 +124,7 @@ PG_FUNCTION_INFO_V1(Quadbin_eq);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return true if two quadbin values are equal
  * @sqlop @p =
+ * @sqlfn quadbin_eq()
  */
 Datum
 Quadbin_eq(PG_FUNCTION_ARGS)
@@ -137,6 +138,7 @@ PG_FUNCTION_INFO_V1(Quadbin_ne);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return true if two quadbin values are not equal
  * @sqlop @p <>
+ * @sqlfn quadbin_ne()
  */
 Datum
 Quadbin_ne(PG_FUNCTION_ARGS)
@@ -150,6 +152,7 @@ PG_FUNCTION_INFO_V1(Quadbin_lt);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return true if the first quadbin is less than the second
  * @sqlop @p <
+ * @sqlfn quadbin_lt()
  */
 Datum
 Quadbin_lt(PG_FUNCTION_ARGS)
@@ -164,6 +167,7 @@ PG_FUNCTION_INFO_V1(Quadbin_le);
  * @brief Return true if the first quadbin is less than or equal to
  * the second
  * @sqlop @p <=
+ * @sqlfn quadbin_le()
  */
 Datum
 Quadbin_le(PG_FUNCTION_ARGS)
@@ -177,6 +181,7 @@ PG_FUNCTION_INFO_V1(Quadbin_gt);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return true if the first quadbin is greater than the second
  * @sqlop @p >
+ * @sqlfn quadbin_gt()
  */
 Datum
 Quadbin_gt(PG_FUNCTION_ARGS)
@@ -191,6 +196,7 @@ PG_FUNCTION_INFO_V1(Quadbin_ge);
  * @brief Return true if the first quadbin is greater than or equal
  * to the second
  * @sqlop @p >=
+ * @sqlfn quadbin_ge()
  */
 Datum
 Quadbin_ge(PG_FUNCTION_ARGS)
@@ -204,6 +210,7 @@ PG_FUNCTION_INFO_V1(Quadbin_cmp);
  * @ingroup mobilitydb_quadbin_base_comp
  * @brief Return the btree-style comparison of two quadbin values
  * (-1 / 0 / +1)
+ * @sqlfn quadbin_cmp()
  */
 Datum
 Quadbin_cmp(PG_FUNCTION_ARGS)
@@ -216,6 +223,7 @@ PG_FUNCTION_INFO_V1(Quadbin_hash);
 /**
  * @ingroup mobilitydb_quadbin_base_accessor
  * @brief Return the hash code of a quadbin value
+ * @sqlfn quadbin_hash()
  */
 Datum
 Quadbin_hash(PG_FUNCTION_ARGS)

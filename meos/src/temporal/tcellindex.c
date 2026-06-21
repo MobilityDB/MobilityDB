@@ -151,12 +151,15 @@ tcellindex_lift_param1(const Temporal *temp, Datum (*func)(Datum, Datum),
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal resolution (tint) of a temporal cell index.
+ * @csqlfn #Tquadbin_get_resolution()
  */
 Temporal *
 tcellindex_get_resolution(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->get_resolution, "getResolution",
     T_TINT);
 }
@@ -165,12 +168,15 @@ tcellindex_get_resolution(const Temporal *temp)
  * @ingroup meos_cellindex
  * @brief Return a tbool stating at each instant whether the value is a valid
  * cell.
+ * @csqlfn #Tquadbin_is_valid_cell()
  */
 Temporal *
 tcellindex_is_valid_cell(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->is_valid_cell, "isValidCell",
     T_TBOOL);
 }
@@ -178,12 +184,15 @@ tcellindex_is_valid_cell(const Temporal *temp)
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal parent cell at the given resolution.
+ * @csqlfn #Tquadbin_cell_to_parent()
  */
 Temporal *
 tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_param1(temp, ops->cell_to_parent, "cellToParent",
     Int32GetDatum(resolution), temp->temptype);
 }
@@ -192,12 +201,15 @@ tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
  * @ingroup meos_cellindex
  * @brief Return the temporal cell centroid as a temporal point (geodetic for
  * H3/S2, Web-Mercator for quadbin).
+ * @csqlfn #Tquadbin_cell_to_point()
  */
 Temporal *
 tcellindex_cell_to_point(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->cell_to_point, "cellToPoint",
     ops->point_temptype);
 }
@@ -205,12 +217,15 @@ tcellindex_cell_to_point(const Temporal *temp)
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal cell boundary as a temporal (multi)polygon.
+ * @csqlfn #Tquadbin_cell_to_boundary()
  */
 Temporal *
 tcellindex_cell_to_boundary(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   MeosType restype = (ops->point_temptype == T_TGEOGPOINT) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
   return tcellindex_lift_unary(temp, ops->cell_to_boundary, "cellToBoundary",
@@ -220,12 +235,15 @@ tcellindex_cell_to_boundary(const Temporal *temp)
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal cell area in square meters (tfloat).
+ * @csqlfn #Tquadbin_cell_area()
  */
 Temporal *
 tcellindex_cell_area(const Temporal *temp)
 {
   assert(temp); assert(tcellindex_type(temp->temptype));
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
+  if (! ops)
+    return NULL;
   return tcellindex_lift_unary(temp, ops->cell_area, "cellArea", T_TFLOAT);
 }
 

@@ -57,7 +57,7 @@
 #include <postgres.h>
 
 #include <meos.h>
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 
 /*****************************************************************************
  * Parsing
@@ -67,6 +67,7 @@
  * @ingroup meos_quadbin_base_inout
  * @brief Parse a string into a quadbin cell. See header for the accepted
  * input shapes.
+ * @csqlfn #Quadbin_in()
  */
 Quadbin
 quadbin_parse(const char *str)
@@ -107,6 +108,7 @@ quadbin_parse(const char *str)
 /**
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if two quadbin values are equal
+ * @csqlfn #Quadbin_eq()
  */
 bool
 quadbin_eq(Quadbin a, Quadbin b)
@@ -117,6 +119,7 @@ quadbin_eq(Quadbin a, Quadbin b)
 /**
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if two quadbin values are not equal
+ * @csqlfn #Quadbin_ne()
  */
 bool
 quadbin_ne(Quadbin a, Quadbin b)
@@ -127,6 +130,7 @@ quadbin_ne(Quadbin a, Quadbin b)
 /**
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if the first quadbin is less than the second
+ * @csqlfn #Quadbin_lt()
  */
 bool
 quadbin_lt(Quadbin a, Quadbin b)
@@ -138,6 +142,7 @@ quadbin_lt(Quadbin a, Quadbin b)
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if the first quadbin is less than or equal to
  * the second
+ * @csqlfn #Quadbin_le()
  */
 bool
 quadbin_le(Quadbin a, Quadbin b)
@@ -148,6 +153,7 @@ quadbin_le(Quadbin a, Quadbin b)
 /**
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if the first quadbin is greater than the second
+ * @csqlfn #Quadbin_gt()
  */
 bool
 quadbin_gt(Quadbin a, Quadbin b)
@@ -159,6 +165,7 @@ quadbin_gt(Quadbin a, Quadbin b)
  * @ingroup meos_quadbin_base_comp
  * @brief Return true if the first quadbin is greater than or equal
  * to the second
+ * @csqlfn #Quadbin_ge()
  */
 bool
 quadbin_ge(Quadbin a, Quadbin b)
@@ -170,6 +177,7 @@ quadbin_ge(Quadbin a, Quadbin b)
  * @ingroup meos_quadbin_base_comp
  * @brief Return -1 / 0 / 1 depending on whether the first quadbin is
  * less than, equal to, or greater than the second
+ * @csqlfn #Quadbin_cmp()
  */
 int
 quadbin_cmp(Quadbin a, Quadbin b)
@@ -185,11 +193,12 @@ quadbin_cmp(Quadbin a, Quadbin b)
  * @ingroup meos_quadbin_base_accessor
  * @brief Return the 32-bit hash value of a quadbin — matches the result
  * `hashint8` would produce on the same bit pattern.
+ * @csqlfn #Quadbin_hash()
  */
 uint32
 quadbin_hash(Quadbin cell)
 {
-  return pg_hashint8((int64) cell);
+  return int64_hash((int64) cell);
 }
 
 /*****************************************************************************/

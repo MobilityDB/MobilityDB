@@ -138,6 +138,7 @@ ensure_valid_tquadbin_tgeompoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_quadbin_inout
  * @brief Parse a temporal quadbin cell index from its Well-Known Text
  * representation.
+ * @csqlfn #Temporal_in()
  */
 Temporal *
 tquadbin_in(const char *str)
@@ -277,6 +278,7 @@ tquadbin_make(Quadbin value, TimestampTz t)
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the quadbin cell value at the first instant of `temp`.
+ * @csqlfn #Temporal_start_value()
  */
 Quadbin
 tquadbin_start_value(const Temporal *temp)
@@ -288,6 +290,7 @@ tquadbin_start_value(const Temporal *temp)
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the quadbin cell value at the last instant of `temp`.
+ * @csqlfn #Temporal_end_value()
  */
 Quadbin
 tquadbin_end_value(const Temporal *temp)
@@ -301,6 +304,7 @@ tquadbin_end_value(const Temporal *temp)
  * @brief Return the quadbin cell value at the `n`-th distinct value of `temp`.
  * 1-indexed.
  * @return `true` on success, `false` if `n` is out of range.
+ * @csqlfn #Temporal_value_n()
  */
 bool
 tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
@@ -322,6 +326,7 @@ tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
  * @param[in] temp Temporal quadbin cell
  * @param[out] count Number of distinct values
  * @return Allocated array of `count` Quadbin values. Caller owns.
+ * @csqlfn #Temporal_valueset()
  */
 Quadbin *
 tquadbin_values(const Temporal *temp, int *count)
@@ -349,6 +354,7 @@ tquadbin_values(const Temporal *temp, int *count)
  * interpolation.
  * @param[out] result The quadbin cell value at `t` (only written on success)
  * @return `true` on success, `false` if `t` lies outside `temp`.
+ * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tquadbin_value_at_timestamptz(const Temporal *temp, TimestampTz t,
@@ -384,6 +390,7 @@ datum_quadbin_identity(Datum d)
 /**
  * @ingroup meos_quadbin_conversion
  * @brief Convert a `tbigint` to a `tquadbin`. Caller owns the result.
+ * @csqlfn #Tbigint_to_tquadbin()
  */
 Temporal *
 tbigint_to_tquadbin(const Temporal *temp)
@@ -403,6 +410,7 @@ tbigint_to_tquadbin(const Temporal *temp)
 /**
  * @ingroup meos_quadbin_conversion
  * @brief Convert a `tquadbin` to a `tbigint`. Caller owns the result.
+ * @csqlfn #Tquadbin_to_tbigint()
  */
 Temporal *
 tquadbin_to_tbigint(const Temporal *temp)

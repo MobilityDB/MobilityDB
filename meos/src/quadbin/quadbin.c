@@ -95,6 +95,7 @@ static const uint32_t QB_S[5] = { 1, 2, 4, 8, 16 };
  * @brief Return the quadbin cell of a Web-Mercator tile
  * @param[in] x,y Tile column and row at zoom @p z
  * @param[in] z Zoom / resolution (0..26)
+ * @csqlfn #Quadbin_tile_to_cell()
  */
 Quadbin
 quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z)
@@ -122,6 +123,7 @@ quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z)
  * @brief Return the Web-Mercator tile of a quadbin cell
  * @param[in] cell Quadbin cell
  * @param[out] x,y,z Tile column, row, and zoom
+ * @csqlfn #Quadbin_cell_to_tile()
  */
 void
 quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
@@ -161,6 +163,7 @@ quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
  * empty quadkey.
  * @param[in] cell Quadbin cell
  * @return A palloc'd, null-terminated string of `z` characters (caller frees)
+ * @csqlfn #Quadbin_cell_to_quadkey()
  */
 char *
 quadbin_cell_to_quadkey(Quadbin cell)
@@ -190,6 +193,7 @@ quadbin_cell_to_quadkey(Quadbin cell)
 /**
  * @ingroup meos_quadbin
  * @brief Return the resolution (zoom) of a quadbin cell
+ * @csqlfn #Quadbin_get_resolution()
  */
 uint32_t
 quadbin_get_resolution(Quadbin cell)
@@ -209,6 +213,7 @@ quadbin_get_resolution(Quadbin cell)
  * @param[in] cell Quadbin cell
  * @param[in] parent_resolution Target resolution (<= resolution of @p cell)
  * @return The parent cell, or 0 if @p parent_resolution is invalid
+ * @csqlfn #Quadbin_cell_to_parent()
  */
 Quadbin
 quadbin_cell_to_parent(Quadbin cell, uint32_t parent_resolution)
@@ -228,6 +233,7 @@ quadbin_cell_to_parent(Quadbin cell, uint32_t parent_resolution)
  * @param[in] children_resolution Target resolution (> resolution of @p cell)
  * @param[out] count Number of children returned
  * @return A palloc'd array of children cells, or NULL on invalid resolution
+ * @csqlfn #Quadbin_cell_to_children()
  */
 Quadbin *
 quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
@@ -262,6 +268,7 @@ quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
  * @param[in] cell Quadbin cell
  * @param[in] direction One of "up", "down", "left", "right"
  * @return The sibling cell, or 0 on an unknown direction
+ * @csqlfn #Quadbin_cell_sibling()
  */
 Quadbin
 quadbin_cell_sibling(Quadbin cell, const char *direction)
@@ -328,6 +335,7 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
 /**
  * @ingroup meos_quadbin
  * @brief Return the quadbin cell containing a lon/lat point at a resolution
+ * @csqlfn #Quadbin_point_to_cell()
  */
 Quadbin
 quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
@@ -355,6 +363,7 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lon/lat centroid of a quadbin cell
+ * @csqlfn #Quadbin_cell_to_point()
  */
 void
 quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
@@ -370,6 +379,7 @@ quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
+ * @csqlfn #Quadbin_cell_to_bounding_box()
  */
 void
 quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
@@ -392,6 +402,7 @@ quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
  * @brief Return the area in square meters of a quadbin cell (WGS84 sphere)
  *
  * VERIFY against quadbin-py cell_area golden vectors.
+ * @csqlfn #Quadbin_cell_area()
  */
 double
 quadbin_cell_area(Quadbin cell)
@@ -417,6 +428,7 @@ quadbin_cell_area(Quadbin cell)
 /**
  * @ingroup meos_quadbin
  * @brief Return true if @p index is a structurally valid quadbin index
+ * @csqlfn #Quadbin_is_valid_index()
  */
 bool
 quadbin_is_valid_index(Quadbin index)
@@ -437,6 +449,7 @@ quadbin_is_valid_index(Quadbin index)
 /**
  * @ingroup meos_quadbin
  * @brief Return true if @p cell is a valid quadbin data cell (mode 1)
+ * @csqlfn #Quadbin_is_valid_cell()
  */
 bool
 quadbin_is_valid_cell(Quadbin cell)
@@ -452,6 +465,7 @@ quadbin_is_valid_cell(Quadbin cell)
  * @ingroup meos_quadbin
  * @brief Return the lowercase hexadecimal string of a quadbin index
  * @return A palloc'd, null-terminated string (caller frees)
+ * @csqlfn #Quadbin_out()
  */
 char *
 quadbin_index_to_string(Quadbin index)

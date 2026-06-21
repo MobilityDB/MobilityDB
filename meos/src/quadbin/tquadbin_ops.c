@@ -54,7 +54,7 @@
 #include <meos_quadbin.h>
 #include "geo/tgeo_spatialfuncs.h"
 #include "temporal/meos_catalog.h"
-#include "temporal/postgres_types.h"
+#include <pgtypes.h>
 #include "temporal/tcellindex.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
@@ -158,7 +158,7 @@ static Datum
 datum_quadbin_cell_to_quadkey(Datum d)
 {
   char *str = quadbin_cell_to_quadkey((Quadbin) DatumGetInt64(d));
-  text *result = cstring2text(str);
+  text *result = cstring_to_text(str);
   pfree(str);
   return PointerGetDatum(result);
 }
@@ -166,6 +166,7 @@ datum_quadbin_cell_to_quadkey(Datum d)
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal quadkey (ttext) of a temporal quadbin cell.
+ * @csqlfn #Tquadbin_cell_to_quadkey()
  */
 Temporal *
 tquadbin_cell_to_quadkey(const Temporal *temp)
