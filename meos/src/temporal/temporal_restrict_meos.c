@@ -224,7 +224,7 @@ tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBOOL(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res;
+  Datum res = (Datum) 0;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetBool(res);
   return result;
@@ -246,7 +246,7 @@ tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res;
+  Datum res = (Datum) 0;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetInt32(res);
   return result;
@@ -290,7 +290,7 @@ tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res;
+  Datum res = (Datum) 0;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetFloat8(res);
   return result;
@@ -312,7 +312,7 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res;
+  Datum res = (Datum) 0;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetTextP(res);
   return result;

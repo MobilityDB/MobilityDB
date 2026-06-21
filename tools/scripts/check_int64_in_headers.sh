@@ -43,10 +43,19 @@
 
 set -euo pipefail
 
+# meos/include/postgres_ext_defs.in.h is the ONE base-type definition template that
+# must spell int64 as `typedef int64_t int64` — it DEFINES the PG alias from the C99
+# type, exactly as the vendored pgtypes/c.h (already excluded) does. int64_t is the
+# only spelling that resolves to the same 64-bit type as the installed pg_*.h on EVERY
+# platform (long int on Linux LP64, long long on Windows LLP64 and macOS); a hardcoded
+# `long int` is 32-bit on Windows and conflicts with pg_text.h's int64_t. Exclude the
+# template like the other vendored base-type headers; the ban still covers all API
+# signatures (which must use the int64 / uint64 aliases, never int64_t directly).
 violations=$(grep -rEn '\bu?int64_t\b' \
   meos/include \
   mobilitydb/pg_include \
-  2>/dev/null || true)
+  2>/dev/null \
+  | grep -vE 'meos/include/postgres_ext_defs[^:]*\.h:' || true)
 
 if [ -n "$violations" ]; then
   cat >&2 <<'EOF'

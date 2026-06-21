@@ -472,7 +472,9 @@ extern int	_pglstat64(const char *name, struct stat *buf);
  */
 extern char *pgwin32_setlocale(int category, const char *locale);
 
+#if !(defined(MEOS) && MEOS)  /* MEOS: standalone uses the CRT setlocale; pgwin32_* is PG-backend-only */
 #define setlocale(a,b) pgwin32_setlocale(a,b)
+#endif
 
 
 /* In backend/port/win32/signal.c */
@@ -541,9 +543,15 @@ extern int	pgwin32_putenv(const char *);
 extern int	pgwin32_setenv(const char *name, const char *value, int overwrite);
 extern int	pgwin32_unsetenv(const char *name);
 
+#if defined(MEOS) && MEOS  /* MEOS: use the UCRT env funcs; the pgwin32_* impls are PG-backend-only and not vendored */
+#define putenv(x) _putenv(x)
+#define setenv(x,y,z) _putenv_s((x),(y))
+#define unsetenv(x) _putenv_s((x),"")
+#else
 #define putenv(x) pgwin32_putenv(x)
 #define setenv(x,y,z) pgwin32_setenv(x,y,z)
 #define unsetenv(x) pgwin32_unsetenv(x)
+#endif
 
 /* in port/win32security.c */
 extern int	pgwin32_is_service(void);

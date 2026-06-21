@@ -343,8 +343,10 @@ extern bool rmtree(const char *path, bool rmtopdir);
 extern HANDLE pgwin32_open_handle(const char *, int, bool);
 extern int	pgwin32_open(const char *, int,...);
 extern FILE *pgwin32_fopen(const char *, const char *);
+#if !(defined(MEOS) && MEOS)  /* MEOS: standalone uses the CRT; pgwin32_* impls are PG-backend-only */
 #define		open(a,b,c) pgwin32_open(a,b,c)
 #define		fopen(a,b) pgwin32_fopen(a,b)
+#endif
 
 /*
  * Mingw-w64 headers #define popen and pclose to _popen and _pclose.  We want
@@ -365,8 +367,10 @@ extern FILE *pgwin32_fopen(const char *, const char *);
 extern int	pgwin32_system(const char *command);
 extern FILE *pgwin32_popen(const char *command, const char *type);
 
+#if !(defined(MEOS) && MEOS)  /* MEOS: standalone uses the CRT; pgwin32_* impls are PG-backend-only */
 #define system(a) pgwin32_system(a)
 #define popen(a,b) pgwin32_popen(a,b)
+#endif
 #define pclose(a) _pclose(a)
 
 #else							/* !WIN32 */
@@ -429,7 +433,7 @@ extern int	getpeereid(int sock, uid_t *uid, gid_t *gid);
 extern void explicit_bzero(void *buf, size_t len);
 #endif
 
-#ifdef HAVE_BUGGY_STRTOF
+#if defined(HAVE_BUGGY_STRTOF) && !(defined(MEOS) && MEOS)  /* MEOS: pg_strtof is PG-backend-only; MEOS uses meos_strtof at the call sites */
 extern float pg_strtof(const char *nptr, char **endptr);
 #define strtof(a,b) (pg_strtof((a),(b)))
 #endif

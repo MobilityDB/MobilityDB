@@ -22,11 +22,17 @@ if(NOT PGTYPES_EXT_WIN32)
   )
 endif()
 
-# Native Windows MSVC has no <dirent.h>; compile the vendored opendir/readdir/
-# closedir shim (the implementation paired with port/win32_msvc/dirent.h). The
-# .c body is itself guarded against MinGW, which ships its own <dirent.h>.
+# Native Windows MSVC has no <dirent.h>; MEOS timezone code (pgtypes/timezone/
+# pgtz.c) includes it. Add the vendored shim (BSD-licensed from PostgreSQL
+# upstream). MinGW already provides its own <dirent.h>, so the .c body is
+# itself guarded against MinGW.
 if(WIN32)
   list(APPEND PORT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/dirent.c)
+  # The mingw-w64 / UCRT runtime does not export _dosmaperr through its import
+  # libraries, and PostgreSQL's win32error.c is normally backend-only. Vendor
+  # it so pg_locale.c / dirent.c / fd.c (which call _dosmaperr after a failed
+  # Win32 call) link in both the standalone MEOS and the extension builds.
+  list(APPEND PORT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/win32error.c)
 endif()
 
 set(PGTYPES_SOURCES ${PGTYPES_SOURCES} ${PORT_SOURCES}
