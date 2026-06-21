@@ -65,3 +65,53 @@ CREATE OR REPLACE FUNCTION raster_value(
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_value'
   LANGUAGE C STRICT;
+
+/******************************************************************************
+ * raster_tile_value_quadbin
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the values of a Raquet raster chip sampled at the instants of
+ * a trajectory, using a QUADBIN cell to determine the tile georeferencing
+ * @param[in] pixels    Row-major pixel bytes
+ * @param[in] width     Tile width in pixels
+ * @param[in] height    Tile height in pixels
+ * @param[in] quadbin   CARTO QUADBIN cell identifier
+ * @param[in] pixtype   Pixel type: UINT8 | INT16 | INT32 | FLOAT32 | FLOAT64
+ * @param[in] nodata    Nodata sentinel value
+ * @param[in] has_nodata Enable nodata filtering
+ * @param[in] traj      Trajectory (SRID 4326)
+ * @csqlfn #Raster_tile_value_quadbin()
+ */
+CREATE OR REPLACE FUNCTION raster_tile_value_quadbin(
+    pixels     bytea,
+    width      integer,
+    height     integer,
+    quadbin    bigint,
+    pixtype    text,
+    nodata     float8,
+    has_nodata boolean,
+    traj       tgeompoint
+) RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Raster_tile_value_quadbin'
+  LANGUAGE C STRICT;
+
+/******************************************************************************
+ * trajectory_quadbins
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the distinct QUADBIN cells at a zoom level covered by a
+ * trajectory, suitable as a WHERE-clause join key against a Raquet table
+ * @param[in] traj  Trajectory (SRID 4326)
+ * @param[in] zoom  QUADBIN zoom level (0–15)
+ * @csqlfn #Trajectory_quadbins()
+ */
+CREATE OR REPLACE FUNCTION trajectory_quadbins(
+    traj  tgeompoint,
+    zoom  integer
+) RETURNS bigint[]
+  AS 'MODULE_PATHNAME', 'Trajectory_quadbins'
+  LANGUAGE C STRICT;

@@ -188,6 +188,10 @@ if(QUADBIN)
   message(STATUS "Including temporal QUADBIN index objects")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:quadbin>")
 endif()
+if(RASTER)
+  message(STATUS "Including raster chip sampling objects")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:raster>")
+endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
@@ -403,6 +407,11 @@ if(MEOS)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/pointcloud/pgsql_compat.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
+  endif()
+  if(RASTER)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_raster.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   endif()
 
   install(
