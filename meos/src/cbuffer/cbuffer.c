@@ -531,6 +531,11 @@ cbuffer_to_geom(const Cbuffer *cb)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, NULL);
   const GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cb->point));
+  /* A zero-radius circular buffer is geometrically its centre point: return
+   * the point itself rather than a degenerate circle (lwcircle_make requires
+   * a positive radius), matching the documented first-class zero-radius case */
+  if (cb->radius == 0)
+    return geo_copy(gs);
   const POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
   int32_t srid = gserialized_get_srid(gs);
   return geocircle_make(p->x, p->y, cb->radius, srid);
@@ -556,7 +561,7 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   /* CURVEPOLYTYPE */
   GSERIALIZED *gscenter;
   double radius;
-  if (type == POINTTYPE)
+  if (type == CURVEPOLYTYPE)
   {
     int32_t srid = gserialized_get_srid(gs);
     LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);

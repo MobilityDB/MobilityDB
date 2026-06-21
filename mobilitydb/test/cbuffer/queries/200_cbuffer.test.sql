@@ -78,6 +78,10 @@ SELECT ST_AsText(round(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
 
 SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
 
+-- A circular-arc CURVEPOLYGON converts to the buffer of its centre and radius
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
+SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
+
 -- SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::cbuffer;
 
 -- Minimum Enclosing Circle (via geometry::cbuffer cast for non-point geometries)
