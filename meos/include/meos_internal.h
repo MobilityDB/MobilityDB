@@ -456,6 +456,26 @@
 #endif /* MEOS */
 
 /**
+ * @brief Macro for ensuring that the temporal value is a temporal big integer
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TBIGINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TBIGINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TBIGINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TBIGINT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
  * @brief Macro for ensuring that the temporal value is a temporal float
  * @note The macro works for the Temporal type and its subtypes TInstant,
  * TSequence, and TSequenceSet
@@ -845,7 +865,11 @@ extern Datum spanset_upper(const SpanSet *ss);
 /* Transformation functions for set and span types */
 
 extern void datespan_set_tstzspan(const Span *s1, Span *s2);
+extern void bigintspan_set_floatspan(const Span *s1, Span *s2);
+extern void bigintspan_set_intspan(const Span *s1, Span *s2);
+extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
+extern void intspan_set_bigintspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Span *numspan_expand(const Span *s, Datum value);
@@ -1032,6 +1056,11 @@ extern TSequenceSet *tfloatseqset_in(const char *str);
 extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype);
 extern TInstant *tinstant_in(const char *str, MeosType temptype);
 extern char *tinstant_out(const TInstant *inst, int maxdd);
+extern TInstant *tbigintinst_from_mfjson(json_object *mfjson);
+extern TInstant *tbigintinst_in(const char *str);
+extern TSequence *tbigintseq_from_mfjson(json_object *mfjson);
+extern TSequenceSet *tbigintseqset_from_mfjson(json_object *mfjson);
+extern TSequenceSet *tbigintseqset_in(const char *str);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tintinst_in(const char *str);
 extern TSequence *tintseq_from_mfjson(json_object *mfjson);

@@ -208,7 +208,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   assert(seq); assert(duration); assert(positive_duration(duration));
-  assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
+  assert(seq->temptype == T_TINT || seq->temptype == T_TBIGINT ||
+    seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
     seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
 
@@ -356,7 +357,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration); assert(positive_duration(duration));
-  assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
+  assert(ss->temptype == T_TINT || ss->temptype == T_TBIGINT ||
+    ss->temptype == T_TFLOAT ||
     ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
 
   int64 tunits = interval_units(duration);
