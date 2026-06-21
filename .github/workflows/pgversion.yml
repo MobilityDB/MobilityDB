@@ -94,7 +94,13 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
+          # The coverage build enables only the network point temporal types
+          # so their sources get instrumented; NPOINT has no extra family
+          # dependencies.
+          cmake -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_COVERAGE=${{ matrix.coverage }} \
+            ${{ matrix.coverage == '1' && '-DNPOINT=ON' || '' }} \
+            ..
 
       - name: Build
         run: |
