@@ -64,6 +64,36 @@
  *****************************************************************************/
 
 /*****************************************************************************
+ * UTF-8 / character encoding contract
+ *
+ * MEOS treats `text` values and the textual representations parsed by
+ * `*_in()` / `*_out()` as opaque byte sequences. The library is encoding-
+ * agnostic at I/O: any encoding with the property that ASCII characters
+ * (`,`, `}`, `]`, `"`, `\\`, whitespace, etc.) round-trip as their
+ * single-byte form is preserved verbatim. UTF-8 satisfies this property,
+ * so callers can pass UTF-8 text through `text_in`/`text_out`, set/array
+ * constructors, and `ttext`/`textset` parsers and get the same bytes
+ * back. Multi-byte UTF-8 continuation bytes (>= 0x80) never collide with
+ * ASCII delimiters, so the parsers are correct on UTF-8 input.
+ *
+ * What MEOS does NOT do today:
+ *   - Locale-aware text collation (`text_cmp` is byte-wise `memcmp`,
+ *     intentionally — see the locale contract above).
+ *   - Unicode-aware case folding. `text_upper`, `text_lower`, and
+ *     `text_initcap` (and the temporal variants `ttext_upper`, ...)
+ *     fold ASCII letters only; bytes >= 0x80 (the body of any
+ *     multi-byte UTF-8 sequence) are passed through unchanged. So
+ *     `text_upper("Zürich")` returns `"Zürich"`, not `"ZÜRICH"`. This
+ *     is documented behaviour pending the full Unicode-aware fold.
+ *   - Character-count APIs (`text_length`, `text_substring`, ...).
+ *     None are exposed; if added, byte-vs-codepoint semantics will
+ *     have to be specified explicitly.
+ *
+ * Round-tripping UTF-8 through MEOS is exercised by the
+ * `meos_utf8_smoke` CI workflow.
+ *****************************************************************************/
+
+/*****************************************************************************
  * Toolchain dependent definitions
  *****************************************************************************/
 
