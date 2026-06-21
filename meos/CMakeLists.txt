@@ -272,6 +272,18 @@ if(POINTCLOUD)
   endif()
 endif()
 
+# postgis (libpostgis.a) references the GEOS C-API reentrant (GEOS*_r), PROJ
+# (proj_*) and GeographicLib geodesic (geod_*) symbols. With GNU ld these
+# dependency import/static libraries must appear AFTER their consumer on the
+# link line, otherwise their archive members are never pulled in and the link
+# fails with undefined references (seen on Windows/MSYS2 UCRT64, where
+# libgeos_c.dll.a / libproj.dll.a are import libraries treated like archives).
+# Re-list GEOS and PROJ after postgis so they resolve postgis's symbols. The
+# repetition is harmless on platforms where order does not matter (e.g. Linux
+# shared objects).
+target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
+target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
+
 #--------------------------------
 # Belongs to MEOS
 #--------------------------------

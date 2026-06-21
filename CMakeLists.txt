@@ -83,6 +83,15 @@ if(MEOS)
   # not used in the MobilityDB PostgreSQL extension.
   message(STATUS "MEOS=1: Including user-facing MEOS API functions")
   add_definitions(-DMEOS=1)
+  # On Windows the vendored PostgreSQL port headers select the win32 typedefs
+  # (uid_t/gid_t in port/win32_port.h, pulled in by port.h via "#if defined(WIN32)")
+  # from the bare WIN32 macro. The MEOS build omits pg_config_os.h (which would
+  # "#define WIN32"), and the C++ targets compile with strict -std=c++17, which
+  # (unlike -std=gnu++17 and the C targets' -std=gnu1x) does NOT predefine bare
+  # WIN32. Define it explicitly so the C and C++ MEOS translation units agree.
+  if(WIN32)
+    add_definitions(-DWIN32)
+  endif()
 else()
   message(STATUS "MEOS=0: Building MEOS core for MobilityDB (internal API only)")
   add_definitions(-DMEOS=0)

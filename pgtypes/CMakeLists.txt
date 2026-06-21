@@ -131,10 +131,15 @@ endif()
 
 # Set the location of the directory of the time zone database. macOS may also
 # have /var/db/timezone/zoneinfo but /usr/share/zoneinfo is the standard
-# fallback; Windows has no such path so leave SYSTEMTZDIR undefined and let
-# pgtypes use its bundled lookup, or, in extension mode, defer to the
-# postgres backend's own timezone resolution.
-if(NOT WIN32)
+# fallback. An explicit -DMEOS_TZDATA_DIR overrides everything: this is how the
+# Windows (UCRT64) build points standalone MEOS at the native tzdata package
+# (e.g. cygpath -m "$MSYSTEM_PREFIX/share/zoneinfo"), since Windows has no
+# /usr/share/zoneinfo and pg_TZDIR()'s get_share_path() fallback would resolve
+# to a non-existent relative "share/timezone" and abort meos_initialize().
+if(MEOS_TZDATA_DIR)
+  add_definitions(-DSYSTEMTZDIR="${MEOS_TZDATA_DIR}")
+  message(STATUS "Directory of the time zone database: ${MEOS_TZDATA_DIR}")
+elseif(NOT WIN32)
   add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
   message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 endif()

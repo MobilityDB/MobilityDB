@@ -380,6 +380,20 @@ extern locale_t newlocale(int category_mask, const char *locale,
 static locale_t meos_c_locale = (locale_t) 0;
 #endif
 
+/* On Windows, <postgres.h> transitively pulls in port/win32_port.h which
+ * redefines setlocale() to pgwin32_setlocale() -- a PostgreSQL-internal
+ * helper provided by libpgport. MEOS standalone builds do not link
+ * libpgport, so the macro causes an undefined-reference link error in the
+ * portable fallback path of meos_strtod() below. Undefine it so the libc
+ * setlocale prototype (pulled in transitively via <locale.h>) remains the
+ * call target. The non-MEOS in-extension build keeps the macro and its
+ * libpgport linkage (the server backend statically links libpgport). */
+#if defined(_WIN32) && defined(MEOS)
+  #ifdef setlocale
+    #undef setlocale
+  #endif
+#endif
+
 double
 meos_strtod(const char *str, char **endptr)
 {
