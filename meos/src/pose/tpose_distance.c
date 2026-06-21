@@ -83,7 +83,7 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
   GSERIALIZED *geom = pose_to_point(pose);
   Temporal *tpoint = tpose_to_tpoint(temp);
   Temporal *result = tdistance_tgeo_geo(tpoint, geom);
-  pfree(geom);
+  pfree(geom); pfree(tpoint);
   return result;
 }
 
@@ -180,12 +180,13 @@ nai_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   if (dist == NULL)
     return NULL;
 
-  const TInstant *min = temporal_min_instant((const Temporal *) dist);
+  const TInstant *min = temporal_min_inst_p((const Temporal *) dist);
+  TimestampTz t = min->t;
   pfree(dist);
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  temporal_value_at_timestamptz(temp1, min->t, false, &value);
-  return tinstant_make_free(value, temp1->temptype, min->t);
+  temporal_value_at_timestamptz(temp1, t, false, &value);
+  return tinstant_make_free(value, temp1->temptype, t);
 }
 
 /*****************************************************************************
@@ -231,7 +232,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
   GSERIALIZED *traj = tpose_trajectory(temp);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(traj, geo);
-  pfree(traj);
+  pfree(traj); pfree(geo);
   return result;
 }
 
@@ -273,7 +274,9 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
   Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
     return -1.0;
-  return DatumGetFloat8(temporal_min_value(dist));
+  double result = DatumGetFloat8(temporal_min_value(dist));
+  pfree(dist);
+  return result;
 }
 
 /*****************************************************************************
