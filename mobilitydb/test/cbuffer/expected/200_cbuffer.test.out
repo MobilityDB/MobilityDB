@@ -107,6 +107,18 @@ SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
  Cbuffer(POINT(1 1),0.2)
 (1 row)
 
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
+        astext         
+-----------------------
+ Cbuffer(POINT(5 5),3)
+(1 row)
+
+SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
+                 st_astext                 
+-------------------------------------------
+ CURVEPOLYGON(CIRCULARSTRING(2 5,8 5,2 5))
+(1 row)
+
 SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
         astext         
 -----------------------
