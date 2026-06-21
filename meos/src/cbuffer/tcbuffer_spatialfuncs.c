@@ -425,7 +425,8 @@ tcbufferseq_discstep_traversed_area(const TSequence *seq, GSERIALIZED **result)
 {
   assert(seq); assert(seq->count > 1);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR);
-  const TInstant **instants = tsequence_insts_p(seq);
+  int ninsts;
+  const TInstant **instants = tsequence_insts_p(seq, &ninsts);
   int res = cbufferarr_circles((TInstant **) instants, seq->count, result);
   pfree(instants);
   return res;
@@ -592,7 +593,8 @@ tcbufferseqset_step_traversed_area(const TSequenceSet *ss, GSERIALIZED **result)
 {
   assert(ss); assert(ss->count > 1);
   assert(MEOS_FLAGS_GET_INTERP(ss->flags) == STEP);
-  const TInstant **instants = tsequenceset_insts_p(ss);
+  int ninsts;
+  const TInstant **instants = tsequenceset_insts_p(ss, &ninsts);
   return cbufferarr_circles((TInstant **) instants, ss->count, result);
 }
 
@@ -690,6 +692,22 @@ tcbuffer_traversed_area(const Temporal *temp, bool unary_union)
     default: /* TSEQUENCESET */
       return tcbufferseqset_traversed_area((TSequenceSet *) temp, unary_union);
   }
+}
+
+/**
+ * @ingroup meos_cbuffer_accessor
+ * @brief Return the convex hull of a temporal circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Tcbuffer_convex_hull()
+ */
+GSERIALIZED *
+tcbuffer_convex_hull(const Temporal *temp)
+{
+  VALIDATE_TCBUFFER(temp, NULL);
+  GSERIALIZED *area = tcbuffer_traversed_area(temp, true);
+  GSERIALIZED *result = geom_convex_hull(area);
+  pfree(area);
+  return result;
 }
 
 /*****************************************************************************/
