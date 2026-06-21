@@ -97,7 +97,7 @@ jobs:
           # The coverage/test build enables ALL present families so the suite
           # exercises cross-family behaviour (in particular Arrow). Families are
           # plug&play independent in code; only the test build turns them all on.
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} -DCBUFFER=ON -DNPOINT=ON ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON ..
 
       - name: Build
         run: |
