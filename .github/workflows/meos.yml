@@ -62,8 +62,13 @@ jobs:
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cbuffer_test cbuffer_test.c -L/usr/local/lib -lmeos
-          ./cbuffer_test
+          # The tcbuffer test program is generated from the installed headers
+          # (gen_smoketest.py introspects meos_cbuffer.h) so it tracks the current
+          # API. Regenerate and compile it here; the CBUFFER family is built and
+          # installed above.
+          python3 gen_smoketest.py tcbuffer
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tcbuffer_smoketest tcbuffer_smoketest.c -L/usr/local/lib -lmeos -lm
+          ./tcbuffer_smoketest
           # The tgeometry test program is generated from the installed headers
           # (gen_smoketest.py introspects meos_geo.h) so it tracks the current
           # API. Regenerate and compile it here; the geo type is built and
