@@ -444,4 +444,27 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+
+PGDLLEXPORT Datum Temporal_ext_kalman_filter(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_ext_kalman_filter);
+/**
+ * @ingroup mobilitydb_temporal_analytics_simplify
+ * @brief Return a temporal sequence (set) filtered using an EKF with gating
+ * @sqlfn extendedKalmanFilter()
+ */
+Datum
+Temporal_ext_kalman_filter(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double gate = PG_GETARG_FLOAT8(1);
+  double q = PG_GETARG_FLOAT8(2);
+  double variance = PG_GETARG_FLOAT8(3);
+  bool to_drop = true;
+  if (PG_NARGS() > 4 && ! PG_ARGISNULL(4))
+    to_drop = PG_GETARG_BOOL(4);
+  Temporal *result = temporal_ext_kalman_filter(temp, gate, q, variance, to_drop);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/
