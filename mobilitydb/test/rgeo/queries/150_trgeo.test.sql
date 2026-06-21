@@ -295,6 +295,16 @@ SELECT ST_AsText(valueN(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1),
 SELECT ST_AsText(valueN(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', 1));
 SELECT ST_AsText(valueN(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}', 1));
 
+SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01'));
+SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(2 2), 0.5)@2000-01-02, Pose(Point(2 2), 0.5)@2000-01-03}'));
+SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-02, Pose(Point(3 3), 0.5)@2000-01-03]'));
+SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-02], [Pose(Point(3 3), 0.6)@2000-01-04, Pose(Point(3 3), 0.6)@2000-01-05]}'));
+
+SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
+SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');
+SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
+SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}');
+
 SELECT numInstants(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
 SELECT numInstants(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');
 SELECT numInstants(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
@@ -611,3 +621,11 @@ SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01
 SELECT trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' >= trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------
+
+SELECT numSequences(trgeometrySeqSetGaps(ARRAY[
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.0)@2000-01-01',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(2 2), 0.5)@2000-01-02',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(3 3), 1.0)@2000-01-03'
+]::trgeometry[], '5 minutes'::interval));
+
+-------------------------------------------------------------------------------/
