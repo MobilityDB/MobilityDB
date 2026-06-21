@@ -652,7 +652,7 @@ pose_from_hexwkb(const char *hexwkb)
  * @param[in] pose Pose
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Pose_recv(), #Pose_as_wkb()
+ * @csqlfn #Pose_send(), #Pose_as_wkb()
  */
 uint8_t *
 pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)

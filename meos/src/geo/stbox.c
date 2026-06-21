@@ -286,7 +286,7 @@ stbox_from_hexwkb(const char *hexwkb)
  * @param[in] box Spatiotemporal box
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Stbox_recv(), #Stbox_as_wkb()
+ * @csqlfn #Stbox_send(), #Stbox_as_wkb()
  */
 uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)

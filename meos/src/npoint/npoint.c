@@ -560,7 +560,7 @@ npoint_from_hexwkb(const char *hexwkb)
  * @param[in] np Network point
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Npoint_recv(), #Npoint_as_wkb()
+ * @csqlfn #Npoint_send(), #Npoint_as_wkb()
  */
 uint8_t *
 npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out)
