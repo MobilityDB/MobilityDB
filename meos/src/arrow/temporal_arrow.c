@@ -75,6 +75,9 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <pgtypes.h>
+
+#if ARROW
+#include <meos_arrow.h>
 #include <arrow_c_data_interface.h>
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
@@ -1334,7 +1337,7 @@ meos_temporal_from_arrow(const struct ArrowSchema *schema,
   else if (v_sc->format[0] == 'i')
     vt = T_TINT;
 #if H3
-  else if (v_sc->format[0] == 'L')
+  else if (v_is_th3index)
     vt = T_TH3INDEX;
 #endif
   else
@@ -1530,5 +1533,7 @@ meos_temporal_arrow_roundtrip(const Temporal *temp)
     array.release(&array);
   return result;
 }
+
+#endif /* ARROW */
 
 /*****************************************************************************/

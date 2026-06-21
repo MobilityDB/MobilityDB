@@ -766,7 +766,9 @@ CREATE OPERATOR CLASS tpose_hash_ops
 
 /******************************************************************************/
 
+#if ARROW
 CREATE FUNCTION arrowRoundtrip(tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //ARROW

@@ -221,6 +221,7 @@ CREATE FUNCTION asHexWKB(ttext, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+#if ARROW
 CREATE FUNCTION arrowRoundtrip(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
@@ -236,5 +237,6 @@ CREATE FUNCTION arrowRoundtrip(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //ARROW
 
 /*****************************************************************************/

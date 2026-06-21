@@ -46,7 +46,12 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_rgeo.h>
+#if ARROW
+  #include <meos_arrow.h>
+#endif
+#if RGEO
+  #include <meos_rgeo.h>
+#endif
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -1638,6 +1643,7 @@ Temporal_round(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+#if ARROW
 PGDLLEXPORT Datum Temporal_arrow_roundtrip(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_arrow_roundtrip);
 /**
@@ -1654,6 +1660,7 @@ Temporal_arrow_roundtrip(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
+#endif /* ARROW */
 
 PGDLLEXPORT Datum Temporalarr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporalarr_round);

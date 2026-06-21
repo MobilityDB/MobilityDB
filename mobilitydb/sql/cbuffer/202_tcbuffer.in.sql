@@ -741,7 +741,9 @@ CREATE OPERATOR CLASS tcbuffer_hash_ops
 
 /*****************************************************************************/
 
+#if ARROW
 CREATE FUNCTION arrowRoundtrip(tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //ARROW

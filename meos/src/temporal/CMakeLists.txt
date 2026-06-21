@@ -21,7 +21,6 @@ set(TEMPORAL_SOURCES
   temporal.c
   temporal_aggfuncs.c
   temporal_analytics.c
-  temporal_arrow.c
   temporal_boxops.c
   temporal_compops.c
   temporal_modif.c

@@ -180,6 +180,7 @@ CREATE FUNCTION asHexEWKB(tgeography, endianenconding text DEFAULT '')
 
 /*****************************************************************************/
 
+#if ARROW
 CREATE FUNCTION arrowRoundtrip(tgeometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
@@ -188,5 +189,6 @@ CREATE FUNCTION arrowRoundtrip(tgeography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_arrow_roundtrip'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //ARROW
 
 /*****************************************************************************/

@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_arrow.h>
 #include <arrow_c_data_interface.h>
 
 int main(void)
