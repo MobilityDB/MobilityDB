@@ -41,6 +41,8 @@
 #include <meos.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
@@ -239,6 +241,20 @@ tnpoint_out(const Temporal *temp, int maxdd)
 }
 
 /**
+ * @ingroup meos_npoint_inout
+ * @brief Return a temporal network point from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @return On error return @p NULL
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tnpoint_from_mfjson(const char *mfjson)
+{
+  VALIDATE_NOT_NULL(mfjson, NULL);
+  return temporal_from_mfjson(mfjson, T_TNPOINT);
+}
+
+/**
  * @ingroup meos_internal_npoint_inout
  * @brief Return a temporal network point instant from its Well-Known Text 
  * (WKT) representation
@@ -302,6 +318,72 @@ TInstant *
 tnpointinst_make(const Npoint *np, TimestampTz t)
 {
   return tinstant_make(PointerGetDatum(np), T_TNPOINT, t);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point from a network point and the time
+ * frame of another temporal value
+ * @param[in] np Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tnpoint_from_base_temp(const Npoint *np, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(np), T_TNPOINT, temp);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point discrete sequence from a network
+ * point and a timestamptz set
+ * @param[in] np Value
+ * @param[in] s Set
+ */
+TSequence *
+tnpointseq_from_base_tstzset(const Npoint *np, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(np), T_TNPOINT, s);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point sequence from a network point and a
+ * timestamptz span
+ * @param[in] np Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tnpointseq_from_base_tstzspan(const Npoint *np, const Span *s,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(np), T_TNPOINT, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_npoint_constructor
+ * @brief Return a temporal network point sequence set from a network point and
+ * a timestamptz span set
+ * @param[in] np Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(np), T_TNPOINT,
+    ss, interp);
 }
 #endif /* MEOS */
 
@@ -497,6 +579,103 @@ tgeompoint_to_tnpoint(const Temporal *temp)
  * Accessor functions
  *****************************************************************************/
 
+#if MEOS
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the start value of a temporal network point
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_start_value()
+ */
+Npoint *
+tnpoint_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  return DatumGetNpointP(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the end value of a temporal network point
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_end_value()
+ */
+Npoint *
+tnpoint_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  return DatumGetNpointP(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return a copy of the n-th value of a temporal network point
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tnpoint_value_n(const Temporal *temp, int n, Npoint **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetNpointP(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return the array of copies of base values of a temporal network point
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+Npoint **
+tnpoint_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  Npoint **result = palloc(sizeof(Npoint *) * *count);
+  for (int i = 0; i < *count; i++)
+  {
+    const Npoint *np = DatumGetNpointP(datumarr[i]);
+    result[i] = npoint_make(np->rid, np->pos);
+  }
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_npoint_accessor
+ * @brief Return the value of a temporal network point at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tnpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+  Npoint **value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(value, false); VALIDATE_TNPOINT(temp, false);
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetNpointP(res);
+  return result;
+}
+#endif /* MEOS */
+
 /**
  * @brief Return the network segments covered by the temporal network point
  */
@@ -644,7 +823,7 @@ tnpoint_positions(const Temporal *temp, int *count)
 int64
 tnpointinst_route(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return np->rid;
 }
 
@@ -719,7 +898,7 @@ tnpointseqset_routes(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, i), 0);
-    Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+    const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
     values[i] = np->rid;
   }
   datumarr_sort(values, ss->count, T_INT8);
@@ -788,7 +967,6 @@ npointset_routes(const Set *s)
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
- * @csqlfn #Tnpoint_restrict_npoint()
  */
 Temporal *
 tnpoint_restrict_npoint(const Temporal *temp, const Npoint *np, bool atfunc)
@@ -839,7 +1017,6 @@ tnpoint_minus_npoint(const Temporal *temp, const Npoint *np)
  * @param[in] temp Temporal network point
  * @param[in] s Set of network points
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Tnpoint_restrict_npointset()
  */
 Temporal *
 tnpoint_restrict_npointset(const Temporal *temp, const Set *s, bool atfunc)
