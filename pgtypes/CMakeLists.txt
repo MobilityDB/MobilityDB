@@ -94,6 +94,13 @@ configure_file(pg_config.h.in pg_config.h @ONLY)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/pgtypes")
 include_directories(SYSTEM "${CMAKE_BINARY_DIR}/pgtypes")
 
+# Native Windows MSVC has no <dirent.h>; put the vendored win32_msvc shim header
+# on the include path so the MEOS code that includes <dirent.h> (pgfnames.c,
+# pgtz.c, fd.c, ...) resolves it. MinGW ships its own, so this is MSVC-only.
+if(WIN32 AND MSVC)
+  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/pgtypes/port/win32_msvc")
+endif()
+
 # When building the MobilityDB extension (MEOS=OFF) on Windows or macOS, the
 # pgtypes "frontend"-style files duplicate symbols that the postgres backend
 # already provides (palloc, pg_strncasecmp, pg_snprintf, enlargeStringInfo,

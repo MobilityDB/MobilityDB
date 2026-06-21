@@ -22,6 +22,13 @@ if(NOT PGTYPES_EXT_WIN32)
   )
 endif()
 
+# Native Windows MSVC has no <dirent.h>; compile the vendored opendir/readdir/
+# closedir shim (the implementation paired with port/win32_msvc/dirent.h). The
+# .c body is itself guarded against MinGW, which ships its own <dirent.h>.
+if(WIN32)
+  list(APPEND PORT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/dirent.c)
+endif()
+
 set(PGTYPES_SOURCES ${PGTYPES_SOURCES} ${PORT_SOURCES}
   # Mandatory so that the variable update is visible in the parent directory's scope
   PARENT_SCOPE
