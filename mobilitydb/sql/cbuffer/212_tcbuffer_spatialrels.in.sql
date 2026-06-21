@@ -45,8 +45,6 @@
  * eContains, aContains
  *****************************************************************************/
 
-/* eContains(geometry, tcbuffer) is not supported */
-
 CREATE FUNCTION eContains(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Econtains_cbuffer_tcbuffer'
@@ -66,6 +64,11 @@ CREATE FUNCTION eContains(tcbuffer, cbuffer)
 
 /*****************************************************************************/
 
+CREATE FUNCTION eContains(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aContains(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acontains_geo_tcbuffer'
@@ -92,8 +95,6 @@ CREATE FUNCTION aContains(tcbuffer, cbuffer)
  * eCovers, aCovers
  *****************************************************************************/
 
-/* eCovers(geometry, tcbuffer) is not supported */
-
 CREATE FUNCTION eCovers(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ecovers_cbuffer_tcbuffer'
@@ -110,9 +111,19 @@ CREATE FUNCTION eCovers(tcbuffer, cbuffer)
   AS 'MODULE_PATHNAME', 'Ecovers_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eCovers(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ecovers_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
+CREATE FUNCTION eCovers(geometry, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ecovers_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aCovers(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acovers_geo_tcbuffer'
@@ -132,6 +143,11 @@ CREATE FUNCTION aCovers(tcbuffer, geometry)
 CREATE FUNCTION aCovers(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acovers_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aCovers(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acovers_tcbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -274,6 +290,11 @@ CREATE FUNCTION eTouches(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Etouches_tcbuffer_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eTouches(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Etouches_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -296,6 +317,11 @@ CREATE FUNCTION aTouches(geometry, tcbuffer)
 CREATE FUNCTION aTouches(tcbuffer, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Atouches_tcbuffer_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aTouches(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_tcbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
