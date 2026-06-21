@@ -159,7 +159,8 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
       theta = start->data[2] + (2 * M_PI + theta_delta) * ratio;
     if (theta > M_PI)
       theta = theta - 2 * M_PI;
-    result = pose_make_2d(x, y, theta, pose_srid(start));
+    result = pose_make_2d(x, y, theta, MEOS_FLAGS_GET_GEODETIC(start->flags),
+      pose_srid(start));
   }
   else
   {
@@ -210,7 +211,8 @@ posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
     X /= norm;
     Y /= norm;
     Z /= norm;
-    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(start));
+    result = pose_make_3d(x, y, z, W, X, Y, Z,
+      MEOS_FLAGS_GET_GEODETIC(start->flags), pose_srid(start));
   }
   return result;
 }
@@ -414,18 +416,23 @@ pose_parse(const char **str, bool end)
   int32_t srid;
   srid_parse(str, &srid);
 
+  /* Determine whether the pose is geodetic from its GeodPose / Pose prefix */
+  bool geodetic = (pg_strncasecmp(*str, "GEODPOSE", 8) == 0);
+  const char *kw = geodetic ? "GEODPOSE" : "POSE";
+  int kwlen = geodetic ? 8 : 4;
+
   /* Determine whether the pose has a geometry */
   int32_t srid_geo;
   GSERIALIZED *geo = NULL;
-  if (pg_strncasecmp(*str, "POSE", 4) != 0)
+  if (pg_strncasecmp(*str, kw, kwlen) != 0)
   {
     if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
       return NULL;
   }
 
-  if (pg_strncasecmp(*str, "POSE", 4) == 0)
+  if (pg_strncasecmp(*str, kw, kwlen) == 0)
   {
-    *str += 4;
+    *str += kwlen;
     p_whitespace(str);
   }
   else
@@ -461,7 +468,7 @@ pose_parse(const char **str, bool end)
     if (! double_parse(str, &theta) || ! ensure_valid_rotation(theta))
       return NULL;
     const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
-    result = pose_make_2d(p->x, p->y, theta, srid);
+    result = pose_make_2d(p->x, p->y, theta, geodetic, srid);
   }
   else
   {
@@ -481,7 +488,7 @@ pose_parse(const char **str, bool end)
     if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
     const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
-    result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, srid);
+    result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, geodetic, srid);
   }
   pfree(point);
 
@@ -528,10 +535,12 @@ pose_out(const Pose *pose, int maxdd)
   char *result = palloc(MAXPOSELEN);
   GSERIALIZED *gs = pose_to_point(pose);
   char *point = basetype_out(PointerGetDatum(gs), T_GEOMETRY, maxdd);
+  const char *posetype = MEOS_FLAGS_GET_GEODETIC(pose->flags) ?
+    "GEODPOSE" : "POSE";
   if (!MEOS_FLAGS_GET_Z(pose->flags))
   {
     char *theta = float8_out(pose->data[2], maxdd); /* theta if 2D*/
-    snprintf(result, MAXPOSELEN - 1, "POSE (%s, %s)", point, theta);
+    snprintf(result, MAXPOSELEN - 1, "%s (%s, %s)", posetype, point, theta);
     pfree(theta);
   }
   else
@@ -540,8 +549,8 @@ pose_out(const Pose *pose, int maxdd)
     char *X = float8_out(pose->data[4], maxdd);
     char *Y = float8_out(pose->data[5], maxdd);
     char *Z = float8_out(pose->data[6], maxdd);
-    snprintf(result, MAXPOSELEN - 1, "POSE(%s, %s, %s, %s, %s)",
-      point, W, X, Y, Z);
+    snprintf(result, MAXPOSELEN - 1, "%s(%s, %s, %s, %s, %s)",
+      posetype, point, W, X, Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   pfree(gs); pfree(point);
@@ -565,6 +574,8 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
 
   /* Write the pose */
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  const char *posetype = MEOS_FLAGS_GET_GEODETIC(pose->flags) ?
+    "GeodPose" : "Pose";
   int32_t srid = pose_srid(pose);
   GSERIALIZED *gs = hasz ?
     geopoint_make(pose->data[0], pose->data[1], pose->data[2], true, false,
@@ -590,16 +601,16 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
     theta = float8_out(pose->data[2], maxdd);
     len += strlen(theta) + 1; // One ','
   }
-  len += 7; // Pose() + '\0' at the end
+  len += strlen(posetype) + 3; // Type() + '\0' at the end
   char *result = palloc(len);
   if (hasz)
   {
-    snprintf(result, len, "Pose(%s,%s,%s,%s,%s)", wkt_point, W, X, Y, Z);
-    pfree(W); pfree(X); pfree(Y); pfree(Z); 
+    snprintf(result, len, "%s(%s,%s,%s,%s,%s)", posetype, wkt_point, W, X, Y, Z);
+    pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   else
   {
-    snprintf(result, len, "Pose(%s,%s)", wkt_point, theta);
+    snprintf(result, len, "%s(%s,%s)", posetype, wkt_point, theta);
     pfree(theta);
   }
   lwgeom_free(geom); pfree(gs); pfree(wkt_point);
@@ -718,7 +729,7 @@ pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
  * @param[in] srid SRID
  */
 Pose *
-pose_make_2d(double x, double y, double theta, int32_t srid)
+pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
 {
   if (! ensure_valid_rotation(theta))
     return NULL;
@@ -732,6 +743,7 @@ pose_make_2d(double x, double y, double theta, int32_t srid)
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
   pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
@@ -765,6 +777,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   pose_set_srid(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
@@ -781,7 +794,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
  */
 Pose *
 pose_make_3d(double x, double y, double z, double W, double X, double Y,
-  double Z, int32_t srid)
+  double Z, bool geodetic, int32_t srid)
 {
   if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
@@ -808,6 +821,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
   pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
@@ -851,6 +865,7 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
+  MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   pose_set_srid(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
@@ -1292,7 +1307,8 @@ pose_normalise(const Pose *pose)
     return NULL;
   }
   return pose_make_3d(pose->data[0], pose->data[1], pose->data[2],
-    W / norm, X / norm, Y / norm, Z / norm, pose_srid(pose));
+    W / norm, X / norm, Y / norm, Z / norm,
+    MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
 }
 
 /**
@@ -1322,14 +1338,16 @@ pose_round(const Pose *pose, int maxdd)
     double X = float8_round(pose->data[4], maxdd);
     double Y = float8_round(pose->data[5], maxdd);
     double Z = float8_round(pose->data[6], maxdd);
-    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose));
+    result = pose_make_3d(x, y, z, W, X, Y, Z,
+      MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
   }
   else
   {
     double x = float8_round(pose->data[0], maxdd);
     double y = float8_round(pose->data[1], maxdd);
     double theta = float8_round(pose->data[2], maxdd);
-    result = pose_make_2d(x, y, theta, pose_srid(pose));
+    result = pose_make_2d(x, y, theta, MEOS_FLAGS_GET_GEODETIC(pose->flags),
+      pose_srid(pose));
   }
   return result;
 }

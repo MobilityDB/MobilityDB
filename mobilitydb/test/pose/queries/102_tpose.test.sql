@@ -599,6 +599,13 @@ SELECT numSequences(tposeSeqSetGaps(ARRAY[
   tpose 'Pose(Point(3 3), 1.0)@2000-01-03'
 ]::tpose[], '5 minutes'::interval));
 
+-------------------------------------------------------------------------------
+-- Geodetic temporal poses
+-------------------------------------------------------------------------------
+
+SELECT asText(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]');
+SELECT tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]';
+
 -------------------------------------------------------------------------------/
 
 -- tprecision
