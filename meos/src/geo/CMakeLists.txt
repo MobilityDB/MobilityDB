@@ -1,4 +1,5 @@
 set(GEO_SOURCES
+  geo_knn.c
   geo_round.c
   postgis_funcs.c
   stbox.c
