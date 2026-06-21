@@ -32,6 +32,8 @@
 
 	<para>El tipo <varname>npoint</varname> sirve como tipo base para definir el tipo punto de red temporal <varname>tnpoint</varname>. El tipo <varname>tnpoint</varname> tiene una funcionalidad similar al tipo de punto temporal <varname>tgeompoint</varname> con la excepción de que solo considera dos dimensiones. Por lo tanto, todas las funciones y operadores descritos anteriormente para el tipo <varname>tgeompoint</varname> también son aplicables para el tipo <varname>tnpoint</varname>. Además, hay funciones específicas definidas para el tipo <varname>tnpoint</varname>.</para>
 
+	<para>La guía operativa sobre cómo elegir entre <varname>tnpoint</varname> y <varname>tgeompoint</varname>; el contrato de herencia del SRID (el SRID se lee de la ruta registrada en <varname>ways</varname>, no se lleva explícitamente en el valor); los peligros numéricos que las cargas de trabajo de producción deben anticipar (la limitación del parámetro de posición a <varname>[0, 1]</varname>, el manejo de SRID mixtos, los errores de ruta no registrada, las operaciones entre redes); y las convenciones de durabilidad y almacenamiento se recogen en <xref linkend="tnpoint_production_guidance"/>.</para>
+
 	<sect1 xml:id="static_network_types">
 		<title>Tipos de red estáticos</title>
 
@@ -396,6 +398,43 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 -- NULL
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tnpoint_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un punto de red temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tnpoint) → tnpoint</varname></para>
+				<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. Un punto de red se descompone en una estructura con el identificador de ruta rid y la fracción de posición pos; la reconstrucción requiere que la red esté cargada. El resultado es igual a la entrada.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+-- NPoint(1,0.5)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>Entrada y Salida MF-JSON</title>
+		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tnpointFromMFJSON</varname></primary></indexterm>
+				<para>Genera un punto de red temporal como MF-JSON y lo lee de vuelta; el ciclo de ida y vuelta es sin pérdida. La salida toma los argumentos de opciones, banderas y dígitos decimales compartidos con los demás tipos temporales.</para>
+				<para><varname>asMFJSON(tnpoint,integer,integer,integer) → text</varname></para>
+				<para><varname>tnpointFromMFJSON(text) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
+  = tnpoint 'NPoint(1, 0.5)@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_mfjson">
+		<title>Entrada y Salida MF-JSON</title>
+		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<itemizedlist>
 		</itemizedlist>
 	</sect1>
 
@@ -901,4 +940,66 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</itemizedlist>
 		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos.</para>
 	</sect1>
+
+	<sect1 xml:id="tnpoint_aggregation">
+		<title>Agregación</title>
+		<itemizedlist>
+			<listitem xml:id="tnpoint_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Devuelve el cuadro delimitador espaciotemporal que cubre cada posición materializada en un conjunto de puntos de red. El agregado es polimórfico con los agregados <varname>extent</varname> de los demás tipos temporales espaciales, por lo que una sola consulta puede calcular un único cuadro a través de un conjunto heterogéneo de columnas <varname>tgeompoint</varname>, <varname>tgeometry</varname> y <varname>tnpoint</varname>. La extensión espacial de cada instante se resuelve a través del registro de ways, lo que domina el coste sobre una entrada grande.</para>
+				<para><varname>extent(tnpoint) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT extent(temp) FROM tbl_tnpoint;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tnpoint_production_guidance">
+		<title>Guía de producción</title>
+		<para>Esta sección recoge el conocimiento operativo que las cargas de trabajo de producción necesitan además de la referencia de funciones: cuándo <varname>npoint</varname> / <varname>tnpoint</varname> son el tipo adecuado, cómo fluyen los SRID desde el registro de la red, los peligros numéricos que afectan a las cargas de trabajo de seguimiento restringidas a una red, y la historia de durabilidad de los valores serializados. La mayoría de estos puntos aparecen por separado a lo largo del capítulo; el objetivo aquí es un único lugar que un nuevo contribuyente pueda leer de principio a fin antes de instrumentar una aplicación.</para>
+
+		<sect2 xml:id="tnpoint_when_to_use">
+			<title>Cuándo usar tnpoint frente a tgeompoint</title>
+			<para>Un <varname>tgeompoint</varname> rastrea una posición en el espacio libre; un <varname>tnpoint</varname> rastrea una posición restringida a una red conocida de rutas. Cada valor de punto de red es un par <varname>(rid, pos)</varname> donde <varname>rid</varname> es el identificador de ruta y <varname>pos</varname> es la posición relativa a lo largo de esa ruta, normalizada a <varname>[0, 1]</varname> (del inicio de la ruta al final de la ruta).</para>
+			<para>Use <varname>tgeompoint</varname> cuando el objeto en movimiento no esté restringido a una red, cuando la topología de la red sea desconocida, o cuando solo importe la geometría de la trayectoria &#x2014; trazas GPS de vehículos a nivel de datos crudos, movimiento de animales, flujos AIS.</para>
+			<para>Use <varname>tnpoint</varname> cuando el movimiento esté sobre una red conocida y se desee semántica relativa a la red: distancias medidas a lo largo de la ruta, no en el espacio libre; agregaciones agrupadas por segmento de ruta; uniones espaciales restringidas a la "misma red". Las cargas de trabajo canónicas son el seguimiento de redes ferroviarias y de carreteras, donde los flujos emparejados con el mapa se convierten en valores <varname>tnpoint</varname>.</para>
+			<para>La componente de posición de un <varname>tnpoint</varname> se puede recuperar como un <varname>tgeompoint</varname> mediante la conversión estándar (o como una <varname>geometry</varname> mediante <varname>geometry(npoint)</varname>); una <varname>geometry</varname> se puede proyectar de vuelta sobre la red cargada con <varname>npoint(geometry)</varname>. En consecuencia, una sola columna <varname>tnpoint</varname> subsume una columna <varname>tgeompoint</varname> emparejada con el mapa cuando se necesita semántica relativa a la red.</para>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_srid_inheritance">
+			<title>Herencia del SRID desde el registro de la red</title>
+			<para>Un valor <varname>npoint</varname> no lleva su propio SRID; hereda el SRID de la ruta referenciada por su campo <varname>rid</varname>. El conjunto de rutas conocidas &#x2014; el registro <emphasis>ways</emphasis> &#x2014; se carga en una caché por proceso (véase <varname>meos/src/npoint/ways_meos.c</varname>) la primera vez que se ejecuta una función de red, y está indexado por el gid de ruta. Todo accesor de <varname>npoint</varname> que necesite la geometría de la ruta (<varname>npoint_to_geompoint</varname>, <varname>npoint_to_stbox</varname>, todos los predicados espaciales y funciones de distancia) consulta esta caché.</para>
+			<para>En la extensión de PostgreSQL la caché se rellena automáticamente desde la tabla <varname>public.ways</varname>. En MEOS independiente la aplicación debe llamar a <varname>meos_register_ways(...)</varname> con la tabla de rutas antes de cualquier operación <varname>npoint</varname>; <varname>meos_finalize_ways()</varname> es idempotente y se puede llamar varias veces de forma segura. Las operaciones entre tipos entre un <varname>npoint</varname> y una geometría validan que el SRID de la ruta coincida con el SRID de la geometría; las discrepancias generan un error explícito en lugar de reproyectar silenciosamente.</para>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_hazards">
+			<title>Peligros numéricos</title>
+			<para>Cuatro peligros afectan de forma fiable a las cargas de trabajo reales de seguimiento restringidas a una red. La implementación mitiga cada uno como sigue:</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Limitación del parámetro de posición a [0, 1]</emphasis>. Una posición fuera de <varname>[0, 1]</varname> no tiene significado en una ruta que no se ha extendido.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> rechaza <varname>pos &lt; 0</varname> o <varname>pos &gt; 1</varname> en la construcción con el mensaje "The relative position must be a real number between 0 and 1", y la misma comprobación se aplica en las entradas de los analizadores WKT, WKB y MFJSON. Los extremos <varname>0.0</varname> (inicio de ruta) y <varname>1.0</varname> (fin de ruta) son válidos y admitidos &#x2014; el conjunto de pruebas ejercita ambos. Los datos de flujo corruptos o sin recortar fallan de forma explícita en lugar de contaminar una consulta posterior.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Manejo de SRID mixtos</emphasis>. Un <varname>tnpoint</varname> hereda su SRID de su ruta, mientras que un argumento <varname>geometry</varname> lleva su SRID explícitamente.</para>
+					<para><emphasis>Mitigación</emphasis>: cada operador entre tipos (<varname>tnpoint &lt;-&gt; geometry</varname>, <varname>tnpoint &amp;&amp; geometry</varname>, <varname>distance(tnpoint, geometry)</varname>) valida que los dos SRID coincidan mediante <varname>ensure_same_srid</varname>; las discrepancias generan un error explícito en lugar de reproyectar silenciosamente un lado sobre el otro.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Ruta no registrada</emphasis>. Un <varname>npoint</varname> que referencia un gid de ruta no presente en la caché de ways no puede resolverse a una geometría.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>npoint_make</varname> llama a <varname>ensure_route_exists</varname> en la construcción; los constructores SQL WKT, WKB, MFJSON y <varname>npoint(...)</varname> fluyen todos por esta comprobación y generan "There is no route with gid value &lt;n&gt; in table ways" si no se encuentra. Los usuarios de MEOS independiente que omitan el arranque <varname>meos_register_ways(...)</varname> verán este error en la primera operación de red, no más tarde como una consulta silenciosa de resultado cero.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Operaciones entre redes</emphasis>. Dos valores <varname>tnpoint</varname> cuyas rutas pertenecen a redes diferentes (o a componentes conexas diferentes de la misma red) no pueden relacionarse mediante distancia de red.</para>
+					<para><emphasis>Mitigación</emphasis>: los operadores de distancia y de relación espacial entre dos valores <varname>tnpoint</varname> bajan primero ambos lados a <varname>tgeompoint</varname> y calculan el resultado como distancia / topología en el espacio libre. Este es un comportamiento documentado: quienes necesiten distancia de red verdadera deben restringir su consulta a una sola componente conexa aguas arriba.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tnpoint_durability">
+			<title>Durabilidad y almacenamiento</title>
+			<para>La representación en disco de un <varname>npoint</varname> es una tupla de 16 bytes: un id de ruta de 8 bytes seguido de una posición de 8 bytes. La disposición de bytes es estable: <varname>asBinary(tnpoint)</varname> / <varname>tnpointFromBinary(bytea)</varname> realizan un ciclo de ida y vuelta que preserva el valor bit a bit, y las serializaciones WKB / HexEWKB siguen el patrón estándar de los tipos temporales de bandera de endianidad seguida de la carga útil. El par <varname>asMFJSON(tnpoint)</varname> / <varname>tnpointFromMFJSON(text)</varname> es bidireccional, por lo que MovingFeatures-JSON es un formato de intercambio viable en igualdad de condiciones con WKB. Cada instante se representa como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname>, con los nombres de campo coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>) según la convención de descriptores en lenguaje natural.</para>
+			<para>El id de ruta se emite como un número JSON, que realiza un ciclo de ida y vuelta sin pérdida entre los codificadores y decodificadores de MEOS (ambos conservan la precisión completa de <varname>int64</varname> mediante <varname>INT64_FORMAT</varname> / <varname>strtoll</varname>). Sin embargo, no es sin pérdida en consumidores JavaScript / ECMAScript: el tipo <varname>Number</varname> tiene una mantisa de 53 bits, por lo que los ids de ruta más allá de <varname>2^53</varname> (~9 × 10^15) pierden precisión cuando los analiza un <varname>JSON.parse</varname> genérico del lado del navegador. Para redes derivadas de OSM esto importa en la práctica — los ids de vía de OSM cruzaron <varname>2^53</varname> en 2025 — y la mitigación recomendada del lado de JS es analizar con una biblioteca que materialice los números como <varname>BigInt</varname> (por ejemplo <varname>json-bigint</varname>) en lugar de confiar en el comportamiento por defecto. Esta es una decisión de diseño deliberada, no un descuido: la alternativa (emitir la ruta como una cadena JSON, como hace <varname>th3index</varname> para su carga útil de celda int64) divergiría de la forma JSON que devuelven todos los accesores numéricos de este tipo y rompería el ciclo de ida y vuelta con el análisis ingenuo de enteros en cada consumidor que <emphasis>sí</emphasis> maneja correctamente los enteros de 64 bits.</para>
+			<para>La salida de <varname>pg_dump</varname> de una tabla que contiene columnas <varname>npoint</varname> o <varname>tnpoint</varname> usa la representación WKT por defecto; <varname>pg_dump --binary-upgrade</varname> usa la representación WKB. Ambas son estables en el ciclo de ida y vuelta, pero un volcado solo se puede restaurar en una base de datos cuya tabla <varname>public.ways</varname> contenga todos los ids de ruta referenciados: el registro de rutas es lógicamente una clave foránea en cada columna <varname>npoint</varname>, aunque no se imponga como tal.</para>
+		</sect2>	</sect1>
 </chapter>
