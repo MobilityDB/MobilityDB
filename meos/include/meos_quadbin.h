@@ -179,6 +179,30 @@ extern Temporal *tbigint_to_tquadbin(const Temporal *temp);
 extern Temporal *tquadbin_to_tbigint(const Temporal *temp);
 
 /* Ever/always + temporal comparison operators (eq/ne) — as th3index */
+extern int ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern int ever_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern int ever_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern int ever_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern int always_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern int always_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern int always_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern int always_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern int ever_eq_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
+extern int ever_ne_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_eq_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_ne_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
+extern Temporal *teq_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern Temporal *teq_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern Temporal *teq_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
+extern Temporal *tne_quadbin_tquadbin(Quadbin cell, const Temporal *temp);
+extern Temporal *tne_tquadbin_quadbin(const Temporal *temp, Quadbin cell);
+extern Temporal *tne_tquadbin_tquadbin(const Temporal *temp1,
+  const Temporal *temp2);
 
 /* Inspection (square subset: resolution + validity only) */
 // extern Temporal *tquadbin_get_resolution(const Temporal *temp);

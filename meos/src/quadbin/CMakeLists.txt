@@ -22,6 +22,11 @@ set(QUADBIN_SRCS
   # Planar bounding box functions for the temporal `tquadbin` subtypes,
   # dispatched from meos/src/geo/tgeo_boxops.c.
   tquadbin_boxops.c
+
+  # Ever/always and temporal comparison functions for `tquadbin` (thin
+  # wrappers over the generic eacomp_/tcomp_ machinery; cell equality is
+  # int64 bit-equality, like th3index).
+  tquadbin_compops.c
 )
 
 add_library(quadbin OBJECT ${QUADBIN_SRCS})

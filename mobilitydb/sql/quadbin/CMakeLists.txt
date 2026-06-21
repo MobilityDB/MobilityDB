@@ -1,9 +1,15 @@
 SET(LOCAL_FILES
-  295_quadbin
-  296_quadbinset
-  297_quadbin_ops
-  298_tquadbin
-  303_tquadbin_ops
+  300_quadbin
+  301_quadbinset
+  306_quadbin_ops
+  302_tquadbin
+  307_tquadbin_ops
+  304_tquadbin_compops
+  308_tquadbin_topops
+  309_tquadbin_posops
+  312_tquadbin_spatialrels
+  322_tquadbin_gist
+  323_tquadbin_spgist
   )
 
 foreach (f ${LOCAL_FILES})
