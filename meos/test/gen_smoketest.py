@@ -906,6 +906,20 @@ def write_test(name, cfg):
                              cfg.get("no_free", ()),
                              cfg.get("value_returns", ()))
                    for fname, ret, args in decls)
+    # A common-input variable that a given type's surface never consumes is
+    # acknowledged with (void), the same idiom emit_call uses for by-value
+    # results, so the generated test compiles cleanly under -Wall. A declared
+    # input that appears only in its own declaration is unused.
+    full_text = cfg["common_inputs"] + body + cfg["cleanup"]
+    # Count real C uses only: a name mentioned in a comment is not a use, so
+    # strip /* */ and // comments before counting (matching the compiler's view).
+    code_only = re.sub(r"/\*.*?\*/", "", full_text, flags=re.S)
+    code_only = re.sub(r"//[^\n]*", "", code_only)
+    declared = re.findall(r"^\s*[A-Za-z_]\w*[ \t]+\**[ \t]*([A-Za-z_]\w*)[ \t]*=",
+                          cfg["common_inputs"], re.M)
+    unused = [v for v in dict.fromkeys(declared)
+              if len(re.findall(r"\b" + re.escape(v) + r"\b", code_only)) == 1]
+    void_block = "".join(f"  (void) {v};\n" for v in unused)
     head = HEADER_TEMPLATE.format(
         type_label=label, header_relpath=cfg["header"],
         out_basename=out_basename,
@@ -914,7 +928,7 @@ def write_test(name, cfg):
         pad=pad)
     foot = FOOTER_TEMPLATE.format(cleanup=cfg["cleanup"])
     with open(out_path, "w") as f:
-        f.write(head + body + foot)
+        f.write(head + void_block + body + foot)
     print(f"Wrote {out_path}: {len(decls)} declarations parsed.")
 
 
