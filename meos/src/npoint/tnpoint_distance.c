@@ -69,10 +69,10 @@ datum_npoint_distance(Datum np1, Datum np2)
  * @ingroup meos_npoint_dist
  * @brief Return the temporal distance between a geometry point and a temporal
  * network point
- * @csqlfn #Tdistance_tnpoint_point()
+ * @csqlfn #Tdistance_tnpoint_geo()
  */
 Temporal *
-tdistance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs) || 
