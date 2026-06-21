@@ -2632,7 +2632,7 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
  * @param[in] temp Temporal value
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #Temporal_recv(), #Temporal_as_wkb()
+ * @csqlfn #Temporal_send(), #Temporal_as_wkb()
  */
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)

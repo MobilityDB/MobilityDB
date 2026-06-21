@@ -243,7 +243,7 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    GSERIALIZED *trav = tcbuffersegm_trav_area(inst1, inst2);
+    GSERIALIZED *trav = tcbuffersegm_traversed_area(inst1, inst2);
     result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
     pfree(trav);
     if (result == 1 && ever)
