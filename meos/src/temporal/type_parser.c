@@ -273,7 +273,8 @@ bool
 double_parse(const char **str, double *result)
 {
   char *nextstr = (char *) *str;
-  *result = strtod(*str, &nextstr);
+  /* Locale-safe: pins the decimal separator to '.' (see meos_strtod). */
+  *result = meos_strtod(*str, &nextstr);
   if (*str == nextstr)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,

@@ -374,6 +374,9 @@ extern uint32 float8_hash(float8 key);
 extern uint64 float8_hash_extended(float8 key, uint64 seed);
 extern float8 float8_in(const char *str);
 extern float8 float8_larger(float8 num1, float8 num2);
+/* Locale-safe strtod(): pins numeric input to the C locale (the decimal
+ * separator is always '.') regardless of the process's LC_NUMERIC. */
+extern double meos_strtod(const char *str, char **endptr);
 extern float8 float8_lgamma(float8 num);
 extern float8 float8_ln(float8 num);
 extern float8 float8_log10(float8 num);

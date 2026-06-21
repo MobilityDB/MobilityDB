@@ -27,6 +27,7 @@
 #include "meos.h"
 #include "utils/datetime.h"
 #include "utils/tzparser.h"
+#include "pgtypes.h"  /* meos_strtod */
 
 #include "../../meos/include/meos_error.h"
 
@@ -703,7 +704,7 @@ ParseFraction(char *cp, double *frac)
       return DTERR_BAD_FORMAT;
 
     errno = 0;
-    *frac = strtod(cp, &cp);
+    *frac = meos_strtod(cp, &cp);
     /* check for parse failure (probably redundant given prior check) */
     if (*cp != '\0' || errno != 0)
       return DTERR_BAD_FORMAT;
@@ -3778,7 +3779,7 @@ ParseISO8601Number(char *str, char **endptr, int64 *ipart, double *fpart)
   if (!(isdigit((unsigned char) *str) || *str == '-' || *str == '.'))
     return DTERR_BAD_FORMAT;
   errno = 0;
-  double val = strtod(str, endptr);
+  double val = meos_strtod(str, endptr);
   /* did we not see anything that looks like a double? */
   if (*endptr == str || errno != 0)
     return DTERR_BAD_FORMAT;
