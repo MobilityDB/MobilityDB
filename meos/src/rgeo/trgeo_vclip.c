@@ -108,7 +108,7 @@ static inline double
 compute_s(POINT4D p, POINT4D vs, POINT4D ve)
 {
   return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    (ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y);
+    ((ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y));
 }
 
 /**
@@ -213,7 +213,7 @@ vertex_vertex_tpoly_point(const LWPOLY *poly, POINT4D point,
   }
 
   /* We found the closest feature */
-  if (s_prev > 1 || s_next < 0)
+  if (s_prev > 1 - MEOS_EPSILON || s_next < MEOS_EPSILON)
     return MEOS_DISJOINT;
   /* Point is on the vertex */
   return MEOS_INTERSECT;
@@ -331,6 +331,9 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
     return MEOS_DISJOINT;
   }
 
+  if (dist)
+    /* A point inside the polygon has distance zero; overwritten below when disjoint */
+    *dist = 0;
   if (dist && result == MEOS_DISJOINT)
   {
     /* compute the distance */
@@ -429,8 +432,8 @@ vertex_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   }
 
   /* We found the closest feature */
-  if ((s1_prev > 1 || s1_next < 0)
-    && (s2_prev > 1 || s2_next < 0))
+  if ((s1_prev > 1 - MEOS_EPSILON || s1_next < MEOS_EPSILON)
+    && (s2_prev > 1 - MEOS_EPSILON || s2_next < MEOS_EPSILON))
     return MEOS_DISJOINT;
   /* Point is on the vertex */
   return MEOS_INTERSECT;
@@ -499,7 +502,6 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
     {
       /* Find edge of poly1 with the largest
          positive distance to v2 */
-      double distance = -1;
       getPoint4d_p(poly1->rings[0], i1 + 1, &v1_end);
       if (pose1)
         apply_pose_point4d(&v1_end, pose1);
@@ -507,7 +509,7 @@ edge_vertex_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
       if ((ccw_poly1 && angle1 > 0)
         || (!ccw_poly1 && angle1 < 0))
       {
-        distance = compute_dist2(v2, v1_start, v1_end);
+        double distance = compute_dist2(v2, v1_start, v1_end);
         if (distance > dmax)
         {
           dmax = distance;
@@ -633,8 +635,11 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
 
   if (loop > MEOS_MAX_ITERS)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "V-clip: Cycle detected, current features: (%d, %d)", *poly1_feature, *poly2_feature);
-    // return result;
+    return result;
 
+  if (dist)
+    /* Intersecting polygons have distance zero; overwritten below when disjoint */
+    *dist = 0;
   if (dist && result == MEOS_DISJOINT)
   {
     /* compute the distance */
