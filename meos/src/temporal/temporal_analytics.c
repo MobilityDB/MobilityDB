@@ -1923,7 +1923,8 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tsequence_simplify_min_tdelta(TSEQUENCESET_SEQ_N(ss, i), mint);
+    sequences[i] = tsequence_simplify_min_tdelta(TSEQUENCESET_SEQ_N(ss, i),
+      mint);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 

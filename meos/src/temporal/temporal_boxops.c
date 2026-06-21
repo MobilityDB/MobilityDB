@@ -561,10 +561,7 @@ tnumberseqarr_set_tbox(TSequence **sequences, int count, TBox *box)
 {
   memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(TBox));
   for (int i = 1; i < count; i++)
-  {
-    const TBox *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
-    tbox_expand(box1, box);
-  }
+    tbox_expand(TSEQUENCE_BBOX_PTR(sequences[i]), box);
   return;
 }
 

@@ -306,8 +306,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
     newspans[0].lower_inc, newspans[newcount - 1].upper_inc,
     result->basetype, result->spantype, &result->span);
   /* Copy the span array */
-  for (int i = 0; i < newcount; i++)
-    result->elems[i] = newspans[i];
+  memcpy(result->elems, newspans, sizeof(Span) * newcount);
   /* Free after normalization */
   if (normalize && count > 1)
     pfree(newspans);
@@ -1207,13 +1206,11 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
 
   /* Shift and/or scale the span set */
   for (int i = 0; i < ss->count; i++)
-    numspan_delta_scale_iter(&copy->elems[i], origin, delta, hasshift,
-      scale);
+    numspan_delta_scale_iter(&copy->elems[i], origin, delta, hasshift, scale);
 
   /* Normalization is required after scaling */
   Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    memcpy(&spans[i], &copy->elems[i], sizeof(Span));
+  memcpy(spans, copy->elems, sizeof(Span) * ss->count);
   SpanSet *result = spanset_make_exp(spans, ss->count, ss->count, true, true);
   pfree(copy); pfree(spans);
   return result;
@@ -1270,8 +1267,7 @@ spanset_spans(const SpanSet *ss)
 
   Span *result = palloc(sizeof(Span) * ss->count);
   /* Output the composing spans */
-  for (int i = 0; i < ss->count; i++)
-    memcpy(&result[i], SPANSET_SP_N(ss, i), sizeof(Span));
+  memcpy(result, ss->elems, sizeof(Span) * ss->count);
   return result;
 }
 
@@ -1341,11 +1337,10 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
   }
 
   /* Merge consecutive sequences having the smallest gap */
-  Span *result = palloc(sizeof(Span) * span_count);
   SpanSet *minus = minus_span_spanset(&ss->span, ss);
   Span *holes = palloc(sizeof(Span) * minus->count);
-  for (int i = 0; i < minus->count; i++)
-    memcpy(&holes[i], SPANSET_SP_N(minus, i), sizeof(Span));
+  memcpy(holes, minus->elems, sizeof(Span) * minus->count);
+
   /* Sort the holes in increasing size */
   spanarr_sort_size(holes, minus->count);
   /* Number of holes in the original spanset that will be filled */
@@ -1357,9 +1352,9 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
   /* Resulting spanset with the holes filed */
   SpanSet *res = union_spanset_spanset(ss, tofill);
   assert(res->count == span_count);
+  Span *result = palloc(sizeof(Span) * span_count);
   /* Construct the resulting array of spans */
-  for (int i = 0; i < res->count; i++)
-    memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
+  memcpy(result, res->elems, sizeof(Span) * span_count);
   /* Clean-up and return */
   pfree(minus); pfree(holes); pfree(tofill); pfree(res);
   *count = span_count;
