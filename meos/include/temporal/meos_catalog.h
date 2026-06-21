@@ -123,6 +123,9 @@ typedef enum
   T_TJSONB         = 66,  /**< temporal JSONB value */
 #endif /* JSON */
   T_TBIGINT        = 67,  /**< temporal big integer type */
+  T_QUADBIN        = 81,  /**< static CARTO quadbin cell index type (uint64) */
+  T_TQUADBIN       = 82,  /**< temporal quadbin index type (cell index over time) */
+  T_QUADBINSET     = 83,  /**< quadbin set type */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

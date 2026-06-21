@@ -1,0 +1,130 @@
+SELECT (quadbin_tile_to_cell(0, 0, 0))::bigint = 5192650370358181887;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_get_resolution(quadbin_tile_to_cell(0, 0, 0)) = 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_tile_to_cell(3, 5, 4) = quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_tile_to_cell(524, 343, 10) = quadbin '48a6227affffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_tile(quadbin '480fffffffffffff') = ARRAY[0, 0, 0];
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_tile(quadbin '48427fffffffffff') = ARRAY[3, 5, 4];
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_tile(quadbin '48a6227affffffff') = ARRAY[524, 343, 10];
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT bool_and(quadbin_cell_to_tile(quadbin_tile_to_cell(x, y, 3)) = ARRAY[x, y, 3])
+  FROM generate_series(0, 7) x, generate_series(0, 7) y;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT quadbin_point_to_cell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
+  = quadbin '48a6227affffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_point_to_cell(geometry 'SRID=4326;POINT(-73.985 40.748)', 18)
+  = quadbin '49238451e2fbffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_X(quadbin_cell_to_point(quadbin '48a6227affffffff'))::numeric, 6) = 4.394531;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_Y(quadbin_cell_to_point(quadbin '48a6227affffffff'))::numeric, 6) = 50.847573;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_XMin(quadbin_cell_to_bounding_box(quadbin '48a6227affffffff'))::numeric, 6) = 4.218750;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_YMin(quadbin_cell_to_bounding_box(quadbin '48a6227affffffff'))::numeric, 6) = 50.736455;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(ST_XMax(quadbin_cell_to_bounding_box(quadbin '48a6227affffffff'))::numeric, 6) = 4.570312;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT round(ST_YMax(quadbin_cell_to_bounding_box(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_parent(quadbin '48a6227affffffff', 5) = quadbin '485623ffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_children(quadbin '480fffffffffffff', 1)
+  = quadbinset '{4813ffffffffffff, 4817ffffffffffff, 481bffffffffffff, 481fffffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '480fffffffffffff') = '';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '48427fffffffffff') = '0213';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbin_cell_to_quadkey(quadbin '48a6227affffffff') = '1202021322';
+ ?column? 
+----------
+ t
+(1 row)
+

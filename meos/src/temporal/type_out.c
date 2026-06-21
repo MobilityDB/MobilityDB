@@ -63,8 +63,16 @@
 #if JSON
   #include <utils/jsonb.h>
 #endif
+#if QUADBIN
+  #include <meos_quadbin.h>
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
+#endif
+#if POINTCLOUD
+  #include <meos_pointcloud.h>            /* meos_pc_schema_xml */
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
 #endif
 #if POSE
   #include "pose/pose.h"
@@ -121,6 +129,10 @@ basetype_out(Datum value, MeosType type, int maxdd)
       return int32_out(DatumGetInt32(value));
     case T_INT8:
       return int64_out(DatumGetInt64(value));
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+#endif
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
@@ -1049,6 +1061,11 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
 #endif /* POSE || RGEO */
+#if QUADBIN
+    case T_QUADBIN:
+      /* quadbin is a uint64 cell id, wire-format identical to int8. */
+      return MEOS_WKB_INT8_SIZE;
+#endif /* QUADBIN */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -1767,6 +1784,12 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
 #endif /* POSE || RGEO */
+#if QUADBIN
+    case T_QUADBIN:
+      /* quadbin is a uint64 cell id; wire it as int8. */
+      buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
+      break;
+#endif /* QUADBIN */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));
