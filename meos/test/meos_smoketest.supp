@@ -1,0 +1,42 @@
+# Valgrind suppressions for the MEOS smoke-test suites.
+#
+# Each entry documents a known issue that the smoke suites cannot
+# fix from the test side — either an upstream library bug or a deep
+# MEOS infrastructure leak whose fix is out of scope of the test
+# framework. Remove an entry once the underlying issue is fixed and
+# re-run the suite to confirm the leak no longer reproduces.
+
+{
+  libproj-atexit-sqlite3-pager-close
+  Memcheck:Addr8
+  ...
+  fun:sqlite3PagerClose
+  ...
+  fun:_dl_fini
+}
+
+{
+  libproj-atexit-DatabaseContext-dtor
+  Memcheck:Addr8
+  ...
+  fun:_ZN5osgeo4proj2io15DatabaseContextD*
+  ...
+}
+
+{
+  libproj-sqlite3-possibly-lost
+  Memcheck:Leak
+  match-leak-kinds: possible
+  ...
+  obj:*libsqlite3*
+  ...
+}
+
+{
+  libproj-internal-state
+  Memcheck:Leak
+  match-leak-kinds: possible
+  ...
+  obj:*libproj*
+  ...
+}
