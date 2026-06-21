@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief `quadbinset` SQL type — set of quadbin values, mirrors
- * bigintset's structure with quadbin as the basetype.
+ * the bigintset structure over the quadbin base type.
  *
  * Every C call routes to a generic `Set_*` symbol. The dispatch
  * arms in `type_in.c` / `type_out.c` (basetype_in / basetype_out

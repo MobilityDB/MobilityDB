@@ -37,12 +37,15 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_quadbin.h>
 #include "temporal/temporal.h"
 
 /*****************************************************************************
  * Function prototypes
  *****************************************************************************/
 
+extern bool quadbin_set_stbox(Quadbin cell, STBox *box);
+extern void quadbinarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void tquadbininst_set_stbox(const TInstant *inst, STBox *box);
 extern void tquadbininstarr_set_stbox(TInstant **instants, int count,
   STBox *box);

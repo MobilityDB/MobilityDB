@@ -1,0 +1,421 @@
+SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+/* Errors */
+SELECT tquadbin 'ABC@2012-01-01 08:00:00';
+ERROR:  quadbin value "ABC" does not encode a valid quadbin cell
+LINE 2: SELECT tquadbin 'ABC@2012-01-01 08:00:00';
+                        ^
+SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
+ERROR:  Could not parse tquadbin value: Extraneous characters at the end
+LINE 1: SELECT tquadbin '480fffffffffffff@2012-01-01 08:00:00,';
+                        ^
+SELECT tquadbin ' { 480fffffffffffff@2001-01-01 08:00:00 , 48427fffffffffff@2001-01-01 08:05:00 , 48a6227affffffff@2001-01-01 08:06:00 } ';
+                                                                   tquadbin                                                                    
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST, 48a6227affffffff@Mon Jan 01 08:06:00 2001 PST}
+(1 row)
+
+SELECT tquadbin '{480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00}';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST}
+(1 row)
+
+/* Errors */
+SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02';
+ERROR:  Could not parse tquadbin value: Missing closing brace
+LINE 2: SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427ffffffff...
+                        ^
+SELECT tquadbin '[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST]
+(1 row)
+
+SELECT tquadbin 'Interp=Step;[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST]
+(1 row)
+
+SELECT tquadbin '{[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00],[48a6227affffffff@2001-01-01 08:10:00]}';
+                                                                     tquadbin                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 08:00:00 2001 PST, 48427fffffffffff@Mon Jan 01 08:05:00 2001 PST], [48a6227affffffff@Mon Jan 01 08:10:00 2001 PST]}
+(1 row)
+
+SELECT tquadbin(Instant) '480fffffffffffff@2012-01-01 08:00:00';
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT tquadbin(Sequence) '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]';
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+                                             tquadbin                                             
+--------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+/* Errors */
+SELECT tquadbin(Instant) '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
+ERROR:  Temporal type (Sequence) does not match column type (Instant)
+SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:00';
+ERROR:  Invalid temporal type modifier: garbage
+LINE 1: SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:...
+               ^
+SELECT (tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint;
+                     tbigint                      
+--------------------------------------------------
+ 5192650370358181887@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (tbigint '5192650370358181887@2012-01-01 08:00:00')::tquadbin;
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT ((tquadbin '480fffffffffffff@2012-01-01 08:00:00')::tbigint)::tquadbin
+  = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tquadbin_assign;
+NOTICE:  table "tbl_tquadbin_assign" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_assign(k int, temp tquadbin);
+CREATE TABLE
+INSERT INTO tbl_tquadbin_assign VALUES (1, tbigint '5192650370358181887@2012-01-01 08:00:00');
+INSERT 0 1
+SELECT * FROM tbl_tquadbin_assign;
+ k |                     temp                      
+---+-----------------------------------------------
+ 1 | 480fffffffffffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+DROP TABLE tbl_tquadbin_assign;
+DROP TABLE
+/* Errors */
+SELECT tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+ERROR:  operator does not exist: tbigint = tquadbin
+LINE 2: ...tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT tquadbin '480fffffffffffff@2012-01-01' = tquadbin '480fffffffffffff@2012-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2012-01-01' <> tquadbin '48427fffffffffff@2012-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT temporal_cmp(tquadbin '480fffffffffffff@2012-01-01', tquadbin '480fffffffffffff@2012-01-01');
+ temporal_cmp 
+--------------
+            0
+(1 row)
+
+DROP TABLE IF EXISTS tbl_tquadbin_binio;
+NOTICE:  table "tbl_tquadbin_binio" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_binio(k int, temp tquadbin);
+CREATE TABLE
+INSERT INTO tbl_tquadbin_binio VALUES
+  (1, tquadbin '480fffffffffffff@2012-01-01 08:00:00'),
+  (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
+  (3, tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+INSERT 0 3
+COPY tbl_tquadbin_binio TO '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY 3
+DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
+NOTICE:  table "tbl_tquadbin_binio_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tquadbin_binio_tmp FROM '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY 3
+SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
+  WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tquadbin_binio;
+DROP TABLE
+DROP TABLE tbl_tquadbin_binio_tmp;
+DROP TABLE
+SELECT tquadbin(quadbin '480fffffffffffff', timestamptz '2001-01-01 08:00');
+                   tquadbin                    
+-----------------------------------------------
+ 480fffffffffffff@Mon Jan 01 08:00:00 2001 PST
+(1 row)
+
+SELECT tquadbin(quadbin '48a6227affffffff', tstzset '{2001-01-01, 2001-01-02}');
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ {48a6227affffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tquadbin(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]');
+                                            tquadbin                                            
+------------------------------------------------------------------------------------------------
+ [48a6227affffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin(quadbin '48a6227affffffff', tstzspanset '{[2001-01-01, 2001-01-02]}');
+                                             tquadbin                                             
+--------------------------------------------------------------------------------------------------
+ {[48a6227affffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tquadbinSeq(ARRAY[tquadbin '480fffffffffffff@2001-01-01', tquadbin '48427fffffffffff@2001-01-02']);
+                                          tquadbinseq                                           
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbinSeqSet(ARRAY[tquadbinSeq(ARRAY[tquadbin '480fffffffffffff@2001-01-01'])]);
+                  tquadbinseqset                   
+---------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST]}
+(1 row)
+
+SELECT timeSpan(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+                           timespan                           
+--------------------------------------------------------------
+ [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT (tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]')::tstzspan;
+                           tstzspan                           
+--------------------------------------------------------------
+ [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbinInst(tquadbin '480fffffffffffff@2001-01-01');
+                 tquadbininst                  
+-----------------------------------------------
+ 480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tquadbinSeq(tquadbin '480fffffffffffff@2001-01-01');
+                   tquadbinseq                   
+-------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT setInterp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]', 'discrete');
+ERROR:  Cannot transform input value to a temporal discrete sequence
+SELECT appendInstant(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]', tquadbin '48a6227affffffff@2001-01-03');
+                                                                 appendinstant                                                                 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT merge(tquadbin '480fffffffffffff@2001-01-01', tquadbin '48427fffffffffff@2001-01-02');
+                                             merge                                              
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT shiftTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', interval '1 day');
+                                           shifttime                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT scaleTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', interval '2 days');
+                                           scaletime                                            
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tempSubtype(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT interp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+ interp 
+--------
+ Step
+(1 row)
+
+SELECT memSize(tquadbin '480fffffffffffff@2001-01-01') > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getValue(tquadbin '480fffffffffffff@2001-01-01');
+     getvalue     
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT getTimestamp(tquadbin '480fffffffffffff@2001-01-01');
+         gettimestamp         
+------------------------------
+ Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT getTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT duration(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT numInstants(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}');
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT startInstant(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+                 startinstant                  
+-----------------------------------------------
+ 480fffffffffffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT instantN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 2);
+                   instantn                    
+-----------------------------------------------
+ 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+
+SELECT numTimestamps(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+ numtimestamps 
+---------------
+             2
+(1 row)
+
+SELECT timestamps(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+                           timestamps                            
+-----------------------------------------------------------------
+ {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST"}
+(1 row)
+
+SELECT numSequences(tquadbin '{[480fffffffffffff@2001-01-01], [48427fffffffffff@2001-01-02]}');
+ numsequences 
+--------------
+            2
+(1 row)
+
+SELECT sequenceN(tquadbin '{[480fffffffffffff@2001-01-01], [48427fffffffffff@2001-01-02]}', 1);
+                    sequencen                    
+-------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT segments(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+                                                                       segments                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST)","[48427fffffffffff@Tue Jan 02 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT (rec).value, (rec).time FROM
+  (SELECT unnest(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}') AS rec) t;
+      value       |                              time                              
+------------------+----------------------------------------------------------------
+ 480fffffffffffff | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]}
+ 48427fffffffffff | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+(2 rows)
+
+SELECT atValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+                                                                     atvalues                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST), [480fffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT minusValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+                                           minusvalues                                            
+--------------------------------------------------------------------------------------------------
+ {[48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT atValues(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}', set(ARRAY[quadbin '480fffffffffffff', quadbin '48a6227affffffff']));
+                                            atvalues                                            
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT atTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+                    attime                     
+-----------------------------------------------
+ 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+
+SELECT minusTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+                                                                                            minustime                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST), (480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT atTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', tstzspan '[2001-01-02, 2001-01-04]');
+                                             attime                                             
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 480fffffffffffff@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT beforeTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', timestamptz '2001-01-03');
+                                        beforetimestamp                                         
+------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Wed Jan 03 00:00:00 2001 PST)
+(1 row)
+
+SELECT afterTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', timestamptz '2001-01-03');
+                                         aftertimestamp                                         
+------------------------------------------------------------------------------------------------
+ (480fffffffffffff@Wed Jan 03 00:00:00 2001 PST, 480fffffffffffff@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT insert(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', tquadbin '[48a6227affffffff@2001-01-04, 48a6227affffffff@2001-01-05]');
+                                                                                            insert                                                                                            
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST, 48a6227affffffff@Thu Jan 04 00:00:00 2001 PST, 48a6227affffffff@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT update(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', tquadbin '48a6227affffffff@2001-01-02');
+                                                                                              update                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48a6227affffffff@Tue Jan 02 00:00:00 2001 PST], (480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT deleteTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+                                                                                            deletetime                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST), (480fffffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT (rec).time, (rec).temp FROM
+  (SELECT timeSplit(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
+             time             |                                              temp                                              
+------------------------------+------------------------------------------------------------------------------------------------
+ Mon Jan 01 00:00:00 2001 PST | [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Wed Jan 03 00:00:00 2001 PST)
+ Wed Jan 03 00:00:00 2001 PST | [480fffffffffffff@Wed Jan 03 00:00:00 2001 PST, 48427fffffffffff@Thu Jan 04 00:00:00 2001 PST]
+(2 rows)
+

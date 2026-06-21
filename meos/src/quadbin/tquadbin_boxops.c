@@ -59,6 +59,7 @@
 #include <meos_quadbin.h>
 #include "temporal/span.h"
 #include "quadbin/quadbin.h"
+#include "quadbin/quadbin_meos.h"
 
 /*****************************************************************************
  * Static helper: convert a single quadbin cell to a planar STBox (XY only,
@@ -69,7 +70,7 @@
  * @brief Set the X/Y planar part of a spatiotemporal box from a quadbin cell.
  * @param[in] cell Quadbin cell index (must be a valid, non-zero cell)
  * @param[out] box Spatiotemporal box (caller-initialised; this function
- *   sets xmin/xmax/ymin/ymax and the X/Y flags)
+ *   sets xmin/xmax/ymin/ymax, the X/Y flags and the SRID)
  */
 static void
 tquadbin_cell_set_stbox(Quadbin cell, STBox *box)
@@ -80,10 +81,55 @@ tquadbin_cell_set_stbox(Quadbin cell, STBox *box)
   box->xmax = xmax;
   box->ymin = ymin;
   box->ymax = ymax;
+  /* Quadbin cells are emitted as planar lon/lat (EPSG:4326); the box SRID must
+   * match `spatial_srid(quadbin)` so the standalone cell and the temporal value
+   * agree under the spatial same-SRID checks (e.g. atValues / atValue). */
+  box->srid = SRID_DEFAULT;
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_Z(box->flags, false);
   MEOS_FLAGS_SET_T(box->flags, false);
   MEOS_FLAGS_SET_GEODETIC(box->flags, false);
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument a spatiotemporal box constructed from a
+ * single quadbin cell (the planar X/Y box of the cell, no T dimension)
+ * @param[in] cell Quadbin cell index (must be a valid, non-zero cell)
+ * @param[out] box Spatiotemporal box
+ * @note Mirrors `cbuffer_set_stbox` / `npoint_set_stbox`; this is the helper
+ *   the central `spatial_set_stbox` dispatch calls for a quadbin value.
+ */
+bool
+quadbin_set_stbox(Quadbin cell, STBox *box)
+{
+  assert(box);
+  memset(box, 0, sizeof(STBox));
+  tquadbin_cell_set_stbox(cell, box);
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument a spatiotemporal box constructed from an
+ * array of quadbin cells (the planar X/Y union, no T dimension)
+ * @param[in] values Quadbin cell Datums
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ * @note Mirrors `cbufferarr_set_stbox`; the helper the central
+ *   `spatialarr_set_bbox` dispatch calls for a quadbin set.
+ */
+void
+quadbinarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  assert(values); assert(count > 0); assert(box);
+  quadbin_set_stbox(DatumGetQuadbin(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    quadbin_set_stbox(DatumGetQuadbin(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
 }
 
 /*****************************************************************************
@@ -101,7 +147,7 @@ tquadbininst_set_stbox(const TInstant *inst, STBox *box)
 {
   assert(inst); assert(box);
   memset(box, 0, sizeof(STBox));
-  Quadbin cell = (Quadbin) DatumGetInt64(tinstant_value_p(inst));
+  Quadbin cell = DatumGetQuadbin(tinstant_value_p(inst));
   tquadbin_cell_set_stbox(cell, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);

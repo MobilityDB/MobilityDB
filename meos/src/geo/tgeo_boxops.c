@@ -389,6 +389,10 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
 #endif
+#if QUADBIN
+  else if (basetype == T_QUADBIN)
+    quadbinarr_set_stbox(values, count, (STBox *) box);
+#endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown set type for computing the bounding box: %s",

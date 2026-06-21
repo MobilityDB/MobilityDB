@@ -122,3 +122,68 @@ DROP TABLE tbl_tquadbin_binio;
 DROP TABLE tbl_tquadbin_binio_tmp;
 
 -------------------------------------------------------------------------------
+-- Constructors (inherited Temporal<T> surface)
+-------------------------------------------------------------------------------
+SELECT tquadbin(quadbin '480fffffffffffff', timestamptz '2001-01-01 08:00');
+SELECT tquadbin(quadbin '48a6227affffffff', tstzset '{2001-01-01, 2001-01-02}');
+SELECT tquadbin(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tquadbin(quadbin '48a6227affffffff', tstzspanset '{[2001-01-01, 2001-01-02]}');
+SELECT tquadbinSeq(ARRAY[tquadbin '480fffffffffffff@2001-01-01', tquadbin '48427fffffffffff@2001-01-02']);
+SELECT tquadbinSeqSet(ARRAY[tquadbinSeq(ARRAY[tquadbin '480fffffffffffff@2001-01-01'])]);
+
+-------------------------------------------------------------------------------
+-- Conversions / transformations
+-------------------------------------------------------------------------------
+SELECT timeSpan(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+SELECT (tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]')::tstzspan;
+SELECT tquadbinInst(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinSeq(tquadbin '480fffffffffffff@2001-01-01');
+SELECT setInterp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]', 'discrete');
+SELECT appendInstant(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]', tquadbin '48a6227affffffff@2001-01-03');
+SELECT merge(tquadbin '480fffffffffffff@2001-01-01', tquadbin '48427fffffffffff@2001-01-02');
+SELECT shiftTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', interval '1 day');
+SELECT scaleTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', interval '2 days');
+
+-------------------------------------------------------------------------------
+-- Accessors
+-------------------------------------------------------------------------------
+SELECT tempSubtype(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT interp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+SELECT memSize(tquadbin '480fffffffffffff@2001-01-01') > 0;
+SELECT getValue(tquadbin '480fffffffffffff@2001-01-01');
+SELECT getTimestamp(tquadbin '480fffffffffffff@2001-01-01');
+SELECT getTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+SELECT duration(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+SELECT numInstants(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}');
+SELECT startInstant(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]');
+SELECT instantN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 2);
+SELECT numTimestamps(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT timestamps(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT numSequences(tquadbin '{[480fffffffffffff@2001-01-01], [48427fffffffffff@2001-01-02]}');
+SELECT sequenceN(tquadbin '{[480fffffffffffff@2001-01-01], [48427fffffffffff@2001-01-02]}', 1);
+SELECT segments(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+SELECT (rec).value, (rec).time FROM
+  (SELECT unnest(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}') AS rec) t;
+
+-------------------------------------------------------------------------------
+-- Restrictions
+-------------------------------------------------------------------------------
+SELECT atValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+SELECT minusValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+SELECT atValues(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}', set(ARRAY[quadbin '480fffffffffffff', quadbin '48a6227affffffff']));
+SELECT atTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+SELECT minusTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+SELECT atTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', tstzspan '[2001-01-02, 2001-01-04]');
+SELECT beforeTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', timestamptz '2001-01-03');
+SELECT afterTimestamp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]', timestamptz '2001-01-03');
+
+-------------------------------------------------------------------------------
+-- Modifications
+-------------------------------------------------------------------------------
+SELECT insert(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', tquadbin '[48a6227affffffff@2001-01-04, 48a6227affffffff@2001-01-05]');
+SELECT update(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', tquadbin '48a6227affffffff@2001-01-02');
+SELECT deleteTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
+SELECT (rec).time, (rec).temp FROM
+  (SELECT timeSplit(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
+
+-------------------------------------------------------------------------------
