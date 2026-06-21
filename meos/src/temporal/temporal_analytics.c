@@ -62,6 +62,11 @@
 #include <meos_pose.h>
 #include "pose/pose.h"
 #endif
+#if RGEO
+#include <meos_rgeo.h>
+#include "rgeo/trgeo.h"
+#include "rgeo/trgeo_seq.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -263,6 +268,9 @@ static Datum
 pose_tprecision_value(const Temporal *temp)
 {
   assert(temp->temptype == T_TPOSE
+#if RGEO
+    || temp->temptype == T_TRGEOMETRY
+#endif
     );
   if (temp->subtype == TSEQUENCE)
   {
@@ -363,6 +371,9 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 #if POSE
     || seq->temptype == T_TPOSE
 #endif
+#if RGEO
+    || seq->temptype == T_TRGEOMETRY
+#endif
     );
 
   int64 tunits = interval_units(duration);
@@ -382,6 +393,12 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   MeosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(seq->temptype);
+#if RGEO
+  /* For trgeometry, cache the reference geometry once -- it is shared across
+   * all output instants and the result sequence */
+  const GSERIALIZED *trgeo_ref_geom = (seq->temptype == T_TRGEOMETRY) ?
+    trgeoseq_geom_p(seq) : NULL;
+#endif
   /* New instants computing the value at the beginning/end of the bin */
   TInstant *start = NULL, *end = NULL;
   /* Sequence for computing the twAvg/twCentroid of each bin */
@@ -430,6 +447,17 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         seq1 = tsequence_make(ininsts, k, true, (k == 1) ? true : false,
           interp, NORMALIZE);
         /* Compute the twAvg/twCentroid for the bin */
+#if RGEO
+        if (seq->temptype == T_TRGEOMETRY)
+        {
+          value = pose_tprecision_value((const Temporal *) seq1);
+          outinsts[l++] = trgeometryinst_make(trgeo_ref_geom,
+            DatumGetPoseP(value), lower);
+          pfree(seq1);
+          pfree(DatumGetPointer(value));
+        }
+        else
+#endif /* RGEO */
         if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
         {
           outinsts[l++] = tinstant_make(value, seq->temptype, lower);
@@ -490,6 +518,16 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   {
     seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
+#if RGEO
+    if (seq->temptype == T_TRGEOMETRY)
+    {
+      value = pose_tprecision_value((const Temporal *) seq1);
+      outinsts[l++] = trgeometryinst_make(trgeo_ref_geom,
+        DatumGetPoseP(value), lower);
+      pfree(DatumGetPointer(value));
+    }
+    else
+#endif /* RGEO */
     if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
     {
       outinsts[l++] = tinstant_make(value, seq->temptype, lower);
@@ -507,8 +545,14 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   }
   /* The lower and upper bounds of the result are both true since the
    * tprecision operation amounts to a granularity change */
+#if RGEO
+  TSequence *result = (seq->temptype == T_TRGEOMETRY) ?
+    trgeoseq_make_free(trgeo_ref_geom, outinsts, l, true, true, interp, NORMALIZE) :
+    tsequence_make_free(outinsts, l, true, true, interp, NORMALIZE);
+#else
   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
+#endif /* RGEO */
   pfree(ininsts);
   if (start)
     pfree(start);
@@ -626,6 +670,21 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
+#if RGEO
+  /* A trgeometry sequence set cannot reuse the sequence-set path directly (the
+   * result would lose the reference geometry); strip to the tpose, set the
+   * precision, then re-attach the geometry -- the same idiom used throughout
+   * trgeo.c. */
+  if (temp->temptype == T_TRGEOMETRY && temp->subtype == TSEQUENCESET)
+  {
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    Temporal *res = temporal_tprecision(tpose, duration, torigin);
+    res->temptype = T_TPOSE;
+    Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+    pfree(res); pfree(tpose);
+    return result;
+  }
+#endif /* RGEO */
   switch (temp->subtype)
   {
     case TINSTANT:
