@@ -781,6 +781,9 @@ set_basetype(MeosType type)
 #if POSE || RGEO
       || type == T_POSE
 #endif
+#if QUADBIN
+      || type == T_QUADBIN
+#endif
       );
 }
 #endif
@@ -1147,6 +1150,9 @@ temporal_basetype(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if QUADBIN
+    || type == T_QUADBIN
 #endif
     );
 }
