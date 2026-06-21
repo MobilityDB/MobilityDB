@@ -58,6 +58,8 @@
  */
 extern Datum regprocedurein(PG_FUNCTION_ARGS);
 extern text *cstring_to_text(const char *s);
+/* PostgreSQL array support (does not pull in fmgrprotos.h) */
+#include <utils/array.h>
 /* PostGIS liblwgeom (vendored) */
 #include <liblwgeom.h>        /* GSERIALIZED, GBOX, gserialized_get_gbox_p */
 /* MEOS */
@@ -65,6 +67,8 @@ extern text *cstring_to_text(const char *s);
 #include <meos_internal.h>    /* temporal_insts_p, tsequence_make_free */
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
+/* MEOS raster kernel */
+#include "raster/raster_quadbin.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_raster/temporal_raster.h"
@@ -205,4 +209,109 @@ Raster_value(PG_FUNCTION_ARGS)
 
   PG_FREE_IF_COPY(traj, 1);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * raster_tile_value_quadbin
+ *****************************************************************************/
+
+/** Map a pixtype name text argument to a MeosPixType code. */
+static MeosPixType
+text_to_pixtype(const text *pt)
+{
+  const char *s   = VARDATA_ANY(pt);
+  int         len = (int) VARSIZE_ANY_EXHDR(pt);
+  if (len == 5 && strncmp(s, "UINT8",   5) == 0) return MEOS_PT_UINT8;
+  if (len == 5 && strncmp(s, "INT16",   5) == 0) return MEOS_PT_INT16;
+  if (len == 5 && strncmp(s, "INT32",   5) == 0) return MEOS_PT_INT32;
+  if (len == 7 && strncmp(s, "FLOAT32", 7) == 0) return MEOS_PT_FLOAT32;
+  if (len == 7 && strncmp(s, "FLOAT64", 7) == 0) return MEOS_PT_FLOAT64;
+  ereport(ERROR,
+    (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+     errmsg("unknown pixel type \"%.*s\": use UINT8, INT16, INT32, FLOAT32, "
+            "or FLOAT64", len, s)));
+  return MEOS_PT_UINT8; /* unreachable */
+}
+
+PGDLLEXPORT Datum Raster_tile_value_quadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_value_quadbin);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Sample a Raquet raster chip along a tgeompoint trajectory
+ * @param[in] pixels   Row-major pixel bytes (bytea)
+ * @param[in] width    Tile width in pixels
+ * @param[in] height   Tile height in pixels
+ * @param[in] quadbin  CARTO QUADBIN cell (bigint)
+ * @param[in] pixtype  Pixel type name: UINT8 | INT16 | INT32 | FLOAT32 | FLOAT64
+ * @param[in] nodata   Nodata sentinel value
+ * @param[in] has_nodata  Enable nodata filtering
+ * @param[in] traj     Trajectory (tgeompoint, SRID 4326)
+ * @csqlfn #Raster_tile_value_quadbin()
+ */
+Datum
+Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
+{
+  bytea     *pxbytea   = PG_GETARG_BYTEA_PP(0);
+  int32      width     = PG_GETARG_INT32(1);
+  int32      height    = PG_GETARG_INT32(2);
+  int64      quadbin   = PG_GETARG_INT64(3);
+  text      *pixtype_t = PG_GETARG_TEXT_PP(4);
+  float8     nodata    = PG_GETARG_FLOAT8(5);
+  bool       has_nd    = PG_GETARG_BOOL(6);
+  Temporal  *traj      = PG_GETARG_TEMPORAL_P(7);
+
+  const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
+  MeosPixType pixtype   = text_to_pixtype(pixtype_t);
+
+  Temporal *result = raster_tile_value_quadbin(pixels,
+    (uint16_t) width, (uint16_t) height, (uint64) quadbin,
+    pixtype, nodata, has_nd, traj);
+
+  PG_FREE_IF_COPY(traj, 7);
+
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * trajectory_quadbins
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Trajectory_quadbins(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trajectory_quadbins);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the distinct QUADBIN cells at a zoom level covered by a
+ * trajectory, for use as a WHERE-clause join key against a Raquet table
+ * @param[in] traj  Trajectory (tgeompoint, SRID 4326)
+ * @param[in] zoom  QUADBIN zoom level (0–15)
+ * @csqlfn #Trajectory_quadbins()
+ */
+Datum
+Trajectory_quadbins(PG_FUNCTION_ARGS)
+{
+  Temporal *traj = PG_GETARG_TEMPORAL_P(0);
+  int32     zoom = PG_GETARG_INT32(1);
+
+  if (zoom < 0 || zoom > 15)
+    ereport(ERROR,
+      (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+       errmsg("zoom level must be between 0 and 15")));
+
+  int       ncells;
+  uint64   *cells = trajectory_quadbins(traj, (uint32_t) zoom, &ncells);
+
+  PG_FREE_IF_COPY(traj, 0);
+
+  /* Build int8[] (bigint[]) from the uint64 cell array */
+  Datum *elems = palloc(sizeof(Datum) * ncells);
+  for (int i = 0; i < ncells; i++)
+    elems[i] = Int64GetDatum((int64) cells[i]);
+  pfree(cells);
+
+  ArrayType *arr = construct_array(elems, ncells, INT8OID, 8, true, TYPALIGN_DOUBLE);
+  pfree(elems);
+
+  PG_RETURN_ARRAYTYPE_P(arr);
 }

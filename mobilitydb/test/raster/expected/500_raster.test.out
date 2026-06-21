@@ -86,3 +86,44 @@ FROM rast;
  {50@2000-01-01 00:00:00+00}
 (1 row)
 
+SELECT array_length(
+  trajectory_quadbins(
+    tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(0.0 45.0)@2024-01-02 00:00:00+00, Point(60.0 45.0)@2024-01-03 00:00:00+00}'),
+    3
+  ), 1
+) AS num_distinct_tiles;
+ num_distinct_tiles 
+--------------------
+                  3
+(1 row)
+
+SELECT array_length(
+  trajectory_quadbins(
+    tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(-61.0 44.0)@2024-01-02 00:00:00+00}'),
+    3
+  ), 1
+) AS num_distinct_tiles;
+ num_distinct_tiles 
+--------------------
+                  1
+(1 row)
+
+SELECT trajectory_quadbins(
+  tgeompointFromText('SRID=4326;{Point(0.0 0.0)@2024-01-01 00:00:00+00}'),
+  16
+);
+ERROR:  zoom level must be between 0 and 15
+SELECT raster_tile_value_quadbin(
+  '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
+  2::integer,                  -- width
+  2::integer,                  -- height
+  5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
+  'UINT8',
+  0.0, false,
+  tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}')
+)::text AS result;
+                                     result                                     
+--------------------------------------------------------------------------------
+ {1@2024-01-01 00:00:00+00, 2@2024-01-02 00:00:00+00, 3@2024-01-03 00:00:00+00}
+(1 row)
+

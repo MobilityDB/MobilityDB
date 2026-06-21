@@ -9,9 +9,9 @@
  * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any fee, and without a written agreement is hereby
- * granted, provided that the above copyright notice and this paragraph and
- * the following two paragraphs appear in all copies.
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
@@ -29,19 +29,20 @@
 
 /**
  * @file
- * @brief C-level implementation of raster_value() — PostGIS raster band
- * sampling along tgeompoint trajectories.
+ * @brief Internal header for QUADBIN-keyed raster chip sampling.
  */
 
-#ifndef TEMPORAL_RASTER_H
-#define TEMPORAL_RASTER_H
+#ifndef __RASTER_QUADBIN_H__
+#define __RASTER_QUADBIN_H__
 
-/* PostgreSQL */
-#include <postgres.h>
-#include <fmgr.h>
+/* MEOS */
+#include <meos.h>
 
-extern PGDLLEXPORT Datum Raster_value(PG_FUNCTION_ARGS);
-extern PGDLLEXPORT Datum Raster_tile_value_quadbin(PG_FUNCTION_ARGS);
-extern PGDLLEXPORT Datum Trajectory_quadbins(PG_FUNCTION_ARGS);
+extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
+  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
+  double nodata, bool has_nodata, const Temporal *traj);
 
-#endif /* TEMPORAL_RASTER_H */
+extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
+  int *count);
+
+#endif /* __RASTER_QUADBIN_H__ */
