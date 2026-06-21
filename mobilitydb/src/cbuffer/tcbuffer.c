@@ -295,7 +295,7 @@ Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
   bool unary_union = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     unary_union = PG_GETARG_BOOL(1);
-  GSERIALIZED *result = tcbuffer_trav_area(temp, unary_union);
+  GSERIALIZED *result = tcbuffer_traversed_area(temp, unary_union);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
