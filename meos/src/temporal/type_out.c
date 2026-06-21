@@ -309,6 +309,34 @@ stringbuffer_append_char(sb, '}');
 }
 #endif /* POSE */
 
+#if CBUFFER
+/**
+ * @brief Write into the buffer a circular buffer in the MF-JSON
+ * representation
+ * @details Circular buffers are always planar 2D: a `point` member (an
+ * `[x, y]` coordinate array, as for a temporal point) and a numeric
+ * `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member names
+ * mirror the @p point and @p radius accessors. There is no Z/geodetic
+ * handling as for poses.
+ */
+static void
+cbuffer_as_json_sb(stringbuffer_t *sb, const Cbuffer *cb, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  GSERIALIZED *gs = cbuffer_point(cb);
+  const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+  stringbuffer_append_len(sb, "{\"point\":[", 10);
+  stringbuffer_append_double(sb, pt->x, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, pt->y, precision);
+  stringbuffer_append_len(sb, "],\"radius\":", 11);
+  stringbuffer_append_double(sb, cbuffer_radius(cb), precision);
+  stringbuffer_append_char(sb, '}');
+  pfree(gs);
+  return;
+}
+#endif /* CBUFFER */
+
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
@@ -475,6 +503,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
     case T_TGEOGRAPHY:
     case T_TPOSE:
     case T_TRGEOMETRY:
+    case T_TCBUFFER:
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
     default: /* Error! */
@@ -528,6 +557,16 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if RGEO
     case T_TRGEOMETRY:
       stringbuffer_append_len(sb, "{\"type\":\"MovingRigidGeometry\",", 30);
+      break;
+#endif
+
+#if CBUFFER
+    case T_TCBUFFER:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingCircularBuffer\",", 31);
+      break;
+#endif
+#if POINTCLOUD
+      break;
       break;
 #endif
     default: /* Error! */
@@ -595,6 +634,24 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
   }
 #endif /* RGEO */
+
+#if CBUFFER
+  else if (inst->temptype == T_TCBUFFER)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+  }
+#endif /* CBUFFER */
+#if POINTCLOUD
+  {
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+    tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+  }
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    tpcpatch_as_mfjson_sb(sb, inst, precision);
+  }
+#endif /* POINTCLOUD */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -674,6 +731,17 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
     }
 #endif /* RGEO */
+
+#if CBUFFER
+    else if (inst->temptype == T_TCBUFFER)
+    {
+      cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+    }
+#endif /* CBUFFER */
+#if POINTCLOUD
+      tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+      tpcpatch_as_mfjson_sb(sb, inst, precision);
+#endif /* POINTCLOUD */
     else
     {
       success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst), 
@@ -770,6 +838,17 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
         pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
       }
 #endif /* RGEO */
+
+#if CBUFFER
+      else if (inst->temptype == T_TCBUFFER)
+      {
+        cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+      }
+#endif /* CBUFFER */
+#if POINTCLOUD
+        tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+        tpcpatch_as_mfjson_sb(sb, inst, precision);
+#endif /* POINTCLOUD */
       else
       {
         success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
@@ -1197,7 +1276,8 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     result += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
-  const TInstant **instants = tsequence_insts_p(seq);
+  int ninsts;
+  const TInstant **instants = tsequence_insts_p(seq, &ninsts);
   /* Include the TInstant array */
   result += tinstarr_to_wkb_size((TInstant **) instants, seq->count, variant);
   pfree(instants);
@@ -1222,7 +1302,8 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   result += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
-  const TInstant **instants = tsequenceset_insts_p(ss);
+  int ninsts;
+  const TInstant **instants = tsequenceset_insts_p(ss, &ninsts);
   result += tinstarr_to_wkb_size((TInstant **) instants, ss->totalcount,
     variant);
   pfree(instants);
