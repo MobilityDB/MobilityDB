@@ -1,0 +1,104 @@
+SELECT startValue(th3index '590464338553208831@2001-01-01');
+   startvalue    
+-----------------
+ 831c02fffffffff
+(1 row)
+
+SELECT startValue(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+   startvalue    
+-----------------
+ 831c02fffffffff
+(1 row)
+
+SELECT startValue(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+   startvalue    
+-----------------
+ 831c02fffffffff
+(1 row)
+
+SELECT endValue(th3index '590464338553208831@2001-01-01');
+    endvalue     
+-----------------
+ 831c02fffffffff
+(1 row)
+
+SELECT endValue(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+    endvalue     
+-----------------
+ 831c00fffffffff
+(1 row)
+
+SELECT startValue(th3index '590464338553208831@2001-01-01')
+  = endValue(th3index '590464338553208831@2001-01-01');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT valueN(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}', 1);
+     valuen      
+-----------------
+ 831c02fffffffff
+(1 row)
+
+SELECT valueN(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}', 2);
+     valuen      
+-----------------
+ 831c00fffffffff
+(1 row)
+
+SELECT valueN(th3index '590464338553208831@2001-01-01', 99);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT getValues(th3index '590464338553208831@2001-01-01');
+      getvalues      
+---------------------
+ {"831c02fffffffff"}
+(1 row)
+
+SELECT getValues(th3index
+  '{590464338553208831@2001-01-01, 590464338553208831@2001-01-02}');
+      getvalues      
+---------------------
+ {"831c02fffffffff"}
+(1 row)
+
+SELECT getValues(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02,
+    612544986753269759@2001-01-03]');
+                         getvalues                         
+-----------------------------------------------------------
+ {"831c00fffffffff", "831c02fffffffff", "880326b885fffff"}
+(1 row)
+
+SELECT valueAtTimestamp(th3index '590464338553208831@2001-01-01',
+  '2001-01-01');
+ valueattimestamp 
+------------------
+ 831c02fffffffff
+(1 row)
+
+SELECT valueAtTimestamp(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-05]',
+  '2001-01-03');
+ valueattimestamp 
+------------------
+ 831c02fffffffff
+(1 row)
+
+SELECT valueAtTimestamp(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-05]',
+  '2000-12-31');
+ valueattimestamp 
+------------------
+ 
+(1 row)
+

@@ -1,0 +1,118 @@
+SELECT h3_get_resolution(th3index '590464338553208831@2001-01-01');
+       h3_get_resolution        
+--------------------------------
+ 3@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_get_resolution(th3index '612544986753269759@2001-01-01');
+       h3_get_resolution        
+--------------------------------
+ 8@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_get_resolution(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+                        h3_get_resolution                         
+------------------------------------------------------------------
+ {3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT h3_get_resolution(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+                        h3_get_resolution                         
+------------------------------------------------------------------
+ [3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT h3_get_resolution(th3index
+  '{[590464338553208831@2001-01-01, 590464201114255359@2001-01-02],
+    [612544986753269759@2001-01-03, 612544986761658367@2001-01-04]}');
+                                                          h3_get_resolution                                                           
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST], [8@Wed Jan 03 00:00:00 2001 PST, 8@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT h3_get_base_cell_number(th3index '590464338553208831@2001-01-01');
+     h3_get_base_cell_number     
+---------------------------------
+ 14@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_get_base_cell_number(th3index '590464201114255359@2001-01-01');
+     h3_get_base_cell_number     
+---------------------------------
+ 14@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_get_base_cell_number(th3index '612544986753269759@2001-01-01');
+    h3_get_base_cell_number     
+--------------------------------
+ 1@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_get_base_cell_number(th3index
+  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+                      h3_get_base_cell_number                       
+--------------------------------------------------------------------
+ [14@Mon Jan 01 00:00:00 2001 PST, 14@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT h3_is_valid_cell(th3index '590464338553208831@2001-01-01');
+        h3_is_valid_cell        
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_cell(th3index '590464201114255359@2001-01-01');
+        h3_is_valid_cell        
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_valid_cell(th3index '0@2001-01-01');
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 1: SELECT h3_is_valid_cell(th3index '0@2001-01-01');
+                                         ^
+SELECT h3_is_valid_cell(th3index
+  '{590464338553208831@2001-01-01, 0@2001-01-02, 590464201114255359@2001-01-03}');
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 2:   '{590464338553208831@2001-01-01, 0@2001-01-02, 59046420111...
+          ^
+SELECT h3_is_res_class_iii(th3index '590464338553208831@2001-01-01');
+      h3_is_res_class_iii       
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_res_class_iii(th3index '612544986753269759@2001-01-01');
+      h3_is_res_class_iii       
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_res_class_iii(th3index
+  '{590464338553208831@2001-01-01, 612544986753269759@2001-01-02}');
+                       h3_is_res_class_iii                        
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT h3_is_pentagon(th3index '590464338553208831@2001-01-01');
+         h3_is_pentagon         
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_pentagon(th3index '590464201114255359@2001-01-01');
+         h3_is_pentagon         
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT h3_is_pentagon(th3index
+  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+                          h3_is_pentagon                          
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
