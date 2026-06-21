@@ -70,6 +70,74 @@ WHERE atValues(raster_value(elev, trip4326),
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raquet_quadbin">
+		<title>Raquet / QUADBIN Sampling</title>
+
+		<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier — a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
+
+		<para>The typical query pattern joins a trajectory against a Raquet table in two steps:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Step 1: identify which tiles the trajectory overlaps
+SELECT DISTINCT q
+FROM unnest(trajectory_quadbins(traj, 8)) AS q;
+
+-- Step 2: sample each matching tile
+SELECT raster_tile_value_quadbin(
+    band_data, width, height, quadbin, 'FLOAT32', nodata, true, traj)
+FROM elevation_raquet
+WHERE quadbin = ANY(trajectory_quadbins(traj, 8));
+</programlisting>
+
+		<itemizedlist>
+			<listitem xml:id="trajectory_quadbins">
+				<indexterm significance="normal"><primary><varname>trajectory_quadbins</varname></primary></indexterm>
+				<para>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+				<para><varname>trajectory_quadbins(tgeompoint,integer) → bigint[]</varname></para>
+				<para>Returns the set of unique QUADBIN cells (deduplicated) whose Web-Mercator tile envelopes contain at least one instant of <varname>traj</varname>. The result is suitable as a WHERE-clause join key against a Raquet table. <varname>zoom</varname> must be in [0, 15].</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Three instants spanning three tiles at zoom 3
+SELECT trajectory_quadbins(
+  tgeompointFromText('SRID=4326;{Point(-60 45)@2024-01-01,
+                                  Point(0 45)@2024-01-02,
+                                  Point(60 45)@2024-01-03}'), 3);
+-- {5202501994543054848,5203346419473186816,5203416788217364480}
+
+-- Count of Raquet tiles a ship trajectory overlaps at zoom 8
+SELECT array_length(trajectory_quadbins(trip4326, 8), 1) AS tile_count
+FROM trips
+ORDER BY tile_count DESC;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_tile_value_quadbin">
+				<indexterm significance="normal"><primary><varname>raster_tile_value_quadbin</varname></primary></indexterm>
+				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+				<para><varname>raster_tile_value_quadbin(bytea,integer,integer,bigint,text,float8,boolean,tgeompoint) → tfloat</varname></para>
+				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Sample elevation tiles from a Raquet Parquet table
+-- for all ship trajectories
+SELECT t.tripid,
+       raster_tile_value_quadbin(
+           r.band_data, r.width, r.height, r.quadbin,
+           'FLOAT32', r.nodata, true, t.trip4326)
+FROM trips t
+JOIN elevation_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+
+-- Average sea-surface temperature per trajectory
+SELECT t.tripid,
+       avgValue(raster_tile_value_quadbin(
+           r.band_data, 256, 256, r.quadbin,
+           'INT16', -9999, true, t.trip4326)) AS mean_sst
+FROM trips t
+JOIN sst_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raster_build">
 		<title>Build and Install</title>
 
@@ -85,11 +153,10 @@ sudo make install
 	<sect1 xml:id="raster_roadmap">
 		<title>Production Roadmap</title>
 
-		<para>The operator in this chapter provides the core SQL surface. A production-grade integration would extend it with:</para>
+		<para>Future extensions to this chapter:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>MEOS kernel function</emphasis> — a C-level <varname>raster_value(raster, tgeompoint)</varname> that returns a heap-allocated <varname>Temporal *</varname>, enabling PyMEOS, JMEOS, and other bindings to auto-derive the operator without a PostgreSQL round-trip.</para></listitem>
-			<listitem><para><emphasis>Raster table integration</emphasis> — a set-returning variant that joins against a tiled raster coverage (<varname>raster_value(raster[], tgeompoint)</varname>) and merges tile results.</para></listitem>
-			<listitem><para><emphasis>Band-aware tfloat array</emphasis> — return one <varname>tfloat</varname> per band for multi-spectral rasters.</para></listitem>
+			<listitem><para><emphasis>Multi-band support</emphasis> — return one <varname>tfloat</varname> per band for multi-spectral Raquet tiles (e.g. RGB or multi-channel satellite imagery).</para></listitem>
+			<listitem><para><emphasis>Aggregate tile merging</emphasis> — a set-returning variant that accepts the full array of matching Raquet tiles and merges the per-tile instant sets, removing duplicate instants at tile boundaries.</para></listitem>
 			<listitem><para><emphasis>Inverse operator</emphasis> — <varname>raster_atTime(raster, tstzspan)</varname> restricts a raster to the spatial extent visited by one or more trajectories during a time interval.</para></listitem>
 		</itemizedlist>
 	</sect1>
