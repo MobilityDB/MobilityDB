@@ -49,6 +49,8 @@
 		</math>.
 	</para>
 
+	<para>The pose constructor accepts quaternions whose norm is within <varname>1e-3</varname> of unit (a tolerance wide enough to absorb the integrator drift typical of sensor-fusion clients such as IMUs and AR/VR runtimes), then renormalises to exactly unit norm before storing. Way-off norms (e.g., the obvious-bug case <varname>(1, 1, 1, 1)</varname> where <varname>|q| = 2</varname>), zero quaternions, and quaternions with <varname>NaN</varname>/<varname>Inf</varname> components are rejected up front. The on-disk representation is therefore independent of the caller's floating-point hygiene, and downstream comparison, hashing, SLERP, and Euler-decomposition code can rely on the unit-norm invariant.</para>
+
 	<para>
 		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
 	</para>
@@ -355,13 +357,224 @@ SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
 					<para>Are the poses approximately equal with respect to an epsilon value?</para>
 					<para><varname>pose ~= pose → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~= 
+SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~=
   pose 'Pose(SRID=5676;Point(1 1.0000001), 0.30000001)';
 -- true
 </programlisting>
 				</listitem>
 
 			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_ogc_geopose">
+			<title>OGC GeoPose v1.0 support</title>
+			<para>MobilityDB's <varname>pose</varname> type implements the data model behind the <ulink url="https://www.ogc.org/standards/geopose/">OGC GeoPose v1.0 standard</ulink> (<ulink url="https://docs.ogc.org/is/21-056r10/21-056r10.html">21-056r10</ulink>): a <varname>position</varname> plus an <varname>orientation</varname> in a known reference frame, where the orientation is a unit quaternion in Hamilton convention or, equivalently, a yaw / pitch / roll triple under the ZYX intrinsic Tait-Bryan convention. This section groups the SQL surface that exposes that interoperability — JSON I/O for the standard's Basic conformance classes, an explicit renormalisation helper for callers running long compositions, and the Euler-angle accessors that Basic-YPR consumers expect.</para>
+
+			<sect3 xml:id="pose_geopose_io">
+				<title>JSON input and output</title>
+				<itemizedlist>
+					<listitem xml:id="pose_geopose_funcs">
+						<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>poseFromGeoPose</varname></primary></indexterm>
+						<para>Convert to or from the OGC GeoPose v1.0 JSON encoding (Basic-Quaternion or Basic-YPR conformance class)</para>
+						<para><varname>asGeoPose(pose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+						<para><varname>poseFromGeoPose(text) → pose</varname></para>
+						<para>The <varname>conformance</varname> argument selects the output class: <varname>0</varname> = Basic-Quaternion (default, lossless), <varname>1</varname> = Basic-YPR (yaw, pitch, roll in degrees, ZYX intrinsic Tait-Bryan). The <varname>maxdecimaldigits</varname> argument is the number of significant digits to keep in the JSON numbers; <varname>-1</varname> uses json-c's lossless default. The input function auto-detects the conformance class from the JSON keys (<varname>quaternion</varname> member → Basic-Quaternion, <varname>angles</varname> member → Basic-YPR). The Basic conformance classes mandate a geographic outer frame; the implementation accepts SRID 4326 (or 0, treated as geographic) and rejects projected SRIDs at the conversion boundary.</para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)', 0, 6);
+-- {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)', 1, 6);
+-- {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+SELECT asEWKT(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'));
+-- Pose(POINT Z (8 47 1500),0.7071067811865476,0,0,0.7071067811865475)
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_normalise">
+				<title>Quaternion renormalisation</title>
+				<itemizedlist>
+					<listitem xml:id="pose_normalise">
+						<indexterm significance="normal"><primary><varname>normalise</varname></primary></indexterm>
+						<para>Return a pose whose orientation quaternion has been brought back to unit norm. A 2D pose is returned unchanged since its orientation is a single angle that does not drift. A 3D pose has its quaternion divided by its Euclidean norm, so long compositions of SLERPs (or any other path that accumulates floating-point drift in <varname>|q|</varname>) can be brought back to the <varname>|q| = 1</varname> invariant required by the SLERP and Euler-decomposition code.</para>
+						<para><varname>normalise(pose) → pose</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(normalise(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
+-- Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_ypr">
+				<title>Euler-angle accessors</title>
+				<itemizedlist>
+					<listitem xml:id="pose_yaw_pitch_roll">
+						<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+						<para>Return the yaw, pitch, or roll angle of a pose, in radians, under the ZYX intrinsic Tait-Bryan convention required by the OGC GeoPose Basic-YPR conformance class</para>
+						<para><varname>yaw(pose) → float</varname></para>
+						<para><varname>pitch(pose) → float</varname></para>
+						<para><varname>roll(pose) → float</varname></para>
+						<para>For a 2D pose <varname>yaw</varname> returns the stored rotation <varname>theta</varname> — by convention the yaw of the body frame — and <varname>pitch</varname> and <varname>roll</varname> return <varname>0</varname>. For a 3D pose the three values come from the ZYX intrinsic Tait-Bryan decomposition of the orientation quaternion. The <varname>asin</varname> pitch term is clamped to <varname>[-1, 1]</varname> to absorb the small numeric drift that long quaternion compositions can introduce.</para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
+-- 0.5
+SELECT pitch(pose 'Pose(Point(1 1), 0.5)');
+-- 0
+SELECT roll(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
+-- 0
+SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
+-- 1.5707963267948966
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpose_yaw_pitch_roll">
+						<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+						<para>Lift the Euler-angle accessors through a temporal pose, returning a temporal float (radians) per instant under the ZYX intrinsic Tait-Bryan convention</para>
+						<para><varname>yaw(tpose) → tfloat</varname></para>
+						<para><varname>pitch(tpose) → tfloat</varname></para>
+						<para><varname>roll(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- [0@2000-01-01, 0.5@2000-01-02]
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_frames">
+				<title>Frame metadata registry</title>
+				<para>The OGC GeoPose v1.0 standard distinguishes the <emphasis>outer frame</emphasis> (the global reference, e.g., WGS-84 geographic or ECEF) from the <emphasis>inner frame</emphasis> (the body frame whose orientation is the pose's quaternion). The Basic conformance classes mandate WGS-84 geographic as the outer frame and an implicit right-handed body-axes inner frame; the Advanced class supports stacks of named frames.</para>
+				<para>In MobilityDB v1 the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table documents this mapping and seeds a registry parallel to pgPointCloud's <varname>pointcloud_formats</varname>, so that future Advanced-class support only needs to extend the catalog instead of redesigning it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT frame_id, authority, code, name, is_geographic
+FROM geopose_frames ORDER BY frame_id;
+-- 1 | EPSG | 4326 | WGS-84 geographic (lat/lon/h)                | t
+-- 2 | EPSG | 4978 | WGS-84 ECEF (Earth-Centred Earth-Fixed)      | f
+-- 3 | OGC  | LTP  | Local Tangent Plane (East-North-Up)          | f
+-- 4 | OGC  | BODY | Right-handed body axes (default inner frame) | f
+</programlisting>
+				<para>Three SQL helpers provide a stable lookup interface for code that doesn't want to hard-code the table layout:</para>
+				<itemizedlist>
+					<listitem><para><varname>geopose_frame_srid(int) → int</varname> — the PostGIS SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY).</para></listitem>
+					<listitem><para><varname>geopose_frame_name(int) → text</varname> — the human-readable name of the frame.</para></listitem>
+					<listitem><para><varname>geopose_frame_is_geographic(int) → boolean</varname> — <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected.</para></listitem>
+				</itemizedlist>
+				<para>Users can register custom frames by inserting into <varname>geopose_frames</varname>; the catalog is marked as a configuration table so <varname>pg_dump</varname> preserves user rows.</para>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_apply">
+				<title>Body↔world rigid transform</title>
+				<para>The <varname>applyPose</varname> function applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body→world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry. The transform is</para>
+				<programlisting xml:space="preserve" format="linespecific">
+world = R(q) · body + p
+</programlisting>
+				<para>where <varname>(p, q)</varname> are the pose's position and orientation. The static form takes a single pose and a static geometry; the temporal form lifts the per-instant rigid transform of a <varname>tpose</varname> across its instants, producing a <varname>tgeompoint</varname> world-frame trajectory of the body geometry. v1 supports point and multipoint body geometries; lines and polygons are deferred. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP) — the same trade-off MobilityDB already takes for spatial trajectories.</para>
+				<para><varname>applyPose(geometry, pose) → geometry</varname></para>
+				<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A body sensor offset 1 unit along the body X axis, traced through a
+-- tpose that ends 90 degrees yawed and translated to (10, 20).
+SELECT asText(applyPose(ST_Point(1,0),
+  tpose '[Pose(Point(0 0), 0)@2026-01-01,
+          Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
+-- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_transform">
+				<title>Cross-SRID frame transforms</title>
+				<para>The <varname>transform(pose, srid)</varname> function carries pose values across SRIDs. Workstream #6 of the temporal-GeoPose plan extends the pre-existing <emphasis>position-only</emphasis> behaviour with the orientation correction required when the source and target frames have different bases at the pose's point. v1 implements the canonical OGC GeoPose case — WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978) — using the standard East-North-Up basis at the geographic point as the rotation pivot. For SRID pairs whose orientation correction is not yet defined, <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged.</para>
+				<para>Round-tripping through ECEF and back lands exactly at the input pose:</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(
+  transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978),
+            4326), 6));
+-- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
+
+-- At the equator-meridian (lat=lon=0), the body identity quaternion in
+-- the ECEF basis becomes the canonical ENU->ECEF rotation:
+SELECT asEWKT(round(
+  transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)
+</programlisting>
+				<para>The implementation also fixes a pre-existing position-only bug where <varname>transform</varname> did not update the result's SRID field, so the returned pose now carries the target SRID as expected.</para>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_temporal_io">
+				<title>Temporal JSON I/O</title>
+				<itemizedlist>
+					<listitem xml:id="tpose_geopose_funcs">
+						<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>tposeFromGeoPose</varname></primary></indexterm>
+						<para>Convert a temporal pose to or from a TemporalGeoPose JSON envelope. Each per-instant payload is a strictly OGC-valid Basic-class GeoPose document plus a <varname>validTime</varname> member; the envelope records the conformance class, the interpolation, and (for sequences and sequence sets) the period bounds inclusion. A non-MEOS GeoPose consumer can iterate <varname>instants[]</varname> (or each <varname>sequences[].instants[]</varname>) and consume each element as a static GeoPose document.</para>
+						<para><varname>asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+						<para><varname>tposeFromGeoPose(text) → tpose</varname></para>
+						<para>The envelope shape is</para>
+						<programlisting language="json" xml:space="preserve" format="linespecific">
+{
+  "type":          "TemporalGeoPose",
+  "version":       "1.0",
+  "conformance":   "Basic-Quaternion" | "Basic-YPR",
+  "interpolation": "None" | "Discrete" | "Step" | "Linear",
+  "instants":      [...]                  // for TInstant + TSequence
+  "lower_inc":     true|false,            // for TSequence only
+  "upper_inc":     true|false,            // for TSequence only
+  "sequences":     [{...}, ...]           // for TSequenceSet only
+}
+</programlisting>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
+                         Pose(Point(9 48), 0.5)@2026-01-02]',
+                 1, 4);
+-- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR",
+--  "interpolation":"Linear","lower_inc":true,"upper_inc":true,
+--  "instants":[
+--    {"position":{"lat":47,"lon":8,"h":0},
+--     "angles":{"yaw":0,"pitch":0,"roll":0},
+--     "validTime":"2026-01-01 00:00:00+01"},
+--    {"position":{"lat":48,"lon":9,"h":0},
+--     "angles":{"yaw":28.65,"pitch":0,"roll":0},
+--     "validTime":"2026-01-02 00:00:00+01"}]}
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_speed">
+				<title>Speed and angular speed</title>
+				<itemizedlist>
+					<listitem xml:id="tpose_speed">
+						<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+						<para>Return the speed of a temporal pose as a temporal float — the magnitude of the position-component velocity (distance travelled per unit time). The orientation is not part of this scalar; for angular velocity see <varname>angularSpeed</varname>.</para>
+						<para><varname>speed(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
+-- (sqrt(2) units / 86400 seconds — units depend on the SRID's CRS)
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpose_angular_speed">
+						<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
+						<para>Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time). For 2D poses this is the per-segment shortest-arc theta delta divided by the segment duration; for 3D poses it is the SLERP arc angle <varname>2 · acos(|q1 · q2|)</varname> divided by the segment duration. SLERP is by construction constant-angular-velocity along a segment, so the result is piecewise-constant.</para>
+						<para><varname>angularSpeed(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
+SELECT asText(angularSpeed(tpose
+  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+-- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 
