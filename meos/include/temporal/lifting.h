@@ -84,6 +84,13 @@ typedef struct
                                  extrema of sin/cos). When set, the result is
                                  densified at the EXACT critical timestamps via
                                  #tfunc_tlinearseq_set, not by adaptive bisection. */
+  bool cross_type;            /**< True if the right-hand argument's type differs from
+                                 the temporal value's basetype (e.g. trgeometry vs
+                                 geometry where basetype is Pose). When set,
+                                 segment-locate intersection finding is skipped, since
+                                 the segment-locate dispatchers (datumsegm_locate)
+                                 assume same-type comparisons and would reinterpret
+                                 the right-hand bytes through the wrong type. */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
