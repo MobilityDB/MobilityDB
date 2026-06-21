@@ -108,6 +108,15 @@ extern Pose *pose_from_hexwkb(const char *hexwkb);
 extern Pose *pose_in(const char *str);
 extern char *pose_out(const Pose *pose, int maxdd);
 
+/* OGC GeoPose JSON I/O — Basic-YPR + Basic-Quaternion conformance */
+
+extern Pose *pose_from_geopose(const char *json);
+extern char *pose_as_geopose(const Pose *pose, int conformance, int precision);
+extern Temporal *tpose_from_geopose(const char *json);
+extern char *tpose_as_geopose(const Temporal *temp, int conformance, int precision);
+extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
+extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
+
 /* Constructor functions */
 
 extern Pose *pose_copy(const Pose *pose);
@@ -125,11 +134,16 @@ extern STBox *pose_to_stbox(const Pose *pose);
 
 extern uint32 pose_hash(const Pose *pose);
 extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
-extern double *pose_orientation(const Pose *pose);
+extern double *pose_orientation(const Pose *pose, int *count);
 extern double pose_rotation(const Pose *pose);
+extern double pose_yaw(const Pose *pose);
+extern double pose_pitch(const Pose *pose);
+extern double pose_roll(const Pose *pose);
+extern double pose_angular_distance(const Pose *pose1, const Pose *pose2);
 
 /* Transformation functions */
 
+extern Pose *pose_normalise(const Pose *pose);
 extern Pose *pose_round(const Pose *pose, int maxdd);
 extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);
 
@@ -185,7 +199,7 @@ extern Set *pose_to_set(const Pose *pose);
 extern Pose *poseset_end_value(const Set *s);
 extern Pose *poseset_start_value(const Set *s);
 extern bool poseset_value_n(const Set *s, int n, Pose **result);
-extern Pose **poseset_values(const Set *s);
+extern Pose **poseset_values(const Set *s, int *count);
 
 /* Set operations */
 
@@ -207,12 +221,18 @@ extern Set *union_set_pose(const Set *s, const Pose *pose);
  * Input/output functions
  *****************************************************************************/
 
+extern Temporal *tpose_from_mfjson(const char *str);
 Temporal *tpose_in(const char *str);
 
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
+extern TInstant *tposeinst_make(const Pose *pose, TimestampTz t);
+extern Temporal *tpose_from_base_temp(const Pose *pose, const Temporal *temp);
+extern TSequence *tposeseq_from_base_tstzset(const Pose *pose, const Set *s);
+extern TSequence *tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp);
+extern TSequenceSet *tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss, interpType interp);
 
 /*****************************************************************************
  * Conversion functions
@@ -229,9 +249,14 @@ extern Pose *tpose_end_value(const Temporal *temp);
 extern Set *tpose_points(const Temporal *temp);
 // extern Temporal *tpose_orientation(const Temporal *temp);
 extern Temporal *tpose_rotation(const Temporal *temp);
+extern Temporal *tpose_yaw(const Temporal *temp);
+extern Temporal *tpose_pitch(const Temporal *temp);
+extern Temporal *tpose_roll(const Temporal *temp);
+extern Temporal *tpose_speed(const Temporal *temp);
+extern Temporal *tpose_angular_speed(const Temporal *temp);
 extern Pose *tpose_start_value(const Temporal *temp);
 extern GSERIALIZED *tpose_trajectory(const Temporal *temp);
-extern bool tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pose **value);
+extern bool tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pose **result);
 extern bool tpose_value_n(const Temporal *temp, int n, Pose **result);
 extern Pose **tpose_values(const Temporal *temp, int *count);
 

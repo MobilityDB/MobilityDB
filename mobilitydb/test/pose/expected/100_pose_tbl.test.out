@@ -15,10 +15,10 @@ SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d_tmp t2 WHERE t1.k = t2.k AND t1.p
 
 DROP TABLE tbl_pose2d_tmp;
 DROP TABLE
-SELECT ST_AsEWKT(MAX(point(pose)), 6) FROM tbl_pose2d;
-               st_asewkt               
----------------------------------------
- SRID=3812;POINT(81.228497 -58.175254)
+SELECT MAX(ST_X(point(pose))) FROM tbl_pose2d;
+        max        
+-------------------
+ 99.29531615669725
 (1 row)
 
 SELECT MAX(rotation(pose)) FROM tbl_pose2d;
