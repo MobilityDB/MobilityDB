@@ -86,6 +86,98 @@ FROM rast;
  {50@2000-01-01 00:00:00+00}
 (1 row)
 
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT asText(atRasterValue(
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]',
+  r, floatspan '[40, 90]'))::text AS result
+FROM rast;
+                                       result                                       
+------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@2000-01-02 00:00:00+00], [POINT(0.5 0.5)@2000-01-03 00:00:00+00]}
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT asText(minusRasterValue(
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]',
+  r, floatspan '[40, 90]'))::text AS result
+FROM rast;
+                  result                   
+-------------------------------------------
+ {[POINT(0.5 2.5)@2000-01-01 00:00:00+00]}
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT
+  eRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[70, 90]') AS e_true,
+  eRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[80, 90]') AS e_false
+FROM rast;
+ e_true | e_false 
+--------+---------
+ t      | f
+(1 row)
+
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT
+  aRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[70, 90]') AS a_false,
+  aRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[0, 100]') AS a_true
+FROM rast;
+ a_false | a_true 
+---------+--------
+ f       | t
+(1 row)
+
 SELECT array_length(
   trajectory_quadbins(
     tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(0.0 45.0)@2024-01-02 00:00:00+00, Point(60.0 45.0)@2024-01-03 00:00:00+00}'),
