@@ -74,7 +74,7 @@
  * @brief Set the X/Y geodetic part of a spatiotemporal box from an H3 cell.
  * @param[in] cell H3 cell index (must be a valid, non-zero cell)
  * @param[out] box Spatiotemporal box (caller-initialised; this function
- *   sets xmin/xmax/ymin/ymax and the X/Y/geodetic flags)
+ *   sets xmin/xmax/ymin/ymax, the X/Y/geodetic flags and the SRID)
  */
 static void
 th3index_cell_set_stbox(H3Index cell, STBox *box)
@@ -101,10 +101,55 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
   box->xmax = xmax;
   box->ymin = ymin;
   box->ymax = ymax;
+  /* H3 cells are geographic (lat/lng, EPSG:4326); the box SRID must match
+   * `spatial_srid(h3index)` so the standalone cell and the temporal value
+   * agree under the spatial same-SRID checks (e.g. atValues / atValue). */
+  box->srid = SRID_DEFAULT;
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_Z(box->flags, false);
   MEOS_FLAGS_SET_T(box->flags, false);
   MEOS_FLAGS_SET_GEODETIC(box->flags, true);
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument a spatiotemporal box constructed from a
+ * single H3 cell (the geodetic X/Y box of the cell, no T dimension)
+ * @param[in] cell H3 cell index (must be a valid, non-zero cell)
+ * @param[out] box Spatiotemporal box
+ * @note Mirrors `cbuffer_set_stbox` / `quadbin_set_stbox`; the helper the
+ *   central `spatial_set_stbox` dispatch calls for an h3index value.
+ */
+bool
+h3index_set_stbox(H3Index cell, STBox *box)
+{
+  assert(box);
+  memset(box, 0, sizeof(STBox));
+  th3index_cell_set_stbox(cell, box);
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument a spatiotemporal box constructed from an
+ * array of H3 cells (the geodetic X/Y union, no T dimension)
+ * @param[in] values H3 cell Datums
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ * @note Mirrors `cbufferarr_set_stbox`; the helper the central
+ *   `spatialarr_set_bbox` dispatch calls for an h3index set.
+ */
+void
+h3indexarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  assert(values); assert(count > 0); assert(box);
+  h3index_set_stbox(DatumGetH3Index(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    h3index_set_stbox(DatumGetH3Index(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
 }
 
 /*****************************************************************************

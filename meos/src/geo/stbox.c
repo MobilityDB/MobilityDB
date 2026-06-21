@@ -73,6 +73,9 @@
 #if RGEO
   #include "rgeo/trgeo_boxops.h"
 #endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -1049,6 +1052,10 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 #if POSE || RGEO
     case T_POSE:
       return pose_set_stbox(DatumGetPoseP(d), result);
+#endif
+#if H3
+    case T_H3INDEX:
+      return h3index_set_stbox(DatumGetH3Index(d), result);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

@@ -38,11 +38,14 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
+#include "h3/h3index.h"
 
 /*****************************************************************************
  * Function prototypes
  *****************************************************************************/
 
+extern bool h3index_set_stbox(H3Index cell, STBox *box);
+extern void h3indexarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void th3indexinst_set_stbox(const TInstant *inst, STBox *box);
 extern void th3indexinstarr_set_stbox(TInstant **instants, int count,
   STBox *box);

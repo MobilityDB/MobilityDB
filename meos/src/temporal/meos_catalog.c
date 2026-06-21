@@ -737,9 +737,6 @@ alphanum_temptype(MeosType type)
 {
   return (type == T_TBOOL || type == T_TINT || type == T_TBIGINT ||
     type == T_TFLOAT || type == T_TTEXT
-#if H3
-    || type == T_TH3INDEX
-#endif
 #if JSON
     || type == T_TJSONB
 #endif
@@ -916,9 +913,6 @@ alphanumset_type(MeosType type)
 {
   return (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
     type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET
-#if H3
-    || type == T_H3INDEXSET
-#endif
 #if JSON
     || type == T_JSONBSET
 #endif
