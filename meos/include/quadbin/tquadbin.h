@@ -33,17 +33,11 @@
  * boilerplate.
  *
  * This header is the analogue of `meos/include/h3/th3index.h`.
- * It carries:
- *   * the `VALIDATE_TQUADBIN(temp, ret)` macro used in every lifted
- *     function and public accessor,
- *   * extern decls for the static helpers in `tquadbin.c` that do
- *     not belong in the public `meos_quadbin.h`.
- *
- * The macro has two shapes: when the module is built against the
- * MEOS-standalone library (`MEOS=1`) it falls back to runtime
- * checks with clear error messages; when built against the
- * PostgreSQL extension it relies on asserts that cost nothing at
- * run-time.
+ * It carries the extern decls for the static helpers in `tquadbin.c`
+ * that do not belong in the public `meos_quadbin.h`. The validity
+ * macro `VALIDATE_TQUADBIN(temp, ret)`, used in every lifted function
+ * and public accessor, lives in the public `meos_quadbin.h` alongside
+ * the other type-validation macros so bindings can use it directly.
  *
  * Quadbin is the square/Web-Mercator (planar) counterpart of the
  * hexagonal/geodetic H3 index, so its temporal point bridge uses
@@ -60,29 +54,6 @@
 #include <meos_quadbin.h>
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
-
-/*****************************************************************************
- * Validation macros
- *****************************************************************************/
-
-/**
- * @brief Ensure that the temporal value is a temporal quadbin cell.
- * Matches the pattern of `VALIDATE_TH3INDEX` / `VALIDATE_TBOOL`.
- */
-#if MEOS
-  #define VALIDATE_TQUADBIN(temp, ret) \
-    do { \
-      if (! ensure_not_null((void *) (temp)) || \
-          ! ensure_temporal_isof_type((Temporal *) (temp), T_TQUADBIN) ) \
-        return (ret); \
-    } while (0)
-#else
-  #define VALIDATE_TQUADBIN(temp, ret) \
-    do { \
-      assert(temp); \
-      assert(((Temporal *) (temp))->temptype == T_TQUADBIN); \
-    } while (0)
-#endif /* MEOS */
 
 /*****************************************************************************
  * Validators (bodies in tquadbin.c)

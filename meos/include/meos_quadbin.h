@@ -53,6 +53,26 @@
 #include <meos_geo.h>
 
 /**
+ * @brief Ensure that the temporal value is a temporal quadbin cell.
+ * Matches the pattern of `VALIDATE_TH3INDEX` / `VALIDATE_TBOOL`.
+ */
+#if MEOS
+  #define VALIDATE_TQUADBIN(temp, ret) \
+    do { \
+      if (! ensure_not_null((void *) (temp)) || \
+          ! ensure_temporal_isof_type((Temporal *) (temp), T_TQUADBIN) ) \
+        return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TQUADBIN(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TQUADBIN); \
+      (void) (temp); \
+    } while (0)
+#endif /* MEOS */
+
+/**
  * @brief A CARTO quadbin cell index, packed into a 64-bit integer.
  *
  * Quadbin is a square quadtree Discrete Global Grid System: a Web-Mercator
