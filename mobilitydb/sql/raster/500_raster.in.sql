@@ -29,13 +29,21 @@
 
 /**
  * @file
- * @brief PostGIS raster sampling along tgeompoint trajectories.
+ * @brief PostGIS raster and Raquet raster sampling along tgeompoint
+ * trajectories.
  *
- * `raster_value(raster, tgeompoint, band integer DEFAULT 1) → tfloat`
- * evaluates a raster band at each instant of a trajectory and returns
- * the sampled values as a `tfloat` (instant set). Instants that fall
- * outside the raster extent or land on a nodata pixel are silently
- * dropped; NULL is returned when no instants survive.
+ * Sampling functions:
+ *   raster_value(raster, tgeompoint, band integer DEFAULT 1) → tfloat
+ *   raster_tile_value_quadbin(bytea, ..., tgeompoint) → tfloat
+ *   trajectory_quadbins(tgeompoint, integer) → bigint[]
+ *
+ * Restriction functions (SQL-defined, compose the sampling operators):
+ *   atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
+ *   minusRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
+ *
+ * Ever/always predicates (SQL-defined):
+ *   eRasterValue(raster, tgeompoint, floatspan, band DEFAULT 1) → boolean
+ *   aRasterValue(raster, tgeompoint, floatspan, band DEFAULT 1) → boolean
  *
  * This file is compiled into the mobilitydb extension only when
  * MobilityDB is built with `-DRASTER=ON`; the generated
@@ -115,3 +123,98 @@ CREATE OR REPLACE FUNCTION trajectory_quadbins(
 ) RETURNS bigint[]
   AS 'MODULE_PATHNAME', 'Trajectory_quadbins'
   LANGUAGE C STRICT;
+
+/******************************************************************************
+ * atRasterValue
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the sampled raster pixel
+ * value falls inside a float range
+ * @param[in] traj  Trajectory (SRID matching the raster)
+ * @param[in] rast  Raster
+ * @param[in] vspan Float value range (inclusive bounds)
+ * @param[in] band  Band number (1-based, default 1)
+ * @csqlfn #atRasterValue()
+ */
+CREATE OR REPLACE FUNCTION atRasterValue(
+    traj  tgeompoint,
+    rast  raster,
+    vspan floatspan,
+    band  integer DEFAULT 1
+) RETURNS tgeompoint AS $$
+  SELECT atTime($1, getTime(atValues(v, $3)))
+  FROM (SELECT raster_value($2, $1, $4) AS v) t
+$$ LANGUAGE SQL STRICT;
+
+/******************************************************************************
+ * minusRasterValue
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the instants of a trajectory where the sampled raster pixel
+ * value falls outside a float range
+ * @param[in] traj  Trajectory (SRID matching the raster)
+ * @param[in] rast  Raster
+ * @param[in] vspan Float value range to exclude
+ * @param[in] band  Band number (1-based, default 1)
+ * @csqlfn #minusRasterValue()
+ */
+CREATE OR REPLACE FUNCTION minusRasterValue(
+    traj  tgeompoint,
+    rast  raster,
+    vspan floatspan,
+    band  integer DEFAULT 1
+) RETURNS tgeompoint AS $$
+  SELECT atTime($1, getTime(minusValues(v, $3)))
+  FROM (SELECT raster_value($2, $1, $4) AS v) t
+$$ LANGUAGE SQL STRICT;
+
+/******************************************************************************
+ * eRasterValue
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the trajectory ever samples a raster pixel value
+ * inside a float range
+ * @param[in] rast  Raster
+ * @param[in] traj  Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range
+ * @param[in] band  Band number (1-based, default 1)
+ * @csqlfn #eRasterValue()
+ */
+CREATE OR REPLACE FUNCTION eRasterValue(
+    rast  raster,
+    traj  tgeompoint,
+    vspan floatspan,
+    band  integer DEFAULT 1
+) RETURNS boolean AS $$
+  SELECT atValues(raster_value($1, $2, $4), $3) IS NOT NULL
+$$ LANGUAGE SQL STRICT;
+
+/******************************************************************************
+ * aRasterValue
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if every in-raster-extent instant of the trajectory
+ * samples a pixel value inside a float range
+ * @param[in] rast  Raster
+ * @param[in] traj  Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range
+ * @param[in] band  Band number (1-based, default 1)
+ * @csqlfn #aRasterValue()
+ */
+CREATE OR REPLACE FUNCTION aRasterValue(
+    rast  raster,
+    traj  tgeompoint,
+    vspan floatspan,
+    band  integer DEFAULT 1
+) RETURNS boolean AS $$
+  SELECT v IS NOT NULL AND minusValues(v, $3) IS NULL
+  FROM (SELECT raster_value($1, $2, $4) AS v) t
+$$ LANGUAGE SQL STRICT;

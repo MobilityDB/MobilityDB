@@ -138,6 +138,78 @@ JOIN sst_raquet r
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raster_restriction">
+		<title>Restriction and Predicate Operators</title>
+
+		<para>The following SQL-defined operators compose <varname>raster_value</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>raster_value</varname> exactly once per invocation.</para>
+
+		<itemizedlist>
+			<listitem xml:id="atRasterValue">
+				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
+				<para>Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+				<para><varname>atRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
+				<para>Evaluates <varname>raster_value</varname> at every instant of <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no instant satisfies the condition.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
+)
+SELECT asText(atRasterValue(
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
+                          POINT(1.5 1.5)@2000-01-02,
+                          POINT(0.5 0.5)@2000-01-03]',
+  r, floatspan '[40, 90]'))
+FROM rast;
+-- {[POINT(1.5 1.5)@2000-01-02 00:00:00+00], [POINT(0.5 0.5)@2000-01-03 00:00:00+00]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="minusRasterValue">
+				<indexterm significance="normal"><primary><varname>minusRasterValue</varname></primary></indexterm>
+				<para>Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+				<para><varname>minusRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
+				<para>The complement of <varname>atRasterValue</varname>: returns the sub-trajectory restricted to the times when the pixel value lies outside <varname>vspan</varname>. Returns <varname>NULL</varname> when every instant satisfies the condition.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Keep only the instant whose raster value (10) is below 40
+SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]'))
+FROM trips, elevation_raster;
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="eRasterValue">
+				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
+				<para>Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+				<para><varname>eRasterValue(raster,tgeompoint,floatspan,band integer DEFAULT 1) → boolean</varname></para>
+				<para>Returns <varname>true</varname> when at least one in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Trips that ever crossed terrain above 200 m
+SELECT tripid
+FROM trips, elevation_raster
+WHERE eRasterValue(elev_raster, trip4326, floatspan '[200, 9999]');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="aRasterValue">
+				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
+				<para>Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+				<para><varname>aRasterValue(raster,tgeompoint,floatspan,band integer DEFAULT 1) → boolean</varname></para>
+				<para>Returns <varname>true</varname> when every in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Trips that stayed entirely below 100 m elevation
+SELECT tripid
+FROM trips, elevation_raster
+WHERE aRasterValue(elev_raster, trip4326, floatspan '[0, 100]');
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raster_build">
 		<title>Build and Install</title>
 

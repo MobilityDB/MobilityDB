@@ -120,6 +120,96 @@ SELECT raster_value(r,
 FROM rast;
 
 -------------------------------------------------------------------------------
+-- atRasterValue / minusRasterValue / eRasterValue / aRasterValue
+-------------------------------------------------------------------------------
+
+-- Shared fixture: 3×3 raster, pixel values 10..90 (row-major).
+-- traj1: three instants sampling values 10, 50, 70.
+-- traj2: two instants sampling values 10, 70.
+
+-- atRasterValue([40,90]): value 10 dropped, 50 and 70 kept.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT asText(atRasterValue(
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]',
+  r, floatspan '[40, 90]'))::text AS result
+FROM rast;
+
+-- minusRasterValue([40,90]): values 50 and 70 dropped, 10 kept.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT asText(minusRasterValue(
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]',
+  r, floatspan '[40, 90]'))::text AS result
+FROM rast;
+
+-- eRasterValue([70,90]): traj2 samples 10 and 70; 70 in range → true.
+-- eRasterValue([80,90]): neither 10 nor 70 in [80,90] → false.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT
+  eRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[70, 90]') AS e_true,
+  eRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[80, 90]') AS e_false
+FROM rast;
+
+-- aRasterValue([70,90]): traj2 has 10 not in range → false.
+-- aRasterValue([0,100]): all values in range → true.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT
+  aRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[70, 90]') AS a_false,
+  aRasterValue(r,
+    tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(0.5 0.5)@2000-01-02 00:00:00+00]',
+    floatspan '[0, 100]') AS a_true
+FROM rast;
+
+-------------------------------------------------------------------------------
 -- trajectory_quadbins
 -------------------------------------------------------------------------------
 
