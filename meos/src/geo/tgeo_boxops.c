@@ -337,10 +337,7 @@ tspatialseqarr_set_stbox(TSequence **sequences, int count, STBox *box)
   assert(sequences); assert(box);
   memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(STBox));
   for (int i = 1; i < count; i++)
-  {
-    const STBox *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
-    stbox_expand(box1, box);
-  }
+    stbox_expand(TSEQUENCE_BBOX_PTR(sequences[i]), box);
   return;
 }
 
