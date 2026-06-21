@@ -1917,6 +1917,8 @@ extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *t
 extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double temporal_average_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
+extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2, double epsilon);
 
 /*****************************************************************************/
 

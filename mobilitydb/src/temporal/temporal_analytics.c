@@ -179,9 +179,21 @@ Temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
   /* Store fcinfo into a global variable for temporal geography points */
   if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
-  double result = (simfunc == HAUSDORFF) ?
-    temporal_hausdorff_distance(temp1, temp2) :
-    temporal_similarity(temp1, temp2, simfunc);
+  double result;
+  switch (simfunc)
+  {
+    case HAUSDORFF:
+      result = temporal_hausdorff_distance(temp1, temp2);
+      break;
+    case AVERAGEHAUSDORFF:
+      result = temporal_average_hausdorff_distance(temp1, temp2);
+      break;
+    case LCSS:
+      result = temporal_lcss_distance(temp1, temp2, PG_GETARG_FLOAT8(2));
+      break;
+    default:
+      result = temporal_similarity(temp1, temp2, simfunc);
+  }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
@@ -468,3 +480,30 @@ Temporal_ext_kalman_filter(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_average_hausdorff_distance);
+/**
+ * @ingroup mobilitydb_temporal_analytics_similarity
+ * @brief Return the average Hausdorff distance between two temporal values
+ * @sqlfn averageHausdorffDistance()
+ */
+Datum
+Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS)
+{
+  return Temporal_similarity(fcinfo, AVERAGEHAUSDORFF);
+}
+
+PGDLLEXPORT Datum Temporal_lcss_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_lcss_distance);
+/**
+ * @ingroup mobilitydb_temporal_analytics_similarity
+ * @brief Return the Longest Common SubSequence (LCSS) distance between two
+ * temporal values
+ * @sqlfn lcssDistance()
+ */
+Datum
+Temporal_lcss_distance(PG_FUNCTION_ARGS)
+{
+  return Temporal_similarity(fcinfo, LCSS);
+}
