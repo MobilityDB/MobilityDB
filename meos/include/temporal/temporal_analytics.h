@@ -39,7 +39,9 @@ typedef enum
 {
   FRECHET,
   DYNTIMEWARP,
-  HAUSDORFF
+  HAUSDORFF,
+  AVERAGEHAUSDORFF,
+  LCSS
 } SimFunc;
 
 /**
