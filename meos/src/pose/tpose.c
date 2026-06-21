@@ -263,7 +263,8 @@ tpointfloat_to_tposeinst(const TInstant *inst1, const TInstant *inst2)
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst1));
   const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   double radius = DatumGetFloat8(tinstant_value_p(inst2));
-  Pose *pose = pose_make_2d(p->x, p->y, radius, gserialized_get_srid(gs));
+  Pose *pose = pose_make_2d(p->x, p->y, radius,
+    FLAGS_GET_GEODETIC(gs->gflags), gserialized_get_srid(gs));
   TInstant *result = tinstant_make(PointerGetDatum(pose), T_TPOSE, inst1->t);
   pfree(pose);
   return result;

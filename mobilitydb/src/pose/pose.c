@@ -384,7 +384,7 @@ Pose_constructor(PG_FUNCTION_ARGS)
   if (PG_NARGS() == 4)
   {
     srid = PG_GETARG_INT32(3);
-    result = pose_make_2d(x, y, theta, srid);
+    result = pose_make_2d(x, y, theta, false, srid);
   }
   else /* PG_NARGS() == 8 */
   {
@@ -393,7 +393,7 @@ Pose_constructor(PG_FUNCTION_ARGS)
     double Y = PG_GETARG_FLOAT8(5);
     double Z = PG_GETARG_FLOAT8(6);
     srid = PG_GETARG_INT32(7);
-    result = pose_make_3d(x, y, z, W, X, Y, Z, srid);
+    result = pose_make_3d(x, y, z, W, X, Y, Z, false, srid);
   }
   PG_RETURN_POINTER(result);
 }

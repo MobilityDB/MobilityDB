@@ -1752,6 +1752,8 @@ pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant)
   wkb_flags |= MEOS_WKB_XFLAG;
   if (MEOS_FLAGS_GET_Z(pose->flags))
     wkb_flags |= MEOS_WKB_ZFLAG;
+  if (MEOS_FLAGS_GET_GEODETIC(pose->flags))
+    wkb_flags |= MEOS_WKB_GEODETICFLAG;
   if (spatial_wkb_needs_srid(pose_srid(pose), variant))
     wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
