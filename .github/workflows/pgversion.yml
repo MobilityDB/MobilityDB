@@ -94,7 +94,13 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} -DCBUFFER=ON ..
+          # The coverage build enables the circular buffer, pose, and rigid
+          # geometry types plus the Arrow export so their sources get
+          # instrumented; RGEO turns POSE on through the dependent CMake option.
+          cmake -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_COVERAGE=${{ matrix.coverage }} \
+            ${{ matrix.coverage == '1' && '-DCBUFFER=ON -DRGEO=ON -DARROW=ON' || '' }} \
+            ..
 
       - name: Build
         run: |

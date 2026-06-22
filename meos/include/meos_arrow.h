@@ -54,6 +54,21 @@ struct ArrowArray;
 extern bool meos_temporal_to_arrow(const Temporal *temp, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
 extern Temporal *meos_temporal_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
 extern Temporal *meos_temporal_arrow_roundtrip(const Temporal *temp);
+extern bool meos_set_to_arrow(const Set *s, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern Set *meos_set_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern Set *meos_set_arrow_roundtrip(const Set *s);
+extern bool meos_span_to_arrow(const Span *s, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern Span *meos_span_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern Span *meos_span_arrow_roundtrip(const Span *s);
+extern bool meos_spanset_to_arrow(const SpanSet *ss, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern SpanSet *meos_spanset_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern SpanSet *meos_spanset_arrow_roundtrip(const SpanSet *ss);
+extern bool meos_tbox_to_arrow(const TBox *box, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern TBox *meos_tbox_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern TBox *meos_tbox_arrow_roundtrip(const TBox *box);
+extern bool meos_stbox_to_arrow(const STBox *box, struct ArrowSchema *out_schema, struct ArrowArray *out_array);
+extern STBox *meos_stbox_from_arrow(const struct ArrowSchema *schema, const struct ArrowArray *array);
+extern STBox *meos_stbox_arrow_roundtrip(const STBox *box);
 
 /*****************************************************************************/
 

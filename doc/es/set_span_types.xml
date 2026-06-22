@@ -260,6 +260,19 @@ SELECT floatspansetFromHexWKB(
 -- {[1, 2], [4, 5]}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="setspan_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un conjunto, span o conjunto de spans a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip({set,span,spanset}) → {set,span,spanset}</varname></para>
+				<para>Los tipos conjunto, span y conjunto de spans representan subconjuntos finitos de un dominio base infinito, cerrando el álgebra de tipos. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada. La codificación refleja la de los tipos temporales: un conjunto se convierte en una lista de sus elementos ordenados, un span en una estructura de sus límites inferior y superior con sus indicadores de inclusión, y un conjunto de spans en una lista de tales estructuras de span; la columna de elementos sigue al tipo base (entero, entero grande, flotante, texto, fecha, marca de tiempo, o un binario grande opaco del binario bien conocido extendido para una geometría o geografía), y se preserva el identificador de referencia espacial de un conjunto de geometrías o geografías.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(intset '{1, 2, 3}');
+-- {1, 2, 3}
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}');
+-- {[1.5, 2.5), (3, 4]}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

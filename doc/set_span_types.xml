@@ -261,6 +261,19 @@ SELECT floatspansetFromHexWKB(
 -- {[1, 2], [4, 5]}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="setspan_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convert a set, span or span set to the Arrow C Data Interface and back, returning the reconstructed value</para>
+				<para><varname>arrowRoundtrip({set,span,spanset}) → {set,span,spanset}</varname></para>
+				<para>Set, span and span set are the types that represent finite subsets of an infinite base domain, closing the type algebra. The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. The result is equal to the input. The encoding mirrors the temporal one: a set becomes a list of its sorted elements, a span a struct of its lower and upper bounds with their inclusivity flags, and a span set a list of such span structs; the element column follows the base type (integer, big integer, float, text, date, timestamptz, or an opaque large binary of the extended well-known binary for a geometry or geography), and the spatial reference identifier of a geometry or geography set is preserved.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(intset '{1, 2, 3}');
+-- {1, 2, 3}
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}');
+-- {[1.5, 2.5), (3, 4]}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

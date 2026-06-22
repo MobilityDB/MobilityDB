@@ -39,6 +39,9 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#if ARROW
+  #include <meos_arrow.h>
+#endif
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -1255,5 +1258,25 @@ Tbox_hash_extended(PG_FUNCTION_ARGS)
   uint64 seed = PG_GETARG_INT64(1);
   PG_RETURN_UINT64(tbox_hash_extended(box, seed));
 }
+
+/*****************************************************************************/
+
+#if ARROW
+PGDLLEXPORT Datum Tbox_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_box_conversion
+ * @brief Round-trip a temporal box through the Arrow C Data Interface,
+ * returning the reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Tbox_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  TBox *result = meos_tbox_arrow_roundtrip(box);
+  PG_RETURN_TBOX_P(result);
+}
+#endif /* ARROW */
 
 /*****************************************************************************/
