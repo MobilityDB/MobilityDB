@@ -487,7 +487,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum X value of a temporal box, if any
- * @sqlfn Xmin()
+ * @sqlfn xMin()
  */
 Datum
 Tbox_xmin(PG_FUNCTION_ARGS)
@@ -505,7 +505,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmin_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum X value of a temporal box is inclusive,
  * if any
- * @sqlfn Xmin_inc()
+ * @sqlfn xMinInc()
  */
 Datum
 Tbox_xmin_inc(PG_FUNCTION_ARGS)
@@ -522,7 +522,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum X value of a temporal box as a double, if any
- * @sqlfn Xmax()
+ * @sqlfn xMax()
  */
 Datum
 Tbox_xmax(PG_FUNCTION_ARGS)
@@ -540,7 +540,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmax_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum X value of a temporal box is inclusive,
  * if any
- * @sqlfn Xmin_inc()
+ * @sqlfn xMaxInc()
  */
 Datum
 Tbox_xmax_inc(PG_FUNCTION_ARGS)
@@ -557,7 +557,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum timestamp of a temporal box, if any
- * @sqlfn Tmin()
+ * @sqlfn tMin()
  */
 Datum
 Tbox_tmin(PG_FUNCTION_ARGS)
@@ -575,7 +575,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the minimum timestamp value of a temporal box is
  * inclusive, if any
- * @sqlfn Tmin_inc()
+ * @sqlfn tMinInc()
  */
 Datum
 Tbox_tmin_inc(PG_FUNCTION_ARGS)
@@ -592,7 +592,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum timestamp of a temporal box, if any
- * @sqlfn Tmax()
+ * @sqlfn tMax()
  */
 Datum
 Tbox_tmax(PG_FUNCTION_ARGS)
@@ -610,7 +610,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax_inc);
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if the maximum timestamp value of a temporal box is
  * inclusive, if any
- * @sqlfn Tmin_inc()
+ * @sqlfn tMaxInc()
  */
 Datum
 Tbox_tmax_inc(PG_FUNCTION_ARGS)

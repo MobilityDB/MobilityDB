@@ -717,7 +717,7 @@ PG_FUNCTION_INFO_V1(Stbox_xmin);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the minimum X value of a spatiotemporal box, if any
- * @sqlfn Xmin()
+ * @sqlfn xMin()
  */
 Datum
 Stbox_xmin(PG_FUNCTION_ARGS)
@@ -734,7 +734,7 @@ PG_FUNCTION_INFO_V1(Stbox_xmax);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the maximum X value of a spatiotemporal box, if any
- * @sqlfn Xmax()
+ * @sqlfn xMax()
  */
 Datum
 Stbox_xmax(PG_FUNCTION_ARGS)
@@ -751,7 +751,7 @@ PG_FUNCTION_INFO_V1(Stbox_ymin);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the minimum Y value of a spatiotemporal box, if any
- * @sqlfn Ymin()
+ * @sqlfn yMin()
  */
 Datum
 Stbox_ymin(PG_FUNCTION_ARGS)
@@ -768,7 +768,7 @@ PG_FUNCTION_INFO_V1(Stbox_ymax);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the maximum Y value of a spatiotemporal box, if any
- * @sqlfn Ymax()
+ * @sqlfn yMax()
  */
 Datum
 Stbox_ymax(PG_FUNCTION_ARGS)
@@ -785,7 +785,7 @@ PG_FUNCTION_INFO_V1(Stbox_zmin);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the minimum Z value of a spatiotemporal box, if any
- * @sqlfn Zmin()
+ * @sqlfn zMin()
  */
 Datum
 Stbox_zmin(PG_FUNCTION_ARGS)
@@ -802,7 +802,7 @@ PG_FUNCTION_INFO_V1(Stbox_zmax);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the maximum Z value of a spatiotemporal box, if any
- * @sqlfn Zmax()
+ * @sqlfn zMax()
  */
 Datum
 Stbox_zmax(PG_FUNCTION_ARGS)
@@ -819,7 +819,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the minimum timestamptz value of a spatiotemporal box, if any
- * @sqlfn Tmin()
+ * @sqlfn tMin()
  */
 Datum
 Stbox_tmin(PG_FUNCTION_ARGS)
@@ -837,7 +837,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin_inc);
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return true if the minimum timestamptz value of a spatiotemporal box
  * is inclusive, if any
- * @sqlfn Tmin_inc()
+ * @sqlfn tMinInc()
  */
 Datum
 Stbox_tmin_inc(PG_FUNCTION_ARGS)
@@ -854,7 +854,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmax);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the maximum T value of a spatiotemporal box, if any
- * @sqlfn Tmax()
+ * @sqlfn tMax()
  */
 Datum
 Stbox_tmax(PG_FUNCTION_ARGS)
@@ -872,7 +872,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmax_inc);
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return true if the maximum timestamptz value of a spatiotemporal box
  * is inclusive, if any
- * @sqlfn Tmax_inc()
+ * @sqlfn tMaxInc()
  */
 Datum
 Stbox_tmax_inc(PG_FUNCTION_ARGS)
