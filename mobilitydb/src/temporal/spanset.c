@@ -1049,7 +1049,7 @@ PG_FUNCTION_INFO_V1(Spanset_split_n_spans);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return an array of N spans from the spans of a spanset
- * @sqlfn splitNspans()
+ * @sqlfn splitNSpans()
  */
 Datum
 Spanset_split_n_spans(PG_FUNCTION_ARGS)
@@ -1070,7 +1070,7 @@ PG_FUNCTION_INFO_V1(Spanset_split_each_n_spans);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return an array of spans from a spanset obtained by merging a given
  * number of successive composing spans
- * @sqlfn splitEachNspans()
+ * @sqlfn splitEachNSpans()
  */
 Datum
 Spanset_split_each_n_spans(PG_FUNCTION_ARGS)
