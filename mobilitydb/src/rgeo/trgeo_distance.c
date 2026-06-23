@@ -70,7 +70,7 @@ PG_FUNCTION_INFO_V1(Tdistance_trgeometry_geo);
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between a temporal rigid geometry and a
  * geometry
- * @sqlfn tdistance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Tdistance_geo_trgeometry);
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between a geometry and a temporal rigid
  * geometry
- * @sqlfn tdistance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
@@ -115,7 +115,7 @@ PG_FUNCTION_INFO_V1(Tdistance_trgeometry_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn tdistance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
@@ -137,7 +137,7 @@ PG_FUNCTION_INFO_V1(Tdistance_tpoint_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn tdistance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Tdistance_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_rgeo_dist
  * @brief Return the temporal distance between two temporal rigid geometries
- * @sqlfn tdistance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
