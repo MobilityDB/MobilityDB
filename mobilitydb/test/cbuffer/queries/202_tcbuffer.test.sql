@@ -663,3 +663,6 @@ SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
 ]::tcbuffer[], '5 minutes'::interval));
 
 -------------------------------------------------------------------------------/
+
+-- tprecision
+SELECT asText(tprecision(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),3)@2001-01-01 00:00:04]', interval '2 secs'));
