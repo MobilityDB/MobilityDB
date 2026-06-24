@@ -2370,3 +2370,9 @@ SELECT numSequences(tposeSeqSetGaps(ARRAY[
             3
 (1 row)
 
+SELECT asText(tprecision(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-01 00:00:04]', interval '2 secs'));
+                                                                       astext                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ [Pose(POINT(1 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 0),0)@Mon Jan 01 00:00:02 2001 PST, Pose(POINT(4 0),0)@Mon Jan 01 00:00:04 2001 PST]
+(1 row)
+
