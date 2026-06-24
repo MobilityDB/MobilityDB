@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Set_split_n_spans);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Return an array of N spans from the elements of a set
- * @sqlfn splitNspans()
+ * @sqlfn splitNSpans()
  */
 Datum
 Set_split_n_spans(PG_FUNCTION_ARGS)
