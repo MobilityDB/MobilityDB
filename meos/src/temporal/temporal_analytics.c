@@ -58,6 +58,10 @@
 #if CBUFFER
   #include <meos_cbuffer.h>
 #endif
+#if POSE || RGEO
+#include <meos_pose.h>
+#include "pose/pose.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -222,6 +226,89 @@ tcbuffer_tprecision_value(const Temporal *temp)
 }
 #endif /* CBUFFER */
 
+#if POSE
+/**
+ * @brief Accumulate the duration-weighted position and circular-angle sums of
+ * a 2D pose-valued sequence into the running totals
+ */
+static void
+poseseq_tprecision_accum(const TSequence *seq, double *sum_x, double *sum_y,
+  double *sum_sin, double *sum_cos, double *total_dur)
+{
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const TInstant *next = TSEQUENCE_INST_N(seq, i + 1);
+    const Pose *p = DatumGetPoseP(tinstant_value_p(inst));
+    double dur = (double) (next->t - inst->t);
+    *sum_x += p->data[0] * dur;
+    *sum_y += p->data[1] * dur;
+    *sum_sin += sin(p->data[2]) * dur;
+    *sum_cos += cos(p->data[2]) * dur;
+    *total_dur += dur;
+  }
+}
+
+/**
+ * @brief Return the time-weighted average pose of a pose-valued temporal
+ * (tpose or trgeometry), over a sequence or a sequence set
+ * @details For a LINEAR (or any 3D) sequence the time-weighted average of both
+ * position and orientation equals the pose at the midpoint timestamp. For a 2D
+ * STEP sequence the position is the step-weighted average and the angle is a
+ * circular mean. A sequence set combines the step-weighted sums over its
+ * component sequences. 3D orientation averaging (quaternions) is deferred to
+ * the midpoint strategy.
+ */
+static Datum
+pose_tprecision_value(const Temporal *temp)
+{
+  assert(temp->temptype == T_TPOSE
+    );
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (const TSequence *) temp;
+    if (seq->count == 1)
+      return datum_copy(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)), T_POSE);
+    const Pose *p0 = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
+    if (MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR ||
+        MEOS_FLAGS_GET_Z(p0->flags))
+    {
+      TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+      TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+      /* The midpoint is strictly interior to the sequence period, so the value
+       * is always defined; fall back to the first instant otherwise to avoid
+       * reading an uninitialized value */
+      Datum value;
+      if (! tsequence_value_at_timestamptz(seq, lower + (upper - lower) / 2,
+          false, &value))
+        return datum_copy(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)), T_POSE);
+      Datum result = datum_copy(value, T_POSE);
+      pfree(DatumGetPointer(value));
+      return result;
+    }
+    int32_t srid = pose_srid(p0);
+    double sx = 0, sy = 0, ssin = 0, scos = 0, td = 0;
+    poseseq_tprecision_accum(seq, &sx, &sy, &ssin, &scos, &td);
+    if (td <= 0)
+      return datum_copy(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)), T_POSE);
+    return PointerGetDatum(pose_make_2d(sx / td, sy / td,
+      atan2(ssin / td, scos / td), srid));
+  }
+  /* TSEQUENCESET: combine the step-weighted sums over component sequences */
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  const TInstant *first = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0);
+  int32_t srid = pose_srid(DatumGetPoseP(tinstant_value_p(first)));
+  double sx = 0, sy = 0, ssin = 0, scos = 0, td = 0;
+  for (int i = 0; i < ss->count; i++)
+    poseseq_tprecision_accum(TSEQUENCESET_SEQ_N(ss, i), &sx, &sy, &ssin, &scos,
+      &td);
+  if (td <= 0)
+    return datum_copy(tinstant_value_p(first), T_POSE);
+  return PointerGetDatum(pose_make_2d(sx / td, sy / td,
+    atan2(ssin / td, scos / td), srid));
+}
+#endif /* POSE */
+
 /**
  * @brief Compute the family-specific time-weighted precision value of a bin
  * @details Dispatch to the per-type precision function and return true; return
@@ -244,6 +331,13 @@ tprecision_value(MeosType temptype, const Temporal *temp, Datum *result)
     return true;
   }
 #endif /* CBUFFER */
+#if POSE
+  if (temptype == T_TPOSE)
+  {
+    *result = pose_tprecision_value(temp);
+    return true;
+  }
+#endif /* POSE */
   return false;
 }
 
@@ -264,6 +358,9 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY
 #if CBUFFER
     || seq->temptype == T_TCBUFFER
+#endif
+#if POSE
+    || seq->temptype == T_TPOSE
 #endif
     );
 
@@ -434,6 +531,9 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     ss->temptype == T_TGEOMETRY || ss->temptype == T_TGEOGRAPHY
 #if CBUFFER
     || ss->temptype == T_TCBUFFER
+#endif
+#if POSE
+    || ss->temptype == T_TPOSE
 #endif
     );
 
