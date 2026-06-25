@@ -73,7 +73,7 @@
 1144  vendor/apache-arrow-c-data-interface
 1071  feat/meos-set-span-spanset-arrow
 1041  feat/meos-temporal-arrow-cbuffer        # umbrella temporal Arrow export family
-# DEFERRED 1070 demo/arrow-parquet-zerometos-session — 52-commit integration demo that merges the type branches; CONFLICTING. Re-integrate on the rebased #1164/#1165/#1210 + arrow chain after they settle. Not required for the library pin (the Arrow export itself is #1144/#1071/#1041).
+1070  demo/arrow-parquet-zerometos-session  # zero-MEOS Arrow/Parquet demo + nanoarrow validator (clean additive rebuild; stacked on the Arrow chain #1071/#1041/#1144)
 
 # ── WAVE 5 — CORRECTNESS / MEMORY FIXES ──
 1255  fix/csqlfn-wkb-output-mistag             # @csqlfn on *_as_wkb pointed at the recv (input) wrapper -> *_send + drop the wrong link
