@@ -1,0 +1,438 @@
+SELECT th3index '622236723497533439@2012-01-01 08:00:00';
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+/* Errors */
+SELECT th3index 'ABC@2012-01-01 08:00:00';
+ERROR:  h3index value ABC does not encode a valid H3 cell
+LINE 2: SELECT th3index 'ABC@2012-01-01 08:00:00';
+                        ^
+SELECT th3index '622236723497533439@2012-01-01 08:00:00,';
+ERROR:  Could not parse th3index value: Extraneous characters at the end
+LINE 1: SELECT th3index '622236723497533439@2012-01-01 08:00:00,';
+                        ^
+SELECT th3index ' { 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 } ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' { 622236723497533439@2001-01-01 08:00:00 ,...
+                        ^
+SELECT th3index '{622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{622236723497533439@2001-01-01 08:00:00,622...
+                        ^
+/* Errors */
+SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 2: SELECT th3index '{622236723497533439@2001-01-01, 62223672349...
+                        ^
+SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03},';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{622236723497533439@2001-01-01, 62223672349...
+                        ^
+SELECT th3index ' [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 ] ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' [ 622236723497533439@2001-01-01 08:00:00 ,...
+                        ^
+SELECT th3index '[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '[622236723497533439@2001-01-01 08:00:00,622...
+                        ^
+SELECT th3index 'Interp=Step;[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index 'Interp=Step;[622236723497533439@2001-01-01 ...
+                        ^
+SELECT th3index ' { [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 ] , [ 622236723497533441@2001-01-01 08:10:00 , 622236723497533442@2001-01-01 08:15:00 ] } ';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index ' { [ 622236723497533439@2001-01-01 08:00:00...
+                        ^
+SELECT th3index '{[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00],[622236723497533441@2001-01-01 08:10:00,622236723497533442@2001-01-01 08:15:00]}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index '{[622236723497533439@2001-01-01 08:00:00,62...
+                        ^
+SELECT th3index(Instant) '622236723497533439@2012-01-01 08:00:00';
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT th3index(Sequence) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(Sequence) '{622236723497533439@2001-01-01, 6...
+                                  ^
+SELECT th3index(Sequence) '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(Sequence) '[622236723497533439@2001-01-01, 6...
+                                  ^
+SELECT th3index(SequenceSet) '{[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT th3index(SequenceSet) '{[622236723497533439@2001-01-0...
+                                     ^
+/* Errors */
+SELECT th3index(Instant) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 2: SELECT th3index(Instant) '{622236723497533439@2001-01-01, 62...
+                                 ^
+SELECT th3index(Sequence) '622236723497533439@2012-01-01 08:00:00';
+ERROR:  Temporal type (Instant) does not match column type (Sequence)
+SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:00:00';
+ERROR:  Invalid temporal type modifier: garbage
+LINE 1: SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:0...
+               ^
+SELECT (tbigint '622236723497533439@2012-01-01 08:00:00')::th3index;
+                   th3index                   
+----------------------------------------------
+ 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::th3index;
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ {8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::th3index;
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ [8a2a100d645ffff@Mon Jan 01 00:00:00 2001 PST, 8a2a100d6460000@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT (th3index '622236723497533439@2012-01-01 08:00:00')::tbigint;
+                     tbigint                     
+-------------------------------------------------
+ 622236723497533439@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+SELECT (th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::tbigint;
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT (th3index '{622236723497533439@2001-01-01, 6222367234...
+                         ^
+SELECT (th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::tbigint;
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 1: SELECT (th3index '[622236723497533439@2001-01-01, 6222367234...
+                         ^
+SELECT ((tbigint '622236723497533439@2012-01-01 08:00:00')::th3index)::tbigint
+  = tbigint '622236723497533439@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ((th3index '622236723497533439@2012-01-01 08:00:00')::tbigint)::th3index
+  = th3index '622236723497533439@2012-01-01 08:00:00';
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_th3index_assign;
+NOTICE:  table "tbl_th3index_assign" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_assign(k int, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_assign VALUES (1, tbigint '622236723497533439@2012-01-01 08:00:00');
+INSERT 0 1
+SELECT * FROM tbl_th3index_assign;
+ k |                     temp                     
+---+----------------------------------------------
+ 1 | 8a2a100d645ffff@Sun Jan 01 08:00:00 2012 PST
+(1 row)
+
+DROP TABLE tbl_th3index_assign;
+DROP TABLE
+/* Errors */
+SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497533439@2012-01-01 08:00:00';
+ERROR:  operator does not exist: tbigint = th3index
+LINE 2: ... tbigint '622236723497533439@2012-01-01 08:00:00' = th3index...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+DROP TABLE IF EXISTS tbl_th3index_binio;
+NOTICE:  table "tbl_th3index_binio" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_binio(k int, temp th3index);
+CREATE TABLE
+INSERT INTO tbl_th3index_binio VALUES
+  (1, th3index '622236723497533439@2012-01-01 08:00:00'),
+  (2, th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}'),
+  (3, th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]');
+ERROR:  h3index value 622236723497533440 does not encode a valid H3 cell
+LINE 3:   (2, th3index '{622236723497533439@2001-01-01, 622236723497...
+                       ^
+COPY tbl_th3index_binio TO '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY 0
+DROP TABLE IF EXISTS tbl_th3index_binio_tmp;
+NOTICE:  table "tbl_th3index_binio_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_binio_tmp AS TABLE tbl_th3index_binio WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_th3index_binio_tmp FROM '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY 0
+SELECT COUNT(*) FROM tbl_th3index_binio t1, tbl_th3index_binio_tmp t2
+  WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_th3index_binio;
+DROP TABLE
+DROP TABLE tbl_th3index_binio_tmp;
+DROP TABLE
+SELECT th3index(h3index '612544986753269759', timestamptz '2001-01-01 08:00');
+                   th3index                   
+----------------------------------------------
+ 880326b885fffff@Mon Jan 01 08:00:00 2001 PST
+(1 row)
+
+SELECT th3index(h3index '612544986753269759', tstzset '{2001-01-01, 2001-01-02}');
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ {880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT th3index(h3index '612544986753269759', tstzspan '[2001-01-01, 2001-01-02]');
+                                           th3index                                           
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT th3index(h3index '612544986753269759', tstzspanset '{[2001-01-01, 2001-01-02]}');
+                                            th3index                                            
+------------------------------------------------------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT th3indexSeq(ARRAY[th3index '612544986753269759@2001-01-01', th3index '612544986761658367@2001-01-02']);
+                                         th3indexseq                                          
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT th3indexSeqSet(ARRAY[th3indexSeq(ARRAY[th3index '612544986753269759@2001-01-01'])]);
+                  th3indexseqset                  
+--------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST]}
+(1 row)
+
+SELECT timeSpan(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
+                           timespan                           
+--------------------------------------------------------------
+ [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT (th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]')::tstzspan;
+                           tstzspan                           
+--------------------------------------------------------------
+ [Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT th3indexInst(th3index '612544986753269759@2001-01-01');
+                 th3indexinst                 
+----------------------------------------------
+ 880326b885fffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT th3indexSeq(th3index '612544986753269759@2001-01-01');
+                  th3indexseq                   
+------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT setInterp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]', 'discrete');
+ERROR:  Cannot transform input value to a temporal discrete sequence
+SELECT appendInstant(th3index '[612544986753269759@2001-01-01]', th3index '612544986761658367@2001-01-02');
+                                        appendinstant                                         
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT merge(th3index '612544986753269759@2001-01-01', th3index '612544986761658367@2001-01-02');
+                                            merge                                             
+----------------------------------------------------------------------------------------------
+ {880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT shiftTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', interval '1 day');
+                                          shifttime                                           
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Tue Jan 02 00:00:00 2001 PST, 880326b88dfffff@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT scaleTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', interval '2 days');
+                                          scaletime                                           
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tempSubtype(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT interp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
+ interp 
+--------
+ Step
+(1 row)
+
+SELECT memSize(th3index '612544986753269759@2001-01-01') > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT getValue(th3index '612544986753269759@2001-01-01');
+    getvalue     
+-----------------
+ 880326b885fffff
+(1 row)
+
+SELECT getTimestamp(th3index '612544986753269759@2001-01-01');
+         gettimestamp         
+------------------------------
+ Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT getTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT duration(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT numInstants(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT startInstant(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
+                 startinstant                 
+----------------------------------------------
+ 880326b885fffff@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT instantN(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', 2);
+                   instantn                   
+----------------------------------------------
+ 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+
+SELECT numTimestamps(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
+ numtimestamps 
+---------------
+             2
+(1 row)
+
+SELECT timestamps(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
+                           timestamps                            
+-----------------------------------------------------------------
+ {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST"}
+(1 row)
+
+SELECT numSequences(th3index '{[612544986753269759@2001-01-01], [612544986761658367@2001-01-02]}');
+ numsequences 
+--------------
+            2
+(1 row)
+
+SELECT sequenceN(th3index '{[612544986753269759@2001-01-01], [612544986761658367@2001-01-02]}', 1);
+                   sequencen                    
+------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT segments(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
+                                                                     segments                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST)","[880326b88dfffff@Tue Jan 02 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT (rec).value, (rec).time FROM
+  (SELECT unnest(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}') AS rec) t;
+      value      |                              time                              
+-----------------+----------------------------------------------------------------
+ 880326b885fffff | {[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST]}
+ 880326b88dfffff | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
+(2 rows)
+
+SELECT atValues(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02, 612544986753269759@2001-01-03]', h3index '612544986753269759');
+                                                                    atvalues                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST), [880326b885fffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT minusValues(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02, 612544986753269759@2001-01-03]', h3index '612544986753269759');
+                                          minusvalues                                           
+------------------------------------------------------------------------------------------------
+ {[880326b88dfffff@Tue Jan 02 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT atValues(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', set(ARRAY[h3index '612544986753269759', h3index '612544986761658367']));
+                                           atvalues                                           
+----------------------------------------------------------------------------------------------
+ {880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT atTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
+                    attime                    
+----------------------------------------------
+ 880326b885fffff@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+
+SELECT minusTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
+                                                                                          minustime                                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST), (880326b885fffff@Tue Jan 02 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT atTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', tstzspan '[2001-01-02, 2001-01-04]');
+                                            attime                                            
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Tue Jan 02 00:00:00 2001 PST, 880326b885fffff@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
+SELECT beforeTimestamp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', timestamptz '2001-01-03');
+                                       beforetimestamp                                        
+----------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Wed Jan 03 00:00:00 2001 PST)
+(1 row)
+
+SELECT afterTimestamp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', timestamptz '2001-01-03');
+                                        aftertimestamp                                        
+----------------------------------------------------------------------------------------------
+ (880326b885fffff@Wed Jan 03 00:00:00 2001 PST, 880326b885fffff@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT insert(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', th3index '[612544986761658367@2001-01-04, 612544986761658367@2001-01-05]');
+                                                                   insert                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------
+ [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST, 880326b88dfffff@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT update(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', th3index '612544986761658367@2001-01-02');
+                                                                                            update                                                                                            
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b88dfffff@Tue Jan 02 00:00:00 2001 PST], (880326b885fffff@Tue Jan 02 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT deleteTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
+                                                                                          deletetime                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Tue Jan 02 00:00:00 2001 PST), (880326b885fffff@Tue Jan 02 00:00:00 2001 PST, 880326b88dfffff@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT (rec).time, (rec).temp FROM
+  (SELECT timeSplit(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
+             time             |                                             temp                                             
+------------------------------+----------------------------------------------------------------------------------------------
+ Mon Jan 01 00:00:00 2001 PST | [880326b885fffff@Mon Jan 01 00:00:00 2001 PST, 880326b885fffff@Wed Jan 03 00:00:00 2001 PST)
+ Wed Jan 03 00:00:00 2001 PST | [880326b885fffff@Wed Jan 03 00:00:00 2001 PST, 880326b88dfffff@Thu Jan 04 00:00:00 2001 PST]
+(2 rows)
+
