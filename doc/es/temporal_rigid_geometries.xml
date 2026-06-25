@@ -438,17 +438,17 @@ SELECT temporalTime(atStbox(
 		<itemizedlist>
 			<listitem xml:id="trgeometry_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tdistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
 				<para>Devuelve la distancia temporal entre dos trgeometries</para>
 				<para><varname>{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat</varname></para>
-				<para><varname>tdistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
+				<para><varname>tDistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(maxValue(tdistance(
+SELECT round(maxValue(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
 -- 4
 
-SELECT asText(tdistance(
+SELECT asText(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- [1@2001-01-01 ..., 9@2001-01-02 ...]
@@ -756,7 +756,7 @@ LIMIT 10;
 					<para><emphasis>Mitigación</emphasis>: documentado en <xref linkend="trgeometry_traversed_area"/>. Las cargas de trabajo que necesiten cotas ajustadas del área barrida deben sobremuestrear la <varname>tpose</varname> de entrada antes de construir la <varname>trgeometry</varname>; el patrón de <varname>setInterp</varname> + inserción de subinstantes del capítulo de <varname>tpose</varname> es el enfoque estándar. El submuestreo adaptativo dentro de <varname>traversedArea</varname> es un refinamiento futuro documentado.</para>
 				</listitem>
 				<listitem>
-					<para><emphasis>Tolerancia de submuestreo adaptativo en la distancia materializada</emphasis>. Los núcleos de distancia continua (<varname>tdistance</varname>, <varname>nearestApproachDistance</varname>) materializan la forma rígida por cada intervalo entre instantes y emiten marcas intermedias donde la trayectoria de distancia se desvía de una línea recta. El tope de profundidad es de 32 marcas por intervalo y la aproximación interpolada LINEAL entre marcas está acotada por <varname>1e-3</varname> (en unidades del CRS).</para>
+					<para><emphasis>Tolerancia de submuestreo adaptativo en la distancia materializada</emphasis>. Los núcleos de distancia continua (<varname>tDistance</varname>, <varname>nearestApproachDistance</varname>) materializan la forma rígida por cada intervalo entre instantes y emiten marcas intermedias donde la trayectoria de distancia se desvía de una línea recta. El tope de profundidad es de 32 marcas por intervalo y la aproximación interpolada LINEAL entre marcas está acotada por <varname>1e-3</varname> (en unidades del CRS).</para>
 					<para><emphasis>Mitigación</emphasis>: la cota de <varname>1e-3</varname> es una decisión de diseño documentada. Los segmentos de traslación pura convergen en profundidad 0; los segmentos con mucha rotación usan el presupuesto completo de 32 marcas. Las cargas de trabajo que necesiten una precisión más nítida en un operador específico deben preprocesar las poses de entrada a instantes más densos en lugar de confiar en una recursión más ajustada.</para>
 				</listitem>
 				<listitem>
