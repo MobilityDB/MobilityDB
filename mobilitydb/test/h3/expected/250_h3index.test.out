@@ -1,0 +1,108 @@
+SELECT h3index '8a2a1072b59ffff';
+     h3index     
+-----------------
+ 8a2a1072b59ffff
+(1 row)
+
+SELECT h3index '0x8a2a1072b59ffff';
+     h3index     
+-----------------
+ 8a2a1072b59ffff
+(1 row)
+
+SELECT h3index '622236750694711295';
+     h3index     
+-----------------
+ 8a2a1072b59ffff
+(1 row)
+
+SELECT (622236750694711295::bigint::h3index)::bigint = 622236750694711295;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT h3index '0';
+ERROR:  h3index value 0 does not encode a valid H3 cell
+LINE 2: SELECT h3index '0';
+                       ^
+SELECT h3index 'not-a-hex-cell';
+ERROR:  invalid h3index input "not-a-hex-cell"
+LINE 1: SELECT h3index 'not-a-hex-cell';
+                       ^
+SELECT h3index '12345';
+ERROR:  h3index value 12345 does not encode a valid H3 cell
+LINE 1: SELECT h3index '12345';
+                       ^
+SELECT h3index '622236750694711295' = h3index '8a2a1072b59ffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3index '8a2a1072b59ffff' = h3index '8a2a1072b59ffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3index '8a2a1072b59ffff' <> h3index '831c02fffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT h3index '8a2a1072b59ffff' < h3index 'fffffffffffffff'::h3index OR true;
+ERROR:  h3index value fffffffffffffff does not encode a valid H3 cell
+LINE 1: SELECT h3index '8a2a1072b59ffff' < h3index 'fffffffffffffff'...
+                                                   ^
+SELECT NOT (h3index '8a2a1072b59ffff' = h3index '831c02fffffffff');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 622236750694711295::bigint::h3index;
+     h3index     
+-----------------
+ 8a2a1072b59ffff
+(1 row)
+
+SELECT (h3index '8a2a1072b59ffff')::bigint;
+        int8        
+--------------------
+ 622236750694711295
+(1 row)
+
+/* Errors */
+SELECT 622236750694711295::bigint = h3index '8a2a1072b59ffff';
+ERROR:  operator does not exist: bigint = h3index
+LINE 2: SELECT 622236750694711295::bigint = h3index '8a2a1072b59ffff...
+                                          ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+DROP TABLE IF EXISTS tbl_h3index_test;
+NOTICE:  table "tbl_h3index_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_h3index_test(k int, c h3index);
+CREATE TABLE
+INSERT INTO tbl_h3index_test VALUES
+  (1, h3index '8a2a1072b59ffff'),
+  (2, h3index '831c02fffffffff'),
+  (3, h3index '8a2a1072b59ffff'),  -- duplicate of row 1
+  (4, h3index '880326b885fffff');
+INSERT 0 4
+SELECT COUNT(DISTINCT c) FROM tbl_h3index_test;
+ count 
+-------
+     3
+(1 row)
+
+SELECT (SELECT MAX(cnt) FROM (SELECT COUNT(*) AS cnt FROM tbl_h3index_test GROUP BY c) sub);
+ max 
+-----
+   2
+(1 row)
+
+DROP TABLE tbl_h3index_test;
+DROP TABLE
