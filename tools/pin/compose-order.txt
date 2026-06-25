@@ -73,7 +73,7 @@
 1144  vendor/apache-arrow-c-data-interface
 1071  feat/meos-set-span-spanset-arrow
 1041  feat/meos-temporal-arrow-cbuffer        # umbrella temporal Arrow export family
-1070  demo/arrow-parquet-zerometos-session
+# DEFERRED 1070 demo/arrow-parquet-zerometos-session — 52-commit integration demo that merges the type branches; CONFLICTING. Re-integrate on the rebased #1164/#1165/#1210 + arrow chain after they settle. Not required for the library pin (the Arrow export itself is #1144/#1071/#1041).
 
 # ── WAVE 5 — CORRECTNESS / MEMORY FIXES ──
 1255  fix/csqlfn-wkb-output-mistag             # @csqlfn on *_as_wkb pointed at the recv (input) wrapper -> *_send + drop the wrong link
@@ -106,8 +106,6 @@
 # ── WAVE 7 — POST-MANIFEST first-pass additions (2026-06-17; fold after their
 #    dependencies, which are all earlier waves). Raster (#1216/#1217/#1218) is the
 #    ONLY recent set deferred to a second pass (see tools/pin/exclusions.txt). ──
-1219  fix/quadbin-basetype-byvalue-merge-safe  # tquadbin NULL guards + byvalue merge-safety (after #1210)
-1220  fix/h3-compop-tests-canonical-eeq        # migrate h3 compop tests to eEq (after #1164/#1204)
 1221  fix/geopose-output-buffer-off-by-one     # BUG: geodetic-pose 3D WKT closing parenthesis
 1222  fix/cppcheck-meos-cleanup                # cppcheck meos/src + the upper_inc segm-duration bug fix
 1225  fix/meos-compiler-warnings               # compiler-only -Wall -Wextra (gs maybe-uninit, rtree discarded-qual) cppcheck can't emit; complements #1222/#1008; fold late after families
@@ -116,7 +114,6 @@
 1168  restore/pg14-15-support                  # PostgreSQL 14/15 extension build support
 1226  fix/export-catalog-predicates            # de-inline 36 public catalog predicates -> export (fold after #1203/#1172/#1146 catalog work; 8 #ifndef NDEBUG helpers left inline by design)
 1228  fix/remove-dangling-geo-get-srid         # remove redundant dangling geo_get_srid decl (geo_srid is the canonical getter; fold after #1162 geo)
-1229  fix/export-pointcloud-catalog-predicates # de-inline pointcloud_basetype/pointcloudset_type/tpointcloud_temptype -> export (stacked on #1165; fold after it)
 
 # ── WAVE 8 — RASTER family (user 2026-06-17, verified buildable both targets) ──
 1216  pr/raster-sql-operator                   # RASTER=ON family base (stack root)
