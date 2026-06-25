@@ -122,7 +122,7 @@ PG_FUNCTION_INFO_V1(Add_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal addition of a number and a temporal number
- * @sqlfn tnumber_add()
+ * @sqlfn tAdd()
  * @sqlop @p +
  */
 inline Datum
@@ -136,7 +136,7 @@ PG_FUNCTION_INFO_V1(Add_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal addition of a temporal number and a number
- * @sqlfn tnumber_add()
+ * @sqlfn tAdd()
  * @sqlop @p +
  */
 inline Datum
@@ -150,7 +150,7 @@ PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal addition of two temporal numbers
- * @sqlfn tnumber_add()
+ * @sqlfn tAdd()
  * @sqlop @p +
  */
 inline Datum
@@ -168,7 +168,7 @@ PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal subtraction of a number and a temporal number
- * @sqlfn tnumber_sub()
+ * @sqlfn tSub()
  * @sqlop @p -
  */
 inline Datum
@@ -182,7 +182,7 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal subtraction of a temporal number and a number
- * @sqlfn tnumber_sub()
+ * @sqlfn tSub()
  * @sqlop @p -
  */
 inline Datum
@@ -196,7 +196,7 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal subtraction of two temporal numbers
- * @sqlfn tnumber_sub()
+ * @sqlfn tSub()
  * @sqlop @p -
  */
 inline Datum
@@ -214,7 +214,7 @@ PG_FUNCTION_INFO_V1(Mul_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a number and a temporal number
- * @sqlfn tnumber_mul()
+ * @sqlfn tMul()
  * @sqlop @p *
  */
 inline Datum
@@ -228,7 +228,7 @@ PG_FUNCTION_INFO_V1(Mul_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a temporal number and a number
- * @sqlfn tnumber_mul()
+ * @sqlfn tMul()
  * @sqlop @p *
  */
 inline Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Mul_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of two temporal numbers
- * @sqlfn tnumber_mul()
+ * @sqlfn tMul()
  * @sqlop @p *
  */
 inline Datum
@@ -260,7 +260,7 @@ PG_FUNCTION_INFO_V1(Div_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal division of a number and a temporal number
- * @sqlfn tnumber_div()
+ * @sqlfn tDiv()
  * @sqlop @p /
  */
 inline Datum
@@ -274,7 +274,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal division of a temporal number and a number
- * @sqlfn tnumber_div()
+ * @sqlfn tDiv()
  * @sqlop @p /
  */
 inline Datum
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of two temporal numbers
- * @sqlfn tnumber_div()
+ * @sqlfn tDiv()
  * @sqlop @p /
  */
 inline Datum

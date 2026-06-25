@@ -776,7 +776,7 @@ PG_FUNCTION_INFO_V1(Union_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a value and a span set
- * @sqlfn span_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 inline Datum
@@ -790,7 +790,7 @@ PG_FUNCTION_INFO_V1(Union_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a span and a span set
- * @sqlfn span_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 inline Datum
@@ -804,7 +804,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a span set and a value
- * @sqlfn span_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 inline Datum
@@ -818,7 +818,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a span set and a span
- * @sqlfn span_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 inline Datum
@@ -832,7 +832,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of two span sets
- * @sqlfn span_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 inline Datum
@@ -850,7 +850,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a value and a span set
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 inline Datum
@@ -864,7 +864,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a span and a span set
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 inline Datum
@@ -878,7 +878,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a span set and a value
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 inline Datum
@@ -892,7 +892,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a span set and a span
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 inline Datum
@@ -906,7 +906,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of two span sets
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 inline Datum
@@ -925,7 +925,7 @@ PG_FUNCTION_INFO_V1(Minus_value_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a span set
- * @sqlfn span_minus()
+ * @sqlfn spanMinus()
  * @sqlop @p -
  */
 inline Datum
@@ -939,7 +939,7 @@ PG_FUNCTION_INFO_V1(Minus_span_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span and a span set
- * @sqlfn span_minus()
+ * @sqlfn spanMinus()
  * @sqlop @p -
  */
 inline Datum
@@ -953,7 +953,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span set and a value
- * @sqlfn span_minus()
+ * @sqlfn spanMinus()
  * @sqlop @p -
  */
 inline Datum
@@ -967,7 +967,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span set and a span
- * @sqlfn span_minus()
+ * @sqlfn spanMinus()
  * @sqlop @p -
  */
 inline Datum
@@ -981,7 +981,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_spanset);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of two span sets
- * @sqlfn span_minus()
+ * @sqlfn spanMinus()
  * @sqlop @p -
  */
 inline Datum

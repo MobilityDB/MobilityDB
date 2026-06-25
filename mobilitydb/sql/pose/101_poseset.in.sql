@@ -407,90 +407,90 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_union(pose, poseset)
+CREATE FUNCTION setUnion(pose, poseset)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(poseset, pose)
+CREATE FUNCTION setUnion(poseset, pose)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(poseset, poseset)
+CREATE FUNCTION setUnion(poseset, poseset)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = pose, RIGHTARG = poseset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = poseset, RIGHTARG = pose,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = +
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_minus(pose, poseset)
+CREATE FUNCTION setMinus(pose, poseset)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(poseset, pose)
+CREATE FUNCTION setMinus(poseset, pose)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(poseset, poseset)
+CREATE FUNCTION setMinus(poseset, poseset)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = pose, RIGHTARG = poseset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = poseset, RIGHTARG = pose
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = poseset, RIGHTARG = poseset
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_intersection(pose, poseset)
+CREATE FUNCTION setIntersection(pose, poseset)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(poseset, pose)
+CREATE FUNCTION setIntersection(poseset, pose)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(poseset, poseset)
+CREATE FUNCTION setIntersection(poseset, poseset)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = pose, RIGHTARG = poseset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = poseset, RIGHTARG = pose,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = *
 );
