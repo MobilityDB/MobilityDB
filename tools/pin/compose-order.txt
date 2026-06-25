@@ -45,11 +45,9 @@
 1160  clean/pose
 1161  clean/rgeo
 1162  clean/geo
-1164  clean/h3
-1232  feat/th3index-surface                   # th3index inherited Temporal<T> surface (superset of #1164)
+1164  clean/h3                                # COMPLETE th3index (base + inherited surface); #1232 folded in + closed
 1165  clean/pointcloud
-1210  feat/tquadbin                           # tquadbin/tcellindex (stacked logically on tbigint)
-1231  feat/tquadbin-spatial                   # tquadbin inherited Temporal<T> surface + kernel bin-align (superset of #1210)
+1210  feat/tquadbin                           # COMPLETE tquadbin (base + inherited surface + scripts/inherited generator); #1231 folded in + closed
 
 # ── WAVE 3 — FAMILY EXTENSIONS & FEATURES ──
 1193  clean/pose-geodetic
