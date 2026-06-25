@@ -169,6 +169,10 @@ if(NPOINT)
   message(STATUS "Including network points")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud temporal types")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pointcloud>")
+endif()
 if(POSE)
   message(STATUS "Including geoposes")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pose>")
@@ -214,6 +218,34 @@ target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 # Link the application to pgtypes and postgis
 target_link_libraries(${MEOS_LIB_NAME} pgtypes)
 target_link_libraries(${MEOS_LIB_NAME} postgis)
+if(POINTCLOUD)
+  # The pointcloud OBJECT library can't propagate its link requirements
+  # directly through $<TARGET_OBJECTS:…>, so we duplicate the libpc.a
+  # static link (plus its xml2/z deps) here, mirroring the equivalent
+  # block in mobilitydb/CMakeLists.txt. See
+  # meos/src/pointcloud/CMakeLists.txt for where libpc.a is located.
+  #
+  # libpc.a bundles its own stringbuffer.c (same upstream origin as
+  # PostGIS's liblwgeom/stringbuffer.c, both descend from the same tree
+  # of utility code). That duplication is benign — the two definitions
+  # are near-identical and either one serves correctly — but the linker
+  # rejects it by default. --allow-multiple-definition picks whichever
+  # comes first in link order (here: liblwgeom wins, which is fine
+  # because MEOS only calls the wrapper through that path).
+  target_link_libraries(${MEOS_LIB_NAME}
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a xml2 z)
+  # If the pgPointCloud subtree was built --with-lazperf=DIR, the
+  # shim's pgsql_compat.c references lazperf_(un)compress_from_*compressed.
+  # Pull in liblazperf.a (and stdc++ for its C++ base) when present.
+  if(EXISTS ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a)
+    target_link_libraries(${MEOS_LIB_NAME}
+      ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a stdc++)
+  endif()
+  if(UNIX AND NOT APPLE)
+    target_link_options(${MEOS_LIB_NAME} PRIVATE
+      "LINKER:--allow-multiple-definition")
+  endif()
+endif()
 
 #--------------------------------
 # Belongs to MEOS
@@ -334,6 +366,19 @@ if(MEOS)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(POINTCLOUD)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pointcloud.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    # The pgPointCloud serialization shim header is part of the public
+    # point-cloud surface a standalone consumer needs to build a patch
+    # value (meos_pc_patch_serialize, SERIALIZED_PATCH); install it under
+    # pointcloud/ so it is reached as <pointcloud/pgsql_compat.h> from the
+    # install prefix without adding the source tree to the include path.
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/pointcloud/pgsql_compat.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
   endif()
 
   install(
