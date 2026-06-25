@@ -1,0 +1,172 @@
+\pset tuples_only on
+\set resolution 9
+\set coverage_size 2
+\set raster_size 25
+\set pixel_size 0.0005
+\set value_num 5
+\set lat 51.5
+\set lng -0.025
+CREATE TABLE h3_test_rasters (id SERIAL, rast raster);
+INSERT INTO h3_test_rasters (rast) (
+    WITH
+        vals AS (
+            SELECT array_agg(row) AS vals
+            FROM (
+                SELECT array_agg((x + y) % :value_num + 1) AS row
+                FROM
+                    generate_series(1, :raster_size) AS x,
+                    generate_series(1, :raster_size) AS y
+                GROUP BY y
+            ) t),
+        rasts AS (
+            SELECT
+                ST_AddBand(
+                    ST_MakeEmptyCoverage(
+                        :raster_size, :raster_size,
+                        :raster_size * :coverage_size, :raster_size * :coverage_size,
+                        :lng, :lat,
+                        :pixel_size, -(:pixel_size),
+                        0, 0,
+                        4326),
+                    ARRAY[ROW(1, '8BUI', 1, 0)]::addbandarg[]
+                ) AS rast)
+    SELECT ST_SetValues(r.rast, 1, 1, 1, v.vals)
+    FROM rasts r, vals v
+);
+CREATE FUNCTION h3_test_equal(
+    v1 double precision,
+    v2 double precision)
+RETURNS boolean
+AS $$
+    SELECT ABS(v1 - v2) < 1e-12;
+$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION h3_test_raster_summary_stats_equal(
+    s1 h3_raster_summary_stats,
+    s2 h3_raster_summary_stats)
+RETURNS boolean
+AS $$
+    SELECT s1 IS NOT NULL AND s2 IS NOT NULL
+        AND h3_test_equal((s1).count, (s2).count)
+        AND h3_test_equal((s1).sum, (s2).sum)
+        AND h3_test_equal((s1).mean, (s2).mean)
+        AND h3_test_equal((s1).stddev, (s2).stddev)
+        AND h3_test_equal((s1).min, (s2).min)
+        AND h3_test_equal((s1).max, (s2).max);
+$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION h3_test_raster_class_summary_item_equal(
+    i1 h3_raster_class_summary_item,
+    i2 h3_raster_class_summary_item)
+RETURNS boolean
+AS $$
+    SELECT i1 IS NOT NULL AND i2 IS NOT NULL
+        AND h3_test_equal((i1).val, (i2).val)
+        AND h3_test_equal((i1).count, (i2).count)
+        AND h3_test_equal((i1).area, (i2).area);
+$$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- Results of `h3_raster_summary_clip` and `h3_raster_summary_centroids`
+-- should be identical
+WITH
+    clip AS (
+        SELECT
+            h3,
+            h3_raster_summary_stats_agg(stats) AS stats
+        FROM (
+            -- h3, stats
+            SELECT (h3_raster_summary_clip(rast, :resolution)).*
+            FROM h3_test_rasters
+        ) t
+        GROUP BY 1),
+    centroids AS (
+        SELECT
+            h3,
+            h3_raster_summary_stats_agg(stats) AS stats
+        FROM (
+            -- h3, stats
+            SELECT (h3_raster_summary_centroids(rast, :resolution)).*
+            FROM h3_test_rasters
+        ) t
+        GROUP BY 1)
+SELECT COUNT(*)
+FROM clip a FULL OUTER JOIN centroids b ON a.h3 = b.h3
+WHERE NOT h3_test_raster_summary_stats_equal(a.stats, b.stats);
+     0
+
+-- Results of `h3_raster_class_summary_clip` and `h3_raster_class_summary_clip`
+-- should be identical
+WITH
+    clip AS (
+        SELECT
+            h3,
+            val,
+            h3_raster_class_summary_item_agg(summary) AS summary
+        FROM (
+            -- h3, val, summary
+            SELECT (h3_raster_class_summary_clip(rast, :resolution)).*
+            FROM h3_test_rasters
+        ) t
+        GROUP BY 1, 2),
+    centroids AS (
+        SELECT
+            h3,
+            val,
+            h3_raster_class_summary_item_agg(summary) AS summary
+        FROM (
+            -- h3, val, summary
+            SELECT (h3_raster_class_summary_centroids(rast, :resolution)).*
+            FROM h3_test_rasters
+        ) t
+        GROUP BY 1, 2)
+SELECT COUNT(*)
+FROM clip a FULL OUTER JOIN centroids b ON a.h3 = b.h3 AND a.val = b.val
+WHERE NOT h3_test_raster_class_summary_item_equal(a.summary, b.summary);
+     0
+
+-- Stats aggregation check:
+-- stats for a cell intersecting multiple rasters (with aggregation) should be
+-- the same when calculated on a union of rasters (without aggregation).
+WITH
+    rast AS (
+        -- Union all test rasters
+        SELECT ST_Union(rast) AS rast FROM h3_test_rasters),
+    middle AS (
+        -- Find an H3 cell in a bottom-right corner of a first raster
+        -- (intersecting 4 rasters)
+        SELECT
+            h3_latlng_to_cell(
+                ST_MakePoint(
+                    ST_RasterToWorldCoordX(rast, :raster_size),
+                    ST_RasterToWorldCoordY(rast, :raster_size)),
+                :resolution
+            ) AS h3
+        FROM rast),
+    summary1 AS (
+        -- Get summary from combined raster
+        SELECT t.stats
+        FROM (
+            -- h3, stats
+            SELECT (h3_raster_summary_clip(rast, :resolution)).*
+            FROM rast
+        ) t, middle m
+        WHERE t.h3 = m.h3),
+    summary2 AS (
+        -- Get aggregates summary from separate rasters
+        SELECT h3_raster_summary_stats_agg(t.stats) AS stats
+        FROM (
+            -- h3, stats
+            SELECT (h3_raster_summary_clip(rast, :resolution)).*
+            FROM h3_test_rasters
+        ) t, middle m
+        WHERE t.h3 = m.h3
+        GROUP BY t.h3)
+SELECT h3_test_raster_summary_stats_equal(s1.stats, s2.stats)
+FROM summary1 s1, summary2 s2;
+ t
+
+DROP FUNCTION h3_test_raster_class_summary_item_equal(
+    h3_raster_class_summary_item,
+    h3_raster_class_summary_item);
+DROP FUNCTION h3_test_raster_summary_stats_equal(
+    h3_raster_summary_stats,
+    h3_raster_summary_stats);
+DROP FUNCTION h3_test_equal(double precision, double precision);
+DROP TABLE h3_test_rasters;
