@@ -634,8 +634,15 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   } while (result == MEOS_CONTINUE);
 
   if (loop > MEOS_MAX_ITERS)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "V-clip: Cycle detected, current features: (%d, %d)", *poly1_feature, *poly2_feature);
+  {
+    /* See doc-comment on meos_error in meos/include/meos.h: handler is
+     * not guaranteed to abort. Bail explicitly so we don't compute a
+     * distance from cycle-detected (i.e. unconverged) feature state. */
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "V-clip: Cycle detected, current features: (%d, %d)", *poly1_feature,
+      *poly2_feature);
     return result;
+  }
 
   if (dist)
     /* Intersecting polygons have distance zero; overwritten below when disjoint */
