@@ -891,68 +891,68 @@ CREATE FUNCTION timeSplit(tgeography, bin_width interval,
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION temporal_lt(tgeometry, tgeometry)
+CREATE FUNCTION lt(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_le(tgeometry, tgeometry)
+CREATE FUNCTION le(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tgeometry, tgeometry)
+CREATE FUNCTION eq(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ne(tgeometry, tgeometry)
+CREATE FUNCTION ne(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ge(tgeometry, tgeometry)
+CREATE FUNCTION ge(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_gt(tgeometry, tgeometry)
+CREATE FUNCTION gt(tgeometry, tgeometry)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_cmp(tgeometry, tgeometry)
+CREATE FUNCTION cmp(tgeometry, tgeometry)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
-  PROCEDURE = temporal_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
@@ -964,72 +964,72 @@ CREATE OPERATOR CLASS tgeometry_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  temporal_cmp(tgeometry, tgeometry);
+    FUNCTION  1  cmp(tgeometry, tgeometry);
 
 /******************************************************************************/
 
-CREATE FUNCTION temporal_lt(tgeography, tgeography)
+CREATE FUNCTION lt(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_le(tgeography, tgeography)
+CREATE FUNCTION le(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tgeography, tgeography)
+CREATE FUNCTION eq(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ne(tgeography, tgeography)
+CREATE FUNCTION ne(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ge(tgeography, tgeography)
+CREATE FUNCTION ge(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_gt(tgeography, tgeography)
+CREATE FUNCTION gt(tgeography, tgeography)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_cmp(tgeography, tgeography)
+CREATE FUNCTION cmp(tgeography, tgeography)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >,  NEGATOR = >=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeography, RIGHTARG = tgeography,
-  PROCEDURE = temporal_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
@@ -1041,7 +1041,7 @@ CREATE OPERATOR CLASS tgeography_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  temporal_cmp(tgeography, tgeography);
+    FUNCTION  1  cmp(tgeography, tgeography);
 
 /******************************************************************************/
 

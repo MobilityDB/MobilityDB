@@ -177,7 +177,7 @@ SELECT MAX(lower(radians(f))) FROM tbl_floatspan;
 -- Comparison Functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.t, t2.t) = -1;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE cmp(t1.t, t2.t) = -1;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t < t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;

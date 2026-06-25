@@ -1103,7 +1103,7 @@ PG_FUNCTION_INFO_V1(Tbox_cmp);
  * @ingroup mobilitydb_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one
- * @sqlfn tbox_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Tbox_cmp(PG_FUNCTION_ARGS)
@@ -1118,7 +1118,7 @@ PG_FUNCTION_INFO_V1(Tbox_lt);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is less than the second one
- * @sqlfn tbox_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -1135,7 +1135,7 @@ PG_FUNCTION_INFO_V1(Tbox_le);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is less than or equal to
  * the second one
- * @sqlfn tbox_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -1152,7 +1152,7 @@ PG_FUNCTION_INFO_V1(Tbox_ge);
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is greater than or equal to
  * the second one
- * @sqlfn tbox_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -1168,7 +1168,7 @@ PG_FUNCTION_INFO_V1(Tbox_gt);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if the first temporal box is greater than the second one
- * @sqlfn tbox_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum
@@ -1184,7 +1184,7 @@ PG_FUNCTION_INFO_V1(Tbox_eq);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two temporal boxes are equal
- * @sqlfn tbox_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -1200,7 +1200,7 @@ PG_FUNCTION_INFO_V1(Tbox_ne);
 /**
  * @ingroup mobilitydb_box_comp
  * @brief Return true if two temporal boxes are different
- * @sqlfn tbox_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum

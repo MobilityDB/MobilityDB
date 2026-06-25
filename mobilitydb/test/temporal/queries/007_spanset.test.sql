@@ -332,7 +332,7 @@ SELECT timestamps(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),
 SELECT timestamps(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 SELECT timestamps(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 
-SELECT spanset_cmp(intspanset '{[1,1]}', intspanset '{[1,2),[2,3),[3,4)}');
+SELECT cmp(intspanset '{[1,1]}', intspanset '{[1,2),[2,3),[3,4)}');
 SELECT intspanset '{[1,1]}' = intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' <> intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' < intspanset '{[1,2),[2,3),[3,4)}';
@@ -340,7 +340,7 @@ SELECT intspanset '{[1,1]}' <= intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' > intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' >= intspanset '{[1,2),[2,3),[3,4)}';
 
-SELECT spanset_cmp(floatspanset '{[1,1]}', floatspanset '{[1,2),[2,3),[3,4)}');
+SELECT cmp(floatspanset '{[1,1]}', floatspanset '{[1,2),[2,3),[3,4)}');
 SELECT floatspanset '{[1,1]}' = floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' <> floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' < floatspanset '{[1,2),[2,3),[3,4)}';
@@ -348,7 +348,7 @@ SELECT floatspanset '{[1,1]}' <= floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' > floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' >= floatspanset '{[1,2),[2,3),[3,4)}';
 
-SELECT spanset_cmp(datespanset '{[2000-01-01,2000-01-01]}', datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}');
+SELECT cmp(datespanset '{[2000-01-01,2000-01-01]}', datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}');
 SELECT datespanset '{[2000-01-01,2000-01-01]}' = datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}';
 SELECT datespanset '{[2000-01-01,2000-01-01]}' <> datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}';
 SELECT datespanset '{[2000-01-01,2000-01-01]}' < datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}';
@@ -356,7 +356,7 @@ SELECT datespanset '{[2000-01-01,2000-01-01]}' <= datespanset '{[2000-01-01,2000
 SELECT datespanset '{[2000-01-01,2000-01-01]}' > datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}';
 SELECT datespanset '{[2000-01-01,2000-01-01]}' >= datespanset '{[2000-01-01,2000-01-02),[2000-01-03,2000-01-04),[2000-01-05,2000-01-06)}';
 
-SELECT spanset_cmp(tstzspanset '{[2000-01-01,2000-01-01]}', tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
+SELECT cmp(tstzspanset '{[2000-01-01,2000-01-01]}', tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' = tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' <> tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' < tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';

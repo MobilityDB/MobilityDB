@@ -912,399 +912,399 @@ CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
  * Comparison functions for defining B-tree indexes
  ******************************************************************************/
 
-CREATE FUNCTION set_eq(intset, intset)
+CREATE FUNCTION eq(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(bigintset, bigintset)
+CREATE FUNCTION eq(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(floatset, floatset)
+CREATE FUNCTION eq(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(textset, textset)
+CREATE FUNCTION eq(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(dateset, dateset)
+CREATE FUNCTION eq(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(tstzset, tstzset)
+CREATE FUNCTION eq(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_ne(intset, intset)
+CREATE FUNCTION ne(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(bigintset, bigintset)
+CREATE FUNCTION ne(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(floatset, floatset)
+CREATE FUNCTION ne(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(textset, textset)
+CREATE FUNCTION ne(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(dateset, dateset)
+CREATE FUNCTION ne(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(tstzset, tstzset)
+CREATE FUNCTION ne(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_lt(intset, intset)
+CREATE FUNCTION lt(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(bigintset, bigintset)
+CREATE FUNCTION lt(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(floatset, floatset)
+CREATE FUNCTION lt(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(textset, textset)
+CREATE FUNCTION lt(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(dateset, dateset)
+CREATE FUNCTION lt(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(tstzset, tstzset)
+CREATE FUNCTION lt(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_le(intset, intset)
+CREATE FUNCTION le(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(bigintset, bigintset)
+CREATE FUNCTION le(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(floatset, floatset)
+CREATE FUNCTION le(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(textset, textset)
+CREATE FUNCTION le(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(dateset, dateset)
+CREATE FUNCTION le(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(tstzset, tstzset)
+CREATE FUNCTION le(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_ge(intset, intset)
+CREATE FUNCTION ge(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(bigintset, bigintset)
+CREATE FUNCTION ge(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(floatset, floatset)
+CREATE FUNCTION ge(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(textset, textset)
+CREATE FUNCTION ge(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(dateset, dateset)
+CREATE FUNCTION ge(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(tstzset, tstzset)
+CREATE FUNCTION ge(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gt(intset, intset)
+CREATE FUNCTION gt(intset, intset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(bigintset, bigintset)
+CREATE FUNCTION gt(bigintset, bigintset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(floatset, floatset)
+CREATE FUNCTION gt(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(textset, textset)
+CREATE FUNCTION gt(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(dateset, dateset)
+CREATE FUNCTION gt(dateset, dateset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(tstzset, tstzset)
+CREATE FUNCTION gt(tstzset, tstzset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_cmp(intset, intset)
+CREATE FUNCTION cmp(intset, intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(bigintset, bigintset)
+CREATE FUNCTION cmp(bigintset, bigintset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(floatset, floatset)
+CREATE FUNCTION cmp(floatset, floatset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(textset, textset)
+CREATE FUNCTION cmp(textset, textset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(dateset, dateset)
+CREATE FUNCTION cmp(dateset, dateset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(tstzset, tstzset)
+CREATE FUNCTION cmp(tstzset, tstzset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 
 CREATE OPERATOR <> (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = intset, RIGHTARG = intset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = bigintset, RIGHTARG = bigintset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = floatset, RIGHTARG = floatset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = textset, RIGHTARG = textset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = dateset, RIGHTARG = dateset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -1316,7 +1316,7 @@ CREATE OPERATOR CLASS intset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(intset, intset);
+    FUNCTION  1  cmp(intset, intset);
 CREATE OPERATOR CLASS bigintset_btree_ops
   DEFAULT FOR TYPE bigintset USING btree AS
     OPERATOR  1  <,
@@ -1324,7 +1324,7 @@ CREATE OPERATOR CLASS bigintset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(bigintset, bigintset);
+    FUNCTION  1  cmp(bigintset, bigintset);
 CREATE OPERATOR CLASS floatset_btree_ops
   DEFAULT FOR TYPE floatset USING btree AS
     OPERATOR  1  <,
@@ -1332,7 +1332,7 @@ CREATE OPERATOR CLASS floatset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(floatset, floatset);
+    FUNCTION  1  cmp(floatset, floatset);
 CREATE OPERATOR CLASS textset_btree_ops
   DEFAULT FOR TYPE textset USING btree AS
     OPERATOR  1  <,
@@ -1340,7 +1340,7 @@ CREATE OPERATOR CLASS textset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(textset, textset);
+    FUNCTION  1  cmp(textset, textset);
 CREATE OPERATOR CLASS dateset_btree_ops
   DEFAULT FOR TYPE dateset USING btree AS
     OPERATOR  1  <,
@@ -1348,7 +1348,7 @@ CREATE OPERATOR CLASS dateset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(dateset, dateset);
+    FUNCTION  1  cmp(dateset, dateset);
 CREATE OPERATOR CLASS tstzset_btree_ops
   DEFAULT FOR TYPE tstzset USING btree AS
     OPERATOR  1  <,
@@ -1356,7 +1356,7 @@ CREATE OPERATOR CLASS tstzset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(tstzset, tstzset);
+    FUNCTION  1  cmp(tstzset, tstzset);
 
 /******************************************************************************
  * Hash functions for defining hash indexes
