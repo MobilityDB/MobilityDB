@@ -18,7 +18,7 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 </pre></li><li class="listitem"><a name="tint_tfloat"></a><a class="indexterm" name="id4305"></a><a class="indexterm" name="id4308"></a><a class="indexterm" name="id4311"></a><p>Convertir entre un entero integer y un número flotante temporal</p><p><code class="varname">tint::tfloat</code></p><p><code class="varname">tfloat::tint</code></p><p><code class="varname">tfloat(tint)</code></p><p><code class="varname">tint(tfloat)</code></p><pre class="programlisting">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03]
-SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
+SELECT tbigint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01, 2@2001-01-03]
