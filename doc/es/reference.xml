@@ -121,6 +121,13 @@
 					<entry><varname></varname></entry>
 					<entry><varname>tcbuffer</varname></entry>
 				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>h3index</varname></emphasis></entry>
+					<entry><varname>h3indexset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>th3index</varname></entry>
+				</row>
 			</tbody>
 			</tgroup>
 		</table>
