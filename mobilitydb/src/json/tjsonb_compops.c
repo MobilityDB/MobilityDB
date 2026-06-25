@@ -98,7 +98,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_jsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a JSONB value is ever equal to a temporal JSONB value
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -113,7 +113,7 @@ PG_FUNCTION_INFO_V1(Always_eq_jsonb_tjsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is always equal to a JSONB
  * value
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -128,7 +128,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_jsonb_tjsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is ever different from a JSONB
  * value
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -143,7 +143,7 @@ PG_FUNCTION_INFO_V1(Always_ne_jsonb_tjsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is always different from a
  * JSONB value
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -159,7 +159,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tjsonb_jsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is ever equal to a JSONB value
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -174,7 +174,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tjsonb_jsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is always equal to a JSONB
  * value
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -189,7 +189,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tjsonb_jsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is ever different from a JSONB
  * value
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tjsonb_jsonb);
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if a temporal JSONB value is always different from a
  * JSONB value
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if two temporal JSONB values are ever equal
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if two temporal JSONB values are always equal
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -248,7 +248,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if two temporal JSONB values are ever different
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -262,7 +262,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_comp_ever
  * @brief Return true if two temporal JSONB values are always different
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum

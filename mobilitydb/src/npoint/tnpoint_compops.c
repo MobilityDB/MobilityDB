@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is ever equal to a network
  * point
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Always_eq_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is always equal to a network
  * point
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -123,7 +123,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is ever different from a
  * network point
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -138,7 +138,7 @@ PG_FUNCTION_INFO_V1(Always_ne_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is always different from a
  * network point
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -154,7 +154,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is ever equal to a network point
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -168,7 +168,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is always equal to a network point
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is ever different from a
  * network point
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -198,7 +198,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if a temporal network point is always different from a
  * network point
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum
@@ -214,7 +214,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if two temporal geos are ever equal
- * @sqlfn ever_eq()
+ * @sqlfn eEq()
  * @sqlop @p ?=
  */
 inline Datum
@@ -228,7 +228,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if two temporal geos are always equal
- * @sqlfn always_eq()
+ * @sqlfn aEq()
  * @sqlop @p %=
  */
 inline Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if two temporal geos are ever different
- * @sqlfn ever_ne()
+ * @sqlfn eNe()
  * @sqlop @p ?<>
  */
 inline Datum
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_comp_ever
  * @brief Return true if two temporal geos are always different
- * @sqlfn always_ne()
+ * @sqlfn aNe()
  * @sqlop @p %<>
  */
 inline Datum

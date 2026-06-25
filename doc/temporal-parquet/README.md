@@ -95,7 +95,7 @@ Some `base_type` values may carry optional metadata that helps consumers decide 
 | `srid` | `tgeompoint`, `tgeogpoint`, `tgeometry`, `tgeography` | EPSG code of the column's CRS; required for spatial-temporal types |
 | `geodetic` | `tgeogpoint`, `tgeography` | `true` ⇒ spheroidal-metre math (Haversine / Vincenty); see [Geodetic Distances](#geodetic-distances) |
 | `has_z` | spatial-temporal types | column carries a Z dimension throughout |
-| `h3_resolution` | `th3index` | **optional**; integer in `[0, 15]` declaring that every cell in the column was produced at this resolution. Consumers MAY rely on this for cell-membership prefilters (e.g. cross-join probes via `ever_eq(h3index, th3index)` only make sense when both sides share a resolution) |
+| `h3_resolution` | `th3index` | **optional**; integer in `[0, 15]` declaring that every cell in the column was produced at this resolution. Consumers MAY rely on this for cell-membership prefilters (e.g. cross-join probes via `eEq(h3index, th3index)` only make sense when both sides share a resolution) |
 
 ### Encoding versioning
 

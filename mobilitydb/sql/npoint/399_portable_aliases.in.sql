@@ -15,66 +15,6 @@
  * behaviour is identical to the operator (RFC: doc/rfc/sql-portability).
  */
 
-CREATE FUNCTION eEq(npoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION eEq(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION eEq(tnpoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION eNe(npoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION eNe(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION eNe(tnpoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aEq(npoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aEq(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aEq(tnpoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aNe(npoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aNe(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION aNe(tnpoint, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION tEq(npoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_npoint_tnpoint'
