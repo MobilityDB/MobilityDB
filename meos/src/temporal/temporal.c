@@ -286,6 +286,7 @@ ensure_temporal_isof_basetype(const Temporal *temp, MeosType basetype)
     meostype_name(temp->temptype), meostype_name(basetype));
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure that a temporal value is of a temporal type
@@ -299,7 +300,6 @@ ensure_temporal_isof_type(const Temporal *temp, MeosType temptype)
     "The temporal value must be of type %s", meostype_name(temptype));
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Ensure that two temporal values have the same temporal type
