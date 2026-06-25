@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "LAZ regression: read LAZ-compressed pcpatches from test_laz_plugin",
+    "(set up by examples/test_lazperf.sql), decode through libpc.a's",
+    "pc_patch_lazperf_from_wkb path, and dump the points to CSV.",
+    "",
+    "Expected output: 5 lines (X, Y, Z, time_t) with the values from",
+    "the SQL fixture. Bit-exact preservation depends on the schema's",
+    "scale (0.01) — values come back to the user as floats with 2 dp."
+  ],
+  "pipeline": [
+    {
+      "type": "readers.tpcpatch",
+      "connection": "dbname=mobility",
+      "query": "SELECT (EXTRACT(EPOCH FROM t)*1000000)::bigint AS t, pcp, PC_PCId(pcp) AS pcid FROM test_laz_plugin ORDER BY id",
+      "time_column": "t",
+      "patch_column": "pcp",
+      "pcid_column": "pcid"
+    },
+    {
+      "type": "writers.text",
+      "filename": "/tmp/tpcpatch_laz_smoke.csv",
+      "format": "csv",
+      "order": "X,Y,Z,time_t",
+      "keep_unspecified": "false"
+    }
+  ]
+}

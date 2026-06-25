@@ -1,0 +1,6 @@
+comment = 'PCL bridge for MobilityDB pgPointCloud temporal types'
+default_version = '@EXT_VERSION@'
+module_pathname = '$libdir/@MODULE_BIG@'
+relocatable = false
+schema = 'public'
+requires = 'pointcloud,mobilitydb'
