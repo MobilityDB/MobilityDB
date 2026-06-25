@@ -56,6 +56,30 @@
  *****************************************************************************/
 
 /**
+ * CANONICAL ORDERING + SYNCHRONIZATION (enforced) — the type-listing arrays and
+ * the subclass-predicate `||`-chains in this file MUST be kept in 1-to-1
+ * correspondence with the `MeosType` enumeration in `meos_catalog.h`:
+ *
+ * 1. ORDER: every array/predicate lists its entries in **ascending `MeosType`
+ *    enum value** (the order of the enum). A family gated behind `#if <FAMILY>`
+ *    sits at its TRUE enum-value position (wrapped in the guard), never
+ *    clustered elsewhere. When adding a type, insert it at its enum-value slot
+ *    — do NOT append by merge order, do NOT order alphabetically.
+ * 2. SYNCHRONIZATION: when a type is added to the enum it MUST also be added to
+ *    `MEOS_TYPE_NAMES`, to its set/span/spanset/temp catalog row, and to every
+ *    subclass predicate it belongs to (and removed from all of them together).
+ *    A type present in the enum but missing from an array/predicate makes
+ *    runtime lookups fail ("Unknown base type" / "operator does not exist").
+ *    Merges are the usual culprit — they botch the `||`-chains into a duplicate
+ *    or dead `return`; keep ONE `return` with each `#if` block stacked and a
+ *    LEADING `||` on every guarded term. Re-verify this correspondence after
+ *    every merge.
+ *
+ * Keeping both invariants makes the catalog deterministic, so two PRs adding
+ * different types touch different lines and never silently drop a type.
+ */
+
+/**
  * @brief Global constant array containing the type names corresponding to the
  * enumeration MeosType defined in file `meos_catalog.h`
  */
@@ -137,6 +161,13 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TQUADBIN] = "tquadbin",
   [T_QUADBIN] = "quadbin",
   [T_QUADBINSET] = "quadbinset",
+  [T_PCPOINT] = "pcpoint",
+  [T_PCPOINTSET] = "pcpointset",
+  [T_TPCPOINT] = "tpcpoint",
+  [T_PCPATCH] = "pcpatch",
+  [T_PCPATCHSET] = "pcpatchset",
+  [T_TPCPATCH] = "tpcpatch",
+  [T_TPCBOX] = "tpcbox",
 };
 
 /**
@@ -250,6 +281,10 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
 #if QUADBIN
   {T_QUADBINSET,    T_QUADBIN},
 #endif
+#if POINTCLOUD
+  {T_PCPOINTSET,    T_PCPOINT},
+  {T_PCPATCHSET,    T_PCPATCH},
+#endif /* POINTCLOUD */
 };
 
 /**
@@ -308,6 +343,8 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TBIGINT,    T_INT8},      /* 67 */
   {T_TH3INDEX,   T_H3INDEX},   /* 70 */
   {T_TQUADBIN,   T_QUADBIN},   /* 73 */
+  {T_TPCPOINT,   T_PCPOINT},   /* 76 */
+  {T_TPCPATCH,   T_PCPATCH},   /* 79 */
 };
 
 /*****************************************************************************/
@@ -643,6 +680,9 @@ meos_basetype(MeosType type)
 #if QUADBIN
     || type == T_QUADBIN
 #endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
+#endif
     );
 }
 #endif
@@ -673,6 +713,9 @@ basetype_varlength(MeosType type)
   return (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
 #endif
     );
 }
@@ -714,6 +757,10 @@ meostype_length(MeosType type)
 #endif
 #if POSE || RGEO
   if (type == T_POSE)
+    return -1;
+#endif
+#if POINTCLOUD
+  if (type == T_PCPOINT || type == T_PCPATCH)
     return -1;
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -838,6 +885,9 @@ set_basetype(MeosType type)
 #if QUADBIN
       || type == T_QUADBIN
 #endif
+#if POINTCLOUD
+      || type == T_PCPOINT || type == T_PCPATCH
+#endif
       );
 }
 #endif
@@ -868,6 +918,9 @@ set_type(MeosType type)
 #endif
 #if QUADBIN
       || type == T_QUADBINSET
+#endif
+#if POINTCLOUD
+      || type == T_PCPOINTSET || type == T_PCPATCHSET
 #endif
       );
 }
@@ -1001,6 +1054,32 @@ ensure_spatialset_type(MeosType type)
   return false;
 }
 #endif /* MEOS */
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a pgpointcloud base type (pcpoint, pcpatch)
+ */
+bool
+pointcloud_basetype(MeosType type)
+{
+  return (type == T_PCPOINT || type == T_PCPATCH);
+}
+
+/**
+ * @brief Return true if the type is a pgpointcloud set type
+ * (pcpointset, pcpatchset)
+ * @note Unlike @p spatialset_type, pointcloud sets carry no bounding box —
+ * dimension-level access requires loading the schema XML keyed by pcid
+ * from the pgpointcloud @p pointcloud_formats PG catalog table, which
+ * MEOS cannot do — the TPCBox bbox type is the separate structure that
+ * carries pointcloud spatial bounds.
+ */
+bool
+pointcloudset_type(MeosType type)
+{
+  return (type == T_PCPOINTSET || type == T_PCPATCHSET);
+}
+#endif /* POINTCLOUD */
 
 /*****************************************************************************/
 
@@ -1192,6 +1271,9 @@ temporal_type(MeosType type)
 #if QUADBIN
     || type == T_TQUADBIN
 #endif
+#if POINTCLOUD
+    || type == T_TPCPOINT || type == T_TPCPATCH
+#endif
     );
 }
 
@@ -1222,6 +1304,9 @@ temporal_basetype(MeosType type)
 #endif
 #if QUADBIN
     || type == T_QUADBIN
+#endif
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
 #endif
     );
 }
@@ -1298,6 +1383,18 @@ talpha_type(MeosType type)
 #endif
     );
 }
+
+#if POINTCLOUD
+/**
+ * @brief Return true if the type is a temporal pgpointcloud type
+ *   (tpcpoint, tpcpatch) — its bounding box is a TPCBox.
+ */
+bool
+tpointcloud_temptype(MeosType type)
+{
+  return (type == T_TPCPOINT || type == T_TPCPATCH);
+}
+#endif
 
 /**
  * @brief Return true if the type is a temporal number type

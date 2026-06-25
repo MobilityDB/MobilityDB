@@ -129,6 +129,13 @@ typedef enum
   T_QUADBIN        = 71,  /**< static CARTO quadbin cell index type (uint64) */
   T_QUADBINSET     = 72,  /**< quadbin set type */
   T_TQUADBIN       = 73,  /**< temporal quadbin index type (cell index over time) */
+  T_PCPOINT        = 74,  /**< pgpointcloud point type */
+  T_PCPOINTSET     = 75,  /**< pgpointcloud point set type */
+  T_TPCPOINT       = 76,  /**< temporal pgpointcloud point type */
+  T_PCPATCH        = 77,  /**< pgpointcloud patch type */
+  T_PCPATCHSET     = 78,  /**< pgpointcloud patch set type */
+  T_TPCPATCH       = 79,  /**< temporal pgpointcloud patch type */
+  T_TPCBOX         = 80,  /**< temporal pgpointcloud bounding box type */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;
@@ -275,6 +282,11 @@ extern bool geoset_type(MeosType type);
 extern bool ensure_geoset_type(MeosType type);
 extern bool spatialset_type(MeosType type);
 extern bool ensure_spatialset_type(MeosType type);
+#if POINTCLOUD
+extern bool pointcloud_basetype(MeosType type);
+extern bool pointcloudset_type(MeosType type);
+extern bool tpointcloud_temptype(MeosType type);
+#endif /* POINTCLOUD */
 
 extern bool span_basetype(MeosType type);
 extern bool span_canon_basetype(MeosType type);

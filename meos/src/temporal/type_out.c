@@ -179,6 +179,12 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);
 #endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+    case T_PCPATCH:
+      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
+#endif
 #if POSE || RGEO
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
@@ -314,6 +320,63 @@ npoint_as_json_sb(stringbuffer_t *sb, const Npoint *np, int precision)
   return;
 }
 #endif /* NPOINT */
+
+#if POINTCLOUD
+/**
+ * @brief Write into the buffer a tpcpoint instant's coordinates in the
+ * MF-JSON representation. Resolves the schema by pcid and emits an
+ * `[X, Y]` or `[X, Y, Z]` array. Falls back to `[]` if the schema
+ * is unknown or has no X/Y dimensions.
+ */
+static void
+tpcpoint_coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
+  int precision)
+{
+  const Pcpoint *pt = (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
+  PCSCHEMA *schema = meos_pc_schema(pt->pcid);
+  stringbuffer_append_char(sb, '[');
+  if (schema)
+  {
+    double x, y, z;
+    if (pcpoint_get_x(pt, schema, &x) && pcpoint_get_y(pt, schema, &y))
+    {
+      stringbuffer_append_double(sb, x, precision);
+      stringbuffer_append_char(sb, ',');
+      stringbuffer_append_double(sb, y, precision);
+      if (pcpoint_get_z(pt, schema, &z))
+      {
+        stringbuffer_append_char(sb, ',');
+        stringbuffer_append_double(sb, z, precision);
+      }
+    }
+  }
+  stringbuffer_append_char(sb, ']');
+}
+
+/**
+ * @brief Write into the buffer a tpcpatch instant in the MF-JSON
+ * representation. Patches don't decompose to a single coordinate, so
+ * we emit a small object with pcid, npoints, and the 2D PCBOUNDS.
+ * The compressed point payload is intentionally left out — JSON is
+ * not the right wire format for it; use asBinary for round-trip.
+ */
+static void
+tpcpatch_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
+{
+  const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(tinstant_value_p(inst));
+  stringbuffer_aprintf(sb, "{\"pcid\":%u,\"npoints\":%u,\"bounds\":[",
+    pa->pcid, pa->npoints);
+  /* PCBOUNDS layout {xmin, xmax, ymin, ymax}. */
+  stringbuffer_append_double(sb, pa->bounds[0], precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, pa->bounds[1], precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, pa->bounds[2], precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, pa->bounds[3], precision);
+  stringbuffer_append_len(sb, "]}", 2);
+}
+#endif /* POINTCLOUD */
 
 #if POSE || RGEO
 /**
@@ -533,6 +596,40 @@ stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *box, int precision)
   return;
 }
 
+#if POINTCLOUD
+/**
+ * @brief Write into the buffer a TPCBox in the MF-JSON representation.
+ * Same shape as stbox JSON plus a "pcid" field.
+ */
+static void
+tpcbox_as_mfjson_sb(stringbuffer_t *sb, const TPCBox *box, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  stringbuffer_aprintf(sb, "\"pcid\":%u,", box->pcid);
+  stringbuffer_append_len(sb, "\"bbox\":[[", 9);
+  stringbuffer_append_double(sb, box->xmin, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, box->ymin, precision);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  if (hasz)
+  {
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, box->zmin, precision);
+  }
+  stringbuffer_append_len(sb, "],[", 3);
+  stringbuffer_append_double(sb, box->xmax, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, box->ymax, precision);
+  if (hasz)
+  {
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, box->zmax, precision);
+  }
+  stringbuffer_append_len(sb, "]],", 3);
+  tstzspan_as_mfjson_sb(sb, &box->period);
+}
+#endif /* POINTCLOUD */
+
 /**
  * @brief Write into the buffer a bounding box corresponding to the temporal
  * type in the MF-JSON representation
@@ -566,6 +663,12 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #endif
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
+#if POINTCLOUD
+    case T_TPCPOINT:
+    case T_TPCPATCH:
+      tpcbox_as_mfjson_sb(sb, (const TPCBox *) box, precision);
+      break;
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %s",
@@ -634,6 +737,14 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if NPOINT
     case T_TNPOINT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingNetworkPoint\",", 29);
+      break;
+#endif
+#if POINTCLOUD
+    case T_TPCPOINT:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingPCPoint\",", 24);
+      break;
+    case T_TPCPATCH:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingPCPatch\",", 24);
       break;
 #endif
     default: /* Error! */
@@ -716,6 +827,18 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
   }
 #endif /* NPOINT */
+#if POINTCLOUD
+  else if (inst->temptype == T_TPCPOINT)
+  {
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+    tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+  }
+  else if (inst->temptype == T_TPCPATCH)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    tpcpatch_as_mfjson_sb(sb, inst, precision);
+  }
+#endif /* POINTCLOUD */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -763,6 +886,10 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     stringbuffer_aprintf(sb, "%s,\"values\":[", str);
   }
 #endif /* RGEO */
+#if POINTCLOUD
+  else if (seq->temptype == T_TPCPOINT)
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+#endif
   else
     stringbuffer_append_len(sb, "\"values\":[", 10);
   const TInstant *inst;
@@ -808,9 +935,15 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
     }
 #endif /* NPOINT */
+#if POINTCLOUD
+    else if (inst->temptype == T_TPCPOINT)
+      tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+    else if (inst->temptype == T_TPCPATCH)
+      tpcpatch_as_mfjson_sb(sb, inst, precision);
+#endif /* POINTCLOUD */
     else
     {
-      success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst), 
+      success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
         inst->temptype, precision);
       /* Propagate errors up */
       if (! success)
@@ -873,6 +1006,10 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
       stringbuffer_append_char(sb, ',');
     if (tpoint_type(seq->temptype))
       stringbuffer_append_len(sb, "{\"coordinates\":[", 16);
+#if POINTCLOUD
+    else if (seq->temptype == T_TPCPOINT)
+      stringbuffer_append_len(sb, "{\"coordinates\":[", 16);
+#endif
     else
       stringbuffer_append_len(sb, "{\"values\":[", 11);
     for (int j = 0; j < seq->count; j++)
@@ -917,6 +1054,12 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
         npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
       }
 #endif /* NPOINT */
+#if POINTCLOUD
+      else if (inst->temptype == T_TPCPOINT)
+        tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+      else if (inst->temptype == T_TPCPATCH)
+        tpcpatch_as_mfjson_sb(sb, inst, precision);
+#endif /* POINTCLOUD */
       else
       {
         success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
@@ -1115,6 +1258,37 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
 }
 #endif /* NPOINT */
 
+#if POINTCLOUD
+/**
+ * @brief Return the size in bytes of a pgPointCloud pcpoint / pcpatch
+ * in the Well-Known Binary (WKB) representation
+ *
+ * The encoding is intentionally minimal: the entire varlena body
+ * (i.e. pcid + payload) is written length-prefixed, with the
+ * trailing struct padding trimmed. The schema for the @c pcid is
+ * resolved out-of-band (pgpointcloud's @c pointcloud_formats catalog,
+ * via the @c meos_pc_schema_fn hook installed at backend startup),
+ * so it is not embedded in the WKB. This makes the encoding fine for
+ * @c COPY @c BINARY round-trips inside a database, but assumes the
+ * receiver can resolve @c pcid against the same catalog. Cross-cluster
+ * portability is a separate concern handled by an optional schema-
+ * embedding flag bit (not yet implemented).
+ */
+static size_t
+pcpoint_to_wkb_size(const Pcpoint *pt, uint8_t variant)
+{
+  (void) variant;
+  /* int32 body length + body bytes */
+  return MEOS_WKB_INT4_SIZE + (VARSIZE(pt) - VARHDRSZ);
+}
+static size_t
+pcpatch_to_wkb_size(const Pcpatch *pa, uint8_t variant)
+{
+  (void) variant;
+  return MEOS_WKB_INT4_SIZE + (VARSIZE(pa) - VARHDRSZ);
+}
+#endif /* POINTCLOUD */
+
 #if POSE || RGEO
 /**
  * @brief Return the size in bytes of a pose in the Well-Known Binary (WKB)
@@ -1211,6 +1385,14 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
       return MEOS_WKB_INT8_SIZE;
 #endif /* QUADBIN */
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_to_wkb_size((const Pcpoint *) DatumGetPointer(value),
+        variant);
+    case T_PCPATCH:
+      return pcpatch_to_wkb_size((const Pcpatch *) DatumGetPointer(value),
+        variant);
+#endif /* POINTCLOUD */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -1414,6 +1596,10 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
  * @brief Return the maximum size in bytes of the temporal value in the
  * Well-Known Binary (WKB) representation
  */
+#if POINTCLOUD
+static size_t pcschema_header_to_wkb_size(const Temporal *temp);
+#endif /* POINTCLOUD */
+
 static size_t
 temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
@@ -1422,6 +1608,9 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   if (temp->temptype == T_TRGEOMETRY)
     result += geo_to_wkb_size(trgeo_geom_p(temp), variant);
 #endif /* RGEO */
+#if POINTCLOUD
+  result += pcschema_header_to_wkb_size(temp);
+#endif /* POINTCLOUD */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1907,6 +2096,55 @@ h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
 }
 #endif /* H3 */
 
+#if POINTCLOUD
+/**
+ * @brief Emit @p body_len bytes from @p src into @p buf, hex-encoding when
+ * @c WKB_HEX is requested. Used for the opaque varlena payload of
+ * pcpoint / pcpatch where each byte must be preserved verbatim (no
+ * endian swap, since the contents are pgPointCloud's own format).
+ */
+static uint8_t *
+opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
+  uint8_t variant)
+{
+  if (variant & WKB_HEX)
+  {
+    for (size_t i = 0; i < body_len; ++i)
+    {
+      buf[2 * i]     = HEXCHR[src[i] >> 4];
+      buf[2 * i + 1] = HEXCHR[src[i] & 0x0F];
+    }
+    return buf + 2 * body_len;
+  }
+  memcpy(buf, src, body_len);
+  return buf + body_len;
+}
+
+/**
+ * @brief Write into the buffer a pgPointCloud pcpoint in the Well-Known
+ * Binary (WKB) representation: int32 body length + body bytes.
+ *
+ * The body comprises everything after the varlena header: pcid +
+ * dimension payload, with the pgpointcloud tail padding trimmed.
+ */
+static uint8_t *
+pcpoint_to_wkb_buf(const Pcpoint *pt, uint8_t *buf, uint8_t variant)
+{
+  size_t body_len = VARSIZE(pt) - VARHDRSZ;
+  buf = int32_to_wkb_buf((int32) body_len, buf, variant);
+  return opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pt), body_len,
+    buf, variant);
+}
+static uint8_t *
+pcpatch_to_wkb_buf(const Pcpatch *pa, uint8_t *buf, uint8_t variant)
+{
+  size_t body_len = VARSIZE(pa) - VARHDRSZ;
+  buf = int32_to_wkb_buf((int32) body_len, buf, variant);
+  return opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pa), body_len,
+    buf, variant);
+}
+#endif /* POINTCLOUD */
+
 /**
  * @brief Write into the buffer a temporal instant in the Well-Known Binary
  * (WKB) representation
@@ -1977,6 +2215,16 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
       break;
 #endif /* QUADBIN */
+#if POINTCLOUD
+    case T_PCPOINT:
+      buf = pcpoint_to_wkb_buf((const Pcpoint *) DatumGetPointer(value),
+        buf, variant);
+      break;
+    case T_PCPATCH:
+      buf = pcpatch_to_wkb_buf((const Pcpatch *) DatumGetPointer(value),
+        buf, variant);
+      break;
+#endif /* POINTCLOUD */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));
@@ -2340,9 +2588,71 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
     if (spatial_wkb_needs_srid(tspatial_srid(temp), variant))
       wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
+#if POINTCLOUD
+  /* For tpcpoint/tpcpatch, set the pgPointCloud schema-embedded bit
+   * iff we can resolve the pcid's schema XML.  Inability to resolve
+   * is a soft fallback: the encoder simply writes no schema header
+   * and relies on the receiver having the pcid registered out of
+   * band (e.g. the same pgPointCloud catalog). */
+  if (temp->temptype == T_TPCPOINT || temp->temptype == T_TPCPATCH)
+  {
+    Datum first = temporal_start_value(temp);
+    uint32_t pcid = (temp->temptype == T_TPCPOINT)
+      ? ((const Pcpoint *) DatumGetPointer(first))->pcid
+      : ((const Pcpatch *) DatumGetPointer(first))->pcid;
+    if (meos_pc_schema_xml(pcid) != NULL)
+      wkb_flags |= MEOS_WKB_PCSCHEMAFLAG;
+  }
+#endif /* POINTCLOUD */
   /* Write the flags */
   return bytes_to_wkb_buf(&wkb_flags, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
+
+#if POINTCLOUD
+/**
+ * @brief Return the size in bytes of the temporal-prefix pgPointCloud
+ *   schema header (pcid + xml_len + xml_bytes), or 0 when no XML is
+ *   registered for the temporal's pcid.
+ */
+static size_t
+pcschema_header_to_wkb_size(const Temporal *temp)
+{
+  if (temp->temptype != T_TPCPOINT && temp->temptype != T_TPCPATCH)
+    return 0;
+  Datum first = temporal_start_value(temp);
+  uint32_t pcid = (temp->temptype == T_TPCPOINT)
+    ? ((const Pcpoint *) DatumGetPointer(first))->pcid
+    : ((const Pcpatch *) DatumGetPointer(first))->pcid;
+  const char *xml = meos_pc_schema_xml(pcid);
+  if (xml == NULL)
+    return 0;
+  /* int32 pcid + int32 xml_len + xml bytes */
+  return MEOS_WKB_INT4_SIZE * 2 + strlen(xml);
+}
+
+/**
+ * @brief Write the temporal-prefix pgPointCloud schema header
+ *   (pcid + xml_len + xml_bytes). No-op when no XML is registered.
+ */
+static uint8_t *
+pcschema_header_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+  if (temp->temptype != T_TPCPOINT && temp->temptype != T_TPCPATCH)
+    return buf;
+  Datum first = temporal_start_value(temp);
+  uint32_t pcid = (temp->temptype == T_TPCPOINT)
+    ? ((const Pcpoint *) DatumGetPointer(first))->pcid
+    : ((const Pcpatch *) DatumGetPointer(first))->pcid;
+  const char *xml = meos_pc_schema_xml(pcid);
+  if (xml == NULL)
+    return buf;
+  size_t xml_len = strlen(xml);
+  buf = int32_to_wkb_buf((int32) pcid, buf, variant);
+  buf = int32_to_wkb_buf((int32) xml_len, buf, variant);
+  return opaque_bytes_to_wkb_buf((const uint8_t *) xml, xml_len, buf,
+    variant);
+}
+#endif /* POINTCLOUD */
 
 /**
  * @brief Write into the buffer a temporal instant in the Well-Known Binary
@@ -2392,6 +2702,9 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   if (inst->temptype == T_TRGEOMETRY)
     buf = geo_to_wkb_buf(trgeoinst_geom_p(inst), buf, variant);
 #endif /* RGEO */
+#if POINTCLOUD
+  buf = pcschema_header_to_wkb_buf((Temporal *) inst, buf, variant);
+#endif /* POINTCLOUD */
   return tinstant_base_time_to_wkb_buf(inst, buf, variant);
 }
 
@@ -2423,6 +2736,9 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   if (seq->temptype == T_TRGEOMETRY)
     buf = geo_to_wkb_buf(trgeoseq_geom_p(seq), buf, variant);
 #endif /* RGEO */
+#if POINTCLOUD
+  buf = pcschema_header_to_wkb_buf((Temporal *) seq, buf, variant);
+#endif /* POINTCLOUD */
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Write the period bounds */
@@ -2465,6 +2781,9 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   if (ss->temptype == T_TRGEOMETRY)
     buf = geo_to_wkb_buf(trgeoseqset_geom_p(ss), buf, variant);
 #endif /* RGEO */
+#if POINTCLOUD
+  buf = pcschema_header_to_wkb_buf((Temporal *) ss, buf, variant);
+#endif /* POINTCLOUD */
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the sequences */
