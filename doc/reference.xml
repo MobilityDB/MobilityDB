@@ -938,7 +938,7 @@
 			<title>Mathematical Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_add"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Temporal addition, subtraction, multiplication, and division</para>
+					<para><link linkend="tAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Temporal addition, subtraction, multiplication, and division</para>
 				</listitem>
 
 				<listitem>

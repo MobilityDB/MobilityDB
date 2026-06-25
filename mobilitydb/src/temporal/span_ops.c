@@ -457,7 +457,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a value and a span
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 Datum
@@ -476,7 +476,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a span and a value
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 Datum
@@ -495,7 +495,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of two spans
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 Datum
@@ -518,7 +518,7 @@ PG_FUNCTION_INFO_V1(Minus_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a span
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 Datum
@@ -537,7 +537,7 @@ PG_FUNCTION_INFO_V1(Minus_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span and a value
- * @sqlfn span_intersection()
+ * @sqlfn spanIntersection()
  * @sqlop @p *
  */
 Datum
