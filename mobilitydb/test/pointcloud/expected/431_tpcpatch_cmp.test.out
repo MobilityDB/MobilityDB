@@ -1,0 +1,136 @@
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) = (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) > (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <= (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) >= (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz))) AND ((tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) > (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) AND (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) > (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) = (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz))) = NOT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) = (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz))) = NOT ((tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) <> (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(2, pcpoint(2, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(2, pcpoint(2, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(2, pcpoint(2, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz)) < (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_cmp_ordered;
+NOTICE:  table "tbl_cmp_ordered" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_cmp_ordered AS
+  SELECT 1::int AS k, (tpcpatch(pcpatch(1, pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz))::tpcpatch AS pa
+  UNION ALL SELECT 2, (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz))
+  UNION ALL SELECT 3, (tpcpatch(pcpatch(2, pcpoint(2, 1.0, 1.0, 1.0)), '2024-01-01'::timestamptz))
+  UNION ALL SELECT 4, (tpcpatch(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), '2024-01-01'::timestamptz));
+SELECT 4
+SELECT array_agg(k ORDER BY pa) FROM tbl_cmp_ordered;
+ array_agg 
+-----------
+ {2,4,1,3}
+(1 row)
+
+DROP TABLE tbl_cmp_ordered;
+DROP TABLE
+DELETE FROM pointcloud_formats WHERE pcid = 2;
+DELETE 1
