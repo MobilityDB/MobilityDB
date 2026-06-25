@@ -11,9 +11,11 @@
 <chapter xml:id="portable_sql">
 	<title>Portable Named-Function Dialect</title>
 
-	<para>Every MobilityDB operator is also callable as a bare named function. A query written with named functions only, using no operator symbols, is portable: the same SQL runs unchanged on MobilityDB (PostgreSQL), MobilityDuck (DuckDB) and MobilitySpark (Apache Spark), which cannot register PostgreSQL operator symbols. Each named alias reuses the operator's own implementation, so it returns exactly the same result as the operator.</para>
+	<para>Every MobilityDB operator is also callable as a bare named function. A query written with named functions only, using no operator symbols, is portable: the same SQL runs unchanged across the MobilityDB ecosystem — the database engines MobilityDB (PostgreSQL), MobilityDuck (DuckDB) and MobilitySpark (Apache Spark), and the streaming engines — several of which cannot register PostgreSQL operator symbols. Each named alias reuses the operator's own implementation, so it returns exactly the same result as the operator.</para>
 
-	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …), the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …), the distance functions <varname>tDistance</varname> and <varname>nearestApproachDistance</varname>, and the ever/always comparison functions (<varname>eEq</varname>, <varname>aEq</varname>, …) are already named functions and need no mapping. The remaining operators map to bare names as follows.</para>
+	<para>This chapter is the canonical, ecosystem-wide reference for that mapping. An engine that does not accept a given operator can look it up here and use the function form instead. For example, DuckDB does not accept any operator containing <literal>#</literal> (it reserves <literal>#</literal> for positional column references), so on MobilityDuck the temporal comparisons (<literal>#=</literal>, …) are written <varname>tEq</varname>, … and the time-position tests (<literal>&lt;&lt;#</literal>, <literal>#&gt;&gt;</literal>, <literal>&amp;&lt;#</literal>, <literal>#&amp;&gt;</literal>) are written <varname>before</varname>, <varname>after</varname>, <varname>overbefore</varname>, <varname>overafter</varname>, while the operators it does accept may be used directly.</para>
+
+	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a bare name as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal numbers).</para>
 
 	<informaltable frame="all" colsep="1" rowsep="1">
 		<?dblatex table-width="autowidth.column: 1 2 3"?>
@@ -55,6 +57,31 @@
 				<row><entry>Distance</entry><entry>&lt;-&gt;</entry><entry>tDistance(a, b)</entry></row>
 				<row><entry></entry><entry>|=|</entry><entry>nearestApproachDistance(a, b)</entry></row>
 				<row><entry>Same</entry><entry>~=</entry><entry>same(a, b)</entry></row>
+				<row><entry>Traditional comparison</entry><entry>=</entry><entry>eq(a, b)</entry></row>
+				<row><entry></entry><entry>&lt;&gt;</entry><entry>ne(a, b)</entry></row>
+				<row><entry></entry><entry>&lt;</entry><entry>lt(a, b)</entry></row>
+				<row><entry></entry><entry>&lt;=</entry><entry>le(a, b)</entry></row>
+				<row><entry></entry><entry>&gt;</entry><entry>gt(a, b)</entry></row>
+				<row><entry></entry><entry>&gt;=</entry><entry>ge(a, b)</entry></row>
+				<row><entry>Ever comparison</entry><entry>?=</entry><entry>eEq(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;&gt;</entry><entry>eNe(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;</entry><entry>eLt(a, b)</entry></row>
+				<row><entry></entry><entry>?&lt;=</entry><entry>eLe(a, b)</entry></row>
+				<row><entry></entry><entry>?&gt;</entry><entry>eGt(a, b)</entry></row>
+				<row><entry></entry><entry>?&gt;=</entry><entry>eGe(a, b)</entry></row>
+				<row><entry>Always comparison</entry><entry>%=</entry><entry>aEq(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;&gt;</entry><entry>aNe(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;</entry><entry>aLt(a, b)</entry></row>
+				<row><entry></entry><entry>%&lt;=</entry><entry>aLe(a, b)</entry></row>
+				<row><entry></entry><entry>%&gt;</entry><entry>aGt(a, b)</entry></row>
+				<row><entry></entry><entry>%&gt;=</entry><entry>aGe(a, b)</entry></row>
+				<row><entry>Arithmetic (temporal numbers)</entry><entry>+</entry><entry>tAdd(a, b)</entry></row>
+				<row><entry></entry><entry>-</entry><entry>tSub(a, b)</entry></row>
+				<row><entry></entry><entry>*</entry><entry>tMul(a, b)</entry></row>
+				<row><entry></entry><entry>/</entry><entry>tDiv(a, b)</entry></row>
+				<row><entry>Union (set / span / span set)</entry><entry>+</entry><entry>setUnion / spanUnion / spansetUnion (a, b)</entry></row>
+				<row><entry>Intersection (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
+				<row><entry>Difference (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
 			</tbody>
 		</tgroup>
 	</informaltable>

@@ -407,7 +407,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_union_agg"><varname>setUnion</varname>, <varname>spanUnion</varname></link>: Aggregate union</para>
+					<para><link linkend="setspan_union_agg"><varname>setUnion</varname>, <varname>spanUnion</varname>, <varname>spansetUnion</varname></link>: Aggregate union</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -328,23 +328,23 @@ SELECT spanUnion(temp) FROM (VALUES
  {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
- spanunion 
------------
+ spansetunion 
+--------------
  
 (1 row)
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 (NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
-                           spanunion                            
+                          spansetunion                          
 ----------------------------------------------------------------
  {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
-                           spanunion                            
+                          spansetunion                          
 ----------------------------------------------------------------
  {[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
@@ -365,10 +365,10 @@ SELECT spanUnion(temp) FROM (VALUES
  {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
 (1 row)
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-03]}'::tstzspanset),
 ('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
-                           spanunion                            
+                          spansetunion                          
 ----------------------------------------------------------------
  {[Sat Jan 01 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
 (1 row)
@@ -414,7 +414,7 @@ SELECT numSpans(spanUnion(t)) FROM tbl_tstzspan;
        99
 (1 row)
 
-SELECT numSpans(spanUnion(t)) FROM tbl_tstzspanset;
+SELECT numSpans(spansetUnion(t)) FROM tbl_tstzspanset;
  numspans 
 ----------
       479
