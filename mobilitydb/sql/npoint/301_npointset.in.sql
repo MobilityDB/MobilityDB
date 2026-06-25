@@ -227,68 +227,68 @@ CREATE AGGREGATE setUnion(npointset) (
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION set_eq(npointset, npointset)
+CREATE FUNCTION eq(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(npointset, npointset)
+CREATE FUNCTION ne(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(npointset, npointset)
+CREATE FUNCTION lt(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(npointset, npointset)
+CREATE FUNCTION le(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(npointset, npointset)
+CREATE FUNCTION ge(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(npointset, npointset)
+CREATE FUNCTION gt(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(npointset, npointset)
+CREATE FUNCTION cmp(npointset, npointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -300,7 +300,7 @@ CREATE OPERATOR CLASS npointset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(npointset, npointset);
+    FUNCTION  1  cmp(npointset, npointset);
 
 /******************************************************************************/
 

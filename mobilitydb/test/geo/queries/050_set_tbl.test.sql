@@ -130,7 +130,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE set_cmp(t1.g, t2.g) = -1;
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE cmp(t1.g, t2.g) = -1;
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g = t2.g;
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <> t2.g;
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g < t2.g;
@@ -138,7 +138,7 @@ SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g <= t2.g;
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g > t2.g;
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset t2 WHERE t1.g >= t2.g;
 
-SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE set_cmp(t1.g, t2.g) = -1;
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE cmp(t1.g, t2.g) = -1;
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g = t2.g;
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <> t2.g;
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g < t2.g;

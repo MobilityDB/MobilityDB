@@ -381,24 +381,24 @@ reset max_parallel_workers_per_gather;
 -- Comparison functions
 -------------------------------------------------------------------------------
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_cmp('TBOXFLOAT X([1,2])', 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
-SELECT tbox_cmp('TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 'TBOXFLOAT X([1,2])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', tbox 'TBOXFLOAT X([1,2])');
 
 SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])' = floatspan '[1, 2]'::tbox;
 
 -------------------------------------------------------------------------------
 
-SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
+SELECT cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 GROUP BY cmp(t1.b, t2.b) ORDER BY 1;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b = t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <> t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b < t2.b;
@@ -406,7 +406,7 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <= t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b > t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b >= t2.b;
 
-SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
+SELECT cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 GROUP BY cmp(t1.b, t2.b) ORDER BY 1;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b = t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b <> t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b < t2.b;

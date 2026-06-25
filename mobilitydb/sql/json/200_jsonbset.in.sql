@@ -206,68 +206,68 @@ CREATE AGGREGATE setUnion(jsonbset) (
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION set_eq(jsonbset, jsonbset)
+CREATE FUNCTION eq(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(jsonbset, jsonbset)
+CREATE FUNCTION ne(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(jsonbset, jsonbset)
+CREATE FUNCTION lt(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(jsonbset, jsonbset)
+CREATE FUNCTION le(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(jsonbset, jsonbset)
+CREATE FUNCTION ge(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(jsonbset, jsonbset)
+CREATE FUNCTION gt(jsonbset, jsonbset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(jsonbset, jsonbset)
+CREATE FUNCTION cmp(jsonbset, jsonbset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -279,7 +279,7 @@ CREATE OPERATOR CLASS jsonbset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(jsonbset, jsonbset);
+    FUNCTION  1  cmp(jsonbset, jsonbset);
 
 /******************************************************************************/
 

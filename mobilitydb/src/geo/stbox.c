@@ -1648,7 +1648,7 @@ PG_FUNCTION_INFO_V1(Stbox_cmp);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal box
  * is less than, equal to, or greater than the second one
- * @sqlfn stbox_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Stbox_cmp(PG_FUNCTION_ARGS)
@@ -1664,7 +1664,7 @@ PG_FUNCTION_INFO_V1(Stbox_lt);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if the first spatiotemporal box is less than the second
  * one
- * @sqlfn stbox_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -1681,7 +1681,7 @@ PG_FUNCTION_INFO_V1(Stbox_le);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
- * @sqlfn stbox_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -1698,7 +1698,7 @@ PG_FUNCTION_INFO_V1(Stbox_ge);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if the first spatiotemporal box is greater than or equal
  * to the second one
- * @sqlfn stbox_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -1715,7 +1715,7 @@ PG_FUNCTION_INFO_V1(Stbox_gt);
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if the first spatiotemporal box is greater than the
  * second one
- * @sqlfn stbox_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum
@@ -1731,7 +1731,7 @@ PG_FUNCTION_INFO_V1(Stbox_eq);
 /**
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if two spatiotemporal boxes are equal
- * @sqlfn stbox_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -1747,7 +1747,7 @@ PG_FUNCTION_INFO_V1(Stbox_ne);
 /**
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return true if two spatiotemporal boxes are different
- * @sqlfn stbox_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum

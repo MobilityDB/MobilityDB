@@ -131,8 +131,8 @@ SELECT duration(tstzspan '(2000-01-01,2000-01-02]');
 SELECT duration(tstzspan '[2000-01-01,2000-01-02)');
 SELECT duration(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT span_cmp(tstzspan '[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
-SELECT span_cmp(tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
+SELECT cmp(tstzspan '[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
+SELECT cmp(tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
 SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' <> tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' < tstzspan '(2000-01-01,2000-01-02)';

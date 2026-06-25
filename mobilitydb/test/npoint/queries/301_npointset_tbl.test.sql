@@ -94,7 +94,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_npointset t2 WHERE t1.k = t2.k AND t1.n <> t2
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE set_cmp(t1.n, t2.n) = -1;
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE cmp(t1.n, t2.n) = -1;
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n = t2.n;
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n <> t2.n;
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n < t2.n;

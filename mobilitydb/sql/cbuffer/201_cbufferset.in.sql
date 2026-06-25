@@ -234,68 +234,68 @@ CREATE AGGREGATE setUnion(cbufferset) (
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION set_eq(cbufferset, cbufferset)
+CREATE FUNCTION eq(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(cbufferset, cbufferset)
+CREATE FUNCTION ne(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(cbufferset, cbufferset)
+CREATE FUNCTION lt(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(cbufferset, cbufferset)
+CREATE FUNCTION le(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(cbufferset, cbufferset)
+CREATE FUNCTION ge(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(cbufferset, cbufferset)
+CREATE FUNCTION gt(cbufferset, cbufferset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(cbufferset, cbufferset)
+CREATE FUNCTION cmp(cbufferset, cbufferset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -307,7 +307,7 @@ CREATE OPERATOR CLASS cbufferset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(cbufferset, cbufferset);
+    FUNCTION  1  cmp(cbufferset, cbufferset);
 
 /******************************************************************************/
 

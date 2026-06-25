@@ -389,7 +389,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>set_cmp</varname>, <varname>span_cmp</varname>, and <varname>spanset_cmp</varname></link>: Traditional comparisons</para>
+					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname>, <varname>cmp</varname>, <varname>cmp</varname>, and <varname>cmp</varname></link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -614,7 +614,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname><varname>tbox_cmp</varname>, </link>: Traditional comparisons</para>
+				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname><varname>cmp</varname>, </link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
