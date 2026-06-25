@@ -122,6 +122,7 @@ typedef enum
   T_JSONBSET       = 65,  /**< static set of JSONB values */
   T_TJSONB         = 66,  /**< temporal JSONB value */
 #endif /* JSON */
+  T_TBIGINT        = 67,  /**< temporal big integer type */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

@@ -24,15 +24,15 @@
 			</listitem>
 
 			<listitem>
-				<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
+				<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname>, <varname>tbigint</varname>, or <varname>tfloat</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>number</varname> represents any number base type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
+				<para><varname>number</varname> represents any number base type, that is, <varname>integer</varname>, <varname>bigint</varname>, or <varname>float</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>numspan</varname> represents any number span type, that is, either <varname>intspan</varname> or <varname>floatspan</varname>,</para>
+				<para><varname>numspan</varname> represents any number span type, that is, either <varname>intspan</varname>, <varname>bigintspan</varname>, or <varname>floatspan</varname>,</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -83,21 +83,18 @@ SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
 
 			<listitem xml:id="tint_tfloat">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tfloat(tint)</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tint(tfloat)</varname></primary></indexterm>
-				<para>Convert between a temporal integer and a temporal float</para>
-				<para><varname>tint::tfloat</varname></para>
-				<para><varname>tfloat::tint</varname></para>
-				<para><varname>tfloat(tint) → tfloat</varname></para>
-				<para><varname>tint(tfloat) → tint</varname></para>
+				<indexterm significance="normal"><primary><varname>tnumber(tnumber)</varname></primary></indexterm>
+				<para>Convert between temporal integers, temporal big integers, and temporal floats</para>
+				<para><varname>tnumber::tnumber</varname></para>
+				<para><varname>tnumber(tnumber) → tnumber</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03]
-SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
+SELECT tbigint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01, 2@2001-01-03]
-SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 </programlisting>
 			</listitem>

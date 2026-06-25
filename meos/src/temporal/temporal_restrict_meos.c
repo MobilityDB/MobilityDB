@@ -254,6 +254,28 @@ tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal big integer at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tbigint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+  int64 *value)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, false); VALIDATE_NOT_NULL(value, false);
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetInt64(res);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return the value of a temporal integer at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp

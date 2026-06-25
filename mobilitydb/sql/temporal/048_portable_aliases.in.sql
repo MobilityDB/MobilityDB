@@ -2167,6 +2167,26 @@ CREATE FUNCTION overafter(tstzspan, tint)
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION before(tstzspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(tstzspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(tstzspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(tstzspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION before(tstzspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
@@ -2227,6 +2247,26 @@ CREATE FUNCTION overright(intspan, tint)
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION left(intspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(intspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(intspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(intspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION left(intspan, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
@@ -2247,6 +2287,66 @@ CREATE FUNCTION overright(intspan, tfloat)
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION left(bigintspan, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(bigintspan, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(bigintspan, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(bigintspan, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(bigintspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(bigintspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(bigintspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(bigintspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(bigintspan, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(bigintspan, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(bigintspan, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(bigintspan, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION left(floatspan, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
@@ -2263,6 +2363,26 @@ CREATE FUNCTION right(floatspan, tint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overright(floatspan, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(floatspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(floatspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(floatspan, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(floatspan, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2323,6 +2443,46 @@ CREATE FUNCTION after(tbox, tint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overafter(tbox, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(tbox, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(tbox, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2523,6 +2683,126 @@ CREATE FUNCTION after(tint, tint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overafter(tint, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(tbigint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(tbigint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(tbigint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(tbigint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(tbigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(tbigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(tbigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(tbigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(tbigint, tbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION left(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overleft(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION right(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overright(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(tbigint, tbigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(tbigint, tbigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

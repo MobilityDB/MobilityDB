@@ -14,7 +14,7 @@
 	<sect1 xml:id="ttype_introduction">
 		<title>Introduction</title>
 		<para>
-			MobilityDB provides several temporal types based on PostgreSQL or PostGIS types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>integer</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname>, where <varname>tgeometry</varname> and <varname>tgeography</varname> accept arbitrary geometries/geographies, while <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> only accept 2D or 3D points with Z dimension. In addition, MobilityDB provides other specific spatial types, namely, <varname>cbuffer</varname> (circular buffer), <varname>npoint</varname> (network point), and <varname>pose</varname>, and its corresponding spatiotemporal types, namely, <varname>tcbuffer</varname>, <varname>tnpoint</varname>, <varname>tpose</varname> and <varname>trgeometry</varname> (temporal rigid geometry). In this chapter and the next one we present the functions and operators available for all temporal types, while the specific functions for the spatiotemporal types will be given in subsequenct chapters.
+			MobilityDB provides several temporal types based on PostgreSQL or PostGIS types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname>, where <varname>tgeometry</varname> and <varname>tgeography</varname> accept arbitrary geometries/geographies, while <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> only accept 2D or 3D points with Z dimension. In addition, MobilityDB provides other specific spatial types, namely, <varname>cbuffer</varname> (circular buffer), <varname>npoint</varname> (network point), and <varname>pose</varname>, and its corresponding spatiotemporal types, namely, <varname>tcbuffer</varname>, <varname>tnpoint</varname>, <varname>tpose</varname> and <varname>trgeometry</varname> (temporal rigid geometry). In this chapter and the next one we present the functions and operators available for all temporal types, while the specific functions for the spatiotemporal types will be given in subsequenct chapters.
 		</para>
 
 		<para>
@@ -114,7 +114,7 @@ SELECT asText(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00,Point(3 3)@2001-01-01
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 </programlisting>
-			the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the subtype of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any subtype are allowed.
+			the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the subtype of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any subtype are allowed.
 		</para>
 
 		<para>
@@ -135,7 +135,7 @@ CREATE TABLE Storm(StormId integer, Route tgeography(Sequence, Linestring, 4326)
 			</listitem>
 
 			<listitem>
-				<para>The <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
+				<para>The <varname>tbox</varname> (temporal box) type for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types, where the value and the time extents are defined, respectively, by a number span and a time span.</para>
 			</listitem>
 
 			<listitem>
@@ -371,7 +371,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 			</listitem>
 
 			<listitem>
-				<para><varname>tdisc</varname> represents any temporal type with a discrete base type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
+				<para><varname>tdisc</varname> represents any temporal type with a discrete base type, that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, or <varname>ttext</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -412,6 +412,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool 'true@2001-01-01 08:00:00';
 SELECT tint '1@2001-01-01 08:00:00';
+SELECT tbigint '5@2001-01-01 08:00:00';
 SELECT tfloat '1.5@2001-01-01 08:00:00';
 SELECT ttext 'AAA@2001-01-01 08:00:00';
 SELECT tgeompoint 'Point(0 0)@2017-01-01 08:00:05';
@@ -425,7 +426,7 @@ SELECT tgeography 'Polygon((0 0,1 1,2 0,0 0))@2017-01-01 08:00:05';
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
 SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
-SELECT tint '{1@2001-01-01 08:00:00}'; -- Instantaneous sequence
+SELECT tbigint '{1@2001-01-01 08:00:00}'; -- Instantaneous sequence
 SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
 SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
 SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
@@ -770,8 +771,8 @@ SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
 SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
   '5@2001-01-05']);
 -- {[1@2001-01-01, 3@2001-01-02, 4@2001-01-03, 5@2001-01-05]}
-SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
-  '5@2001-01-05'], '1 day', 1);
+  SELECT tbigintSeqSetGaps(ARRAY[tbigint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
+    '5@2001-01-05'], '1 day', 1);
 -- {[1@2001-01-01], [3@2001-01-02, 4@2001-01-03], [5@2001-01-05]}
 SELECT ttextSeqSetGaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
   'CC@2001-01-05'], '1 day');

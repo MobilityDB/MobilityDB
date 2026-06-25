@@ -46,6 +46,21 @@
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is ever equal to a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_eq_base_temporal()
+ */
+int
+ever_eq_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_eq_base_temporal(Int64GetDatum(i), temp);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a boolean is ever equal to a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -108,6 +123,21 @@ ever_eq_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever equal to a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_eq_temporal_base()
+ */
+int
+ever_eq_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_eq_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
@@ -167,6 +197,21 @@ ever_eq_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is always equal to a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_eq_base_temporal()
+ */
+int
+always_eq_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_eq_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -234,6 +279,21 @@ always_eq_text_ttext(const text *txt, const Temporal *temp)
  * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal boolean is always equal to a boolean
  * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_eq_temporal_base()
+ */
+int
+always_eq_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_eq_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal boolean is always equal to a boolean
+ * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Always_eq_temporal_base()
  */
@@ -291,6 +351,22 @@ always_eq_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is ever different from a temporal big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ne_base_temporal()
+ */
+int
+ever_ne_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_ne_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -356,6 +432,22 @@ ever_ne_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever different from a big
+ * integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_ne_temporal_base()
+ */
+int
+ever_ne_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_ne_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal boolean is ever different from a boolean
  * @param[in] temp Temporal value
  * @param[in] b Value
@@ -418,6 +510,22 @@ ever_ne_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is always different from a temporal big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ne_base_temporal()
+ */
+int
+always_ne_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_ne_base_temporal(Int64GetDatum(i), temp);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a boolean is always different from a temporal boolean
  * @param[in] b Value
  * @param[in] temp Temporal value
@@ -477,6 +585,22 @@ always_ne_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is always different from a big
+ * integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_ne_temporal_base()
+ */
+int
+always_ne_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_ne_temporal_base(temp, Int64GetDatum(i));
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -557,6 +681,21 @@ ever_lt_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is ever less than a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_lt_base_temporal()
+ */
+int
+ever_lt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_lt_base_temporal(Int64GetDatum(i), temp);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a float is ever less than a temporal float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -586,6 +725,21 @@ ever_lt_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever less than a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_lt_temporal_base()
+ */
+int
+ever_lt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_lt_temporal_base(temp, Int64GetDatum(i));
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -633,6 +787,22 @@ ever_lt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is always less than a temporal big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_lt_base_temporal()
+ */
+int
+always_lt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_lt_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -689,6 +859,21 @@ always_lt_text_ttext(const text *txt, const Temporal *temp)
  * @csqlfn #Always_lt_temporal_base()
  */
 int
+always_lt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_lt_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_lt_temporal_base()
+ */
+int
 always_lt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
@@ -727,6 +912,22 @@ always_lt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is ever less than or equal to a big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_le_base_temporal()
+ */
+int
+ever_le_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_le_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -778,6 +979,22 @@ ever_le_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever less than or equal to a
+ * big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_le_temporal_base()
+ */
+int
+ever_le_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_le_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an
  * integer
  * @param[in] temp Temporal value
@@ -826,7 +1043,23 @@ ever_le_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup meos_temporal_comp_ever
- * @brief Return true if an integer is always less than or equal to an
+ * @brief Return true if a big integer is always less than or equal to a
+ * temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_le_base_temporal()
+ */
+int
+always_le_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_le_base_temporal(Int64GetDatum(i), temp);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if an integer is always less than or equal to a temporal
  * integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -842,7 +1075,7 @@ always_le_int_tint(int i, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
- * @brief Return true if a float is always less than or equal to a
+ * @brief Return true if a float is always less than or equal to a temporal
  * float
  * @param[in] d Value
  * @param[in] temp Temporal value
@@ -858,7 +1091,7 @@ always_le_float_tfloat(double d, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
- * @brief Return true if a text is always less than or equal to a text
+ * @brief Return true if a text is always less than or equal to a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_le_base_temporal()
@@ -872,6 +1105,22 @@ always_le_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is always less than or equal to
+ * a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_le_temporal_base()
+ */
+int
+always_le_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_le_temporal_base(temp, Int64GetDatum(i));
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -924,6 +1173,21 @@ always_le_ttext_text(const Temporal *temp, const text *txt)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is ever less than a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_gt_base_temporal()
+ */
+int
+ever_gt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_gt_base_temporal(Int64GetDatum(i), temp);
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if an integer is ever less than a temporal integer
  * @param[in] i Value
  * @param[in] temp Temporal value
@@ -971,6 +1235,21 @@ ever_gt_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever less than a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_gt_temporal_base()
+ */
+int
+ever_gt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_gt_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than an integer
  * @param[in] temp Temporal value
  * @param[in] i Value
@@ -1015,6 +1294,22 @@ ever_gt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is always less than a temporal big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_gt_base_temporal()
+ */
+int
+always_gt_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_gt_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1071,6 +1366,21 @@ always_gt_text_ttext(const text *txt, const Temporal *temp)
  * @csqlfn #Always_gt_temporal_base()
  */
 int
+always_gt_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_gt_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal integer is always less than an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_gt_temporal_base()
+ */
+int
 always_gt_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
@@ -1109,6 +1419,22 @@ always_gt_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is ever less than or equal to a big
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Ever_ge_base_temporal()
+ */
+int
+ever_ge_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_ge_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1160,6 +1486,22 @@ ever_ge_text_ttext(const text *txt, const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is ever less than or equal to a
+ * big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Ever_ge_temporal_base()
+ */
+int
+ever_ge_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return ever_ge_temporal_base(temp, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_temporal_comp_ever
  * @brief Return true if a temporal integer is ever less than or equal to an
  * integer
  * @param[in] temp Temporal value
@@ -1205,6 +1547,22 @@ ever_ge_ttext_text(const Temporal *temp, const text *txt)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a big integer is always less than or equal to a
+ * temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Always_ge_base_temporal()
+ */
+int
+always_ge_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_ge_base_temporal(Int64GetDatum(i), temp);
+}
 
 /**
  * @ingroup meos_temporal_comp_ever
@@ -1254,6 +1612,22 @@ always_ge_text_ttext(const text *txt, const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_ever
+ * @brief Return true if a temporal big integer is always less than or equal to
+ * a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Always_ge_temporal_base()
+ */
+int
+always_ge_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, -1);
+  return always_ge_temporal_base(temp, Int64GetDatum(i));
+}
 
 /**
  * @ingroup meos_temporal_comp_ever

@@ -855,6 +855,8 @@ tsequenceset_max_val(const TSequenceSet *ss)
     MeosType basetype = temptype_basetype(ss->temptype);
     if (basetype == T_INT4)
       max = Int32GetDatum(DatumGetInt32(max) - 1);
+    else if (basetype == T_INT8)
+      max = Int64GetDatum(DatumGetInt64(max) - 1);
     return max;
   }
 
