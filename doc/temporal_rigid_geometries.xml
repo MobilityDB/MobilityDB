@@ -438,17 +438,17 @@ SELECT temporalTime(atStbox(
 		<itemizedlist>
 			<listitem xml:id="trgeometry_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tdistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
 				<para>Return the temporal distance between two trgeometries</para>
 				<para><varname>{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat</varname></para>
-				<para><varname>tdistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
+				<para><varname>tDistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT round(maxValue(tdistance(
+SELECT round(maxValue(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0), 0.0)@2001-01-01',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0), 0.0)@2001-01-01')), 6);
 -- 4
 
-SELECT asText(tdistance(
+SELECT asText(tDistance(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 0.0)@2001-01-02]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- [1@2001-01-01 ..., 9@2001-01-02 ...]
@@ -756,7 +756,7 @@ LIMIT 10;
 					<para><emphasis>Mitigation</emphasis>: documented in <xref linkend="trgeometry_traversed_area"/>. Workloads needing tight swept-area bounds must up-sample the input <varname>tpose</varname> before constructing the <varname>trgeometry</varname>; the <varname>setInterp</varname> + sub-instant insertion pattern from the <varname>tpose</varname> chapter is the standard approach. Adaptive sub-sampling within <varname>traversedArea</varname> is a documented future refinement.</para>
 				</listitem>
 				<listitem>
-					<para><emphasis>Adaptive sub-sampling tolerance in materialised distance</emphasis>. Continuous-distance kernels (<varname>tdistance</varname>, <varname>nearestApproachDistance</varname>) materialise the rigid shape per inter-instant gap and emit intermediate marks where the distance trajectory deviates from a straight line. The depth-cap is 32 marks per gap and the LINEAR-interpolated approximation between marks is bounded by <varname>1e-3</varname> (in CRS units).</para>
+					<para><emphasis>Adaptive sub-sampling tolerance in materialised distance</emphasis>. Continuous-distance kernels (<varname>tDistance</varname>, <varname>nearestApproachDistance</varname>) materialise the rigid shape per inter-instant gap and emit intermediate marks where the distance trajectory deviates from a straight line. The depth-cap is 32 marks per gap and the LINEAR-interpolated approximation between marks is bounded by <varname>1e-3</varname> (in CRS units).</para>
 					<para><emphasis>Mitigation</emphasis>: the <varname>1e-3</varname> bound is a documented design choice. Pure-translation segments converge at depth 0; rotation-heavy segments use the full 32-mark budget. Workloads that need sharper precision on a specific operator should pre-process the input poses to denser instants rather than rely on tighter recursion.</para>
 				</listitem>
 				<listitem>
