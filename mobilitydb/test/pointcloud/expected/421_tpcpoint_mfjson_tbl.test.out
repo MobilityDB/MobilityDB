@@ -1,0 +1,40 @@
+SELECT bool_and(asMFJSON(temp) LIKE '%"type":"MovingPCPoint"%')
+FROM tbl_tpcpoint;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(asMFJSON(temp) LIKE '%"type":"MovingPCPatch"%')
+FROM tbl_tpcpatch;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(asMFJSON(temp, 1) LIKE '%"pcid":1%' AND
+                asMFJSON(temp, 1) LIKE '%"bbox":%')
+FROM tbl_tpcpoint;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(
+  substring(asMFJSON(inst) FROM '"coordinates":\[\[[^\]]+\]') ~
+    '^"coordinates":\[\[-?[0-9.]+,-?[0-9.]+(,-?[0-9.]+)?\]$')
+FROM tbl_tpcpoint_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(asMFJSON(inst) LIKE '%"pcid":1%' AND
+                asMFJSON(inst) LIKE '%"npoints":%' AND
+                asMFJSON(inst) LIKE '%"bounds":[%')
+FROM tbl_tpcpatch_inst;
+ bool_and 
+----------
+ t
+(1 row)
+
