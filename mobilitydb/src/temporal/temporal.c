@@ -2884,8 +2884,8 @@ PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if two temporal values are equal
- * @sqlfn tint_eq(), tfloat_eq(), ...
- * @sqlop =
+ * @sqlfn eq()
+ * @sqlop @p =
  */
 Datum
 Temporal_eq(PG_FUNCTION_ARGS)
@@ -2903,8 +2903,8 @@ PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if two temporal values are different
- * @sqlfn tint_ne(), tfloat_ne(), ...
- * @sqlop <>
+ * @sqlfn ne()
+ * @sqlop @p <>
  */
 Datum
 Temporal_ne(PG_FUNCTION_ARGS)
@@ -2925,7 +2925,7 @@ PG_FUNCTION_INFO_V1(Temporal_cmp);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal to, or greater than the second temporal value
- * @sqlfn tint_cmp(), tfloat_cmp(), ...
+ * @sqlfn cmp()
  */
 Datum
 Temporal_cmp(PG_FUNCTION_ARGS)
@@ -2943,7 +2943,7 @@ PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
- * @sqlfn tint_lt(), tfloat_lt(), ...
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -2963,7 +2963,7 @@ PG_FUNCTION_INFO_V1(Temporal_le);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
- * @sqlfn tint_le(), tfloat_le(), ...
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -2983,8 +2983,8 @@ PG_FUNCTION_INFO_V1(Temporal_ge);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
- * @sqlfn tint_ge(), tfloat_ge(), ...
- * @sqlop =@p >=
+ * @sqlfn ge()
+ * @sqlop @p >=
  */
 Datum
 Temporal_ge(PG_FUNCTION_ARGS)
@@ -3002,7 +3002,7 @@ PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
- * @sqlfn tint_gt(), tfloat_gt(), ...
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

@@ -404,143 +404,143 @@ CREATE AGGREGATE setUnion(geogset) (
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION set_eq(geomset, geomset)
+CREATE FUNCTION eq(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_eq(geogset, geogset)
+CREATE FUNCTION eq(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_ne(geomset, geomset)
+CREATE FUNCTION ne(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ne(geogset, geogset)
+CREATE FUNCTION ne(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_lt(geomset, geomset)
+CREATE FUNCTION lt(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_lt(geogset, geogset)
+CREATE FUNCTION lt(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_le(geomset, geomset)
+CREATE FUNCTION le(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_le(geogset, geogset)
+CREATE FUNCTION le(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_ge(geomset, geomset)
+CREATE FUNCTION ge(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_ge(geogset, geogset)
+CREATE FUNCTION ge(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gt(geomset, geomset)
+CREATE FUNCTION gt(geomset, geomset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_gt(geogset, geogset)
+CREATE FUNCTION gt(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_cmp(geomset, geomset)
+CREATE FUNCTION cmp(geomset, geomset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_cmp(geogset, geogset)
+CREATE FUNCTION cmp(geogset, geogset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 
 CREATE OPERATOR <> (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = geomset, RIGHTARG = geomset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = geogset, RIGHTARG = geogset,
-  PROCEDURE = set_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
@@ -552,7 +552,7 @@ CREATE OPERATOR CLASS geomset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(geomset, geomset);
+    FUNCTION  1  cmp(geomset, geomset);
 CREATE OPERATOR CLASS geogset_btree_ops
   DEFAULT FOR TYPE geogset USING btree AS
     OPERATOR  1  <,
@@ -560,7 +560,7 @@ CREATE OPERATOR CLASS geogset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  set_cmp(geogset, geogset);
+    FUNCTION  1  cmp(geogset, geogset);
 
 /******************************************************************************/
 
@@ -709,174 +709,174 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_union(geometry, geomset)
+CREATE FUNCTION setUnion(geometry, geomset)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(geomset, geometry)
+CREATE FUNCTION setUnion(geomset, geometry)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(geomset, geomset)
+CREATE FUNCTION setUnion(geomset, geomset)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_union(geography, geogset)
+CREATE FUNCTION setUnion(geography, geogset)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(geogset, geography)
+CREATE FUNCTION setUnion(geogset, geography)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Union_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(geogset, geogset)
+CREATE FUNCTION setUnion(geogset, geogset)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geometry, RIGHTARG = geomset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geomset, RIGHTARG = geometry,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = +
 );
 
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
-  PROCEDURE = set_union,
+  PROCEDURE = setUnion,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = +
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_minus(geometry, geomset)
+CREATE FUNCTION setMinus(geometry, geomset)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(geomset, geometry)
+CREATE FUNCTION setMinus(geomset, geometry)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(geomset, geomset)
+CREATE FUNCTION setMinus(geomset, geomset)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_minus(geography, geogset)
+CREATE FUNCTION setMinus(geography, geogset)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(geogset, geography)
+CREATE FUNCTION setMinus(geogset, geography)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(geogset, geogset)
+CREATE FUNCTION setMinus(geogset, geogset)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geometry, RIGHTARG = geomset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geomset, RIGHTARG = geometry
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geomset, RIGHTARG = geomset
 );
 
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geography, RIGHTARG = geogset
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geogset, RIGHTARG = geography
 );
 CREATE OPERATOR - (
-  PROCEDURE = set_minus,
+  PROCEDURE = setMinus,
   LEFTARG = geogset, RIGHTARG = geogset
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_intersection(geometry, geomset)
+CREATE FUNCTION setIntersection(geometry, geomset)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(geomset, geometry)
+CREATE FUNCTION setIntersection(geomset, geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(geomset, geomset)
+CREATE FUNCTION setIntersection(geomset, geomset)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_intersection(geography, geogset)
+CREATE FUNCTION setIntersection(geography, geogset)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(geogset, geography)
+CREATE FUNCTION setIntersection(geogset, geography)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(geogset, geogset)
+CREATE FUNCTION setIntersection(geogset, geogset)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geometry, RIGHTARG = geomset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geomset, RIGHTARG = geometry,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = *
 );
 
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
+  PROCEDURE = setIntersection,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = *
 );

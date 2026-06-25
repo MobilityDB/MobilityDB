@@ -790,7 +790,7 @@ PG_FUNCTION_INFO_V1(Set_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less than,
  * equal to, or greater than the second one
- * @sqlfn set_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Set_cmp(PG_FUNCTION_ARGS)
@@ -808,7 +808,7 @@ PG_FUNCTION_INFO_V1(Set_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is equal to the second one
- * @sqlfn set_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -827,7 +827,7 @@ PG_FUNCTION_INFO_V1(Set_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is different from the second one
- * @sqlfn set_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -846,7 +846,7 @@ PG_FUNCTION_INFO_V1(Set_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than the second one
- * @sqlfn set_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -865,7 +865,7 @@ PG_FUNCTION_INFO_V1(Set_le);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than or equal to the second one
- * @sqlfn set_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -885,7 +885,7 @@ PG_FUNCTION_INFO_V1(Set_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than or equal to the second
  * one
- * @sqlfn set_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -904,7 +904,7 @@ PG_FUNCTION_INFO_V1(Set_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than the second one
- * @sqlfn set_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

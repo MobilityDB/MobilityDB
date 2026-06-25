@@ -51,10 +51,10 @@
  * @brief Return the temporal distance between a geometry and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #Tdistance_tpose_point()
+ * @csqlfn #Tdistance_tpose_geo()
  */
 Temporal *
-tdistance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
+tdistance_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))

@@ -940,7 +940,7 @@
 			<title>Operaciones matemáticas</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_add"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Adición, resta, multiplicación y división temporal</para>
+					<para><link linkend="tAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Adición, resta, multiplicación y división temporal</para>
 				</listitem>
 
 				<listitem>

@@ -303,7 +303,7 @@ PG_FUNCTION_INFO_V1(Set_split_n_spans);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Return an array of N spans from the elements of a set
- * @sqlfn splitNspans()
+ * @sqlfn splitNSpans()
  */
 Datum
 Set_split_n_spans(PG_FUNCTION_ARGS)
@@ -840,7 +840,7 @@ PG_FUNCTION_INFO_V1(Span_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is equal to the second one
- * @sqlfn span_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -856,7 +856,7 @@ PG_FUNCTION_INFO_V1(Span_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is different from the second one
- * @sqlfn span_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -873,7 +873,7 @@ PG_FUNCTION_INFO_V1(Span_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal to, or greater than the second one
- * @sqlfn span_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Span_cmp(PG_FUNCTION_ARGS)
@@ -888,7 +888,7 @@ PG_FUNCTION_INFO_V1(Span_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is less than the second one
- * @sqlfn span_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -904,7 +904,7 @@ PG_FUNCTION_INFO_V1(Span_le);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is less than or equal to the second one
- * @sqlfn span_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -921,7 +921,7 @@ PG_FUNCTION_INFO_V1(Span_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is greater than or equal to the second
  * one
- * @sqlfn span_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -937,7 +937,7 @@ PG_FUNCTION_INFO_V1(Span_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span is greater than the second one
- * @sqlfn span_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

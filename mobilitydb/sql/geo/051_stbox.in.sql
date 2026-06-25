@@ -293,44 +293,44 @@ CREATE FUNCTION isGeodetic(stbox)
   AS 'MODULE_PATHNAME', 'Stbox_isgeodetic'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION Xmin(stbox)
+CREATE FUNCTION xMin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_xmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Ymin(stbox)
+CREATE FUNCTION yMin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_ymin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Zmin(stbox)
+CREATE FUNCTION zMin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_zmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmin(stbox)
+CREATE FUNCTION tMin(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION TminInc(stbox)
+CREATE FUNCTION tMinInc(stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_tmin_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION Xmax(stbox)
+CREATE FUNCTION xMax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_xmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Ymax(stbox)
+CREATE FUNCTION yMax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_ymax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Zmax(stbox)
+CREATE FUNCTION zMax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_zmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmax(stbox)
+CREATE FUNCTION tMax(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION TmaxInc(stbox)
+CREATE FUNCTION tMaxInc(stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_tmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -667,67 +667,67 @@ CREATE AGGREGATE extent(stbox) (
  * Comparison
  *****************************************************************************/
 
-CREATE FUNCTION stbox_eq(stbox, stbox)
+CREATE FUNCTION eq(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_ne(stbox, stbox)
+CREATE FUNCTION ne(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_lt(stbox, stbox)
+CREATE FUNCTION lt(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_le(stbox, stbox)
+CREATE FUNCTION le(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_ge(stbox, stbox)
+CREATE FUNCTION ge(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_gt(stbox, stbox)
+CREATE FUNCTION gt(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_cmp(stbox, stbox)
+CREATE FUNCTION cmp(stbox, stbox)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Stbox_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = stbox, RIGHTARG = stbox,
-  PROCEDURE = stbox_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = stbox, RIGHTARG = stbox,
-  PROCEDURE = stbox_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
-  PROCEDURE = stbox_lt,
+  PROCEDURE = lt,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR <= (
-  PROCEDURE = stbox_le,
+  PROCEDURE = le,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR >= (
-  PROCEDURE = stbox_ge,
+  PROCEDURE = ge,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR > (
-  PROCEDURE = stbox_gt,
+  PROCEDURE = gt,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = areasel, JOIN = areajoinsel
@@ -740,7 +740,7 @@ CREATE OPERATOR CLASS stbox_btree_ops
   OPERATOR  3  = ,
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
-  FUNCTION  1  stbox_cmp(stbox, stbox);
+  FUNCTION  1  cmp(stbox, stbox);
 
 /*****************************************************************************/
 

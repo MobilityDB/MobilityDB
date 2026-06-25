@@ -353,7 +353,7 @@ SELECT whenTrue(tdwithin(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 		<title>Operaciones matemáticas</title>
 
 		<itemizedlist>
-			<listitem xml:id="tnumber_add">
+			<listitem xml:id="tAdd">
 				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>

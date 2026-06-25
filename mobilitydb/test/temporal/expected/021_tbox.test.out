@@ -1277,70 +1277,70 @@ reset min_parallel_table_scan_size;
 RESET
 reset max_parallel_workers_per_gather;
 RESET
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
- tbox_cmp 
-----------
-       -1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+ cmp 
+-----
+  -1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_cmp 
-----------
-        1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ cmp 
+-----
+   1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
- tbox_cmp 
-----------
-       -1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
+ cmp 
+-----
+  -1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_cmp 
-----------
-        1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ cmp 
+-----
+   1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
- tbox_cmp 
-----------
-       -1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])');
+ cmp 
+-----
+  -1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_cmp 
-----------
-        1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-02, 2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ cmp 
+-----
+   1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
- tbox_cmp 
-----------
-       -1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])');
+ cmp 
+-----
+  -1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_cmp 
-----------
-        1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-03])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ cmp 
+-----
+   1
 (1 row)
 
-SELECT tbox_cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_cmp 
-----------
-        0
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+ cmp 
+-----
+   0
 (1 row)
 
-SELECT tbox_cmp('TBOXFLOAT X([1,2])', 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
- tbox_cmp 
-----------
-       -1
+SELECT cmp(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ cmp 
+-----
+  -1
 (1 row)
 
-SELECT tbox_cmp('TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 'TBOXFLOAT X([1,2])');
- tbox_cmp 
-----------
-        1
+SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', tbox 'TBOXFLOAT X([1,2])');
+ cmp 
+-----
+   1
 (1 row)
 
 SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])' = floatspan '[1, 2]'::tbox;
@@ -1349,13 +1349,13 @@ SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])' = floatspan '[1, 2
  f
 (1 row)
 
-SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
- tbox_cmp | count 
-----------+-------
-       -1 |  4851
-        0 |    99
-        1 |  4851
-          |   199
+SELECT cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 GROUP BY cmp(t1.b, t2.b) ORDER BY 1;
+ cmp | count 
+-----+-------
+  -1 |  4851
+   0 |    99
+   1 |  4851
+     |   199
 (4 rows)
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b = t2.b;
@@ -1394,13 +1394,13 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b >= t2.b;
   4950
 (1 row)
 
-SELECT tbox_cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
- tbox_cmp | count 
-----------+-------
-       -1 |  4851
-        0 |    99
-        1 |  4851
-          |   199
+SELECT cmp(t1.b, t2.b), COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 GROUP BY cmp(t1.b, t2.b) ORDER BY 1;
+ cmp | count 
+-----+-------
+  -1 |  4851
+   0 |    99
+   1 |  4851
+     |   199
 (4 rows)
 
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b = t2.b;

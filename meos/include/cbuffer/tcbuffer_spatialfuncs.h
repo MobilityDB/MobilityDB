@@ -44,10 +44,10 @@
 
 /* Traversed area functions */
 
-extern GSERIALIZED *tcbufferinst_trav_area(const TInstant *inst);
-extern GSERIALIZED *tcbufferseq_trav_area(const TSequence *seq);
-extern GSERIALIZED *tcbufferseqset_trav_area(const TSequenceSet *ss);
-extern GSERIALIZED *tcbuffersegm_trav_area(const TInstant *inst1,
+extern GSERIALIZED *tcbufferinst_traversed_area(const TInstant *inst);
+extern GSERIALIZED *tcbufferseq_traversed_area(const TSequence *seq);
+extern GSERIALIZED *tcbufferseqset_traversed_area(const TSequenceSet *ss);
+extern GSERIALIZED *tcbuffersegm_traversed_area(const TInstant *inst1,
   const TInstant *inst2);
 
 /* Restriction functions */

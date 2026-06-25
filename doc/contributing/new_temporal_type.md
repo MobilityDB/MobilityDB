@@ -397,7 +397,7 @@ A new temporal type is at *parity* when it exposes the same shape of surface as 
 | Value accessors | `tfoo_start_value`, `tfoo_end_value`, `tfoo_value_n`, `tfoo_values` | every type |
 | Restrictions | `at/minus_value`, `at/minus_values`, `at/minus_time`, `at/minus_geometry`, `at/minus_stbox` | every spatial type |
 | Distance | `tdistance_*`, `nad_*` (failure sentinel = `DBL_MAX`), `nai_*`, `shortestline_*` for every cross-type combo | every spatial type |
-| Comparison | `temporal_eq/ne/lt/le/gt/ge` (orderable types only — skip lt/gt for non-orderable like cbuffer / pose) | every type |
+| Comparison | `eq/ne/lt/le/gt/ge` (orderable types only — skip lt/gt for non-orderable like cbuffer / pose) | every type |
 | Spatial relationships | `contains/covers/disjoint/intersects/touches/dwithin` × `{ever, always, t}` for each cross-type | spatial types |
 | Aggregates | `extent` (returns the spatiotemporal `STBox`), `tcount`, `mergeAgg`, `appendInstantAgg`, `appendSequenceAgg` | every type |
 | Index opclasses | GiST + SP-GiST registered for both `tfoobox` and `tfoo` | every type |

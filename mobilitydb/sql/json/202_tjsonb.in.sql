@@ -615,68 +615,68 @@ CREATE FUNCTION splitEachNSpans(tjsonb, integer)
  * Comparison functions and B-tree indexing
  *****************************************************************************/
 
-CREATE FUNCTION temporal_lt(tjsonb, tjsonb)
+CREATE FUNCTION lt(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_le(tjsonb, tjsonb)
+CREATE FUNCTION le(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tjsonb, tjsonb)
+CREATE FUNCTION eq(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ne(tjsonb, tjsonb)
+CREATE FUNCTION ne(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ge(tjsonb, tjsonb)
+CREATE FUNCTION ge(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_gt(tjsonb, tjsonb)
+CREATE FUNCTION gt(tjsonb, tjsonb)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_cmp(tjsonb, tjsonb)
+CREATE FUNCTION cmp(tjsonb, tjsonb)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE = temporal_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
@@ -688,7 +688,7 @@ CREATE OPERATOR CLASS tjsonb_btree_ops
     OPERATOR  3 =,
     OPERATOR  4 >=,
     OPERATOR  5 >,
-    FUNCTION  1 temporal_cmp(tjsonb, tjsonb);
+    FUNCTION  1 cmp(tjsonb, tjsonb);
 
 /*****************************************************************************/
 

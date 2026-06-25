@@ -84,6 +84,7 @@ jobs:
             --suppress='*:clipper2/*' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
+            --library=cppcheck-mobilitydb.cfg \
             --xml --xml-version=2 \
             -j "$(nproc)" \
             2> cppcheck.xml || true

@@ -277,35 +277,35 @@ CREATE FUNCTION hasT(tbox)
   AS 'MODULE_PATHNAME', 'Tbox_hast'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION Xmin(tbox)
+CREATE FUNCTION xMin(tbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tbox_xmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION XminInc(tbox)
+CREATE FUNCTION xMinInc(tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_xmin_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Xmax(tbox)
+CREATE FUNCTION xMax(tbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tbox_xmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION XmaxInc(tbox)
+CREATE FUNCTION xMaxInc(tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_xmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmin(tbox)
+CREATE FUNCTION tMin(tbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tbox_tmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION TminInc(tbox)
+CREATE FUNCTION tMinInc(tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_tmin_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmax(tbox)
+CREATE FUNCTION tMax(tbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tbox_tmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION TmaxInc(tbox)
+CREATE FUNCTION tMaxInc(tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_tmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -587,67 +587,67 @@ CREATE AGGREGATE extent(tbox) (
  * Comparison
  *****************************************************************************/
 
-CREATE FUNCTION tbox_eq(tbox, tbox)
+CREATE FUNCTION eq(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_ne(tbox, tbox)
+CREATE FUNCTION ne(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_lt(tbox, tbox)
+CREATE FUNCTION lt(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_le(tbox, tbox)
+CREATE FUNCTION le(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_ge(tbox, tbox)
+CREATE FUNCTION ge(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_gt(tbox, tbox)
+CREATE FUNCTION gt(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tbox_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_cmp(tbox, tbox)
+CREATE FUNCTION cmp(tbox, tbox)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Tbox_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = tbox, RIGHTARG = tbox,
-  PROCEDURE = tbox_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tbox, RIGHTARG = tbox,
-  PROCEDURE = tbox_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
-  PROCEDURE = tbox_lt,
+  PROCEDURE = lt,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR <= (
-  PROCEDURE = tbox_le,
+  PROCEDURE = le,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR >= (
-  PROCEDURE = tbox_ge,
+  PROCEDURE = ge,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR > (
-  PROCEDURE = tbox_gt,
+  PROCEDURE = gt,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = areasel, JOIN = areajoinsel
@@ -660,7 +660,7 @@ CREATE OPERATOR CLASS tbox_btree_ops
   OPERATOR  3  = ,
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
-  FUNCTION  1  tbox_cmp(tbox, tbox);
+  FUNCTION  1  cmp(tbox, tbox);
 
 /*****************************************************************************/
 

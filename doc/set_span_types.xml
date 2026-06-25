@@ -1251,16 +1251,16 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>set_cmp</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>span_cmp</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>spanset_cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
 				<para><varname>set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean</varname></para>
 				<para><varname>spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean</varname></para>
-				<para><varname>set_cmp(set,set) → int</varname></para>
-				<para><varname>span_cmp(span,span) → int</varname></para>
-				<para><varname>spanset_cmp(spanset,spanset) → int</varname></para>
-				<para>Functions <varname>set_cmp</varname>, <varname>span_cmp</varname>, and <varname>spanset_cmp</varname> return -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
+				<para><varname>cmp(set,set) → int</varname></para>
+				<para><varname>cmp(span,span) → int</varname></para>
+				<para><varname>cmp(spanset,spanset) → int</varname></para>
+				<para>Functions <varname>cmp</varname>, <varname>cmp</varname>, and <varname>cmp</varname> return -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
@@ -1287,7 +1287,7 @@ SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-
 -- true
 SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 -- false
-SELECT spanset_cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
+SELECT cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 -- -1
 </programlisting>
 			</listitem>
@@ -1301,7 +1301,7 @@ SELECT spanset_cmp(intspanset '{[1, 4)}', intspanset '{[1, 5), [6, 7)}');
 
 		<itemizedlist>
 			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of set or span values.</para></listitem>
-			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_ops"/>, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>setUnion</varname> and <varname>spanUnion</varname> can be used for this purpose.</para></listitem>
+			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_ops"/>, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>setUnion</varname>, <varname>spanUnion</varname>, and <varname>spansetUnion</varname> can be used for this purpose.</para></listitem>
 			<listitem><para>Function <varname>tCount</varname> generalizes the traditional aggregate function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tCount</varname> returns a temporal integer (see <xref linkend="ttype_p1"/>). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time bins of the given granularity (see <xref linkend="ttype_tiling"/>).</para></listitem>
 		</itemizedlist>
 
@@ -1337,6 +1337,7 @@ SELECT extent(ps) FROM periods;
 				<para>Aggregate union</para>
 				<para><varname>setUnion({value,set}) → set</varname></para>
 				<para><varname>spanUnion(spans) → spanset</varname></para>
+					<para><varname>spansetUnion(spansets) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
@@ -1348,7 +1349,7 @@ WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}' UNION
   SELECT tstzspanset '{[2001-01-02, 2001-01-03], [2001-01-05, 2001-01-06]}' UNION
   SELECT tstzspanset '{[2001-01-07, 2001-01-08]}' )
-SELECT spanUnion(ps) FROM periods;
+SELECT spansetUnion(ps) FROM periods;
 -- {[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06], [2001-01-07, 2001-01-08]}
 </programlisting>
 			</listitem>

@@ -916,335 +916,335 @@ CREATE FUNCTION splitEachNSpans(tstzspanset, integer)
  * Comparison operators
  ******************************************************************************/
 
-CREATE FUNCTION spanset_eq(intspanset, intspanset)
+CREATE FUNCTION eq(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_eq(bigintspanset, bigintspanset)
+CREATE FUNCTION eq(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_eq(floatspanset, floatspanset)
+CREATE FUNCTION eq(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_eq(datespanset, datespanset)
+CREATE FUNCTION eq(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_eq(tstzspanset, tstzspanset)
+CREATE FUNCTION eq(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_ne(intspanset, intspanset)
+CREATE FUNCTION ne(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ne(bigintspanset, bigintspanset)
+CREATE FUNCTION ne(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ne(floatspanset, floatspanset)
+CREATE FUNCTION ne(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ne(datespanset, datespanset)
+CREATE FUNCTION ne(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ne(tstzspanset, tstzspanset)
+CREATE FUNCTION ne(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_lt(intspanset, intspanset)
+CREATE FUNCTION lt(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_lt(bigintspanset, bigintspanset)
+CREATE FUNCTION lt(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_lt(floatspanset, floatspanset)
+CREATE FUNCTION lt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_lt(datespanset, datespanset)
+CREATE FUNCTION lt(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_lt(tstzspanset, tstzspanset)
+CREATE FUNCTION lt(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_le(intspanset, intspanset)
+CREATE FUNCTION le(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_le(bigintspanset, bigintspanset)
+CREATE FUNCTION le(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_le(floatspanset, floatspanset)
+CREATE FUNCTION le(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_le(datespanset, datespanset)
+CREATE FUNCTION le(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_le(tstzspanset, tstzspanset)
+CREATE FUNCTION le(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_ge(intspanset, intspanset)
+CREATE FUNCTION ge(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ge(bigintspanset, bigintspanset)
+CREATE FUNCTION ge(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ge(floatspanset, floatspanset)
+CREATE FUNCTION ge(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ge(datespanset, datespanset)
+CREATE FUNCTION ge(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_ge(tstzspanset, tstzspanset)
+CREATE FUNCTION ge(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_gt(intspanset, intspanset)
+CREATE FUNCTION gt(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_gt(bigintspanset, bigintspanset)
+CREATE FUNCTION gt(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_gt(floatspanset, floatspanset)
+CREATE FUNCTION gt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_gt(datespanset, datespanset)
+CREATE FUNCTION gt(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_gt(tstzspanset, tstzspanset)
+CREATE FUNCTION gt(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_cmp(intspanset, intspanset)
+CREATE FUNCTION cmp(intspanset, intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_cmp(bigintspanset, bigintspanset)
+CREATE FUNCTION cmp(bigintspanset, bigintspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_cmp(floatspanset, floatspanset)
+CREATE FUNCTION cmp(floatspanset, floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_cmp(datespanset, datespanset)
+CREATE FUNCTION cmp(datespanset, datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_cmp(tstzspanset, tstzspanset)
+CREATE FUNCTION cmp(tstzspanset, tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 
 CREATE OPERATOR <> (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = intspanset, RIGHTARG = intspanset,
-  PROCEDURE = spanset_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
-  PROCEDURE = spanset_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
-  PROCEDURE = spanset_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = datespanset, RIGHTARG = datespanset,
-  PROCEDURE = spanset_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
-  PROCEDURE = spanset_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -1256,7 +1256,7 @@ CREATE OPERATOR CLASS intspanset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  spanset_cmp(intspanset, intspanset);
+    FUNCTION  1  cmp(intspanset, intspanset);
 CREATE OPERATOR CLASS bigintspanset_btree_ops
   DEFAULT FOR TYPE bigintspanset USING btree AS
     OPERATOR  1  <,
@@ -1264,7 +1264,7 @@ CREATE OPERATOR CLASS bigintspanset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  spanset_cmp(bigintspanset, bigintspanset);
+    FUNCTION  1  cmp(bigintspanset, bigintspanset);
 CREATE OPERATOR CLASS floatspanset_btree_ops
   DEFAULT FOR TYPE floatspanset USING btree AS
     OPERATOR  1  <,
@@ -1272,7 +1272,7 @@ CREATE OPERATOR CLASS floatspanset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  spanset_cmp(floatspanset, floatspanset);
+    FUNCTION  1  cmp(floatspanset, floatspanset);
 CREATE OPERATOR CLASS datespanset_btree_ops
   DEFAULT FOR TYPE datespanset USING btree AS
     OPERATOR  1  <,
@@ -1280,7 +1280,7 @@ CREATE OPERATOR CLASS datespanset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  spanset_cmp(datespanset, datespanset);
+    FUNCTION  1  cmp(datespanset, datespanset);
 CREATE OPERATOR CLASS tstzspanset_btree_ops
   DEFAULT FOR TYPE tstzspanset USING btree AS
     OPERATOR  1  <,
@@ -1288,7 +1288,7 @@ CREATE OPERATOR CLASS tstzspanset_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  spanset_cmp(tstzspanset, tstzspanset);
+    FUNCTION  1  cmp(tstzspanset, tstzspanset);
 
 /******************************************************************************/
 

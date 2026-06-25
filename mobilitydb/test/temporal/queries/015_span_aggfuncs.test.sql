@@ -124,11 +124,11 @@ SELECT spanUnion(temp) FROM (VALUES
 SELECT spanUnion(temp) FROM (VALUES
 ('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 (NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 -------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ SELECT spanUnion(temp) FROM (VALUES
 ('[2000-01-01, 2000-01-03]'::tstzspan),
 ('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
 
-SELECT spanUnion(temp) FROM (VALUES
+SELECT spansetUnion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-03]}'::tstzspanset),
 ('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
 
@@ -165,6 +165,6 @@ SELECT startValue(setUnion(t)) FROM Temp;
 SELECT numValues(setUnion(t)) FROM tbl_timestamptz;
 SELECT numValues(setUnion(t)) FROM tbl_tstzset;
 SELECT numSpans(spanUnion(t)) FROM tbl_tstzspan;
-SELECT numSpans(spanUnion(t)) FROM tbl_tstzspanset;
+SELECT numSpans(spansetUnion(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

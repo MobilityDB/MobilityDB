@@ -87,7 +87,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_poseset2d t2 WHERE t1.k = t2.k AND t1.s <> t2
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE set_cmp(t1.s, t2.s) = -1;
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE cmp(t1.s, t2.s) = -1;
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s = t2.s;
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s <> t2.s;
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s < t2.s;

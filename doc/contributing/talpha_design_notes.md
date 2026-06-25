@@ -71,7 +71,7 @@ on interpolated values can be counter-intuitive.
 
 ### 4. `ttext` comparison is collation-dependent
 
-`temporal_eq`, `temporal_cmp`, and the comparison operators on `ttext` use the
+`eq`, `cmp`, and the comparison operators on `ttext` use the
 underlying PostgreSQL `text_cmp`, which respects the database collation.
 Identical inputs may compare differently across deployments with different
 default collations (e.g. case-insensitive vs case-sensitive). UTF-8 encoding is

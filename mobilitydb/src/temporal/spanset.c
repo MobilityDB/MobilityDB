@@ -1049,7 +1049,7 @@ PG_FUNCTION_INFO_V1(Spanset_split_n_spans);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return an array of N spans from the spans of a spanset
- * @sqlfn splitNspans()
+ * @sqlfn splitNSpans()
  */
 Datum
 Spanset_split_n_spans(PG_FUNCTION_ARGS)
@@ -1070,7 +1070,7 @@ PG_FUNCTION_INFO_V1(Spanset_split_each_n_spans);
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return an array of spans from a spanset obtained by merging a given
  * number of successive composing spans
- * @sqlfn splitEachNspans()
+ * @sqlfn splitEachNSpans()
  */
 Datum
 Spanset_split_each_n_spans(PG_FUNCTION_ARGS)
@@ -1095,7 +1095,7 @@ PG_FUNCTION_INFO_V1(Spanset_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal to, or greater than the second one
- * @sqlfn spanset_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Spanset_cmp(PG_FUNCTION_ARGS)
@@ -1113,7 +1113,7 @@ PG_FUNCTION_INFO_V1(Spanset_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is equal to the second one
- * @sqlfn spanset_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -1132,7 +1132,7 @@ PG_FUNCTION_INFO_V1(Spanset_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is different from the second one
- * @sqlfn spanset_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -1153,7 +1153,7 @@ PG_FUNCTION_INFO_V1(Spanset_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is less than the second one
- * @sqlfn spanset_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -1173,7 +1173,7 @@ PG_FUNCTION_INFO_V1(Spanset_le);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is less than or equal to
  * the second one
- * @sqlfn spanset_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -1193,7 +1193,7 @@ PG_FUNCTION_INFO_V1(Spanset_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is greater than or equal to
  * the second one
- * @sqlfn spanset_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -1212,7 +1212,7 @@ PG_FUNCTION_INFO_V1(Spanset_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first span set is greater than the second one
- * @sqlfn spanset_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

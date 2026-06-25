@@ -473,11 +473,11 @@ SELECT tgeography '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-01-02]' =
 					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>temporal_cmp</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 					<para>Traditional comparisons</para>
 					<para><varname>ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean</varname></para>
-				<para><varname>temporal_cmp(ttype,ttype) → int</varname></para>
-				<para>Function <varname>temporal_cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
+				<para><varname>cmp(ttype,ttype) → int</varname></para>
+				<para>Function <varname>cmp</varname> returns -1, 0, or 1 depending on whether the first argument is, respectively, less than, equal to, or greater than the second one.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
 -- false
@@ -491,7 +491,7 @@ SELECT tbigint '[1@2001-01-01, 1@2001-01-04)' &lt;= tbigint '[2@2001-01-03, 2@20
 -- true
 SELECT tbigint '[1@2001-01-01, 1@2001-01-04)' &gt;= tbigint '[2@2001-01-03, 2@2001-01-05)';
 -- false
-SELECT temporal_cmp(tfloat '[1@2001-01-01, 1@2001-01-04)','[2@2001-01-03, 2@2001-01-05)');
+SELECT cmp(tfloat '[1@2001-01-01, 1@2001-01-04)', '[2@2001-01-03, 2@2001-01-05)');
 -- -1
 </programlisting>
 				</listitem>

@@ -251,7 +251,7 @@ extern Temporal *tpose_minus_stbox(const Temporal *temp, const STBox *box, bool 
  *****************************************************************************/
 
 extern Temporal *tdistance_tpose_pose(const Temporal *temp, const Pose *pose);
-extern Temporal *tdistance_tpose_point(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tdistance_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
 extern double nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tpose_pose(const Temporal *temp, const Pose *pose);
