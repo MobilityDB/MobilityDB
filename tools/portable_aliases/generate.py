@@ -98,7 +98,8 @@ SYM_RE = re.compile(r"'MODULE_PATHNAME',\s*'([A-Za-z0-9_]+)'")
 # under the top-level list(SORT) (aliases depend only on argument types).
 GROUP_PREFIX = {"temporal": "048", "geo": "079", "npoint": "399",
                 "pose": "115", "rgeo": "199", "cbuffer": "299",
-                "json": "218", "h3": "298", "quadbin": "398"}
+                "json": "218", "h3": "298", "quadbin": "398",
+                "pointcloud": "447"}
 
 HEADER = (
     "/*****************************************************************************\n"
