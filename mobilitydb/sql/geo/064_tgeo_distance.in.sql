@@ -36,62 +36,62 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION tdistance(geometry, tgeometry)
+CREATE FUNCTION tDistance(geometry, tgeometry)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdistance(tgeometry, geometry)
+CREATE FUNCTION tDistance(tgeometry, geometry)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdistance(tgeometry, tgeometry)
+CREATE FUNCTION tDistance(tgeometry, tgeometry)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = geometry, RIGHTARG = tgeometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeometry, RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = <->
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tdistance(geography, tgeography)
+CREATE FUNCTION tDistance(geography, tgeography)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdistance(tgeography, geography)
+CREATE FUNCTION tDistance(tgeography, geography)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdistance(tgeography, tgeography)
+CREATE FUNCTION tDistance(tgeography, tgeography)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = geography, RIGHTARG = tgeography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeography, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tdistance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = <->
 );
