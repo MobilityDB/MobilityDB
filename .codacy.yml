@@ -20,6 +20,7 @@ engines:
       - "postgres/**"
       - "pgtypes/**"
       - "h3-pg/**"
+      - "pointcloud-pg/**"
       - "contrib/**"
       - "clipper2/**"
     config:
@@ -35,6 +36,9 @@ exclude_paths:
   # h3-pg is a vendored copy of the Apache-2.0 h3-pg project; its
   # cyclomatic complexity should not count against MobilityDB's gate.
   - "h3-pg/**"
+  # pointcloud-pg is a vendored copy of the BSD pgpointcloud project; its
+  # autoconf and packaging files are upstream, not part of MobilityDB.
+  - "pointcloud-pg/**"
   # contrib/ contains optional PCL/PDAL integration plugins; they are
   # not part of the core codebase and pull in large generated files.
   - "contrib/**"

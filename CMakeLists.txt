@@ -93,6 +93,7 @@ option(CBUFFER "Set ON|OFF (default=OFF) to include circular buffers" OFF)
 option(H3 "Set ON|OFF (default=OFF) to include the temporal H3 index type (th3index). Requires libh3 on the build path." OFF)
 option(JSON "Set ON|OFF (default=ON) to include json types" ON)
 option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
+option(POINTCLOUD "Set ON|OFF (default=OFF) to include pgpointcloud temporal types" OFF)
 option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
 CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)
 # Option for including the temporal CARTO QUADBIN index type (`tquadbin`).
@@ -142,6 +143,13 @@ if(NPOINT)
 else()
   message(STATUS "Excluding network points")
   add_definitions(-DNPOINT=0)
+endif()
+if(POINTCLOUD)
+  message(STATUS "Including pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=1)
+else()
+  message(STATUS "Excluding pgpointcloud types")
+  add_definitions(-DPOINTCLOUD=0)
 endif()
 if(POSE)
   message(STATUS "Including geoposes")
@@ -225,6 +233,14 @@ set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
 set(MOBILITYDB_VERSION_STRING "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
 add_definitions(-DMOBILITYDB_VERSION_STRING="${MOBILITYDB_VERSION_STRING}")
 message(STATUS "MOBILITYDB_VERSION_STRING = '${MOBILITYDB_VERSION_STRING}'")
+
+# PostGIS is always required by the MobilityDB extension; pgPointCloud is
+# required only when POINTCLOUD=ON, so the control file's `requires` line is
+# assembled from this variable.
+set(MOBILITYDB_REQUIRES "postgis")
+if(POINTCLOUD)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
+endif()
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)
