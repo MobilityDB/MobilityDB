@@ -269,6 +269,11 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_tls.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  if(ARROW)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/arrow/arrow_c_data_interface.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
 
   # Files from ${CMAKE_SOURCE_DIR}
 
