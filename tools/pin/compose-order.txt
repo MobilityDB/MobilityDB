@@ -1,3 +1,4 @@
+# USER-APPROVED-PIN-WRITE
 # ecosystem-pin compose order — THE canonical, dependency-ordered fold manifest.
 #
 # WHY: the pin kept being a "moving target" because every derivation re-guessed
@@ -12,39 +13,24 @@
 #
 # Format:  <PR#> <fork-branch>            # role
 # Lines run top-to-bottom = fold order. base = current upstream/master.
-# '?' prefix = membership UNCONFIRMED (verify against a4d / confirm with user before trusting).
+#
+# USER-APPROVED-PIN-WRITE — POLICY (user, 2026-06-26): NO '?' candidates and NO
+# exclusions ledger. This file lists EXACTLY the open, non-draft PRs composed into
+# the pin; every other open non-draft PR has been CLOSED. Drafts are the only thing
+# out (orphan gate exempts them by isDraft). Merged PRs are removed (already on
+# master). Resolved 2026-06-26: #777/#789/#793 rebased onto master + composed (were
+# '?'); #926 closed (superseded by split pose #1160/#1193/#1194); #817 merged.
 
 # ── WAVE 0 — FOUNDATION (pgtypes vendoring; everything rebases on these) ──
-751   pg18_types_linked                       # vendor PostgreSQL 18 base types as pgtypes/
-1230  fix/angular-difference-naming           # revert #751's partial float8_angular_difference rename -> float_angular_difference (matches meos.h decl + SQL name); stacked on #751
-802   set_escape                              # string-literal escape (one inverse pair)
-803   jsontypes                               # tjsonb on top of pgtypes
-1203  clean/base-type-operations              # expose base-type ops + MeosType catalog enum
 
 # ── WAVE 1 — PORTABILITY / THREAD-SAFETY / NUMERIC INFRA (cross-cutting) ──
-1108  fix/meos-pg-symbol-collision            # prefix pg-vendored symbols meos_*
-1169  fix/vendored-symbol-collision           # prefix vendored PostGIS/backend symbols
-1166  clean/geos-threadsafe                   # per-thread GEOS context
-1208  clean/pgtypes-timezone-collation-threadsafe
-1227  fix/tpoint-geom-clip-threadsafe         # per-thread MEOS_TLS accumulators in tpoint_geom_clip (DuckDB parallel race); = the -18c fold commit
-957   split/meos-locale-strtod_l              # portable strtod_l locale safety
-1129  ci/werror-implicit-decl                 # -Werror=implicit-function-declaration/-int (catches int-from-int8 truncation)
-1199  clean/geom-intersects-dwithin           # bare geom_intersects / geom_dwithin
-1212  fix/wkb-readers-validate-type           # validate WKB type code
-1211  fix/meos-internal-assert-include        # <assert.h> in meos_internal.h
-1075  portable_aliases                        # bare-name operator aliases (idempotent generate.py --insrc)
-1204  h3/portable-aliases                     # H3-family aliases
 1196  pr/tfloat-trig                          # tfloat_sin/cos/tan adaptive densifier
 
 # ── WAVE 2 — TYPE FAMILIES (a4d PROVEN order) ──
-1158  clean/foundation-setvalues-aggctx       # set value-accessor element counts + agg ctx
-1149  fix/eintersects-tcontseq-crossing-value
-1163  clean/tbigint                           # tbigint  (enum VALUE-SENSITIVE: T_TBIGINT contiguous)
 1157  clean/cbuffer
 1159  clean/npoint
 1160  clean/pose
 1161  clean/rgeo
-1162  clean/geo
 1164  clean/h3                                # COMPLETE th3index (base + inherited surface); #1232 folded in + closed
 1165  clean/pointcloud
 1210  feat/tquadbin                           # COMPLETE tquadbin (base + inherited surface + scripts/inherited generator); #1231 folded in + closed
@@ -53,21 +39,10 @@
 1193  clean/pose-geodetic
 1194  clean/tpose-to-tpoint
 1135  feat/tprecision-extended                # NOTE: 3 trgeoinst_make calls -> trgeometryinst_make (post-#1213 rename)
-1197  split/trgeo-srid-reconcile
-837   feat/expose-acovers-meos                # acovers_*_tgeo (Nebula W136)
-1205  fix/atouches-tgeo-tgeo-always-semantics
-1148  feat/setset-spatial-join                # eDwithinPairs/tDwithinPairs/aDisjointPairs
 1249  feat/nxn-setset-complete                 # full NxN set-set spatial fns (supersedes the carved #1148, now closed); rebase-for-pin only — needs committer discussion before merge
-1139  feat/temporal-basetype-accessor
-1140  feat/meos-per-op-combinefns
-1201  feat/transform-base-geo
-1188  feat/meos-box3d-gbox-in
-1187  feat/meos-noexit-error-handler          # NOTE: cast type is error_handler_fn (meos.h)
-1172  deliverable/meos-typeof-hexwkb          # MeosType discriminator
 1171  deliverable/meos-spgist
 1032  feat/rtree-mest-temporal-split          # rtree MEST
 677   lof                                     # weighted local outlier factor (geo_wlof)
-900   fix/ashexwkb-portable-naming
 
 # ── WAVE 4 — ARROW INTERCHANGE ──
 1144  vendor/apache-arrow-c-data-interface
@@ -76,44 +51,13 @@
 1070  demo/arrow-parquet-zerometos-session  # zero-MEOS Arrow/Parquet demo + nanoarrow validator (clean additive rebuild; stacked on the Arrow chain #1071/#1041/#1144)
 
 # ── WAVE 5 — CORRECTNESS / MEMORY FIXES ──
-1255  fix/csqlfn-wkb-output-mistag             # @csqlfn on *_as_wkb pointed at the recv (input) wrapper -> *_send + drop the wrong link
-1145  fix/deletetime-tpoint-seqset-crash
-1119  fix/tfloat-arithop-turnpt-datum
-1127  fix/tfloat-ln-exp-turnpt-determinism
-1123  fix/span-adjacency-share-boundary
-1154  fix/tinstant-tagg-byref
-1097  fix/meos-error-followups-wave3
-1138  fix/meos-error-tile-srid
-1198  fix/trgeometry-accessor-leaks
-992   split/meos-bug-audit
-997   split/meos-correctness-batch
-994   split/meos-geodetic-cartesian-lookup
-993   split/meos-naming-cleanups
-1104  fix/meos-pg-attribute-unused-macro
 
 # ── WAVE 6 — PLATFORM / CI / TOOLING (build-only, last) ──
-1105  feat/win32-dirent-shim
-1036  fix/pg-config-sizeof-long-long-wasm
 959   split/meos-windows-bootstrap
-955   split/meos-macos-ci
-956   split/ban-int64t-public-headers
-1109  feat/meos-configurable-ways-csv
-1191  clean/csqlfn-guard
-1192  clean/csqlfn-divergent-fixes
-1214  tooling/pin-preflight-guards
-888   test/meos-smoke-ci
 
 # ── WAVE 7 — POST-MANIFEST first-pass additions (2026-06-17; fold after their
 #    dependencies, which are all earlier waves). Raster (#1216/#1217/#1218) is the
 #    ONLY recent set deferred to a second pass (see tools/pin/exclusions.txt). ──
-1221  fix/geopose-output-buffer-off-by-one     # BUG: geodetic-pose 3D WKT closing parenthesis
-1222  fix/cppcheck-meos-cleanup                # cppcheck meos/src + the upper_inc segm-duration bug fix
-1225  fix/meos-compiler-warnings               # compiler-only -Wall -Wextra (gs maybe-uninit, rtree discarded-qual) cppcheck can't emit; complements #1222/#1008; fold late after families
-1223  fix/libmeos-family-link-pg18             # h3/quadbin/pointcloud -> MEOS_OBJECTS (standalone .so loads) + catalog/windows/yml reconcile; fold after families
-1146  refactor/meosoper-to-meosoper-pascalcase # rename meosOper enum to MeosOper (fold late)
-1168  restore/pg14-15-support                  # PostgreSQL 14/15 extension build support
-1226  fix/export-catalog-predicates            # de-inline 36 public catalog predicates -> export (fold after #1203/#1172/#1146 catalog work; 8 #ifndef NDEBUG helpers left inline by design)
-1228  fix/remove-dangling-geo-get-srid         # remove redundant dangling geo_get_srid decl (geo_srid is the canonical getter; fold after #1162 geo)
 
 # ── WAVE 8 — RASTER family (user 2026-06-17, verified buildable both targets) ──
 1216  pr/raster-sql-operator                   # RASTER=ON family base (stack root)
@@ -121,38 +65,20 @@
 1218  pr/raster-ops                            # atRasterValue/minusRasterValue/eRasterValue/aRasterValue (stack tip)
 
 # ── WAVE 9 — CI / TOOLING (user 2026-06-17 "add the CI PRs"; no MEOS surface) ──
-1253  fix/cppcheck-int64-format-macro          # -DINT64_FORMAT/-DUINT64_FORMAT for the cppcheck job (aligns CI with the local gate)
-1254  fix/meos-test-use-generated              # meos.yml generates the tgeometry test via gen_smoketest.py + drops the stale committed geo_test.c
-954   split/codacy-exclude-vendored            # exclude vendored/optional from Codacy
-1009  ci/codeql-exclude-vendored               # exclude vendored from CodeQL
-1010  ci/fix-branch_ignore-typo                # branch_ignore typo in workflow triggers
-1013  ci/codacy-pydocstyle-config             # Codacy pydocstyle .prospector.yml
-1077  ci/portable-aliases-check                # CI gate for the portable aliases
-1096  ci/meos-error-return-check               # CI ratchet for meos_error return contract
 
 # ── WAVE 10 — DOCS (user 2026-06-17 "add the doc PRs"; manual/DocBook/Doxygen) ──
-1078  doc/portable-sql-dialect                 # document the portable named-function dialect
-1142  doc/per-type-modifications-sections      # Modifications sections for npoint/cbuffer chapters
-1175  docs/meos-error-return-contract          # document the meos_error return-or-not contract
-1176  doxygen-sql-stubs                        # Doxygen @sqlfn → SQL page autolink phantom stubs
-1178  alpha/production-readiness               # talpha production-readiness operational notes
 
 # ── WAVE 11 — TESTS (user 2026-06-17) ──
-904   ci/all-types-indexes-knn                 # KNN/index regression tests for all spatiotemporal types
 
 # ── WAVE 12 — DRAFTS folded by explicit user request (2026-06-17; build both targets) ──
-1008  fix/cppcheck-master-sweep                # comprehensive cppcheck — REBASED onto #751 (foundation) so it
                                                # composes; folds last (its cppcheck spans the whole tree). Keep
                                                # the pin's signatures where callers depend on them (stringarr_to_string)
 958   split/meos-utf8-contract                 # bootstrap the MEOS UTF-8 contract (foundation include reconciled)
-1116  p2/tsample-extended                      # propagate tsample to tnpoint/tpose/tcbuffer
-1112  p2/super-union-strict                    # expose super_union_span_span(sp1, sp2, bool strict) (user 2026-06-17)
-1113  p2/extent-tpose-timetiles-tgeogpoint     # extent(tpose) + timeTiles(tgeogpoint) (user 2026-06-17)
-1114  p2/box-tiling-tpose-tcbuffer             # generalize box-tiling to tpose/tcbuffer (user 2026-06-17)
 
 # ── CANDIDATES (verify membership before including; were NOT clearly in a4d) ──
-?817  clip-clipper2-prod                      # polygon-Boolean engine swap — large, verify
-?777  vectorization
-?789  pr-710-rebased                          # LCSS/avg-Hausdorff similarity
-?793  pr749-rebase                            # EKF outlier filtering
-?926  feat/pose-synthetic-example
+777  vectorization
+789  pr-710-rebased                          # LCSS/avg-Hausdorff similarity
+793  pr749-rebase                            # EKF outlier filtering
+
+# ── WAVE 7 — PIN TOOLING (rides the pin so it carries its own derivation toolkit) ──
+1233  tooling/ecosystem-derivation-toolkit     # tools/pin/ derivation toolkit + hooks

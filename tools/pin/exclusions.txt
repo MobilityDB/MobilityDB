@@ -1,25 +1,12 @@
-# Pin EXCLUSIONS ledger — every OPEN PR that is intentionally NOT composed into
-# the ecosystem pin, each with a reason. Paired with tools/pin/compose-order.txt
-# (the IN-pin set). Together they MUST account for EVERY open non-draft PR — the
-# orphan gate (tools/pin/orphan-gate.sh) DENIES a pin publish if any open
-# non-draft PR is in neither file. This closes the "silently dropped PR" gap
-# (user, 2026-06-17: "you were ready to launch the pin without ensuring no
-# orphaned PRs").
+# USER-APPROVED-PIN-WRITE
+# Pin EXCLUSIONS ledger — INTENTIONALLY EMPTY.
 #
-# DECISION (user, 2026-06-17, after reviewing the full list): the pin includes
-# EVERYTHING that is ready — CI, docs, tests, raster, fixes, families. Only DRAFTS
-# stay out (not ready-for-review). So this ledger is drafts-only; everything else
-# is in compose-order.txt.
+# Policy (user, 2026-06-26): there are NO exclusions. Every OPEN, NON-DRAFT PR is
+# either COMPOSED into the pin (listed in tools/pin/compose-order.txt) or CLOSED.
+# Drafts are the only thing out of the pin, and the orphan gate
+# (tools/pin/orphan-gate.sh) already exempts them via `isDraft==false` — they need
+# no ledger entry. So this file carries no PR numbers.
 #
-# Format:  <PR#>  <reason-tag>   # note
-
-# ── DRAFTS — not ready-for-review; revisit when marked ready ──
-# (#958 UTF-8 and #1116 tsample were drafts but the user asked to fold them into
-#  the pin 2026-06-17 — both build both targets — so they moved to compose-order.txt.)
-785    draft        # Move MEOS out of MobilityDB as a submodule (structural, draft)
-
-# ── META-TOOLING — changes no MEOS/extension code, so NOT composed into the pin
-#    (orphan-gate rule: a PR composes iff it changes MEOS/extension CODE). This is
-#    the pin's OWN derivation machinery; folding the builder into the pin it builds
-#    is circular, and bindings consume the folded MEOS source, not the assembler. ──
-1233   tooling      # tools/pin derivation toolkit (PROCEDURE.md + superset-fold/fold-resolve/derive-pin + manifest); machinery that BUILDS the pin, not pin content.
+# (The pin-tooling PR #1233 changes no MEOS/extension surface; rather than carry a
+#  ledger exception it is simply composed in its own WAVE 7 in compose-order.txt,
+#  so the pin tree self-documents its own derivation toolkit.)
