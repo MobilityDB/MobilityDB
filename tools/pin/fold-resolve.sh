@@ -545,6 +545,67 @@ if s2 != s:
         print("   resolved %s (generic empty-base union x%d)" % (f, n))
 PY
   done
+
+  # USER-APPROVED-PIN-WRITE  USER-APPROVED-FOLD-RULE (2026-06-26, user "dict-aware merge for
+  # generate.py"): GROUP_PREFIX family dict-merge (MODIFY/MODIFY — the empty-base rule above skips
+  # it because the base tail `"json": "218"}` is non-empty). Each family PR inserts its
+  # `"<family>": "<prefix>"` before the dict's closing brace on the shared base tail; a blind
+  # line-union stacks the closers (IndentationError, regressed the pin once). Merge = the
+  # ordered-unique set of `"key": "val"` pairs across HEAD + theirs as ONE dict tail; accumulates
+  # across folds (h3 -> +pointcloud -> +quadbin).
+  if echo "$U" | grep -qx 'tools/portable_aliases/generate.py'; then
+    python3 - <<'PY'
+import re
+f = "tools/portable_aliases/generate.py"; s = open(f).read()
+pat = re.compile(r"<<<<<<< HEAD\n(?P<h>.*?)\|\|\|\|\|\|\| [^\n]*\n(?P<b>.*?)=======\n"
+                 r"(?P<t>.*?)>>>>>>> refs/pin/\d+\n", re.S)
+def merge(m):
+    h, t = m.group("h"), m.group("t")
+    pairs, seen = [], set()
+    for side in (h, t):
+        for k, v in re.findall(r'"(\w+)":\s*"([^"]+)"', side):
+            if k not in seen:
+                seen.add(k); pairs.append((k, v))
+    if not pairs:
+        return m.group(0)
+    indent = re.match(r"(\s*)", h).group(1)
+    return indent + ", ".join('"%s": "%s"' % kv for kv in pairs) + "}\n"
+s2, n = pat.subn(merge, s)
+if n and "<<<<<<<" not in s2:
+    open(f, "w").write(s2); print("   resolved generate.py (GROUP_PREFIX dict-merge x%d)" % n)
+else:
+    print("   !! generate.py not resolved by dict-merge (n=%d, markers=%s)" % (n, "<<<<<<<" in s2))
+PY
+    git add tools/portable_aliases/generate.py
+  fi
+
+  # USER-APPROVED-PIN-WRITE  USER-APPROVED-FOLD-RULE (2026-06-26, user "fold clean automatically"):
+  # ADDITIVE-TEXT union for build/doc/CI text files (CMakeLists / *.xml / doc/* / *.sh). Each
+  # family PR appends its object/subdir/section at the same spot — a MODIFY/MODIFY the empty-base
+  # rule skips. These are append-only TEXT (NOT catalog/source); a verbatim pin-restore is
+  # FORBIDDEN here (it reverts master's clipper2 MEOS_OBJECTS / recent CI gen-conversions), so the
+  # diff3 union (HEAD + theirs) is the only non-stale resolution and the all-families build
+  # verifies it. SOURCE files (.c/.h) are NOT matched: a still-conflicted source file falls through
+  # to the loud exit below so a genuinely-new merge never resolves silently.
+  for af in $(git diff --name-only --diff-filter=U); do
+    case "$af" in
+      CMakeLists.txt|*/CMakeLists.txt|*.xml|doc/*|*.sh)
+        python3 - "$af" <<'PY'
+import re, sys
+f = sys.argv[1]; s = open(f).read()
+pat = re.compile(r"<<<<<<< HEAD\n(?P<h>.*?)(?:\|\|\|\|\|\|\| [^\n]*\n(?P<b>.*?))?=======\n"
+                 r"(?P<t>.*?)>>>>>>> refs/pin/\d+\n", re.S)
+def u(m):
+    h, t = m.group("h"), m.group("t")
+    if h and not h.endswith("\n"): h += "\n"
+    return h + t
+s2, n = pat.subn(u, s)
+if s2 != s and "<<<<<<<" not in s2:
+    open(f, "w").write(s2); print("   resolved %s (additive-text union x%d)" % (f, n))
+PY
+        git add "$af" 2>/dev/null ;;
+    esac
+  done
 }
 
 echo "== fold deltas in order =="
@@ -664,12 +725,16 @@ PIN_TAG="$(git for-each-ref --sort=-creatordate --format='%(refname:short)' 'ref
 PIN_SOT="$(git rev-list -1 "$PIN_TAG" 2>/dev/null)"
 [ -n "$PIN_SOT" ] || { echo "!! no ecosystem-pin-* tag found — cannot pin-restore"; exit 4; }
 echo "   pin SoT = $PIN_TAG ($PIN_SOT)"
+# NOTE: the pointcloud source (meos tpc_boxops + mobilitydb tpcpoint/schema_cache/tpc_typmod/
+# pcset) is DELIBERATELY NOT pin-restored. pgPointCloud has a single OWNER PR (#1165); with the
+# corrected arrow chain #1070 no longer carries a stacked copy of pointcloud, so these files fold
+# cleanly from #1165 and need no convergence. Restoring them from an older pin is STALE — it
+# clobbered #1165's current content and regressed 415_tpc_typmod (proven 2026-06-26). Take them
+# from the fold (= #1165, the owner), never from a previous pin.
 for _cf in meos/include/temporal/meos_catalog.h meos/src/temporal/meos_catalog.c \
            meos/src/temporal/type_in.c meos/src/temporal/type_out.c meos/src/temporal/type_util.c \
            meos/src/temporal/temporal_analytics.c meos/src/geo/stbox.c meos/src/geo/tspatial.c \
-           meos/include/temporal/lifting.h meos/src/geo/tgeo_boxops.c meos/src/pointcloud/tpc_boxops.c \
-           mobilitydb/src/pointcloud/tpcpoint.c mobilitydb/src/pointcloud/schema_cache.c \
-           mobilitydb/src/pointcloud/tpc_typmod.c mobilitydb/src/pointcloud/pcset.c; do  # USER-APPROVED-PIN-WRITE
+           meos/include/temporal/lifting.h meos/src/geo/tgeo_boxops.c; do  # USER-APPROVED-PIN-WRITE
   git checkout "$PIN_SOT" -- "$_cf" 2>/dev/null && echo "   restored $_cf VERBATIM from the pin"
 done
 
