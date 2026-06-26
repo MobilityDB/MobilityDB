@@ -185,31 +185,31 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_teq(quadbin, tquadbin)
+CREATE FUNCTION tEq(quadbin, tquadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_quadbin_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(tquadbin, quadbin)
+CREATE FUNCTION tEq(tquadbin, quadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_tquadbin_quadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(tquadbin, tquadbin)
+CREATE FUNCTION tEq(tquadbin, tquadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = quadbin, RIGHTARG = tquadbin,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = tquadbin, RIGHTARG = quadbin,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   COMMUTATOR = #=
 );
@@ -218,31 +218,31 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_tne(quadbin, tquadbin)
+CREATE FUNCTION tNe(quadbin, tquadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_quadbin_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(tquadbin, quadbin)
+CREATE FUNCTION tNe(tquadbin, quadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_tquadbin_quadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(tquadbin, tquadbin)
+CREATE FUNCTION tNe(tquadbin, tquadbin)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = quadbin, RIGHTARG = tquadbin,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = tquadbin, RIGHTARG = quadbin,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   COMMUTATOR = #<>
 );

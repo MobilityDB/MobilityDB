@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(Teq_quadbin_tquadbin);
 /**
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal equality of a QUADBIN cell and a temporal QUADBIN cell
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -323,7 +323,7 @@ PG_FUNCTION_INFO_V1(Teq_tquadbin_quadbin);
 /**
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal equality of a temporal QUADBIN cell and a QUADBIN cell
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -336,7 +336,7 @@ PG_FUNCTION_INFO_V1(Teq_tquadbin_tquadbin);
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal equality of two temporal QUADBIN cells across their
  * shared time axis
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Tne_quadbin_tquadbin);
 /**
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal inequality of a QUADBIN cell and a temporal QUADBIN cell
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
@@ -364,7 +364,7 @@ PG_FUNCTION_INFO_V1(Tne_tquadbin_quadbin);
 /**
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal inequality of a temporal QUADBIN cell and a QUADBIN cell
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Tne_tquadbin_tquadbin);
  * @ingroup mobilitydb_quadbin_comp_temp
  * @brief Return the temporal inequality of two temporal QUADBIN cells across
  * their shared time axis
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum

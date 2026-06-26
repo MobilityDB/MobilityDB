@@ -60,7 +60,7 @@ SELECT NOT (
   (tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '480fffffffffffff'));
 
 -------------------------------------------------------------------------------
--- temporal_teq / #= and temporal_tne / #<> (tbool result)
+-- tEq / #= and tNe / #<> (tbool result)
 -------------------------------------------------------------------------------
 SELECT asText(quadbin '480fffffffffffff' #= tquadbin '480fffffffffffff@2001-01-01');
 SELECT asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]' #= quadbin '480fffffffffffff');

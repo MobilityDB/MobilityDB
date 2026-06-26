@@ -15,36 +15,6 @@
  * behaviour is identical to the operator (RFC: doc/rfc/sql-portability).
  */
 
-CREATE FUNCTION tEq(quadbin, tquadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_quadbin_tquadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(tquadbin, quadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tquadbin_quadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(tquadbin, tquadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(quadbin, tquadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_quadbin_tquadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(tquadbin, quadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tquadbin_quadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(tquadbin, tquadbin)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION before(tstzspan, tquadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
