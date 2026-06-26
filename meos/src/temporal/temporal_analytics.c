@@ -223,6 +223,31 @@ tcbuffer_tprecision_value(const Temporal *temp)
 #endif /* CBUFFER */
 
 /**
+ * @brief Compute the family-specific time-weighted precision value of a bin
+ * @details Dispatch to the per-type precision function and return true; return
+ * false when the temporal type has no specific implementation so that the
+ * caller applies the generic twAvg/twCentroid. Each optional family registers
+ * its own case in its own #if block (disjoint), so no family edits the shared
+ * dispatch body in the tprecision functions.
+ * @param[in] temptype Temporal type of the input
+ * @param[in] temp Temporal value of the bin
+ * @param[out] result Resulting precision value when handled
+ */
+static bool
+tprecision_value(MeosType temptype, const Temporal *temp, Datum *result)
+{
+  (void) temptype; (void) temp; (void) result;
+#if CBUFFER
+  if (temptype == T_TCBUFFER)
+  {
+    *result = tcbuffer_tprecision_value(temp);
+    return true;
+  }
+#endif /* CBUFFER */
+  return false;
+}
+
+/**
  * @brief Return a temporal sequence with the precision set to a time bin
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time bins
@@ -307,16 +332,13 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         seq1 = tsequence_make(ininsts, k, true, (k == 1) ? true : false,
           interp, NORMALIZE);
         /* Compute the twAvg/twCentroid for the bin */
-#if CBUFFER
-        if (seq->temptype == T_TCBUFFER)
+        if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
         {
-          value = tcbuffer_tprecision_value((const Temporal *) seq1);
-          outinsts[l++] = tinstant_make(value, T_TCBUFFER, lower);
+          outinsts[l++] = tinstant_make(value, seq->temptype, lower);
           pfree(seq1);
           pfree(DatumGetPointer(value));
         }
         else
-#endif /* CBUFFER */
         {
           value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
             PointerGetDatum(tpointseq_twcentroid(seq1));
@@ -370,15 +392,12 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   {
     seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
-#if CBUFFER
-    if (seq->temptype == T_TCBUFFER)
+    if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
     {
-      value = tcbuffer_tprecision_value((const Temporal *) seq1);
-      outinsts[l++] = tinstant_make(value, T_TCBUFFER, lower);
+      outinsts[l++] = tinstant_make(value, seq->temptype, lower);
       pfree(DatumGetPointer(value));
     }
     else
-#endif /* CBUFFER */
     {
       value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
         PointerGetDatum(tpointseq_twcentroid(seq1));
@@ -448,11 +467,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     if (proj)
     {
       Datum value;
-#if CBUFFER
-      if (ss->temptype == T_TCBUFFER)
-        value = tcbuffer_tprecision_value((const Temporal *) proj);
-      else
-#endif
+      if (! tprecision_value(ss->temptype, (const Temporal *) proj, &value))
         value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
           PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
       /* We keep only the first instant since the tprecision operation amounts
