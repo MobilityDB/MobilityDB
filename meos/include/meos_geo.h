@@ -870,6 +870,21 @@ extern Temporal *ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern Temporal *ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 
+/* Set-set spatial join */
+
+extern int *edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count);
+extern int *adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count);
+extern int *eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, int *count, SpanSet ***periods);
+extern int *tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+
 /* Distance */
 
 extern Temporal *tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
@@ -883,6 +898,8 @@ extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern double tgeoarr_tgeoarr_mindist(const Temporal **arr1, int count1, const Temporal **arr2, int count2);
+extern double mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double threshold);
 
 /* Aggregates */
 
