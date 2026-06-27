@@ -15,36 +15,6 @@
  * behaviour is identical to the operator (RFC: doc/rfc/sql-portability).
  */
 
-CREATE FUNCTION tEq(geometry, trgeometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_geo_trgeometry'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(trgeometry, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_trgeometry_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(trgeometry, trgeometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(geometry, trgeometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_geo_trgeometry'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(trgeometry, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_trgeometry_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(trgeometry, trgeometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION before(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
