@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(Contains_tstzspan_temporal);
  * @brief Return true if a timestamptz span contains the time span of a
  * temporal value
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tstzspan_temporal(PG_FUNCTION_ARGS)
@@ -273,7 +273,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_tstzspan);
  * @brief Return true if the time span of a temporal value contains a
  * timestamptz span
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_temporal_tstzspan(PG_FUNCTION_ARGS)
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
  * @brief Return true if the time span of the first temporal value
  * contains the one of the second one
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
@@ -581,7 +581,7 @@ PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
  * @brief Return true if a number span contains the value span of a temporal
  * number
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_numspan_tnumber(PG_FUNCTION_ARGS)
@@ -596,7 +596,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
  * @brief Return true if the value span of a temporal number contains
  * a number span
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tnumber_numspan(PG_FUNCTION_ARGS)
@@ -611,7 +611,7 @@ PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
  * @brief Return true if a temporal box contains the bounding box of a
  * temporal number
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -626,7 +626,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tbox);
  * @brief Return true if the bounding box of a temporal number contains a
  * temporal box
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -641,7 +641,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tnumber);
  * @brief Return true if the bounding box of the first temporal number contains
  * the one of the second temporal number
  * @sqlfn contains_bbox()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
