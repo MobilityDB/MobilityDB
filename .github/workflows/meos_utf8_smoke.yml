@@ -1,0 +1,185 @@
+name: MEOS UTF-8 smoke
+
+# Guards the MEOS UTF-8 encoding contract for the standalone library.
+#
+# What this job pins:
+#   1. UTF-8 byte sequences round-trip through `text_in`/`text_out`,
+#      `ttext_in`/`ttext_out`, and `textset_in`/`textset_out` unchanged.
+#      The ttext / textset parsers only match ASCII delimiters
+#      (`"`, `,`, `}`, `]`, ...) and UTF-8 continuation bytes (>= 0x80)
+#      can never collide with them, so this is just byte-preservation.
+#
+#   2. The known limitation: `text_upper` / `text_lower` are an ASCII-only
+#      fold (PG's `asc_toupper` / `asc_tolower`). Non-ASCII bytes pass
+#      through unchanged. This is documented behaviour per the UTF-8
+#      contract in meos.h; the test asserts the documented behaviour so
+#      we don't accidentally regress in either direction (silent
+#      corruption *or* surprise Unicode-awareness).
+#
+# Together (1) + (2) form the encoding contract that downstream bindings
+# (PyMEOS, JMEOS, MEOS.NET, MEOS.js, RustMEOS, GoMEOS) can rely on.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/meos_utf8_smoke.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'pgtypes/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/meos_utf8_smoke.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'pgtypes/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+
+jobs:
+  utf8-smoke:
+    name: utf8-smoke
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            libgeos++-dev libproj-dev libjson-c-dev libgsl-dev
+
+      - name: Configure standalone MEOS
+        run: |
+          cmake -S . -B build-meos \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$PWD/meos-install" \
+            -DMEOS=ON \
+            -DCBUFFER=ON -DNPOINT=ON
+
+      - name: Build libmeos
+        run: cmake --build build-meos -j
+
+      - name: Install libmeos
+        run: cmake --install build-meos
+
+      - name: Compile UTF-8 smoke test
+        run: |
+          cat > /tmp/utf8_smoke.c <<'EOF'
+          /*
+           * UTF-8 contract smoke test for the MEOS library.
+           *
+           * Verifies: (1) UTF-8 bytes round-trip through text/ttext/textset
+           * I/O unchanged, and (2) ASCII-only case folding is the documented
+           * behaviour for text_upper/text_lower (non-ASCII bytes preserved).
+           */
+          #include <stdio.h>
+          #include <stdlib.h>
+          #include <string.h>
+          #include <meos.h>
+
+          static int fail = 0;
+
+          static void expect_contains(const char *what, const char *haystack,
+                                      const char *needle)
+          {
+            if (strstr(haystack, needle) == NULL) {
+              fprintf(stderr, "FAIL %s: expected %s in %s\n",
+                      what, needle, haystack);
+              fail = 1;
+            } else {
+              printf("ok   %s: contains %s\n", what, needle);
+            }
+          }
+
+          int main(void)
+          {
+            meos_initialize();
+            meos_initialize_timezone("UTC");
+
+            /* (1a) ttext round-trip preserves a German umlaut. */
+            {
+              Temporal *t = ttext_in("[\"Zürich\" @ 2001-01-01]");
+              if (!t) { fprintf(stderr, "FAIL ttext_in NULL\n"); return 1; }
+              char *out = ttext_out(t);
+              expect_contains("ttext de", out, "Zürich");
+              free(out); free(t);
+            }
+
+            /* (1b) ttext round-trip preserves CJK and Arabic. */
+            {
+              Temporal *t = ttext_in("[\"日本\" @ 2001-01-01]");
+              if (!t) { fprintf(stderr, "FAIL ttext_in cjk NULL\n"); return 1; }
+              char *out = ttext_out(t);
+              expect_contains("ttext cjk", out, "日本");
+              free(out); free(t);
+            }
+            {
+              Temporal *t = ttext_in("[\"العربية\" @ 2001-01-01]");
+              if (!t) { fprintf(stderr, "FAIL ttext_in ar NULL\n"); return 1; }
+              char *out = ttext_out(t);
+              expect_contains("ttext ar", out, "العربية");
+              free(out); free(t);
+            }
+
+            /* (1c) textset with mixed-script strings round-trips. */
+            {
+              Set *s = textset_in("{\"Zürich\", \"日本\", \"العربية\", \"한국\"}");
+              if (!s) { fprintf(stderr, "FAIL textset_in NULL\n"); return 1; }
+              char *out = textset_out(s);
+              expect_contains("textset de", out, "Zürich");
+              expect_contains("textset cjk", out, "日本");
+              expect_contains("textset ar", out, "العربية");
+              expect_contains("textset ko", out, "한국");
+              free(out); free(s);
+            }
+
+            /* (2) ASCII-only case folding is the documented contract:
+             * EVERY ASCII letter is folded; bytes >= 0x80 (the body of
+             * any UTF-8 multi-byte sequence) pass through unchanged.
+             *
+             * "Zürich" -> upper: Z stays, ü preserved, r/i/c/h fold to
+             *   R/I/C/H. Result: "ZüRICH".
+             * "ZÜRICH" -> lower: Z->z, Ü preserved, R/I/C/H fold to
+             *   r/i/c/h. Result: "zÜrich".
+             *
+             * These pins will need updating when (and only when) a
+             * Unicode-aware fold lands. */
+            {
+              text *t = text_in("Zürich");
+              text *u = text_upper(t);
+              char *out = text_out(u);
+              expect_contains("upper ascii-only", out, "ZüRICH");
+              free(out); free(t); free(u);
+            }
+            {
+              text *t = text_in("ZÜRICH");
+              text *u = text_lower(t);
+              char *out = text_out(u);
+              expect_contains("lower ascii-only", out, "zÜrich");
+              free(out); free(t); free(u);
+            }
+
+            meos_finalize();
+            if (fail) { fprintf(stderr, "UTF-8 smoke FAILED\n"); return 1; }
+            printf("UTF-8 smoke OK\n");
+            return 0;
+          }
+          EOF
+          gcc -I meos-install/include -L meos-install/lib \
+            -o /tmp/utf8_smoke /tmp/utf8_smoke.c -lmeos
+
+      - name: Run UTF-8 smoke test
+        env:
+          LD_LIBRARY_PATH: meos-install/lib
+          LANG: C.UTF-8
+        run: /tmp/utf8_smoke
