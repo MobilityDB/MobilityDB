@@ -94,7 +94,13 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
+          # Coverage build enables only this PR's opt-in subsystem so its sources get instrumented.
+          # QUADBIN is first-party (no external lib) and depends only on the unconditional tbigint
+          # type; the other families are owned by their own PRs and are not part of tquadbin.
+          cmake -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_COVERAGE=${{ matrix.coverage }} \
+            ${{ matrix.coverage == '1' && '-DQUADBIN=ON' || '' }} \
+            ..
 
       - name: Build
         run: |

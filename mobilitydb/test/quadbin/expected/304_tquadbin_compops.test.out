@@ -1,0 +1,87 @@
+SELECT quadbin '480fffffffffffff' ?= tquadbin '480fffffffffffff@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2001-01-01' ?= tquadbin '480fffffffffffff@2001-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]' ?= quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '48427fffffffffff';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2001-01-01' %= quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' %= quadbin '480fffffffffffff';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]' %= tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}' ?<> quadbin '480fffffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '48427fffffffffff';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT NOT (
+  (tquadbin '480fffffffffffff@2001-01-01' ?= quadbin '480fffffffffffff')
+  AND
+  (tquadbin '480fffffffffffff@2001-01-01' %<> quadbin '480fffffffffffff'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(quadbin '480fffffffffffff' #= tquadbin '480fffffffffffff@2001-01-01');
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]' #= quadbin '480fffffffffffff');
+                              astext                              
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(tquadbin '480fffffffffffff@2001-01-01' #<> tquadbin '48427fffffffffff@2001-01-01');
+             astext             
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

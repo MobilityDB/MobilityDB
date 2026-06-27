@@ -18,6 +18,7 @@ set(TEMPORAL_SOURCES
   tbool_ops.c
   tbox.c
   tbox_index.c
+  tcellindex.c
   temporal.c
   temporal_aggfuncs.c
   temporal_analytics.c

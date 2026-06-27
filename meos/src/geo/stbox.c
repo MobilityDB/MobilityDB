@@ -73,6 +73,10 @@
 #if RGEO
   #include "rgeo/trgeo_boxops.h"
 #endif
+#if QUADBIN
+  #include "quadbin/quadbin_meos.h"
+  #include "quadbin/tquadbin_boxops.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -1049,6 +1053,10 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 #if POSE || RGEO
     case T_POSE:
       return pose_set_stbox(DatumGetPoseP(d), result);
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_set_stbox(DatumGetQuadbin(d), result);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
