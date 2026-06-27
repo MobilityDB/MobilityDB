@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="tpoint_raster">
+	<title>Raster Sampling</title>
+
+	<para>The <ulink url="https://postgis.net/docs/using_raster_dataman.html">PostGIS raster</ulink> extension stores gridded coverage data (elevation, temperature, satellite imagery, …) in the <varname>raster</varname> type. Each raster has one or more bands; a band holds a 2D array of pixel values, a spatial extent, a pixel size, and an optional nodata sentinel value.</para>
+
+	<para>MobilityDB's raster sampling operator evaluates a raster band at the instants of a moving-point trajectory and returns a <varname>tfloat</varname>. Instants whose position falls outside the raster extent or on a nodata pixel are silently dropped. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
+
+	<para>To use the operators described here, MobilityDB must be built with <varname>-DRASTER=ON</varname>. On such a build the generated <filename>mobilitydb.control</filename> declares <varname>requires = 'postgis, postgis_raster'</varname>, so a single <varname>CASCADE</varname> creates the full stack:</para>
+	<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE EXTENSION mobilitydb CASCADE;
+-- NOTICE:  installing required extension "postgis"
+-- NOTICE:  installing required extension "postgis_raster"
+</programlisting>
+
+	<sect1 xml:id="raster_sampling_operator">
+		<title>Sampling Operator</title>
+
+		<itemizedlist>
+			<listitem xml:id="raster_value">
+				<indexterm significance="normal"><primary><varname>raster_value</varname></primary></indexterm>
+				<para>Sample a raster band at each instant of a trajectory</para>
+				<para><varname>raster_value(raster,tgeompoint,band integer DEFAULT 1) → tfloat</varname></para>
+				<para>Evaluates pixel <varname>band</varname> at every instant of <varname>traj</varname> using bilinear-nearest sampling (<varname>ST_Value</varname> with <varname>resample=false</varname>). Returns an instant-set <varname>tfloat</varname> whose values are rounded to four decimal places. Returns <varname>NULL</varname> when no instant intersects the raster.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3×3 synthetic elevation raster (SRID 4326, 1° pixels)
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, NULL::float8),
+    1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
+)
+SELECT raster_value(r,
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00,
+                          POINT(2.5 2.5)@2000-01-02 00:00:00+00,
+                          POINT(0.5 0.5)@2000-01-03 00:00:00+00]')::text
+FROM rast;
+-- {10@2000-01-01 00:00:00+00, 30@2000-01-02 00:00:00+00, 70@2000-01-03 00:00:00+00}
+</programlisting>
+				<para>Applied to the BerlinMOD trajectory dataset with a terrain elevation raster:</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Elevation profile per trip (requires a loaded elevation raster)
+SELECT tripid, raster_value(elev, trip4326) AS elevation
+FROM trips, elevation_raster;
+
+-- Average elevation per trip
+SELECT tripid, avgValue(raster_value(elev, trip4326)) AS mean_elev
+FROM trips, elevation_raster;
+
+-- Trips that crossed terrain above 200 m
+SELECT tripid
+FROM trips, elevation_raster
+WHERE atValues(raster_value(elev, trip4326),
+               floatspan '[200, 9999]') IS NOT NULL;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="raster_build">
+		<title>Build and Install</title>
+
+		<para>PostGIS raster is part of the standard <varname>postgresql-<replaceable>N</replaceable>-postgis-3</varname> package on Debian/Ubuntu; no extra package is required. Pass <varname>-DRASTER=ON</varname> to CMake:</para>
+		<programlisting language="bash" xml:space="preserve" format="linespecific">
+cmake -DRASTER=ON ..
+make -j$(nproc)
+sudo make install
+</programlisting>
+		<para>To include raster in the CI coverage build alongside other optional families, add <varname>-DRASTER=ON</varname> to the cmake invocation in <filename>.github/workflows/pgversion.yml</filename>.</para>
+	</sect1>
+
+	<sect1 xml:id="raster_roadmap">
+		<title>Production Roadmap</title>
+
+		<para>The operator in this chapter provides the core SQL surface. A production-grade integration would extend it with:</para>
+		<itemizedlist>
+			<listitem><para><emphasis>MEOS kernel function</emphasis> — a C-level <varname>raster_value(raster, tgeompoint)</varname> that returns a heap-allocated <varname>Temporal *</varname>, enabling PyMEOS, JMEOS, and other bindings to auto-derive the operator without a PostgreSQL round-trip.</para></listitem>
+			<listitem><para><emphasis>Raster table integration</emphasis> — a set-returning variant that joins against a tiled raster coverage (<varname>raster_value(raster[], tgeompoint)</varname>) and merges tile results.</para></listitem>
+			<listitem><para><emphasis>Band-aware tfloat array</emphasis> — return one <varname>tfloat</varname> per band for multi-spectral rasters.</para></listitem>
+			<listitem><para><emphasis>Inverse operator</emphasis> — <varname>raster_atTime(raster, tstzspan)</varname> restricts a raster to the spatial extent visited by one or more trajectories during a time interval.</para></listitem>
+		</itemizedlist>
+	</sect1>
+</chapter>
