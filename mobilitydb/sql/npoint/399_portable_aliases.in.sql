@@ -15,36 +15,6 @@
  * behaviour is identical to the operator (RFC: doc/rfc/sql-portability).
  */
 
-CREATE FUNCTION tEq(npoint, tnpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(tnpoint, npoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tEq(tnpoint, tnpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(npoint, tnpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_npoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(tnpoint, npoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tnpoint_npoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tNe(tnpoint, tnpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_tnpoint_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION before(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'

@@ -321,7 +321,7 @@ PG_FUNCTION_INFO_V1(Teq_jsonb_tjsonb);
  * @ingroup mobilitydb_json_comp_temp
  * @brief Return a temporal boolean that states whether a JSONB value is
  * equal to a temporal JSONB value
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -336,7 +336,7 @@ PG_FUNCTION_INFO_V1(Tne_jsonb_tjsonb);
  * @ingroup mobilitydb_json_comp_temp
  * @brief Return a temporal boolean that states whether a JSONB value is
  * different from a temporal JSONB value
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
@@ -353,7 +353,7 @@ PG_FUNCTION_INFO_V1(Teq_tjsonb_jsonb);
  * @ingroup mobilitydb_json_comp_temp
  * @brief Return a temporal boolean that states whether a temporal JSONB value
  * is equal to a JSONB value
- * @sqlfn temporal_teq()
+ * @sqlfn tEq()
  * @sqlop @p #=
  */
 inline Datum
@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(Tne_tjsonb_jsonb);
  * @ingroup mobilitydb_json_comp_temp
  * @brief Return a temporal boolean that states whether a temporal JSONB value
  * is different from a JSONB value
- * @sqlfn temporal_tne()
+ * @sqlfn tNe()
  * @sqlop @p #<>
  */
 inline Datum
