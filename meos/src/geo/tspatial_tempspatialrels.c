@@ -433,7 +433,7 @@ tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
     {
       sequences[i] = tinterrel_tpointseq_linear_geo_iter(
         TSEQUENCESET_SEQ_N(ss, i), DatumGetGserializedP(base), box, tinter,
-          func, &countseqs[i]);
+        func, &countseqs[i]);
       totalcount += countseqs[i];
     }
     allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count, totalcount);
