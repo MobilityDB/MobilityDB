@@ -61,12 +61,15 @@ bash ~/.claude/hooks/pin_equivalence_audit.sh $PIN \
 #    tag is IMMUTABLE — any change cuts a NEW numbered tag (never re-point an existing one).
 ```
 
-## The other scripts (`superset-fold.sh`, `assemble-pin.sh`, `finalize-pin.sh`, `derive-pin.sh`)
+<!-- # USER-APPROVED-PIN-WRITE: consolidate to one route; remove the 4 superseded scripts -->
+## One tool, one route
 
-These are SUPERSEDED earlier experiments (base+delta-onto-a-previous-pin, or a full
-re-fold that dead-ended at #802). `fold-resolve.sh` on a `upstream/master` base is the
-sole proven route. Their stale `PIN_BASE=d94af2d2c` (-16g floor) default has been made
-fail-loud. Do not use them to cut a pin.
+`fold-resolve.sh` (on a `upstream/master` base) is the SOLE script that cuts a pin —
+there is no second route to choose between. Earlier experiments
+(`superset-fold.sh`, `assemble-pin.sh`, `finalize-pin.sh`, `derive-pin.sh` — base+delta
+onto a previous pin, or a full re-fold that dead-ended at #802) were removed so the
+procedure is unambiguous. The only supporting pieces are `compose-order.txt` (the
+set+order SoT), `exclusions.txt`, `orphan-gate.sh`, and `smoke-resolved/`.
 
 ## Pitfalls that have burned whole sessions (the gate blocks these)
 
