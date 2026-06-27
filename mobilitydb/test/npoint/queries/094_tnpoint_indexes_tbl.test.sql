@@ -163,3 +163,16 @@ SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tnpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------
+-- Coverage of all the same and order by logic in SP-GiST indexes
+
+CREATE TABLE tbl_tnpoint_big_allthesame AS
+  SELECT k, tnpoint(npoint 'Npoint(1, 0.5)', t) AS temp
+  FROM tbl_tstzspan_big;
+CREATE INDEX tbl_tnpoint_big_allthesame_quadtree_idx ON tbl_tnpoint_big_allthesame USING SPGIST(temp);
+ANALYZE tbl_tnpoint_big_allthesame;
+
+-- EXPLAIN ANALYZE
+
+DROP TABLE tbl_tnpoint_big_allthesame;
+
+-------------------------------------------------------------------------------

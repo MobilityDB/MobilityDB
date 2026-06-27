@@ -164,7 +164,13 @@ GetWaysCache()
 void
 meos_finalize_ways(void)
 {
+  /* Idempotency: only destroy a live cache, and null the slot so a
+   * second finalize call does not double-free the cache and its
+   * stored geometries. */
+  if (! MEOS_WAYS_CACHE)
+    return;
   DestroyWaysCache(MEOS_WAYS_CACHE);
+  MEOS_WAYS_CACHE = NULL;
 }
 
 /**
@@ -314,7 +320,7 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
   {
     if (! get_ways_record(gid, rec))
       return false;
-    ways_entry = AddRouteToWaysCache(ways_cache, rec);
+    AddRouteToWaysCache(ways_cache, rec);
     return true;
   }
   /* The route was found in the cache */

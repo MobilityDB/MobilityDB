@@ -409,3 +409,13 @@ SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 DROP INDEX
+CREATE TABLE tbl_tnpoint_big_allthesame AS
+  SELECT k, tnpoint(npoint 'Npoint(1, 0.5)', t) AS temp
+  FROM tbl_tstzspan_big;
+SELECT 12500
+CREATE INDEX tbl_tnpoint_big_allthesame_quadtree_idx ON tbl_tnpoint_big_allthesame USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tnpoint_big_allthesame;
+ANALYZE
+DROP TABLE tbl_tnpoint_big_allthesame;
+DROP TABLE
