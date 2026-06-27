@@ -97,6 +97,7 @@ extern ArrayType *cbufferarr_to_array(const Cbuffer **cbarr, int count);
 extern Pose **posearr_extract(ArrayType *array, int *count);
 extern ArrayType *posearr_to_array(const Pose **posearr, int count);
 #endif
+extern GSERIALIZED **geoarr_extract(ArrayType *array, int *count);
 extern Span *spanarr_extract(ArrayType *array, int *count);
 extern STBox *stboxarr_extract(ArrayType *array, int *count);
 extern Temporal **temparr_extract(ArrayType *array, int *count);
