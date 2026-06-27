@@ -4,11 +4,17 @@ SET(LOCAL_FILES
   150_trgeo
   152_trgeo_compops
   153_trgeo_spatialfuncs
+  154_trgeo_spatialrels
+  155_trgeo_tempspatialrels
   156_trgeo_topops
+  166_trgeo_boxops
   157_trgeo_posops
+  158_trgeo_tile
+  160_trgeo_similarity
   161_trgeo_distance
   161_trgeo_vclip
   162_trgeo_indexes
+  163_trgeo_geom_clip
   )
 
 append_portable_aliases()

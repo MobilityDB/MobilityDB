@@ -61,9 +61,27 @@ CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
  * Traversed area
  *****************************************************************************/
 
-CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT true)
+CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Centroid
+ *****************************************************************************/
+
+CREATE FUNCTION centroid(tcbuffer)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Convex hull
+ *****************************************************************************/
+
+CREATE FUNCTION convexHull(tcbuffer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tcbuffer_convex_hull'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -90,15 +108,15 @@ CREATE FUNCTION minusGeometry(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

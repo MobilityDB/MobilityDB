@@ -1607,7 +1607,7 @@ geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_intersects2d(gs1, gs2);
 }
 
-#if MEOS
+#if MEOS || RGEO
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry contains the second one
@@ -1619,7 +1619,7 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
-#endif /* MEOS */
+#endif /* MEOS || RGEO */
 
 /**
  * @ingroup meos_geo_base_rel
@@ -1633,7 +1633,7 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, TOUCHES);
 }
 
-#if MEOS
+#if MEOS || RGEO
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry covers the second one
@@ -1657,7 +1657,7 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return ! geom_spatialrel(gs1, gs2, INTERSECTS);
 }
-#endif /* MEOS */
+#endif /* MEOS || RGEO */
 
 /**
  * @ingroup meos_geo_base_rel
