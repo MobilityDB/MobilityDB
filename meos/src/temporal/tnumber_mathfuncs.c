@@ -861,7 +861,7 @@ tfloat_log10_turnpt(Datum start, Datum end,
 
 /**
  * @ingroup meos_temporal_math
- * @brief Return the natural logarithm of a double
+ * @brief Return the base 10 logarithm of a double
  * @param[in] temp Temporal value
  * @csqlfn #Tfloat_log10()
  */
