@@ -1892,4 +1892,34 @@ extern TBox *tintbox_value_time_tiles(const TBox *box, int xsize, const Interval
 
 /*****************************************************************************/
 
+#if RASTER
+/*****************************************************************************
+ * Raster chip sampling (Raquet / QUADBIN)
+ *****************************************************************************/
+
+/**
+ * @brief Pixel data type for raster chip sampling.
+ *
+ * Values are assigned to be compatible with the corresponding PostGIS
+ * rt_pixtype codes where they overlap.
+ */
+typedef enum
+{
+  MEOS_PT_UINT8   = 0,   /**< Unsigned 8-bit integer  */
+  MEOS_PT_INT16   = 1,   /**< Signed 16-bit integer   */
+  MEOS_PT_INT32   = 2,   /**< Signed 32-bit integer   */
+  MEOS_PT_FLOAT32 = 3,   /**< 32-bit IEEE float       */
+  MEOS_PT_FLOAT64 = 4,   /**< 64-bit IEEE double      */
+} MeosPixType;
+
+extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
+  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
+  double nodata, bool has_nodata, const Temporal *traj);
+
+extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
+  int *count);
+#endif /* RASTER */
+
+/*****************************************************************************/
+
 #endif
