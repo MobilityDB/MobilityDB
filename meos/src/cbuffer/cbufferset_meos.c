@@ -167,11 +167,12 @@ cbufferset_value_n(const Set *s, int n, Cbuffer **result)
  * @ingroup meos_cbuffer_set_accessor
  * @brief Return the array of copies of the values of a circular buffer set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 Cbuffer **
-cbufferset_values(const Set *s)
+cbufferset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_CBUFFERSET(s, NULL);
@@ -179,6 +180,7 @@ cbufferset_values(const Set *s)
   Cbuffer **result = palloc(sizeof(Cbuffer *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetCbufferP(datum_copy(SET_VAL_N(s, i), s->basetype));
+  *count = s->count;
   return result;
 }
 

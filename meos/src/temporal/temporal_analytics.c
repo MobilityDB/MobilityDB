@@ -55,6 +55,9 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -197,6 +200,53 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
 
+#if CBUFFER
+/**
+ * @brief Return the time-weighted average circular buffer of a tcbuffer
+ * temporal, over a sequence or a sequence set
+ * @details The center is the time-weighted centroid of the center trajectory
+ * and the radius is the time-weighted average of the radius; both reuse the
+ * number/point machinery on the decomposed parts.
+ */
+static Datum
+tcbuffer_tprecision_value(const Temporal *temp)
+{
+  assert(temp->temptype == T_TCBUFFER);
+  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+  Temporal *tfloat = tcbuffer_to_tfloat(temp);
+  GSERIALIZED *center = tpoint_twcentroid(tpoint);
+  double radius = tnumber_twavg(tfloat);
+  Cbuffer *result = cbuffer_make(center, radius);
+  pfree(tpoint); pfree(tfloat); pfree(center);
+  return PointerGetDatum(result);
+}
+#endif /* CBUFFER */
+
+/**
+ * @brief Compute the family-specific time-weighted precision value of a bin
+ * @details Dispatch to the per-type precision function and return true; return
+ * false when the temporal type has no specific implementation so that the
+ * caller applies the generic twAvg/twCentroid. Each optional family registers
+ * its own case in its own #if block (disjoint), so no family edits the shared
+ * dispatch body in the tprecision functions.
+ * @param[in] temptype Temporal type of the input
+ * @param[in] temp Temporal value of the bin
+ * @param[out] result Resulting precision value when handled
+ */
+static bool
+tprecision_value(MeosType temptype, const Temporal *temp, Datum *result)
+{
+  (void) temptype; (void) temp; (void) result;
+#if CBUFFER
+  if (temptype == T_TCBUFFER)
+  {
+    *result = tcbuffer_tprecision_value(temp);
+    return true;
+  }
+#endif /* CBUFFER */
+  return false;
+}
+
 /**
  * @brief Return a temporal sequence with the precision set to a time bin
  * @param[in] seq Temporal value
@@ -211,7 +261,11 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   assert(seq->temptype == T_TINT || seq->temptype == T_TBIGINT ||
     seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
-    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
+    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY
+#if CBUFFER
+    || seq->temptype == T_TCBUFFER
+#endif
+    );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -278,12 +332,21 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
         seq1 = tsequence_make(ininsts, k, true, (k == 1) ? true : false,
           interp, NORMALIZE);
         /* Compute the twAvg/twCentroid for the bin */
-        value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
-          PointerGetDatum(tpointseq_twcentroid(seq1));
-        outinsts[l++] = tinstant_make(value, temptype_out, lower);
-        pfree(seq1);
-        if (! twavg)
+        if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
+        {
+          outinsts[l++] = tinstant_make(value, seq->temptype, lower);
+          pfree(seq1);
           pfree(DatumGetPointer(value));
+        }
+        else
+        {
+          value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
+            PointerGetDatum(tpointseq_twcentroid(seq1));
+          outinsts[l++] = tinstant_make(value, temptype_out, lower);
+          pfree(seq1);
+          if (! twavg)
+            pfree(DatumGetPointer(value));
+        }
       }
       /* Free the instant at the beginning of the bin if it was generated */
       if (start)
@@ -329,16 +392,24 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   {
     seq1 = tsequence_make(ininsts, k, true,
       (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
-    value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
-      PointerGetDatum(tpointseq_twcentroid(seq1));
-    outinsts[l++] = tinstant_make(value, temptype_out, lower);
-    if (! twavg)
+    if (tprecision_value(seq->temptype, (const Temporal *) seq1, &value))
+    {
+      outinsts[l++] = tinstant_make(value, seq->temptype, lower);
       pfree(DatumGetPointer(value));
+    }
+    else
+    {
+      value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
+        PointerGetDatum(tpointseq_twcentroid(seq1));
+      outinsts[l++] = tinstant_make(value, temptype_out, lower);
+      if (! twavg)
+        pfree(DatumGetPointer(value));
+    }
     pfree(seq1);
   }
-  /* The lower and upper bounds of the result are both true since the 
+  /* The lower and upper bounds of the result are both true since the
    * tprecision operation amounts to a granularity change */
-   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
+  TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
   pfree(ininsts);
   if (start)
@@ -359,7 +430,12 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   assert(ss); assert(duration); assert(positive_duration(duration));
   assert(ss->temptype == T_TINT || ss->temptype == T_TBIGINT ||
     ss->temptype == T_TFLOAT ||
-    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
+    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT ||
+    ss->temptype == T_TGEOMETRY || ss->temptype == T_TGEOGRAPHY
+#if CBUFFER
+    || ss->temptype == T_TCBUFFER
+#endif
+    );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
@@ -390,8 +466,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     TSequenceSet *proj = tsequenceset_restrict_tstzspan(ss, &p, REST_AT);
     if (proj)
     {
-      Datum value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
-        PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
+      Datum value;
+      if (! tprecision_value(ss->temptype, (const Temporal *) proj, &value))
+        value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
+          PointerGetDatum(tpoint_twcentroid((Temporal *) proj));
       /* We keep only the first instant since the tprecision operation amounts
        * to a granularity change */
       instants[ninsts++] = tinstant_make(value, temptype_out, lower);
@@ -1006,7 +1084,11 @@ static void
 tinstarr_similarity_matrix1(TInstant **instants1, int count1,
   TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  /* The flags are needed to select the spatial distance function */
+  MeosType temptype = instants1[0]->temptype;
+  datum_func2 func = tgeo_type(temptype) ?
+    geo_distance_fn(instants1[0]->flags) : ( tpoint_type(temptype) ?
+    pt_distance_fn(instants1[0]->flags) : NULL );
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
