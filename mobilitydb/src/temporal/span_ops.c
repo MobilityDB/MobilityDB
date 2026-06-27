@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Contains_span_value);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a value
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 Datum
 Contains_span_value(PG_FUNCTION_ARGS)
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Contains_span_span);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span contains the second one
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 Datum
 Contains_span_span(PG_FUNCTION_ARGS)
