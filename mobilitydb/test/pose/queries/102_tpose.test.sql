@@ -592,3 +592,21 @@ SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-
 SELECT tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}' >= tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
 
 -------------------------------------------------------------------------------/
+
+SELECT numSequences(tposeSeqSetGaps(ARRAY[
+  tpose 'Pose(Point(1 1), 0.0)@2000-01-01',
+  tpose 'Pose(Point(2 2), 0.5)@2000-01-02',
+  tpose 'Pose(Point(3 3), 1.0)@2000-01-03'
+]::tpose[], '5 minutes'::interval));
+
+-------------------------------------------------------------------------------
+-- Geodetic temporal poses
+-------------------------------------------------------------------------------
+
+SELECT asText(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]');
+SELECT tpose '[GeodPose(Point(1 1),0.1)@2000-01-01, GeodPose(Point(2 2),0.2)@2000-01-02]';
+
+-------------------------------------------------------------------------------/
+
+-- tprecision
+SELECT asText(tprecision(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-01 00:00:04]', interval '2 secs'));

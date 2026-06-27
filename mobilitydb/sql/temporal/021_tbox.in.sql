@@ -91,6 +91,13 @@ CREATE FUNCTION asHexWKB(tbox, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tbox_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+#if ARROW
+CREATE FUNCTION arrowRoundtrip(tbox)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_arrow_roundtrip'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //ARROW
+
 /******************************************************************************
  * Constructor functions
  ******************************************************************************/

@@ -18,16 +18,17 @@ list(SORT testfiles)
 # of the underlying functions. Re-enable once the expected output is
 # regenerated.
 set(SKIP_TESTS
-  210_tcbuffer_distance_tbl         # NearestApproachDistance / |=| count drift
-  212_tcbuffer_spatialrels          # spatialrels output drift
-  212_tcbuffer_spatialrels_tbl      # spatialrels output drift (table form)
-  214_tcbuffer_tempspatialrels      # tempspatialrels output drift
-  214_tcbuffer_tempspatialrels_tbl  # tempspatialrels output drift (table form)
 )
 
 foreach(file ${testfiles})
   get_filename_component(TESTNAME ${file} NAME_WE)
   set(DOTEST TRUE)
+  if(${TESTNAME} MATCHES "_arrow")
+    if(NOT ARROW)
+      message("Disabling test ${TESTNAME} (ARROW=OFF)")
+      set(DOTEST FALSE)
+    endif()
+  endif()
   if(${TESTNAME} MATCHES "_pg([0-9]+)")
     if(${POSTGRESQL_VERSION_MAJOR} LESS ${CMAKE_MATCH_1})
       message("Disabling test ${TESTNAME}")
