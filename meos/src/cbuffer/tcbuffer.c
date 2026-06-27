@@ -549,7 +549,7 @@ tcbufferseqset_in(const char *str)
  * #tcbuffer_make
  */
 TInstant *
-tpointfloat_to_tcbufferinst(const TInstant *inst1, const TInstant *inst2)
+tgeompoint_tfloat_to_tcbufferinst(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
@@ -573,7 +573,7 @@ tcbufferseq_make(const TSequence *seq1, const TSequence *seq2)
   assert(seq1->count == seq2->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
   for (int i = 0; i < seq1->count; i++)
-    instants[i] = tpointfloat_to_tcbufferinst(TSEQUENCE_INST_N(seq1, i),
+    instants[i] = tgeompoint_tfloat_to_tcbufferinst(TSEQUENCE_INST_N(seq1, i),
       TSEQUENCE_INST_N(seq2, i));
   return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc,
     seq1->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
@@ -622,7 +622,7 @@ tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tpointfloat_to_tcbufferinst((TInstant *) sync1,
+      result = (Temporal *) tgeompoint_tfloat_to_tcbufferinst((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:

@@ -256,7 +256,7 @@ tpose_from_mfjson(const char *mfjson)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TInstant *
-tpointfloat_to_tposeinst(const TInstant *inst1, const TInstant *inst2)
+tgeompoint_tfloat_to_tposeinst(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
@@ -290,7 +290,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   /* Instantaneous sequence */
   if (seq1->count == 1)
   {
-    TInstant *inst = tpointfloat_to_tposeinst(inst1, inst2);
+    TInstant *inst = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
@@ -302,7 +302,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   {
     inst1 = TSEQUENCE_INST_N(seq1, i);
     inst2 = TSEQUENCE_INST_N(seq2, i);
-    instants[i] = tpointfloat_to_tposeinst(inst1, inst2);
+    instants[i] = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
   }
   TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
@@ -376,7 +376,7 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tpointfloat_to_tposeinst((TInstant *) sync1,
+      result = (Temporal *) tgeompoint_tfloat_to_tposeinst((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
