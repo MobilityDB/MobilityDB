@@ -1,0 +1,84 @@
+# USER-APPROVED-PIN-WRITE
+# ecosystem-pin compose order — THE canonical, dependency-ordered fold manifest.
+#
+# WHY: the pin kept being a "moving target" because every derivation re-guessed
+# the composing set + order, so bindings (Nebula/Duck/Spark/...) chased a surface
+# that shifted run to run. This file FIXES the order once and for all. Every pin
+# derivation MUST fold exactly these branches, in exactly this order, onto current
+# upstream/master, then run the superset gate + per-PR equivalence audit before
+# publishing. Do NOT re-derive the order ad hoc; edit THIS file (reviewed) instead.
+#
+# Spine = a4d318ebd6's PROVEN family order (the pin the bindings already consumed):
+#   foundation-setvalues -> eintersects -> cbuffer -> npoint -> pose -> rgeo -> geo -> h3 -> pointcloud
+#
+# Format:  <PR#> <fork-branch>            # role
+# Lines run top-to-bottom = fold order. base = current upstream/master.
+#
+# USER-APPROVED-PIN-WRITE — POLICY (user, 2026-06-26): NO '?' candidates and NO
+# exclusions ledger. This file lists EXACTLY the open, non-draft PRs composed into
+# the pin; every other open non-draft PR has been CLOSED. Drafts are the only thing
+# out (orphan gate exempts them by isDraft). Merged PRs are removed (already on
+# master). Resolved 2026-06-26: #777/#789/#793 rebased onto master + composed (were
+# '?'); #926 closed (superseded by split pose #1160/#1193/#1194); #817 merged.
+
+# ── WAVE 0 — FOUNDATION (pgtypes vendoring; everything rebases on these) ──
+
+# ── WAVE 1 — PORTABILITY / THREAD-SAFETY / NUMERIC INFRA (cross-cutting) ──
+1196  pr/tfloat-trig                          # tfloat_sin/cos/tan adaptive densifier
+
+# ── WAVE 2 — TYPE FAMILIES (a4d PROVEN order) ──
+1157  clean/cbuffer
+1159  clean/npoint
+1160  clean/pose
+1161  clean/rgeo
+1164  clean/h3                                # COMPLETE th3index (base + inherited surface); #1232 folded in + closed
+1165  clean/pointcloud
+1210  feat/tquadbin                           # COMPLETE tquadbin (base + inherited surface + scripts/inherited generator); #1231 folded in + closed
+
+# ── WAVE 3 — FAMILY EXTENSIONS & FEATURES ──
+1193  clean/pose-geodetic
+1194  clean/tpose-to-tpoint
+1135  feat/tprecision-extended                # NOTE: 3 trgeoinst_make calls -> trgeometryinst_make (post-#1213 rename)
+1249  feat/nxn-setset-complete                 # full NxN set-set spatial fns (supersedes the carved #1148, now closed); rebase-for-pin only — needs committer discussion before merge
+1171  deliverable/meos-spgist
+1032  feat/rtree-mest-temporal-split          # rtree MEST
+677   lof                                     # weighted local outlier factor (geo_wlof)
+
+# ── WAVE 4 — ARROW INTERCHANGE ──
+1144  vendor/apache-arrow-c-data-interface
+1071  feat/meos-set-span-spanset-arrow
+1041  feat/meos-temporal-arrow-cbuffer        # umbrella temporal Arrow export family
+1070  demo/arrow-parquet-zerometos-session  # zero-MEOS Arrow/Parquet demo + nanoarrow validator (clean additive rebuild; stacked on the Arrow chain #1071/#1041/#1144)
+
+# ── WAVE 5 — CORRECTNESS / MEMORY FIXES ──
+
+# ── WAVE 6 — PLATFORM / CI / TOOLING (build-only, last) ──
+959   split/meos-windows-bootstrap
+
+# ── WAVE 7 — POST-MANIFEST first-pass additions (2026-06-17; fold after their
+#    dependencies, which are all earlier waves). Raster (#1216/#1217/#1218) is the
+#    ONLY recent set deferred to a second pass (see tools/pin/exclusions.txt). ──
+
+# ── WAVE 8 — RASTER family (user 2026-06-17, verified buildable both targets) ──
+1216  pr/raster-sql-operator                   # RASTER=ON family base (stack root)
+1217  pr/raster-meos-kernel                    # Raquet raster chip sampling via QUADBIN
+1218  pr/raster-ops                            # atRasterValue/minusRasterValue/eRasterValue/aRasterValue (stack tip)
+
+# ── WAVE 9 — CI / TOOLING (user 2026-06-17 "add the CI PRs"; no MEOS surface) ──
+
+# ── WAVE 10 — DOCS (user 2026-06-17 "add the doc PRs"; manual/DocBook/Doxygen) ──
+
+# ── WAVE 11 — TESTS (user 2026-06-17) ──
+
+# ── WAVE 12 — DRAFTS folded by explicit user request (2026-06-17; build both targets) ──
+                                               # composes; folds last (its cppcheck spans the whole tree). Keep
+                                               # the pin's signatures where callers depend on them (stringarr_to_string)
+958   split/meos-utf8-contract                 # bootstrap the MEOS UTF-8 contract (foundation include reconciled)
+
+# ── CANDIDATES (verify membership before including; were NOT clearly in a4d) ──
+777  vectorization
+789  pr-710-rebased                          # LCSS/avg-Hausdorff similarity
+793  pr749-rebase                            # EKF outlier filtering
+
+# ── WAVE 7 — PIN TOOLING (rides the pin so it carries its own derivation toolkit) ──
+1233  tooling/ecosystem-derivation-toolkit     # tools/pin/ derivation toolkit + hooks
