@@ -120,7 +120,7 @@ void
 tposeinst_set_stbox(const TInstant *inst, STBox *box)
 {
   assert(inst); assert(box);
-  pose_set_stbox(DatumGetPoseP(tinstant_value(inst)), box);
+  pose_set_stbox(DatumGetPoseP(tinstant_value_p(inst)), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -144,7 +144,7 @@ tposeinstarr_set_stbox(TInstant **instants, int count, STBox *box)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
   for (int i = 1; i < count; i++)
   {
-    Pose *pose = DatumGetPoseP(tinstant_value(instants[i]));
+    Pose *pose = DatumGetPoseP(tinstant_value_p(instants[i]));
     box->xmin = Min(box->xmin, pose->data[0]);
     box->xmax = Max(box->xmax, pose->data[0]);
     box->ymin = Min(box->ymin, pose->data[1]);

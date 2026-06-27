@@ -98,7 +98,14 @@
 					<entry><varname>geogset</varname></entry>
 					<entry><varname></varname></entry>
 					<entry><varname></varname></entry>
-					<entry><varname>tgeogpoint</varname></entry>
+					<entry><varname>tgeogpoint</varname>, <varname>tgeography</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pose</varname></emphasis></entry>
+					<entry><varname>poseset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tpose</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
@@ -106,6 +113,13 @@
 					<entry><varname></varname></entry>
 					<entry><varname></varname></entry>
 					<entry><varname>tnpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
+					<entry><varname>cbufferset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tcbuffer</varname></entry>
 				</row>
 			</tbody>
 			</tgroup>

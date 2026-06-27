@@ -94,7 +94,7 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} -DCBUFFER=ON ..
 
       - name: Build
         run: |
