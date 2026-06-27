@@ -400,7 +400,7 @@ floatspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, DBL_MAX);
-  return Float8GetDatum(ss->elems[0].lower);
+  return DatumGetFloat8(ss->elems[0].lower);
 }
 
 /**
@@ -462,7 +462,7 @@ floatspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, DBL_MAX);
-  return Float8GetDatum(ss->elems[ss->count - 1].upper);
+  return DatumGetFloat8(ss->elems[ss->count - 1].upper);
 }
 
 /**
