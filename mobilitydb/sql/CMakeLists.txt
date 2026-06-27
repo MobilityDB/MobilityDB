@@ -48,6 +48,15 @@ macro(process_file f srcdir bindir)
     string(REPLACE "#endif //POSTGRESQL_VERSION_NUMBER < 160000" "-- endif POSTGRESQL_VERSION_NUMBER >= 160000" CURR_CONTENTS "${CURR_CONTENTS}")
   endif()
 
+  # Feature gate: the Apache Arrow C Data Interface export (ARROW build option)
+  if(ARROW)
+    string(REPLACE "#if ARROW" "-- if ARROW" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REPLACE "#endif //ARROW" "-- endif ARROW" CURR_CONTENTS "${CURR_CONTENTS}")
+  else()
+    string(REPLACE "#if ARROW" "/* -- if ARROW" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REPLACE "#endif //ARROW" "-- endif ARROW */" CURR_CONTENTS "${CURR_CONTENTS}")
+  endif()
+
   file(WRITE ${bindir}/${f}.sql.in "${CURR_CONTENTS}")
 endmacro()
 

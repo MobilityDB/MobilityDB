@@ -61,6 +61,23 @@ CREATE CAST (tcbuffer AS stbox) WITH FUNCTION stbox(tcbuffer);
 
 /*****************************************************************************/
 
+CREATE FUNCTION stboxes(tcbuffer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION splitNStboxes(tcbuffer, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_split_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION splitEachNStboxes(tcbuffer, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_split_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
 CREATE FUNCTION expandSpace(tcbuffer, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
