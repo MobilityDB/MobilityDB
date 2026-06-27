@@ -59,6 +59,11 @@
   // #include <meos_npoint.h>
   #include "npoint/tnpoint.h"
 #endif
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+#endif
 #if POSE
   #include "pose/pose.h"
 #endif
@@ -146,6 +151,14 @@ datum_cmp(Datum l, Datum r, MeosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_cmp((const Pcpoint *) DatumGetPointer(l),
+        (const Pcpoint *) DatumGetPointer(r));
+    case T_PCPATCH:
+      return pcpatch_cmp((const Pcpatch *) DatumGetPointer(l),
+        (const Pcpatch *) DatumGetPointer(r));
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -246,6 +259,14 @@ datum_eq(Datum l, Datum r, MeosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_eq((const Pcpoint *) DatumGetPointer(l),
+        (const Pcpoint *) DatumGetPointer(r));
+    case T_PCPATCH:
+      return pcpatch_eq((const Pcpatch *) DatumGetPointer(l),
+        (const Pcpatch *) DatumGetPointer(r));
 #endif
 #if POSE || RGEO
     case T_POSE:
@@ -469,6 +490,12 @@ datum_hash(Datum d, MeosType type)
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));
 #endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hash((const Pcpoint *) DatumGetPointer(d));
+    case T_PCPATCH:
+      return pcpatch_hash((const Pcpatch *) DatumGetPointer(d));
+#endif
 #if POSE || RGEO
     case T_POSE:
       return pose_hash(DatumGetPoseP(d));
@@ -514,6 +541,12 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
 #if NPOINT
     case T_NPOINT:
       return npoint_hash_extended(DatumGetNpointP(d), seed);
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_hash_extended((const Pcpoint *) DatumGetPointer(d), seed);
+    case T_PCPATCH:
+      return pcpatch_hash_extended((const Pcpatch *) DatumGetPointer(d), seed);
 #endif
 #if POSE || RGEO
     case T_POSE:
