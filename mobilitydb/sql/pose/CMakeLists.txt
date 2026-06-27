@@ -9,6 +9,11 @@ SET(LOCAL_FILES
   111_tpose_aggfuncs
   113_tpose_distance
   114_tpose_indexes
+  115_tpose_spatialrels
+  116_tpose_tempspatialrels
+  118_tpose_analytics
+  119_tpose_tile
+  120_geopose_frames
   )
 
 append_portable_aliases()

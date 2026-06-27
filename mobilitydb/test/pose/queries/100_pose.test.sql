@@ -121,3 +121,16 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- Geodetic poses (planar/geodetic support, uniform with the stbox GEODSTBOX form)
+-------------------------------------------------------------------------------
+
+SELECT asText(pose 'GeodPose(Point(1 1),0.5)');
+SELECT asText(pose 'SRID=4326;GeodPose(Point(1 1),0.5)');
+SELECT asText(pose 'GeodPose(Point(1 1 1),1,0,0,0)');
+SELECT pose 'GeodPose(Point(1 1),0.5)';
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1),0.5)'));
+SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
+
+-------------------------------------------------------------------------------/
