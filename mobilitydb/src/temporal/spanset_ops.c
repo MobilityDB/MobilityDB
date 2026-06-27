@@ -142,7 +142,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_value);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a value
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_spanset_value(PG_FUNCTION_ARGS)
@@ -156,7 +156,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span set contains a span
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_spanset_span(PG_FUNCTION_ARGS)
@@ -170,7 +170,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a span contains a span set
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_span_spanset(PG_FUNCTION_ARGS)
@@ -184,7 +184,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first span set contains the second one
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_spanset_spanset(PG_FUNCTION_ARGS)
