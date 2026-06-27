@@ -889,3 +889,195 @@ tfloat_log10(const Temporal *temp)
 }
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Trigonometric functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the sine of a double
+ * @param[in] d Value (in radians)
+ */
+static Datum
+datum_sin(Datum d)
+{
+  return Float8GetDatum(sin(DatumGetFloat8(d)));
+}
+
+/**
+ * @brief Exact turning points of an oscillatory trigonometric lift over a linear
+ * float segment
+ * @details The argument theta(t) varies linearly from @p v1 (at @p lower) to
+ * @p v2 (at @p upper). sin/cos have a local extremum wherever their derivative
+ * vanishes, i.e. at theta = (k + @p offset) * pi: offset 1/2 for sin (where
+ * cos(theta) = 0) and offset 0 for cos (where sin(theta) = 0). This pallocs into
+ * @p result, in ascending time order, the timestamps of every such extremum
+ * STRICTLY inside the segment, and returns their count. The locations are
+ * analytic, so the result is EXACT rather than adaptively approximated.
+ */
+static int
+tfloatseg_trig_extrema(double v1, double v2, TimestampTz lower,
+  TimestampTz upper, double offset, TimestampTz **result)
+{
+  double dv = v2 - v1;
+  double lo = (v1 < v2) ? v1 : v2;
+  double hi = (v1 < v2) ? v2 : v1;
+  /* Critical arguments are (k + offset)*pi; bracket the integer range of k. */
+  long kmin = (long) floor(lo / M_PI - offset);
+  long kmax = (long) ceil(hi / M_PI - offset);
+  long span = kmax - kmin + 1;
+  TimestampTz *tps = palloc(sizeof(TimestampTz) * (span > 0 ? span : 1));
+  int n = 0;
+  /* Iterate k so the resulting timestamps come out in ascending time order
+   * (k increasing for an increasing segment, decreasing otherwise). */
+  long kfrom = (dv > 0) ? kmin : kmax;
+  long kto   = (dv > 0) ? kmax : kmin;
+  long kstep = (dv > 0) ? 1 : -1;
+  for (long k = kfrom; (kstep > 0) ? (k <= kto) : (k >= kto); k += kstep)
+  {
+    double theta = (k + offset) * M_PI;
+    if (theta <= lo || theta >= hi)
+      continue;
+    double frac = (theta - v1) / dv;
+    TimestampTz t = lower +
+      (TimestampTz) llround(frac * (double) (upper - lower));
+    /* Keep strictly interior, strictly increasing timestamps (dedup ties). */
+    if (t > lower && t < upper && (n == 0 || t > tps[n - 1]))
+      tps[n++] = t;
+  }
+  *result = tps;
+  return n;
+}
+
+/**
+ * @brief Exact turning points (extrema, where cos(theta) = 0) of sin over a
+ * linear float segment; see #tfloatseg_trig_extrema
+ */
+static int
+tfloatseg_sin_turnpt(Datum start, Datum end, TimestampTz lower,
+  TimestampTz upper, TimestampTz **result)
+{
+  return tfloatseg_trig_extrema(DatumGetFloat8(start), DatumGetFloat8(end),
+    lower, upper, 0.5, result);
+}
+
+/**
+ * @brief Exact turning points (extrema, where sin(theta) = 0) of cos over a
+ * linear float segment; see #tfloatseg_trig_extrema
+ */
+static int
+tfloatseg_cos_turnpt(Datum start, Datum end, TimestampTz lower,
+  TimestampTz upper, TimestampTz **result)
+{
+  return tfloatseg_trig_extrema(DatumGetFloat8(start), DatumGetFloat8(end),
+    lower, upper, 0.0, result);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the sine of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note sin is oscillatory with an arbitrary number of turning points per linear
+ * segment, but their locations are ANALYTIC (the extrema where cos = 0). The
+ * result is densified at those EXACT turning points (no approximation); see
+ * #tfunc_tlinearseq_set and #tfloatseg_sin_turnpt.
+ * @csqlfn #Tfloat_sin()
+ */
+Temporal *
+tfloat_sin(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_sin;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_set = lfinfo.reslinear ? &tfloatseg_sin_turnpt : NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the cosine of a double
+ * @param[in] d Value (in radians)
+ */
+static Datum
+datum_cos(Datum d)
+{
+  return Float8GetDatum(cos(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the cosine of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note cos is oscillatory with an arbitrary number of turning points per linear
+ * segment, but their locations are ANALYTIC (the extrema where sin = 0). The
+ * result is densified at those EXACT turning points (no approximation); see
+ * #tfunc_tlinearseq_set and #tfloatseg_cos_turnpt.
+ * @csqlfn #Tfloat_cos()
+ */
+Temporal *
+tfloat_cos(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_cos;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_set = lfinfo.reslinear ? &tfloatseg_cos_turnpt : NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the tangent of a double
+ * @param[in] d Value (in radians)
+ * @note tan is undefined at π/2 + kπ where cos(d) = 0; per-instant
+ * errors are not raised here since cos is never exactly 0 in floating-point
+ * for finite inputs, and the C library returns ±Inf naturally.
+ */
+static Datum
+datum_tan(Datum d)
+{
+  return Float8GetDatum(tan(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the tangent of a temporal float
+ * @param[in] temp Temporal value (in radians)
+ * @note tan is monotone within each branch (π/2 + kπ poles) but its curvature
+ * grows without bound near a pole, so it is densified by the same adaptive
+ * recursive bisection as sin/cos (see #tfunc_tlinearseq_adaptive): the
+ * bisection refines the steep near-pole regions, and the C library yields
+ * ±Inf for an argument landing exactly on a pole (see #datum_tan). No bespoke
+ * pole detection is needed.
+ * @csqlfn #Tfloat_tan()
+ */
+Temporal *
+tfloat_tan(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_tan;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.tpfn_adaptive = true;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
