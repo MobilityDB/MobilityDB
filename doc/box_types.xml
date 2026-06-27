@@ -126,6 +126,19 @@ SELECT stboxFromHexWKB(
 -- STBOX X((1,1),(2,2))
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="box_arrowRoundtrip">
+					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+					<para>Convert a temporal or spatiotemporal box to the Arrow C Data Interface and back, returning the reconstructed value</para>
+					<para><varname>arrowRoundtrip(box) → box</varname></para>
+					<para>A box is a finite subset of a product domain (a temporal box of the time and value domain, a spatiotemporal box of the space and time domain), closing the type algebra over the product domain. The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. The result is equal to the input. The encoding mirrors the canonical box: the flags word is carried verbatim, the time span and the value span of a temporal box and the time span of a spatiotemporal box each reuse the same span structure as a span value, the spatial extent of a spatiotemporal box is its raw minimum and maximum doubles per axis, and the spatial reference identifier is preserved; the dimensions actually present (value, time, two- or three-dimensional space) follow the flags.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))');
+-- TBOXFLOAT XT([1.5, 9.75],[2000-01-01,2000-12-31))
+SELECT arrowRoundtrip(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
+-- SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])
+</programlisting>
+				</listitem>
 			</itemizedlist>
 	</sect1>
 

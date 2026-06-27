@@ -414,6 +414,17 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 -- NULL
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tnpoint_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convert a temporal network point to the Arrow C Data Interface and back, returning the reconstructed value</para>
+				<para><varname>arrowRoundtrip(tnpoint) → tnpoint</varname></para>
+				<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. A network point decomposes to a Struct of the route identifier rid and the position fraction pos; reconstruction requires the network to be loaded. The result is equal to the input.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2001-01-01');
+-- NPoint(1,0.5)@2001-01-01
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

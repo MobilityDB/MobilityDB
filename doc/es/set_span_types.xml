@@ -16,10 +16,10 @@
 	</para>
 
 	<para>
-		Los tipos de base que se utilizan para construir tipos de conjunto, de rango y de conjunto de rangos son los tipos <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>date</varname>, and <varname>timestamptz</varname> (marca de tiempo con zona horaria) proporcionados por PostgreSQL, los tipos <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, y el tipo <varname>npoint</varname > (<emphasis>network point</emphasis> o punto de red) proporcionado por MobilityDB (ver <xref linkend="temporal_network_points" />). MobilityDB proporciona los siguientes tipos de conjunto y de rango:
+		Los tipos de base que se utilizan para construir tipos de conjunto, de rango y de conjunto de rangos son los tipos <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>date</varname>, and <varname>timestamptz</varname> (marca de tiempo con zona horaria) proporcionados por PostgreSQL, los tipos <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, y los tipos <varname>cbuffer</varname> (búfer circular, ver <xref linkend="temporal_circular_buffers" />) y <varname>npoint</varname> (<emphasis>network point</emphasis> o punto de red, ver <xref linkend="temporal_network_points" />) proporcionados por MobilityDB. MobilityDB proporciona los siguientes tipos de conjunto y de rango:
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>dateset</varname>, <varname>tstzset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname>.</para>
+				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>dateset</varname>, <varname>tstzset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, <varname>npointset</varname>.</para>
 			</listitem>
 			<listitem>
 				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>datespan</varname>, <varname>tstzspan</varname>.</para>
@@ -125,9 +125,11 @@ SELECT textset '{"highway"}';
 SELECT floatset '{3.5, 1.2}';
 -- Conjunto erróneo: elementos duplicados
 SELECT geomset '{"Point(1 1)", "Point(1 1)"}';
+-- Conjunto de búferes circulares: cada elemento es un cbuffer en WKT
+SELECT cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),1.0)"}';
 </programlisting>
 		<para>
-			Nótese que los elementos de los conjuntos <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname> y <varname>npointset</varname> deben estar delimitados entre commillas dobles. Nótese también que las geometrías y las geografías utilizan el orden definido por PostGIS.
+			Nótese que los elementos de los conjuntos <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname> y <varname>npointset</varname> deben estar delimitados entre commillas dobles. Nótese también que las geometrías y las geografías utilizan el orden definido por PostGIS.
 		</para>
 
 		<para>
@@ -256,6 +258,19 @@ SELECT intspanFromHexWKB('011300010100000003000000');
 SELECT floatspansetFromHexWKB(
   '00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="setspan_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un conjunto, span o conjunto de spans a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip({set,span,spanset}) → {set,span,spanset}</varname></para>
+				<para>Los tipos conjunto, span y conjunto de spans representan subconjuntos finitos de un dominio base infinito, cerrando el álgebra de tipos. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El resultado es igual a la entrada. La codificación refleja la de los tipos temporales: un conjunto se convierte en una lista de sus elementos ordenados, un span en una estructura de sus límites inferior y superior con sus indicadores de inclusión, y un conjunto de spans en una lista de tales estructuras de span; la columna de elementos sigue al tipo base (entero, entero grande, flotante, texto, fecha, marca de tiempo, o un binario grande opaco del binario bien conocido extendido para una geometría o geografía), y se preserva el identificador de referencia espacial de un conjunto de geometrías o geografías.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(intset '{1, 2, 3}');
+-- {1, 2, 3}
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}');
+-- {[1.5, 2.5), (3, 4]}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -919,6 +934,12 @@ SELECT asEWKT(setSRID(geomset '{Point(1 1), Point(2 2)}', 5676));
 -- SRID=5676;{"POINT(1 1)", "POINT(2 2)"}
 SELECT asEWKT(setSRID(poseset '{"Pose(Point(1 1),1)", "Pose(Point(2 2),3)"}', 5676));
 -- SRID=5676;{"Pose(POINT(2 2),3)", "Pose(POINT(1 1),1)"}
+SELECT SRID(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)",
+  "Cbuffer(Point(2 2),1.0)"}');
+-- 4326
+SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)",
+  "Cbuffer(Point(2 2),1.0)"}', 3812));
+-- SRID=3812;{"Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),1)"}
 </programlisting>
 				</listitem>
 
