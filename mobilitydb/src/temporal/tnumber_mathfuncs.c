@@ -487,8 +487,8 @@ PGDLLEXPORT Datum Tfloat_exp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_exp);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the natural logarithm of a temporal number
- * @sqlfn ln()
+ * @brief Return the exponential of a temporal number
+ * @sqlfn exp()
  */
 Datum
 Tfloat_exp(PG_FUNCTION_ARGS)
@@ -523,8 +523,8 @@ PGDLLEXPORT Datum Tfloat_log10(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_log10);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the natural logarithm of a temporal number
- * @sqlfn ln()
+ * @brief Return the base 10 logarithm of a temporal number
+ * @sqlfn log10()
  */
 Datum
 Tfloat_log10(PG_FUNCTION_ARGS)
