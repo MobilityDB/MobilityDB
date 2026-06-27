@@ -182,31 +182,31 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_teq(geometry, trgeometry)
+CREATE FUNCTION tEq(geometry, trgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(trgeometry, geometry)
+CREATE FUNCTION tEq(trgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(trgeometry, trgeometry)
+CREATE FUNCTION tEq(trgeometry, trgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = geometry, RIGHTARG = trgeometry,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = trgeometry, RIGHTARG = geometry,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   COMMUTATOR = #=
 );
@@ -215,31 +215,31 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_tne(geometry, trgeometry)
+CREATE FUNCTION tNe(geometry, trgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_geo_trgeometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(trgeometry, geometry)
+CREATE FUNCTION tNe(trgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_trgeometry_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(trgeometry, trgeometry)
+CREATE FUNCTION tNe(trgeometry, trgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = geometry, RIGHTARG = trgeometry,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = trgeometry, RIGHTARG = geometry,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   COMMUTATOR = #<>
 );
