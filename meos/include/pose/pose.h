@@ -94,7 +94,12 @@ extern char *pose_wkt_out(const Pose *pose, bool extended, int maxdd);
 extern Pose *pose_parse(const char **str, bool end);
 
 extern Datum datum_pose_point(Datum pose);
+extern Datum datum_pose_geopoint(Datum pose);
 extern Datum datum_pose_rotation(Datum pose);
+extern Datum datum_pose_yaw(Datum pose);
+extern Datum datum_pose_pitch(Datum pose);
+extern Datum datum_pose_roll(Datum pose);
+extern Datum datum_pose_apply_geo(Datum pose, Datum body);
 
 /* Transformation functions */
 
