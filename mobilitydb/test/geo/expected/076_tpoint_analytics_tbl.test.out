@@ -258,3 +258,41 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X((0,0),(50,50))') AS mvt
  67719.329591 |  45
 (1 row)
 
+SELECT MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true)))AS max_removed
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+ max_removed 
+-------------
+          30
+(1 row)
+
+SELECT MIN(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS min_diff,
+         MAX(numInstants(temp) - numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false))) AS max_diff
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3;
+ min_diff | max_diff 
+----------+----------
+        0 |        0
+(1 row)
+
+SELECT k,
+         numInstants(temp) AS n_before,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))  AS n_after_drop,
+         numInstants(extendedKalmanFilter(temp, 8, 5e-10, 5e-10, false)) AS n_after_fill
+  FROM tbl_tgeompoint
+  WHERE numInstants(temp) >= 3
+    AND numInstants(temp) > numInstants(
+          extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))
+  ORDER BY (numInstants(temp) - numInstants(
+             extendedKalmanFilter(temp, 8, 5e-10, 5e-10, true))) DESC,
+           k
+  LIMIT 5;
+ k  | n_before | n_after_drop | n_after_fill 
+----+----------+--------------+--------------
+ 84 |       56 |           26 |           56
+ 86 |       56 |           26 |           56
+ 96 |       46 |           20 |           46
+ 77 |       37 |           15 |           37
+ 79 |       37 |           15 |           37
+(5 rows)
+
