@@ -105,7 +105,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a set contains a value
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_set_value(PG_FUNCTION_ARGS)
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first set contains the second one
  * @sqlfn contains()
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 inline Datum
 Contains_set_set(PG_FUNCTION_ARGS)
