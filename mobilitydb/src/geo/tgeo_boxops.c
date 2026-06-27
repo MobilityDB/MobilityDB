@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tspatial);
  * @brief Return true if a spatiotemporal box contains the one of a temporal
  * point
  * @sqlfn contains_bbox()
- * @sqlop @p <@
+ * @sqlop @p @>
  */
 inline Datum
 Contains_stbox_tspatial(PG_FUNCTION_ARGS)
@@ -326,7 +326,7 @@ PG_FUNCTION_INFO_V1(Contains_tspatial_stbox);
  * @brief Return true if the spatiotemporal box of a spatiotemporal value
  * contains a spatiotemporal box
  * @sqlfn contains_bbox()
- * @sqlop @p <@
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tspatial_stbox(PG_FUNCTION_ARGS)
@@ -341,7 +341,7 @@ PG_FUNCTION_INFO_V1(Contains_tspatial_tspatial);
  * @brief Return true if the spatiotemporal box of the first spatiotemporal
  * value contains the one of the second spatiotemporal value
  * @sqlfn contains_bbox()
- * @sqlop @p <@
+ * @sqlop @p @>
  */
 inline Datum
 Contains_tspatial_tspatial(PG_FUNCTION_ARGS)
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tspatial);
  * @brief Return true if a spatiotemporal box is contained in the
  * spatiotemporal box of a spatiotemporal value
  * @sqlfn contained_bbox()
- * @sqlop @p \@>
+ * @sqlop @p <@
  */
 inline Datum
 Contained_stbox_tspatial(PG_FUNCTION_ARGS)
@@ -375,7 +375,7 @@ PG_FUNCTION_INFO_V1(Contained_tspatial_stbox);
  * @brief Return true if the spatiotemporal box of a spatiotemporal value is
  * contained in the spatiotemporal box
  * @sqlfn contained_bbox()
- * @sqlop @p \@>
+ * @sqlop @p <@
  */
 inline Datum
 Contained_tspatial_stbox(PG_FUNCTION_ARGS)
@@ -390,7 +390,7 @@ PG_FUNCTION_INFO_V1(Contained_tspatial_tspatial);
  * @brief Return true if the spatiotemporal box of the first spatiotemporal
  * value is contained in the one of the second spatiotemporal value
  * @sqlfn contained_bbox()
- * @sqlop @p \@>
+ * @sqlop @p <@
  */
 inline Datum
 Contained_tspatial_tspatial(PG_FUNCTION_ARGS)
