@@ -21,7 +21,7 @@
 #define __MEOS_POINTCLOUD_H__
 
 /* C */
-#include <assert.h>      /* for _Static_assert on STBox/TPCBox layout */
+#include <assert.h>      /* for static_assert on STBox/TPCBox layout */
 #include <stdbool.h>
 #include <stddef.h>      /* for offsetof in the static asserts below */
 #include <stdint.h>
@@ -79,13 +79,13 @@ typedef struct
  * projected to an STBox by dropping the trailing pcid + padding. The
  * layout-compatibility cast (CREATE CAST tpcbox AS stbox) and any
  * future tooling that converts between the two rely on this. */
-_Static_assert(offsetof(TPCBox, period) == offsetof(STBox, period),
+static_assert(offsetof(TPCBox, period) == offsetof(STBox, period),
                "TPCBox and STBox must share the period offset");
-_Static_assert(offsetof(TPCBox, xmin) == offsetof(STBox, xmin),
+static_assert(offsetof(TPCBox, xmin) == offsetof(STBox, xmin),
                "TPCBox and STBox must share the xmin offset");
-_Static_assert(offsetof(TPCBox, zmax) == offsetof(STBox, zmax),
+static_assert(offsetof(TPCBox, zmax) == offsetof(STBox, zmax),
                "TPCBox and STBox must share the zmax offset");
-_Static_assert(offsetof(TPCBox, srid) == offsetof(STBox, srid),
+static_assert(offsetof(TPCBox, srid) == offsetof(STBox, srid),
                "TPCBox and STBox must share the srid offset");
 
 /*****************************************************************************
