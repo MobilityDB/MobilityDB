@@ -286,7 +286,7 @@ trgeoseqset_make_free(const GSERIALIZED *geom, TSequence **sequences,
 static int *
 trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, double maxdist,
-  Interval *maxt, int *nsplits)
+  const Interval *maxt, int *nsplits)
 {
   assert(interp != DISCRETE);
   trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
@@ -311,7 +311,7 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
  */
 TSequenceSet *
 trgeoseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
-  int count, interpType interp, Interval *maxt, double maxdist)
+  int count, interpType interp, const Interval *maxt, double maxdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(instants, NULL);

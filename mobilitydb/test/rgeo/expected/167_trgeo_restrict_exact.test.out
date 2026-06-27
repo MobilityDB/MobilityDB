@@ -1,0 +1,163 @@
+SELECT getTime(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(minusGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {(Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((2.4 0.4,2.6 0.4,2.6 0.6,2.4 0.6,2.4 0.4))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Tue Jan 02 09:36:00 2001 PST, Wed Jan 03 14:24:00 2001 PST]}
+(1 row)
+
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(2 0), 0.0)@2001-01-01',
+  geometry 'Polygon((2.9 0,3.5 0,3.5 1,2.9 1,2.9 0))'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(2 0),0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+WITH trip AS (
+  SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]' AS t
+),
+tgt AS (SELECT geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))' AS g),
+res AS (SELECT getTime(atGeometry((SELECT t FROM trip), (SELECT g FROM tgt))) AS ss),
+samples AS (
+  SELECT timestamptz '2001-01-01' +
+    ((i + 0.5) / 200.0) * (timestamptz '2001-01-05' - timestamptz '2001-01-01') AS ts
+  FROM generate_series(0, 199) AS i
+)
+SELECT count(*) AS disagreements
+FROM samples s
+WHERE ST_Intersects(
+        valueAtTimestamp((SELECT t FROM trip), s.ts),
+        (SELECT g FROM tgt))
+      <> ((SELECT ss FROM res) @> s.ts);
+ disagreements 
+---------------
+             0
+(1 row)
+
+WITH trip AS (
+  SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]' AS t
+),
+tgt AS (SELECT geometry 'Polygon((2.4 0.4,2.6 0.4,2.6 0.6,2.4 0.6,2.4 0.4))' AS g),
+res AS (SELECT getTime(atGeometry((SELECT t FROM trip), (SELECT g FROM tgt))) AS ss),
+samples AS (
+  SELECT timestamptz '2001-01-01' +
+    ((i + 0.5) / 200.0) * (timestamptz '2001-01-05' - timestamptz '2001-01-01') AS ts
+  FROM generate_series(0, 199) AS i
+)
+SELECT count(*) AS disagreements
+FROM samples s
+WHERE ST_Intersects(
+        valueAtTimestamp((SELECT t FROM trip), s.ts),
+        (SELECT g FROM tgt))
+      <> ((SELECT ss FROM res) @> s.ts);
+ disagreements 
+---------------
+             0
+(1 row)
+
+SELECT getTime(atGeometry(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(2 0), 0.0)@2001-01-02, Pose(Point(5 0), 0.0)@2001-01-03]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST)}
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX X((1, -1), (3, 1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(minusStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX X((1, -1), (3, 1))'));
+                            gettime                             
+----------------------------------------------------------------
+ {(Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX XT(((1, -1), (3, 1)), [2001-01-02, 2001-01-04])'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Tue Jan 02 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+WITH trip AS (
+  SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]' AS t
+),
+box AS (SELECT stbox 'STBOX X((1, -1), (3, 1))' AS b),
+res AS (SELECT getTime(atStbox((SELECT t FROM trip), (SELECT b FROM box))) AS ss),
+samples AS (
+  SELECT timestamptz '2001-01-01' +
+    ((i + 0.5) / 200.0) * (timestamptz '2001-01-05' - timestamptz '2001-01-01') AS ts
+  FROM generate_series(0, 199) AS i
+)
+SELECT count(*) AS disagreements
+FROM samples s
+WHERE ST_Intersects(
+        valueAtTimestamp((SELECT t FROM trip), s.ts),
+        (SELECT b::geometry FROM box))
+      <> ((SELECT ss FROM res) @> s.ts);
+ disagreements 
+---------------
+             0
+(1 row)
+
+SELECT atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
+ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
+SELECT minusGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))');
+ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
+SELECT atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 1.5)@2001-01-05]',
+  stbox 'STBOX X((1, -1), (3, 1))');
+ERROR:  Exact spatial restriction of a temporal rigid geometry with a rotating segment is not implemented
+SELECT atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1,2 1,2 -1))');
+ERROR:  Exact spatial restriction of a temporal rigid geometry against a geometry with interior rings (holes) is not implemented
+SELECT minusGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((0 -2,6 -2,6 2,0 2,0 -2),(2 -1,4 -1,4 1,2 1,2 -1))');
+ERROR:  Exact spatial restriction of a temporal rigid geometry against a geometry with interior rings (holes) is not implemented
+SELECT asText(atGeometry(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
+                                                               astext                                                                
+-------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 0),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atStbox(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  stbox 'STBOX X((1, -1), (3, 1))'));
+                                                               astext                                                                
+-------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,1 0,1 1,0 1,0 0));{[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 0),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+

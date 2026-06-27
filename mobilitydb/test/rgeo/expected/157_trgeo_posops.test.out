@@ -1970,3 +1970,75 @@ SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@200
 ERROR:  The stbox must have T dimension
 SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0.5)@2000-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have T dimension
+SELECT stbox 'STBOX Z((0,0,0),(1,1,1))' <</ trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'STBOX Z((0,0,0),(1,1,1))' &</ trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'STBOX Z((0,0,0),(1,1,1))' />> trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'STBOX Z((0,0,0),(1,1,1))' /&> trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]' <</ stbox 'STBOX Z((0,0,0),(1,1,1))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]' &</ stbox 'STBOX Z((0,0,0),(1,1,1))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]' />> stbox 'STBOX Z((0,0,0),(1,1,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]' /&> stbox 'STBOX Z((0,0,0),(1,1,1))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-02]' <</ trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-02]' &</ trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-02]' />> trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(0 0 0),1.0,0.0,0.0,0.0)@2000-01-02]' /&> trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-01,Pose(Point(10 10 10),1.0,0.0,0.0,0.0)@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+

@@ -256,14 +256,15 @@ tpose_from_mfjson(const char *mfjson)
  * @pre The temporal point and the temporal float are synchronized
  */
 static TInstant *
-tposeinst_make(const TInstant *inst1, const TInstant *inst2)
+tgeompoint_tfloat_to_tposeinst(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst1));
-  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
   double radius = DatumGetFloat8(tinstant_value_p(inst2));
-  Pose *pose = pose_make_2d(p->x, p->y, radius, gserialized_get_srid(gs));
+  Pose *pose = pose_make_2d(p->x, p->y, radius,
+    FLAGS_GET_GEODETIC(gs->gflags), gserialized_get_srid(gs));
   TInstant *result = tinstant_make(PointerGetDatum(pose), T_TPOSE, inst1->t);
   pfree(pose);
   return result;
@@ -289,7 +290,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   /* Instantaneous sequence */
   if (seq1->count == 1)
   {
-    TInstant *inst = tposeinst_make(inst1, inst2);
+    TInstant *inst = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
     return result;
@@ -301,7 +302,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   {
     inst1 = TSEQUENCE_INST_N(seq1, i);
     inst2 = TSEQUENCE_INST_N(seq2, i);
-    instants[i] = tposeinst_make(inst1, inst2);
+    instants[i] = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
   }
   TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
@@ -375,7 +376,7 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   switch (sync1->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tposeinst_make((TInstant *) sync1,
+      result = (Temporal *) tgeompoint_tfloat_to_tposeinst((TInstant *) sync1,
         (TInstant *) sync2);
       break;
     case TSEQUENCE:
@@ -390,14 +391,96 @@ tpose_make(const Temporal *tpoint, const Temporal *tradius)
   return result;
 }
 
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose instant from a pose and a timestamptz
+ * @param[in] pose Value
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tposeinst_make(const Pose *pose, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  return tinstant_make(PointerGetDatum(pose), T_TPOSE, t);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose from a pose and the time frame of another
+ * temporal value
+ * @param[in] pose Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tpose_from_base_temp(const Pose *pose, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(PointerGetDatum(pose), T_TPOSE, temp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose discrete sequence from a pose and a
+ * timestamptz set
+ * @param[in] pose Value
+ * @param[in] s Set
+ */
+TSequence *
+tposeseq_from_base_tstzset(const Pose *pose, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSET(s, NULL);
+  return tsequence_from_base_tstzset(PointerGetDatum(pose), T_TPOSE, s);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence from a pose and a timestamptz span
+ * @param[in] pose Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tposeseq_from_base_tstzspan(const Pose *pose, const Span *s, interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  return tsequence_from_base_tstzspan(PointerGetDatum(pose), T_TPOSE, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_pose_constructor
+ * @brief Return a temporal pose sequence set from a pose and a timestamptz
+ * span set
+ * @param[in] pose Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(pose), T_TPOSE,
+    ss, interp);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
 /**
  * @ingroup meos_pose_conversion
- * @brief Return a geometry point from a temporal pose
+ * @brief Return a temporal point from a temporal pose
+ * @details The result is a temporal geometry point for a planar pose and a
+ * temporal geography point for a geodetic pose
  * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_to_tpoint()
  */
 Temporal *
 tpose_to_tpoint(const Temporal *temp)
@@ -407,9 +490,10 @@ tpose_to_tpoint(const Temporal *temp)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_pose_point;
+  lfinfo.func = (varfunc) &datum_pose_geopoint;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.restype = MEOS_FLAGS_GET_GEODETIC(temp->flags) ?
+    T_TGEOGPOINT : T_TGEOMPOINT;
   /* Position projection is affine: linear input -> linear output */
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
@@ -443,6 +527,262 @@ tpose_rotation(const Temporal *temp)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
+}
+
+/**
+ * @brief Lift a pose-to-double Datum function through a temporal pose,
+ * returning a temporal float. Shared backend for the @p yaw / @p pitch /
+ * @p roll accessors below.
+ */
+static Temporal *
+tpose_lift_to_tfloat(const Temporal *temp, varfunc func)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = func;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TPOSE;
+  lfinfo.restype = T_TFLOAT;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the yaw angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_yaw()
+ */
+Temporal *
+tpose_yaw(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_yaw);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the pitch angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_pitch()
+ */
+Temporal *
+tpose_pitch(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_pitch);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the roll angle of a temporal pose (radians) as a temporal
+ * float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_roll()
+ */
+Temporal *
+tpose_roll(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  return tpose_lift_to_tfloat(temp, (varfunc) &datum_pose_roll);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the speed of a temporal pose as a temporal float
+ * @details The result is the magnitude of the position-component
+ * velocity, i.e. distance travelled per unit time. The orientation
+ * component is not part of this scalar — angular velocity has its own
+ * accessor @p tpose_angular_speed.
+ * @param[in] temp Temporal pose
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_speed()
+ */
+Temporal *
+tpose_speed(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  Temporal *traj = tpose_to_tpoint(temp);
+  if (! traj)
+    return NULL;
+  Temporal *result = tpoint_speed(traj);
+  pfree(traj);
+  return result;
+}
+
+/**
+ * @brief Per-segment angular speed for a TSequence of tpose with linear
+ * interpolation. Builds a step-interpolation TSequence of tfloat where
+ * each instant carries the constant @p |omega| of the segment that
+ * starts at it.
+ */
+static TSequence *
+tposeseq_angular_speed(const TSequence *seq)
+{
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Instantaneous sequence — no segment, no angular speed. */
+  if (seq->count == 1)
+    return NULL;
+
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+  double angspeed = 0.0;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+    double dt = (double) (inst2->t - inst1->t) / 1000000.0;
+    angspeed = (dt > 0.0) ?
+      pose_angular_distance(pose1, pose2) / dt : 0.0;
+    instants[i] = tinstant_make(Float8GetDatum(angspeed), T_TFLOAT, inst1->t);
+    inst1 = inst2;
+    pose1 = pose2;
+  }
+  /* The trailing instant carries the previous segment's value, so the
+   * step-interpolated tfloat is well-defined on the closed interval. */
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(angspeed),
+    T_TFLOAT, seq->period.upper);
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  pfree_array((void **) instants, seq->count);
+  return result;
+}
+
+/**
+ * @brief Per-sequenceset angular speed.
+ */
+static TSequenceSet *
+tposeseqset_angular_speed(const TSequenceSet *ss)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    TSequence *r = tposeseq_angular_speed(seq);
+    if (r) sequences[nseqs++] = r;
+  }
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the angular speed of a temporal pose (radians per unit
+ * time) as a step-interpolated temporal float
+ * @details For 2D poses this is the per-segment shortest-arc theta delta
+ * divided by the segment duration. For 3D poses this is the SLERP arc
+ * angle @p 2 · acos(|q1 · q2|) divided by the segment duration; SLERP is
+ * by construction constant-angular-velocity over a segment so the
+ * resulting tfloat is step-interpolated.
+ * @param[in] temp Temporal pose with linear interpolation
+ * @return On error or for an instantaneous tpose return @p NULL
+ * @csqlfn #Tpose_angular_speed()
+ */
+Temporal *
+tpose_angular_speed(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
+    return NULL;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return NULL;
+    case TSEQUENCE:
+      return (Temporal *) tposeseq_angular_speed((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tposeseqset_angular_speed(
+        (TSequenceSet *) temp);
+  }
+}
+
+/**
+ * @brief Per-sequence builder of @p applyPose: applies the rigid-body
+ * transform of each instant's pose to the body geometry, producing a
+ * tgeompoint sequence with the same temporal shape as the input.
+ */
+static TSequence *
+tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+    GSERIALIZED *world = pose_apply_geo(pose, body);
+    if (world == NULL)
+    {
+      for (int j = 0; j < i; j++) pfree(instants[j]);
+      pfree(instants);
+      return NULL;
+    }
+    instants[i] = tinstant_make(GserializedPGetDatum(world), T_TGEOMPOINT,
+      inst->t);
+  }
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+  pfree_array((void **) instants, seq->count);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_geopose_accessor
+ * @brief Return the world-frame trajectory obtained by applying a
+ * temporal pose to a body-frame geometry
+ * @details Per instant the rigid-body transform @p R(q_i) · v + p_i is
+ * applied to the body geometry; the result is a temporal point with the
+ * same subtype and interpolation as the input @p tpose. v1 supports
+ * point and multipoint body geometries — the output is a tgeompoint
+ * carrying the per-instant transformed point. Linear interpolation of
+ * the resulting trajectory is the chord on each segment, which
+ * approximates the true rigid-body trajectory (a circular arc under
+ * SLERP); the same linear-interpolation trade-off MobilityDB already
+ * uses for spatial trajectories.
+ * @param[in] temp Temporal pose
+ * @param[in] body Body-frame geometry (POINT or MULTIPOINT)
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_apply_geo()
+ */
+Temporal *
+tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body)
+{
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(body, NULL);
+
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      const TInstant *inst = (const TInstant *) temp;
+      const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+      GSERIALIZED *world = pose_apply_geo(pose, body);
+      if (world == NULL) return NULL;
+      return (Temporal *) tinstant_make(GserializedPGetDatum(world),
+        T_TGEOMPOINT, inst->t);
+    }
+    case TSEQUENCE:
+      return (Temporal *) tposeseq_apply_geo((const TSequence *) temp, body);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+      for (int i = 0; i < ss->count; i++)
+      {
+        TSequence *r = tposeseq_apply_geo(TSEQUENCESET_SEQ_N(ss, i), body);
+        if (! r)
+        {
+          for (int j = 0; j < i; j++) pfree(sequences[j]);
+          pfree(sequences);
+          return NULL;
+        }
+        sequences[i] = r;
+      }
+      return (Temporal *) tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+    }
+  }
 }
 
 /*****************************************************************************/
@@ -527,9 +867,12 @@ tpose_values(const Temporal *temp, int *count)
 Set *
 tposeinst_points(const TInstant *inst)
 {
-  Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-  Datum value = PointerGetDatum(pose_to_point(pose));
-  return set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
+  const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+  GSERIALIZED *gs = pose_to_point(pose);
+  Datum value = PointerGetDatum(gs);
+  Set *result = set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
+  pfree(gs);
+  return result;
 }
 
 /**
@@ -546,7 +889,11 @@ tposeseq_points(const TSequence *seq)
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
   int count = datumarr_remove_duplicates(values, seq->count, T_GEOMETRY);
-  return set_make_free(values, count, T_GEOMETRY, ORDER_NO);
+  Set *result = set_make_exp(values, count, count, T_GEOMETRY, ORDER_NO);
+  for (int i = 0; i < seq->count; i++)
+    pfree(DatumGetPointer(values[i]));
+  pfree(values);
+  return result;
 }
 
 /**
@@ -563,13 +910,17 @@ tposeseqset_points(const TSequenceSet *ss)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
+      const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
       values[nvalues++] = PointerGetDatum(pose_to_point(pose));
     }
   }
   datumarr_sort(values, ss->totalcount, T_GEOMETRY);
   int count = datumarr_remove_duplicates(values, ss->totalcount, T_GEOMETRY);
-  return set_make_free(values, count, T_GEOMETRY, ORDER_NO);
+  Set *result = set_make_exp(values, count, count, T_GEOMETRY, ORDER_NO);
+  for (int i = 0; i < ss->totalcount; i++)
+    pfree(DatumGetPointer(values[i]));
+  pfree(values);
+  return result;
 }
 
 /**
@@ -603,20 +954,20 @@ tpose_points(const Temporal *temp)
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
  * false when it may be at an exclusive bound
- * @param[out] value Resulting value
+ * @param[out] result Resulting value
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
 tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  Pose **value)
+  Pose **result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(value, false); VALIDATE_TPOSE(temp, false);
+  VALIDATE_NOT_NULL(result, false); VALIDATE_TPOSE(temp, false);
 
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetPoseP(res);
-  return result;
+  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *result = DatumGetPoseP(res);
+  return found;
 }
 #endif /* MEOS */
 
