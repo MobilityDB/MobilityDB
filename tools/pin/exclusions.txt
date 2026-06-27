@@ -1,0 +1,12 @@
+# USER-APPROVED-PIN-WRITE
+# Pin EXCLUSIONS ledger — INTENTIONALLY EMPTY.
+#
+# Policy (user, 2026-06-26): there are NO exclusions. Every OPEN, NON-DRAFT PR is
+# either COMPOSED into the pin (listed in tools/pin/compose-order.txt) or CLOSED.
+# Drafts are the only thing out of the pin, and the orphan gate
+# (tools/pin/orphan-gate.sh) already exempts them via `isDraft==false` — they need
+# no ledger entry. So this file carries no PR numbers.
+#
+# (The pin-tooling PR #1233 changes no MEOS/extension surface; rather than carry a
+#  ledger exception it is simply composed in its own WAVE 7 in compose-order.txt,
+#  so the pin tree self-documents its own derivation toolkit.)
