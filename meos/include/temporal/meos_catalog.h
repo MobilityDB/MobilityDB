@@ -123,6 +123,9 @@ typedef enum
   T_TJSONB         = 66,  /**< temporal JSONB value */
 #endif /* JSON */
   T_TBIGINT        = 67,  /**< temporal big integer type */
+  T_H3INDEX        = 68,  /**< static H3 cell index type (uint64) */
+  T_H3INDEXSET     = 69,  /**< h3index set type */
+  T_TH3INDEX       = 70,  /**< temporal H3 index type (libh3 cell index over time) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;
