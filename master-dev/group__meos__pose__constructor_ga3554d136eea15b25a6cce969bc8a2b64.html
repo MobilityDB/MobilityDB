@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: tposeseq_from_base_tstzset</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2pose_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2CMakeLists_8txt_a4d95332c8f9e6cd0aea13f9fc9c2b633.html#a4d95332c8f9e6cd0aea13f9fc9c2b633">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga943e8092da94ad5044de24fd80cebb13.html#ga943e8092da94ad5044de24fd80cebb13">tpose_from_base_temp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga260a06f64c998ebd70e5537fb9274b27.html#ga260a06f64c998ebd70e5537fb9274b27">tposeinst_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__constructor_ga3554d136eea15b25a6cce969bc8a2b64.html#ga3554d136eea15b25a6cce969bc8a2b64">tposeseq_from_base_tstzset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga1f1d15601ef0b88b646deacd45e58281.html#ga1f1d15601ef0b88b646deacd45e58281">tposeseq_from_base_tstzspan</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga92922719798cd0e2121a9b568a46bfa7.html#ga92922719798cd0e2121a9b568a46bfa7">tposeseqset_from_base_tstzspanset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4d95332c8f9e6cd0aea13f9fc9c2b633" name="a4d95332c8f9e6cd0aea13f9fc9c2b633"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d95332c8f9e6cd0aea13f9fc9c2b633">&#9670;&#160;</a></span>set()</h2>
+<a id="ga3554d136eea15b25a6cce969bc8a2b64" name="ga3554d136eea15b25a6cce969bc8a2b64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3554d136eea15b25a6cce969bc8a2b64">&#9670;&#160;</a></span>tposeseq_from_base_tstzset()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname"><a class="el" href="structTSequence.html">TSequence</a> * tposeseq_from_base_tstzset </td>
           <td>(</td>
-          <td class="paramtype">POSE_SOURCES pose.c tpose.c tpose_compops.c tpose_boxops.c tpose_distance.c tpose_spatialfuncs.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
+          <td class="paramname"><em>pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>s</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a temporal pose discrete sequence from a pose and a timestamptz set. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td>Value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

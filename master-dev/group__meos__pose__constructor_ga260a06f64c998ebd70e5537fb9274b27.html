@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Tpose_to_tgeompoint</title>
+<title>MobilityDB: tposeinst_make</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__pose__conversion.html">Conversion functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,29 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pose__conversion_gaec7c92e306684689c0f9cf1a037679ae.html#gaec7c92e306684689c0f9cf1a037679ae">Tpose_to_tgeompoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga943e8092da94ad5044de24fd80cebb13.html#ga943e8092da94ad5044de24fd80cebb13">tpose_from_base_temp</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__constructor_ga260a06f64c998ebd70e5537fb9274b27.html#ga260a06f64c998ebd70e5537fb9274b27">tposeinst_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga3554d136eea15b25a6cce969bc8a2b64.html#ga3554d136eea15b25a6cce969bc8a2b64">tposeseq_from_base_tstzset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga1f1d15601ef0b88b646deacd45e58281.html#ga1f1d15601ef0b88b646deacd45e58281">tposeseq_from_base_tstzspan</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga92922719798cd0e2121a9b568a46bfa7.html#ga92922719798cd0e2121a9b568a46bfa7">tposeseqset_from_base_tstzspanset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaec7c92e306684689c0f9cf1a037679ae" name="gaec7c92e306684689c0f9cf1a037679ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaec7c92e306684689c0f9cf1a037679ae">&#9670;&#160;</a></span>Tpose_to_tgeompoint()</h2>
+<a id="ga260a06f64c998ebd70e5537fb9274b27" name="ga260a06f64c998ebd70e5537fb9274b27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga260a06f64c998ebd70e5537fb9274b27">&#9670;&#160;</a></span>tposeinst_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tpose_to_tgeompoint </td>
+          <td class="memname"><a class="el" href="structTInstant.html">TInstant</a> * tposeinst_make </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
+          <td class="paramname"><em>pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Convert a temporal pose into a temporal geometry point @sqlfn tgeompoint() </p>
-<dl class="section user"><dt>SQL Operator:</dt><dd><code>::</code> </dd></dl>
+<p>Return a temporal pose instant from a pose and a timestamptz. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td>Value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp @csqlfn <a class="el" href="group__mobilitydb__temporal__constructor_ga7b173611749d0b72b536b401fdc92ff5.html#ga7b173611749d0b72b536b401fdc92ff5" title="Return a temporal instant from a value and a timestamptz @sqlfn tint(), tfloat(), ....">Tinstant_constructor()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_make_2d</title>
+<title>MobilityDB: pose_normalize</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pose__base__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__base__geopose.html">OGC GeoPose v1.0 support</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,59 +79,38 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga03d273333d98e303b2f9d69cc486f5c3.html#ga03d273333d98e303b2f9d69cc486f5c3">pose_copy</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__constructor_ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f.html#ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f">pose_make_2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga8fb40ab9b7f4ed80c920514ff862f309.html#ga8fb40ab9b7f4ed80c920514ff862f309">pose_make_3d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga78076e80290144efda958018ee77fb1b.html#ga78076e80290144efda958018ee77fb1b">pose_make_point2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga97fc765c85aaa2cae3c9d47611b15074.html#ga97fc765c85aaa2cae3c9d47611b15074">pose_make_point3d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba">pose_apply_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2c6aeab3635ad3d3437d3d7b01abe4b0.html#ga2c6aeab3635ad3d3437d3d7b01abe4b0">pose_from_geopose</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_gad5e828feed7c85f4a85b65aa5ac64ea3.html#gad5e828feed7c85f4a85b65aa5ac64ea3">pose_normalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gafd53d866fa9c7669104fb88dd8496d9f.html#gafd53d866fa9c7669104fb88dd8496d9f">pose_pitch</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga3c10ffe2f8d75138fa01925278618344.html#ga3c10ffe2f8d75138fa01925278618344">pose_roll</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47">pose_yaw</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f" name="ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f">&#9670;&#160;</a></span>pose_make_2d()</h2>
+<a id="gad5e828feed7c85f4a85b65aa5ac64ea3" name="gad5e828feed7c85f4a85b65aa5ac64ea3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad5e828feed7c85f4a85b65aa5ac64ea3">&#9670;&#160;</a></span>pose_normalize()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structPose.html">Pose</a> * pose_make_2d </td>
+          <td class="memname"><a class="el" href="structPose.html">Pose</a> * pose_normalize </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
+          <td class="paramname"><em>pose</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>theta</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Construct a 2D pose value from the arguments. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a pose whose orientation quaternion has been renormalized to unit norm. </p>
+<p >A 2D pose is returned as a copy since its orientation is a single angle that does not drift. A 3D pose has its quaternion divided by its Euclidean norm so that long compositions of SLERPs (or any other path that accumulates floating-point drift in <code>|q|</code>) can be brought back to the <code>|q|</code> = 1 invariant required by the SLERP and Euler-decomposition code. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x,y</td><td>Position </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">theta</td><td>Orientation </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> @csqlfn <a class="el" href="group__mobilitydb__pose__base__transf_ga9384a64fd3049597fabeeb8fb3b67d22.html#ga9384a64fd3049597fabeeb8fb3b67d22" title="Return a pose whose orientation quaternion has been renormalized to unit norm @sqlfn poseNormalize()">Pose_normalize()</a> </td></tr>
   </table>
   </dd>
 </dl>

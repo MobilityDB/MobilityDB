@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['position_20functions_0',['Position functions',['../group__meos__box__bbox__pos.html',1,'(Global Namespace)'],['../group__meos__geo__bbox__pos.html',1,'(Global Namespace)'],['../group__meos__geo__box__pos.html',1,'(Global Namespace)'],['../group__meos__internal__geo__bbox__pos.html',1,'(Global Namespace)'],['../group__meos__internal__geo__box__pos.html',1,'(Global Namespace)'],['../group__meos__internal__setspan__pos.html',1,'(Global Namespace)'],['../group__meos__setspan__pos.html',1,'(Global Namespace)'],['../group__meos__temporal__bbox__pos.html',1,'(Global Namespace)'],['../group__mobilitydb__box__pos.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__bbox__pos.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__box__pos.html',1,'(Global Namespace)'],['../group__mobilitydb__setspan__pos.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__bbox__pos.html',1,'(Global Namespace)']]]
+  ['ogc_20geopose_20euler_2dangle_20accessors_0',['OGC GeoPose Euler-angle accessors',['../group__meos__pose__geopose__accessor.html',1,'']]],
+  ['ogc_20geopose_20v1_2e0_20support_1',['OGC GeoPose v1.0 support',['../group__meos__pose__base__geopose.html',1,'']]]
 ];

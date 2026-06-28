@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_make_3d</title>
+<title>MobilityDB: tpose_value_at_timestamptz</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pose__base__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__accessor.html">Accessor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,68 +79,47 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga03d273333d98e303b2f9d69cc486f5c3.html#ga03d273333d98e303b2f9d69cc486f5c3">pose_copy</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f.html#ga0f1060aa9c41c0a7bc6e0c2c90bb5a9f">pose_make_2d</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__constructor_ga8fb40ab9b7f4ed80c920514ff862f309.html#ga8fb40ab9b7f4ed80c920514ff862f309">pose_make_3d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga78076e80290144efda958018ee77fb1b.html#ga78076e80290144efda958018ee77fb1b">pose_make_point2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__constructor_ga97fc765c85aaa2cae3c9d47611b15074.html#ga97fc765c85aaa2cae3c9d47611b15074">pose_make_point3d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gae7492583ca4716cdcec782ed9145af3c.html#gae7492583ca4716cdcec782ed9145af3c">tpose_end_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_ga93755e4ad7365ed0b79715897c07dc89.html#ga93755e4ad7365ed0b79715897c07dc89">tpose_points</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gad25a0d5b71c1f4608de91721228adfdb.html#gad25a0d5b71c1f4608de91721228adfdb">tpose_rotation</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gadc7c222888161a3a3d755de196fb5b70.html#gadc7c222888161a3a3d755de196fb5b70">tpose_start_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_ga5db30881d28e8e1a817aff6bb2c413e0.html#ga5db30881d28e8e1a817aff6bb2c413e0">tpose_trajectory</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__accessor_ga11caa60e7599f57811acb4a7b465ea1c.html#ga11caa60e7599f57811acb4a7b465ea1c">tpose_value_at_timestamptz</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gae6c8fc822ad0fb330670d02784011c4c.html#gae6c8fc822ad0fb330670d02784011c4c">tpose_value_n</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gadfe9d4638ca4cc7cc9234e5360177a0d.html#gadfe9d4638ca4cc7cc9234e5360177a0d">tpose_values</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8fb40ab9b7f4ed80c920514ff862f309" name="ga8fb40ab9b7f4ed80c920514ff862f309"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8fb40ab9b7f4ed80c920514ff862f309">&#9670;&#160;</a></span>pose_make_3d()</h2>
+<a id="ga11caa60e7599f57811acb4a7b465ea1c" name="ga11caa60e7599f57811acb4a7b465ea1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga11caa60e7599f57811acb4a7b465ea1c">&#9670;&#160;</a></span>tpose_value_at_timestamptz()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structPose.html">Pose</a> * pose_make_3d </td>
+          <td class="memname">bool tpose_value_at_timestamptz </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>z</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>strict</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>W</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>X</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>Y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>Z</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>srid</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structPose.html">Pose</a> **&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -150,12 +129,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Construct a 3D pose value from the arguments. </p>
+<p>Return the value of a temporal pose at a timestamptz. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">x,y,z</td><td>Position </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">W,X,Y,Z</td><td>Orientation </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strict</td><td>True if the timestamp must belong to the temporal value, false when it may be at an exclusive bound </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Resulting value @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_ga2db56d515d1de8210c6b6306479dce8c.html#ga2db56d515d1de8210c6b6306479dce8c" title="Return the base value of a temporal value at a timestamptz @sqlfn valueAtTimestamp()">Temporal_value_at_timestamptz()</a> </td></tr>
   </table>
   </dd>
 </dl>

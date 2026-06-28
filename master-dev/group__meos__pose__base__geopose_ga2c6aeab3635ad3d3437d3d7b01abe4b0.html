@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_orientation</title>
+<title>MobilityDB: pose_from_geopose</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pose__base__accessor.html">Accessor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__base__geopose.html">OGC GeoPose v1.0 support</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,38 +79,48 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_ga9a4f570b78355ffbe8b7530a9a6f6377.html#ga9a4f570b78355ffbe8b7530a9a6f6377">pose_hash</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_gaeeab410e9b6c5dfb3c81531f963a7634.html#gaeeab410e9b6c5dfb3c81531f963a7634">pose_hash_extended</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__accessor_gaf4d99ebd27c5fed621e0c3a474274a4c.html#gaf4d99ebd27c5fed621e0c3a474274a4c">pose_orientation</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_gaa63e5cf23996a7b77ee40c71031d9860.html#gaa63e5cf23996a7b77ee40c71031d9860">pose_rotation</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba">pose_apply_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_ga2c6aeab3635ad3d3437d3d7b01abe4b0.html#ga2c6aeab3635ad3d3437d3d7b01abe4b0">pose_from_geopose</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gad5e828feed7c85f4a85b65aa5ac64ea3.html#gad5e828feed7c85f4a85b65aa5ac64ea3">pose_normalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gafd53d866fa9c7669104fb88dd8496d9f.html#gafd53d866fa9c7669104fb88dd8496d9f">pose_pitch</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga3c10ffe2f8d75138fa01925278618344.html#ga3c10ffe2f8d75138fa01925278618344">pose_roll</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47">pose_yaw</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf4d99ebd27c5fed621e0c3a474274a4c" name="gaf4d99ebd27c5fed621e0c3a474274a4c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf4d99ebd27c5fed621e0c3a474274a4c">&#9670;&#160;</a></span>pose_orientation()</h2>
+<a id="ga2c6aeab3635ad3d3437d3d7b01abe4b0" name="ga2c6aeab3635ad3d3437d3d7b01abe4b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2c6aeab3635ad3d3437d3d7b01abe4b0">&#9670;&#160;</a></span>pose_from_geopose()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double * pose_orientation </td>
+          <td class="memname"><a class="el" href="structPose.html">Pose</a> * pose_from_geopose </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
-          <td class="paramname"><em>pose</em></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>json</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the orientation of a 3D pose. </p>
+<p>Return a pose from its OGC GeoPose JSON representation. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>GeoPose JSON string (Basic-YPR or Basic-Quaternion) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__base__accessor_gacc05f81d28a5847e2bbb1069ebfa4879.html#gacc05f81d28a5847e2bbb1069ebfa4879" title="Return the orientation of a 3D pose @sqlfn orientation()">Pose_orientation()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<p>Auto-detects the conformance class from the JSON keys present:</p>
+<ul>
+<li><code>quaternion</code>: Basic-Quaternion (returns a 3D pose).</li>
+<li><code>angles</code>: Basic-YPR (returns a 3D pose; or 2D if pitch=roll=0 and h=0, since that is the canonical 2D representation).</li>
+</ul>
+<p >Position is parsed as <code>{lat, lon, h}</code> (degrees, degrees, metres). The resulting pose has SRID 4326 (WGS-84). Projected SRIDs are not supported by this entry point — use the WKT/WKB I/O for those. @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_gaf9447e2f1f334b9b4c723bd56ab95c5a.html#gaf9447e2f1f334b9b4c723bd56ab95c5a" title="Return a pose from its OGC GeoPose JSON representation.">Pose_from_geopose()</a> </p>
 
 </div>
 </div>

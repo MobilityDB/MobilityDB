@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: SET</title>
+<title>MobilityDB: tpose_from_base_temp</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="mobilitydb_2sql_2pose_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,27 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2sql_2pose_2CMakeLists_8txt_a8feb682851e112ff5d2e1e4ff6da03c3.html#a8feb682851e112ff5d2e1e4ff6da03c3">process_file</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2sql_2pose_2CMakeLists_8txt_ad2c12f2eebb4c8983bfea3cfe6322c61.html#ad2c12f2eebb4c8983bfea3cfe6322c61">SET</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__constructor_ga943e8092da94ad5044de24fd80cebb13.html#ga943e8092da94ad5044de24fd80cebb13">tpose_from_base_temp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga260a06f64c998ebd70e5537fb9274b27.html#ga260a06f64c998ebd70e5537fb9274b27">tposeinst_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga3554d136eea15b25a6cce969bc8a2b64.html#ga3554d136eea15b25a6cce969bc8a2b64">tposeseq_from_base_tstzset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga1f1d15601ef0b88b646deacd45e58281.html#ga1f1d15601ef0b88b646deacd45e58281">tposeseq_from_base_tstzspan</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__constructor_ga92922719798cd0e2121a9b568a46bfa7.html#ga92922719798cd0e2121a9b568a46bfa7">tposeseqset_from_base_tstzspanset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad2c12f2eebb4c8983bfea3cfe6322c61" name="ad2c12f2eebb4c8983bfea3cfe6322c61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2c12f2eebb4c8983bfea3cfe6322c61">&#9670;&#160;</a></span>SET()</h2>
+<a id="ga943e8092da94ad5044de24fd80cebb13" name="ga943e8092da94ad5044de24fd80cebb13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga943e8092da94ad5044de24fd80cebb13">&#9670;&#160;</a></span>tpose_from_base_temp()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">SET </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpose_from_base_temp </td>
           <td>(</td>
-          <td class="paramtype">LOCAL_FILES 100_pose 101_poseset 102_tpose 104_tpose_compops 105_tpose_spatialfuncs 108_tpose_topops 109_tpose_posops 111_tpose_aggfuncs 113_tpose_distance&#160;</td>
-          <td class="paramname"><em>114_tpose_indexes</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
+          <td class="paramname"><em>pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a temporal pose from a pose and the time frame of another temporal value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td>Value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

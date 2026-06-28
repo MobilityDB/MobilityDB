@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpose_value_at_timestamptz</title>
+<title>MobilityDB: tpose_apply_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pose__accessor.html">Accessor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__pose__geopose__accessor.html">OGC GeoPose Euler-angle accessors</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,26 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gae7492583ca4716cdcec782ed9145af3c.html#gae7492583ca4716cdcec782ed9145af3c">tpose_end_value</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_ga93755e4ad7365ed0b79715897c07dc89.html#ga93755e4ad7365ed0b79715897c07dc89">tpose_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gad25a0d5b71c1f4608de91721228adfdb.html#gad25a0d5b71c1f4608de91721228adfdb">tpose_rotation</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gadc7c222888161a3a3d755de196fb5b70.html#gadc7c222888161a3a3d755de196fb5b70">tpose_start_value</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_ga5db30881d28e8e1a817aff6bb2c413e0.html#ga5db30881d28e8e1a817aff6bb2c413e0">tpose_trajectory</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__accessor_gaeb560692cf7f90f1e64f8f26e04bc490.html#gaeb560692cf7f90f1e64f8f26e04bc490">tpose_value_at_timestamptz</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gae6c8fc822ad0fb330670d02784011c4c.html#gae6c8fc822ad0fb330670d02784011c4c">tpose_value_n</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_gadfe9d4638ca4cc7cc9234e5360177a0d.html#gadfe9d4638ca4cc7cc9234e5360177a0d">tpose_values</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_gadd7e1c098c04767e7affd79c9896d7dd.html#gadd7e1c098c04767e7affd79c9896d7dd">tpose_angular_speed</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__geopose__accessor_gaecf2a4d3d975d4b4f5638c3c40515a7c.html#gaecf2a4d3d975d4b4f5638c3c40515a7c">tpose_apply_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga5d1f5abdb64356d3e14cdd7737bbe28b.html#ga5d1f5abdb64356d3e14cdd7737bbe28b">tpose_as_geopose</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga6645db4832cba4a8f2abaf7cf0770013.html#ga6645db4832cba4a8f2abaf7cf0770013">tpose_from_geopose</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga0cffba7fc740cb244c7c452b7125628e.html#ga0cffba7fc740cb244c7c452b7125628e">tpose_pitch</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga91fff1871719ba2096e061010f057c03.html#ga91fff1871719ba2096e061010f057c03">tpose_roll</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_gab91bbce74d2a826e0fd41d84a7b1f3f8.html#gab91bbce74d2a826e0fd41d84a7b1f3f8">tpose_speed</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_gaab98350288671167f816a070e9c16b8d.html#gaab98350288671167f816a070e9c16b8d">tpose_yaw</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaeb560692cf7f90f1e64f8f26e04bc490" name="gaeb560692cf7f90f1e64f8f26e04bc490"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaeb560692cf7f90f1e64f8f26e04bc490">&#9670;&#160;</a></span>tpose_value_at_timestamptz()</h2>
+<a id="gaecf2a4d3d975d4b4f5638c3c40515a7c" name="gaecf2a4d3d975d4b4f5638c3c40515a7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaecf2a4d3d975d4b4f5638c3c40515a7c">&#9670;&#160;</a></span>tpose_apply_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool tpose_value_at_timestamptz </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpose_apply_geo </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -106,20 +106,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>t</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>strict</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structPose.html">Pose</a> **&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>body</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -129,16 +117,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the value of a temporal pose at a timestamptz. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the world-frame trajectory obtained by applying a temporal pose to a body-frame geometry. </p>
+<p >Per instant the rigid-body transform <code>R(q_i)</code> · v + p_i is applied to the body geometry; the result is a temporal point with the same subtype and interpolation as the input <code>tpose</code>. v1 supports point and multipoint body geometries — the output is a tgeompoint carrying the per-instant transformed point. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP); the same linear-interpolation trade-off MobilityDB already uses for spatial trajectories. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">strict</td><td>True if the timestamp must belong to the temporal value, false when it may be at an exclusive bound </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Resulting value @csqlfn <a class="el" href="group__mobilitydb__temporal__accessor_ga2db56d515d1de8210c6b6306479dce8c.html#ga2db56d515d1de8210c6b6306479dce8c" title="Return the base value of a temporal value at a timestamptz @sqlfn valueAtTimestamp()">Temporal_value_at_timestamptz()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body-frame geometry (POINT or MULTIPOINT) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__accessor_ga4603a7b75b72b52bbc3dca9b3d456ba1.html#ga4603a7b75b72b52bbc3dca9b3d456ba1" title="Return the world-frame temporal trajectory obtained by applying a temporal pose to a body-frame point...">Tpose_apply_geo()</a> </dd></dl>
 
 </div>
 </div>
