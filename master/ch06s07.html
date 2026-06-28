@@ -86,8 +86,15 @@ SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
 </pre></li><li class="listitem"><a name="tnumber_exp"></a><a class="indexterm" name="id5211"></a><p>Return the exponential (e raised to the given power) of a temporal float</p><p><code class="varname">exp(tfloat) → tfloat</code></p><pre class="programlisting">
 SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02],
   [1@2001-01-04, 1@2001-01-05]}');
-/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02], 
+/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02],
    [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
 SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
 -- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
+</pre></li><li class="listitem"><a name="tnumber_sin"></a><a class="indexterm" name="id5219"></a><a class="indexterm" name="id5222"></a><a class="indexterm" name="id5225"></a><p>Return the sine, cosine, or tangent of a temporal float (argument in radians)</p><p><code class="varname">sin(tfloat) → tfloat</code></p><p><code class="varname">cos(tfloat) → tfloat</code></p><p><code class="varname">tan(tfloat) → tfloat</code></p><pre class="programlisting">
+SELECT round(sin(tfloat '[0@2001-01-01, 6.283185307@2001-01-02]'), 6);
+-- [0@2001-01-01, -0.000000@2001-01-02]
+SELECT round(cos(tfloat '[0@2001-01-01, 3.141592654@2001-01-02]'), 6);
+-- [1@2001-01-01, -1@2001-01-02]
+SELECT round(tan(tfloat '{0@2001-01-01, 0.785398163@2001-01-02}'), 6);
+-- {0@2001-01-01, 1@2001-01-02}
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch06s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Boolean Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Text Operations</td></tr></table></div></body></html>
