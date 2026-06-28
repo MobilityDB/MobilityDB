@@ -91,7 +91,12 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
-</pre></li><li class="listitem"><a name="tgeo_direction"></a><a class="indexterm" name="id5208"></a><p>Devuelve la dirección, es decir, el acimut entre las ubicaciones inicial y final <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_twCentroid"></a><a class="indexterm" name="id5208"></a><p>Devuelve el centroide ponderado en el tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</p><p><code class="varname">twCentroid(tgeompoint) → point</code></p><pre class="programlisting">
+SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
+  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
+-- POINT Z (0 0.666666666666667 0.666666666666667)
+</pre></li><li class="listitem"><a name="tgeo_direction"></a><a class="indexterm" name="id5223"></a><p>Devuelve la dirección, es decir, el acimut entre las ubicaciones inicial y final <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">direction(tpoint) → float</code></p><p>El resultado se expresa en radianes. Es NULL si solo hay una ubicación o si las ubicaciones inicial y final son iguales.</p><pre class="programlisting">
 SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
@@ -100,13 +105,13 @@ SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
 SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
   Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}');
 -- NULL
-</pre></li><li class="listitem"><a name="tgeo_azimuth"></a><a class="indexterm" name="id5231"></a><p>Devuelve el acimut temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_azimuth"></a><a class="indexterm" name="id5246"></a><p>Devuelve el acimut temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">azimuth(tpoint) → tfloat</code></p><p>El resultado se expresa en radianes. El azimut es indefinido cuando dos localizaciones sucesivas son iguales y en este caso se añade una brecha de tempo.</p><pre class="programlisting">
 SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)')));
 -- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
-</pre></li><li class="listitem"><a name="tgeo_angularDifference"></a><a class="indexterm" name="id5254"></a><p>Devuelve la diferencia angular temporal <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_angularDifference"></a><a class="indexterm" name="id5269"></a><p>Devuelve la diferencia angular temporal <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">angularDifference(tpoint) → tfloat</code></p><p>El resultado se expresa en grados.</p><pre class="programlisting">
 SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03]'), 3);
@@ -114,7 +119,7 @@ SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@20
 SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02], [Point(2 2)@2001-01-03, Point(1 1)@2001-01-04]}')), 3);
 -- {0@2001-01-01, 0@2001-01-02, 0@2001-01-03, 0@2001-01-04}
-</pre></li><li class="listitem"><a name="tgeo_bearing"></a><a class="indexterm" name="id5270"></a><p>Devuelve el rumbo temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_bearing"></a><a class="indexterm" name="id5285"></a><p>Devuelve el rumbo temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">bearing({tpoint,point},{tpoint,point}) → tfloat</code></p><p>Nótese que esta función no acepta dos puntos geográficos temporales.</p><pre class="programlisting">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',

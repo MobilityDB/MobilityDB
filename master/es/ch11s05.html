@@ -1,12 +1,40 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s04.html" title="Constructores"><link rel="next" href="ch11s06.html" title="Accessores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tnpoint_conversions"></a>Conversión de tipos</h2></div></div></div><p>Un valor de punto de red temporal se puede convertir en y desde un punto de geometría temporal. Esto se puede hacer usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code>. Se devuelve un valor nulo si alguno de los valores de puntos de geometría que componen no se puede convertir en un valor <code class="varname">npoint</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_tgeompoint"></a><a class="indexterm" name="id7371"></a><p>Convertir entre un punto de red temporal y un punto de geometría temporal</p><p><code class="varname">tnpoint::tgeompoint</code></p><p><code class="varname">tgeompoint::tnpoint</code></p><pre class="programlisting">
-SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,
-  NPoint(1, 0.3)@2001-01-02)')::tgeompoint);
-/* [POINT(23.057077727326 28.7666335767956)@2001-01-01,
-   POINT(48.7117553116406 20.9256801894708)@2001-01-02) */
-SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
-  POINT(48.7117553116406 20.9256801894708)@2001-01-02)'::tnpoint
--- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02)
-SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
-  POINT(48.7117553116406 20.9)@2001-01-02)'::tnpoint
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Poses temporales"><link rel="prev" href="ch11s04.html" title="Entrada y salida"><link rel="next" href="ch11s06.html" title="Conversión de tipos"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s04.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s06.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_constructors"></a>Constructores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_const"></a><a class="indexterm" name="id7507"></a><p>Constructor para poses temporales con valor constante</p><p><code class="varname">tpose(pose,timestamptz) → tposeInst</code></p><p><code class="varname">tpose(pose,tstzset) → tposeDiscSeq</code></p><p><code class="varname">tpose(pose,tstzspan,interp='linear') → tposeContSeq</code></p><p><code class="varname">tpose(pose,tstzspanset,interp='linear') → tposeSeqSet</code></p><pre class="programlisting">
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', timestamptz '2001-01-01'));
+-- Pose(Point(1 1),0.5)@2001-01-01
+SELECT asText(tpose('Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)',
+  tstzset '{2001-01-01, 2001-01-05}'));
+/* {Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01,
+  Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-05} */
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', 
+  tstzspan '[2001-01-01, 2001-01-02]'));
+-- [Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02]
+SELECT asText(tpose('Pose(Point(1 1), 0.2)', 
+  tstzspanset '{[2001-01-01, 2001-01-03]}', 'step'));
+-- Interp=Step;{[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.2)@2001-01-03]}
+</pre></li><li class="listitem"><a name="tposeSeq"></a><a class="indexterm" name="id7521"></a><p>Constructor para poses temporales de subtipo secuencia</p><p><code class="varname">tposeSeq(tposeInst[],interp={'step','linear'},leftInc bool=true,</code></p><p><code class="varname">  rightInc bool=true) → tposeSeq</code></p><pre class="programlisting">
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
+  'Pose(Point(2 2), 0.5)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* {Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03} */
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
+  'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.4)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03] */
+</pre></li><li class="listitem"><a name="tposeSeqSet"></a><a class="indexterm" name="id7531"></a><p>Constructor para poses temporales de subtipo conjunto de secuencias</p><p><code class="varname">tposeSeqSet(tpose[]) → tposeSeqSet</code></p><p><code class="varname">tposeSeqSetGaps(tposeInst[],maxt=NULL,maxdist=NULL,interp='linear') → tposeSeqSet</code></p><pre class="programlisting">
+SELECT asText(tposeSeqSet(ARRAY[tpose 
+  '[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.4)@2001-01-02]', 
+  '[Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.8)@2001-01-04]']));
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.4)@2001-01-02],
+   [Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.6)@2001-01-04]} */
+SELECT asText(tposeSeqSetGaps(ARRAY[tpose 'Pose(Point(1 1),0.1)@2001-01-01',
+  'Pose(Point(1 1),0.3)@2001-01-03', 'Pose(Point(1 1),0.5)@2001-01-05'], '1 day'));
+/* {[Pose(Point(1 1),0.1)@2001-01-01], [Pose(Point(1 1),0.3)@2001-01-03], 
+   [Pose(Point(1 1),0.5)@2001-01-05]} */
+</pre></li><li class="listitem"><a name="tgeompoint_tfloat_tpose"></a><a class="indexterm" name="id7541"></a><p>Construir una pose temporal 2D a partir de un punto geométrico temporal y un flotante temporal</p><p><code class="varname">tpose(tgeompoint, tfloat) → tpose</code></p><p>El marco temporal del resultado es la intersección de los marcos temporales del punto temporal y el flotante temporal. Si no se intersecan, se devuelve un valor nulo</p><pre class="programlisting">
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+-- [Pose(Point(1 1),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)'));
 -- NULL
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accessores</td></tr></table></div></body></html>
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Entrada y salida </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversión de tipos</td></tr></table></div></body></html>
