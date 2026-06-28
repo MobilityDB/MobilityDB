@@ -3230,7 +3230,8 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
   max_value = min_value;
   for (int i = start + 1; i < end + 1; ++i)
   {
-    double curr_value = DatumGetFloat8(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+    double curr_value = DatumGetFloat8(tinstant_value_p(
+      TSEQUENCE_INST_N(seq, i)));
     min_value = fmin(min_value, curr_value);
     max_value = fmax(max_value, curr_value);
   }

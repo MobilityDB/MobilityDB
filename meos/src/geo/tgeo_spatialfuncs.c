@@ -1066,8 +1066,7 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
   assert(ss); assert(tgeo_type_all(ss->temptype));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tgeomseq_tgeogseq(TSEQUENCESET_SEQ_N(ss, i),
-      oper);
+    sequences[i] = tgeomseq_tgeogseq(TSEQUENCESET_SEQ_N(ss, i), oper);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 

@@ -304,10 +304,7 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
   assert(ss); assert(tspatial_type(ss->temptype));
   /* Loop for every composing sequence */
   for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
-    tspatialseq_set_srid(seq, srid);
-  }
+    tspatialseq_set_srid((TSequence *) TSEQUENCESET_SEQ_N(ss, i), srid);
   /* Set the SRID of the bounding box */
   STBox *box = TSEQUENCESET_BBOX_PTR(ss);
   box->srid = srid;

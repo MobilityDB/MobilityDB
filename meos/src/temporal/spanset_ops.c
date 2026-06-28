@@ -1214,10 +1214,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   int nspans = 0;
   for (int i = 0; i < ss->count; i++)
-  {
-    const Span *s1 = SPANSET_SP_N(ss, i);
-    nspans += mi_span_span(s1, s, &spans[nspans]);
-  }
+    nspans += mi_span_span(SPANSET_SP_N(ss, i), s, &spans[nspans]);
   return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
