@@ -431,12 +431,6 @@ SELECT tnpointFromMFJSON(asMFJSON(tnpoint 'NPoint(1, 0.5)@2001-01-01'))
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="tnpoint_mfjson">
-		<title>Entrada y Salida MF-JSON</title>
-		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
-		<itemizedlist>
-		</itemizedlist>
-	</sect1>
 
 	<sect1 xml:id="tnpoint_accessors">
 		<title>Accessores</title>

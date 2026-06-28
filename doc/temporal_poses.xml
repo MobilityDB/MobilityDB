@@ -522,7 +522,7 @@ SELECT asEWKT(round(
 						<para><varname>asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
 						<para><varname>tposeFromGeoPose(text) → tpose</varname></para>
 						<para>The envelope shape is</para>
-						<programlisting language="json" xml:space="preserve" format="linespecific">
+						<programlisting xml:space="preserve" format="linespecific">
 {
   "type":          "TemporalGeoPose",
   "version":       "1.0",
