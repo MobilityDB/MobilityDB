@@ -8,5 +8,6 @@ var searchData=
   ['compact_5fcomp_5fseqs_5',['COMPACT_COMP_SEQS',['../ttext__expand_8c_a01fa66b89ffeecb1c172bc490622d411.html#a01fa66b89ffeecb1c172bc490622d411',1,'ttext_expand.c']]],
   ['continuous_6',['CONTINUOUS',['../meos_2include_2temporal_2temporal_8h_acf80826c205230fbc6a84ab9c46ff9af.html#acf80826c205230fbc6a84ab9c46ff9af',1,'temporal.h']]],
   ['crossings_7',['CROSSINGS',['../meos_2include_2temporal_2temporal_8h_a048c093fef7b037e36e7f19bf83c5d53.html#a048c093fef7b037e36e7f19bf83c5d53',1,'temporal.h']]],
-  ['crossings_5fno_8',['CROSSINGS_NO',['../meos_2include_2temporal_2temporal_8h_a21881fbfe51a67ecb3bf3d86fd979cb3.html#a21881fbfe51a67ecb3bf3d86fd979cb3',1,'temporal.h']]]
+  ['crossings_5fno_8',['CROSSINGS_NO',['../meos_2include_2temporal_2temporal_8h_a21881fbfe51a67ecb3bf3d86fd979cb3.html#a21881fbfe51a67ecb3bf3d86fd979cb3',1,'temporal.h']]],
+  ['csv_5fpath_9',['CSV_PATH',['../meos_2examples_2trgeo__distance_8c_a51397e5a9c1b4e9a019d2b372bcaddd1.html#a51397e5a9c1b4e9a019d2b372bcaddd1',1,'trgeo_distance.c']]]
 ];

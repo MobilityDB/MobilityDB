@@ -17,6 +17,7 @@ var searchData=
   ['textset_5frecord_14',['textset_record',['../structtextset__record.html',1,'']]],
   ['tinstant_15',['TInstant',['../structTInstant.html',1,'']]],
   ['trip_5frecord_16',['trip_record',['../structtrip__record.html',1,'']]],
-  ['tsequence_17',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_18',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
+  ['trip_5ft_17',['trip_t',['../structtrip__t.html',1,'']]],
+  ['tsequence_18',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_19',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];

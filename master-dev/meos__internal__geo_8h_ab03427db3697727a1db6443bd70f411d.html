@@ -186,18 +186,17 @@ $(function() {
           <td class="memname">#define GS_POINT_PTR</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a></td><td>)</td>
+          <td class="paramname">gs</td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  ( (uint8_t *) ((<a class="code hl_variable" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)-&gt;data) + 8 + \</div>
-<div class="line">  <a class="code hl_define" href="postgis__ext__defs_8in_8h_a5117ed359c59aa73454b5e7312adbb40.html#a5117ed359c59aa73454b5e7312adbb40">FLAGS_GET_BBOX</a>((<a class="code hl_variable" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)-&gt;gflags) * <a class="code hl_define" href="postgis__ext__defs_8in_8h_a3d5245b763e71373c8d468738ab0ccfa.html#a3d5245b763e71373c8d468738ab0ccfa">FLAGS_NDIMS_BOX</a>((<a class="code hl_variable" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)-&gt;gflags) * 8 + \</div>
-<div class="line">  <a class="code hl_define" href="meos__internal__geo_8h_a8bdf4149ac1e18cc684ddd84c00db241.html#a8bdf4149ac1e18cc684ddd84c00db241">FLAGS_GET_VERSBIT2</a>((<a class="code hl_variable" href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a>)-&gt;gflags) * 8 )</div>
+<b>Value:</b><div class="fragment"><div class="line">  ( (uint8_t *) ((gs)-&gt;data) + 8 + \</div>
+<div class="line">  <a class="code hl_define" href="postgis__ext__defs_8in_8h_a5117ed359c59aa73454b5e7312adbb40.html#a5117ed359c59aa73454b5e7312adbb40">FLAGS_GET_BBOX</a>((gs)-&gt;gflags) * <a class="code hl_define" href="postgis__ext__defs_8in_8h_a3d5245b763e71373c8d468738ab0ccfa.html#a3d5245b763e71373c8d468738ab0ccfa">FLAGS_NDIMS_BOX</a>((gs)-&gt;gflags) * 8 + \</div>
+<div class="line">  <a class="code hl_define" href="meos__internal__geo_8h_a8bdf4149ac1e18cc684ddd84c00db241.html#a8bdf4149ac1e18cc684ddd84c00db241">FLAGS_GET_VERSBIT2</a>((gs)-&gt;gflags) * 8 )</div>
 <div class="ttc" id="ameos__internal__geo_8h_a8bdf4149ac1e18cc684ddd84c00db241_html_a8bdf4149ac1e18cc684ddd84c00db241"><div class="ttname"><a href="meos__internal__geo_8h_a8bdf4149ac1e18cc684ddd84c00db241.html#a8bdf4149ac1e18cc684ddd84c00db241">FLAGS_GET_VERSBIT2</a></div><div class="ttdeci">#define FLAGS_GET_VERSBIT2(flags)</div><div class="ttdef"><b>Definition:</b> meos_internal_geo.h:83</div></div>
 <div class="ttc" id="apostgis__ext__defs_8in_8h_a3d5245b763e71373c8d468738ab0ccfa_html_a3d5245b763e71373c8d468738ab0ccfa"><div class="ttname"><a href="postgis__ext__defs_8in_8h_a3d5245b763e71373c8d468738ab0ccfa.html#a3d5245b763e71373c8d468738ab0ccfa">FLAGS_NDIMS_BOX</a></div><div class="ttdeci">#define FLAGS_NDIMS_BOX(flags)</div><div class="ttdef"><b>Definition:</b> postgis_ext_defs.in.h:35</div></div>
 <div class="ttc" id="apostgis__ext__defs_8in_8h_a5117ed359c59aa73454b5e7312adbb40_html_a5117ed359c59aa73454b5e7312adbb40"><div class="ttname"><a href="postgis__ext__defs_8in_8h_a5117ed359c59aa73454b5e7312adbb40.html#a5117ed359c59aa73454b5e7312adbb40">FLAGS_GET_BBOX</a></div><div class="ttdeci">#define FLAGS_GET_BBOX(flags)</div><div class="ttdef"><b>Definition:</b> postgis_ext_defs.in.h:21</div></div>
-<div class="ttc" id="atrgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e_html_aafdcedbc127e201251d764047053d12e"><div class="ttname"><a href="trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e">gs</a></div><div class="ttdeci">int const GSERIALIZED * gs</div><div class="ttdef"><b>Definition:</b> trgeo_spatialrels.h:52</div></div>
 </div><!-- fragment -->
 </div>
 </div>

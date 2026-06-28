@@ -11,6 +11,5 @@ var searchData=
   ['gfac_8',['gfac',['../structAFFINE_a3891d1c5c1296387cf6918f98315de17.html#a3891d1c5c1296387cf6918f98315de17',1,'AFFINE']]],
   ['gflags_9',['gflags',['../structGSERIALIZED_ad8e6c920c4204a8c431495bb72125bcd.html#ad8e6c920c4204a8c431495bb72125bcd',1,'GSERIALIZED']]],
   ['gid_10',['gid',['../structways__record_afab06e2675f8f3a80ee3ce6270e7f69e.html#afab06e2675f8f3a80ee3ce6270e7f69e',1,'ways_record::gid()'],['../structways__record_abe1c21c32666b9929b406380e07229cd.html#abe1c21c32666b9929b406380e07229cd',1,'ways_record::gid()'],['../structstruct__WaysCacheEntry_a31d4d45e0f57a200e536f974912467e0.html#a31d4d45e0f57a200e536f974912467e0',1,'struct_WaysCacheEntry::gid()']]],
-  ['global_5fskip_11',['GLOBAL_SKIP',['../namespacegen__smoketest_a4a33b5e79b445f6463d9968bba88cf3c.html#a4a33b5e79b445f6463d9968bba88cf3c',1,'gen_smoketest']]],
-  ['gs_12',['gs',['../trgeo__spatialrels_8h_aafdcedbc127e201251d764047053d12e.html#aafdcedbc127e201251d764047053d12e',1,'trgeo_spatialrels.h']]]
+  ['global_5fskip_11',['GLOBAL_SKIP',['../namespacegen__smoketest_a4a33b5e79b445f6463d9968bba88cf3c.html#a4a33b5e79b445f6463d9968bba88cf3c',1,'gen_smoketest']]]
 ];

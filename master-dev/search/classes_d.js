@@ -7,5 +7,6 @@ var searchData=
   ['point3dz_4',['POINT3DZ',['../structPOINT3DZ.html',1,'']]],
   ['point4d_5',['POINT4D',['../structPOINT4D.html',1,'']]],
   ['pointarray_6',['POINTARRAY',['../structPOINTARRAY.html',1,'']]],
-  ['pose_7',['Pose',['../structPose.html',1,'']]]
+  ['polypointmovingedgestate_7',['PolypointMovingEdgeState',['../structPolypointMovingEdgeState.html',1,'']]],
+  ['pose_8',['Pose',['../structPose.html',1,'']]]
 ];
