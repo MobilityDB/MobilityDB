@@ -1,0 +1,40 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Input and Output</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch15.html" title="Chapter 15. JSON Types in MobilityDB"><link rel="prev" href="ch15s03.html" title="Validity of temporal JSONB values"><link rel="next" href="ch15s05.html" title="Constructors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch15s03.html">Prev</a> </td><th width="60%" align="center">Chapter 15. JSON Types in MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch15s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_inout"></a>Input and Output</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_asText"></a><a class="indexterm" name="id11576"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText({tjsonb,tjsonb[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
+/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
+   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+SELECT asText(ARRAY[tjsonb '"{\"vehicleId\":1, \"location\": \"Point(1 1)\"}"@2001-01-01',
+  '"{\"vehicleId\": 1, \"location\": \"Point(2 2)\"}"@2001-01-02']);
+/* {"{\"location\": \"Point(1 1)\", \"vehicleId\": 1}@2001-01-01",
+   "{\"location\": \"Point(2 2)\", \"vehicleId\": 1}@2001-01-02"} */
+</pre><p>As can be seen above, for arrays of JSONB values, the elements must be enclosed between quotes and thus, the inner quotes must be escaped.</p></li><li class="listitem"><a name="tjsonb_asBinary"></a><a class="indexterm" name="id11585"></a><a class="indexterm" name="id11588"></a><p>Return the Well-Known Binary (WKB) or the Hexadecimal Extended Well-Known Binary (HexWKB) representation</p><p><code class="varname">asBinary(tjsonb,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(tjsonb,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asBinary(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
+-- \x0141000138000000000000000200002008000080090000000a000000090000106c6f636174696f6e7...
+SELECT asHexWKB(tjsonb '"{\"vehicleId\": 1, \"location\": \"Point(1 2)\"}"@2001-01-01');
+-- 0141000138000000000000000200002008000080090000000A000000090000106C6F636174696F6E7...
+</pre></li><li class="listitem"><a name="tjsonb_asMFJSON"></a><a class="indexterm" name="id11599"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(text) → tjsonb</code></p><pre class="programlisting">
+SELECT asMFJSON(tjsonb '[{"Position": "Point(1 1)"}@2001-01-01,
+  {"Position": "Point(2 2)"}@2001-01-02]');
+/* {"type":"MovingJsonb","values":[{"Position": "Point(1 1)"},{"Position": "Point(2 2)"}],
+   "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
+   "lower_inc":true,"upper_inc":true,"interpolation":"Step"} */
+</pre></li><li class="listitem"><a name="tjsonbFromText"></a><a class="indexterm" name="id11607"></a><p>Input from the Well-Known Text (WKT) representation</p><p><code class="varname">tjsonbFromText(text) → tjsonb</code></p><pre class="programlisting">
+SELECT tjsonbFromText(text
+  '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
+    {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]');
+/* [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-01,
+   {"location": "Point(2 2)", "vehicleId": 1}@2001-01-02] */
+</pre></li><li class="listitem"><a name="tjsonbFromBinary"></a><a class="indexterm" name="id11615"></a><a class="indexterm" name="id11618"></a><p>Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</p><p><code class="varname">tjsonbFromBinary(bytea) → tjsonb</code></p><p><code class="varname">tjsonbFromHexWKB(text) → tjsonb</code></p><pre class="programlisting">
+SELECT tjsonbFromBinary(asBinary(
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 2)"}@2001-01-01]'));
+-- [{"location": "Point(1 2)", "vehicleId": 1}@2001-01-01]
+SELECT tjsonbFromHexWKB(asHexWKB(
+  tjsonb '[{"vehicleId": 1, "location": "Point(1 2)"}@2001-01-01]'));
+-- [{"location": "Point(1 2)", "vehicleId": 1}@2001-01-01]
+</pre></li><li class="listitem"><a name="tjsonbFromMFJSON"></a><a class="indexterm" name="id11628"></a><p>Input from the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">tjsonbFromMFJSON(text) → tjsonb</code></p><pre class="programlisting">
+SELECT tjsonbFromMFJSON('{"type": "MovingJSON", "interpolation": "Step",
+  "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
+  "datetimes": ["2001-01-01T10:00:00Z","2001-01-01T12:00:00Z"]}');
+/* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00+01,
+   {"Position": "Point(2 2)"}@2001-01-01 13:00:00+01] */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Validity of temporal JSONB values </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>

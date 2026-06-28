@@ -1,0 +1,15 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Indexing</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch14.html" title="Chapter 14. Temporal Rigid Geometries"><link rel="prev" href="ch14s16.html" title="Aggregations"><link rel="next" href="ch14s18.html" title="Production guidance"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Indexing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s16.html">Prev</a> </td><th width="60%" align="center">Chapter 14. Temporal Rigid Geometries</th><td width="20%" align="right"> <a accesskey="n" href="ch14s18.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_indexing"></a>Indexing</h2></div></div></div><p>Three index types are available on <code class="varname">trgeometry</code> columns. Each uses the spatiotemporal bounding box of the materialised geometry and supports topological, position, and KNN distance queries.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="varname">GIST(temp)</code> — R-tree GiST.</p></li><li class="listitem"><p><code class="varname">SPGIST(temp trgeometry_quadtree_ops)</code> — quad-tree SP-GiST.</p></li><li class="listitem"><p><code class="varname">SPGIST(temp trgeometry_kdtree_ops)</code> — kd-tree SP-GiST.</p></li></ul></div><pre class="programlisting">
+CREATE INDEX tbl_trgeometry_gist_idx
+  ON tbl_trgeometry
+  USING GIST(temp);
+
+-- topological lookup
+SELECT count(*) FROM tbl_trgeometry
+WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02])';
+
+-- KNN (ordered scan)
+SELECT mmsi
+FROM tbl_trgeometry
+ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01'
+LIMIT 10;
+</pre><p>The kd-tree variant typically wins on workloads dominated by KNN queries with a tight ordering bound; the quad-tree variant is more uniform. The R-tree GiST is the safe default for mixed read/write workloads.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s16.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Aggregations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Production guidance</td></tr></table></div></body></html>

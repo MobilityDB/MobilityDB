@@ -1,38 +1,10 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Tipos JSON en MobilityDB"><link rel="prev" href="ch14s10.html" title="Restricciones"><link rel="next" href="ch14s12.html" title="Operaciones de caja delimitadora"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Tipos JSON en MobilityDB</th><td width="20%" align="right"> <a accesskey="n" href="ch14s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tjsonb_comparisons"></a>Comparaciones</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tjsonb_comp"></a><a class="indexterm" name="id10355"></a><a class="indexterm" name="id10358"></a><a class="indexterm" name="id10361"></a><a class="indexterm" name="id10364"></a><a class="indexterm" name="id10367"></a><a class="indexterm" name="id10370"></a><p>Comparaciones tradicionales</p><p><code class="varname">tjsonb {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tjsonb → boolean</code></p><pre class="programlisting">
-SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02),
-  [{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-02,
-   {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' =
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- true
-SELECT tjsonb '{[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]}' &lt;&gt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- false
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]' &lt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-    {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03]';
--- true
-</pre></li><li class="listitem"><a name="tjsonb_ever_always"></a><a class="indexterm" name="id10378"></a><a class="indexterm" name="id10381"></a><p>Comparaciones siempre y alguna vez</p><p><code class="varname">{jsonb,tjsonb} {?=, %=} {jsonb,tjsonb} → boolean</code></p><pre class="programlisting">
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' ?=
-  jsonb '{"vehicleId": 1, "location": "Point(1 1)"}';
--- true
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(2 2)"}@2001-01-02]' %=
-  jsonb '{"vehicleId": 1, "location": "Point(1 1)"}';
--- false
-</pre></li><li class="listitem"><a name="tjsonb_tcomp"></a><a class="indexterm" name="id10389"></a><p>Comparaciones temporales</p><p><code class="varname">{jsonb,tjsonb} {#=, #&lt;&gt;} {jsonb,tjsonb} → tbool</code></p><pre class="programlisting">
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #=
-  jsonb '{"vehicleId": 1, "location": "Point(1 1)"}';
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
-SELECT tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)' #&lt;&gt;
-  tjsonb '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
-  {"vehicleId": 1, "location": "Point(1 1)"}@2001-01-03)';
--- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Restricciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de caja delimitadora</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Similitud</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s10.html" title="Operaciones de distancia"><link rel="next" href="ch14s12.html" title="Comparaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Similitud</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s10.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s12.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_similarity"></a>Similitud</h2></div></div></div><p>Las funciones de similitud comparan dos geometrías rígidas temporales a través de sus trayectorias del centroide.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trgeometry_similarityDistance"></a><a class="indexterm" name="id9971"></a><a class="indexterm" name="id9974"></a><a class="indexterm" name="id9977"></a><p>Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta, o la distancia de deformación dinámica del tiempo (Dynamic Time Warp) entre dos geometrías rígidas temporales</p><p><code class="varname">hausdorffDistance(trgeometry, trgeometry) → float</code></p><p><code class="varname">frechetDistance(trgeometry, trgeometry) → float</code></p><p><code class="varname">dynTimeWarpDistance(trgeometry, trgeometry) → float</code></p><pre class="programlisting">
+SELECT round(frechetDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2.828427
+SELECT round(hausdorffDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(0 2),0)@2000-01-03]'), 6);
+-- 2
+</pre></li><li class="listitem"><a name="trgeometry_similarityPath"></a><a class="indexterm" name="id9989"></a><a class="indexterm" name="id9992"></a><p>Devuelve los pares de correspondencia entre dos geometrías rígidas temporales con respecto a la distancia de Fréchet discreta o a la distancia de deformación dinámica del tiempo (Dynamic Time Warp), como un conjunto de pares de índices de instante <code class="varname">(i,j)</code></p><p><code class="varname">frechetDistancePath(trgeometry, trgeometry) → {(i,j)}</code></p><p><code class="varname">dynTimeWarpPath(trgeometry, trgeometry) → {(i,j)}</code></p></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s10.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s12.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Operaciones de distancia </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Comparaciones</td></tr></table></div></body></html>

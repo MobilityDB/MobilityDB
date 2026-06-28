@@ -1,0 +1,15 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Indexación</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch14.html" title="Capítulo 14. Geometrías rígidas temporales"><link rel="prev" href="ch14s16.html" title="Agregaciones"><link rel="next" href="ch14s18.html" title="Guía de producción"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Indexación</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch14s16.html">Anterior</a> </td><th width="60%" align="center">Capítulo 14. Geometrías rígidas temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch14s18.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="trgeometry_indexing"></a>Indexación</h2></div></div></div><p>Hay tres tipos de índices disponibles sobre columnas <code class="varname">trgeometry</code>. Cada uno utiliza la caja delimitadora espaciotemporal de la geometría materializada y admite consultas topológicas, de posición y de distancia KNN.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="varname">GIST(temp)</code> — GiST de árbol R.</p></li><li class="listitem"><p><code class="varname">SPGIST(temp trgeometry_quadtree_ops)</code> — SP-GiST de árbol cuádruple.</p></li><li class="listitem"><p><code class="varname">SPGIST(temp trgeometry_kdtree_ops)</code> — SP-GiST de árbol kd.</p></li></ul></div><pre class="programlisting">
+CREATE INDEX tbl_trgeometry_gist_idx
+  ON tbl_trgeometry
+  USING GIST(temp);
+
+-- topological lookup
+SELECT count(*) FROM tbl_trgeometry
+WHERE temp &amp;&amp; stbox 'STBOX XT(((0, 0), (10, 10)),[2001-01-01, 2001-01-02])';
+
+-- KNN (ordered scan)
+SELECT mmsi
+FROM tbl_trgeometry
+ORDER BY temp &lt;-&gt; trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(100 100), 0.0)@2001-01-01'
+LIMIT 10;
+</pre><p>La variante de árbol kd suele ganar en cargas de trabajo dominadas por consultas KNN con una cota de ordenación ajustada; la variante de árbol cuádruple es más uniforme. El GiST de árbol R es el valor predeterminado seguro para cargas de trabajo mixtas de lectura/escritura.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s16.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s18.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Agregaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Guía de producción</td></tr></table></div></body></html>
