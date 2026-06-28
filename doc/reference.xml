@@ -2281,7 +2281,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
+						<para><link linkend="tcbuffer_centroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2430,7 +2430,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_path_query"><varname>tjsonb_path_query</varname>, <varname>tjsonb_path_query_tz</varname></link>: Return all items returned by a JSON path expression from a temporal JSONB value, as a JSON array</para>
+					<para><link linkend="tjsonb_path_query_array"><varname>tjsonb_path_query</varname>, <varname>tjsonb_path_query_tz</varname></link>: Return all items returned by a JSON path expression from a temporal JSONB value, as a JSON array</para>
 				</listitem>
 
 				<listitem>
