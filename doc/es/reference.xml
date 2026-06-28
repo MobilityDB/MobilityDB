@@ -1140,7 +1140,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal</para>
+					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal</para>
 				</listitem>
 
 				<listitem>

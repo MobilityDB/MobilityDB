@@ -20,7 +20,7 @@
 	<figure xml:id="tgeo_tcbuffer" float="start">
 		<title>Ilustración del uso del tipo <varname>tcbuffer</varname> para modelar el búfer circular alrededor de la franja de viento de las tormentas tropicales en 2024.</title>
 		<mediaobject>
-			<imageobject><imagedata format="PNG" scale='30' fileref="images/tcbuffer.png"/></imageobject>
+			<imageobject><imagedata format="PNG" scale='30' fileref="../images/tcbuffer.png"/></imageobject>
 		</mediaobject>
 		</figure>
 
