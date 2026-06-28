@@ -285,6 +285,178 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 #endif /* JSON */
 }
 
+/*****************************************************************************
+ * Turning-point densification of unary lifted functions.
+ *
+ * A unary function lifted over a LINEAR temporal float is itself emitted as a
+ * piecewise-linear temporal float, so the result must carry a vertex at each of
+ * the input segment's critical points. Three strategies are used, most-exact
+ * first:
+ *
+ *   1. #tfunc_tlinearseq_turnpt (#tpfn_unary): a closed form inserting at most
+ *      two turning points per segment. Suffices for monotone or single-extremum
+ *      lifts (exp, ln, log10, ...).
+ *   2. #tfunc_tlinearseq_set (#tpfn_set): inserts the EXACT, analytically
+ *      located turning points when their number per segment is unbounded but
+ *      still closed-form. Used by sin and cos, whose extrema lie at
+ *      theta = (k + 1/2)*pi and theta = k*pi; the result is exact.
+ *   3. #tfunc_tlinearseq_adaptive (#tpfn_adaptive): adaptive recursive
+ *      bisection, the fallback when the critical points are NOT analytic. Used
+ *      by tan, which is monotone within each branch but whose curvature grows
+ *      without bound near its poles. This reuses the method of the trgeometry
+ *      distance/traversed-area kernels (trgeo_pair_dist_adaptive /
+ *      trgeo_trav_adaptive, which mirror `tdistance_trgeoseq_trgeoseq_linear`):
+ *      a segment is bisected while a change metric across it exceeds a tolerance
+ *      and the recursion depth is below a cap.
+ *
+ * The adaptive metric is the SAME as the trgeometry kernels': the magnitude of
+ * the argument change across the segment. There the argument is the pose
+ * orientation, so the metric is the rotation magnitude (radians); here the
+ * argument is the temporal float itself (an angle in radians for tan), so the
+ * metric is the span of the float. Bounding each sub-segment to a small argument
+ * span guarantees it spans only a small arc of the curve, within which the
+ * lifted function is well approximated by its chord. An output-space
+ * (chord-error) metric is deliberately NOT used: for a periodic function the
+ * segment midpoint can land exactly on the endpoint chord (e.g. a function equal
+ * to 0 at both endpoints and at the midpoint), which would falsely report
+ * linearity and skip a whole period. The argument-span metric never cancels.
+ * #NORMALIZE in #tsequence_make_free then collapses any collinear runs the
+ * uniform-by-argument sampling produced.
+ *****************************************************************************/
+
+/**
+ * @brief Adaptive sub-sampling tolerances for densifying a non-analytic unary
+ * lifted function (tan) over a linear segment.
+ *
+ * Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH
+ * in the trgeometry distance kernel. @p MEOS_ADAPTIVE_TOL is the argument-span
+ * tolerance in the input space: a segment is subdivided while its float
+ * argument spans more than this many units. For tan the argument is radians, so
+ * the same 0.05 rad (~2.86 deg) tolerance the trgeometry kernels use bounds the
+ * per-segment chord error away from a pole to about tol^2/8 ~ 3e-4. @p
+ * MEOS_ADAPTIVE_MAX_DEPTH bounds the recursion so a pathological segment (one
+ * straddling very many periods, or approaching a tan pole) cannot subdivide
+ * without end: a single segment yields at most 2^depth sub-samples, but the
+ * adaptive test stops far earlier wherever the argument span is already below
+ * the tolerance.
+ */
+#define MEOS_ADAPTIVE_TOL       0.05
+#define MEOS_ADAPTIVE_MAX_DEPTH 16
+
+/**
+ * @brief Append a lifted result instant to a growing buffer, doubling the
+ * capacity as needed
+ */
+static void
+tfunc_adaptive_emit(Datum resvalue, MeosType restype, TimestampTz t,
+  TInstant ***buf, int *buf_n, int *buf_cap)
+{
+  if (*buf_n == *buf_cap)
+  {
+    *buf_cap *= 2;
+    *buf = repalloc(*buf, sizeof(TInstant *) * (*buf_cap));
+  }
+  (*buf)[(*buf_n)++] = tinstant_make_free(resvalue, restype, t);
+}
+
+/**
+ * @brief Recursively bisect a linear segment of a unary lifted function,
+ * appending result instants on the half-open interval @p (t1, t2]
+ * @details Reuses the depth-bounded adaptive recursion of the trgeometry
+ * distance/traversed-area kernels. The convergence test is the argument span
+ * across the segment: if the input float moves by less than #MEOS_ADAPTIVE_TOL
+ * (or the depth cap is reached, or the half-segment is sub-microsecond) the
+ * arc is small enough that the lifted chord is accurate, and only the segment
+ * endpoint @p t2 is emitted. Otherwise the midpoint is computed, the left half
+ * is recursed (which emits the midpoint as its terminal endpoint), and the
+ * right half is recursed. The caller is responsible for emitting the very
+ * first instant @p t1 (as the previous segment's endpoint or the sequence
+ * start), so that consecutive segments do not duplicate the shared instant.
+ * @param[in] value1,value2 Input base values at @p t1,@p t2 (segment endpoints)
+ * @param[in] t1,t2 Segment endpoints
+ * @param[in] temptype Temporal type of the input (for value interpolation)
+ * @param[in] basetype Base type of the input (a continuous float)
+ * @param[in] lfinfo Information about the lifted function
+ * @param[in] depth Current recursion depth
+ * @param[in,out] buf,buf_n,buf_cap Growing result-instant buffer
+ */
+static void
+tfunc_adaptive_bisect(Datum value1, Datum value2, TimestampTz t1,
+  TimestampTz t2, MeosType temptype, MeosType basetype,
+  LiftedFunctionInfo *lfinfo, int depth, TInstant ***buf, int *buf_n,
+  int *buf_cap)
+{
+  assert(basetype == T_FLOAT8);
+  /* Argument span across the segment — the radian analog of the rotation
+   * magnitude used by the trgeometry kernels. */
+  double dv = fabs(DatumGetFloat8(value2) - DatumGetFloat8(value1));
+  if (dv < MEOS_ADAPTIVE_TOL || depth >= MEOS_ADAPTIVE_MAX_DEPTH ||
+      t2 - t1 <= 1)
+  {
+    /* The argument barely moves across [t1, t2], so the lifted chord is a
+     * good approximation: emit only the segment endpoint t2 (t1 was emitted
+     * by the caller). */
+    tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype, t2, buf,
+      buf_n, buf_cap);
+    return;
+  }
+  /* Bisect: interpolate the argument at the midpoint, recurse on the left
+   * half (which emits the midpoint as its terminal endpoint), then on the
+   * right half. */
+  TimestampTz tm = t1 + (t2 - t1) / 2;
+  Datum vm = tsegment_value_at_timestamptz(value1, value2, temptype, t1, t2,
+    tm);
+  tfunc_adaptive_bisect(value1, vm, t1, tm, temptype, basetype, lfinfo,
+    depth + 1, buf, buf_n, buf_cap);
+  tfunc_adaptive_bisect(vm, value2, tm, t2, temptype, basetype, lfinfo,
+    depth + 1, buf, buf_n, buf_cap);
+  DATUM_FREE(vm, basetype);
+}
+
+/**
+ * @brief Apply a unary lifted function to a temporal sequence with adaptive
+ * densification
+ * @details The fallback path for unary lifts whose critical points are not known
+ * analytically (tan, whose curvature grows without bound near its poles): each
+ * non-constant input segment is densified by adaptive recursive bisection
+ * (#tfunc_adaptive_bisect), reusing the trgeometry distance kernel's method.
+ * Constant segments are passed through unchanged. Mirrors the structure of
+ * #tfunc_tlinearseq_turnpt, but with an unbounded (depth-capped) rather than a
+ * fixed two-point insertion.
+ * @param[in] seq Temporal sequence with LINEAR interpolation
+ * @param[in] lfinfo Information about the lifted function (tpfn_adaptive set)
+ */
+static TSequence *
+tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+{
+  MeosType basetype = temptype_basetype(seq->temptype);
+  /* Generous initial capacity; the buffer doubles on demand */
+  int buf_cap = seq->count * 4;
+  TInstant **instants = palloc(sizeof(TInstant *) * buf_cap);
+  int ninsts = 0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Datum value1 = tinstant_value_p(inst1);
+  /* Emit the first instant */
+  tfunc_adaptive_emit(tfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
+    &instants, &ninsts, &buf_cap);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    Datum value2 = tinstant_value_p(inst2);
+    if (datum_eq(value1, value2, basetype))
+      /* Constant segment: just emit the endpoint */
+      tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype,
+        inst2->t, &instants, &ninsts, &buf_cap);
+    else
+      tfunc_adaptive_bisect(value1, value2, inst1->t, inst2->t,
+        seq->temptype, basetype, lfinfo, 0, &instants, &ninsts, &buf_cap);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+}
+
 /**
  * @brief Apply a unary lifted function to a temporal sequence with
  * turning-point densification
@@ -342,6 +514,63 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 }
 
 /**
+ * @brief Apply a unary lifted function to a temporal sequence, densifying each
+ * segment at its EXACT, analytically-located turning points
+ * @details For each non-constant input segment, @p tpfn_set returns the ordered
+ * array of exact critical timestamps strictly inside the segment (e.g. the
+ * extrema of sin/cos); the lifted value at each is inserted. Unlike
+ * #tfunc_tlinearseq_adaptive there is no approximation: the inserted vertices
+ * are the analytic turning points. Mirrors #tfunc_tlinearseq_turnpt with an
+ * arbitrary, rather than a fixed two-point, insertion (using the same growing
+ * buffer as #tfunc_tlinearseq_adaptive).
+ * @param[in] seq Temporal sequence with LINEAR interpolation
+ * @param[in] lfinfo Information about the lifted function (tpfn_set set)
+ */
+static TSequence *
+tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+{
+  MeosType basetype = temptype_basetype(seq->temptype);
+  /* The number of turning points per segment is not bounded a priori (a segment
+   * may span many periods), so grow the buffer on demand. */
+  int buf_cap = seq->count * 4;
+  TInstant **instants = palloc(sizeof(TInstant *) * buf_cap);
+  int ninsts = 0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Datum value1 = tinstant_value_p(inst1);
+  /* Emit the first instant */
+  tfunc_adaptive_emit(tfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
+    &instants, &ninsts, &buf_cap);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    Datum value2 = tinstant_value_p(inst2);
+    /* Densify non-constant segments at their exact turning points */
+    if (! datum_eq(value1, value2, basetype))
+    {
+      TimestampTz *tps = NULL;
+      int ntp = lfinfo->tpfn_set(value1, value2, inst1->t, inst2->t, &tps);
+      for (int j = 0; j < ntp; j++)
+      {
+        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
+          inst1->temptype, inst1->t, inst2->t, tps[j]);
+        tfunc_adaptive_emit(tfunc_base(tpvalue, lfinfo), lfinfo->restype,
+          tps[j], &instants, &ninsts, &buf_cap);
+        DATUM_FREE(tpvalue, basetype);
+      }
+      if (tps)
+        pfree(tps);
+    }
+    /* Emit the segment endpoint */
+    tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype, inst2->t,
+      &instants, &ninsts, &buf_cap);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+}
+
+/**
  * @brief Apply a lifted function to a temporal sequence
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -350,9 +579,19 @@ TSequence *
 tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* Densified LINEAR output via turning-point insertion */
+  /* Densified LINEAR output via closed-form turning-point insertion
+   * (at most two turning points per segment) */
   if (lfinfo->tpfn_unary && interp == LINEAR)
     return tfunc_tlinearseq_turnpt(seq, lfinfo);
+  /* Densified LINEAR output at the EXACT, analytically-located turning points,
+   * for unary functions that have an arbitrary number of them (sin/cos extrema) */
+  if (lfinfo->tpfn_set && interp == LINEAR)
+    return tfunc_tlinearseq_set(seq, lfinfo);
+  /* Densified LINEAR output via adaptive recursive bisection, for unary
+   * functions that may have more than two turning points per segment whose
+   * locations are not analytic (tan curvature and poles, the trgeometry kernels) */
+  if (lfinfo->tpfn_adaptive && interp == LINEAR)
+    return tfunc_tlinearseq_adaptive(seq, lfinfo);
 
   /* Plain per-instant lift */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
