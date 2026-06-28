@@ -123,7 +123,6 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Leaf consistency for temporal numbers. </p>
-<p >Basic routines for indexing temporal values.</p>
 <p >Since temporal boxes do not distinguish between inclusive and exclusive bounds, it is necessary to generalize the tests, e.g.,</p><ul>
 <li>left : (box1-&gt;xmax &lt; box2-&gt;xmin) =&gt; (box1-&gt;xmax &lt;= box2-&gt;xmin) e.g., to take into account left([a,b],(b,c])</li>
 <li>right : (box1-&gt;xmin &gt; box2-&gt;xmax) =&gt; (box1-&gt;xmin &gt;= box2-&gt;xmax) e.g., to take into account right((b,c],[a,b]) and similarly for before and after <dl class="params"><dt>Parameters</dt><dd>

@@ -119,7 +119,6 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Leaf consistency for temporal points. </p>
-<p >Basic routines for indexing temporal numbers.</p>
 <p >Since spatiotemporal boxes do not distinguish between inclusive and exclusive bounds it is necessary to generalize the tests, e.g.,</p><ul>
 <li>before : (box1-&gt;tmax &lt; box2-&gt;tmin) =&gt; (box1-&gt;tmax &lt;= box2-&gt;tmin) e.g., to take into account before([a,b],(b,c])</li>
 <li>after : (box1-&gt;tmin &gt; box2-&gt;tmax) =&gt; (box1-&gt;tmin &gt;= box2-&gt;tmax) e.g., to take into account after((b,c],[a,b]) <dl class="params"><dt>Parameters</dt><dd>

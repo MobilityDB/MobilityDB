@@ -38,8 +38,8 @@ var searchData=
   ['miny_35',['miny',['../structCbufSegBox_ada97c5db84e665afc1ea1b2e0bf76ad2.html#ada97c5db84e665afc1ea1b2e0bf76ad2',1,'CbufSegBox']]],
   ['mmax_36',['mmax',['../structGBOX_a91a19593ffa05d2d448b9df73617bc28.html#a91a19593ffa05d2d448b9df73617bc28',1,'GBOX']]],
   ['mmin_37',['mmin',['../structGBOX_ad507132c9112623c880536df0b9033a3.html#ad507132c9112623c880536df0b9033a3',1,'GBOX']]],
-  ['mmsi_38',['mmsi',['../structtrip__t_a633c93b265640dd7976b581d2bdd3fb0.html#a633c93b265640dd7976b581d2bdd3fb0',1,'trip_t']]],
-  ['mmsi_39',['MMSI',['../structtrip__record_ac59e54a66432d10c6f970e034fb64b2c.html#ac59e54a66432d10c6f970e034fb64b2c',1,'trip_record::MMSI()'],['../structAIS__record_a362a85dd59e52979c2d18c4468d2ea1a.html#a362a85dd59e52979c2d18c4468d2ea1a',1,'AIS_record::MMSI()']]],
+  ['mmsi_38',['MMSI',['../structtrip__record_ac59e54a66432d10c6f970e034fb64b2c.html#ac59e54a66432d10c6f970e034fb64b2c',1,'trip_record::MMSI()'],['../structAIS__record_a362a85dd59e52979c2d18c4468d2ea1a.html#a362a85dd59e52979c2d18c4468d2ea1a',1,'AIS_record::MMSI()']]],
+  ['mmsi_39',['mmsi',['../structtrip__t_a633c93b265640dd7976b581d2bdd3fb0.html#a633c93b265640dd7976b581d2bdd3fb0',1,'trip_t']]],
   ['mobdb_5fpg_5ffcinfo_40',['MOBDB_PG_FCINFO',['../mobilitydb_2src_2temporal_2temporal_8c_aa18353e9ccdc2e1d36357a0941a0dca7.html#aa18353e9ccdc2e1d36357a0941a0dca7',1,'temporal.c']]],
   ['mobilitydb_5fconstants_41',['MOBILITYDB_CONSTANTS',['../mobilitydb_2src_2temporal_2meos__catalog_8c_a44566259abe79101ae1cc95d5745097a.html#a44566259abe79101ae1cc95d5745097a',1,'meos_catalog.c']]],
   ['month_42',['month',['../structInterval_a29b2e2520d4626777d22db3581774b41.html#a29b2e2520d4626777d22db3581774b41',1,'Interval']]]
