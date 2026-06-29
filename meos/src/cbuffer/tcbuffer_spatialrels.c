@@ -537,8 +537,6 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  /* This function is not provided for the ever semantics */
-  assert(! ever);
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT);
 }
@@ -730,8 +728,6 @@ acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  /* This function is not provided for the ever semantics */
-  assert(! ever);
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_covers, 2, ever, INVERT);
 }
