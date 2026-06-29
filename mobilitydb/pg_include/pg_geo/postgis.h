@@ -65,7 +65,6 @@
 /*****************************************************************************/
 
 int32_t getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs);
-char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
 
 /* PostGIS functions called by MobilityDB */
 
