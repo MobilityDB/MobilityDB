@@ -1545,8 +1545,9 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
    * gs1 bounding box we can return FALSE.
    */
   GBOX box1, box2;
-  if (gserialized_get_gbox_p(gs1, &box1) &&
-      gserialized_get_gbox_p(gs2, &box2))
+  memset(&box1, 0, sizeof(GBOX));
+  memset(&box2, 0, sizeof(GBOX));
+  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2))
   {
     if (gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
       return false;
@@ -2306,8 +2307,9 @@ geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * we can return FALSE.
    */
   GBOX box1, box2;
-  if ( gserialized_get_gbox_p(gs1, &box1) &&
-       gserialized_get_gbox_p(gs2, &box2) )
+  memset(&box1, 0, sizeof(GBOX));
+  memset(&box2, 0, sizeof(GBOX));
+  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2))
   {
     // ORIGINAL DEFINITION: TODO verify that the generalization to 3D is OK
     // if ( gbox_same_2d_float(&box1, &box2) == LW_FALSE )
