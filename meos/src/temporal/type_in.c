@@ -1739,6 +1739,34 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* NPOINT */
 
+#if H3
+/**
+ * @brief Read an h3index and advance the parse state forward
+ * @details The endian flag was consumed by #type_from_wkb. Consume the SRID
+ * flag and the optional SRID — which, if present, must be WGS84 (EPSG:4326),
+ * an h3 cell being inherently geographic — then read the cell id (int8).
+ */
+static Datum
+h3index_from_wkb_state(meos_wkb_parse_state *s)
+{
+  /* Read the flags; consume the SRID only when it is present */
+  uint8_t wkb_flags = byte_from_wkb_state(s);
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+  {
+    int32_t srid = int32_from_wkb_state(s);
+    if (srid != SRID_DEFAULT)
+    {
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "Only SRID %d (WGS84) is accepted for an h3index, received %d",
+        SRID_DEFAULT, srid);
+      return (Datum) 0;
+    }
+  }
+  /* Read the cell id, wire-format identical to int8 */
+  return Int64GetDatum(int64_from_wkb_state(s));
+}
+#endif /* H3 */
+
 #if POSE || RGEO
 /**
  * @brief Return the state flags initialized with a byte flag read from the
@@ -2417,6 +2445,10 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
 #endif /* NPOINT */
+#if H3
+  if (type == T_H3INDEX)
+    return h3index_from_wkb_state(&s);
+#endif /* H3 */
 #if POSE || RGEO
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));

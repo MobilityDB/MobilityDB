@@ -36,11 +36,14 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <libpq/pqformat.h>
+#include <utils/builtins.h>
 /* MEOS */
 #include <h3api.h>
 #include <meos.h>
+#include <meos_h3.h>
 #include "h3/h3index.h"
 #include "h3/h3_generated.h"
+#include "pg_temporal/temporal.h"
 
 /* DatumGetH3Index / H3IndexGetDatum live in h3index.h.
  * PG_GETARG_H3INDEX / PG_RETURN_H3INDEX are the fmgr-layer
@@ -108,6 +111,85 @@ H3index_send(PG_FUNCTION_ARGS)
   pq_begintypsend(&buf);
   pq_sendint64(&buf, (int64) cell);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************
+ * WKB and HexWKB input/output
+ *
+ * An h3index is a geographic cell with the constant default SRID WGS84
+ * (EPSG:4326). asBinary/asHexWKB are the SRID-less base WKB (the inherited
+ * Temporal<T> surface, like geography ST_AsBinary — the 4326 is implicit);
+ * they mirror th3index exactly. The SRID-bearing EWKB form is the
+ * TSpatial<T> overload, not exposed here. The output side reuses the generic
+ * Datum_as_wkb / Datum_as_hexwkb dispatch; the input side calls the MEOS
+ * helpers (which accept an absent SRID as 4326, or a present 4326).
+ *****************************************************************************/
+
+PGDLLEXPORT Datum H3index_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_from_wkb);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return an h3index from its Well-Known Binary (WKB) representation
+ * @sqlfn h3indexFromBinary()
+ */
+Datum
+H3index_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  H3Index result = h3index_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_H3INDEX(result);
+}
+
+PGDLLEXPORT Datum H3index_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_from_hexwkb);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return an h3index from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn h3indexFromHexWKB()
+ */
+Datum
+H3index_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  H3Index result = h3index_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_H3INDEX(result);
+}
+
+PGDLLEXPORT Datum H3index_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_as_wkb);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of an h3index
+ * @sqlfn asBinary()
+ */
+Datum
+H3index_as_wkb(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, H3IndexGetDatum(cell), T_H3INDEX,
+    false));
+}
+
+PGDLLEXPORT Datum H3index_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_as_hexwkb);
+/**
+ * @ingroup mobilitydb_h3_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of an h3index
+ * @sqlfn asHexWKB()
+ */
+Datum
+H3index_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, H3IndexGetDatum(cell), T_H3INDEX,
+    false));
 }
 
 /*****************************************************************************
