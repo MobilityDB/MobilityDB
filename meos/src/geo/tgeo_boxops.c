@@ -60,6 +60,9 @@
 #if CBUFFER
   #include "cbuffer/tcbuffer_boxops.h"
 #endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -67,12 +70,12 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if QUADBIN
+  #include "quadbin/tquadbin_boxops.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_boxops.h"
-#endif
-#if H3
-  #include "h3/th3index_boxops.h"
 #endif
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
@@ -118,6 +121,10 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
   else if (inst->temptype == T_TCBUFFER)
     tcbufferinst_set_stbox(inst, (STBox *) box);
 #endif
+#if H3
+  else if (inst->temptype == T_TH3INDEX)
+    th3indexinst_set_stbox(inst, (STBox *) box);
+#endif
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_set_stbox(inst, (STBox *) box);
@@ -126,13 +133,13 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
   else if (inst->temptype == T_TPOSE)
     tposeinst_set_stbox(inst, (STBox *) box);
 #endif
+#if QUADBIN
+  else if (inst->temptype == T_TQUADBIN)
+    tquadbininst_set_stbox(inst, (STBox *) box);
+#endif
 #if RGEO
   else if (inst->temptype == T_TRGEOMETRY)
     tposeinst_set_stbox(inst, (STBox *) box);
-#endif
-#if H3
-  else if (inst->temptype == T_TH3INDEX)
-    th3indexinst_set_stbox(inst, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -237,6 +244,10 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   else if (temptype == T_TCBUFFER)
     tcbufferinstarr_set_stbox(instants, count, (STBox *) box);
 #endif
+#if H3
+  else if (temptype == T_TH3INDEX)
+    th3indexinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
 #if NPOINT
   else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
@@ -245,13 +256,13 @@ tspatialinstarr_set_stbox(TInstant **instants, int count, bool lower_inc,
   else if (temptype == T_TPOSE)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
 #endif
+#if QUADBIN
+  else if (temptype == T_TQUADBIN)
+    tquadbininstarr_set_stbox(instants, count, (STBox *) box);
+#endif
 #if RGEO
   else if (temptype == T_TRGEOMETRY)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
-#endif
-#if H3
-  else if (temptype == T_TH3INDEX)
-    th3indexinstarr_set_stbox(instants, count, (STBox *) box);
 #endif
   else
   {
@@ -300,6 +311,10 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TCBUFFER)
     tcbufferseq_expand_stbox(seq, inst);
 #endif
+#if H3
+  else if (seq->temptype == T_TH3INDEX)
+    th3indexseq_expand_stbox(seq, inst);
+#endif
 #if NPOINT
   else if (seq->temptype == T_TNPOINT)
     tnpointseq_expand_stbox(seq, inst);
@@ -308,13 +323,13 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TPOSE)
     tposeseq_expand_stbox(seq, inst);
 #endif
+#if QUADBIN
+  else if (seq->temptype == T_TQUADBIN)
+    tquadbinseq_expand_stbox(seq, inst);
+#endif
 #if RGEO
   else if (seq->temptype == T_TRGEOMETRY)
     tposeseq_expand_stbox(seq, inst);
-#endif
-#if H3
-  else if (seq->temptype == T_TH3INDEX)
-    th3indexseq_expand_stbox(seq, inst);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -363,6 +378,10 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   else if (basetype == T_CBUFFER)
     cbufferarr_set_stbox(values, count, (STBox *) box);
 #endif
+#if H3
+  else if (basetype == T_H3INDEX)
+    h3indexarr_set_stbox(values, count, (STBox *) box);
+#endif
 #if NPOINT
   else if (basetype == T_NPOINT)
     npointarr_set_stbox(values, count, (STBox *) box);
@@ -371,9 +390,9 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
 #endif
-#if H3
-  else if (basetype == T_H3INDEX)
-    h3indexarr_set_stbox(values, count, (STBox *) box);
+#if QUADBIN
+  else if (basetype == T_QUADBIN)
+    quadbinarr_set_stbox(values, count, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
