@@ -63,6 +63,9 @@
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
 #endif
+#if H3
+  #include "h3/th3index_boxops.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -70,11 +73,12 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if QUADBIN
+  #include "quadbin/quadbin_meos.h"
+  #include "quadbin/tquadbin_boxops.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo_boxops.h"
-#endif
-#if H3
-  #include "h3/th3index_boxops.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -1045,6 +1049,10 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     case T_CBUFFER:
       return cbuffer_set_stbox(DatumGetCbufferP(d), result);
 #endif
+#if H3
+    case T_H3INDEX:
+      return h3index_set_stbox(DatumGetH3Index(d), result);
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_set_stbox(DatumGetNpointP(d), result);
@@ -1053,9 +1061,9 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     case T_POSE:
       return pose_set_stbox(DatumGetPoseP(d), result);
 #endif
-#if H3
-    case T_H3INDEX:
-      return h3index_set_stbox(DatumGetH3Index(d), result);
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_set_stbox(DatumGetQuadbin(d), result);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
