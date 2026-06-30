@@ -1,0 +1,263 @@
+ANALYZE tbl_tquadbin_big;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tquadbin_big_rtree_idx;
+NOTICE:  index "tbl_tquadbin_big_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tquadbin_big_quadtree_idx;
+NOTICE:  index "tbl_tquadbin_big_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tquadbin_big_kdtree_idx;
+NOTICE:  index "tbl_tquadbin_big_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE IF EXISTS test_tquadbin_idx;
+NOTICE:  table "test_tquadbin_idx" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_tquadbin_idx(
+  op char(3),
+  leftarg text,
+  rightarg text,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b && temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b @> temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <@ temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '~=', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b ~= temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tstzspan', 'tquadbin', COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t && temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'tstzspan', 'tquadbin', COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <@ temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b << temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b >> temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<| temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b |>> temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tstzspan', 'tquadbin', COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <<# temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tstzspan', 'tquadbin', COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t #>> temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<# temp;
+INSERT 0 1
+INSERT INTO test_tquadbin_idx(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'stbox', 'tquadbin', COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b #>> temp;
+INSERT 0 1
+CREATE INDEX tbl_tquadbin_big_rtree_idx ON tbl_tquadbin_big USING GIST(temp);
+CREATE INDEX
+ANALYZE tbl_tquadbin_big;
+ANALYZE
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+DROP INDEX tbl_tquadbin_big_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tquadbin_big_quadtree_idx ON tbl_tquadbin_big USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tquadbin_big;
+ANALYZE
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+DROP INDEX tbl_tquadbin_big_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tquadbin_big_kdtree_idx ON tbl_tquadbin_big USING SPGIST(temp tquadbin_kdtree_ops);
+CREATE INDEX
+ANALYZE tbl_tquadbin_big;
+ANALYZE
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b << temp )
+WHERE op = '<<' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b >> temp )
+WHERE op = '>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<| temp )
+WHERE op = '<<|' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b |>> temp )
+WHERE op = '|>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tquadbin_big WHERE t #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzspan' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b <<# temp )
+WHERE op = '<<#' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+UPDATE test_tquadbin_idx
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox_quadbin, tbl_tquadbin_big WHERE b #>> temp )
+WHERE op = '#>>' AND leftarg = 'stbox' AND rightarg = 'tquadbin';
+UPDATE 1
+DROP INDEX tbl_tquadbin_big_kdtree_idx;
+DROP INDEX
+SELECT * FROM test_tquadbin_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR
+  no_idx <> kdtree_idx OR no_idx IS NULL OR rtree_idx IS NULL OR
+  quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+---------+----------+--------+-----------+--------------+------------
+(0 rows)
+
+DROP TABLE test_tquadbin_idx;
+DROP TABLE
