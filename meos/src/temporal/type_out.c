@@ -1125,6 +1125,28 @@ pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
 }
 #endif /* POSE */
 
+#if H3
+/**
+ * @brief Return the size in bytes of an h3index in the Well-Known Binary
+ * (WKB) representation
+ * @details An h3index is a uint64 cell id whose only spatial metadata is the
+ * SRID — the constant WGS84 (EPSG:4326), emitted solely for the extended
+ * (EWKB) variant, exactly like the other spatial base types.
+ */
+static size_t
+h3index_to_wkb_size(uint8_t variant)
+{
+  /* Endian flag + SRID flag */
+  size_t size = MEOS_WKB_BYTE_SIZE * 2;
+  /* Optional SRID (extended/EWKB variant only) */
+  if (spatial_wkb_needs_srid(SRID_DEFAULT, variant))
+    size += MEOS_WKB_INT4_SIZE;
+  /* The cell id, wire-format identical to int8 */
+  size += MEOS_WKB_INT8_SIZE;
+  return size;
+}
+#endif /* H3 */
+
 /**
  * @brief Return the size of the WKB representation of a base value
  * @return On error return SIZE_MAX
@@ -1430,6 +1452,10 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_NPOINT)
     return npoint_to_wkb_size(DatumGetNpointP(value), variant, false);
 #endif /* NPOINT */
+#if H3
+  if (type == T_H3INDEX)
+    return h3index_to_wkb_size(variant);
+#endif /* H3 */
 #if POSE || RGEO
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
@@ -1835,6 +1861,34 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
   return buf;
 }
 #endif /* POSE */
+
+#if H3
+/**
+ * @brief Write into the buffer an h3index in the Well-Known Binary (WKB)
+ * representation
+ * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
+ * only), then the cell id (int8). The SRID flag bit is set only when the SRID
+ * is actually written — matching the npoint/pose readers (and unlike the
+ * unconditional cbuffer flag).
+ */
+static uint8_t *
+h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
+{
+  /* Write the endian flag (byte) */
+  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the SRID flag, set only when the SRID will follow */
+  int32_t srid = SRID_DEFAULT;
+  uint8_t wkb_flags = spatial_wkb_needs_srid(srid, variant) ?
+    (uint8_t) MEOS_WKB_SRIDFLAG : 0;
+  buf = uint8_to_wkb_buf(wkb_flags, buf, variant);
+  /* Write the SRID (extended/EWKB variant only) */
+  if (spatial_wkb_needs_srid(srid, variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  /* Write the cell id, wire-format identical to int8 */
+  buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
+  return buf;
+}
+#endif /* H3 */
 
 /**
  * @brief Write into the buffer a temporal instant in the Well-Known Binary
@@ -2459,6 +2513,10 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
     buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant,
       false);
 #endif /* NPOINT */
+#if H3
+  else if (type == T_H3INDEX)
+    buf = h3index_to_wkb_buf(value, buf, variant);
+#endif /* H3 */
 #if POSE || RGEO
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);

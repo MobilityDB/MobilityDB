@@ -61,9 +61,12 @@
 #include <postgres.h>
 
 #include <meos.h>
+#include <meos_internal.h>
 #include <h3api.h>
 #include "h3/h3_generated.h"
 #include "h3/th3index_internal.h"
+#include "temporal/temporal.h"
+#include "temporal/type_inout.h"
 #include <pgtypes.h>
 
 /*****************************************************************************
@@ -162,6 +165,83 @@ h3index_out(H3Index cell)
   char *buf = palloc(17);
   snprintf(buf, 17, "%" PRIx64, (uint64_t) cell);
   return buf;
+}
+
+/*****************************************************************************
+ * WKB and HexWKB input/output functions
+ *
+ * An h3index is a geographic cell with the constant default SRID WGS84
+ * (EPSG:4326) — like a PostGIS geography. These functions route the cell
+ * through the generic type WKB machinery, which (as for every spatial base
+ * type) emits the SRID only for the extended (EWKB) variant; the plain-WKB
+ * form omits it and a reader assumes 4326. This is the same base-value I/O
+ * surface npoint and cbuffer expose, so a downstream tool with no native
+ * spatial extension can round-trip a cell value through MEOS alone.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_base_inout
+ * @brief Return an h3index from its Well-Known Binary (WKB) representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #H3index_recv(), #H3index_from_wkb()
+ */
+H3Index
+h3index_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(wkb, (H3Index) 0);
+  return DatumGetH3Index(type_from_wkb(wkb, size, T_H3INDEX));
+}
+
+/**
+ * @ingroup meos_h3_base_inout
+ * @brief Return an h3index from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #H3index_from_hexwkb()
+ */
+H3Index
+h3index_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(hexwkb, (H3Index) 0);
+  size_t size = strlen(hexwkb);
+  return DatumGetH3Index(type_from_hexwkb(hexwkb, size, T_H3INDEX));
+}
+
+/**
+ * @ingroup meos_h3_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of an h3index
+ * @param[in] cell H3 cell id
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #H3index_send(), #H3index_as_wkb()
+ */
+uint8_t *
+h3index_as_wkb(H3Index cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(H3IndexGetDatum(cell), T_H3INDEX, variant, size_out);
+}
+
+/**
+ * @ingroup meos_h3_base_inout
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of an h3index
+ * @param[in] cell H3 cell id
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #H3index_as_hexwkb()
+ */
+char *
+h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(H3IndexGetDatum(cell), T_H3INDEX,
+    variant | (uint8_t) WKB_HEX, size_out);
 }
 
 /*****************************************************************************

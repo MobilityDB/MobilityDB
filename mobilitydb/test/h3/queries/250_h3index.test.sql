@@ -32,6 +32,21 @@ SELECT h3index '12345';   -- not a valid H3 cell
 SELECT h3index '622236750694711295' = h3index '8a2a1072b59ffff';
 
 -------------------------------------------------------------------------------
+-- (Hex)WKB round trip
+-- Base WKB carries no embedded SRID; the default WGS84 (4326) is implied,
+-- exactly like the th3index temporal asBinary/asHexWKB surface.
+-------------------------------------------------------------------------------
+
+SELECT h3indexFromBinary(asBinary(h3index '8a2a1072b59ffff'))
+       = h3index '8a2a1072b59ffff';
+SELECT h3indexFromBinary(asBinary(h3index '831c02fffffffff'))
+       = h3index '831c02fffffffff';
+SELECT h3indexFromHexWKB(asHexWKB(h3index '8a2a1072b59ffff'))
+       = h3index '8a2a1072b59ffff';
+SELECT h3indexFromHexWKB(asHexWKB(h3index '880326b885fffff'))
+       = h3index '880326b885fffff';
+
+-------------------------------------------------------------------------------
 -- Comparison operators
 -------------------------------------------------------------------------------
 

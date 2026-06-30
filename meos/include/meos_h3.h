@@ -72,6 +72,10 @@
 /* Input and output */
 extern H3Index h3index_in(const char *str);
 extern char *h3index_out(H3Index cell);
+extern H3Index h3index_from_wkb(const uint8_t *wkb, size_t size);
+extern H3Index h3index_from_hexwkb(const char *hexwkb);
+extern uint8_t *h3index_as_wkb(H3Index cell, uint8_t variant, size_t *size_out);
+extern char *h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out);
 
 /* Comparisons */
 extern bool h3index_eq(H3Index a, H3Index b);
