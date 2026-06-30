@@ -111,3 +111,22 @@ SELECT th3CellToBoundary(th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]') IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Casts — th3index :: tgeogpoint / tgeompoint (sugar over the conversions above)
+-------------------------------------------------------------------------------
+
+SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint IS NOT NULL;
+SELECT (th3index
+  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeogpoint
+  IS NOT NULL;
+-- Equivalence with the explicit function call
+SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint
+  ~= th3CellToLatlng(th3index '590464338553208831@2001-01-01');
+
+SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint IS NOT NULL;
+SELECT (th3index
+  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]')::tgeompoint
+  IS NOT NULL;
+SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint
+  ~= th3CellToLatlngTgeompoint(th3index '590464338553208831@2001-01-01');
+
+-------------------------------------------------------------------------------

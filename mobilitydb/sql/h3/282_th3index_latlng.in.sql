@@ -84,4 +84,18 @@ CREATE FUNCTION th3CellToBoundary(th3index)
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Casts
+ *
+ * Convenience casts reusing the lifted conversions above. The casts are
+ * EXPLICIT (not IMPLICIT nor ASSIGNMENT): typing a cell as a point should
+ * not happen by accident. This matches h3-pg's own `h3index :: point` /
+ * `h3index :: geometry` cast direction. The `th3index :: tbigint` and
+ * `tbigint :: th3index` casts live with the type in `270_th3index.in.sql`.
+ ******************************************************************************/
+
+CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION th3CellToLatlng(th3index);
+CREATE CAST (th3index AS tgeompoint)
+  WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
+
 /******************************************************************************/
