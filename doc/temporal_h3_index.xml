@@ -501,10 +501,10 @@ SELECT th3
 
 	<sect1 xml:id="th3_bbox_ops">
 		<title>Bounding-Box Operators</title>
-		<para>The following operators compare the <emphasis>time extent</emphasis> of temporal H3 cells, not cell-hierarchy containment. <varname>th3</varname> is classified as a time-only temporal type (like <varname>ttext</varname> / <varname>tbool</varname>): H3 cell ids have no meaningful total order, so the bounding box reduces to the trajectory's <varname>tstzspan</varname> period. The operators below compare that period. See the indexing section for the opclasses that make these operators index-capable.</para>
+		<para>The following operators compare the spatiotemporal <emphasis>bounding box</emphasis> of temporal H3 cells, not cell-hierarchy containment. <varname>th3</varname> is a spatial temporal type: its bounding box is an <varname>stbox</varname> that combines the geodetic spatial extent of the cell boundaries (their longitude/latitude envelope in SRID 4326) with the trajectory's <varname>tstzspan</varname> time period. The operators below compare that box along the spatial and/or temporal axes. See the indexing section for the opclasses that make these operators index-capable.</para>
 
 		<note>
-			<para>The <varname>@&gt;</varname> operator tests time-period containment, <emphasis>not</emphasis> H3 hierarchical containment. To test whether one cell is the parent of another at a given resolution, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
+			<para>The <varname>@&gt;</varname> operator tests spatiotemporal bounding-box containment (spatial extent and time together), <emphasis>not</emphasis> H3 hierarchical containment. To test whether one cell is the parent of another at a given resolution, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
 		</note>
 
 		<itemizedlist>
@@ -514,12 +514,32 @@ SELECT th3
 				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
-				<para>Time-period overlap, contains, contained-by, same, and adjacent</para>
-				<para><varname>th3 &amp;&amp; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 @&gt; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 &lt;@ {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 ~= {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 -|- {tstzspan,th3} → boolean</varname></para>
+				<para>Bounding-box overlap, contains, contained-by, same, and adjacent</para>
+				<para><varname>th3 &amp;&amp; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 @&gt; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;@ {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 ~= {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 -|- {tstzspan,stbox,th3} → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3_space_position">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+				<para>Relative position along the spatial axes (strictly-left, overlaps-left, overlaps-right, strictly-right; strictly-below, overlaps-below, overlaps-above, strictly-above)</para>
+				<para><varname>th3 &lt;&lt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &gt;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;&lt;| {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt;| {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 |&amp;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 |&gt;&gt; {stbox,th3} → boolean</varname></para>
 			</listitem>
 
 			<listitem xml:id="th3_time_position">
@@ -528,10 +548,10 @@ SELECT th3
 				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 				<para>Relative position along the time axis (strictly-before, overlaps-before, strictly-after, overlaps-after)</para>
-				<para><varname>th3 &lt;&lt;# {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 &amp;&lt;# {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 #&gt;&gt; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 #&amp;&gt; {tstzspan,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;&lt;# {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt;# {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 #&gt;&gt; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 #&amp;&gt; {tstzspan,stbox,th3} → boolean</varname></para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -662,7 +682,7 @@ SELECT eContains(
 		<itemizedlist>
 			<listitem xml:id="th3_rtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_rtree_ops</varname></primary></indexterm>
-				<para>GiST operator class for temporal H3 cells. Indexes a <varname>tstzspan</varname> bounding period per row (th3 is a time-only temporal type).</para>
+				<para>GiST operator class for temporal H3 cells. Indexes an <varname>stbox</varname> spatiotemporal bounding box per row (the geodetic extent of the cell boundaries together with the time period).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING gist(cells);       -- uses th3_rtree_ops by default
 CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
@@ -672,7 +692,7 @@ CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
 			<listitem xml:id="th3_quadtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_quadtree_ops</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3_kdtree_ops</varname></primary></indexterm>
-				<para>SP-GiST operator classes for temporal H3 cells, keyed on the <varname>tstzspan</varname> period. <varname>th3_quadtree_ops</varname> is the default (quadtree partitioning); <varname>th3_kdtree_ops</varname> uses k-d tree partitioning and must be named explicitly.</para>
+				<para>SP-GiST operator classes for temporal H3 cells, keyed on the <varname>stbox</varname> spatiotemporal bounding box. <varname>th3_quadtree_ops</varname> is the default (quadtree partitioning); <varname>th3_kdtree_ops</varname> uses k-d tree partitioning and must be named explicitly.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING spgist(cells);     -- uses th3_quadtree_ops by default
 CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
@@ -697,7 +717,7 @@ CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
 			<itemizedlist>
 				<listitem>
 					<para><emphasis>Int64 ordering is arbitrary with respect to grid geometry</emphasis>. H3 cell identifiers are 64-bit unsigned integers whose bitpattern encodes resolution, base cell, and hierarchical position. The bitwise ordering of two cells carries no geographic meaning &#x2014; two cells that are bit-adjacent may be on opposite sides of the planet, and two cells that are spatially adjacent may have wildly different bitpatterns.</para>
-					<para><emphasis>Mitigation</emphasis>: <varname>th3</varname> deliberately has no <varname>h3span</varname> / <varname>h3spanset</varname> companion types (precedent: <varname>geometry</varname> has no <varname>geometryspan</varname>), and the bbox indexes are time-only (<varname>tstzspan</varname>). Value-range filtering must go through <varname>h3_*</varname> inspection functions (resolution, base cell, hierarchy checks) or explicit set enumeration via <varname>h3set</varname>. Code that assumes <varname>cell_a &lt; cell_b</varname> reflects spatial proximity will silently produce wrong results.</para>
+					<para><emphasis>Mitigation</emphasis>: <varname>th3</varname> deliberately has no <varname>h3span</varname> / <varname>h3spanset</varname> companion types (precedent: <varname>geometry</varname> has no <varname>geometryspan</varname>), and the bbox indexes capture the cells' spatiotemporal extent (<varname>stbox</varname>), not the cell-id value. Value-range filtering must go through <varname>h3_*</varname> inspection functions (resolution, base cell, hierarchy checks) or explicit set enumeration via <varname>h3set</varname>. Code that assumes <varname>cell_a &lt; cell_b</varname> reflects spatial proximity will silently produce wrong results.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Resolution mixing in operations</emphasis>. H3 cells at different resolutions (0&#x2013;15) represent different coverage areas. Mixing resolutions in a single trajectory is valid but semantically requires explicit justification &#x2014; <varname>th3CellToParent(cell, coarser_res)</varname> coarsens, <varname>h3CellToChildren(parent, finer_res)</varname> refines, and <varname>h3CompactCells</varname> / <varname>h3UncompactCells</varname> round-trip correctly only when input resolutions are compatible.</para>
