@@ -88,8 +88,8 @@
  *
  * @defgroup mobilitydb_h3_set Set-returning functions
  * @ingroup mobilitydb_h3
- * @brief Static set-returning helpers (h3_grid_disk, h3_cell_to_children,
- * h3_compact_cells, …) surfaced via `mobilitydb/src/h3/h3index_sets.c`
+ * @brief Static set-returning helpers (h3GridDisk, h3CellToChildren,
+ * h3CompactCells, …) surfaced via `mobilitydb/src/h3/h3index_sets.c`
  *
  * @defgroup mobilitydb_h3_metrics Metric functions
  * @ingroup mobilitydb_h3

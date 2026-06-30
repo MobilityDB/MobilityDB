@@ -31,8 +31,8 @@
  * @file
  * @brief Grid-traversal functions for `th3index`.
  *
- * Besides declaring `h3_grid_distance`, `h3_cell_to_local_ij` and
- * `h3_local_ij_to_cell`, this file wires up the temporal `<->`
+ * Besides declaring `th3GridDistance`, `th3CellToLocalIj` and
+ * `th3LocalIjToCell`, this file wires up the temporal `<->`
  * operator on `(th3index, th3index)` to grid-hop distance. No
  * arithmetic `<->` exists — `th3index` is a `talpha_type`
  * (time-only bbox, like `tbool` / `ttext`), not a `tnumber`,
@@ -42,10 +42,10 @@
  */
 
 /******************************************************************************
- * h3_grid_distance
+ * th3GridDistance
  ******************************************************************************/
 
-CREATE FUNCTION h3_grid_distance(th3index, th3index)
+CREATE FUNCTION th3GridDistance(th3index, th3index)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Th3index_grid_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -61,32 +61,32 @@ CREATE FUNCTION h3_grid_distance(th3index, th3index)
  */
 
 CREATE OPERATOR <-> (
-  PROCEDURE = h3_grid_distance,
+  PROCEDURE = th3GridDistance,
   LEFTARG = th3index, RIGHTARG = th3index,
   COMMUTATOR = <->
 );
 
 /******************************************************************************
- * h3_cell_to_local_ij
+ * th3CellToLocalIj
  *
  * `binary_synced` — both temporals are synchronised, h3-pg is called
  * per shared instant. Output is a 2-D planar point (IJ coords),
  * carried as `tgeompoint`.
  ******************************************************************************/
 
-CREATE FUNCTION h3_cell_to_local_ij(th3index, th3index)
+CREATE FUNCTION th3CellToLocalIj(th3index, th3index)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_local_ij'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_local_ij_to_cell
+ * th3LocalIjToCell
  *
  * Inverse of `cell_to_local_ij`. The origin is temporal (th3index);
  * the IJ coord is a temporal 2-D point.
  ******************************************************************************/
 
-CREATE FUNCTION h3_local_ij_to_cell(th3index, tgeompoint)
+CREATE FUNCTION th3LocalIjToCell(th3index, tgeompoint)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_local_ij_to_cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

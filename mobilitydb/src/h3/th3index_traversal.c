@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_grid_distance — also the procedure behind the `<->` operator.
+ * th3GridDistance — also the procedure behind the `<->` operator.
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_grid_distance(PG_FUNCTION_ARGS);
@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Th3index_grid_distance);
 /**
  * @ingroup mobilitydb_h3_traversal
  * @brief Return the temporal grid-hop distance between two temporal H3 cells
- * @sqlfn h3_grid_distance()
+ * @sqlfn th3GridDistance()
  * @sqlop @p \<->
  */
 Datum
@@ -66,7 +66,7 @@ Th3index_grid_distance(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_cell_to_local_ij
+ * th3CellToLocalIj
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_local_ij(PG_FUNCTION_ARGS);
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_local_ij);
  * @ingroup mobilitydb_h3_traversal
  * @brief Return the temporal local (I, J) coordinate pair of a cell with
  * respect to an origin cell, as a temporal planar point
- * @sqlfn h3_cell_to_local_ij()
+ * @sqlfn th3CellToLocalIj()
  */
 Datum
 Th3index_cell_to_local_ij(PG_FUNCTION_ARGS)
@@ -89,7 +89,7 @@ Th3index_cell_to_local_ij(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_local_ij_to_cell
+ * th3LocalIjToCell
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_local_ij_to_cell(PG_FUNCTION_ARGS);
@@ -98,7 +98,7 @@ PG_FUNCTION_INFO_V1(Th3index_local_ij_to_cell);
  * @ingroup mobilitydb_h3_traversal
  * @brief Return the temporal H3 cell at the given local (I, J) coordinate
  * relative to an origin cell
- * @sqlfn h3_local_ij_to_cell()
+ * @sqlfn th3LocalIjToCell()
  */
 Datum
 Th3index_local_ij_to_cell(PG_FUNCTION_ARGS)

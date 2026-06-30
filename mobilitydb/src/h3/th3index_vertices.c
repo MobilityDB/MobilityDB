@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_cell_to_vertex(th3index, integer)
+ * th3CellToVertex(th3index, integer)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_vertex(PG_FUNCTION_ARGS);
@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_vertex);
  * @ingroup mobilitydb_h3_vertex
  * @brief Return the temporal H3-vertex index at the given vertex number of
  * a temporal H3 cell
- * @sqlfn h3_cell_to_vertex()
+ * @sqlfn th3CellToVertex()
  */
 Datum
 Th3index_cell_to_vertex(PG_FUNCTION_ARGS)
@@ -65,7 +65,7 @@ Th3index_cell_to_vertex(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_vertex_to_latlng
+ * th3VertexToLatlng
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_vertex_to_latlng(PG_FUNCTION_ARGS);
@@ -73,7 +73,7 @@ PG_FUNCTION_INFO_V1(Th3index_vertex_to_latlng);
 /**
  * @ingroup mobilitydb_h3_vertex
  * @brief Return the geodetic coordinates of a temporal H3 vertex
- * @sqlfn h3_vertex_to_latlng()
+ * @sqlfn th3VertexToLatlng()
  */
 Datum
 Th3index_vertex_to_latlng(PG_FUNCTION_ARGS)
@@ -85,7 +85,7 @@ Th3index_vertex_to_latlng(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_is_valid_vertex
+ * isValidVertex
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_is_valid_vertex(PG_FUNCTION_ARGS);
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Th3index_is_valid_vertex);
  * @ingroup mobilitydb_h3_vertex
  * @brief Return a temporal boolean stating at each instant whether the
  * value is a valid H3 vertex
- * @sqlfn h3_is_valid_vertex()
+ * @sqlfn isValidVertex()
  */
 Datum
 Th3index_is_valid_vertex(PG_FUNCTION_ARGS)

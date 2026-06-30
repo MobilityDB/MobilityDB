@@ -6,10 +6,10 @@
 --
 -------------------------------------------------------------------------------
 
--- §1.10 Casts — pure sugar over h3_cell_to_latlng (212).
+-- §1.10 Casts — pure sugar over th3CellToLatlng (212).
 --
 -- The casts depend on the same h3_cell_to_gs_point adapter that
--- h3_cell_to_latlng uses; they fail at runtime in the same way until
+-- th3CellToLatlng uses; they fail at runtime in the same way until
 -- the adapter lands. The tests below exercise only the cast
 -- machinery, leaving correctness of the underlying conversion to
 -- 282_th3index_latlng.
@@ -27,7 +27,7 @@ SELECT (th3index
 
 -- Equivalence with the explicit function call
 SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint
-  ~= h3_cell_to_latlng(th3index '590464338553208831@2001-01-01');
+  ~= th3CellToLatlng(th3index '590464338553208831@2001-01-01');
 
 -- The cast is EXPLICIT, not IMPLICIT — assignment without `::` fails.
 /* Errors */
@@ -50,7 +50,7 @@ SELECT (th3index
 
 -- Equivalence with the explicit function call
 SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint
-  ~= h3_cell_to_latlng_tgeompoint(th3index '590464338553208831@2001-01-01');
+  ~= th3CellToLatlngTgeompoint(th3index '590464338553208831@2001-01-01');
 
 -- The cast is EXPLICIT
 /* Errors */

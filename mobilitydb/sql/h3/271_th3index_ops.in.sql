@@ -42,7 +42,7 @@
  * beyond the bounding box conversion function.
  *
  * The grid-distance `<->(th3index, th3index)` built on
- * `h3_grid_distance` is declared in `285_th3index_traversal.in.sql` —
+ * `th3GridDistance` is declared in `285_th3index_traversal.in.sql` —
  * it is not an ORDER BY operator and is not part of the GiST / SP-GiST
  * opclasses.
  */

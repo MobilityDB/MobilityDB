@@ -33,7 +33,7 @@
  *
  * `h3-pg` exposes plain-SQL `h3index :: point`, `h3index :: geometry`
  * and `h3index :: geography`. The temporal counterparts reuse the
- * lifted `h3_cell_to_latlng` conversion defined in
+ * lifted `th3CellToLatlng` conversion defined in
  * `282_th3index_latlng.in.sql` — these casts are pure sugar for the
  * explicit call.
  *
@@ -50,13 +50,13 @@
  * th3index :: tgeogpoint
  ******************************************************************************/
 
-CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION h3_cell_to_latlng(th3index);
+CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION th3CellToLatlng(th3index);
 
 /******************************************************************************
  * th3index :: tgeompoint
  ******************************************************************************/
 
 CREATE CAST (th3index AS tgeompoint)
-  WITH FUNCTION h3_cell_to_latlng_tgeompoint(th3index);
+  WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
 
 /******************************************************************************/

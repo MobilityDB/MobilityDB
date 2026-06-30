@@ -56,30 +56,30 @@ CREATE FUNCTION th3index(tgeogpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_cell_to_latlng
+ * th3CellToLatlng
  *
  * Primary output is `tgeogpoint` (geodetic, matches h3-pg semantics);
  * `tgeompoint` overload is a convenience for pipelines that index
  * into planar storage.
  ******************************************************************************/
 
-CREATE FUNCTION h3_cell_to_latlng(th3index)
+CREATE FUNCTION th3CellToLatlng(th3index)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_cell_to_latlng_tgeompoint(th3index)
+CREATE FUNCTION th3CellToLatlngTgeompoint(th3index)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_cell_to_boundary
+ * th3CellToBoundary
  *
  * Per-instant polygon boundary of the cell, carried as a `tgeography`.
  ******************************************************************************/
 
-CREATE FUNCTION h3_cell_to_boundary(th3index)
+CREATE FUNCTION th3CellToBoundary(th3index)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Th3index_cell_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

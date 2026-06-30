@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(H3_grid_disk);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return all cells within k grid-steps of the origin
- * @sqlfn h3_grid_disk()
+ * @sqlfn h3GridDisk()
  */
 Datum
 H3_grid_disk(PG_FUNCTION_ARGS)
@@ -79,7 +79,7 @@ PG_FUNCTION_INFO_V1(H3_grid_ring);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the ring of cells at exactly k grid-steps from the origin
- * @sqlfn h3_grid_ring()
+ * @sqlfn h3GridRing()
  */
 Datum
 H3_grid_ring(PG_FUNCTION_ARGS)
@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(H3_grid_path_cells);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the cells on the inclusive path from start to end
- * @sqlfn h3_grid_path_cells()
+ * @sqlfn h3GridPathCells()
  */
 Datum
 H3_grid_path_cells(PG_FUNCTION_ARGS)
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(H3_cell_to_children);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return all children of the cell at the target resolution
- * @sqlfn h3_cell_to_children()
+ * @sqlfn h3CellToChildren()
  */
 Datum
 H3_cell_to_children(PG_FUNCTION_ARGS)
@@ -137,7 +137,7 @@ PG_FUNCTION_INFO_V1(H3_compact_cells);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the compacted representation of an h3indexset
- * @sqlfn h3_compact_cells()
+ * @sqlfn h3CompactCells()
  */
 Datum
 H3_compact_cells(PG_FUNCTION_ARGS)
@@ -156,7 +156,7 @@ PG_FUNCTION_INFO_V1(H3_uncompact_cells);
  * @ingroup mobilitydb_h3_set
  * @brief Return the uncompacted representation of an h3indexset at
  * the target resolution
- * @sqlfn h3_uncompact_cells()
+ * @sqlfn h3UncompactCells()
  */
 Datum
 H3_uncompact_cells(PG_FUNCTION_ARGS)
@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(H3_origin_to_directed_edges);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the outgoing directed edges of a cell
- * @sqlfn h3_origin_to_directed_edges()
+ * @sqlfn h3OriginToDirectedEdges()
  */
 Datum
 H3_origin_to_directed_edges(PG_FUNCTION_ARGS)
@@ -196,7 +196,7 @@ PG_FUNCTION_INFO_V1(H3_cell_to_vertexes);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the vertexes of a cell
- * @sqlfn h3_cell_to_vertexes()
+ * @sqlfn h3CellToVertexes()
  */
 Datum
 H3_cell_to_vertexes(PG_FUNCTION_ARGS)
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(H3_get_icosahedron_faces);
 /**
  * @ingroup mobilitydb_h3_set
  * @brief Return the icosahedron face indexes intersected by a cell
- * @sqlfn h3_get_icosahedron_faces()
+ * @sqlfn h3GetIcosahedronFaces()
  */
 Datum
 H3_get_icosahedron_faces(PG_FUNCTION_ARGS)

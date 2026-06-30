@@ -19,35 +19,35 @@
 --   612544986761658367 = res 8 hexagon (neighbour — distance 1)
 
 -------------------------------------------------------------------------------
--- h3_grid_distance — binary_synced
+-- th3GridDistance — binary_synced
 -------------------------------------------------------------------------------
 
 -- A cell is at distance 0 from itself
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01');
 
 -- A neighbour pair is at distance 1
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01');
 
 -- Distance is symmetric
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')
-  = h3_grid_distance(
+  = th3GridDistance(
     th3index '612544986761658367@2001-01-01',
     th3index '612544986753269759@2001-01-01');
 
 -- Sequence form
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
   th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]')
   IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- The `<->` operator (synonym for h3_grid_distance per §6.1)
+-- The `<->` operator (synonym for th3GridDistance per §6.1)
 -------------------------------------------------------------------------------
 
 SELECT (th3index '612544986753269759@2001-01-01')
@@ -56,34 +56,34 @@ SELECT (th3index '612544986753269759@2001-01-01')
 -- Operator and function form must agree
 SELECT (th3index '612544986753269759@2001-01-01'
         <-> th3index '612544986761658367@2001-01-01')
-  = h3_grid_distance(
+  = th3GridDistance(
       th3index '612544986753269759@2001-01-01',
       th3index '612544986761658367@2001-01-01');
 
 -------------------------------------------------------------------------------
--- h3_cell_to_local_ij — binary_synced
+-- th3CellToLocalIj — binary_synced
 -------------------------------------------------------------------------------
 
 -- Local IJ of a cell from its own perspective is the origin (0, 0).
-SELECT h3_cell_to_local_ij(
+SELECT th3CellToLocalIj(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01') IS NOT NULL;
 
 -- Local IJ to a neighbour
-SELECT h3_cell_to_local_ij(
+SELECT th3CellToLocalIj(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01') IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- h3_local_ij_to_cell — binary_synced (th3index, tgeompoint)
+-- th3LocalIjToCell — binary_synced (th3index, tgeompoint)
 --
 -- Round trip: cell -> local_ij -> cell must be the identity for cells
 -- in the same parent. We use the origin as anchor.
 -------------------------------------------------------------------------------
 
-SELECT h3_local_ij_to_cell(
+SELECT th3LocalIjToCell(
     th3index '612544986753269759@2001-01-01',
-    h3_cell_to_local_ij(
+    th3CellToLocalIj(
       th3index '612544986753269759@2001-01-01',
       th3index '612544986761658367@2001-01-01'))
   = th3index '612544986761658367@2001-01-01';

@@ -68,7 +68,7 @@ h3_vertex_to_gs_point(H3Index vertex)
 }
 
 /*****************************************************************************
- * h3_cell_to_vertex(th3index, integer) — lift_with_const
+ * th3CellToVertex(th3index, integer) — lift_with_const
  *****************************************************************************/
 
 /**
@@ -96,7 +96,7 @@ th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 }
 
 /*****************************************************************************
- * h3_vertex_to_latlng — needs h3_adapter.c body
+ * th3VertexToLatlng — needs h3_adapter.c body
  *****************************************************************************/
 
 /**
@@ -123,7 +123,7 @@ th3index_vertex_to_latlng(const Temporal *temp)
 }
 
 /*****************************************************************************
- * h3_is_valid_vertex
+ * isValidVertex
  *****************************************************************************/
 
 /**

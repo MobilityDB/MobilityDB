@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(H3index_is_valid_cell);
 /**
  * @ingroup mobilitydb_h3_base_accessor
  * @brief Return true if the value encodes a valid H3 cell
- * @sqlfn h3_is_valid_cell()
+ * @sqlfn isValidCell()
  */
 Datum
 H3index_is_valid_cell(PG_FUNCTION_ARGS)
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(H3index_is_valid_directed_edge);
 /**
  * @ingroup mobilitydb_h3_base_accessor
  * @brief Return true if the value encodes a valid H3 directed edge
- * @sqlfn h3_is_valid_directed_edge()
+ * @sqlfn isValidDirectedEdge()
  */
 Datum
 H3index_is_valid_directed_edge(PG_FUNCTION_ARGS)
@@ -260,7 +260,7 @@ PG_FUNCTION_INFO_V1(H3index_is_valid_vertex);
 /**
  * @ingroup mobilitydb_h3_base_accessor
  * @brief Return true if the value encodes a valid H3 vertex
- * @sqlfn h3_is_valid_vertex()
+ * @sqlfn isValidVertex()
  */
 Datum
 H3index_is_valid_vertex(PG_FUNCTION_ARGS)

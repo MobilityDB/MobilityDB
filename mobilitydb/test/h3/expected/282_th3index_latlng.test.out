@@ -1,23 +1,23 @@
-SELECT h3_cell_to_latlng(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+SELECT th3CellToLatlng(th3index '590464338553208831@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_latlng(th3index '622236750694711295@2001-01-01') IS NOT NULL;
+SELECT th3CellToLatlng(th3index '622236750694711295@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_latlng(th3index
+SELECT th3CellToLatlng(th3index
   '{590464338553208831@2001-01-01, 622236750694711295@2001-01-02}') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_latlng(th3index
+SELECT th3CellToLatlng(th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]') IS NOT NULL;
  ?column? 
 ----------
@@ -25,23 +25,23 @@ SELECT h3_cell_to_latlng(th3index
 (1 row)
 
 SELECT th3index(
-  h3_cell_to_latlng(th3index '622236750694711295@2001-01-01'), 10)
+  th3CellToLatlng(th3index '622236750694711295@2001-01-01'), 10)
   = th3index '622236750694711295@2001-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_latlng_tgeompoint(th3index
+SELECT th3CellToLatlngTgeompoint(th3index
   '590464338553208831@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_get_resolution(th3index(
+SELECT th3GetResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
-       h3_get_resolution        
+        th3getresolution        
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
@@ -60,9 +60,9 @@ FROM densified;
  t                    | t                  | t
 (1 row)
 
-SELECT h3_get_resolution(th3index(
+SELECT th3GetResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
-       h3_get_resolution        
+        th3getresolution        
 --------------------------------
  9@Mon Jan 01 00:00:00 2001 PST
 (1 row)
@@ -87,19 +87,19 @@ ERROR:  Only lon/lat coordinate systems are supported in geography
 SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 ERROR:  Only lon/lat coordinate systems are supported in geography
-SELECT h3_cell_to_boundary(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+SELECT th3CellToBoundary(th3index '590464338553208831@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_boundary(th3index '622236750694711295@2001-01-01') IS NOT NULL;
+SELECT th3CellToBoundary(th3index '622236750694711295@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT h3_cell_to_boundary(th3index
+SELECT th3CellToBoundary(th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]') IS NOT NULL;
  ?column? 
 ----------

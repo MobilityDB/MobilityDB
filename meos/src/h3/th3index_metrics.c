@@ -154,7 +154,7 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 }
 
 /*****************************************************************************
- * h3_cell_area(th3index, text) — lift_with_const (unit as H3Unit enum)
+ * th3CellArea(th3index, text) — lift_with_const (unit as H3Unit enum)
  *****************************************************************************/
 
 /**
@@ -184,7 +184,7 @@ th3index_cell_area(const Temporal *temp, const char *unit)
 }
 
 /*****************************************************************************
- * h3_edge_length(th3index, text) — lift_with_const
+ * th3EdgeLength(th3index, text) — lift_with_const
  *****************************************************************************/
 
 /**
@@ -214,7 +214,7 @@ th3index_edge_length(const Temporal *temp, const char *unit)
 }
 
 /*****************************************************************************
- * h3_great_circle_distance(tgeogpoint, tgeogpoint, text) — binary_synced
+ * greatCircleDistance(tgeogpoint, tgeogpoint, text) — binary_synced
  *
  * Two temporal geodetic points are synchronised over their shared
  * time axis; the unit is constant across instants and is threaded

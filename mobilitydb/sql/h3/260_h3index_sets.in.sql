@@ -45,17 +45,17 @@
  * Grid traversal
  ******************************************************************************/
 
-CREATE FUNCTION h3_grid_disk(h3index, integer)
+CREATE FUNCTION h3GridDisk(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_grid_disk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_grid_ring(h3index, integer)
+CREATE FUNCTION h3GridRing(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_grid_ring'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_grid_path_cells(h3index, h3index)
+CREATE FUNCTION h3GridPathCells(h3index, h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_grid_path_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -64,17 +64,17 @@ CREATE FUNCTION h3_grid_path_cells(h3index, h3index)
  * Hierarchy
  ******************************************************************************/
 
-CREATE FUNCTION h3_cell_to_children(h3index, integer)
+CREATE FUNCTION h3CellToChildren(h3index, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_cell_to_children'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_compact_cells(h3indexset)
+CREATE FUNCTION h3CompactCells(h3indexset)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_compact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_uncompact_cells(h3indexset, integer)
+CREATE FUNCTION h3UncompactCells(h3indexset, integer)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_uncompact_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -83,12 +83,12 @@ CREATE FUNCTION h3_uncompact_cells(h3indexset, integer)
  * Edges and vertexes
  ******************************************************************************/
 
-CREATE FUNCTION h3_origin_to_directed_edges(h3index)
+CREATE FUNCTION h3OriginToDirectedEdges(h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_origin_to_directed_edges'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_cell_to_vertexes(h3index)
+CREATE FUNCTION h3CellToVertexes(h3index)
   RETURNS h3indexset
   AS 'MODULE_PATHNAME', 'H3_cell_to_vertexes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -97,7 +97,7 @@ CREATE FUNCTION h3_cell_to_vertexes(h3index)
  * Icosahedron faces
  ******************************************************************************/
 
-CREATE FUNCTION h3_get_icosahedron_faces(h3index)
+CREATE FUNCTION h3GetIcosahedronFaces(h3index)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'H3_get_icosahedron_faces'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
