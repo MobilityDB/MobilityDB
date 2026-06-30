@@ -44,7 +44,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_cell_area(th3index, text)
+ * th3CellArea(th3index, text)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_area(PG_FUNCTION_ARGS);
@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_area);
 /**
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant area of a temporal H3 cell in the given unit
- * @sqlfn h3_cell_area()
+ * @sqlfn th3CellArea()
  */
 Datum
 Th3index_cell_area(PG_FUNCTION_ARGS)
@@ -67,7 +67,7 @@ Th3index_cell_area(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_edge_length(th3index, text)
+ * th3EdgeLength(th3index, text)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_edge_length(PG_FUNCTION_ARGS);
@@ -76,7 +76,7 @@ PG_FUNCTION_INFO_V1(Th3index_edge_length);
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant length of a temporal H3 directed edge in
  * the given unit
- * @sqlfn h3_edge_length()
+ * @sqlfn th3EdgeLength()
  */
 Datum
 Th3index_edge_length(PG_FUNCTION_ARGS)
@@ -91,7 +91,7 @@ Th3index_edge_length(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_great_circle_distance(tgeogpoint, tgeogpoint, text)
+ * greatCircleDistance(tgeogpoint, tgeogpoint, text)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tgeogpoint_great_circle_distance(PG_FUNCTION_ARGS);
@@ -100,7 +100,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_great_circle_distance);
  * @ingroup mobilitydb_h3_metrics
  * @brief Return the per-instant great-circle distance between two temporal
  * geodetic points in the given unit
- * @sqlfn h3_great_circle_distance()
+ * @sqlfn greatCircleDistance()
  */
 Datum
 Tgeogpoint_great_circle_distance(PG_FUNCTION_ARGS)

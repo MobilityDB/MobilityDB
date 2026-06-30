@@ -221,17 +221,17 @@ CREATE OPERATOR CLASS h3index_ops
  * these three are the static h3index counterparts.
  ******************************************************************************/
 
-CREATE FUNCTION h3_is_valid_cell(h3index)
+CREATE FUNCTION isValidCell(h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_is_valid_cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_is_valid_directed_edge(h3index)
+CREATE FUNCTION isValidDirectedEdge(h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_is_valid_directed_edge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3_is_valid_vertex(h3index)
+CREATE FUNCTION isValidVertex(h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_is_valid_vertex'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

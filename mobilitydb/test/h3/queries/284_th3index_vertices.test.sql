@@ -16,49 +16,49 @@
 --   612544986753269759 = res 8 hexagon
 
 -------------------------------------------------------------------------------
--- h3_cell_to_vertex(th3index, integer) — lift_with_const
+-- th3CellToVertex(th3index, integer) — lift_with_const
 -------------------------------------------------------------------------------
 
 -- A hexagon has six vertices (numbered 0..5)
-SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0)
+SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 0)
   IS NOT NULL;
-SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 5)
+SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 5)
   IS NOT NULL;
 
 -- All four temporal subtypes
-SELECT h3_cell_to_vertex(th3index
+SELECT th3CellToVertex(th3index
   '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', 0)
   IS NOT NULL;
-SELECT h3_cell_to_vertex(th3index
+SELECT th3CellToVertex(th3index
   '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]', 0)
   IS NOT NULL;
 
 -- Distinct vertex numbers must yield distinct vertices for the same cell
-SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0)
-  <> h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 1);
+SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 0)
+  <> th3CellToVertex(th3index '612544986753269759@2001-01-01', 1);
 
 -- Out-of-range vertex number must error
 /* Errors */
-SELECT h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 9);
+SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 9);
 
 -------------------------------------------------------------------------------
--- h3_is_valid_vertex
+-- isValidVertex
 -------------------------------------------------------------------------------
 
 -- A freshly built vertex is valid
-SELECT h3_is_valid_vertex(
-  h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0));
+SELECT isValidVertex(
+  th3CellToVertex(th3index '612544986753269759@2001-01-01', 0));
 
 -- A plain cell is not a valid vertex
-SELECT h3_is_valid_vertex(th3index '612544986753269759@2001-01-01');
-SELECT h3_is_valid_vertex(th3index '0@2001-01-01');
+SELECT isValidVertex(th3index '612544986753269759@2001-01-01');
+SELECT isValidVertex(th3index '0@2001-01-01');
 
 -------------------------------------------------------------------------------
--- h3_vertex_to_latlng — needs h3_vertex_to_gs_point adapter
+-- th3VertexToLatlng — needs h3_vertex_to_gs_point adapter
 -------------------------------------------------------------------------------
 
-SELECT h3_vertex_to_latlng(
-  h3_cell_to_vertex(th3index '612544986753269759@2001-01-01', 0))
+SELECT th3VertexToLatlng(
+  th3CellToVertex(th3index '612544986753269759@2001-01-01', 0))
   IS NOT NULL;
 
 -------------------------------------------------------------------------------

@@ -37,46 +37,46 @@
  */
 
 /******************************************************************************
- * h3_get_resolution
+ * th3GetResolution
  ******************************************************************************/
 
-CREATE FUNCTION h3_get_resolution(th3index)
+CREATE FUNCTION th3GetResolution(th3index)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Th3index_get_resolution'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_get_base_cell_number
+ * th3GetBaseCellNumber
  ******************************************************************************/
 
-CREATE FUNCTION h3_get_base_cell_number(th3index)
+CREATE FUNCTION th3GetBaseCellNumber(th3index)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Th3index_get_base_cell_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_is_valid_cell
+ * isValidCell
  ******************************************************************************/
 
-CREATE FUNCTION h3_is_valid_cell(th3index)
+CREATE FUNCTION isValidCell(th3index)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Th3index_is_valid_cell'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_is_res_class_iii
+ * th3IsResClassIii
  ******************************************************************************/
 
-CREATE FUNCTION h3_is_res_class_iii(th3index)
+CREATE FUNCTION th3IsResClassIii(th3index)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Th3index_is_res_class_iii'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_is_pentagon
+ * th3IsPentagon
  ******************************************************************************/
 
-CREATE FUNCTION h3_is_pentagon(th3index)
+CREATE FUNCTION th3IsPentagon(th3index)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Th3index_is_pentagon'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

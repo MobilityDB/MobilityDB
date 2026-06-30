@@ -19,77 +19,77 @@
 --                                              of the above)
 
 -------------------------------------------------------------------------------
--- h3_are_neighbor_cells — binary_synced
+-- th3AreNeighborCells — binary_synced
 -------------------------------------------------------------------------------
 
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01');
 
 -- A cell is not a neighbour of itself
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01');
 
 -- Two-instant sequences of the neighbouring pair
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
   th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]');
 
 -------------------------------------------------------------------------------
--- h3_cells_to_directed_edge — binary_synced
+-- th3CellsToDirectedEdge — binary_synced
 -------------------------------------------------------------------------------
 
 -- Round trip: the edge built from (origin, dest) must report the same
 -- origin and destination back.
-SELECT h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986753269759@2001-01-01';
 
-SELECT h3_get_directed_edge_destination(h3_cells_to_directed_edge(
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986761658367@2001-01-01';
 
 -------------------------------------------------------------------------------
--- h3_is_valid_directed_edge
+-- isValidDirectedEdge
 -------------------------------------------------------------------------------
 
 -- A freshly built directed edge is valid
-SELECT h3_is_valid_directed_edge(h3_cells_to_directed_edge(
+SELECT isValidDirectedEdge(th3CellsToDirectedEdge(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01'));
 
 -- A plain h3 cell is not a valid directed edge
-SELECT h3_is_valid_directed_edge(th3index '612544986753269759@2001-01-01');
-SELECT h3_is_valid_directed_edge(th3index '0@2001-01-01');
+SELECT isValidDirectedEdge(th3index '612544986753269759@2001-01-01');
+SELECT isValidDirectedEdge(th3index '0@2001-01-01');
 
 -------------------------------------------------------------------------------
--- h3_get_directed_edge_origin
+-- th3GetDirectedEdgeOrigin
 -------------------------------------------------------------------------------
 
 -- Combined with cells_to_directed_edge, see round trip above.
 -- Standalone: the origin of an edge must be a valid h3 cell.
-SELECT h3_is_valid_cell(h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+SELECT isValidCell(th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01')));
 
 -------------------------------------------------------------------------------
--- h3_get_directed_edge_destination
+-- th3GetDirectedEdgeDestination
 -------------------------------------------------------------------------------
 
-SELECT h3_is_valid_cell(h3_get_directed_edge_destination(
-  h3_cells_to_directed_edge(
+SELECT isValidCell(th3GetDirectedEdgeDestination(
+  th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')));
 
 -------------------------------------------------------------------------------
--- h3_directed_edge_to_boundary — needs h3_adapter.c body
+-- th3DirectedEdgeToBoundary — needs h3_adapter.c body
 -------------------------------------------------------------------------------
 
-SELECT h3_directed_edge_to_boundary(
-  h3_cells_to_directed_edge(
+SELECT th3DirectedEdgeToBoundary(
+  th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')) IS NOT NULL;
 

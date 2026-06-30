@@ -94,7 +94,7 @@ ensure_valid_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * @brief Ensure that a (th3index, H3Index) pair is valid.
  *
  * The cell argument carries h3 semantics: a value of 0 is the
- * conventional "invalid" sentinel (what `h3_is_valid_cell(0)`
+ * conventional "invalid" sentinel (what `isValidCell(0)`
  * returns `false` for). We reject it up front so callers cannot
  * e.g. test a temporal trajectory for "ever equal to the invalid
  * sentinel" without noticing.

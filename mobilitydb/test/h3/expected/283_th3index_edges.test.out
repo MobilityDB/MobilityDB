@@ -1,28 +1,28 @@
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01');
-     h3_are_neighbor_cells      
+      th3areneighborcells       
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01');
-     h3_are_neighbor_cells      
+      th3areneighborcells       
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_are_neighbor_cells(
+SELECT th3AreNeighborCells(
   th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
   th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]');
-                      h3_are_neighbor_cells                       
+                       th3areneighborcells                        
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
-SELECT h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986753269759@2001-01-01';
@@ -31,7 +31,7 @@ SELECT h3_get_directed_edge_origin(h3_cells_to_directed_edge(
  t
 (1 row)
 
-SELECT h3_get_directed_edge_destination(h3_cells_to_directed_edge(
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01'))
   = th3index '612544986761658367@2001-01-01';
@@ -40,43 +40,43 @@ SELECT h3_get_directed_edge_destination(h3_cells_to_directed_edge(
  t
 (1 row)
 
-SELECT h3_is_valid_directed_edge(h3_cells_to_directed_edge(
+SELECT isValidDirectedEdge(th3CellsToDirectedEdge(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01'));
-   h3_is_valid_directed_edge    
+      isvaliddirectededge       
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_is_valid_directed_edge(th3index '612544986753269759@2001-01-01');
-   h3_is_valid_directed_edge    
+SELECT isValidDirectedEdge(th3index '612544986753269759@2001-01-01');
+      isvaliddirectededge       
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_is_valid_directed_edge(th3index '0@2001-01-01');
+SELECT isValidDirectedEdge(th3index '0@2001-01-01');
 ERROR:  h3index value 0 does not encode a valid H3 cell
-LINE 1: SELECT h3_is_valid_directed_edge(th3index '0@2001-01-01');
-                                                  ^
-SELECT h3_is_valid_cell(h3_get_directed_edge_origin(h3_cells_to_directed_edge(
+LINE 1: SELECT isValidDirectedEdge(th3index '0@2001-01-01');
+                                            ^
+SELECT isValidCell(th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01')));
-        h3_is_valid_cell        
+          isvalidcell           
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_is_valid_cell(h3_get_directed_edge_destination(
-  h3_cells_to_directed_edge(
+SELECT isValidCell(th3GetDirectedEdgeDestination(
+  th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')));
-        h3_is_valid_cell        
+          isvalidcell           
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_directed_edge_to_boundary(
-  h3_cells_to_directed_edge(
+SELECT th3DirectedEdgeToBoundary(
+  th3CellsToDirectedEdge(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')) IS NOT NULL;
  ?column? 

@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_cell_to_parent(th3index, integer)
+ * th3CellToParent(th3index, integer)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_parent(PG_FUNCTION_ARGS);
@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_parent);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal parent cell at the given resolution
- * @sqlfn h3_cell_to_parent()
+ * @sqlfn th3CellToParent()
  */
 Datum
 Th3index_cell_to_parent(PG_FUNCTION_ARGS)
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_parent_next);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal parent cell at the next-coarser resolution
- * @sqlfn h3_cell_to_parent()
+ * @sqlfn th3CellToParent()
  */
 Datum
 Th3index_cell_to_parent_next(PG_FUNCTION_ARGS)
@@ -80,7 +80,7 @@ Th3index_cell_to_parent_next(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_cell_to_center_child
+ * th3CellToCenterChild
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_center_child(PG_FUNCTION_ARGS);
@@ -88,7 +88,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_center_child);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal center-child cell at the given resolution
- * @sqlfn h3_cell_to_center_child()
+ * @sqlfn th3CellToCenterChild()
  */
 Datum
 Th3index_cell_to_center_child(PG_FUNCTION_ARGS)
@@ -105,7 +105,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_center_child_next);
 /**
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal center-child cell at the next-finer resolution
- * @sqlfn h3_cell_to_center_child()
+ * @sqlfn th3CellToCenterChild()
  */
 Datum
 Th3index_cell_to_center_child_next(PG_FUNCTION_ARGS)
@@ -117,7 +117,7 @@ Th3index_cell_to_center_child_next(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_cell_to_child_pos(th3index, integer)
+ * th3CellToChildPos(th3index, integer)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cell_to_child_pos(PG_FUNCTION_ARGS);
@@ -126,7 +126,7 @@ PG_FUNCTION_INFO_V1(Th3index_cell_to_child_pos);
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal position of the cell among the siblings of its
  * parent at the given resolution
- * @sqlfn h3_cell_to_child_pos()
+ * @sqlfn th3CellToChildPos()
  */
 Datum
 Th3index_cell_to_child_pos(PG_FUNCTION_ARGS)
@@ -139,7 +139,7 @@ Th3index_cell_to_child_pos(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_child_pos_to_cell(tbigint, th3index, integer)
+ * th3ChildPosToCell(tbigint, th3index, integer)
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_child_pos_to_cell(PG_FUNCTION_ARGS);
@@ -148,7 +148,7 @@ PG_FUNCTION_INFO_V1(Th3index_child_pos_to_cell);
  * @ingroup mobilitydb_h3_hierarchy
  * @brief Return the temporal child cell of the given parent at a given
  * ordinal position among siblings, at a given child resolution
- * @sqlfn h3_child_pos_to_cell()
+ * @sqlfn th3ChildPosToCell()
  */
 Datum
 Th3index_child_pos_to_cell(PG_FUNCTION_ARGS)

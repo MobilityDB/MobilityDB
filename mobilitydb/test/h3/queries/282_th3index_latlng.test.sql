@@ -17,31 +17,31 @@
 --   622236750694711295 = res 10 NYC hexagon
 
 -------------------------------------------------------------------------------
--- h3_cell_to_latlng — geodetic centroid trajectory
+-- th3CellToLatlng — geodetic centroid trajectory
 -------------------------------------------------------------------------------
 
 -- Result is non-NULL and is a tgeogpoint.
-SELECT h3_cell_to_latlng(th3index '590464338553208831@2001-01-01') IS NOT NULL;
-SELECT h3_cell_to_latlng(th3index '622236750694711295@2001-01-01') IS NOT NULL;
+SELECT th3CellToLatlng(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+SELECT th3CellToLatlng(th3index '622236750694711295@2001-01-01') IS NOT NULL;
 
 -- All four temporal subtypes
-SELECT h3_cell_to_latlng(th3index
+SELECT th3CellToLatlng(th3index
   '{590464338553208831@2001-01-01, 622236750694711295@2001-01-02}') IS NOT NULL;
-SELECT h3_cell_to_latlng(th3index
+SELECT th3CellToLatlng(th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]') IS NOT NULL;
 
 -- Round trip: latlng -> cell at the same resolution gives the original cell
 -- back. This holds because cellToLatLng yields the centroid, and
 -- latLngToCell maps the centroid to the same cell.
 SELECT th3index(
-  h3_cell_to_latlng(th3index '622236750694711295@2001-01-01'), 10)
+  th3CellToLatlng(th3index '622236750694711295@2001-01-01'), 10)
   = th3index '622236750694711295@2001-01-01';
 
 -------------------------------------------------------------------------------
--- h3_cell_to_latlng_tgeompoint — planar (SRID 4326) overload
+-- th3CellToLatlngTgeompoint — planar (SRID 4326) overload
 -------------------------------------------------------------------------------
 
-SELECT h3_cell_to_latlng_tgeompoint(th3index
+SELECT th3CellToLatlngTgeompoint(th3index
   '590464338553208831@2001-01-01') IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ SELECT h3_cell_to_latlng_tgeompoint(th3index
 
 -- A geodetic point indexed at resolution R yields a cell whose
 -- resolution is R.
-SELECT h3_get_resolution(th3index(
+SELECT th3GetResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence form. The densifying conversion resamples the trajectory into the
@@ -76,7 +76,7 @@ FROM densified;
 -- expected to raise on mismatch.
 -------------------------------------------------------------------------------
 
-SELECT h3_get_resolution(th3index(
+SELECT th3GetResolution(th3index(
   tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 
 -- Sequence input on the planar (SRID 4326) overload exercises the densify
@@ -101,13 +101,13 @@ SELECT th3index(
   tgeompoint 'SRID=3857;[POINT(-73.96 40.78)@2001-01-01, POINT(-73.90 40.80)@2001-01-02]', 7);
 
 -------------------------------------------------------------------------------
--- h3_cell_to_boundary — per-instant polygon as tgeography
+-- th3CellToBoundary — per-instant polygon as tgeography
 -------------------------------------------------------------------------------
 
-SELECT h3_cell_to_boundary(th3index '590464338553208831@2001-01-01') IS NOT NULL;
-SELECT h3_cell_to_boundary(th3index '622236750694711295@2001-01-01') IS NOT NULL;
+SELECT th3CellToBoundary(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+SELECT th3CellToBoundary(th3index '622236750694711295@2001-01-01') IS NOT NULL;
 
-SELECT h3_cell_to_boundary(th3index
+SELECT th3CellToBoundary(th3index
   '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]') IS NOT NULL;
 
 -------------------------------------------------------------------------------

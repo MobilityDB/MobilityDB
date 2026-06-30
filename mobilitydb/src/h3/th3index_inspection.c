@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_get_resolution
+ * th3GetResolution
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_get_resolution(PG_FUNCTION_ARGS);
@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Th3index_get_resolution);
 /**
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal integer of the resolution of a temporal H3 cell
- * @sqlfn h3_get_resolution()
+ * @sqlfn th3GetResolution()
  */
 Datum
 Th3index_get_resolution(PG_FUNCTION_ARGS)
@@ -63,7 +63,7 @@ Th3index_get_resolution(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_get_base_cell_number
+ * th3GetBaseCellNumber
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_get_base_cell_number(PG_FUNCTION_ARGS);
@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(Th3index_get_base_cell_number);
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal integer of the base-cell number of a temporal H3
  * cell
- * @sqlfn h3_get_base_cell_number()
+ * @sqlfn th3GetBaseCellNumber()
  */
 Datum
 Th3index_get_base_cell_number(PG_FUNCTION_ARGS)
@@ -84,7 +84,7 @@ Th3index_get_base_cell_number(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_is_valid_cell
+ * isValidCell
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_is_valid_cell(PG_FUNCTION_ARGS);
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Th3index_is_valid_cell);
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal boolean stating at each instant whether the
  * value is a valid H3 cell
- * @sqlfn h3_is_valid_cell()
+ * @sqlfn isValidCell()
  */
 Datum
 Th3index_is_valid_cell(PG_FUNCTION_ARGS)
@@ -105,7 +105,7 @@ Th3index_is_valid_cell(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_is_res_class_iii
+ * th3IsResClassIii
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_is_res_class_iii(PG_FUNCTION_ARGS);
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Th3index_is_res_class_iii);
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal boolean stating at each instant whether the cell
  * has Class-III orientation
- * @sqlfn h3_is_res_class_iii()
+ * @sqlfn th3IsResClassIii()
  */
 Datum
 Th3index_is_res_class_iii(PG_FUNCTION_ARGS)
@@ -126,7 +126,7 @@ Th3index_is_res_class_iii(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_is_pentagon
+ * th3IsPentagon
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_is_pentagon(PG_FUNCTION_ARGS);
@@ -135,7 +135,7 @@ PG_FUNCTION_INFO_V1(Th3index_is_pentagon);
  * @ingroup mobilitydb_h3_inspection
  * @brief Return a temporal boolean stating at each instant whether the cell
  * is a pentagon
- * @sqlfn h3_is_pentagon()
+ * @sqlfn th3IsPentagon()
  */
 Datum
 Th3index_is_pentagon(PG_FUNCTION_ARGS)

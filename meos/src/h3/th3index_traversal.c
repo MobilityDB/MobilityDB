@@ -91,7 +91,7 @@ h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
 }
 
 /*****************************************************************************
- * h3_grid_distance — binary_synced (th3index, th3index) → tbigint
+ * th3GridDistance — binary_synced (th3index, th3index) → tbigint
  *****************************************************************************/
 
 /**
@@ -124,7 +124,7 @@ th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 }
 
 /*****************************************************************************
- * h3_cell_to_local_ij — binary_synced (th3index, th3index) → tgeompoint
+ * th3CellToLocalIj — binary_synced (th3index, th3index) → tgeompoint
  *****************************************************************************/
 
 /**
@@ -154,7 +154,7 @@ th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 }
 
 /*****************************************************************************
- * h3_local_ij_to_cell — binary_synced (th3index, tgeompoint) → th3index
+ * th3LocalIjToCell — binary_synced (th3index, tgeompoint) → th3index
  *****************************************************************************/
 
 /**

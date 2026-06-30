@@ -84,7 +84,7 @@ h3_cell_to_center_child_next_meos(H3Index cell)
 }
 
 /*****************************************************************************
- * h3_cell_to_parent(th3index, integer)
+ * th3CellToParent(th3index, integer)
  *****************************************************************************/
 
 /**
@@ -111,7 +111,7 @@ th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 }
 
 /*****************************************************************************
- * h3_cell_to_parent(th3index)
+ * th3CellToParent(th3index)
  *****************************************************************************/
 
 /**
@@ -137,7 +137,7 @@ th3index_cell_to_parent_next(const Temporal *temp)
 }
 
 /*****************************************************************************
- * h3_cell_to_center_child(th3index, integer)
+ * th3CellToCenterChild(th3index, integer)
  *****************************************************************************/
 
 /**
@@ -164,7 +164,7 @@ th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 }
 
 /*****************************************************************************
- * h3_cell_to_center_child(th3index)
+ * th3CellToCenterChild(th3index)
  *****************************************************************************/
 
 /**
@@ -190,7 +190,7 @@ th3index_cell_to_center_child_next(const Temporal *temp)
 }
 
 /*****************************************************************************
- * h3_cell_to_child_pos(th3index, integer)
+ * th3CellToChildPos(th3index, integer)
  *****************************************************************************/
 
 /**
@@ -218,7 +218,7 @@ th3index_cell_to_child_pos(const Temporal *temp, int32 parent_res)
 }
 
 /*****************************************************************************
- * h3_child_pos_to_cell(tbigint, th3index, integer)
+ * th3ChildPosToCell(tbigint, th3index, integer)
  *
  * Two temporal operands are synchronised over their shared time axis;
  * the integer child resolution is constant.

@@ -43,7 +43,7 @@
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
- * h3_are_neighbor_cells
+ * th3AreNeighborCells
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_are_neighbor_cells(PG_FUNCTION_ARGS);
@@ -52,7 +52,7 @@ PG_FUNCTION_INFO_V1(Th3index_are_neighbor_cells);
  * @ingroup mobilitydb_h3_edges
  * @brief Return a temporal boolean stating whether two temporal H3 cells
  * are neighbours at each instant
- * @sqlfn h3_are_neighbor_cells()
+ * @sqlfn th3AreNeighborCells()
  */
 Datum
 Th3index_are_neighbor_cells(PG_FUNCTION_ARGS)
@@ -66,7 +66,7 @@ Th3index_are_neighbor_cells(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_cells_to_directed_edge
+ * th3CellsToDirectedEdge
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_cells_to_directed_edge(PG_FUNCTION_ARGS);
@@ -74,7 +74,7 @@ PG_FUNCTION_INFO_V1(Th3index_cells_to_directed_edge);
 /**
  * @ingroup mobilitydb_h3_edges
  * @brief Return a temporal directed-edge H3 index from origin to destination
- * @sqlfn h3_cells_to_directed_edge()
+ * @sqlfn th3CellsToDirectedEdge()
  */
 Datum
 Th3index_cells_to_directed_edge(PG_FUNCTION_ARGS)
@@ -88,7 +88,7 @@ Th3index_cells_to_directed_edge(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_is_valid_directed_edge
+ * isValidDirectedEdge
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_is_valid_directed_edge(PG_FUNCTION_ARGS);
@@ -97,7 +97,7 @@ PG_FUNCTION_INFO_V1(Th3index_is_valid_directed_edge);
  * @ingroup mobilitydb_h3_edges
  * @brief Return a temporal boolean stating at each instant whether the
  * value is a valid H3 directed edge
- * @sqlfn h3_is_valid_directed_edge()
+ * @sqlfn isValidDirectedEdge()
  */
 Datum
 Th3index_is_valid_directed_edge(PG_FUNCTION_ARGS)
@@ -109,7 +109,7 @@ Th3index_is_valid_directed_edge(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_get_directed_edge_origin
+ * th3GetDirectedEdgeOrigin
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_get_directed_edge_origin(PG_FUNCTION_ARGS);
@@ -117,7 +117,7 @@ PG_FUNCTION_INFO_V1(Th3index_get_directed_edge_origin);
 /**
  * @ingroup mobilitydb_h3_edges
  * @brief Return the origin cell of a temporal directed edge
- * @sqlfn h3_get_directed_edge_origin()
+ * @sqlfn th3GetDirectedEdgeOrigin()
  */
 Datum
 Th3index_get_directed_edge_origin(PG_FUNCTION_ARGS)
@@ -129,7 +129,7 @@ Th3index_get_directed_edge_origin(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_get_directed_edge_destination
+ * th3GetDirectedEdgeDestination
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_get_directed_edge_destination(PG_FUNCTION_ARGS);
@@ -137,7 +137,7 @@ PG_FUNCTION_INFO_V1(Th3index_get_directed_edge_destination);
 /**
  * @ingroup mobilitydb_h3_edges
  * @brief Return the destination cell of a temporal directed edge
- * @sqlfn h3_get_directed_edge_destination()
+ * @sqlfn th3GetDirectedEdgeDestination()
  */
 Datum
 Th3index_get_directed_edge_destination(PG_FUNCTION_ARGS)
@@ -149,7 +149,7 @@ Th3index_get_directed_edge_destination(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * h3_directed_edge_to_boundary
+ * th3DirectedEdgeToBoundary
  *****************************************************************************/
 
 PGDLLEXPORT Datum Th3index_directed_edge_to_boundary(PG_FUNCTION_ARGS);
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Th3index_directed_edge_to_boundary);
  * @ingroup mobilitydb_h3_edges
  * @brief Return the per-instant polygon boundary of a temporal directed
  * edge as a temporal geography
- * @sqlfn h3_directed_edge_to_boundary()
+ * @sqlfn th3DirectedEdgeToBoundary()
  */
 Datum
 Th3index_directed_edge_to_boundary(PG_FUNCTION_ARGS)

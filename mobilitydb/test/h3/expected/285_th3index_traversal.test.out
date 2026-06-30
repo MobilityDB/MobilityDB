@@ -1,23 +1,23 @@
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01');
-        h3_grid_distance        
+        th3griddistance         
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01');
-        h3_grid_distance        
+        th3griddistance         
 --------------------------------
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
     th3index '612544986753269759@2001-01-01',
     th3index '612544986761658367@2001-01-01')
-  = h3_grid_distance(
+  = th3GridDistance(
     th3index '612544986761658367@2001-01-01',
     th3index '612544986753269759@2001-01-01');
  ?column? 
@@ -25,7 +25,7 @@ SELECT h3_grid_distance(
  t
 (1 row)
 
-SELECT h3_grid_distance(
+SELECT th3GridDistance(
   th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
   th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]')
   IS NOT NULL;
@@ -43,7 +43,7 @@ SELECT (th3index '612544986753269759@2001-01-01')
 
 SELECT (th3index '612544986753269759@2001-01-01'
         <-> th3index '612544986761658367@2001-01-01')
-  = h3_grid_distance(
+  = th3GridDistance(
       th3index '612544986753269759@2001-01-01',
       th3index '612544986761658367@2001-01-01');
  ?column? 
@@ -51,7 +51,7 @@ SELECT (th3index '612544986753269759@2001-01-01'
  t
 (1 row)
 
-SELECT h3_cell_to_local_ij(
+SELECT th3CellToLocalIj(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986753269759@2001-01-01') IS NOT NULL;
  ?column? 
@@ -59,7 +59,7 @@ SELECT h3_cell_to_local_ij(
  t
 (1 row)
 
-SELECT h3_cell_to_local_ij(
+SELECT th3CellToLocalIj(
   th3index '612544986753269759@2001-01-01',
   th3index '612544986761658367@2001-01-01') IS NOT NULL;
  ?column? 
@@ -67,9 +67,9 @@ SELECT h3_cell_to_local_ij(
  t
 (1 row)
 
-SELECT h3_local_ij_to_cell(
+SELECT th3LocalIjToCell(
     th3index '612544986753269759@2001-01-01',
-    h3_cell_to_local_ij(
+    th3CellToLocalIj(
       th3index '612544986753269759@2001-01-01',
       th3index '612544986761658367@2001-01-01'))
   = th3index '612544986761658367@2001-01-01';

@@ -38,55 +38,55 @@
  */
 
 /******************************************************************************
- * h3_are_neighbor_cells
+ * th3AreNeighborCells
  ******************************************************************************/
 
-CREATE FUNCTION h3_are_neighbor_cells(th3index, th3index)
+CREATE FUNCTION th3AreNeighborCells(th3index, th3index)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Th3index_are_neighbor_cells'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_cells_to_directed_edge
+ * th3CellsToDirectedEdge
  ******************************************************************************/
 
-CREATE FUNCTION h3_cells_to_directed_edge(th3index, th3index)
+CREATE FUNCTION th3CellsToDirectedEdge(th3index, th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_cells_to_directed_edge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_is_valid_directed_edge
+ * isValidDirectedEdge
  ******************************************************************************/
 
-CREATE FUNCTION h3_is_valid_directed_edge(th3index)
+CREATE FUNCTION isValidDirectedEdge(th3index)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Th3index_is_valid_directed_edge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_get_directed_edge_origin
+ * th3GetDirectedEdgeOrigin
  ******************************************************************************/
 
-CREATE FUNCTION h3_get_directed_edge_origin(th3index)
+CREATE FUNCTION th3GetDirectedEdgeOrigin(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_get_directed_edge_origin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_get_directed_edge_destination
+ * th3GetDirectedEdgeDestination
  ******************************************************************************/
 
-CREATE FUNCTION h3_get_directed_edge_destination(th3index)
+CREATE FUNCTION th3GetDirectedEdgeDestination(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Th3index_get_directed_edge_destination'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_directed_edge_to_boundary
+ * th3DirectedEdgeToBoundary
  ******************************************************************************/
 
-CREATE FUNCTION h3_directed_edge_to_boundary(th3index)
+CREATE FUNCTION th3DirectedEdgeToBoundary(th3index)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Th3index_directed_edge_to_boundary'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

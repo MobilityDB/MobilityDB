@@ -13,7 +13,7 @@ SELECT (th3index
 (1 row)
 
 SELECT (th3index '590464338553208831@2001-01-01')::tgeogpoint
-  ~= h3_cell_to_latlng(th3index '590464338553208831@2001-01-01');
+  ~= th3CellToLatlng(th3index '590464338553208831@2001-01-01');
  ?column? 
 ----------
  t
@@ -48,7 +48,7 @@ SELECT (th3index
 (1 row)
 
 SELECT (th3index '590464338553208831@2001-01-01')::tgeompoint
-  ~= h3_cell_to_latlng_tgeompoint(th3index '590464338553208831@2001-01-01');
+  ~= th3CellToLatlngTgeompoint(th3index '590464338553208831@2001-01-01');
  ?column? 
 ----------
  t

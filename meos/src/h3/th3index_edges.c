@@ -74,7 +74,7 @@ h3_directed_edge_to_gs_boundary(H3Index edge)
 }
 
 /*****************************************************************************
- * h3_are_neighbor_cells — binary_synced
+ * th3AreNeighborCells — binary_synced
  *****************************************************************************/
 
 /**
@@ -104,7 +104,7 @@ th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 }
 
 /*****************************************************************************
- * h3_cells_to_directed_edge — binary_synced
+ * th3CellsToDirectedEdge — binary_synced
  *****************************************************************************/
 
 /**
@@ -133,7 +133,7 @@ th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 }
 
 /*****************************************************************************
- * h3_is_valid_directed_edge
+ * isValidDirectedEdge
  *****************************************************************************/
 
 /**
@@ -160,7 +160,7 @@ th3index_is_valid_directed_edge(const Temporal *edge)
 }
 
 /*****************************************************************************
- * h3_get_directed_edge_origin
+ * th3GetDirectedEdgeOrigin
  *****************************************************************************/
 
 /**
@@ -186,7 +186,7 @@ th3index_get_directed_edge_origin(const Temporal *edge)
 }
 
 /*****************************************************************************
- * h3_get_directed_edge_destination
+ * th3GetDirectedEdgeDestination
  *****************************************************************************/
 
 /**
@@ -212,7 +212,7 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 }
 
 /*****************************************************************************
- * h3_directed_edge_to_boundary — needs h3_adapter.c body
+ * th3DirectedEdgeToBoundary — needs h3_adapter.c body
  *****************************************************************************/
 
 /**

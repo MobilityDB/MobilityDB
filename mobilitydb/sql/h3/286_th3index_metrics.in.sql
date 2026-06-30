@@ -36,34 +36,34 @@
  * validated at bind time by the MEOS implementation; an invalid
  * value raises an error before any per-instant work happens.
  *
- * `h3_great_circle_distance(tgeogpoint, tgeogpoint, text)` is the
+ * `greatCircleDistance(tgeogpoint, tgeogpoint, text)` is the
  * `binary_synced` form of the scalar h3-pg helper — both geodetic
  * points are synchronised over their shared time axis.
  */
 
 /******************************************************************************
- * h3_cell_area
+ * th3CellArea
  ******************************************************************************/
 
-CREATE FUNCTION h3_cell_area(th3index, text DEFAULT 'km2')
+CREATE FUNCTION th3CellArea(th3index, text DEFAULT 'km2')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Th3index_cell_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_edge_length
+ * th3EdgeLength
  ******************************************************************************/
 
-CREATE FUNCTION h3_edge_length(th3index, text DEFAULT 'km')
+CREATE FUNCTION th3EdgeLength(th3index, text DEFAULT 'km')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Th3index_edge_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * h3_great_circle_distance
+ * greatCircleDistance
  ******************************************************************************/
 
-CREATE FUNCTION h3_great_circle_distance(tgeogpoint, tgeogpoint,
+CREATE FUNCTION greatCircleDistance(tgeogpoint, tgeogpoint,
   text DEFAULT 'km')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tgeogpoint_great_circle_distance'
