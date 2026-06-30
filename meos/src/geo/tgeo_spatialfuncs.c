@@ -448,6 +448,20 @@ h3index_flags(void)
 }
 #endif /* H3 */
 
+#if QUADBIN
+/**
+ * @brief Get the MEOS flags from a quadbin cell index
+ */
+static int16
+quadbin_flags(void)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  /* Quadbin cells are planar (Web-Mercator slippy tiles), not geodetic */
+  return result;
+}
+#endif /* QUADBIN */
+
 /**
  * @brief Get the MEOS flags from a spatial value
  */
@@ -471,6 +485,11 @@ spatial_flags(Datum d, MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      (void) d;
+      return quadbin_flags();
 #endif
 #if H3
     case T_H3INDEX:
