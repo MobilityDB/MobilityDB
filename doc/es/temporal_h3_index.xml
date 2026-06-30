@@ -452,10 +452,10 @@ SELECT th3 '880326b885fffff@2001-01-01'
 
 	<sect1 xml:id="th3_bbox_ops">
 		<title>Operadores de Caja Envolvente</title>
-		<para>Los siguientes operadores comparan la <emphasis>extensión temporal</emphasis> de las celdas H3 temporales, no la inclusión jerárquica de celdas. <varname>th3</varname> está clasificado como un tipo temporal solo-tiempo (como <varname>ttext</varname> / <varname>tbool</varname>): los identificadores de celda H3 no tienen un orden total significativo, por lo que la caja envolvente se reduce al período <varname>tstzspan</varname> de la trayectoria. Los operadores a continuación comparan ese período.</para>
+		<para>Los siguientes operadores comparan la <emphasis>caja envolvente</emphasis> espaciotemporal de las celdas H3 temporales, no la inclusión jerárquica de celdas. <varname>th3</varname> es un tipo temporal espacial: su caja envolvente es un <varname>stbox</varname> que combina la extensión espacial geodésica de los límites de las celdas (su envolvente de longitud/latitud en SRID 4326) con el período temporal <varname>tstzspan</varname> de la trayectoria. Los operadores a continuación comparan esa caja a lo largo de los ejes espacial y/o temporal. Consulte la sección de indexación para las clases de operadores que hacen estos operadores indexables.</para>
 
 		<note>
-			<para>El operador <varname>@&gt;</varname> prueba la inclusión del período temporal, <emphasis>no</emphasis> la inclusión jerárquica de H3. Para probar si una celda es el padre de otra en una resolución dada, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
+			<para>El operador <varname>@&gt;</varname> prueba la inclusión de la caja envolvente espaciotemporal (extensión espacial y tiempo juntos), <emphasis>no</emphasis> la inclusión jerárquica de H3. Para probar si una celda es el padre de otra en una resolución dada, use <link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>.</para>
 		</note>
 
 		<itemizedlist>
@@ -465,12 +465,32 @@ SELECT th3 '880326b885fffff@2001-01-01'
 				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
-				<para>Solapamiento de período temporal, contiene, contenido por, igual y adyacente</para>
-				<para><varname>th3 &amp;&amp; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 @&gt; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 &lt;@ {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 ~= {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 -|- {tstzspan,th3} → boolean</varname></para>
+				<para>Solapamiento de caja envolvente, contiene, contenido por, igual y adyacente</para>
+				<para><varname>th3 &amp;&amp; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 @&gt; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;@ {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 ~= {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 -|- {tstzspan,stbox,th3} → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="th3_space_position">
+				<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+				<para>Posición relativa a lo largo de los ejes espaciales (estrictamente a la izquierda, solapa a la izquierda, solapa a la derecha, estrictamente a la derecha; estrictamente abajo, solapa abajo, solapa arriba, estrictamente arriba)</para>
+				<para><varname>th3 &lt;&lt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &gt;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;&lt;| {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt;| {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 |&amp;&gt; {stbox,th3} → boolean</varname></para>
+				<para><varname>th3 |&gt;&gt; {stbox,th3} → boolean</varname></para>
 			</listitem>
 
 			<listitem xml:id="th3_time_position">
@@ -479,10 +499,10 @@ SELECT th3 '880326b885fffff@2001-01-01'
 				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 				<para>Posición relativa a lo largo del eje de tiempo (estrictamente antes, solapa antes, estrictamente después, solapa después)</para>
-				<para><varname>th3 &lt;&lt;# {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 &amp;&lt;# {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 #&gt;&gt; {tstzspan,th3} → boolean</varname></para>
-				<para><varname>th3 #&amp;&gt; {tstzspan,th3} → boolean</varname></para>
+				<para><varname>th3 &lt;&lt;# {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 &amp;&lt;# {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 #&gt;&gt; {tstzspan,stbox,th3} → boolean</varname></para>
+				<para><varname>th3 #&amp;&gt; {tstzspan,stbox,th3} → boolean</varname></para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -613,7 +633,7 @@ SELECT eContains(
 		<itemizedlist>
 			<listitem xml:id="th3_rtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_rtree_ops</varname></primary></indexterm>
-				<para>Clase de operadores GiST para celdas H3 temporales. Indexa un período de tiempo <varname>tstzspan</varname> por fila (th3 es un tipo temporal solo-tiempo).</para>
+				<para>Clase de operadores GiST para celdas H3 temporales. Indexa una caja envolvente espaciotemporal <varname>stbox</varname> por fila (la extensión geodésica de los límites de las celdas junto con el período temporal).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING gist(cells);       -- usa th3_rtree_ops por defecto
 CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
@@ -623,7 +643,7 @@ CREATE INDEX ON trips USING gist(cells th3_rtree_ops);
 			<listitem xml:id="th3_quadtree_ops">
 				<indexterm significance="normal"><primary><varname>th3_quadtree_ops</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>th3_kdtree_ops</varname></primary></indexterm>
-				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por el período <varname>tstzspan</varname>. <varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
+				<para>Clases de operadores SP-GiST para celdas H3 temporales, indexadas por la caja envolvente espaciotemporal <varname>stbox</varname>. <varname>th3_quadtree_ops</varname> es la predeterminada (partición por quadtree); <varname>th3_kdtree_ops</varname> utiliza partición por árbol k-d y debe ser nombrada explícitamente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX ON trips USING spgist(cells);     -- usa th3_quadtree_ops por defecto
 CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
@@ -648,7 +668,7 @@ CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
 			<itemizedlist>
 				<listitem>
 					<para><emphasis>El orden int64 es arbitrario respecto a la geometría de la cuadrícula</emphasis>. Los identificadores de celda H3 son enteros sin signo de 64 bits cuyo patrón de bits codifica resolución, celda base y posición jerárquica. El orden binario de dos celdas no tiene significado geográfico &#x2014; dos celdas adyacentes en bits pueden estar en lados opuestos del planeta, y dos celdas espacialmente adyacentes pueden tener patrones de bits muy distintos.</para>
-					<para><emphasis>Mitigación</emphasis>: <varname>th3</varname> deliberadamente no tiene tipos compañeros <varname>h3span</varname> / <varname>h3spanset</varname> (precedente: <varname>geometry</varname> no tiene <varname>geometryspan</varname>), y los índices de caja envolvente son solo temporales (<varname>tstzspan</varname>). El filtrado por rango de valores debe pasar por funciones de inspección <varname>h3_*</varname> (resolución, celda base, comprobaciones de jerarquía) o la enumeración explícita de conjuntos mediante <varname>h3set</varname>. El código que asume que <varname>cell_a &lt; cell_b</varname> refleja proximidad espacial producirá resultados silenciosamente erróneos.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>th3</varname> deliberadamente no tiene tipos compañeros <varname>h3span</varname> / <varname>h3spanset</varname> (precedente: <varname>geometry</varname> no tiene <varname>geometryspan</varname>), y los índices de caja envolvente capturan la extensión espaciotemporal de las celdas (<varname>stbox</varname>), no el valor del identificador de celda. El filtrado por rango de valores debe pasar por funciones de inspección <varname>h3_*</varname> (resolución, celda base, comprobaciones de jerarquía) o la enumeración explícita de conjuntos mediante <varname>h3set</varname>. El código que asume que <varname>cell_a &lt; cell_b</varname> refleja proximidad espacial producirá resultados silenciosamente erróneos.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis>Mezcla de resoluciones en las operaciones</emphasis>. Las celdas H3 a distintas resoluciones (0&#x2013;15) representan áreas de cobertura diferentes. Mezclar resoluciones en una misma trayectoria es válido pero semánticamente requiere justificación explícita &#x2014; <varname>th3CellToParent(cell, coarser_res)</varname> engrosa, <varname>h3CellToChildren(parent, finer_res)</varname> refina, y <varname>h3CompactCells</varname> / <varname>h3UncompactCells</varname> realizan el ciclo de ida y vuelta correctamente solo cuando las resoluciones de entrada son compatibles.</para>
