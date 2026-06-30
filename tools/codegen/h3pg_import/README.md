@@ -1,4 +1,4 @@
-# `scripts/h3pg_import`
+# `tools/codegen/h3pg_import`
 
 Maintainer tooling that imports functions from the vendored `h3-pg/`
 binding sources into MobilityDB's `meos/src/h3/h3_generated.{c,h}`.
@@ -15,7 +15,7 @@ tests, CI, docs, and the `h3_postgis/` tree are not — mirroring the
 ## Layout
 
 ```
-scripts/h3pg_import/
+tools/codegen/h3pg_import/
 ├── README.md            this file
 ├── extract.py           the transformer
 ├── ruleset.yaml         PG-macro → MEOS-helper rules
@@ -41,11 +41,11 @@ cp "$tmp"/LICENSE h3-pg/LICENSE
 echo "$(git -C "$tmp" rev-parse HEAD)  # <tag>" > h3-pg/H3PG_REVISION
 
 # 3. Regenerate the MEOS-side translated C.
-python scripts/h3pg_import/extract.py
+python tools/codegen/h3pg_import/extract.py
 
 # 4. Review the diff, re-run tests, commit.
 git add h3-pg meos/src/h3/h3_generated.* meos/include/h3/h3_generated.* \
-  scripts/h3pg_import/extraction_report.txt
+  tools/codegen/h3pg_import/extraction_report.txt
 git commit -m "chore(h3-pg): bump embedded h3-pg to <tag>"
 ```
 

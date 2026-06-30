@@ -3,4 +3,4 @@ a26630b8353d441e6bc8065c0a8dcaa3d89ef87b
 # Corresponds to tag v4.2.3.
 # Bump with:
 #   git subtree pull --prefix=h3-pg https://github.com/postgis/h3-pg.git <tag> --squash
-#   python scripts/h3pg_import/extract.py
+#   python tools/codegen/h3pg_import/extract.py
