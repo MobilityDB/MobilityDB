@@ -1,0 +1,95 @@
+COPY tbl_th3index TO '/tmp/tbl_th3index' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_th3index_tmp;
+NOTICE:  table "tbl_th3index_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_th3index_tmp AS TABLE tbl_th3index WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_th3index_tmp FROM '/tmp/tbl_th3index' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_th3index_tmp;
+DROP TABLE
+SELECT SUM(numInstants(temp)) FROM tbl_th3index;
+ sum  
+------
+ 1032
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE startValue(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE endValue(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE getTime(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE duration(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE startInstant(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE endInstant(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT SUM(numTimestamps(temp)) FROM tbl_th3index;
+ sum  
+------
+ 1032
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE memSize(temp) > 0;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE atTime(temp, getTime(temp)) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index WHERE minusTime(temp, getTime(temp)) IS NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp = t2.temp;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp <> t2.temp;
+ count 
+-------
+  9900
+(1 row)
+
