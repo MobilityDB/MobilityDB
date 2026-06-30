@@ -1,0 +1,65 @@
+COPY tbl_quadbin TO '/tmp/tbl_quadbin' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_quadbin_tmp;
+NOTICE:  table "tbl_quadbin_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_quadbin_tmp AS TABLE tbl_quadbin WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_quadbin_tmp FROM '/tmp/tbl_quadbin' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin_tmp t2 WHERE t1.k = t2.k AND t1.qb <> t2.qb;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_quadbin_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_quadbin WHERE NOT isValidCell(qb);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin WHERE (qb::bigint)::quadbin <> qb;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb = t2.qb;
+ count 
+-------
+   216
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb <> t2.qb;
+ count 
+-------
+  9784
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb < t2.qb;
+ count 
+-------
+  4892
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb <= t2.qb;
+ count 
+-------
+  5108
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb > t2.qb;
+ count 
+-------
+  4892
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin t2 WHERE t1.qb >= t2.qb;
+ count 
+-------
+  5108
+(1 row)
+

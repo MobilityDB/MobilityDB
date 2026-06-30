@@ -1,0 +1,60 @@
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_tquadbin t2 WHERE eEq(t1.qb, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_quadbin t2 WHERE eEq(t1.temp, t2.qb) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eEq(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_tquadbin t2 WHERE aEq(t1.qb, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbin t1, tbl_tquadbin t2 WHERE tEq(t1.qb, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_quadbin t2 WHERE tEq(t1.temp, t2.qb) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tEq(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

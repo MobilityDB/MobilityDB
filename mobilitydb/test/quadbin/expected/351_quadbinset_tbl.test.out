@@ -1,0 +1,41 @@
+COPY tbl_quadbinset TO '/tmp/tbl_quadbinset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_quadbinset_tmp;
+NOTICE:  table "tbl_quadbinset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_quadbinset_tmp AS TABLE tbl_quadbinset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_quadbinset_tmp FROM '/tmp/tbl_quadbinset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_quadbinset_tmp;
+DROP TABLE
+SELECT SUM(numValues(s)) FROM tbl_quadbinset;
+ sum 
+-----
+ 482
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbinset WHERE memSize(s) IS NOT NULL;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset t2 WHERE t1.s = t2.s;
+ count 
+-------
+    92
+(1 row)
+
+SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset t2 WHERE t1.s <> t2.s;
+ count 
+-------
+  8008
+(1 row)
+
