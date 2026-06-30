@@ -1,3 +1,16 @@
+add_test(
+  NAME load_h3_tables
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
+    -D TEST_NAME=load_h3_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_h3.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
+)
+
+set_tests_properties(load_h3_tables PROPERTIES
+  DEPENDS test_setup
+  FIXTURES_SETUP DBH3
+  FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
+
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
@@ -20,8 +33,16 @@ foreach(file ${testfiles})
         -D TEST_NAME=${TESTNAME} -D TEST_FILE=${file}
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
-    set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED DB
-      RESOURCE_LOCK DBLOCK)
+    # The table-based tests load the frozen tbl_* fixtures (DBH3); the rest
+    # use literal values and only need the base extension (DB).
+    if(${TESTNAME} MATCHES "_tbl$")
+      set_tests_properties(${TESTNAME} PROPERTIES
+        FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBH3"
+        RESOURCE_LOCK DBLOCK)
+    else()
+      set_tests_properties(${TESTNAME} PROPERTIES
+        FIXTURES_REQUIRED DB
+        RESOURCE_LOCK DBLOCK)
+    endif()
   endif()
 endforeach()
