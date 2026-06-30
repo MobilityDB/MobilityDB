@@ -1,0 +1,96 @@
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eContains(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tContains(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eCovers(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tCovers(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tDisjoint(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tIntersects(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eTouches(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aTouches(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tTouches(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDwithin(t1.temp, t2.temp, 0.05);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDwithin(t1.temp, t2.temp, 0.05);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tDwithin(t1.temp, t2.temp, 0.05) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
