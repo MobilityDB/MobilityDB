@@ -90,6 +90,31 @@ CREATE TABLE tbl_th3index(k, temp) AS
 (SELECT k + size / 2, seq FROM tbl_th3index_seq LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, ss FROM tbl_th3index_seqset LIMIT size / 4);
 
+------------------------------------------------------------------------------
+-- Geodetic spatiotemporal box (operand for the bounding-box operator tests).
+-- A 2D geodetic STBox at SRID 4326 (geodetic = true, no Z), matching the 2D
+-- geodetic bounding box of th3index. NOT the 3D tbl_geodstbox3D.
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_geodstbox;
+CREATE TABLE tbl_geodstbox AS
+SELECT k, random_geodstbox(-170, 170, -80, 80, 0, 1000, '2001-01-01',
+  '2001-12-31', 10, 10) AS b
+FROM generate_series(1, size) k;
+
+------------------------------------------------------------------------------
+-- Large temporal H3 cell index table for the index-operator tests. It must be
+-- big enough that the planner chooses a GiST/SP-GiST index scan over a
+-- sequential scan, otherwise the index tests exercise nothing. The threshold
+-- is around 10 000 rows; size * 100 + 100 keeps a small margin above it
+-- (10 100 at the default size of 100).
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_th3index_big;
+CREATE TABLE tbl_th3index_big(k, temp) AS
+SELECT k, random_th3index_seq(0, 10, '2001-01-01', '2001-12-31', 10, 5, 10) AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
 -------------------------------------------------------------------------------
 RETURN 'The End';
 END;
