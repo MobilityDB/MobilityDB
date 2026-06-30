@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['read_5fspatial_5fref_5fsys_2ec_0',['read_spatial_ref_sys.c',['../read__spatial__ref__sys_8c.html',1,'']]],
-  ['regions_5fintersecting_2ec_1',['regions_intersecting.c',['../regions__intersecting_8c.html',1,'']]],
-  ['route_5fexists_2ec_2',['route_exists.c',['../route__exists_8c.html',1,'']]],
-  ['route_5fgeom_2ec_3',['route_geom.c',['../route__geom_8c.html',1,'']]],
-  ['route_5flength_2ec_4',['route_length.c',['../route__length_8c.html',1,'']]],
-  ['rtree_5fexample_2ec_5',['rtree_example.c',['../rtree__example_8c.html',1,'']]],
-  ['rtree_5fmest_5fexample_2ec_6',['rtree_mest_example.c',['../rtree__mest__example_8c.html',1,'']]],
-  ['rtree_5fmest_5ftest_2ec_7',['rtree_mest_test.c',['../rtree__mest__test_8c.html',1,'']]]
+  ['quadbin_2ec_0',['quadbin.c',['../meos_2src_2quadbin_2quadbin_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2quadbin_2quadbin_8c.html',1,'(Global Namespace)']]],
+  ['quadbin_2eh_1',['quadbin.h',['../quadbin_8h.html',1,'']]],
+  ['quadbin_5fmeos_2ec_2',['quadbin_meos.c',['../quadbin__meos_8c.html',1,'']]],
+  ['quadbin_5fmeos_2eh_3',['quadbin_meos.h',['../quadbin__meos_8h.html',1,'']]],
+  ['quadbin_5fops_2ec_4',['quadbin_ops.c',['../quadbin__ops_8c.html',1,'']]],
+  ['quadbin_5fsmoke_2ec_5',['quadbin_smoke.c',['../quadbin__smoke_8c.html',1,'']]],
+  ['quadbinset_5fmeos_2ec_6',['quadbinset_meos.c',['../quadbinset__meos_8c.html',1,'']]],
+  ['quadbinset_5fmeos_2eh_7',['quadbinset_meos.h',['../quadbinset__meos_8h.html',1,'']]]
 ];

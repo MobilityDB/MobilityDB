@@ -15,5 +15,6 @@ var searchData=
   ['invalid_5fgeoms_12',['invalid_geoms',['../parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2',1,'parse_test.c']]],
   ['invert_13',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
   ['is_5fpoly_14',['is_poly',['../structTcbSeg_ab140d0ac8c89c0a84e2173fef6f700b6.html#ab140d0ac8c89c0a84e2173fef6f700b6',1,'TcbSeg']]],
-  ['iters_15',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
+  ['is_5fvalid_5fcell_15',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
+  ['iters_16',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];
