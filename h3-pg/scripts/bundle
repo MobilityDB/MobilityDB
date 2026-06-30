@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-git clean -xdf
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target=pgxn
