@@ -1,0 +1,60 @@
+SELECT COUNT(*) FROM tbl_h3index t1, tbl_th3index t2 WHERE eEq(t1.h3, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_h3index t2 WHERE eEq(t1.temp, t2.h3) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eEq(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_h3index t1, tbl_th3index t2 WHERE aEq(t1.h3, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_h3index t1, tbl_th3index t2 WHERE tEq(t1.h3, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_h3index t2 WHERE tEq(t1.temp, t2.h3) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tEq(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tNe(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
