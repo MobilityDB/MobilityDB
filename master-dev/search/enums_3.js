@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['interptype_0',['interpType',['../meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7',1,'meos.h']]],
-  ['intersecttype_1',['IntersectType',['../tpoint__geom__clip_8c_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c',1,'tpoint_geom_clip.c']]]
+  ['h3unit_0',['H3Unit',['../th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe',1,'th3index_internal.h']]]
 ];

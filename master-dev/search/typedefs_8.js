@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['meosarray_0',['MeosArray',['../meos_8h_a7985b4251ce7797272f57e8f732c5c36.html#a7985b4251ce7797272f57e8f732c5c36',1,'MeosArray():&#160;meos.h'],['../meos__internal_8h_a7985b4251ce7797272f57e8f732c5c36.html#a7985b4251ce7797272f57e8f732c5c36',1,'MeosArray():&#160;meos_internal.h']]],
-  ['meosprojsrscache_1',['MEOSPROJSRSCache',['../tspatial__transform__meos_8c_ab0bb703c710af522ac54701c9c414d80.html#ab0bb703c710af522ac54701c9c414d80',1,'tspatial_transform_meos.c']]]
+  ['lwflags_5ft_0',['lwflags_t',['../postgis__ext__defs_8in_8h_a4f088265c50fb586dd2f7e9d6e6a7784.html#a4f088265c50fb586dd2f7e9d6e6a7784',1,'postgis_ext_defs.in.h']]],
+  ['lwproj_1',['LWPROJ',['../postgis__ext__defs_8in_8h_adce5f7e0704787473194ee1396d08bfa.html#adce5f7e0704787473194ee1396d08bfa',1,'postgis_ext_defs.in.h']]]
 ];

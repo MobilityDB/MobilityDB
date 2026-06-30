@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['varfunc_0',['varfunc',['../meos_2include_2temporal_2temporal_8h_a57d262bb40cf099f9383ad364d3bd231.html#a57d262bb40cf099f9383ad364d3bd231',1,'temporal.h']]],
-  ['varlena_1',['varlena',['../postgres__ext__defs_8in_8h_a28d0a4fd4128a3d3052e8a19f7742282.html#a28d0a4fd4128a3d3052e8a19f7742282',1,'postgres_ext_defs.in.h']]]
+  ['uint16_0',['uint16',['../postgres__ext__defs_8in_8h_a05f6b0ae8f6a6e135b0e290c25fe0e4e.html#a05f6b0ae8f6a6e135b0e290c25fe0e4e',1,'postgres_ext_defs.in.h']]],
+  ['uint32_1',['uint32',['../postgres__ext__defs_8in_8h_a1134b580f8da4de94ca6b1de4d37975e.html#a1134b580f8da4de94ca6b1de4d37975e',1,'postgres_ext_defs.in.h']]],
+  ['uint64_2',['uint64',['../postgres__ext__defs_8in_8h_af68cb4c1926b997d49286c1e0c7fa68a.html#af68cb4c1926b997d49286c1e0c7fa68a',1,'postgres_ext_defs.in.h']]],
+  ['uint8_3',['uint8',['../postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79',1,'postgres_ext_defs.in.h']]]
 ];
