@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="tquadbin">
+	<title>Índices de Celdas QUADBIN Temporales</title>
+
+	<para>El tipo de índice de celda QUADBIN temporal <varname>tquadbin</varname> representa el movimiento de los objetos como una secuencia de identificadores de celdas cuadradas QUADBIN. <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin">QUADBIN de CARTO</ulink> es un sistema de cuadrícula cuadrada jerárquica construido sobre el esquema de teselas slippy-map (web-mercator): una única celda mundial en la resolución 0 se subdivide en cuatro hijos iguales en cada resolución más fina (hasta la resolución 26). Cada celda tiene un identificador entero de 64 bits que codifica una etiqueta de cabecera, la resolución y las coordenadas de tesela de la celda.</para>
+
+	<para>El tipo <varname>tquadbin</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de QUADBIN cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente — sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
+
+	<para>Como con otros tipos temporales, <varname>tquadbin</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas QUADBIN son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
+
+	<para>La guía operativa sobre cuándo elegir <varname>tquadbin</varname> en lugar de <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>; los peligros específicos de QUADBIN que los consumidores deben anticipar (el orden int64 es arbitrario respecto a la geometría de la cuadrícula, la mezcla de resoluciones en las operaciones, el límite de latitud de web-mercator, y el comportamiento en el antimeridiano); y las convenciones de durabilidad y almacenamiento se recogen en <xref linkend="quadbin_operational_notes"/>.</para>
+
+	<sect1 xml:id="tquadbin_inout">
+		<title>Entrada y Salida</title>
+		<para>Un valor <varname>tquadbin</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda QUADBIN de 64 bits subyacente. El analizador acepta tanto la forma hexadecimal canónica como el equivalente en decimal sin signo. El hexadecimal es idiomático en el ecosistema QUADBIN y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>480fffffffffffff</varname> empleado en los ejemplos es la celda mundial de resolución 0, igual al valor decimal <varname>5192650370358181887</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tquadbin '480fffffffffffff@2001-01-01';
+SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
+SELECT tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]';
+SELECT tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02],
+  [48a6227affffffff@2001-01-03, 485623ffffffffff@2001-01-04]}';
+</programlisting>
+		<para>El tipo acepta modificadores de tipo (<varname>typmod</varname>) para restringir una columna a un subtipo específico: <varname>Instant</varname>, <varname>Sequence</varname>, o <varname>SequenceSet</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
+SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
+-- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
+SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
+</programlisting>
+		<para>La función <varname>arrowRoundtrip</varname> convierte un índice QUADBIN temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. Un índice de celda QUADBIN es un valor de 64 bits, por lo que usa la hoja de valor de 64 bits sin signo, distinta de la hoja de 64 bits con signo del entero grande temporal.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tquadbin '480fffffffffffff@2001-01-01');
+-- 480fffffffffffff@2001-01-01
+</programlisting>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_conversions">
+		<title>Conversiones</title>
+
+		<para>Un valor <varname>tquadbin</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis> — requiere <varname>::</varname> — para que las funciones específicas de QUADBIN no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tquadbin_tbigint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir entre un <varname>tquadbin</varname> y un <varname>tbigint</varname> (explícito, sin coste)</para>
+				<para><varname>tbigint::tquadbin</varname></para>
+				<para><varname>tquadbin::tbigint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (tbigint '5192650370358181887@2001-01-01')::tquadbin;
+-- 480fffffffffffff@2001-01-01
+SELECT ((tquadbin '480fffffffffffff@2001-01-01')::tbigint)::tquadbin
+  = tquadbin '480fffffffffffff@2001-01-01';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_tgeompoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir una celda QUADBIN temporal a un punto planar temporal (SRID 4326) de los centroides de las celdas. La conversión delega en <varname>tquadbinCellToPoint</varname>.</para>
+				<para><varname>tquadbin::tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (tquadbin '480fffffffffffff@2001-01-01')::tgeompoint;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_static_cells">
+		<title>Celdas Estáticas</title>
+
+		<para>El tipo estático complementario <varname>quadbin</varname> contiene un único identificador de celda QUADBIN (no temporal); <varname>quadbinset</varname> contiene un conjunto finito de ellos. Comparten la misma representación textual hexadecimal / decimal que el tipo temporal. El tipo estático lleva los operadores estándar de igualdad / orden (una clase de operadores btree y una clase hash), y expone los predicados de validez siguientes.</para>
+
+		<itemizedlist>
+			<listitem xml:id="quadbin_is_valid_index">
+				<indexterm significance="normal"><primary><varname>isValidIndex</varname></primary></indexterm>
+				<para>Devuelve si un valor es un identificador QUADBIN estructuralmente válido (etiqueta de cabecera y campo de resolución correctos)</para>
+				<para><varname>isValidIndex(quadbin) → boolean</varname></para>
+			</listitem>
+
+			<listitem xml:id="quadbin_is_valid_cell">
+				<indexterm significance="normal"><primary><varname>isValidCell</varname></primary></indexterm>
+				<para>Devuelve si un valor es una celda QUADBIN válida (un índice válido cuyas coordenadas de tesela están dentro de los límites de su resolución)</para>
+				<para><varname>isValidCell(quadbin) → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(quadbin '480fffffffffffff');
+-- true
+SELECT isValidCell(quadbin '0');
+-- false
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_accessors">
+		<title>Accesores</title>
+		<itemizedlist>
+			<listitem xml:id="tquadbin_startValue">
+				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>
+				<para>Devuelve el primer o el último identificador de celda QUADBIN de un valor temporal</para>
+				<para><varname>startValue(tquadbin) → quadbin</varname></para>
+				<para><varname>endValue(tquadbin) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT startValue(tquadbin '480fffffffffffff@2001-01-01');
+-- 480fffffffffffff
+SELECT endValue(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+-- 48427fffffffffff
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_valueN">
+				<indexterm significance="normal"><primary><varname>valueN</varname></primary></indexterm>
+				<para>Devuelve el <varname>n</varname>-ésimo identificador de celda QUADBIN distinto (índice base 1). Devuelve <varname>NULL</varname> si está fuera de rango.</para>
+				<para><varname>valueN(tquadbin,integer) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 1);
+-- 480fffffffffffff
+SELECT valueN(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}', 2);
+-- 48427fffffffffff
+SELECT valueN(tquadbin '480fffffffffffff@2001-01-01', 99);
+-- NULL
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_getValues">
+				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
+				<para>Devuelve el conjunto de identificadores de celda QUADBIN distintos que toma la trayectoria</para>
+				<para><varname>getValues(tquadbin) → quadbinset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getValues(tquadbin '480fffffffffffff@2001-01-01');
+-- {480fffffffffffff}
+SELECT getValues(tquadbin
+  '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02,
+    48a6227affffffff@2001-01-03]');
+-- {480fffffffffffff, 48427fffffffffff, 48a6227affffffff}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_valueAtTimestamp">
+				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Devuelve el identificador de celda QUADBIN en un instante dado, usando interpolación de pasos</para>
+				<para><varname>valueAtTimestamp(tquadbin,timestamptz) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT valueAtTimestamp(tquadbin
+  '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]',
+  '2001-01-03');
+-- 480fffffffffffff
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_inspection">
+		<title>Inspección del Índice</title>
+		<itemizedlist>
+			<listitem xml:id="tquadbin_quadbin_get_resolution">
+				<indexterm significance="normal"><primary><varname>quadbinGetResolution</varname></primary></indexterm>
+				<para>Devuelve el nivel de resolución (zoom) (0–26) de una celda. La forma estática devuelve un <varname>integer</varname>; la forma temporal devuelve la resolución de cada celda de una trayectoria como un <varname>tint</varname>.</para>
+				<para><varname>quadbinGetResolution(quadbin) → integer</varname></para>
+				<para><varname>tquadbinGetResolution(tquadbin) → tint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinGetResolution(quadbin '480fffffffffffff');
+-- 0
+SELECT tquadbinGetResolution(tquadbin '48427fffffffffff@2001-01-01');
+-- 4@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_is_valid_cell">
+				<indexterm significance="normal"><primary><varname>isValidCell</varname></primary></indexterm>
+				<para>Devuelve un booleano temporal que indica en cada instante si el valor es una celda QUADBIN válida</para>
+				<para><varname>isValidCell(tquadbin) → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidCell(tquadbin '480fffffffffffff@2001-01-01');
+-- t@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_hierarchy">
+		<title>Jerarquía</title>
+		<itemizedlist>
+			<listitem xml:id="tquadbin_quadbin_cell_to_parent">
+				<indexterm significance="normal"><primary><varname>quadbinCellToParent</varname></primary></indexterm>
+				<para>Devuelve la celda padre en la resolución más gruesa dada. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el padre de cada celda de una trayectoria.</para>
+				<para><varname>quadbinCellToParent(quadbin,integer) → quadbin</varname></para>
+				<para><varname>tquadbinCellToParent(tquadbin,integer) → tquadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToParent(quadbin '48a6227affffffff', 5);
+-- 485623ffffffffff
+SELECT tquadbinGetResolution(
+  tquadbinCellToParent(tquadbin '48a6227affffffff@2001-01-01', 5));
+-- 5@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_children">
+				<indexterm significance="normal"><primary><varname>quadbinCellToChildren</varname></primary></indexterm>
+				<para>Devuelve las cuatro celdas hijas en la resolución más fina solicitada como un <varname>quadbinset</varname>. Es un auxiliar estático que devuelve un conjunto sobre un único <varname>quadbin</varname>; no tiene elevación temporal (los hijos son un conjunto por instante, diferido a la espera de una primitiva <varname>tset&lt;T&gt;</varname>).</para>
+				<para><varname>quadbinCellToChildren(quadbin,integer) → quadbinset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToChildren(quadbin '480fffffffffffff', 1);
+-- {4813ffffffffffff, 4817ffffffffffff, 481bffffffffffff, 481fffffffffffff}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_sibling">
+				<indexterm significance="normal"><primary><varname>quadbinCellSibling</varname></primary></indexterm>
+				<para>Devuelve la celda vecina en la misma resolución en la dirección dada (<varname>up</varname> / <varname>down</varname> / <varname>left</varname> / <varname>right</varname>)</para>
+				<para><varname>quadbinCellSibling(quadbin,text) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellSibling(
+  quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
+  = quadbin '48427fffffffffff';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_grid_disk">
+				<indexterm significance="normal"><primary><varname>quadbinGridDisk</varname></primary></indexterm>
+				<para>Devuelve todas las celdas dentro de <varname>k</varname> pasos de cuadrícula del origen (inclusive del origen en k=0), como un <varname>quadbinset</varname>. En la cuadrícula cuadrada el disco en el paso <varname>k</varname> es el bloque cuadrado de <varname>(2k+1)</varname>×<varname>(2k+1)</varname> celdas centrado en el origen.</para>
+				<para><varname>quadbinGridDisk(quadbin,integer) → quadbinset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 0));  -- 1
+SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 1));  -- 9
+SELECT numValues(quadbinGridDisk(quadbin '48a6227affffffff', 2));  -- 25
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_latlng">
+		<title>Conversiones de Geometría</title>
+		<itemizedlist>
+			<listitem xml:id="tquadbin_quadbin_point_to_cell">
+				<indexterm significance="normal"><primary><varname>geoToQuadbinCell</varname></primary></indexterm>
+				<para>Devuelve la celda QUADBIN en la resolución dada que contiene una geometría de punto. La geometría debe ser un <varname>POINT</varname>; las longitudes se interpretan en SRID 4326.</para>
+				<para><varname>geoToQuadbinCell(geometry,integer) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
+  = quadbin '48a6227affffffff';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_point">
+				<indexterm significance="normal"><primary><varname>quadbinCellToPoint</varname></primary></indexterm>
+				<para>Devuelve el centroide de una celda como un punto SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <varname>tgeompoint</varname>.</para>
+				<para><varname>quadbinCellToPoint(quadbin) → geometry</varname></para>
+				<para><varname>tquadbinCellToPoint(tquadbin) → tgeompoint</varname></para>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_boundary">
+				<indexterm significance="normal"><primary><varname>quadbinCellToBoundary</varname></primary></indexterm>
+				<para>Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <varname>tgeometry</varname>.</para>
+				<para><varname>quadbinCellToBoundary(quadbin) → geometry</varname></para>
+				<para><varname>tquadbinCellToBoundary(tquadbin) → tgeometry</varname></para>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_bounding_box">
+				<indexterm significance="normal"><primary><varname>quadbinCellToBoundingBox</varname></primary></indexterm>
+				<para>Devuelve el rectángulo delimitador alineado con los ejes de una celda como una geometría SRID 4326. Para una celda QUADBIN el rectángulo delimitador y el contorno coinciden, ya que las celdas son cuadrados web-mercator alineados con los ejes.</para>
+				<para><varname>quadbinCellToBoundingBox(quadbin) → geometry</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_tile_quadkey">
+		<title>Teselas y Quadkeys</title>
+
+		<para>QUADBIN está construido sobre el esquema de teselas slippy-map (web-mercator), por lo que una celda se corresponde directamente con un triple de coordenadas de tesela <varname>(x, y, z)</varname> y con la cadena quadkey en base 4 usada por los servidores de teselas. Estas conversiones son el puente específico de QUADBIN con el ecosistema de teselado.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tquadbin_quadbin_tile_to_cell">
+				<indexterm significance="normal"><primary><varname>quadbinTileToCell</varname></primary></indexterm>
+				<para>Construye una celda a partir de coordenadas de tesela slippy-map: columna <varname>x</varname>, fila <varname>y</varname>, y zoom <varname>z</varname></para>
+				<para><varname>quadbinTileToCell(integer,integer,integer) → quadbin</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinTileToCell(0, 0, 0) = quadbin '480fffffffffffff';
+-- true
+SELECT quadbinTileToCell(3, 5, 4) = quadbin '48427fffffffffff';
+-- true
+SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_tile">
+				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
+				<para>Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <varname>{x, y, z}</varname> — la inversa de <varname>quadbinTileToCell</varname></para>
+				<para><varname>quadbinCellToTile(quadbin) → integer[]</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToTile(quadbin '480fffffffffffff');
+-- {0,0,0}
+SELECT quadbinCellToTile(quadbin '48a6227affffffff');
+-- {524,343,10}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_quadbin_cell_to_quadkey">
+				<indexterm significance="normal"><primary><varname>quadbinCellToQuadkey</varname></primary></indexterm>
+				<para>Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía). La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <varname>ttext</varname>.</para>
+				<para><varname>quadbinCellToQuadkey(quadbin) → text</varname></para>
+				<para><varname>tquadbinCellToQuadkey(tquadbin) → ttext</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbinCellToQuadkey(quadbin '480fffffffffffff');
+-- (cadena vacía)
+SELECT quadbinCellToQuadkey(quadbin '48427fffffffffff');
+-- 0213
+SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
+-- 1202021322
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_metrics">
+		<title>Métricas</title>
+		<itemizedlist>
+			<listitem xml:id="tquadbin_quadbin_cell_area">
+				<indexterm significance="normal"><primary><varname>quadbinCellArea</varname></primary></indexterm>
+				<para>Devuelve el área de una celda sobre la esfera, en metros cuadrados. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el área de cada celda de una trayectoria como un <varname>tfloat</varname>. El área de la celda se reduce hacia los polos, ya que los cuadrados web-mercator cubren progresivamente menos terreno a latitudes más altas.</para>
+				<para><varname>quadbinCellArea(quadbin) → float8</varname></para>
+				<para><varname>tquadbinCellArea(tquadbin) → tfloat</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_comparisons">
+		<title>Comparaciones</title>
+		<para>Los operadores de comparación de árbol B (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname>) y el operador hash están definidos sobre <varname>tquadbin</varname> a través de la maquinaria genérica de comparación temporal, ordenando por la secuencia de valores temporal subyacente. Soportan las clases de operadores <varname>tquadbin_btree_ops</varname> y <varname>tquadbin_hash_ops</varname> usadas por GROUP BY, DISTINCT, ORDER BY, y las uniones por mezcla / hash. Como con <varname>tbigint</varname>, el orden int64 de los identificadores QUADBIN no tiene significado geográfico — véase <xref linkend="quadbin_operational_notes"/>.</para>
+	</sect1>
+
+	<sect1 xml:id="tquadbin_indexing">
+		<title>Indexación</title>
+		<para>Se definen clases de operadores de árbol B y hash para que los operadores de comparación de la sección anterior puedan utilizarse con los índices correspondientes.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tquadbin_btree_ops">
+				<indexterm significance="normal"><primary><varname>tquadbin_btree_ops</varname></primary></indexterm>
+				<para>Clase de operadores de árbol B por defecto para las celdas QUADBIN temporales, ordenando por el valor temporal subyacente.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING btree(cells);       -- usa tquadbin_btree_ops por defecto
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tquadbin_hash_ops">
+				<indexterm significance="normal"><primary><varname>tquadbin_hash_ops</varname></primary></indexterm>
+				<para>Clase de operadores hash por defecto para las celdas QUADBIN temporales, usada por las uniones hash y la agregación hash.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX ON trips USING hash(cells);        -- usa tquadbin_hash_ops por defecto
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="quadbin_operational_notes">
+		<title>Notas operativas</title>
+		<para>Esta sección recoge el conocimiento operativo que los consumidores necesitan además de la referencia de funciones: cuándo <varname>tquadbin</varname> es el tipo adecuado, las convenciones que asume la implementación, y los peligros específicos de QUADBIN que las cargas de trabajo reales deben tener en cuenta. La cuadrícula cuadrada jerárquica QUADBIN tiene algunas propiedades no obvias que la codificación bit a bit en <varname>int64</varname> oculta; esta sección las expone para que no sorprendan a los consumidores.</para>
+
+		<sect2 xml:id="quadbin_when_to_use">
+			<title>Cuándo usar tquadbin</title>
+			<para>Use <varname>tquadbin</varname> cuando el identificador natural de una ubicación discreta a una resolución dada sea una tesela QUADBIN &#x2014; viajes de vehículos agrupados a un nivel de zoom fijo, lecturas de sensores agrupadas por tesela, o eventos asociados a su celda contenedora, especialmente en flujos de trabajo que ya hablan el esquema de teselado slippy-map / web-mercator. El tipo almacena una celda QUADBIN por instante; la resolución puede variar entre instantes de una misma trayectoria pero la mayoría de las cargas de trabajo fijan una resolución por columna.</para>
+			<para>Elija <varname>tgeompoint</varname> / <varname>tgeogpoint</varname> en lugar de <varname>tquadbin</varname> cuando la posición geográfica real (precisión sub-celda) sea el valor de interés. Elija <varname>tbigint</varname> en lugar de <varname>tquadbin</varname> cuando los valores resulten ser enteros de 64 bits pero no lleven semántica QUADBIN &#x2014; las representaciones binarias son idénticas (se convierten sin pérdidas vía <varname>tquadbin :: tbigint</varname> y de vuelta) pero el sistema de tipos SQL usa la distinción para rechazar funciones agnósticas a QUADBIN sobre trayectorias específicas de QUADBIN.</para>
+		</sect2>
+
+		<sect2 xml:id="quadbin_hazards">
+			<title>Peligros específicos de QUADBIN</title>
+			<para>Algunos peligros muerden de forma fiable a las cargas de trabajo que usan celdas QUADBIN. Cada uno es una propiedad de la propia cuadrícula QUADBIN y no una decisión de implementación de MobilityDB; las mitigaciones siguientes explican cómo trabajar con ellos.</para>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>El orden int64 es arbitrario respecto a la geometría de la cuadrícula</emphasis>. Los identificadores de celda QUADBIN son enteros de 64 bits cuyo patrón de bits codifica una etiqueta de cabecera, la resolución y las coordenadas de tesela. El orden bit a bit de dos celdas no tiene significado de proximidad espacial &#x2014; dos celdas adyacentes en bits pueden estar lejos, y dos celdas espacialmente adyacentes pueden tener patrones de bits diferentes.</para>
+					<para><emphasis>Mitigación</emphasis>: <varname>tquadbin</varname> deliberadamente no tiene tipos complementarios <varname>quadbinspan</varname> / <varname>quadbinspanset</varname> (precedente: <varname>geometry</varname> no tiene <varname>geometryspan</varname>). El filtrado por rango de valores debe pasar por las funciones de inspección <varname>quadbin_*</varname> (resolución, validez, jerarquía) o por la enumeración explícita de conjuntos vía <varname>quadbinset</varname>. El código que asume que <varname>cell_a &lt; cell_b</varname> refleja proximidad espacial producirá resultados erróneos silenciosamente.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Mezcla de resoluciones en las operaciones</emphasis>. Las celdas QUADBIN a distintas resoluciones (0&#x2013;26) representan áreas de cobertura diferentes. Mezclar resoluciones en una misma trayectoria es válido pero semánticamente requiere una justificación explícita &#x2014; <varname>quadbinCellToParent(cell, res_mas_gruesa)</varname> engruesa y <varname>quadbinCellToChildren(parent, res_mas_fina)</varname> refina.</para>
+					<para><emphasis>Mitigación</emphasis>: los consumidores deben documentar la invariante de resolución por trayectoria (por ejemplo, "todas las celdas son de resolución 10") y validar las entradas en el límite de ingesta. El accesor <varname>quadbinGetResolution</varname> permite que una restricción CHECK lo imponga.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Límite de latitud de web-mercator</emphasis>. QUADBIN hereda la proyección web-mercator, que está definida únicamente entre aproximadamente &#xb1;85,05&#xb0; de latitud. Los puntos fuera de esta banda no tienen celda QUADBIN, y el área de la celda se reduce hacia los polos &#x2014; <varname>quadbinCellArea</varname> devuelve valores progresivamente menores a latitudes más altas para celdas de la misma resolución.</para>
+					<para><emphasis>Mitigación</emphasis>: las cargas de trabajo cercanas a los polos deben recortar o rechazar las latitudes fuera de la banda web-mercator en el límite de ingesta; no confíe en las celdas QUADBIN para la cobertura polar.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Comportamiento en el antimeridiano</emphasis>. Las columnas de tesela se envuelven en el antimeridiano (&#xb1;180&#xb0; de longitud). Una trayectoria que cruza el antimeridiano se mueve entre celdas cuyas coordenadas de tesela <varname>x</varname> difieren en el ancho completo de la cuadrícula a ese zoom, aunque sean espacialmente adyacentes.</para>
+					<para><emphasis>Mitigación</emphasis>: las cargas de trabajo que cruzan el antimeridiano deben validar celdas representativas contra la implementación de referencia de QUADBIN y añadir fixtures para los casos límite específicos que la carga de trabajo encuentre.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="quadbin_durability">
+			<title>Durabilidad y almacenamiento</title>
+			<para>La representación en disco de <varname>tquadbin</varname> es idéntica byte a byte a la de <varname>tbigint</varname> (cada instante lleva un ID de celda QUADBIN de 64 bits más una marca de tiempo). Consecuencias para la planificación del almacenamiento:</para>
+			<itemizedlist>
+				<listitem><para><emphasis>WKT</emphasis> vía <varname>tquadbin_in</varname> y la función de salida temporal. Las celdas se representan como cadenas hexadecimales canónicas (por ejemplo, <varname>'480fffffffffffff'</varname>); se aceptan tanto decimal como hexadecimal en la entrada. El ciclo de ida y vuelta es estable a nivel de bits.</para></listitem>
+				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> vía el patrón estándar de PostGIS de bandera de endianness seguida de la carga útil. Estable entre versiones mayores de PostgreSQL.</para></listitem>
+				<listitem><para><emphasis>pg_dump</emphasis> usa WKT en modo plano y WKB bajo <varname>--binary-upgrade</varname>; ambos completan el ciclo de ida y vuelta limpiamente.</para></listitem>
+				<listitem><para><emphasis>Conversión cruzada con <varname>tbigint</varname></emphasis>: las conversiones bidireccionales <varname>tquadbin :: tbigint</varname> son reinterpretaciones bit a bit sin coste. Úselas cuando trabaje con vistas seguras por tipo (<varname>tquadbin</varname>) y aptas para aritmética (<varname>tbigint</varname>) de la misma trayectoria en una sola consulta.</para></listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+</chapter>
