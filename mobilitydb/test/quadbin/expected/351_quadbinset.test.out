@@ -1,0 +1,167 @@
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}';
+                quadbinset                
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{48427fffffffffff, 480fffffffffffff}';
+                quadbinset                
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff}';
+      quadbinset      
+----------------------
+ {"480fffffffffffff"}
+(1 row)
+
+/* Errors */
+SELECT quadbinset '{480fffffffffffff, not-a-cell}';
+ERROR:  quadbin value "not-a-cell" does not encode a valid quadbin cell
+LINE 2: SELECT quadbinset '{480fffffffffffff, not-a-cell}';
+                          ^
+SELECT quadbinset '{480fffffffffffff';
+ERROR:  Could not parse quadbinset value: Missing closing brace
+LINE 1: SELECT quadbinset '{480fffffffffffff';
+                          ^
+SELECT set(ARRAY[quadbin '480fffffffffffff', quadbin '48427fffffffffff']);
+                   set                    
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT set(quadbin '480fffffffffffff');
+         set          
+----------------------
+ {"480fffffffffffff"}
+(1 row)
+
+SELECT (quadbin '480fffffffffffff')::quadbinset;
+      quadbinset      
+----------------------
+ {"480fffffffffffff"}
+(1 row)
+
+SELECT numValues(quadbinset '{480fffffffffffff, 48427fffffffffff, 48a6227affffffff}');
+ numvalues 
+-----------
+         3
+(1 row)
+
+SELECT startValue(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+    startvalue    
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT endValue(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+     endvalue     
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT valueN(quadbinset '{480fffffffffffff, 48427fffffffffff}', 1);
+      valuen      
+------------------
+ 480fffffffffffff
+(1 row)
+
+SELECT valueN(quadbinset '{480fffffffffffff, 48427fffffffffff}', 2);
+      valuen      
+------------------
+ 48427fffffffffff
+(1 row)
+
+SELECT getValues(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+              getvalues              
+-------------------------------------
+ {480fffffffffffff,48427fffffffffff}
+(1 row)
+
+SELECT memSize(quadbinset '{480fffffffffffff, 48427fffffffffff}') > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromBinary(asBinary(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinsetFromHexWKB(asHexWKB(quadbinset '{480fffffffffffff, 48427fffffffffff}'))
+  = quadbinset '{480fffffffffffff, 48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(quadbinset '{480fffffffffffff, 48427fffffffffff}');
+                  astext                  
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff}' = quadbinset '{480fffffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff}' <> quadbinset '{48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff}' < quadbinset '{48427fffffffffff}';
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_quadbinset_test;
+NOTICE:  table "tbl_quadbinset_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_quadbinset_test(k int, s quadbinset);
+CREATE TABLE
+INSERT INTO tbl_quadbinset_test VALUES
+  (1, quadbinset '{480fffffffffffff}'),
+  (2, quadbinset '{48427fffffffffff}'),
+  (3, quadbinset '{480fffffffffffff}');
+INSERT 0 3
+SELECT COUNT(DISTINCT s) FROM tbl_quadbinset_test;
+ count 
+-------
+     2
+(1 row)
+
+DROP TABLE tbl_quadbinset_test;
+DROP TABLE
+SELECT unnest(quadbinset '{480fffffffffffff, 48427fffffffffff}') ORDER BY 1;
+      unnest      
+------------------
+ 480fffffffffffff
+ 48427fffffffffff
+(2 rows)
+
+SELECT setUnion(c) FROM (VALUES
+  (quadbin '480fffffffffffff'),
+  (quadbin '48427fffffffffff'),
+  (quadbin '480fffffffffffff')) t(c);
+                 setunion                 
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT setUnion(s) FROM (VALUES
+  (quadbinset '{480fffffffffffff}'),
+  (quadbinset '{48427fffffffffff, 48a6227affffffff}')) t(s);
+                           setunion                           
+--------------------------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff", "48a6227affffffff"}
+(1 row)
+
