@@ -180,6 +180,10 @@ if(POSE)
   message(STATUS "Including geoposes")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:pose>")
 endif()
+if(QUADBIN)
+  message(STATUS "Including temporal QUADBIN index objects")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:quadbin>")
+endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
@@ -348,6 +352,11 @@ if(MEOS)
   if(RGEO)
     install(
       FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(QUADBIN)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_quadbin.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   endif()
 

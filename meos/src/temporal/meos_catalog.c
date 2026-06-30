@@ -44,11 +44,11 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/doublen.h"
-#if NPOINT
-  #include "npoint/tnpoint.h"
-#endif
 #if CBUFFER
   #include <meos_cbuffer.h>
+#endif
+#if NPOINT
+  #include "npoint/tnpoint.h"
 #endif
 
 /*****************************************************************************
@@ -134,6 +134,9 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TH3INDEX] = "th3index",
   [T_H3INDEX] = "h3index",
   [T_H3INDEXSET] = "h3indexset",
+  [T_TQUADBIN] = "tquadbin",
+  [T_QUADBIN] = "quadbin",
+  [T_QUADBINSET] = "quadbinset",
 };
 
 /**
@@ -244,6 +247,9 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
 #if JSON
   {T_JSONBSET,      T_JSONB},
 #endif /* JSON */
+#if QUADBIN
+  {T_QUADBINSET,    T_QUADBIN},
+#endif
 };
 
 /**
@@ -280,27 +286,28 @@ static const spansettype_catalog_struct MEOS_SPANSETTYPE_CATALOG[] =
  */
 static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
 {
-  /* temptype    basetype */
-  {T_TDOUBLE2,   T_DOUBLE2},
-  {T_TDOUBLE3,   T_DOUBLE3},
-  {T_TDOUBLE4,   T_DOUBLE4},
-  {T_TBOOL,      T_BOOL},
-  {T_TBIGINT,    T_INT8},
-  {T_TH3INDEX,   T_H3INDEX},
-  {T_TINT,       T_INT4},
-  {T_TFLOAT,     T_FLOAT8},
-  {T_TTEXT,      T_TEXT},
-  {T_TGEOMPOINT, T_GEOMETRY},
-  {T_TGEOGPOINT, T_GEOGRAPHY},
-  {T_TGEOMETRY,  T_GEOMETRY},
-  {T_TGEOGRAPHY, T_GEOGRAPHY},
-  {T_TPOSE,      T_POSE},
-  {T_TRGEOMETRY, T_POSE},
-  {T_TNPOINT,    T_NPOINT},
-  {T_TCBUFFER,   T_CBUFFER},
+  /* temptype    basetype  (canonical MeosType enum-value order) */
+  {T_TBOOL,      T_BOOL},      /* 26 */
+  {T_TDOUBLE2,   T_DOUBLE2},   /* 28 */
+  {T_TDOUBLE3,   T_DOUBLE3},   /* 29 */
+  {T_TDOUBLE4,   T_DOUBLE4},   /* 30 */
+  {T_TFLOAT,     T_FLOAT8},    /* 33 */
+  {T_TINT,       T_INT4},      /* 35 */
+  {T_TTEXT,      T_TEXT},      /* 41 */
+  {T_TGEOMPOINT, T_GEOMETRY},  /* 46 */
+  {T_TGEOGPOINT, T_GEOGRAPHY}, /* 47 */
+  {T_TNPOINT,    T_NPOINT},    /* 51 */
+  {T_TPOSE,      T_POSE},      /* 56 */
+  {T_TCBUFFER,   T_CBUFFER},   /* 59 */
+  {T_TGEOMETRY,  T_GEOMETRY},  /* 60 */
+  {T_TGEOGRAPHY, T_GEOGRAPHY}, /* 61 */
+  {T_TRGEOMETRY, T_POSE},      /* 62 */
 #if JSON
-  {T_TJSONB,     T_JSONB},
+  {T_TJSONB,     T_JSONB},     /* 66 */
 #endif /* JSON */
+  {T_TBIGINT,    T_INT8},      /* 67 */
+  {T_TH3INDEX,   T_H3INDEX},   /* 70 */
+  {T_TQUADBIN,   T_QUADBIN},   /* 73 */
 };
 
 /*****************************************************************************/
@@ -633,6 +640,9 @@ meos_basetype(MeosType type)
 #if H3
     || type == T_H3INDEX
 #endif
+#if QUADBIN
+    || type == T_QUADBIN
+#endif
     );
 }
 #endif
@@ -647,6 +657,9 @@ basetype_byvalue(MeosType type)
     type == T_DATE || type == T_TIMESTAMPTZ
 #if H3
     || type == T_H3INDEX
+#endif
+#if QUADBIN
+    || type == T_QUADBIN
 #endif
     );
 }
@@ -725,6 +738,9 @@ alphanum_basetype(MeosType type)
 #if JSON
     || type == T_JSONB
 #endif
+#if QUADBIN
+    || type == T_QUADBIN
+#endif
     );
 }
 
@@ -772,6 +788,9 @@ spatial_basetype(MeosType type)
 #if H3
     || type == T_H3INDEX
 #endif
+#if QUADBIN
+    || type == T_QUADBIN
+#endif
     );
 }
 
@@ -816,6 +835,9 @@ set_basetype(MeosType type)
 #if H3
       || type == T_H3INDEX
 #endif
+#if QUADBIN
+      || type == T_QUADBIN
+#endif
       );
 }
 #endif
@@ -843,6 +865,9 @@ set_type(MeosType type)
 #endif
 #if H3
       || type == T_H3INDEXSET
+#endif
+#if QUADBIN
+      || type == T_QUADBINSET
 #endif
       );
 }
@@ -1164,6 +1189,9 @@ temporal_type(MeosType type)
 #if H3
     || type == T_TH3INDEX
 #endif
+#if QUADBIN
+    || type == T_TQUADBIN
+#endif
     );
 }
 
@@ -1191,6 +1219,9 @@ temporal_basetype(MeosType type)
 #endif
 #if POSE || RGEO
     || type == T_POSE
+#endif
+#if QUADBIN
+    || type == T_QUADBIN
 #endif
     );
 }
@@ -1352,6 +1383,9 @@ tspatial_type(MeosType type)
 #endif
 #if H3
     || type == T_TH3INDEX
+#endif
+#if QUADBIN
+    || type == T_TQUADBIN
 #endif
     );
 }

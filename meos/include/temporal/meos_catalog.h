@@ -126,6 +126,9 @@ typedef enum
   T_H3INDEX        = 68,  /**< static H3 cell index type (uint64) */
   T_H3INDEXSET     = 69,  /**< h3index set type */
   T_TH3INDEX       = 70,  /**< temporal H3 index type (libh3 cell index over time) */
+  T_QUADBIN        = 71,  /**< static CARTO quadbin cell index type (uint64) */
+  T_QUADBINSET     = 72,  /**< quadbin set type */
+  T_TQUADBIN       = 73,  /**< temporal quadbin index type (cell index over time) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

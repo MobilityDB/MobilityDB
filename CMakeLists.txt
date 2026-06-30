@@ -95,6 +95,11 @@ option(JSON "Set ON|OFF (default=ON) to include json types" ON)
 option(NPOINT "Set ON|OFF (default=ON) to include network points" ON)
 option(POSE "Set ON|OFF (default=OFF) to include geoposes" OFF)
 CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometries" ON "POSE" OFF)
+# Option for including the temporal CARTO QUADBIN index type (`tquadbin`).
+# quadbin has no external dependency: its cell algebra is implemented
+# first-party in meos/src/quadbin/ (libm only), so no find_library /
+# vendored subtree is needed.
+option(QUADBIN "Set ON|OFF (default=OFF) to include the temporal QUADBIN index type (tquadbin)" OFF)
 
 # The JSON types are derived from PostgreSQL 18 and require a PostgreSQL 18
 # server. For the MobilityDB extension, detect the server version and disable
@@ -145,12 +150,30 @@ else()
   message(STATUS "Excluding geoposes")
   add_definitions(-DPOSE=0)
 endif()
+if(QUADBIN)
+  message(STATUS "Including temporal QUADBIN index (tquadbin)")
+  add_definitions(-DQUADBIN=1)
+else()
+  message(STATUS "Excluding temporal QUADBIN index")
+  add_definitions(-DQUADBIN=0)
+endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
   add_definitions(-DRGEO=1)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
+endif()
+
+# Build the 'requires =' clause for the generated mobilitydb.control file
+# from the same flags that gate C compilation and SQL inclusion. PostGIS
+# is always required; pgPointCloud is required only when POINTCLOUD=ON,
+# because that is the only flag that maps to an external extension.
+# CBUFFER / NPOINT / POSE / RGEO add internal types that live inside
+# libMobilityDB itself with no extra CREATE EXTENSION dependency.
+set(MOBILITYDB_REQUIRES "postgis")
+if(POINTCLOUD)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file
