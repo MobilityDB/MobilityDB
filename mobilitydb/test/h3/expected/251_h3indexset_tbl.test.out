@@ -1,0 +1,41 @@
+COPY tbl_h3indexset TO '/tmp/tbl_h3indexset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_h3indexset_tmp;
+NOTICE:  table "tbl_h3indexset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_h3indexset_tmp AS TABLE tbl_h3indexset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_h3indexset_tmp FROM '/tmp/tbl_h3indexset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_h3indexset_tmp;
+DROP TABLE
+SELECT SUM(numValues(s)) FROM tbl_h3indexset;
+ sum 
+-----
+ 537
+(1 row)
+
+SELECT COUNT(*) FROM tbl_h3indexset WHERE memSize(s) IS NOT NULL;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset t2 WHERE t1.s = t2.s;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_h3indexset t1, tbl_h3indexset t2 WHERE t1.s <> t2.s;
+ count 
+-------
+  8010
+(1 row)
+
