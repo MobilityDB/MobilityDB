@@ -28,6 +28,7 @@
 <!ENTITY temporal_rigid_geometries SYSTEM "temporal_rigid_geometries.xml">
 <!ENTITY temporal_jsonb SYSTEM "temporal_jsonb.xml">
 <!ENTITY temporal_h3_index SYSTEM "temporal_h3_index.xml">
+<!ENTITY temporal_quadbin_index SYSTEM "temporal_quadbin_index.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
@@ -133,6 +134,7 @@
 	&temporal_rigid_geometries;
 	&temporal_jsonb;
 	&temporal_h3_index;
+	&temporal_quadbin_index;
 	&reference;
 	&data_generator;
 	<index />
