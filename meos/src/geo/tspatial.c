@@ -70,6 +70,9 @@
 #if H3
   #include "h3/th3index_boxops.h"
 #endif
+#if QUADBIN
+  #include "quadbin/tquadbin_boxops.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -457,6 +460,10 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
 #if H3
       else if (temp->temptype == T_TH3INDEX)
         th3indexinst_set_stbox((TInstant *) temp, result);
+#endif
+#if QUADBIN
+      else if (temp->temptype == T_TQUADBIN)
+        tquadbininst_set_stbox((TInstant *) temp, result);
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
