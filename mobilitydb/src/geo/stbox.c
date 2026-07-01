@@ -43,6 +43,9 @@
 #include <lib/stringinfo.h>
 /* MEOS */
 #include <meos.h>
+#if ARROW
+  #include <meos_arrow.h>
+#endif
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
@@ -1788,5 +1791,25 @@ Stbox_hash_extended(PG_FUNCTION_ARGS)
   uint64 seed = PG_GETARG_INT64(1);
   PG_RETURN_UINT64(stbox_hash_extended(box, seed));
 }
+
+/*****************************************************************************/
+
+#if ARROW
+PGDLLEXPORT Datum Stbox_arrow_roundtrip(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_arrow_roundtrip);
+/**
+ * @ingroup mobilitydb_geo_box_conversion
+ * @brief Round-trip a spatiotemporal box through the Arrow C Data Interface,
+ * returning the reconstructed value
+ * @sqlfn arrowRoundtrip()
+ */
+Datum
+Stbox_arrow_roundtrip(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  STBox *result = meos_stbox_arrow_roundtrip(box);
+  PG_RETURN_STBOX_P(result);
+}
+#endif /* ARROW */
 
 /*****************************************************************************/

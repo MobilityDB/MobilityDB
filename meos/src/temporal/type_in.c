@@ -41,7 +41,6 @@
 #include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
-#include <meos_rgeo.h>
 #include <meos_internal.h>
 #if H3
 #include <h3api.h>
@@ -50,6 +49,7 @@
 #if QUADBIN
 #include "quadbin/quadbin_meos.h"
 #endif
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
@@ -78,6 +78,7 @@
   #include "pose/pose.h"
 #endif
 #if RGEO
+  #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 
