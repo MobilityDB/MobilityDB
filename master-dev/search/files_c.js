@@ -4,7 +4,7 @@ var searchData=
   ['meos_2eh_1',['meos.h',['../meos_8h.html',1,'']]],
   ['meos_5farray_2ec_2',['meos_array.c',['../meos__array_8c.html',1,'']]],
   ['meos_5fcatalog_2ec_3',['meos_catalog.c',['../mobilitydb_2src_2temporal_2meos__catalog_8c.html',1,'(Global Namespace)'],['../meos_2src_2temporal_2meos__catalog_8c.html',1,'(Global Namespace)']]],
-  ['meos_5fcatalog_2eh_4',['meos_catalog.h',['../mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h.html',1,'(Global Namespace)'],['../meos_2include_2temporal_2meos__catalog_8h.html',1,'(Global Namespace)']]],
+  ['meos_5fcatalog_2eh_4',['meos_catalog.h',['../meos_2include_2temporal_2meos__catalog_8h.html',1,'(Global Namespace)'],['../mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h.html',1,'(Global Namespace)']]],
   ['meos_5fcbuffer_2eh_5',['meos_cbuffer.h',['../meos__cbuffer_8h.html',1,'']]],
   ['meos_5ferror_2eh_6',['meos_error.h',['../meos__error_8h.html',1,'']]],
   ['meos_5fgeo_2eh_7',['meos_geo.h',['../meos__geo_8h.html',1,'']]],
@@ -17,8 +17,9 @@ var searchData=
   ['meos_5fpose_2eh_14',['meos_pose.h',['../meos__pose_8h.html',1,'']]],
   ['meos_5fproj_2ec_15',['meos_proj.c',['../meos__proj_8c.html',1,'']]],
   ['meos_5fquadbin_2eh_16',['meos_quadbin.h',['../meos__quadbin_8h.html',1,'']]],
-  ['meos_5frgeo_2eh_17',['meos_rgeo.h',['../meos__rgeo_8h.html',1,'']]],
-  ['meos_5fschema_5fhook_2eh_18',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
-  ['meos_5ftls_2eh_19',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
-  ['meos_5ftransform_2eh_20',['meos_transform.h',['../meos__transform_8h.html',1,'']]]
+  ['meos_5fraster_2eh_17',['meos_raster.h',['../meos__raster_8h.html',1,'']]],
+  ['meos_5frgeo_2eh_18',['meos_rgeo.h',['../meos__rgeo_8h.html',1,'']]],
+  ['meos_5fschema_5fhook_2eh_19',['meos_schema_hook.h',['../meos__schema__hook_8h.html',1,'']]],
+  ['meos_5ftls_2eh_20',['meos_tls.h',['../meos__tls_8h.html',1,'']]],
+  ['meos_5ftransform_2eh_21',['meos_transform.h',['../meos__transform_8h.html',1,'']]]
 ];
