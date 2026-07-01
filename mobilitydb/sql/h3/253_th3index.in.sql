@@ -300,7 +300,7 @@ CREATE FUNCTION tsample(th3index, duration interval,
  *
  * The value accessors that return the `h3index` cell (`startValue`,
  * `endValue`, `valueN`, `getValues`, `valueAtTimestamp`) live in
- * `274_th3index_accessors.in.sql`.
+ * `255_th3index_spatialfuncs.in.sql`.
  ******************************************************************************/
 
 CREATE FUNCTION tempSubtype(th3index)
