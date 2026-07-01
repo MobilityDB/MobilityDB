@@ -116,4 +116,9 @@ SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
 SELECT floatspansetFromHexWKB(
   '00000E00000002033FF000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
+</pre></li><li class="listitem"><a name="setspan_arrowRoundtrip"></a><a class="indexterm" name="id2189"></a><p>Convert a set, span or span set to the Arrow C Data Interface and back, returning the reconstructed value</p><p><code class="varname">arrowRoundtrip({set,span,spanset}) → {set,span,spanset}</code></p><pre class="programlisting">
+SELECT arrowRoundtrip(intset '{1, 2, 3}');
+-- {1, 2, 3}
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}');
+-- {[1.5, 2.5), (3, 4]}
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s08.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch02s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Migrating from Version 1.2 to Version 1.3 </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>

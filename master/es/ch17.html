@@ -9,7 +9,7 @@ SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
 -- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
-</pre><p>La función <code class="varname">arrowRoundtrip</code> convierte un índice QUADBIN temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. Un índice de celda QUADBIN es un valor de 64 bits, por lo que usa la hoja de valor de 64 bits sin signo, distinta de la hoja de 64 bits con signo del entero grande temporal.</p><pre class="programlisting">
+</pre><p>La función <code class="varname">arrowRoundtrip</code> convierte un índice QUADBIN temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada.</p><pre class="programlisting">
 SELECT arrowRoundtrip(tquadbin '480fffffffffffff@2001-01-01');
 -- 480fffffffffffff@2001-01-01
 </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s17.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch17s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Notas operativas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversiones</td></tr></table></div></body></html>

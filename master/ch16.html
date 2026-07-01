@@ -9,7 +9,7 @@ SELECT th3(Instant) '831c02fffffffff@2001-01-01';
 SELECT th3(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]}';
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT th3(Sequence) '831c02fffffffff@2001-01-01';
-</pre><p>The function <code class="varname">arrowRoundtrip</code> converts a temporal H3 index to the Arrow C Data Interface and reconstructs it, returning a value equal to the input. The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. An H3 cell index is a 64-bit value, so it uses the unsigned 64-bit value leaf, distinct from the signed 64-bit leaf of temporal big integer.</p><pre class="programlisting">
+</pre><p>The function <code class="varname">arrowRoundtrip</code> converts a temporal H3 index to the Arrow C Data Interface and reconstructs it, returning a value equal to the input.</p><pre class="programlisting">
 SELECT arrowRoundtrip(th3 '831c02fffffffff@2001-01-01');
 -- 831c02fffffffff@2001-01-01
 </pre><p>The functions <code class="varname">asText</code>, <code class="varname">asBinary</code>, and <code class="varname">asHexWKB</code> serialize a <code class="varname">th3</code> value, and <code class="varname">th3FromBinary</code> and <code class="varname">th3FromHexWKB</code> reconstruct it. The hexadecimal WKB form lets a temporal H3 index column round-trip through a text-based <code class="varname">COPY</code>.</p><pre class="programlisting">
