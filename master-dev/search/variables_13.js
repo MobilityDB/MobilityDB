@@ -21,6 +21,7 @@ var searchData=
   ['roty_18',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
   ['rotz_19',['rotz',['../projection__gk_8c_a3bc522161034a64098cc55f6798ecc39.html#a3bc522161034a64098cc55f6798ecc39',1,'projection_gk.c']]],
   ['routes_20',['routes',['../structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6',1,'struct_WaysCache']]],
-  ['rtree_5fresults_21',['rtree_results',['../tpoint__geom__clip_8c_af78dfca0c2cf886728da77d60354272e.html#af78dfca0c2cf886728da77d60354272e',1,'tpoint_geom_clip.c']]],
-  ['rtype_22',['rtype',['../structoid__meosoper__entry_ae4af96f03eb63ea3dc196b6eacd78da7.html#ae4af96f03eb63ea3dc196b6eacd78da7',1,'oid_meosoper_entry']]]
+  ['row_5fgroup_5fsize_21',['ROW_GROUP_SIZE',['../namespacetemporal__arrow__parquet__bridge_af426b52903e75a4997af592249711448.html#af426b52903e75a4997af592249711448',1,'temporal_arrow_parquet_bridge']]],
+  ['rtree_5fresults_22',['rtree_results',['../tpoint__geom__clip_8c_af78dfca0c2cf886728da77d60354272e.html#af78dfca0c2cf886728da77d60354272e',1,'tpoint_geom_clip.c']]],
+  ['rtype_23',['rtype',['../structoid__meosoper__entry_ae4af96f03eb63ea3dc196b6eacd78da7.html#ae4af96f03eb63ea3dc196b6eacd78da7',1,'oid_meosoper_entry']]]
 ];

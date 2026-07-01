@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: _pg</title>
+<title>MobilityDB: validate_trgeo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_12121c49f044f6afa0e21d8cd2ea7508.html">examples</a></li><li class="navelem"><a class="el" href="temporal__arrow__validate_8c.html">temporal_arrow_validate.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,30 +79,59 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt_a264f966c962def3390f3f6e54eb68923.html#a264f966c962def3390f3f6e54eb68923">_pg</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt_a54ce4c27696f9a1a01d307f244276364.html#a54ce4c27696f9a1a01d307f244276364">add_test</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt_a36df77ddd36ee79d48cb286138cb84d6.html#a36df77ddd36ee79d48cb286138cb84d6">DBGEO</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt_a330792651512023eae809c10097f9735.html#a330792651512023eae809c10097f9735">file</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2test_2quadbin_2CMakeLists_8txt_ac7dcd4d2e4ea46d9061b41b6915da7e7.html#ac7dcd4d2e4ea46d9061b41b6915da7e7">get_filename_component</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_ab314db71bad7c955a4a4f4f97cd2a98a.html#ab314db71bad7c955a4a4f4f97cd2a98a">MEOS_ARROW_C_DATA_INTERFACE_H</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_aa3c441bc7eea36e9ae2264dca8a02628.html#aa3c441bc7eea36e9ae2264dca8a02628">validate_cbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_a2f1eaaf97605be0e8d006ce995d15d20.html#a2f1eaaf97605be0e8d006ce995d15d20">validate_temp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_ac1aff67d07265f6b1d8411e4a015c25c.html#ac1aff67d07265f6b1d8411e4a015c25c">validate_tgeography</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__arrow__validate_8c_a90e7b0244d82d6c2ac37d7a32f52193d.html#a90e7b0244d82d6c2ac37d7a32f52193d">validate_tgeometry</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__arrow__validate_8c_a397e9df3f0a41512eb690188ddbd19d4.html#a397e9df3f0a41512eb690188ddbd19d4">validate_trgeo</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a264f966c962def3390f3f6e54eb68923" name="a264f966c962def3390f3f6e54eb68923"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a264f966c962def3390f3f6e54eb68923">&#9670;&#160;</a></span>_pg()</h2>
+<a id="a397e9df3f0a41512eb690188ddbd19d4" name="a397e9df3f0a41512eb690188ddbd19d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a397e9df3f0a41512eb690188ddbd19d4">&#9670;&#160;</a></span>validate_trgeo()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">MATCHES _pg </td>
+          <td class="memname">static int validate_trgeo </td>
           <td>(</td>
-          <td class="paramtype">[0-9] +&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>label</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>geo_wkt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>tpose_in_str</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Validate one temporal rigid geometry value (the value leaf is a Struct whose leading "ref" child is the shared reference geometry as a LargeBinary EWKB, followed by the per-instant pose fields) </p>
+<p >A temporal rigid geometry has no string input function; it is built the canonical way, from a reference geometry plus a temporal pose via <a class="el" href="meos__rgeo_8h_a8e0f4599f5d919e19aacb728a267796f.html#a8e0f4599f5d919e19aacb728a267796f" title="Construct a temporal rigid geometry from a geometry and a temporal pose.">geo_tpose_to_trgeometry</a> (the same path the Arrow reader uses to reconstruct it). </p>
 
 </div>
 </div>
