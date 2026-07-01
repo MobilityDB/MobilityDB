@@ -2939,5 +2939,52 @@
 		</sect2>
 	</sect1>
 
+	<sect1>
+		<title>Raster Sampling</title>
+
+		<sect2>
+			<title>Sampling Operator</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_value"><varname>raster_value</varname></link>: Sample a raster band at each instant of a trajectory</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Raquet / QUADBIN Sampling</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trajectory_quadbins"><varname>trajectory_quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Restriction and Predicate Operators</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
 </appendix>
 

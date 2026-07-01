@@ -2153,4 +2153,51 @@
 		</sect2>
 	</sect1>
 
+	<sect1>
+		<title>Muestreo de Ráster</title>
+
+		<sect2>
+			<title>Operador de Muestreo</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_value"><varname>raster_value</varname></link>: Muestrear una banda de ráster en cada instante de una trayectoria</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Muestreo Raquet / QUADBIN</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trajectory_quadbins"><varname>trajectory_quadbins</varname></link>: Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de Restricción y Predicado</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="atRasterValue"><varname>atRasterValue</varname></link>: Devolver los instantes de una trayectoria donde el valor ráster muestreado cae dentro de un rango de flotante</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusRasterValue"><varname>minusRasterValue</varname></link>: Devolver los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="eRasterValue"><varname>eRasterValue</varname></link>: Devolver verdadero si la trayectoria alguna vez muestrea un valor de píxel ráster dentro de un rango de flotante</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="aRasterValue"><varname>aRasterValue</varname></link>: Devolver verdadero si cada instante de la trayectoria dentro de la extensión del ráster muestrea un valor de píxel dentro de un rango de flotante</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
 </appendix>
