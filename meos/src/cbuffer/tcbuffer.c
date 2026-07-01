@@ -1016,7 +1016,7 @@ Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(count, false);
+  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   Datum *datumarr = temporal_values_p(temp, count);
   Cbuffer **result = palloc(sizeof(Cbuffer *) * *count);
