@@ -1,5 +1,8 @@
 add_subdirectory(temporal)
 add_subdirectory(geo)
+if(ARROW)
+  add_subdirectory(arrow)
+endif()
 if(CBUFFER)
   add_subdirectory(cbuffer)
 endif()

@@ -145,7 +145,7 @@ jobs:
           # H3 depends on libh3, POINTCLOUD on pgPointCloud's libpc.a, and RASTER
           # on PostGIS raster — all installed/built/located above only on coverage builds.
           cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
-            -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON -DQUADBIN=ON \
+            -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON -DQUADBIN=ON -DARROW=ON \
             ${{ matrix.coverage == '1' && '-DPOINTCLOUD=ON' || '' }} \
             ${{ matrix.coverage == '1' && format('-DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1} -DRASTER=ON', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
             ..

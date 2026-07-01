@@ -122,6 +122,9 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Enable all warnings on MEOS and MobilityDB
   target_compile_options(temporal PRIVATE "/W4")
   target_compile_options(geo PRIVATE "/W4")
+  if(ARROW)
+    target_compile_options(arrow PRIVATE "/W4")
+  endif()
   if(CBUFFER)
     target_compile_options(cbuffer PRIVATE "/W4")
   endif()
@@ -160,6 +163,10 @@ set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clip_clipper2>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clipper2>")
+if(ARROW)
+  message(STATUS "Including Apache Arrow C Data Interface export")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:arrow>")
+endif()
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
@@ -319,6 +326,14 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_tls.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  if(ARROW)
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/arrow/arrow_c_data_interface.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_arrow.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
 
   # Files from ${CMAKE_SOURCE_DIR}
 
