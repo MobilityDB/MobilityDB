@@ -188,7 +188,13 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Global constant array containing the type names corresponding to the enumeration MeosType defined in file <code>meos_catalog.h</code> </p>
+<p>CANONICAL ORDERING + SYNCHRONIZATION (enforced) — the type-listing arrays and the subclass-predicate <code>||</code>-chains in this file MUST be kept in 1-to-1 correspondence with the <code>MeosType</code> enumeration in <code>meos_catalog.h</code>: </p>
+<ol type="1">
+<li>ORDER: every array/predicate lists its entries in <b>ascending <code>MeosType</code> enum value</b> (the order of the enum). A family gated behind <code>#if &lt;FAMILY&gt;</code> sits at its TRUE enum-value position (wrapped in the guard), never clustered elsewhere. When adding a type, insert it at its enum-value slot — do NOT append by merge order, do NOT order alphabetically.</li>
+<li>SYNCHRONIZATION: when a type is added to the enum it MUST also be added to <code>MEOS_TYPE_NAMES</code>, to its set/span/spanset/temp catalog row, and to every subclass predicate it belongs to (and removed from all of them together). A type present in the enum but missing from an array/predicate makes runtime lookups fail ("Unknown base type" / "operator does not exist"). Merges are the usual culprit — they botch the <code>||</code>-chains into a duplicate or dead <code>return</code>; keep ONE <code>return</code> with each <code>#if</code> block stacked and a LEADING <code>||</code> on every guarded term. Re-verify this correspondence after every merge.</li>
+</ol>
+<p >Keeping both invariants makes the catalog deterministic, so two PRs adding different types touch different lines and never silently drop a type.</p>
+<p >Global constant array containing the type names corresponding to the enumeration MeosType defined in file <code>meos_catalog.h</code> </p>
 
 </div>
 </div>

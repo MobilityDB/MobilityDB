@@ -16,8 +16,10 @@ var searchData=
   ['tempunneststate_13',['TempUnnestState',['../structTempUnnestState.html',1,'']]],
   ['textset_5frecord_14',['textset_record',['../structtextset__record.html',1,'']]],
   ['tinstant_15',['TInstant',['../structTInstant.html',1,'']]],
-  ['trip_5frecord_16',['trip_record',['../structtrip__record.html',1,'']]],
-  ['trip_5ft_17',['trip_t',['../structtrip__t.html',1,'']]],
-  ['tsequence_18',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_19',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
+  ['tpcbox_16',['TPCBox',['../structTPCBox.html',1,'']]],
+  ['tpcpatchpointsstate_17',['TpcpatchPointsState',['../structTpcpatchPointsState.html',1,'']]],
+  ['trip_5frecord_18',['trip_record',['../structtrip__record.html',1,'']]],
+  ['trip_5ft_19',['trip_t',['../structtrip__t.html',1,'']]],
+  ['tsequence_20',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_21',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];
