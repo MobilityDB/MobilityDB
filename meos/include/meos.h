@@ -351,6 +351,18 @@ extern int rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op, con
 typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
+
+/* Definition of the optional allocator hook functions. When installed, MEOS
+ * routes its working-memory allocations through these hooks so that an
+ * embedder can account for and bound them with its own memory manager. They
+ * are plain C function pointers so that JNR/cffi/cgo closures can implement
+ * them, exactly like error_handler_fn. */
+typedef void *(*meos_malloc_fn)(size_t size);
+typedef void *(*meos_realloc_fn)(void *ptr, size_t size);
+typedef void  (*meos_free_fn)(void *ptr);
+
+extern void meos_initialize_allocator(meos_malloc_fn malloc_fn,
+  meos_realloc_fn realloc_fn, meos_free_fn free_fn);
 extern void meos_initialize_noexit_error_handler(void);
 extern void meos_initialize_timezone(const char *name);
 extern void meos_initialize_collation(void);
