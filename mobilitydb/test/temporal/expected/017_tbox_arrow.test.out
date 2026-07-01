@@ -1,0 +1,84 @@
+SELECT arrowRoundtrip(tbox 'TBOXINT XT([1,10),[2000-01-01,2000-01-05])');
+                                  arrowroundtrip                                  
+----------------------------------------------------------------------------------
+ TBOXINT XT([1, 10),[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))');
+                                     arrowroundtrip                                     
+----------------------------------------------------------------------------------------
+ TBOXFLOAT XT([1.5, 9.75],[Sat Jan 01 00:00:00 2000 PST, Sun Dec 31 00:00:00 2000 PST))
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXINT X([1,10))');
+   arrowroundtrip   
+--------------------
+ TBOXINT X([1, 10))
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT X([1.5,9.75])');
+      arrowroundtrip      
+--------------------------
+ TBOXFLOAT X([1.5, 9.75])
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOX T([2000-01-01,2000-01-05])');
+                            arrowroundtrip                            
+----------------------------------------------------------------------
+ TBOX T([Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST])
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOX T([2000-01-01 08:00:00+00,2000-12-31 23:59:59+00))');
+                            arrowroundtrip                            
+----------------------------------------------------------------------
+ TBOX T([Sat Jan 01 00:00:00 2000 PST, Sun Dec 31 15:59:59 2000 PST))
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXINT XT([-5,5],[2000-06-15,2001-06-15])');
+                                  arrowroundtrip                                  
+----------------------------------------------------------------------------------
+ TBOXINT XT([-5, 6),[Thu Jun 15 00:00:00 2000 PDT, Fri Jun 15 00:00:00 2001 PDT])
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXINT XT([1,10),[2000-01-01,2000-01-05])') = tbox 'TBOXINT XT([1,10),[2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))') = tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXINT X([1,10))') = tbox 'TBOXINT X([1,10))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXFLOAT X([1.5,9.75])') = tbox 'TBOXFLOAT X([1.5,9.75])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOX T([2000-01-01,2000-01-05])') = tbox 'TBOX T([2000-01-01,2000-01-05])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOX T([2000-01-01 08:00:00+00,2000-12-31 23:59:59+00))') = tbox 'TBOX T([2000-01-01 08:00:00+00,2000-12-31 23:59:59+00))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT arrowRoundtrip(tbox 'TBOXINT XT([-5,5],[2000-06-15,2001-06-15])') = tbox 'TBOXINT XT([-5,5],[2000-06-15,2001-06-15])';
+ ?column? 
+----------
+ t
+(1 row)
+
