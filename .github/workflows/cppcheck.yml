@@ -41,6 +41,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Add the PostgreSQL APT repository
+        # Provides libh3-dev and the postgresql-server-dev package that the
+        # vendored pgPointCloud build below needs for pg_config.
+        run: |
+          sudo apt-get install -y curl ca-certificates gnupg
+          curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ \
+            $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
       - name: Install build dependencies and cppcheck
         run: |
           sudo apt-get update
@@ -49,16 +58,51 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev
+            libgsl-dev \
+            libh3-dev \
+            postgresql-server-dev-17 \
+            autoconf automake libtool libxml2-dev zlib1g-dev
           cppcheck --version
+
+      - name: Locate libh3 on disk and pin its paths
+        # The pgdg libh3-dev package layout differs between releases; find the
+        # header and library at runtime and pin -DH3_INCLUDE_DIR / -DH3_LIBRARY.
+        run: |
+          H3_INC=$(dpkg -L libh3-dev | grep -E 'h3api\.h$' | head -1)
+          H3_LIB=$(dpkg -L libh3-dev libh3-1 2>/dev/null | grep -E 'libh3\.so$' | head -1)
+          if [ -z "$H3_INC" ] || [ -z "$H3_LIB" ]; then
+            find /usr -name 'h3api.h' 2>/dev/null
+            find /usr -name 'libh3*' 2>/dev/null
+            echo "::error::could not locate libh3 headers/library"
+            exit 1
+          fi
+          echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
+          echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
+
+      - name: Build pgPointCloud from source (for libpc.a)
+        # The POINTCLOUD build links the vendored pgPointCloud static library
+        # (pointcloud-pg/lib/libpc.a, produced as a side-effect of its own
+        # autotools build); build it here so cmake can find it.
+        run: |
+          cd pointcloud-pg
+          ./autogen.sh
+          ./configure --with-pgconfig=/usr/lib/postgresql/17/bin/pg_config
+          make -j "$(nproc)"
+          ls -la lib/libpc.a
 
       - name: Configure (generate compile_commands.json)
         run: |
           mkdir build
           cd build
+          # Enable every optional feature so all of their sources land in
+          # compile_commands.json and get analysed. A plain -DMEOS=on build
+          # excludes them, so cppcheck would otherwise never see that code.
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DMEOS=on ..
+                -DMEOS=on \
+                -DCBUFFER=on -DNPOINT=on -DPOSE=on -DRGEO=on -DQUADBIN=on \
+                -DARROW=on -DRASTER=on -DPOINTCLOUD=on \
+                -DH3=on -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" -DH3_LIBRARY="$H3_LIBRARY" ..
 
       - name: Run cppcheck (XML output - universally supported)
         # --project uses the same -I paths CMake records for the real
