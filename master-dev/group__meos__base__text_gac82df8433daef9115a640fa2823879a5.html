@@ -110,7 +110,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostgreSQL function: <code>upper()</code> in file <code>varlena.c</code>. Notice that <code>DEFAULT_COLLATION_OID</code> is used instead of <code>PG_GET_COLLATION()</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostgreSQL function: <code>upper()</code> in file <code>varlena.c</code>. Notice that <code>DEFAULT_COLLATION_OID</code> is used instead of <code>PG_GET_COLLATION()</code>.</dd></dl>
+<p>In standalone MEOS this is an ASCII-only fold: bytes 0x61..0x7A become 0x41..0x5A; bytes &gt;= 0x80 (UTF-8 continuation/lead bytes) are left unchanged. So <code>text_upper("Zürich")</code> returns <code>"ZüRICH"</code>, not <code>"ZÜRICH"</code>. This is the documented UTF-8 contract — see <a class="el" href="meos_8h.html" title="External API of the Mobility Engine Open Source (MEOS) library.">meos.h</a>. </p>
 
 </div>
 </div>
