@@ -1,0 +1,41 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Muestreo Raquet / QUADBIN</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch19.html" title="Capítulo 19. Muestreo de Ráster"><link rel="prev" href="ch19.html" title="Capítulo 19. Muestreo de Ráster"><link rel="next" href="ch19s03.html" title="Operadores de Restricción y Predicado"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Muestreo Raquet / QUADBIN</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19.html">Anterior</a> </td><th width="60%" align="center">Capítulo 19. Muestreo de Ráster</th><td width="20%" align="right"> <a accesskey="n" href="ch19s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raquet_quadbin"></a>Muestreo Raquet / QUADBIN</h2></div></div></div><p><a class="ulink" href="https://github.com/CartoDB/raquet" target="_top">Raquet</a> es un formato ráster nativo en la nube que almacena teselas ráster como filas en un archivo Apache Parquet. Cada fila contiene los bytes de píxel de una tesela Web-Mercator junto con su identificador de celda <a class="ulink" href="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin" target="_top">QUADBIN</a> — un entero de 64 bits que codifica el nivel de zoom y las coordenadas x/y intercaladas mediante Morton. No se requieren metadatos espaciales adicionales: el rectángulo delimitador y el mapeo de píxel a coordenadas quedan completamente determinados por el valor QUADBIN.</p><p>El patrón de consulta típico une una trayectoria con una tabla Raquet en dos pasos:</p><pre class="programlisting">
+-- Step 1: identify which tiles the trajectory overlaps
+SELECT DISTINCT q
+FROM unnest(trajectory_quadbins(traj, 8)) AS q;
+
+-- Step 2: sample each matching tile
+SELECT raster_tile_value_quadbin(
+    band_data, width, height, quadbin, 'FLOAT32', nodata, true, traj)
+FROM elevation_raquet
+WHERE quadbin = ANY(trajectory_quadbins(traj, 8));
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trajectory_quadbins"></a><a class="indexterm" name="id14270"></a><p>Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</p><p><code class="varname">trajectory_quadbins(tgeompoint,integer) → bigint[]</code></p><p>Devuelve el conjunto de celdas QUADBIN únicas (deduplicadas) cuyas envolventes de tesela Web-Mercator contienen al menos un instante de <code class="varname">traj</code>. El resultado es adecuado como clave de unión en la cláusula WHERE contra una tabla Raquet. El parámetro <code class="varname">zoom</code> debe estar en [0, 15].</p><pre class="programlisting">
+-- Three instants spanning three tiles at zoom 3
+SELECT trajectory_quadbins(
+  tgeompointFromText('SRID=4326;{Point(-60 45)@2024-01-01,
+                                  Point(0 45)@2024-01-02,
+                                  Point(60 45)@2024-01-03}'), 3);
+
+-- Count of Raquet tiles a ship trajectory overlaps at zoom 8
+SELECT array_length(trajectory_quadbins(trip4326, 8), 1) AS tile_count
+FROM trips
+ORDER BY tile_count DESC;
+</pre></li><li class="listitem"><a name="raster_tile_value_quadbin"></a><a class="indexterm" name="id14281"></a><p>Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</p><p><code class="varname">raster_tile_value_quadbin(bytea,integer,integer,bigint,text,float8,boolean,tgeompoint) → tfloat</code></p><p>Evalúa un arreglo de píxeles de banda única en orden de fila mayor en cada instante de <code class="varname">traj</code> (SRID 4326). La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <code class="varname">quadbin</code> mediante la transformada de tesela deslizante Web-Mercator. El argumento <code class="varname">pixtype</code> debe ser uno de <code class="varname">UINT8</code>, <code class="varname">INT16</code>, <code class="varname">INT32</code>, <code class="varname">FLOAT32</code> o <code class="varname">FLOAT64</code>. Cuando <code class="varname">has_nodata</code> es verdadero, los instantes cuyo píxel equivale a <code class="varname">nodata</code> se descartan silenciosamente. Devuelve <code class="varname">NULL</code> cuando ningún instante sobrevive.</p><pre class="programlisting">
+-- Sample elevation tiles from a Raquet Parquet table
+-- for all ship trajectories
+SELECT t.tripid,
+       raster_tile_value_quadbin(
+           r.band_data, r.width, r.height, r.quadbin,
+           'FLOAT32', r.nodata, true, t.trip4326)
+FROM trips t
+JOIN elevation_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+
+-- Average sea-surface temperature per trajectory
+SELECT t.tripid,
+       avgValue(raster_tile_value_quadbin(
+           r.band_data, 256, 256, r.quadbin,
+           'INT16', -9999, true, t.trip4326)) AS mean_sst
+FROM trips t
+JOIN sst_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 19. Muestreo de Ráster </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operadores de Restricción y Predicado</td></tr></table></div></body></html>

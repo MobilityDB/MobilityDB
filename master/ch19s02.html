@@ -1,0 +1,42 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Raquet / QUADBIN Sampling</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch19.html" title="Chapter 19. Raster Sampling"><link rel="prev" href="ch19.html" title="Chapter 19. Raster Sampling"><link rel="next" href="ch19s03.html" title="Restriction and Predicate Operators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Raquet / QUADBIN Sampling</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Raster Sampling</th><td width="20%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raquet_quadbin"></a>Raquet / QUADBIN Sampling</h2></div></div></div><p><a class="ulink" href="https://github.com/CartoDB/raquet" target="_top">Raquet</a> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <a class="ulink" href="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin" target="_top">QUADBIN</a> cell identifier — a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</p><p>The typical query pattern joins a trajectory against a Raquet table in two steps:</p><pre class="programlisting">
+-- Step 1: identify which tiles the trajectory overlaps
+SELECT DISTINCT q
+FROM unnest(trajectory_quadbins(traj, 8)) AS q;
+
+-- Step 2: sample each matching tile
+SELECT raster_tile_value_quadbin(
+    band_data, width, height, quadbin, 'FLOAT32', nodata, true, traj)
+FROM elevation_raquet
+WHERE quadbin = ANY(trajectory_quadbins(traj, 8));
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trajectory_quadbins"></a><a class="indexterm" name="id15243"></a><p>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</p><p><code class="varname">trajectory_quadbins(tgeompoint,integer) → bigint[]</code></p><p>Returns the set of unique QUADBIN cells (deduplicated) whose Web-Mercator tile envelopes contain at least one instant of <code class="varname">traj</code>. The result is suitable as a WHERE-clause join key against a Raquet table. <code class="varname">zoom</code> must be in [0, 15].</p><pre class="programlisting">
+-- Three instants spanning three tiles at zoom 3
+SELECT trajectory_quadbins(
+  tgeompointFromText('SRID=4326;{Point(-60 45)@2024-01-01,
+                                  Point(0 45)@2024-01-02,
+                                  Point(60 45)@2024-01-03}'), 3);
+-- {5202501994543054848,5203346419473186816,5203416788217364480}
+
+-- Count of Raquet tiles a ship trajectory overlaps at zoom 8
+SELECT array_length(trajectory_quadbins(trip4326, 8), 1) AS tile_count
+FROM trips
+ORDER BY tile_count DESC;
+</pre></li><li class="listitem"><a name="raster_tile_value_quadbin"></a><a class="indexterm" name="id15254"></a><p>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</p><p><code class="varname">raster_tile_value_quadbin(bytea,integer,integer,bigint,text,float8,boolean,tgeompoint) → tfloat</code></p><p>Evaluates a row-major single-band pixel array at each instant of <code class="varname">traj</code> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <code class="varname">quadbin</code> alone via the Web-Mercator slippy-tile transform. The <code class="varname">pixtype</code> argument must be one of <code class="varname">UINT8</code>, <code class="varname">INT16</code>, <code class="varname">INT32</code>, <code class="varname">FLOAT32</code>, or <code class="varname">FLOAT64</code>. When <code class="varname">has_nodata</code> is true, instants whose pixel equals <code class="varname">nodata</code> are silently dropped. Returns <code class="varname">NULL</code> when no instant survives.</p><pre class="programlisting">
+-- Sample elevation tiles from a Raquet Parquet table
+-- for all ship trajectories
+SELECT t.tripid,
+       raster_tile_value_quadbin(
+           r.band_data, r.width, r.height, r.quadbin,
+           'FLOAT32', r.nodata, true, t.trip4326)
+FROM trips t
+JOIN elevation_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+
+-- Average sea-surface temperature per trajectory
+SELECT t.tripid,
+       avgValue(raster_tile_value_quadbin(
+           r.band_data, 256, 256, r.quadbin,
+           'INT16', -9999, true, t.trip4326)) AS mean_sst
+FROM trips t
+JOIN sst_raquet r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Raster Sampling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Restriction and Predicate Operators</td></tr></table></div></body></html>
