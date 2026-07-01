@@ -60,6 +60,9 @@ jobs:
         run: |
           cd meos/test
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+          # SIBLING-FROM bool_test (same compile+run idiom)
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o allocator_test allocator_test.c -L/usr/local/lib -lmeos
+          ./allocator_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o bool_test bool_test.c -L/usr/local/lib -lmeos
           ./bool_test
           # The tcbuffer test program is generated from the installed headers

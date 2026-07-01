@@ -624,6 +624,8 @@ extern void init_database_collation(void);
 void
 meos_initialize(void)
 {
+  /* Install the default (libc) allocator before anything else can allocate */
+  meos_initialize_allocator(NULL, NULL, NULL);
   meos_initialize_error_handler(NULL);
   meos_initialize_timezone(NULL);
   /* Initialize collation */
