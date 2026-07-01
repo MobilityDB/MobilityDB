@@ -52,7 +52,7 @@ macro(process_file f srcdir bindir)
 endmacro()
 
 # Auto-register a type family's generated portable-alias SQL file. The file is
-# emitted by tools/portable_aliases/generate.py as <NNN>_portable_aliases.in.sql
+# emitted by tools/codegen/portable_aliases/generate.py as <NNN>_portable_aliases.in.sql
 # in the family directory; its mere presence registers it for the build, so no
 # family has to hand-list it (and a new family needs no manifest edit). Called
 # from within each (feature-gated) family directory, so a family's aliases are

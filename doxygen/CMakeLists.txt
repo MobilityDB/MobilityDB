@@ -14,7 +14,7 @@ if(DOC_DEV)
     # Generate phantom C decls for every SQL function so Doxygen's
     # @sqlfn alias expansion autolinks into a symbol page listing the
     # SQL signatures and the C backing function. See
-    # scripts/sql_to_doxygen_stubs.py for the full rationale.
+    # tools/codegen/sql_to_doxygen_stubs/sql_to_doxygen_stubs.py for the full rationale.
     set(SQL_STUB_DIR ${CMAKE_CURRENT_BINARY_DIR}/sql_stubs)
     set(SQL_STUB_FILE ${SQL_STUB_DIR}/sql_phantom_decls.c)
     file(GLOB_RECURSE SQL_SRC_FILES
@@ -23,7 +23,7 @@ if(DOC_DEV)
       OUTPUT ${SQL_STUB_FILE}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${SQL_STUB_DIR}
       COMMAND python3
-        ${CMAKE_SOURCE_DIR}/scripts/sql_to_doxygen_stubs.py
+        ${CMAKE_SOURCE_DIR}/tools/codegen/sql_to_doxygen_stubs/sql_to_doxygen_stubs.py
         --sql-dir ${CMAKE_SOURCE_DIR}/mobilitydb/sql
         --collision-dir
           ${CMAKE_SOURCE_DIR}/meos/include
@@ -32,7 +32,7 @@ if(DOC_DEV)
           ${CMAKE_SOURCE_DIR}/mobilitydb/src
         --out-dir ${SQL_STUB_DIR}
       DEPENDS
-        ${CMAKE_SOURCE_DIR}/scripts/sql_to_doxygen_stubs.py
+        ${CMAKE_SOURCE_DIR}/tools/codegen/sql_to_doxygen_stubs/sql_to_doxygen_stubs.py
         ${SQL_SRC_FILES}
       COMMENT "Generating SQL phantom declarations for Doxygen autolink"
       VERBATIM

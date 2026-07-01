@@ -27,8 +27,8 @@ run() { # name, cmd...
 run "int64 in headers"           bash   tools/scripts/check_int64_in_headers.sh
 command -v licensecheck >/dev/null && run "license headers" bash tools/scripts/test_license.sh \
   || echo "SKIP: license (licensecheck not installed: apt-get install -y devscripts)"
-[ -f tools/portable_aliases/generate.py ] && \
-  run "portable aliases up to date" bash -c 'python3 tools/portable_aliases/generate.py --check 2>/dev/null || python3 tools/portable_aliases/generate.py'
+[ -f tools/codegen/portable_aliases/generate.py ] && \
+  run "portable aliases up to date" bash -c 'python3 tools/codegen/portable_aliases/generate.py --check 2>/dev/null || python3 tools/codegen/portable_aliases/generate.py'
 
 # One main() per MEOS test — a bad pin merge can CONCATENATE two copies of a test
 # file into a duplicate main(), which reddens the binding-CI full build while the

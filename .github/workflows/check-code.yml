@@ -22,11 +22,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Portable-alias invariants (0 collisions / unresolved / invented / unclassified)
-        run: python3 tools/portable_aliases/generate.py --check
+        run: python3 tools/codegen/portable_aliases/generate.py --check
       - name: Generated alias SQL is up to date (idempotent)
         run: |
-          python3 tools/portable_aliases/generate.py --insrc
-          git diff --exit-code -- mobilitydb/sql tools/portable_aliases/verify_equivalence.sql
+          python3 tools/codegen/portable_aliases/generate.py --insrc
+          git diff --exit-code -- mobilitydb/sql tools/codegen/portable_aliases/verify_equivalence.sql
 
   int64_check:
     name: int64 vs int64_t header convention

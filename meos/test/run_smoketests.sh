@@ -52,7 +52,7 @@ fi
 # configured family, including trgeometry_test.c.
 if command -v python3 >/dev/null 2>&1; then
   echo "[gen]   regenerating smoke suites from $MEOS_INCLUDE_DIR"
-  MEOS_INCLUDE_DIR="$MEOS_INCLUDE_DIR" python3 "$HERE/gen_smoketest.py"
+  MEOS_INCLUDE_DIR="$MEOS_INCLUDE_DIR" python3 "$HERE/../../tools/codegen/gen_smoketest/gen_smoketest.py"
 fi
 
 mkdir -p "$HERE/build"

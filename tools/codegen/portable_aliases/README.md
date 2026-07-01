@@ -14,7 +14,7 @@ operator's own backing C symbol, so it is the operator's exact implementation.
 ## Regenerate
 
 ```bash
-python3 tools/portable_aliases/generate.py --insrc
+python3 tools/codegen/portable_aliases/generate.py --insrc
 ```
 
 Writes `mobilitydb/sql/<group>/<NNN>_portable_aliases.in.sql` (wired into each
@@ -26,7 +26,7 @@ idempotent — committed output equals a fresh run.
 1. **Static invariants — no database** (CI gate, `check-code.yml`):
 
    ```bash
-   python3 tools/portable_aliases/generate.py --check
+   python3 tools/codegen/portable_aliases/generate.py --check
    ```
 
    Fails on any of: collisions, unresolved backing function, invented C
@@ -42,7 +42,7 @@ idempotent — committed output equals a fresh run.
    current build:
 
    ```bash
-   tools/portable_aliases/verify.sh <database>
+   tools/codegen/portable_aliases/verify.sh <database>
    ```
 
    Runs `verify_equivalence.sql`; expects `PORTABLE ALIASES OK`.
