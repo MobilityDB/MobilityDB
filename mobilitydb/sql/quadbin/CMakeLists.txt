@@ -1,10 +1,10 @@
 SET(LOCAL_FILES
   350_quadbin
   351_quadbinset
-  356_quadbin_ops
-  352_tquadbin
-  357_tquadbin_ops
+  352_quadbin_ops
+  353_tquadbin
   354_tquadbin_compops
+  355_tquadbin_spatialfuncs
   358_tquadbin_topops
   359_tquadbin_posops
   362_tquadbin_spatialrels
