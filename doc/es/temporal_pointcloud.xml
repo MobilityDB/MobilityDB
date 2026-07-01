@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="tpointcloud">
+	<title>Nubes de Puntos Temporales</title>
+
+	<para>La extensión <ulink url="https://pgpointcloud.github.io/pointcloud/">pgPointCloud</ulink> almacena datos de nubes de puntos LIDAR en PostgreSQL mediante dos tipos estáticos: <varname>pcpoint</varname>, un único punto multidimensional cuyas dimensiones se describen mediante un <emphasis>esquema</emphasis> almacenado en la tabla de catálogo <varname>pointcloud_formats</varname>; y <varname>pcpatch</varname>, un lote comprimido de valores <varname>pcpoint</varname> que comparten el mismo <varname>pcid</varname> (identificador de esquema). Cada esquema fija las dimensiones presentes (<varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, <varname>Intensity</varname>, …), su tipo numérico, escala y desplazamiento.</para>
+
+	<para>MobilityDB eleva estos tipos al mundo temporal mediante <varname>tpcpoint</varname> (un sensor LIDAR/GPS en movimiento) y <varname>tpcpatch</varname> (una serie temporal de grupos de puntos comprimidos). También añade los tipos de conjunto <varname>pcpointset</varname> / <varname>pcpatchset</varname> y el tipo de caja delimitadora espaciotemporal <varname>tpcbox</varname>. Una referencia completa de los tipos estáticos <varname>pcpoint</varname> y <varname>pcpatch</varname> se ofrece en la <ulink url="https://pgpointcloud.github.io/pointcloud/">documentación de pgPointCloud</ulink>; este capítulo cubre las adiciones de MobilityDB sobre pgPointCloud.</para>
+
+	<para>Para usar los tipos descritos aquí, MobilityDB debe compilarse con la opción de CMake <varname>POINTCLOUD=ON</varname>. En tal compilación, el archivo <filename>mobilitydb.control</filename> generado declara <varname>requires = 'postgis, pointcloud'</varname>, de modo que un único <varname>CASCADE</varname> crea la pila completa:</para>
+	<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE EXTENSION mobilitydb CASCADE;
+-- NOTICE:  installing required extension "postgis"
+-- NOTICE:  installing required extension "pointcloud"
+</programlisting>
+	<sect1 xml:id="tpointcloud_quickstart">
+		<title>Inicio rápido</title>
+
+		<para>Esta sección recorre un ejemplo mínimo de extremo a extremo: registrar un esquema, construir valores, elevar al tipo temporal, consultar con la superficie bbox e indexar. El objetivo es que cada sección posterior de este capítulo esté anclada a un uso concreto. Siga los pasos en orden sobre una base de datos nueva.</para>
+
+		<sect2 xml:id="tpointcloud_quickstart_setup">
+			<title>Registrar un esquema</title>
+
+			<para>Cada valor <varname>pcpoint</varname> y <varname>pcpatch</varname> lleva un <varname>pcid</varname> que se resuelve a través de <varname>pointcloud_formats</varname> en un esquema XML. El esquema declara las dimensiones (X, Y, Z, …), su tipo numérico en disco y la escala por dimensión. Un esquema 3D mínimo con todas las dimensiones almacenadas como <varname>int32</varname> con escala unitaria:</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+INSERT INTO pointcloud_formats (pcid, srid, schema) VALUES (1, 4326, '
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1"&gt;
+  &lt;pc:dimension&gt;&lt;pc:position&gt;1&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
+    &lt;pc:name&gt;X&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
+    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
+  &lt;pc:dimension&gt;&lt;pc:position&gt;2&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
+    &lt;pc:name&gt;Y&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
+    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
+  &lt;pc:dimension&gt;&lt;pc:position&gt;3&lt;/pc:position&gt;&lt;pc:size&gt;4&lt;/pc:size&gt;
+    &lt;pc:name&gt;Z&lt;/pc:name&gt;&lt;pc:interpretation&gt;int32_t&lt;/pc:interpretation&gt;
+    &lt;pc:scale&gt;1&lt;/pc:scale&gt;&lt;/pc:dimension&gt;
+&lt;/pc:PointCloudSchema&gt;');
+</programlisting>
+			<para>Los esquemas son globales a la base de datos; normalmente se registran una sola vez durante la carga inicial de datos. El SRID es por esquema y es heredado por cada valor con ese <varname>pcid</varname>.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_construct">
+			<title>Construir valores base y temporales</title>
+
+			<para>MobilityDB incluye constructores ergonómicos sobre los <varname>PC_MakePoint</varname> / <varname>PC_Patch</varname> de pgPointCloud:</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- a single point at (1, 2, 3) under pcid=1
+SELECT pcpoint(1, 1.0, 2.0, 3.0);
+
+-- a patch holding two points
+SELECT pcpatch(1, pcpoint(1, 1.0, 2.0, 3.0),
+                  pcpoint(1, 4.0, 5.0, 6.0));
+
+-- a single-instant tpcpoint at (10, 20, 30) at 2024-01-01
+SELECT tpcpoint(pcpoint(1, 10, 20, 30), '2024-01-01'::timestamptz);
+
+-- a 3-instant moving sensor track (step interpolation, the default for
+-- pointcloud temporals because dimensions like Intensity don't interpolate
+-- linearly the way coordinates do)
+SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(1, 0, 0, 0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-02'::timestamptz),
+  tpcpoint(pcpoint(1, 2, 2, 2), '2024-01-03'::timestamptz)]);
+</programlisting>
+			<para>Para sesiones largas, declare la columna con un <emphasis>typmod</emphasis> para que el pcid de cada fila se imponga en el momento del INSERT:</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE TABLE scans (id int, traj tpcpoint(1), full_scan tpcpatch(1));
+INSERT INTO scans VALUES (1,
+  tpcpointSeq(ARRAY[
+    tpcpoint(pcpoint(1, 0, 0, 0), '2024-01-01'::timestamptz),
+    tpcpoint(pcpoint(1, 1, 1, 1), '2024-01-02'::timestamptz)]),
+  tpcpatch(pcpatch(1, pcpoint(1,1,1,1), pcpoint(1,2,2,2)),
+           '2024-01-01'::timestamptz));
+</programlisting>
+			<para>Insertar un valor cuyo pcid no coincide con el typmod de la columna genera <varname>ERROR: Pcid of tpcpoint value (N) does not match column typmod pcid (M)</varname>; mezclar pcids en una columna sin restricciones también se rechaza en el momento de la agregación con <varname>extent</varname>.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_query">
+			<title>Consultar con la superficie bbox</title>
+
+			<para>Cada tpcpoint y tpcpatch lleva una <varname>tpcbox</varname> (espejo de <varname>stbox</varname> + <varname>pcid</varname>) calculada en el momento de la construcción. La superficie de operadores a nivel bbox — topológica (<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>), direccional en X/Y/Z/tiempo y distancia KNN <varname>|=|</varname> — funciona entre cualquier par de (<varname>tpcbox</varname>, <varname>tpcpoint</varname>, <varname>tpcpatch</varname>):</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- rows whose track ever entered a 3D-temporal box
+SELECT id FROM scans
+WHERE traj &amp;&amp; tpcbox_zt(0, 0, 0, 1, 1, 1,
+  tstzspan '[2024-01-01, 2024-01-02]', 1, 4326);
+
+-- 5 nearest tracks to a query box (KNN, GiST-orderable)
+SELECT id, traj |=| my_box AS dist FROM scans
+ORDER BY traj |=| my_box LIMIT 5;
+</programlisting>
+			<para>El filtrado a nivel de parche (descartar instantes completos cuyo parche no se superpone con una caja) se proporciona mediante <varname>atTpcbox</varname> / <varname>minusTpcbox</varname>. Véase <link linkend="tpcpatch_perpoint_roadmap">Operaciones por punto</link> para el ámbito de granularidad.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_index">
+			<title>Índice para búsquedas impulsadas por bbox</title>
+
+			<para>Las clases de operadores R-tree GiST y quadtree / kd-tree SP-GiST aceleran todos los predicados bbox. Elija GiST para cargas de trabajo de propósito general (y para ordenación KNN); SP-GiST kd-tree es competitivo en datos de solo puntos con muchas lecturas:</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX scans_traj_gist ON scans USING gist(traj);
+CREATE INDEX scans_full_spgist ON scans USING spgist(full_scan);
+</programlisting>
+			<para>Las clases de operadores SP-GiST almacenan un <varname>stbox</varname> internamente y recuperan el filtro <varname>pcid</varname> en el momento de la reverificación, por lo que una columna con pcids mixtos devuelve un conjunto de candidatos ligeramente mayor para reverificar — no supone ningún problema cuando cada tabla contiene valores de un único esquema, que es lo que impone la receta typmod en <link linkend="tpointcloud_quickstart_construct">Construir valores base y temporales</link>.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_aggregate">
+			<title>Agregación</title>
+
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- spatiotemporal extent of every track (one tpcbox)
+SELECT extent(traj) FROM scans;
+
+-- count of active tracks at each timestamp (tint)
+SELECT tcount(traj) FROM scans;
+
+-- merge per-source instants into a single tpcpoint
+SELECT id, merge(traj) FROM scans GROUP BY id;
+</programlisting>
+			<para><varname>extent</varname> rechaza pcids mixtos (las dimensiones bbox serían ininterpretables entre esquemas); <varname>merge</varname> y <varname>tcount</varname> siguen las mismas reglas que sus equivalentes sin nube de puntos.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_perpoint">
+			<title>Acceso por punto</title>
+
+			<para>La función de retorno de conjuntos <link linkend="tpcpatch_points"><varname>points</varname></link> expande el parche de cada instante en pcpoints individuales, lo que resulta útil para uniones con predicados por punto que la capa bbox no puede expresar:</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- explode every patch in the column into one row per (instant timestamp, point)
+SELECT id, t, point FROM scans, points(full_scan);
+
+-- total points across every instant of every track
+SELECT id, numPoints(full_scan) FROM scans;
+</programlisting>
+			<para>El <emphasis>filtrado</emphasis> por punto — construir un nuevo parche a partir de un subconjunto de los puntos del original — se proporciona mediante <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname></link> / <varname>minusTpcboxFine</varname> (contra una <varname>tpcbox</varname>) y <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname></link> / <varname>minusGeometry</varname> (contra una geometría 2D); véase <link linkend="tpcpatch_perpoint_roadmap">Operaciones por punto</link> para la matriz de granularidad.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_quickstart_next">
+			<title>¿Qué sigue?</title>
+
+			<para>El resto del capítulo profundiza en cada una de las superficies abordadas aquí: <link linkend="pcpoint_pcpatch_static">funciones de acceso de pcpoint / pcpatch</link>, <link linkend="pcpointset_pcpatchset">pcpointset / pcpatchset</link>, <link linkend="tpcbox">la caja delimitadora tpcbox</link>, <link linkend="tpcpoint">tpcpoint</link>, <link linkend="tpcpatch">tpcpatch</link>, <link linkend="tpointcloud_indexes">índices</link> y <link linkend="tpointcloud_aggregations">agregaciones</link>.</para>
+		</sect2>
+	</sect1>
+	<sect1 xml:id="pcpoint_pcpatch_static">
+		<title>Tipos estáticos <varname>pcpoint</varname> y <varname>pcpatch</varname></title>
+
+		<para>Los tipos estáticos provienen de pgPointCloud. MobilityDB expone las funciones de acceso de coordenadas con conocimiento del esquema necesarias para proyectar los valores de pgPointCloud en el resto del ecosistema de tipos temporales.</para>
+
+		<sect2 xml:id="pcpoint_pcpatch_constructors">
+			<title>Constructores ergonómicos</title>
+
+			<para>La función <varname>pcpoint_in</varname> de pgPointCloud solo acepta hex-WKB, por lo que el constructor canónico es <varname>PC_MakePoint(pcid, ARRAY[…]::float[])</varname>. MobilityDB incluye dos sobrecargas SQL ligeras sobre él para literales de prueba más cortos y consultas ad hoc; la validación subyacente de dimensiones del esquema sigue ocurriendo dentro de <varname>PC_MakePoint</varname>.</para>
+
+			<itemizedlist>
+				<listitem xml:id="pcpoint_xy_xyz">
+					<indexterm significance="normal"><primary><varname>pcpoint</varname></primary></indexterm>
+					<para>Construye un pcpoint 2D o 3D directamente a partir de coordenadas x/y(/z)</para>
+					<para><varname>pcpoint(pcid integer, x float, y float) → pcpoint</varname></para>
+					<para><varname>pcpoint(pcid integer, x float, y float, z float) → pcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpoint(1, 10.0, 20.0, 30.0);
+-- equivalent to PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]::float[])
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpatch_variadic">
+					<indexterm significance="normal"><primary><varname>pcpatch</varname></primary></indexterm>
+					<para>Construye un pcpatch a partir de una lista variádica de pcpoints que comparten el mismo pcid</para>
+					<para><varname>pcpatch(pcid integer, VARIADIC points pcpoint[]) → pcpatch</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0));
+-- equivalent to PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+--                              PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pcpoint_accessors">
+			<title>Funciones de acceso</title>
+
+			<itemizedlist>
+				<listitem xml:id="pcpoint_pcid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<para>Devuelve el identificador de esquema de un pcpoint o pcpatch</para>
+					<para><varname>pcid(pcpoint) → integer</varname></para>
+					<para><varname>pcid(pcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pcid(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+-- 1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_getXYZ">
+					<indexterm significance="normal"><primary><varname>getX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
+					<para>Devuelve una coordenada de un pcpoint, NULL si la dimensión está ausente del esquema</para>
+					<para><varname>getX(pcpoint) → float</varname></para>
+					<para><varname>getY(pcpoint) → float</varname></para>
+					<para><varname>getZ(pcpoint) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH pt AS (SELECT PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]) p)
+  SELECT getX(p), getY(p), getZ(p) FROM pt;
+-- 10 | 20 | 30
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_getDim">
+					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
+					<para>Devuelve cualquier dimensión con nombre de un pcpoint, NULL si el nombre es desconocido para el esquema</para>
+					<para><varname>getDim(pcpoint,text) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
+-- 10
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pcpoint_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Devuelve el identificador de referencia espacial (heredado del esquema)</para>
+					<para><varname>SRID(pcpoint) → integer</varname></para>
+					<para><varname>SRID(pcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+-- 0
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 xml:id="pcpointset_pcpatchset">
+		<title>Tipos de conjunto <varname>pcpointset</varname> y <varname>pcpatchset</varname></title>
+
+		<para>Un <varname>pcpointset</varname> es un conjunto ordenado de valores <varname>pcpoint</varname> distintos; un <varname>pcpatchset</varname> es el tipo de conjunto análogo para <varname>pcpatch</varname>. Ambos siguen la semántica general de conjuntos de MobilityDB (véase <xref linkend="set_span_types" />): los valores se deduplicen en la construcción, la representación binaria es canónica, y todos los operadores genéricos a nivel de conjunto (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>&amp;&amp;</varname>, <varname>+</varname>, <varname>-</varname>, <varname>*</varname>) y las funciones de acceso (<varname>numValues</varname>, <varname>memSize</varname>, <varname>asText</varname>, <varname>asBinary</varname>, <varname>asHexWKB</varname>, …) están disponibles.</para>
+
+		<para>Todos los valores de un conjunto deben compartir el mismo <varname>pcid</varname>. Mezclar esquemas en un único conjunto genera un error en el momento de la construcción.</para>
+
+		<sect2 xml:id="pcpointset_constructor">
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem xml:id="pcpointset_set">
+					<indexterm significance="normal"><primary><varname>set</varname></primary></indexterm>
+					<para>Construye un conjunto a partir de un array de valores, todos los cuales deben compartir el mismo pcid</para>
+					<para><varname>set(pcpoint[]) → pcpointset</varname></para>
+					<para><varname>set(pcpatch[]) → pcpatchset</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
+  PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),  -- duplicate, deduped
+  PC_MakePoint(1, ARRAY[11.0, 21.0, 31.0])]));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>	<sect1 xml:id="tpcbox">
+		<title>Caja Delimitadora <varname>tpcbox</varname></title>
+
+		<para>El tipo <varname>tpcbox</varname> es la caja delimitadora espaciotemporal para los tipos de nube de puntos temporal. Refleja la estructura de <varname>stbox</varname> (véase <xref linkend="box_types" />) — mismos ejes X/Y/Z/T, mismos bits de indicador para las dimensiones presentes — y añade un único campo: el <varname>pcid</varname>. Dos valores <varname>tpcbox</varname> con distintos valores de <varname>pcid</varname> nunca se consideran solapados, contenidos, iguales o adyacentes entre sí, independientemente de su extensión geométrica o temporal.</para>
+
+		<para>Propagar el <varname>pcid</varname> a través de la aritmética de cajas delimitadoras garantiza que la poda por caja delimitadora nunca descarte una fila cuyo esquema difiera del esquema de la consulta, y nunca devuelva un resultado entre esquemas incompatibles.</para>
+
+		<sect2 xml:id="tpcbox_constructors">
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_const">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_z</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_t</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_xt</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcbox_zt</varname></primary></indexterm>
+					<para>Construir un tpcbox a partir de límites X/Y/Z/T explícitos y un pcid</para>
+					<para><varname>tpcbox(xmin,ymin,xmax,ymax,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_z(xmin,ymin,zmin,xmax,ymax,zmax,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_t(period,pcid) → tpcbox</varname></para>
+					<para><varname>tpcbox_xt(xmin,ymin,xmax,ymax,period,pcid,srid=0) → tpcbox</varname></para>
+					<para><varname>tpcbox_zt(xmin,ymin,zmin,xmax,ymax,zmax,period,pcid,srid=0) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 10, 10, 1, 0);
+-- TPCBOX X(0, 0), (10, 10) PCID=1
+SELECT tpcbox_zt(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-02]', 1, 0);
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_conversions">
+			<title>Conversiones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_pcpoint_to_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<para>Convertir un pcpoint a un tpcbox degenerado (de extensión cero); el SRID y el pcid provienen del esquema</para>
+					<para><varname>tpcbox(pcpoint) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
+-- TPCBOX Z(10, 20, 30), (10, 20, 30) PCID=1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_pcpatch_to_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<para>Convertir un pcpatch a un tpcbox usando los límites PCBOUNDS 2D integrados en el parche; la segunda forma acepta un SRID explícito en lugar de buscarlo en el esquema</para>
+					<para><varname>tpcbox(pcpatch) → tpcbox</varname></para>
+					<para><varname>tpcbox(pcpatch,integer) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])));
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_accessors">
+			<title>Accesores</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_hasXZT">
+					<indexterm significance="normal"><primary><varname>hasX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
+					<para>Devuelve si un tpcbox tiene establecidas las dimensiones X/Y, Z o T</para>
+					<para><varname>hasX(tpcbox) → boolean</varname></para>
+					<para><varname>hasZ(tpcbox) → boolean</varname></para>
+					<para><varname>hasT(tpcbox) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+  SELECT hasX(b), hasZ(b) FROM b;
+-- t | f
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_xyzminmax">
+					<indexterm significance="normal"><primary><varname>xmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>xmax</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>ymin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>ymax</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>zmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>zmax</varname></primary></indexterm>
+					<para>Devuelve un límite de coordenada, NULL si la dimensión correspondiente está ausente</para>
+					<para><varname>xmin(tpcbox) → float</varname></para>
+					<para><varname>xmax(tpcbox) → float</varname></para>
+					<para><varname>ymin(tpcbox) → float</varname></para>
+					<para><varname>ymax(tpcbox) → float</varname></para>
+					<para><varname>zmin(tpcbox) → float</varname></para>
+					<para><varname>zmax(tpcbox) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
+  SELECT xmin(b), xmax(b) FROM b;
+-- 0 | 10
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_tminmax">
+					<indexterm significance="normal"><primary><varname>tmin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tmax</varname></primary></indexterm>
+					<para>Devuelve un límite temporal, NULL si la caja no tiene dimensión T</para>
+					<para><varname>tmin(tpcbox) → timestamptz</varname></para>
+					<para><varname>tmax(tpcbox) → timestamptz</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
+-- 2024-01-01 00:00:00+00
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_pcid_srid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Devuelve el identificador de esquema y el SRID</para>
+					<para><varname>pcid(tpcbox) → integer</varname></para>
+					<para><varname>SRID(tpcbox) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH b AS (SELECT tpcbox(0, 0, 10, 10, 7, 4326) AS b)
+  SELECT pcid(b), SRID(b) FROM b;
+-- 7 | 4326
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_transformations">
+			<title>Transformaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_round">
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<para>Devuelve un tpcbox con las coordenadas redondeadas al número de dígitos decimales indicado</para>
+					<para><varname>round(tpcbox,integer=0) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
+-- TPCBOX X(0.12, 1.23), (2.35, 3.46) PCID=1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_setSRID">
+					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+					<para>Devuelve un tpcbox con el SRID sobreescrito. No reproyecta las coordenadas — para ello, proyecte primero el tpcpoint subyacente y tome la caja delimitadora del resultado</para>
+					<para><varname>setSRID(tpcbox,integer) → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
+-- 4326
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_setops">
+			<title>Operaciones de conjuntos</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_union">
+					<indexterm significance="normal"><primary><varname>tpcbox_union</varname></primary></indexterm>
+					<para>Devuelve la unión de dos tpcboxes; ambas deben compartir el mismo pcid</para>
+					<para><varname>tpcbox_union(tpcbox,tpcbox) → tpcbox</varname></para>
+					<para><varname>tpcbox + tpcbox → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) + tpcbox(3, 3, 10, 10, 1, 0);
+-- TPCBOX X(0, 0), (10, 10) PCID=1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_intersection">
+					<indexterm significance="normal"><primary><varname>tpcbox_intersection</varname></primary></indexterm>
+					<para>Devuelve la intersección de dos tpcboxes, NULL si son disjuntas o el pcid no coincide</para>
+					<para><varname>tpcbox_intersection(tpcbox,tpcbox) → tpcbox</varname></para>
+					<para><varname>tpcbox * tpcbox → tpcbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) * tpcbox(3, 3, 10, 10, 1, 0);
+-- TPCBOX X(3, 3), (5, 5) PCID=1
+</programlisting>
+				</listitem>
+			</itemizedlist>
+			<para>Nota: no se proporciona un <varname>minus</varname> genérico entre cajas, siguiendo la convención de <varname>stbox</varname> y <varname>tbox</varname>: la diferencia de dos cajas no es en general una caja.</para>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_topo">
+			<title>Operadores Topológicos</title>
+			<para>Todos los operadores topológicos toman dos valores <varname>tpcbox</varname> con <varname>pcid</varname> coincidente. Una discrepancia de pcid siempre devuelve false (no un error) para que los escaneos de índice se comporten de forma intuitiva.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_contains">
+					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+					<para>Devuelve true si el primer tpcbox contiene al segundo</para>
+					<para><varname>tpcbox @&gt; tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 10, 10, 1, 0) @&gt; tpcbox(2, 2, 8, 8, 1, 0);
+-- t
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_contained">
+					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+					<para>Devuelve true si el primer tpcbox está contenido en el segundo</para>
+					<para><varname>tpcbox &lt;@ tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
+-- t
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_overlaps">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+					<para>Devuelve true si dos tpcboxes se solapan</para>
+					<para><varname>tpcbox &amp;&amp; tpcbox → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);  -- t
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);  -- f (pcid mismatch)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcbox_same">
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>Devuelve true si dos tpcboxes son exactamente iguales</para>
+					<para><varname>tpcbox ~= tpcbox → boolean</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_adjacent">
+					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+					<para>Devuelve true si dos tpcboxes son adyacentes (comparten un límite)</para>
+					<para><varname>tpcbox -|- tpcbox → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_pos">
+			<title>Operadores de Posición</title>
+			<para>Dieciséis predicados de posición alineados por eje, paralelos a los de <varname>stbox</varname>. Cada uno comprueba la relación estricta o de solapamiento a lo largo de un eje. Todos requieren <varname>pcid</varname> coincidente; la discrepancia devuelve false. Los predicados del eje Z requieren que ambas cajas tengan dimensión Z; los del eje T requieren que ambas tengan dimensión T.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_left_right">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+					<para>Comprueba el orden en el eje X de dos tpcboxes</para>
+					<para><varname>tpcbox &lt;&lt; tpcbox → boolean</varname>  (estrictamente a la izquierda)</para>
+					<para><varname>tpcbox &amp;&lt; tpcbox → boolean</varname>  (no se extiende a la derecha)</para>
+					<para><varname>tpcbox &gt;&gt; tpcbox → boolean</varname>  (estrictamente a la derecha)</para>
+					<para><varname>tpcbox &amp;&gt; tpcbox → boolean</varname>  (no se extiende a la izquierda)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_below_above">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+					<para>Comprueba el orden en el eje Y de dos tpcboxes</para>
+					<para><varname>tpcbox &lt;&lt;| tpcbox → boolean</varname>  (estrictamente por debajo)</para>
+					<para><varname>tpcbox &amp;&lt;| tpcbox → boolean</varname>  (no se extiende hacia arriba)</para>
+					<para><varname>tpcbox |&gt;&gt; tpcbox → boolean</varname>  (estrictamente por encima)</para>
+					<para><varname>tpcbox |&amp;&gt; tpcbox → boolean</varname>  (no se extiende hacia abajo)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_front_back">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&amp;&gt;</varname></primary></indexterm>
+					<para>Comprueba el orden en el eje Z de dos tpcboxes (devuelve false si alguna carece de Z)</para>
+					<para><varname>tpcbox &lt;&lt;/ tpcbox → boolean</varname>  (estrictamente al frente)</para>
+					<para><varname>tpcbox &amp;&lt;/ tpcbox → boolean</varname>  (no se extiende hacia atrás)</para>
+					<para><varname>tpcbox /&gt;&gt; tpcbox → boolean</varname>  (estrictamente detrás)</para>
+					<para><varname>tpcbox /&amp;&gt; tpcbox → boolean</varname>  (no se extiende hacia el frente)</para>
+				</listitem>
+
+				<listitem xml:id="tpcbox_before_after">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+					<para>Comprueba el orden en el eje temporal de dos tpcboxes (devuelve false si alguna carece de T)</para>
+					<para><varname>tpcbox &lt;&lt;# tpcbox → boolean</varname>  (estrictamente antes)</para>
+					<para><varname>tpcbox &amp;&lt;# tpcbox → boolean</varname>  (no se extiende después)</para>
+					<para><varname>tpcbox #&gt;&gt; tpcbox → boolean</varname>  (estrictamente después)</para>
+					<para><varname>tpcbox #&amp;&gt; tpcbox → boolean</varname>  (no se extiende antes)</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcbox_comparisons">
+			<title>Comparaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcbox_btree">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<para>Compara dos tpcboxes; orden total sobre la codificación canónica (pcid, srid, flags, período y a continuación límites espaciales en orden XYZ-min/max)</para>
+					<para><varname>tpcbox = tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt;&gt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &lt;= tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &gt; tpcbox → boolean</varname></para>
+					<para><varname>tpcbox &gt;= tpcbox → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+	<sect1 xml:id="tpcpoint">
+		<title>Tipo Temporal <varname>tpcpoint</varname></title>
+
+		<para>Un <varname>tpcpoint</varname> es el levantamiento de <varname>pcpoint</varname> a través de la maquinaria temporal de MobilityDB. Admite los mismos tres subtipos que los demás tipos temporales — instante, secuencia (con interpolación discreta o de pasos) y conjunto de secuencias. Todos los instantes de un único valor <varname>tpcpoint</varname> deben compartir el mismo <varname>pcid</varname>; el constructor impone esta restricción.</para>
+
+		<para>La caja delimitadora de un <varname>tpcpoint</varname> es un <varname>tpcbox</varname>, calculada en el momento de la construcción a partir de las dimensiones X/Y/Z de los valores <varname>pcpoint</varname> subyacentes junto con las marcas temporales de los instantes.</para>
+
+		<para>Una columna o dominio puede fijar el esquema añadiendo el <varname>pcid</varname> como un typmod de entero único, exactamente igual que el <varname>geometry(Point, SRID)</varname> de PostGIS. La mezcla de esquemas en dicha columna es rechazada en el momento de INSERT o de la conversión. El mismo constructor se aplica a <varname>tpcpatch</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE TABLE scans (id int, traj tpcpoint(1), full_scan tpcpatch(1));
+-- accepts pcid 1
+INSERT INTO scans VALUES (1,
+  tpcpoint(pcpoint(1, 1.0, 2.0, 3.0), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
+           '2024-01-01'::timestamptz));
+-- rejects any other pcid:
+-- ERROR: Pcid of tpcpoint value (2) does not match column typmod pcid (1)
+</programlisting>
+		<para>Omitir el typmod (<varname>tpcpoint</varname> sin pcid entre paréntesis) deja la columna sin restricción de esquema. La comprobación en tiempo de ejecución del agregado <varname>extent</varname> sigue rechazando entradas con pcid mixtos a mitad de consulta incluso en columnas sin restricciones.</para>
+
+		<sect2 xml:id="tpcpoint_constructors">
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_inst">
+					<indexterm significance="normal"><primary><varname>tpcpoint</varname></primary></indexterm>
+					<para>Construir un pcpoint temporal de subtipo instante</para>
+					<para><varname>tpcpoint(pcpoint,timestamptz) → tpcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), '2024-01-01 12:00+00');
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_seq">
+					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
+					<para>Construir un pcpoint temporal de subtipo secuencia a partir de un array de instantes. La interpolación es una de <varname>'discrete'</varname>, <varname>'step'</varname>; <varname>'step'</varname> es el valor predeterminado para tpcpoint, ya que los pcpoints llevan dimensiones heterogéneas que no se interpolan de manera lineal</para>
+					<para><varname>tpcpointSeq(tpcpoint[]) → tpcpoint</varname></para>
+					<para><varname>tpcpointSeq(tpcpoint[],text) → tpcpoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 2.0, 3.0]), '2024-01-01'::timestamptz),
+  tpcpoint(PC_MakePoint(1, ARRAY[4.0, 5.0, 6.0]), '2024-01-02'::timestamptz)], 'step');
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_seqset">
+					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
+					<para>Construir un pcpoint temporal de subtipo conjunto de secuencias a partir de un array de secuencias</para>
+					<para><varname>tpcpointSeqSet(tpcpoint[]) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_accessors">
+			<title>Funciones de Acceso</title>
+			<para>Se aplican todas las funciones de acceso temporales genéricas (véase <xref linkend="ttype_p1" />): <varname>numInstants</varname>, <varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname>, <varname>instants</varname>, <varname>startValue</varname>, <varname>endValue</varname>, <varname>getValues</varname>, <varname>numTimestamps</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>getTime</varname>, <varname>duration</varname>, <varname>memSize</varname>, <varname>interp</varname>. Adicionalmente:</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_pcid">
+					<indexterm significance="normal"><primary><varname>pcid</varname></primary></indexterm>
+					<para>Devolver el id de esquema de pgPointCloud compartido por todos los instantes</para>
+					<para><varname>pcid(tpcpoint) → integer</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<para>Devolver el SRID heredado del esquema</para>
+					<para><varname>SRID(tpcpoint) → integer</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_projections">
+			<title>Proyecciones por Dimensión</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_getXYZ">
+					<indexterm significance="normal"><primary><varname>getX</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
+					<para>Proyectar un tpcpoint sobre una dimensión espacial, produciendo un tfloat</para>
+					<para><varname>getX(tpcpoint) → tfloat</varname></para>
+					<para><varname>getY(tpcpoint) → tfloat</varname></para>
+					<para><varname>getZ(tpcpoint) → tfloat</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT startValue(getX(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
+  '2024-01-01'::timestamptz)));
+-- 10
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_getDim">
+					<indexterm significance="normal"><primary><varname>getDim</varname></primary></indexterm>
+					<para>Proyectar un tpcpoint sobre cualquier dimensión de esquema con nombre, produciendo un tfloat</para>
+					<para><varname>getDim(tpcpoint,text) → tfloat</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_conversions">
+			<title>Conversiones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_tgeompoint">
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Convertir un tpcpoint a un punto de geometría temporal, proyectando todas las dimensiones no espaciales mientras se preservan las marcas temporales. El resultado tiene el mismo SRID que el esquema; su dimensionalidad (2D frente a 3D) sigue la presencia de Z en el esquema. No se proporciona una conversión inversa: reconstruir un pcpoint requiere un esquema destino que el valor temporal solo no puede suministrar</para>
+					<para><varname>tgeompoint::tpcpoint</varname> no está definida</para>
+					<para><varname>tpcpoint::tgeompoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
+  '2024-01-01'::timestamptz)::tgeompoint));
+-- POINT Z (10 20 30)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_arrowRoundtrip">
+					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+					<para>Convertir un punto de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+					<para><varname>arrowRoundtrip(tpcpoint) → tpcpoint</varname></para>
+					<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El pcpoint de cada instante se transporta de forma literal como un valor binario opaco; el id de esquema se resuelve fuera de banda en el catálogo pointcloud_formats, exactamente igual que para la representación binaria. El resultado es igual a la entrada.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
+  '2024-01-01'::timestamptz)) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
+  '2024-01-01'::timestamptz);
+-- t
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_compops">
+			<title>Comparaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_btree">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<para>Comparar dos tpcpoints lexicográficamente sobre sus codificaciones canónicas</para>
+					<para><varname>tpcpoint = tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt;&gt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &lt;= tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &gt; tpcpoint → boolean</varname></para>
+					<para><varname>tpcpoint &gt;= tpcpoint → boolean</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_ever_eq">
+					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+					<para>Comprobar si el valor en algún instante (alguna vez) o en todos los instantes (siempre) es igual a un pcpoint dado</para>
+					<para><varname>tpcpoint ?= pcpoint → boolean</varname></para>
+					<para><varname>tpcpoint %= pcpoint → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_restrictions">
+			<title>Restricciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_atTime">
+					<indexterm significance="normal"><primary><varname>atTime</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTime</varname></primary></indexterm>
+					<para>Restringir un tpcpoint a un selector temporal (marca de tiempo, periodo, conjunto o spanset), o eliminarlo</para>
+					<para><varname>atTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzset) → tpcpoint</varname></para>
+					<para><varname>atTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,timestamptz) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzspan) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzset) → tpcpoint</varname></para>
+					<para><varname>minusTime(tpcpoint,tstzspanset) → tpcpoint</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_atTpcbox">
+					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
+					<para>Restringir un tpcpoint al extent espacial / temporal de un tpcbox, o eliminarlo. Devuelve NULL cuando el pcid del tpcbox no coincide con el del tpcpoint. Internamente proyecta a un tgeompoint a través de la caché de esquemas, restringe la proyección mediante el stbox equivalente y devuelve el span temporal del resultado al tpcpoint original para preservar los valores pcpoint completos</para>
+					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_bbox_ops">
+			<title>Operadores de caja delimitadora</title>
+			<para>Los operadores de caja delimitadora evalúan contra el <varname>tpcbox</varname> del valor; véase <xref linkend="tpcbox_topo" /> y <xref linkend="tpcbox_pos" /> para la geometría por operador. Cada operador a continuación está conectado contra <varname>tpcbox</varname>, <varname>tstzspan</varname> y el propio <varname>tpcpoint</varname>.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_topo">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+					<para>Predicados topológicos: <varname>&amp;&amp;</varname> solapa, <varname>@&gt;</varname> contiene, <varname>&lt;@</varname> contenido en, <varname>~=</varname> mismo, <varname>-|-</varname> adyacente.</para>
+				</listitem>
+				<listitem xml:id="tpcpoint_pos">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+					<para>Predicados direccionales estrictos sobre el eje X (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>), eje Y (<varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>), eje Z (<varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>) y eje temporal (<varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>), más sus variantes "solapa o X": <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>.</para>
+				</listitem>
+				<listitem xml:id="tpcpoint_knn">
+					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+					<para>Distancia de aproximación más cercana, ordenable KNN mediante la clase de operadores GiST: <varname>SELECT … ORDER BY temp |=| query LIMIT N</varname> se acelera con índice. El desajuste de pcid produce infinito.</para>
+					<para><varname>nearestApproachDistance(tpcpoint,tpcbox) → float</varname></para>
+					<para><varname>nearestApproachDistance(tpcpoint,tpcpoint) → float</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_btree_ordering">
+			<title>Ordenación B-tree — qué significa <varname>ORDER BY tpcpoint</varname></title>
+
+			<para>La clase de operadores <varname>tpcpoint_btree_ops</varname> produce un orden total sobre los valores <varname>tpcpoint</varname>, pero el orden es byte a byte sobre la serialización <varname>pcpoint</varname> subyacente, no geométrico. Se aplican las mismas advertencias que al <link linkend="tpcpatch_btree">B-tree de <varname>tpcpatch</varname></link>:</para>
+
+			<itemizedlist>
+				<listitem>
+					<para><emphasis role="bold"><varname>pcid</varname> es el discriminador primario.</emphasis> Los puntos con <varname>pcid</varname> menor se ordenan antes que los puntos con <varname>pcid</varname> mayor, independientemente de las coordenadas. La mezcla de pcids en una única columna agrupa las filas por esquema primero al ordenar.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis role="bold">Dentro de un único <varname>pcid</varname>, el orden sigue la disposición de dimensiones en disco del esquema</emphasis> — típicamente X, Y, Z codificados como int32 (tras aplicar la escala por dimensión del esquema). Dos puntos cuya distancia euclidiana es pequeña pueden ordenarse muy separados si sus dimensiones X difieren, ya que X se compara primero.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis role="bold">La igualdad es igualdad exacta de bytes.</emphasis> Dos pcpoints con los mismos valores de dimensión en el mismo esquema son iguales; el mismo conjunto de coordenadas codificado en un esquema con escala u orden de dimensiones diferente no lo es.</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>Para una ordenación con significado espacial, proyecte a un <varname>tgeompoint</varname> mediante la conversión con conocimiento de esquema y use el KNN <varname>&lt;-&gt;</varname> de PostGIS sobre la geometría resultante, o use el operador KNN GiST <link linkend="tpcpoint_knn"><varname>|=|</varname></link> directamente sobre el tpcpoint. Para una ordenación con significado temporal, proyecte a <varname>startTimestamp</varname> o <varname>timespan</varname> y ordene sobre ese valor.</para>
+		</sect2>
+
+		<sect2 xml:id="tpcpoint_spatialrels">
+			<title>Relaciones espaciales</title>
+			<para>Se evalúan proyectando el tpcpoint a un <varname>tgeompoint</varname> a través de la caché de esquemas y delegando en la relación tgeompoint correspondiente. Cada función está conectada en tres órdenes de argumentos: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname> y <varname>(tpcpoint, tpcpoint)</varname>. tpcpatch queda intencionalmente fuera del alcance — la intersección a nivel de parche requeriría la descompresión punto a punto y un diseño diferente.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_intersects">
+					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+					<para>Alguna vez / siempre intersecta.</para>
+					<para><varname>eIntersects(tpcpoint,geometry) → bool</varname>, <varname>aIntersects(tpcpoint,geometry) → bool</varname></para>
+					<para><varname>eIntersects(tpcpoint,tpcpoint) → bool</varname>, <varname>aIntersects(tpcpoint,tpcpoint) → bool</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpoint_disjoint">
+					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<para>Alguna vez / siempre disjunto.</para>
+					<para><varname>eDisjoint(tpcpoint,geometry) → bool</varname>, <varname>aDisjoint(tpcpoint,geometry) → bool</varname></para>
+					<para><varname>eDisjoint(tpcpoint,tpcpoint) → bool</varname>, <varname>aDisjoint(tpcpoint,tpcpoint) → bool</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpoint_dwithin">
+					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+					<para>Alguna vez / siempre dentro de la distancia.</para>
+					<para><varname>eDwithin(tpcpoint,geometry,float) → bool</varname>, <varname>aDwithin(tpcpoint,geometry,float) → bool</varname></para>
+					<para><varname>eDwithin(tpcpoint,tpcpoint,float) → bool</varname>, <varname>aDwithin(tpcpoint,tpcpoint,float) → bool</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+	<sect1 xml:id="tpcpatch">
+		<title>Tipo Temporal <varname>tpcpatch</varname></title>
+
+		<para>Un <varname>tpcpatch</varname> es la elevación temporal de <varname>pcpatch</varname>. Es el espejo de <varname>tpcpoint</varname> en todos los aspectos — mismos subtipos, mismas funciones de acceso, mismas conversiones y operadores — excepto que cada instante contiene un lote comprimido completo de puntos en lugar de un único punto. La caja delimitadora es de nuevo un <varname>tpcbox</varname>, calculada en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
+
+		<sect2 xml:id="tpcpatch_constructors">
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_inst">
+					<indexterm significance="normal"><primary><varname>tpcpatch</varname></primary></indexterm>
+					<para>Construir un pcpatch temporal de subtipo instante</para>
+					<para><varname>tpcpatch(pcpatch,timestamptz) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_seq">
+					<indexterm significance="normal"><primary><varname>tpcpatchSeq</varname></primary></indexterm>
+					<para>Construir un pcpatch temporal de subtipo secuencia</para>
+					<para><varname>tpcpatchSeq(tpcpatch[]) → tpcpatch</varname></para>
+					<para><varname>tpcpatchSeq(tpcpatch[],text) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_seqset">
+					<indexterm significance="normal"><primary><varname>tpcpatchSeqSet</varname></primary></indexterm>
+					<para>Construir un pcpatch temporal de subtipo conjunto de secuencias</para>
+					<para><varname>tpcpatchSeqSet(tpcpatch[]) → tpcpatch</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_accessors">
+			<title>Accesores</title>
+			<para>Se aplican todos los accesores temporales genéricos, además del <varname>pcid</varname> y el <varname>SRID</varname> al estilo de <varname>tpcpoint</varname>. Adicionalmente:</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_numpoints">
+					<indexterm significance="normal"><primary><varname>startNumPoints</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>endNumPoints</varname></primary></indexterm>
+					<para>Devolver el número de puntos del parche contenido en el primer o último instante</para>
+					<para><varname>startNumPoints(tpcpatch) → integer</varname></para>
+					<para><varname>endNumPoints(tpcpatch) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])),
+  '2024-02-01'::timestamptz));
+-- 1
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_total_numpoints">
+					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
+					<para>Devolver el número total de puntos de todos los parches de todos los instantes. Se lee directamente de la cabecera de cada parche — sin descompresión.</para>
+					<para><varname>numPoints(tpcpatch) → bigint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numPoints(tpcpatchSeq(ARRAY[
+  tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
+                          PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]),
+           '2024-01-01'::timestamptz),
+  tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0])]),
+           '2024-01-02'::timestamptz)]));
+-- 3
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_points">
+					<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+					<para>Función devuelve-conjunto: emite una fila por cada (marca de tiempo de instante, punto) recorriendo el parche de cada instante y descomponiéndolo mediante la API C en memoria de pgPointCloud. Útil para combinar una columna tpcpatch con predicados por punto que los operadores de nivel de caja delimitadora no pueden expresar. El coste es O(total de puntos) — una descompresión por instante más una emisión de fila por punto.</para>
+					<para><varname>points(tpcpatch) → setof (t timestamptz, point pcpoint)</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT t, point FROM points(tpcpatch(
+  PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
+                 PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]),
+  '2024-01-01'::timestamptz));
+-- ('2024-01-01', '01:0000000000000000000000F03F0000000000000000F03F00000000000000F03F'::pcpoint)
+-- ('2024-01-01', '01:0000000000000000000000004000000000000000400000000000000040'::pcpoint)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+			<para>Véase <xref linkend="tpcpatch_perpoint_roadmap" /> para conocer los límites de estos accesores y qué está y qué no está disponible a nivel de granularidad por punto.</para>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_conversions">
+			<title>Conversiones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_arrowRoundtrip">
+					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+					<para>Convertir un parche de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+					<para><varname>arrowRoundtrip(tpcpatch) → tpcpatch</varname></para>
+					<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la autocomprobación de interoperabilidad reutilizada por los bindings de lenguaje. El pcpatch de cada instante se transporta textualmente como un valor binario opaco; el identificador de esquema se resuelve fuera de banda en el catálogo <varname>pointcloud_formats</varname>, exactamente igual que en la representación binaria. El resultado es igual a la entrada.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0,
+  1.0]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz)) =
+  tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
+  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz);
+-- t
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_restrictions">
+			<title>Restricciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_atTpcbox">
+					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
+					<para>Restringir un tpcpatch a los instantes cuyo parche supera una prueba de superposición aproximada de PCBOUNDS frente al tpcbox, o eliminarlos. La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente, sin descompresión por punto. Como el <varname>PCBOUNDS</varname> de pgPointCloud es 2D, la dimensión Z de la caja se ignora a esta granularidad. Devuelve NULL cuando el pcid del tpcbox no coincide.</para>
+					<para><varname>atTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>minusTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpatch_atTpcboxFine">
+					<indexterm significance="normal"><primary><varname>atTpcboxFine</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusTpcboxFine</varname></primary></indexterm>
+					<para>Variante por punto de la anterior: cada instante superviviente contiene un pcpatch recién construido que incluye solo los puntos dentro (o fuera, en el caso de minus) del tpcbox en 2D — y en 3D cuando la caja tiene dimensión Z. Los instantes cuyo parche filtra hasta cero puntos se descartan. Más lenta que la variante aproximada porque cada parche se descomprime y reconstruye; úsela cuando se necesite fidelidad a nivel de punto.</para>
+					<para><varname>atTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>minusTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpatch_atGeometry">
+					<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
+					<para>Restringir un tpcpatch a los puntos cuya proyección XY intersecta (o no intersecta, en el caso de minus) una geometría 2D. Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</para>
+					<para><varname>atGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+					<para><varname>minusGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_spatialrels">
+			<title>Relaciones espaciales</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_eIntersects">
+					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+					<para>Devolver verdadero si y solo si al menos un punto de alguno de los instantes del tpcpatch intersecta la geometría (solo XY).</para>
+					<para><varname>eIntersects(tpcpatch,geometry) → boolean</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_bbox_ops">
+			<title>Operadores de caja delimitadora</title>
+			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, calculado en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_topo">
+					<para>Predicados topológicos: <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>. Véase <xref linkend="tpcbox_topo" />.</para>
+				</listitem>
+				<listitem xml:id="tpcpatch_pos">
+					<para>Predicados direccionales estrictos sobre los ejes X / Y / Z / tiempo (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>) y sus variantes «solapa-o-X» (<varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>). Véase <xref linkend="tpcbox_pos" />.</para>
+				</listitem>
+				<listitem xml:id="tpcpatch_knn">
+					<para>La distancia de aproximación más cercana (<varname>|=|</varname>) es ordenable KNN a través de la clase de operador GiST.</para>
+					<para><varname>nearestApproachDistance(tpcpatch,tpcbox) → float</varname></para>
+					<para><varname>nearestApproachDistance(tpcpatch,tpcpatch) → float</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_btree">
+			<title>Ordenación B-tree — qué significa <varname>ORDER BY tpcpatch</varname></title>
+
+			<para>La clase de operador <varname>tpcpatch_btree_ops</varname> produce un orden total sobre los valores <varname>tpcpatch</varname>, pero ese orden no es espacial. El comparador sobre el <varname>pcpatch</varname> subyacente es byte a byte (<function>memcmp</function> sobre los bytes varlena significativos); el comparador al nivel temporal es la combinación lexicográfica de las marcas de tiempo por instante y el orden de bytes de <varname>pcpatch</varname> por instante. Las consecuencias observables son:</para>
+
+			<itemizedlist>
+				<listitem>
+					<para><emphasis role="bold"><varname>pcid</varname> es el discriminador primario.</emphasis> Un parche con un <varname>pcid</varname> menor se ordena antes que uno con un <varname>pcid</varname> mayor, independientemente de las coordenadas de los puntos, su cantidad o la compresión. Esto hace que <varname>ORDER BY</varname> sobre una columna de pcid mixto agrupe las filas primero por esquema, lo que a veces resulta útil como paso de agrupación gruesa «por esquema de origen».</para>
+				</listitem>
+				<listitem>
+					<para><emphasis role="bold">Dentro de un mismo <varname>pcid</varname>, el orden sigue la disposición de bytes en disco</emphasis>: esquema de <varname>compression</varname>, luego <varname>npoints</varname>, luego el <varname>PCBOUNDS</varname> 2D (xmin, xmax, ymin, ymax) y finalmente el payload <varname>data</varname> comprimido. Este orden está bien definido y es estable para una versión dada de pgPointCloud, pero <emphasis>no</emphasis> es un orden geométrico o espacial — dos parches cuyos cuadros delimitadores se superponen en el espacio 3D pueden ordenarse de forma arbitraria entre sí si difieren en su esquema de compresión o en el número de puntos.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis role="bold">La igualdad es igualdad exacta de bytes</emphasis> sobre los bytes significativos (se excluye el relleno de ceros al final que reserva el varlena de pgPointCloud). Dos parches construidos a partir del mismo conjunto de puntos en el mismo orden, con la misma compresión, son iguales; reordenar los puntos o cambiar la compresión los hace desiguales.</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>Para un orden con sentido espacial, use el operador KNN de GiST <varname>|=|</varname> (véase <link linkend="tpcpatch_knn">distancia de aproximación más cercana en tpcpatch</link>); para un orden con sentido temporal, proyecte a <varname>startTimestamp</varname> o <varname>timespan</varname> y ordene sobre ese valor.</para>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_perpoint_roadmap">
+			<title>Operaciones por punto: qué está y qué no está disponible</title>
+
+			<para>Las operaciones sobre valores <varname>tpcpatch</varname> se realizan a dos granularidades: <emphasis>nivel de parche</emphasis> y <emphasis>por punto</emphasis>. La distinción importa porque los parches de pgPointCloud almacenan sus puntos en un payload comprimido que la capa de caja delimitadora no puede inspeccionar.</para>
+
+			<itemizedlist>
+				<listitem>
+					<para><emphasis role="bold">Nivel de parche — soportado.</emphasis> El parche de cada instante se trata como opaco y se conserva o descarta como un todo, usando únicamente la cabecera <varname>PCBOUNDS</varname> de 4 valores double (xmin / xmax / ymin / ymax) y la marca de tiempo del instante. Esta es la granularidad de <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link> y de los operadores de caja delimitadora en <xref linkend="tpcpatch_bbox_ops" />, así como del agregado <varname>tpcbox</varname> basado en caja. No se produce descompresión del payload; las consultas son O(número de instantes).</para>
+					<para>Como <varname>PCBOUNDS</varname> es 2D, la dimensión Z de cualquier argumento <varname>tpcbox</varname> se ignora a esta granularidad, incluso cuando el esquema subyacente tiene dimensión Z.</para>
+				</listitem>
+
+				<listitem>
+					<para><emphasis role="bold">Inspección por punto — soportada.</emphasis> La función devuelve-conjunto <link linkend="tpcpatch_points"><varname>points</varname></link> emite una fila por cada (marca de tiempo de instante, punto) descomponiendo el parche de cada instante mediante la API C en memoria de pgPointCloud. El coste es O(total de puntos) — una descompresión por instante más una emisión de fila por punto.</para>
+				</listitem>
+
+				<listitem>
+					<para><emphasis role="bold">Filtrado / construcción por punto — soportado.</emphasis> <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname> / <varname>minusTpcboxFine</varname></link>, <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname> / <varname>minusGeometry</varname></link> y <link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch, geometry)</varname></link> recorren en C cada punto de cada instante, aplicando su predicado sobre las coordenadas reales del punto en lugar de limitarse al cuadro delimitador del parche. Los instantes supervivientes contienen un parche recién construido que incluye solo los puntos que superaron el predicado; los instantes cuyos parches filtran hasta cero puntos se descartan.</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>El flujo de trabajo recomendado cuando ambas granularidades están disponibles es: (a) podar al nivel de parche con <varname>atTpcbox</varname> o un escaneo de índice SP-GiST/GiST para descartar los instantes completos cuyo <varname>PCBOUNDS</varname> no se superpone con el área de interés, y (b) refinar sobre los supervivientes con <varname>atTpcboxFine</varname> / <varname>atGeometry</varname> cuando se necesite fidelidad a nivel de punto.</para>
+		</sect2>
+	</sect1>
+	<sect1 xml:id="tpointcloud_indexes">
+		<title>Índices</title>
+
+		<para>Las clases de operadores B-tree (<varname>tpcpoint_btree_ops</varname>, <varname>tpcpatch_btree_ops</varname>, <varname>tpcbox_btree_ops</varname>) y hash (<varname>tpcpoint_hash_ops</varname>, <varname>tpcpatch_hash_ops</varname>) admiten predicados de igualdad y ordenación. Las clases de operadores GiST R-tree y SP-GiST quadtree / kd-tree aceleran los predicados basados en la caja delimitadora (<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>) sobre los tres tipos <varname>tpcbox</varname>, <varname>tpcpoint</varname> y <varname>tpcpatch</varname>:</para>
+
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- GiST (R-tree)
+CREATE INDEX ON my_table USING gist(my_tpcpoint_column);
+CREATE INDEX ON my_table USING gist(my_tpcpatch_column);
+
+-- SP-GiST quadtree (default) or kd-tree
+CREATE INDEX ON my_table USING spgist(my_tpcpoint_column);
+CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
+</programlisting>
+
+		<para>Las clases de operadores SP-GiST almacenan internamente un <varname>stbox</varname> (el filtro <varname>pcid</varname> se recupera mediante la revisión del operador), por lo que una consulta contra un índice sobre una columna cuyos valores mezclan múltiples <varname>pcid</varname> devolverá un conjunto ligeramente mayor de filas candidatas para revisión — algo irrelevante cuando cada tabla contiene valores de un único esquema, que es el caso común.</para>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_aggregations">
+		<title>Agregaciones</title>
+		<itemizedlist>
+			<listitem xml:id="tpcpoint_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
+				<para>Agregado de caja delimitadora sobre una columna de valores tpcpoint, tpcpatch o tpcbox. Devuelve el tpcbox más pequeño que contiene todas las entradas. Agregar a través de pcid distintos genera un error — la caja delimitadora sería ininterpretable ya que las dimensiones son relativas al pcid.</para>
+				<para><varname>extent(tpcpoint) → tpcbox</varname></para>
+				<para><varname>extent(tpcpatch) → tpcbox</varname></para>
+				<para><varname>extent(tpcbox) → tpcbox</varname></para>
+			</listitem>
+
+			<listitem xml:id="tpcpoint_tcount">
+				<indexterm significance="normal"><primary><varname>tcount</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wcount</varname></primary></indexterm>
+				<para>Conteo temporal y conteo por ventana de filas superpuestas en cada marca de tiempo. El resultado es un tint. Todas las filas de entrada deben compartir el mismo subtipo temporal (instante / secuencia / conjunto de secuencias).</para>
+				<para><varname>tcount(tpcpoint) → tint</varname>, <varname>tcount(tpcpatch) → tint</varname></para>
+				<para><varname>wcount(tpcpoint,interval) → tint</varname>, <varname>wcount(tpcpatch,interval) → tint</varname></para>
+			</listitem>
+
+			<listitem xml:id="tpcpatch_tnpoints">
+				<indexterm significance="normal"><primary><varname>tnpoints</varname></primary></indexterm>
+				<para>Conteo de puntos de pcpatch por instante, sumado a través de las filas. Distinto de <varname>tcount(tpcpatch)</varname>, que cuenta el número de parches (siempre 1 por instante). <varname>tnpoints</varname> se lee como «cuántos puntos había en la nube en el tiempo t», la primitiva natural para el control de calidad de la ingesta y los paneles de densidad a lo largo del tiempo.</para>
+				<para><varname>tnpoints(tpcpatch) → tint</varname></para>
+			</listitem>
+
+			<listitem xml:id="tpcpatch_tdensity">
+				<indexterm significance="normal"><primary><varname>tdensity</varname></primary></indexterm>
+				<para>Densidad de puntos por instante (<varname>numPoints / área-bbox-xy</varname>) sumada a través de las filas. Cada pcpatch lleva el <varname>PCBOUNDS</varname> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente — sin recálculo. Un parche de 1 punto o colineal produce <varname>+Infinity</varname> para ese instante; filtre con <varname>isfinite()</varname> en consultas posteriores si es necesario.</para>
+				<para><varname>tdensity(tpcpatch) → tfloat</varname></para>
+			</listitem>
+
+			<listitem xml:id="tpcpoint_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal. Todas las entradas deben compartir el mismo pcid y subtipo.</para>
+				<para><varname>merge(tpcpoint) → tpcpoint</varname>, <varname>merge(tpcpatch) → tpcpatch</varname></para>
+			</listitem>
+
+			<listitem xml:id="tpcpoint_append">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias. Útil para cargadores de trayectorias que consumen filas en orden temporal.</para>
+				<para><varname>appendInstant(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstant(tpcpatch) → tpcpatch</varname></para>
+				<para><varname>appendSequence(tpcpoint) → tpcpoint</varname>, <varname>appendSequence(tpcpatch) → tpcpatch</varname></para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_wkb">
+		<title>Representación binaria y portabilidad</title>
+
+		<para>Tanto <varname>tpcpoint</varname> como <varname>tpcpatch</varname> admiten la E/S binaria estándar de MobilityDB a través de <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> / <varname>tpcpatchFromBinary</varname>, y a través de <varname>COPY ... (FORMAT BINARY)</varname> de PostgreSQL. La codificación incrusta el <varname>pcid</varname> de cada valor junto a la carga de dimensiones, por lo que el blob binario es inequívoco sobre bajo qué esquema se escribieron los valores.</para>
+
+		<para>Siempre que el backend de codificación tenga el XML de esquema de un <varname>pcid</varname> dado registrado en su caché de esquemas a nivel de MEOS (que la extensión de PG rellena de forma perezosa en el primer uso, escaneando <varname>pointcloud_formats</varname>), el codificador incrusta además el XML de esquema en el blob WKB. El bit <varname>MEOS_WKB_PCSCHEMAFLAG</varname> (0x80) en el byte de banderas temporales lo señala. Un receptor que aún no conoce el <varname>pcid</varname> — por ejemplo, un clúster diferente tras un <varname>pg_dump --format=binary</varname> — analiza y registra automáticamente el esquema incrustado, por lo que la importación tiene éxito sin un paso de precarga de esquema fuera de banda.</para>
+
+		<para>Si el backend de codificación solo tiene un <varname>PCSCHEMA</varname> analizado (sin XML de origen) para un <varname>pcid</varname>, el bit de esquema se deja sin establecer y el blob es portable solo entre backends que comparten el mismo catálogo <varname>pointcloud_formats</varname>. Esto coincide con el comportamiento de la codificación anterior sin esquema y es la ruta de reserva cuando la caché se rellenó a mano desde un programa MEOS independiente.</para>
+
+		<para>El receptor también necesita que <varname>mobilitydb_init</varname> se haya ejecutado — automático en cualquier backend que haya cargado la extensión <varname>mobilitydb</varname>, ya que el módulo de información de funciones instala allí el hook de análisis de XML.</para>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_mfjson">
+		<title>Salida MF-JSON</title>
+		<itemizedlist>
+			<listitem xml:id="tpcpoint_mfjson">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Para <varname>tpcpoint</varname>, el tipo temporal se emite como <varname>{"type":"MovingPCPoint", … "coordinates":[[X,Y,Z], …], "datetimes":[…]}</varname>. X/Y/[Z] se extraen del <varname>pcpoint</varname> de cada instante mediante la caché de esquemas; si el esquema carece de X/Y el array de coordenadas está vacío para ese instante.</para>
+				<para><varname>asMFJSON(tpcpoint, options int=0, flags int=0, maxdecimaldigits int=15) → text</varname></para>
+			</listitem>
+			<listitem xml:id="tpcpatch_mfjson">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Para <varname>tpcpatch</varname>, la etiqueta de tipo es <varname>"MovingPCPatch"</varname> y cada instante emite un pequeño objeto <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>. La carga de puntos comprimida no está intencionadamente en el JSON — use <varname>asBinary</varname> / <varname>asHexWKB</varname> para el ida y vuelta.</para>
+				<para><varname>asMFJSON(tpcpatch, options int=0, flags int=0, maxdecimaldigits int=15) → text</varname></para>
+			</listitem>
+		</itemizedlist>
+		<para>Cuando <varname>options</varname> se establece en 1 la salida también incluye una clave <varname>"bbox"</varname> — para <varname>tpcpoint</varname> / <varname>tpcpatch</varname> esto es un objeto JSON TPCBox que añade un campo <varname>"pcid"</varname> junto al array <varname>"bbox"</varname> con forma de stbox estándar.</para>
+		<para><emphasis>MF-JSON es solo de salida para <varname>tpcpoint</varname> / <varname>tpcpatch</varname>.</emphasis> La forma JSON no lleva el esquema (pcid + disposición de dimensiones) para tpcpoint, y es un resumen por instante que descarta la carga por punto para tpcpatch — por lo que un analizador inverso no puede reconstruir el valor original. Para un ida y vuelta sin pérdidas use <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> / <varname>tpcpatchFromBinary</varname>, o <varname>asHexWKB</varname> / <varname>tpcpointFromHexWKB</varname> / <varname>tpcpatchFromHexWKB</varname>.</para>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_pdal_plugin">
+		<title>Integración con PDAL: <varname>readers.tpcpatch</varname> y <varname>writers.tpcpatch</varname></title>
+
+		<para>MobilityDB incluye complementos PDAL nativos bajo <filename>contrib/pdal/</filename> que leen y escriben valores <varname>tpcpatch</varname> directamente sin pasar por <varname>readers.pgpointcloud</varname> + <varname>tpcpatchSeq()</varname>. Compílelos con:</para>
+<programlisting language="bash"><![CDATA[cd contrib/pdal
+cmake -B build && cmake --build build -j
+sudo cmake --install build]]></programlisting>
+
+		<para>PDAL descubre los complementos mediante <varname>PDAL_DRIVER_PATH</varname> o, tras la instalación, en su ruta de búsqueda por defecto. Verifique con <code>pdal --drivers | grep tpcpatch</code>.</para>
+
+		<sect2 xml:id="tpointcloud_pdal_reader">
+			<title><varname>readers.tpcpatch</varname></title>
+			<para>Lee cualquier consulta SQL que devuelva filas de <code>(timestamp, pcpatch, pcid)</code> y emite un <classname>PointView</classname> de PDAL con todas las dimensiones del esquema más una dimensión <varname>time_t</varname> que lleva microsegundos desde la época. La decodificación se delega a <function>pc_patch_from_wkb</function> de pgPointCloud, por lo que se manejan los tres tipos de compresión (<varname>PC_NONE</varname>, <varname>PC_DIMENSIONAL</varname>, <varname>PC_LAZPERF</varname>).</para>
+
+			<para>Para descomprimir un <varname>tpcpatch</varname> almacenado en filas por instante que el lector pueda consumir:</para>
+<programlisting><![CDATA[{
+  "type": "readers.tpcpatch",
+  "connection": "host=/tmp dbname=mydb",
+  "query": "SELECT (EXTRACT(EPOCH FROM timestampN(traj, n))*1000000)::bigint AS t,
+                   valueN(traj, n)              AS pcp,
+                   PC_PCId(valueN(traj, n))     AS pcid
+            FROM trajectories,
+                 generate_series(1, numInstants(traj)) n
+            WHERE id = 42
+            ORDER BY n"
+}]]></programlisting>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_pdal_writer">
+			<title><varname>writers.tpcpatch</varname></title>
+			<para>Recibe un <classname>PointView</classname> con una dimensión de tiempo configurable, agrupa los puntos por marca de tiempo en valores <varname>pcpatch</varname> por instante, luego despacha un <code>INSERT</code>, <code>UPDATE</code>, fusión-append o upsert contra una columna <varname>tpcpatch</varname> usando los constructores <function>tpcpatch(pcpatch, timestamptz)</function> + <function>tpcpatchSeq(pcpatch[])</function> de MobilityDB. La codificación se delega a <function>pc_patch_to_wkb</function> de pgPointCloud con <function>pc_patch_compress</function> opcional. La escala / desplazamiento del esquema se aplica simétricamente — los valores fluyen como sus unidades semánticas (metros, grados, …) a través de PDAL incluso cuando el esquema los almacena como int32 escalado.</para>
+
+			<para>Opciones:</para>
+			<itemizedlist>
+				<listitem><para><varname>connection</varname> (posicional) — cadena de conexión libpq.</para></listitem>
+				<listitem><para><varname>table</varname> (posicional) — nombre de la tabla de destino.</para></listitem>
+				<listitem><para><varname>column</varname> — nombre de la columna <varname>tpcpatch</varname> (por defecto <varname>traj</varname>).</para></listitem>
+				<listitem><para><varname>pcid</varname> (requerido) — entrada en <varname>pointcloud_formats</varname> cuyo esquema deben coincidir las dimensiones de entrada.</para></listitem>
+				<listitem><para><varname>id_column</varname>, <varname>id_value</varname> — identifican la fila de destino para cualquier modo distinto de <varname>insert</varname>.</para></listitem>
+				<listitem><para><varname>mode</varname> — <varname>insert</varname> (por defecto — nueva fila por ejecución de la tubería), <varname>update</varname> (sobrescribe la fila identificada por <varname>id_column</varname> = <varname>id_value</varname>), <varname>append</varname> (concatena mediante <varname>merge()</varname> sobre la fila existente), o <varname>upsert</varname> (inserta si está ausente, añade si está presente). <varname>append</varname> / <varname>update</varname> generan un error claro «matched no row» si no se encuentra <varname>id_value</varname>, por lo que no pueden ocurrir escrituras silenciosas de cero filas.</para></listitem>
+				<listitem><para><varname>time_dim</varname> — nombre de la dimensión de tiempo de origen (por defecto <varname>time_t</varname>; establézcalo en <varname>GpsTime</varname> para consumir marcas de tiempo LAS directamente sin una etapa <varname>filters.assign</varname>).</para></listitem>
+				<listitem><para><varname>time_format</varname> — interpretación de <varname>time_dim</varname>: <varname>unix_microseconds</varname> (por defecto), <varname>unix_seconds</varname>, o <varname>gps_adjusted</varname> (Tiempo GPS Estándar Ajustado LAS-1.4 — el escritor aplica el desplazamiento de época GPS-Unix y el offset de segundo intercalar de 2024).</para></listitem>
+				<listitem><para><varname>compression</varname> — <varname>none</varname> (por defecto), <varname>dimensional</varname>, o <varname>laz</varname>. MobilityDB normaliza el almacenamiento en disco de <varname>tpcpatch</varname> a <varname>PC_NONE</varname>, por lo que la opción solo afecta al tamaño de transporte libpq — la reducción típica es ~3x para <varname>dimensional</varname> en datos con dimensiones redundantes.</para></listitem>
+				<listitem><para><varname>flush_threshold</varname> (por defecto 1024) — número de parches por instante completados almacenados en memoria antes de emitir un INSERT/append. Se respeta para <varname>mode=append</varname>/<varname>upsert</varname>; <varname>mode=insert</varname>/<varname>update</varname> difieren a un único vaciado final ya que cada ejecución de la tubería produce una única fila.</para></listitem>
+			</itemizedlist>
+
+			<para>El escritor emite líneas de progreso periódicas de nivel <code>Info</code> mediante el registrador de PDAL y un resumen final en <function>done()</function>: total de puntos / parches escritos, columna de destino, pcid, compresión y modo. Visible con <code>pdal pipeline -v 5</code>.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_pdal_compression">
+			<title>Esquemas de compresión soportados</title>
+			<para>El lector y el escritor admiten los tres tipos de compresión de pgPointCloud: <varname>PC_NONE</varname>, <varname>PC_DIMENSIONAL</varname> y <varname>PC_LAZPERF</varname>. La regresión <varname>PC_LAZPERF</varname> en <filename>contrib/pdal/examples/test_lazperf.sql</filename> requiere que la instalación de pgPointCloud en ejecución esté compilada con <option>--with-lazperf=DIR</option>; el fixture SQL aborta con un mensaje claro en caso contrario. Los complementos se mantienen bajo <filename>contrib/pdal/</filename> en lugar de en el árbol de compilación principal de MobilityDB para que puedan compilarse y actualizarse de forma independiente.</para>
+		</sect2>
+
+		<sect2 xml:id="tpointcloud_pdal_limitations">
+			<title>Limitaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><emphasis>Endianness de WKB.</emphasis> <varname>readers.tpcpatch</varname> acepta solo pcpatch WKB little-endian (NDR). Un parche big-endian (primer byte <literal>0x00</literal>) se rechaza con un error claro en lugar de decodificarse mal silenciosamente. pgPointCloud emite NDR en toda plataforma común; el soporte XDR sería aditivo.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Compresión del tpcpatch almacenado.</emphasis> La opción <varname>compression</varname> de <varname>writers.tpcpatch</varname> controla solo la forma de transporte libpq. El <varname>tpcpatch</varname> de MobilityDB normaliza su almacenamiento de pcpatch en disco a <varname>PC_NONE</varname>.</para>
+				</listitem>
+				<listitem>
+					<para><emphasis>Escritura en flujo.</emphasis> <varname>writers.tpcpatch</varname> implementa la interfaz <classname>Streamable::processOne</classname> de PDAL, por lo que una tubería <code>readers.las → writers.tpcpatch</code> se ejecuta en modo de flujo de PDAL automáticamente y nunca mantiene toda la nube de puntos en memoria. La cola de parches completados está limitada por la opción del escritor <varname>flush_threshold</varname> (por defecto 1024); en <varname>mode=append</varname> / <varname>mode=upsert</varname> cada vaciado activado por umbral emite un lote SQL incremental mediante <function>merge()</function>, mientras que <varname>mode=insert</varname> / <varname>mode=update</varname> difieren a un único vaciado final en <function>done()</function> (semántica de fila única). Esta es la ruta que hace tratable la ingesta de LAS de varios GB.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_pcl_bridge">
+		<title>Puente PCL: filtros invocables desde SQL y registro</title>
+		<para>Una extensión complementaria opcional <varname>mobilitydb_pcl</varname> vive bajo <filename>contrib/pcl/</filename>. Enlaza el backend de PostgreSQL en ejecución con la <ulink url="https://pointclouds.org/">Point Cloud Library</ulink> y expone un pequeño conjunto de operaciones por pcpatch como funciones SQL. El despacho de tipo de punto consciente del esquema elige <varname>pcl::PointXYZ</varname>, <varname>pcl::PointXYZI</varname>, o <varname>pcl::PointXYZRGB</varname> en el momento de la llamada según la disposición de dimensiones del pcid de entrada.</para>
+
+		<itemizedlist>
+			<listitem>
+				<para><varname>pcpatch_to_pcd(pcpatch) → bytea</varname> y <varname>pcpatch_from_pcd(bytea, pcid) → pcpatch</varname> — ida y vuelta a través del formato de cable PCD de PCL. El ida y vuelta preserva todos los valores de dimensión de forma bit-exacta.</para>
+			</listitem>
+			<listitem>
+				<para><varname>pcpatch_voxel_grid(pcpatch, leaf double precision) → pcpatch</varname> — submuestreo VoxelGrid, leaf en las unidades espaciales del esquema. Preserva Intensity / RGB.</para>
+			</listitem>
+			<listitem>
+				<para><varname>pcpatch_sor(pcpatch, k integer DEFAULT 50, stddev_mul double precision DEFAULT 1.0) → pcpatch</varname> — Eliminación de valores atípicos estadística (Statistical Outlier Removal). Descarta los puntos cuya distancia media a sus k vecinos más cercanos cae fuera de (media ± stddev_mul × stddev). Preserva Intensity / RGB.</para>
+			</listitem>
+			<listitem>
+				<para><varname>pcpatch_icp(source pcpatch, target pcpatch, max_iter int DEFAULT 50, max_corr double DEFAULT 1.0) → double[]</varname> y <varname>pcpatch_gicp(...)</varname> con la misma firma — registro rígido IterativeClosestPoint y GeneralizedICP. Ambos devuelven un array de 8 dobles <varname>[tx, ty, tz, qw, qx, qy, qz, fitness]</varname> componible en una pose de MobilityDB mediante <function>pose_make_3d</function>. El coste de Mahalanobis de GICP sobre covarianzas locales por punto es notablemente más robusto que ICP en superficies no planas / con vegetación (escaneos de corredores viales, fachadas patrimoniales fotogramétricas).</para>
+			</listitem>
+			<listitem>
+				<para><varname>pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]</varname> — normal de superficie + curvatura por punto mediante <classname>NormalEstimation&lt;PointXYZ, Normal&gt;</classname> de PCL sobre los <varname>k</varname> vecinos más cercanos. Devuelve un array plano de longitud <varname>4 × npoints</varname> dispuesto como <varname>[nx_0, ny_0, nz_0, curv_0, nx_1, ny_1, nz_1, curv_1, …]</varname>. Casos de uso: detección de cambios de superficie orientada entre estudios repetidos, exportación Potree <option>--normal</option>, siembra de mallas fotogramétricas. Para parches muy grandes (>50 k puntos) considere submuestrear primero con <varname>pcpatch_voxel_grid</varname>.</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>El puente está condicionado a <varname>CREATE EXTENSION mobilitydb_pcl</varname> en bases de datos que ya han cargado <varname>pointcloud</varname> + <varname>mobilitydb</varname>. Las instrucciones de compilación y una suite de regresión determinista están en <filename>contrib/pcl/README.md</filename>.</para>
+	</sect1>
+
+	<sect1 xml:id="tpointcloud_caveats">
+		<title>Advertencias</title>
+
+		<itemizedlist>
+			<listitem>
+				<para>La extensión <varname>pointcloud</varname> debe existir en la base de datos antes de que las definiciones SQL de <varname>mobilitydb</varname> hagan referencia a <varname>pcpoint</varname> / <varname>pcpatch</varname>. En una compilación <varname>POINTCLOUD=ON</varname> el <filename>mobilitydb.control</filename> generado declara esta dependencia en su cláusula <varname>requires =</varname>, por lo que <varname>CREATE EXTENSION mobilitydb CASCADE</varname> resuelve <varname>pointcloud</varname> automáticamente. La creación manual en el orden incorrecto sin <varname>CASCADE</varname> sigue generando un error de tipo ausente.</para>
+			</listitem>
+			<listitem>
+				<para>La mezcla de esquemas se rechaza en el momento de la construcción: no se puede construir una secuencia <varname>tpcpoint</varname> cuyos instantes tengan valores <varname>pcid</varname> diferentes, y la misma restricción se aplica a <varname>pcpointset</varname> y <varname>pcpatchset</varname>. El esquema es lo que da significado a las dimensiones, y mezclar esquemas silenciosamente produciría valores cuyas coordenadas son ininterpretables.</para>
+			</listitem>
+			<listitem>
+				<para>El flag de CMake <varname>POINTCLOUD=ON</varname> es obligatorio. Las compilaciones sin él producen un <varname>libMobilityDB</varname> que no declara ninguno de los tipos de este capítulo; los archivos SQL para ellos no se generan.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+</chapter>
