@@ -150,7 +150,7 @@ CREATE FUNCTION tquadbinCellToQuadkey(tquadbin)
  * EXPLICIT (not IMPLICIT nor ASSIGNMENT): typing a cell trajectory as
  * a point trajectory should not happen by accident. The
  * `tquadbin :: tbigint` and `tbigint :: tquadbin` casts are declared
- * in `352_tquadbin.in.sql` as ASSIGNMENT and are not re-declared here.
+ * in `353_tquadbin.in.sql` as ASSIGNMENT and are not re-declared here.
  ******************************************************************************/
 
 CREATE CAST (tquadbin AS tgeompoint)

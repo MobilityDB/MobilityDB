@@ -260,7 +260,7 @@ CREATE FUNCTION tsample(tquadbin, duration interval,
  *
  * The value accessors that return the `quadbin` cell (`startValue`,
  * `endValue`, `valueN`, `getValues`, `valueAtTimestamp`) and the lifted cell
- * operations live in `357_tquadbin_ops.in.sql`.
+ * operations live in `355_tquadbin_spatialfuncs.in.sql`.
  ******************************************************************************/
 
 CREATE FUNCTION tempSubtype(tquadbin)

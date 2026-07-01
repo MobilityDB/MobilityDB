@@ -88,7 +88,7 @@ CREATE TYPE quadbin (
  * cannot silently flow into a quadbin-specific function. quadbin and
  * bigint share the same on-disk representation (both int64 passed
  * by value), so the casts are WITHOUT FUNCTION — same pattern as
- * `352_tquadbin.in.sql` uses for tquadbin ↔ tbigint.
+ * `353_tquadbin.in.sql` uses for tquadbin ↔ tbigint.
  *
  * Note: bigint is a reserved word in SQL, so `CREATE FUNCTION
  * bigint(quadbin)` would be a syntax error. WITHOUT FUNCTION
@@ -217,7 +217,7 @@ CREATE OPERATOR CLASS quadbin_ops
  *
  * Thin wrappers over the first-party kernel `quadbin_is_valid_*`
  * checks declared in `meos_quadbin.h`. The `(tquadbin)` temporal lift
- * lives in `357_tquadbin_ops.in.sql` — these two are the static
+ * lives in `355_tquadbin_spatialfuncs.in.sql` — these two are the static
  * quadbin counterparts. `isValidIndex` accepts any CARTO quadbin
  * payload (including mode-0 header cells); `isValidCell` additionally
  * requires a populated cell at a concrete resolution.
