@@ -1,23 +1,21 @@
 SET(LOCAL_FILES
   250_h3index
   251_h3indexset
-  254_h3indexset_ops
-  260_h3index_sets
-  289_h3_geo
-  270_th3index
-  271_th3index_ops
+  252_h3index_ops
+  253_th3index
+  254_th3index_compops
+  255_th3index_spatialfuncs
+  258_th3index_topops
+  259_th3index_posops
+  262_th3index_spatialrels
   272_th3index_gist
   273_th3index_spgist
-  274_th3index_accessors
   280_th3index_inspection
   281_th3index_hierarchy
-  282_th3index_latlng
   283_th3index_edges
   284_th3index_vertices
   285_th3index_traversal
   286_th3index_metrics
-  288_th3index_compops
-  290_th3index_spatialrels
   )
 
 append_portable_aliases()

@@ -119,7 +119,7 @@ CREATE FUNCTION asHexWKB(h3index, endianenconding text DEFAULT '')
  * cannot silently flow into an H3-specific function. h3index and
  * bigint share the same on-disk representation (both int64 passed
  * by value), so the casts are WITHOUT FUNCTION — same pattern as
- * `270_th3index.in.sql` uses for th3index ↔ tbigint.
+ * `253_th3index.in.sql` uses for th3index ↔ tbigint.
  *
  * Note: bigint is a reserved word in SQL, so `CREATE FUNCTION
  * bigint(h3index)` would be a syntax error. WITHOUT FUNCTION

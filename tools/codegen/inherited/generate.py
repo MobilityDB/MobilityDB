@@ -53,15 +53,24 @@ def apply_conditionals(text: str, sub: dict) -> str:
 
 def render(behaviour: str, sub: dict) -> str:
     tmpl = apply_conditionals((TEMPLATES / f"{behaviour}.sql.tmpl").read_text(), sub)
+    # The cell-boundary function name defaults to `<temp>CellToBoundary`
+    # (e.g. tquadbinCellToBoundary), but the h3 family - whose cell functions carry
+    # the pg-h3 name temporalized by a bare `t` prefix (h3CellToBoundary ->
+    # th3CellToBoundary, NOT th3indexCellToBoundary) - overrides it via `boundary_fn`.
+    boundary = sub.get("boundary_fn", sub["temp"] + "CellToBoundary")
     body = (tmpl.replace("{TEMP}", sub["temp"])
                 .replace("{BASE}", sub["base"])
-                .replace("{BRIEF}", sub["brief"]))
+                .replace("{BRIEF}", sub["brief"])
+                .replace("{BOUNDARY}", boundary))
     return BANNER.format(tmpl=f"{behaviour}.sql.tmpl") + body
 
 
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     num = sub["bin"] + positions[behaviour]
-    fam = sub["base"]
+    # The SQL family directory defaults to the base type name (quadbin, cbuffer),
+    # but a family whose directory differs from its base type (h3: dir `h3`, base
+    # `h3index`) overrides it with an explicit `fam`.
+    fam = sub.get("fam", sub["base"])
     return ROOT / "mobilitydb" / "sql" / fam / f"{num}_{sub['temp']}_{behaviour}.in.sql"
 
 

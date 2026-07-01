@@ -35,86 +35,6 @@ CREATE FUNCTION overafter(tstzspan, th3index)
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION before(th3index, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overbefore(th3index, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION after(th3index, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overafter(th3index, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION before(stbox, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overbefore(stbox, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION after(stbox, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overafter(stbox, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION before(th3index, stbox)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overbefore(th3index, stbox)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION after(th3index, stbox)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overafter(th3index, stbox)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION before(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overbefore(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION after(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overafter(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION left(stbox, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
@@ -153,6 +73,46 @@ CREATE FUNCTION above(stbox, th3index)
 CREATE FUNCTION overabove(stbox, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(stbox, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(stbox, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(stbox, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(stbox, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(th3index, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(th3index, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(th3index, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(th3index, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION left(th3index, stbox)
@@ -195,6 +155,26 @@ CREATE FUNCTION overabove(th3index, stbox)
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION before(th3index, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(th3index, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(th3index, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(th3index, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION left(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
@@ -233,5 +213,25 @@ CREATE FUNCTION above(th3index, th3index)
 CREATE FUNCTION overabove(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION before(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overbefore(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION after(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION overafter(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

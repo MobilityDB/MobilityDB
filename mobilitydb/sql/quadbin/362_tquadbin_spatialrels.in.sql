@@ -32,8 +32,6 @@
  *****************************************************************************/
 
 /*
- * 290_th3index_spatialrels.in.sql
- *
  * Spatial relationships for temporal cell indices.
  *
  * Each tquadbin value carries one cell per instant. The spatial

@@ -29,17 +29,34 @@
 
 /**
  * @file
- * @brief SQL surface for the static set-returning h3 functions.
+ * @brief Static h3index cell operations.
  *
- * These are the MobilityDB ports of the nine h3-pg SETOF-returning
- * functions. h3-pg returns rows; MobilityDB returns a single
- * `h3indexset` (or `intset` for icosahedron faces) — the finite
- * collection companion type of `h3index`. Every function here
- * operates on STATIC `h3index` values; temporal variants are
- * deliberately parked until a `tset<T>` primitive exists.
+ * Non-temporal operations on the `h3index` base type: the static-geometry
+ * → cell / cell-set constructors (`geoToH3Cell`, `geoToH3IndexSet`) and the
+ * MobilityDB ports of the h3-pg SETOF-returning grid functions. h3-pg
+ * returns rows; MobilityDB returns a single `h3indexset` (or `intset` for
+ * icosahedron faces) — the finite collection companion type of `h3index`.
+ * Every function here operates on STATIC `h3index` values; temporal variants
+ * are deliberately parked until a `tset<T>` primitive exists.
  *
- * All C wrappers live in `mobilitydb/src/h3/h3index_sets.c`.
+ * The geometry → cell constructors are C-wrapped in
+ * `mobilitydb/src/h3/h3_geo.c`; the grid functions in
+ * `mobilitydb/src/h3/h3index_sets.c`.
  */
+
+/******************************************************************************
+ * Static geometry → H3 cell (POINT only) / cell set (any geometry)
+ ******************************************************************************/
+
+CREATE FUNCTION geoToH3Cell(geometry, integer)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Geo_gs_point_to_h3index'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geoToH3IndexSet(geometry, integer)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'Geo_to_h3indexset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Grid traversal

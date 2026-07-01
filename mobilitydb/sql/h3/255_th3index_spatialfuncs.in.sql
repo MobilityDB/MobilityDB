@@ -29,7 +29,14 @@
 
 /**
  * @file
- * @brief Lat/Lng conversion functions for `th3index`.
+ * @brief Spatial functions for temporal H3 cells.
+ *
+ * The point-to-cell and cell-to-point/boundary conversions, the temporal
+ * value accessors, and the `h3indexset` ⇄ `th3index` ever-equal prefilter
+ * for the `th3index` type. The cell-to-boundary function declared here
+ * (`th3CellToBoundary`) is the boundary provider consumed by the generated
+ * spatial-relationship surface (`262_th3index_spatialrels`), so it must load
+ * before it.
  *
  * Two overloads of the point-to-cell conversion are provided: the geodetic
  * `tgeogpoint_to_th3index` form is the canonical one; the
@@ -91,11 +98,75 @@ CREATE FUNCTION th3CellToBoundary(th3index)
  * EXPLICIT (not IMPLICIT nor ASSIGNMENT): typing a cell as a point should
  * not happen by accident. This matches h3-pg's own `h3index :: point` /
  * `h3index :: geometry` cast direction. The `th3index :: tbigint` and
- * `tbigint :: th3index` casts live with the type in `270_th3index.in.sql`.
+ * `tbigint :: th3index` casts live with the type in `253_th3index.in.sql`.
  ******************************************************************************/
 
 CREATE CAST (th3index AS tgeogpoint) WITH FUNCTION th3CellToLatlng(th3index);
 CREATE CAST (th3index AS tgeompoint)
   WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
+
+/******************************************************************************
+ * Value accessors
+ *
+ * Every declaration routes to the generic `Temporal_*` C symbol — the same
+ * pattern tcbuffer and tbigint use. Scalar accessors return `h3index`;
+ * `getValues` returns `h3indexset`. Callers who need to pipe a cell into a
+ * bigint-taking function must spell out an explicit `::bigint` cast —
+ * consistent with the ASSIGNMENT-only cast design.
+ ******************************************************************************/
+
+CREATE FUNCTION startValue(th3index)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(th3index)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(th3index, integer)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getValues(th3index)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(th3index, timestamptz)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * h3indexset × th3index — ever-equal (sound cell-set prefilter)
+ *
+ * True when the temporal H3 cell ever equals a cell in the set. Paired with
+ * geoToH3IndexSet, this is the sound, conservative spatial prefilter for the
+ * exact eIntersects(geometry, th3index): the cell-granularity test never drops
+ * a real intersection, and the exact predicate confirms the survivors.
+ ******************************************************************************/
+
+CREATE FUNCTION eEq(h3indexset, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_h3indexset_th3index'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eEq(th3index, h3indexset)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT eEq($2, $1) $$;
+
+CREATE OPERATOR ?= (
+  LEFTARG = h3indexset, RIGHTARG = th3index,
+  PROCEDURE = eEq,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ?= (
+  LEFTARG = th3index, RIGHTARG = h3indexset,
+  PROCEDURE = eEq,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
 
 /******************************************************************************/

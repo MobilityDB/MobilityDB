@@ -44,6 +44,20 @@ subtypes:
     # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
     files: [compops, posops, topops, spatialrels, gist, spgist]
 
+  # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
+  - temp:  th3index
+    base:  h3index
+    # The h3 family directory is `h3`, not the base type name `h3index`.
+    fam:   h3
+    brief: "temporal H3 cells"
+    # pg-h3 cell fns temporalize as t+h3Xxx -> th3CellToBoundary (see memory).
+    boundary_fn: th3CellToBoundary
+    bin:   250
+    category: tspatial
+    # A cell-index has NO scalar base::stbox cast — same as tquadbin.
+    scalar_stbox_cast: false
+    files: [compops, posops, topops, spatialrels, gist, spgist]
+
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer
     base:  cbuffer
