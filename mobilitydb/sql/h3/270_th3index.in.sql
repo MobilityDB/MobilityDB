@@ -107,6 +107,12 @@ CREATE FUNCTION asHexWKB(th3index, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asMFJSON(temp th3index, options int4 DEFAULT 0,
+    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION th3indexFromBinary(bytea)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
@@ -115,6 +121,11 @@ CREATE FUNCTION th3indexFromBinary(bytea)
 CREATE FUNCTION th3indexFromHexWKB(text)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION th3indexFromMFJSON(text)
+  RETURNS th3index
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
