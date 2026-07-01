@@ -15,11 +15,13 @@ var searchData=
   ['temptype_5fcatalog_5fstruct_12',['temptype_catalog_struct',['../structtemptype__catalog__struct.html',1,'']]],
   ['tempunneststate_13',['TempUnnestState',['../structTempUnnestState.html',1,'']]],
   ['textset_5frecord_14',['textset_record',['../structtextset__record.html',1,'']]],
-  ['tinstant_15',['TInstant',['../structTInstant.html',1,'']]],
-  ['tpcbox_16',['TPCBox',['../structTPCBox.html',1,'']]],
-  ['tpcpatchpointsstate_17',['TpcpatchPointsState',['../structTpcpatchPointsState.html',1,'']]],
-  ['trip_5frecord_18',['trip_record',['../structtrip__record.html',1,'']]],
-  ['trip_5ft_19',['trip_t',['../structtrip__t.html',1,'']]],
-  ['tsequence_20',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_21',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
+  ['tgeoarrjoinstate_15',['TgeoarrJoinState',['../structTgeoarrJoinState.html',1,'']]],
+  ['tgeoarrpair_16',['TgeoarrPair',['../structTgeoarrPair.html',1,'']]],
+  ['tinstant_17',['TInstant',['../structTInstant.html',1,'']]],
+  ['tpcbox_18',['TPCBox',['../structTPCBox.html',1,'']]],
+  ['tpcpatchpointsstate_19',['TpcpatchPointsState',['../structTpcpatchPointsState.html',1,'']]],
+  ['trip_5frecord_20',['trip_record',['../structtrip__record.html',1,'']]],
+  ['trip_5ft_21',['trip_t',['../structtrip__t.html',1,'']]],
+  ['tsequence_22',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_23',['TSequenceSet',['../structTSequenceSet.html',1,'']]]
 ];
