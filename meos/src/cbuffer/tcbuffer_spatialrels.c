@@ -966,7 +966,19 @@ int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  /* The always semantics reduce exactly to the native nearest-approach
+   * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
+   * min_t dist(disk(t), gs) > 0. The ever semantics (∃t disjoint) do not
+   * reduce to a single running minimum, so they stay on the traversed-area
+   * path. */
+  if (! ever)
+  {
+    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+    if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+      return -1;
+    return nad_tcbuffer_geo(temp, gs) > 0.0 ? 1 : 0;
+  }
+  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
 }
 
@@ -1028,6 +1040,21 @@ int
 ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
+  /* aDisjoint = ¬eIntersects reduces exactly to ¬eDwithin(., ., 0). A static
+   * circular buffer is a degenerate constant temporal circular buffer, so
+   * promote it and route through the native (GEOS-free) dwithin turning-point
+   * engine. The ever semantics (∃t disjoint) are not distance-reducible and
+   * stay on the traversed-area path. */
+  if (! ever)
+  {
+    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
+    if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+      return -1;
+    Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+    int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
+    pfree(ctemp);
+    return result < 0 ? result : (result ? 0 : 1);
+  }
   return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
 }
@@ -1142,7 +1169,19 @@ int
 ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  /* The ever semantics reduce exactly to the native nearest-approach
+   * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. This
+   * avoids linearizing the round buffer through GEOS. The always semantics
+   * (∀t intersects) do not reduce to a single running minimum, so they stay
+   * on the traversed-area path. */
+  if (ever)
+  {
+    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+    if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+      return -1;
+    return nad_tcbuffer_geo(temp, gs) <= 0.0 ? 1 : 0;
+  }
+  return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
 }
 
@@ -1206,6 +1245,22 @@ int
 ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
+  /* eIntersects reduces exactly to eDwithin(., ., 0). A static circular
+   * buffer is a degenerate constant temporal circular buffer, so promote it
+   * and route through the native (GEOS-free) dwithin turning-point engine,
+   * which detects the mid-segment approach that a per-instant evaluation
+   * would miss. The always semantics (∀t intersects) are not distance-
+   * reducible and stay on the traversed-area path. */
+  if (ever)
+  {
+    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
+    if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+      return -1;
+    Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+    int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
+    pfree(ctemp);
+    return result;
+  }
   return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
 }
@@ -1507,6 +1562,13 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+  /* The ever semantics reduce exactly to the native nearest-approach
+   * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d. This
+   * avoids linearizing the round buffer through GEOS. The always semantics
+   * (∀t within d) do not reduce to a single running minimum, so they stay on
+   * the traversed-area path. */
+  if (ever)
+    return nad_tcbuffer_geo(temp, gs) <= dist ? 1 : 0;
   return ea_spatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) &datum_geom_dwithin2d, 3, ever, invert);
 }
@@ -1561,10 +1623,12 @@ edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  GSERIALIZED *trav = cbuffer_to_geom(cb);
-  int result = ea_spatialrel_tcbuffer_geo(temp, trav, Float8GetDatum(dist),
-    (varfunc) &datum_geom_dwithin2d, 3, EVER, INVERT_NO);
-  pfree(trav);
+  /* A static circular buffer is a degenerate constant temporal circular
+   * buffer. Promote it and route through the native (GEOS-free) temporal
+   * circular buffer dwithin engine. */
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, EVER);
+  pfree(ctemp);
   return result;
 }
 
