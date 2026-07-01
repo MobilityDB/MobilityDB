@@ -36,7 +36,7 @@ SELECT th3(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-0
 -- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
 SELECT th3(Sequence) '831c02fffffffff@2001-01-01';
 </programlisting>
-		<para>La función <varname>arrowRoundtrip</varname> convierte un índice H3 temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada. La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. Un índice de celda H3 es un valor de 64 bits, por lo que usa la hoja de valor de 64 bits sin signo, distinta de la hoja de 64 bits con signo del entero grande temporal.</para>
+		<para>La función <varname>arrowRoundtrip</varname> convierte un índice H3 temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(th3 '831c02fffffffff@2001-01-01');
 -- 831c02fffffffff@2001-01-01

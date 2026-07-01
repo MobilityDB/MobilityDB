@@ -673,7 +673,6 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
 					<para>Convertir un punto de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
 					<para><varname>arrowRoundtrip(tpcpoint) → tpcpoint</varname></para>
-					<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la verificación de interoperabilidad reutilizada por los enlaces de lenguaje. El pcpoint de cada instante se transporta de forma literal como un valor binario opaco; el id de esquema se resuelve fuera de banda en el catálogo pointcloud_formats, exactamente igual que para la representación binaria. El resultado es igual a la entrada.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
   '2024-01-01'::timestamptz)) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
@@ -906,7 +905,6 @@ SELECT t, point FROM points(tpcpatch(
 					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
 					<para>Convertir un parche de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
 					<para><varname>arrowRoundtrip(tpcpatch) → tpcpatch</varname></para>
-					<para>La interfaz Arrow C Data Interface es una ABI columnar en proceso; esta función valida la correspondencia sin pérdidas y es la autocomprobación de interoperabilidad reutilizada por los bindings de lenguaje. El pcpatch de cada instante se transporta textualmente como un valor binario opaco; el identificador de esquema se resuelve fuera de banda en el catálogo <varname>pointcloud_formats</varname>, exactamente igual que en la representación binaria. El resultado es igual a la entrada.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0,
   1.0]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz)) =
