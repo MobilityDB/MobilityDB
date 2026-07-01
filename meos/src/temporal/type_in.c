@@ -1024,6 +1024,14 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
+#if H3
+    /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
+     * crs/SRID is parsed as for a spatial type, but the 'values' array holds
+     * plain int8 cell ids, so they are parsed as base values (mirrors the
+     * tbigint sibling and the MF-JSON output in type_out.c). */
+    else if (temptype == T_TH3INDEX)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* H3 */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1079,6 +1087,14 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TNPOINT)
       values = parse_mfjson_npoints(mfjson, srid, &nvalues);
 #endif /* NPOINT */
+#if H3
+    /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
+     * crs/SRID is parsed as for a spatial type, but the 'values' array holds
+     * plain int8 cell ids, so they are parsed as base values (mirrors the
+     * tbigint sibling and the MF-JSON output in type_out.c). */
+    else if (temptype == T_TH3INDEX)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* H3 */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
