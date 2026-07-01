@@ -183,31 +183,31 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_teq({BASE}, {TEMP})
+CREATE FUNCTION tEq({BASE}, {TEMP})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_{BASE}_{TEMP}'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq({TEMP}, {BASE})
+CREATE FUNCTION tEq({TEMP}, {BASE})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_{TEMP}_{BASE}'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq({TEMP}, {TEMP})
+CREATE FUNCTION tEq({TEMP}, {TEMP})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = {BASE}, RIGHTARG = {TEMP},
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = {TEMP}, RIGHTARG = {BASE},
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_teq,
+  PROCEDURE = tEq,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = #=
 );
@@ -216,31 +216,31 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_tne({BASE}, {TEMP})
+CREATE FUNCTION tNe({BASE}, {TEMP})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_{BASE}_{TEMP}'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne({TEMP}, {BASE})
+CREATE FUNCTION tNe({TEMP}, {BASE})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_{TEMP}_{BASE}'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne({TEMP}, {TEMP})
+CREATE FUNCTION tNe({TEMP}, {TEMP})
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = {BASE}, RIGHTARG = {TEMP},
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = {TEMP}, RIGHTARG = {BASE},
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_tne,
+  PROCEDURE = tNe,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = #<>
 );

@@ -5,7 +5,7 @@
 # On-database equivalence check: every portable alias must resolve to the
 # exact same C implementation as the operator it aliases.
 #
-# Usage: tools/portable_aliases/verify.sh <database> [psql args...]
+# Usage: tools/codegen/portable_aliases/verify.sh <database> [psql args...]
 # Requires the database to have `CREATE EXTENSION mobilitydb` already.
 
 set -euo pipefail
