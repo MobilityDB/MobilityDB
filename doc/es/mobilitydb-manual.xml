@@ -30,6 +30,7 @@
 <!ENTITY temporal_h3_index SYSTEM "temporal_h3_index.xml">
 <!ENTITY temporal_quadbin_index SYSTEM "temporal_quadbin_index.xml">
 <!ENTITY temporal_pointcloud SYSTEM "temporal_pointcloud.xml">
+<!ENTITY temporal_raster SYSTEM "temporal_raster.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
@@ -137,6 +138,7 @@
 	&temporal_h3_index;
 	&temporal_quadbin_index;
 	&temporal_pointcloud;
+	&temporal_raster;
 	&reference;
 	&data_generator;
 	<index />
