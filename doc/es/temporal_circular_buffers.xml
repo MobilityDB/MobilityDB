@@ -335,6 +335,16 @@ SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tcbuffer_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un búfer circular temporal a la interfaz Arrow C Data y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip(tcbuffer) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
+-- Cbuffer(POINT(1 2),1)@2001-01-01
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tcbufferFromText">
 				<indexterm significance="normal"><primary><varname>tcbufferFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tcbufferFromEWKT</varname></primary></indexterm>

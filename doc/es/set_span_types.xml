@@ -260,6 +260,18 @@ SELECT floatspansetFromHexWKB(
 -- {[1, 2], [4, 5]}
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="setspan_arrowRoundtrip">
+				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
+				<para>Convierte un conjunto, span o conjunto de spans a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
+				<para><varname>arrowRoundtrip({set,span,spanset}) → {set,span,spanset}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT arrowRoundtrip(intset '{1, 2, 3}');
+-- {1, 2, 3}
+SELECT arrowRoundtrip(floatspanset '{[1.5, 2.5), (3, 4]}');
+-- {[1.5, 2.5), (3, 4]}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

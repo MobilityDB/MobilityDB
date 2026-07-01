@@ -678,7 +678,6 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
 					<para>Convert a temporal point cloud point to the Arrow C Data Interface and back, returning the reconstructed value</para>
 					<para><varname>arrowRoundtrip(tpcpoint) → tpcpoint</varname></para>
-					<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. Each instant's pcpoint is carried verbatim as an opaque binary value; the schema id is resolved out-of-band against the pointcloud_formats catalog, exactly as for the binary representation. The result is equal to the input.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
   '2024-01-01'::timestamptz)) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
@@ -912,7 +911,6 @@ SELECT t, point FROM points(tpcpatch(
 					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
 					<para>Convert a temporal point cloud patch to the Arrow C Data Interface and back, returning the reconstructed value</para>
 					<para><varname>arrowRoundtrip(tpcpatch) → tpcpatch</varname></para>
-					<para>The Arrow C Data Interface is an in-process columnar ABI; this function validates the lossless correspondence and is the interop self-check reused by the language bindings. Each instant's pcpatch is carried verbatim as an opaque binary value; the schema id is resolved out-of-band against the pointcloud_formats catalog, exactly as for the binary representation. The result is equal to the input.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT arrowRoundtrip(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0,
   1.0]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz)) =
