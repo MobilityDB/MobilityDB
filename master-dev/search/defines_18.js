@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['z_5fdim_0',['Z_DIM',['../tspatial__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115.html#a4e67a69f461f2cc5cd1bade418dcd115',1,'tspatial_selfuncs.h']]]
+  ['y_5fdim_0',['Y_DIM',['../tspatial__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22.html#a2cfec1e8b5f2afbb0211381d14376f22',1,'tspatial_selfuncs.h']]]
 ];
