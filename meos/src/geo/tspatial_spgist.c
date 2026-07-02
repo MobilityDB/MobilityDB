@@ -679,6 +679,10 @@ tspatial_spgist_get_stbox(Datum value, MeosType type, STBox *result)
   {
     memcpy(result, DatumGetSTboxP(value), sizeof(STBox));
   }
+  else if (geo_basetype(type))
+  {
+    geo_set_stbox(DatumGetGserializedP(value), result);
+  }
   else if (tspatial_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(value);

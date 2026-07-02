@@ -49,6 +49,8 @@
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
 /* MobilityDB */
+#include "pg_geo/postgis.h"
+/* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/tnumber_gist.h"
@@ -75,6 +77,14 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, MeosType type)
     if (! box)
       return false;
     memcpy(result, box, sizeof(STBox));
+  }
+  else if (geo_basetype(type))
+  {
+    if (PG_ARGISNULL(1))
+      return false;
+    GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+    if (! geo_set_stbox(gs, result))
+      return false;
   }
   else if (tspatial_type(type))
   {
