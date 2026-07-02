@@ -88,6 +88,8 @@ CREATE OPERATOR CLASS stbox_rtree_ops
   OPERATOR  25    |=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (stbox, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (stbox, stbox),
   OPERATOR  28    &<# (stbox, tgeompoint),
@@ -185,6 +187,7 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   -- nearest approach distance
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeompoint, tstzspan),
   OPERATOR  28    &<# (tgeompoint, stbox),
@@ -248,6 +251,7 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   -- distance
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeogpoint, tstzspan),
   OPERATOR  28    &<# (tgeogpoint, stbox),
