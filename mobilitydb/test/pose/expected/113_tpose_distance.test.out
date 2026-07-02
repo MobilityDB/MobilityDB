@@ -180,7 +180,7 @@ SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2
 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL LIMIT 10;
  count 
 -------
- 10000
+   104
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2

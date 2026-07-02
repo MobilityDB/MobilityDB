@@ -32,6 +32,8 @@
  * @brief Temporal distance for temporal poses
  */
 
+/* C */
+#include <float.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
@@ -206,7 +208,7 @@ nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *traj = tpose_trajectory(temp);
   double result = geom_distance2d(traj, gs);
@@ -227,7 +229,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_stbox(temp, box))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *traj = tpose_trajectory(temp);
   GSERIALIZED *geo = stbox_geo(box);
@@ -249,7 +251,7 @@ nad_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_pose(temp, pose))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geom = pose_to_point(pose);
   GSERIALIZED *traj = tpose_trajectory(temp);
@@ -269,11 +271,11 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_tpose(temp1, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
   if (dist == NULL)
-    return -1.0;
+    return DBL_MAX;
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
