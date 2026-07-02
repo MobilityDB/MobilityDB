@@ -42,3 +42,6 @@ jobs:
                  "'python3 tools/codegen/inherited/generate.py' and commit the result."
             exit 1
           fi
+
+      - name: Validate the reference family reproduces from the template
+        run: python3 tools/codegen/inherited/generate.py --validate

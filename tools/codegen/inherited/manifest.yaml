@@ -37,6 +37,7 @@ subtypes:
     category: tspatial
     # A cell-index (like h3) has NO scalar base::stbox cast — drop that block.
     scalar_stbox_cast: false
+    stboxes: false
     # compops/posops/topops are generic (topops' scalar cast stripped via the flag
     # above). spatialrels delegates to the geo spatial relationships via the
     # cell→boundary tgeometry conversion (quadbin_cell_to_boundary), the cell-index
@@ -56,6 +57,7 @@ subtypes:
     category: tspatial
     # A cell-index has NO scalar base::stbox cast — same as tquadbin.
     scalar_stbox_cast: false
+    stboxes: false
     files: [compops, posops, topops, spatialrels, gist, spgist]
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
