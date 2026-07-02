@@ -65,6 +65,25 @@ CREATE CAST ({TEMP} AS stbox) WITH FUNCTION stbox({TEMP});
 
 /*****************************************************************************/
 
+-- @IF stboxes
+CREATE FUNCTION stboxes({TEMP})
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION splitNStboxes({TEMP}, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_split_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION splitEachNStboxes({TEMP}, integer)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tgeo_split_each_n_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+-- @ENDIF
 CREATE FUNCTION expandSpace({TEMP}, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
