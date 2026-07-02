@@ -1205,6 +1205,22 @@ mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return DBL_MAX;
+  /* Outer STBox spatial-distance prune: every point on either trajectory
+   * lies within the respective STBox, so the spatial distance between the
+   * boxes is a lower bound on the minimum distance; when it already meets or
+   * exceeds the running threshold the kernels below cannot improve on it, so
+   * short-circuit. Not valid for geodetic inputs (the planar bbox distance is
+   * not a lower bound); TINSTANT inputs have no precomputed bbox
+   * (temporal_bbox_ptr returns NULL) so they are skipped and handled below.
+   * Critical for cross-join aggregations where most pairs are far apart. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp1->flags) &&
+      temp1->subtype != TINSTANT && temp2->subtype != TINSTANT)
+  {
+    const STBox *bbox1 = (const STBox *) temporal_bbox_ptr(temp1);
+    const STBox *bbox2 = (const STBox *) temporal_bbox_ptr(temp2);
+    if (stbox_spatial_distance(bbox1, bbox2) >= threshold)
+      return threshold;
+  }
   bool inline_eligible =
     ! MEOS_FLAGS_GET_Z(temp1->flags) &&
     ! MEOS_FLAGS_GET_GEODETIC(temp1->flags) &&
