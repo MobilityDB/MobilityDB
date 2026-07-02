@@ -110,6 +110,7 @@ CREATE OPERATOR CLASS tgeometry_quadtree_ops
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeometry, tstzspan),
   OPERATOR  28    &<# (tgeometry, stbox),
@@ -212,6 +213,7 @@ CREATE OPERATOR CLASS tgeometry_kdtree_ops
   -- nearest approach distance
   OPERATOR  25    |=| (tgeometry, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeometry, tgeometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeometry, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeometry, tstzspan),
   OPERATOR  28    &<# (tgeometry, stbox),
@@ -275,6 +277,7 @@ CREATE OPERATOR CLASS tgeography_quadtree_ops
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeography, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeography, tstzspan),
   OPERATOR  28    &<# (tgeography, stbox),
@@ -325,6 +328,7 @@ CREATE OPERATOR CLASS tgeography_kdtree_ops
   -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeography, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeography, tstzspan),
   OPERATOR  28    &<# (tgeography, stbox),
