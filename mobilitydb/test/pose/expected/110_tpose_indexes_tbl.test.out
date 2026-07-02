@@ -231,11 +231,11 @@ WITH test AS (
   SELECT temp |=| tpose 'SRID=3812;[Pose(Point(0 0), 0.1)@2001-06-01, Pose(Point(50 50), 0.5)@2001-07-01]' AS distance
   FROM tbl_tpose2d ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
- round 
--------
-    -1
-    -1
-    -1
+   round   
+-----------
+ 48.915272
+ 63.640965
+          
 (3 rows)
 
 WITH test AS (
@@ -279,11 +279,11 @@ WITH test AS (
   SELECT temp |=| tpose 'SRID=3812;[Pose(Point(0 0), 0.1)@2001-06-01, Pose(Point(50 50), 0.5)@2001-07-01]' AS distance
   FROM tbl_tpose2d ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
- round 
--------
-    -1
-    -1
-    -1
+   round   
+-----------
+ 48.915272
+ 63.640965
+          
 (3 rows)
 
 WITH test AS (
