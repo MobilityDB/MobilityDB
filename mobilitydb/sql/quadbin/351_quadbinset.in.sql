@@ -71,8 +71,8 @@ CREATE TYPE quadbinset (
   receive = quadbinset_recv,
   send = quadbinset_send,
   alignment = double,
-  storage = extended,
-  analyze = span_analyze
+  storage = extended
+  -- , analyze = geoset_analyze
 );
 
 /******************************************************************************

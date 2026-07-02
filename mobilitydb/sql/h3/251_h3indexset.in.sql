@@ -71,8 +71,8 @@ CREATE TYPE h3indexset (
   receive = h3indexset_recv,
   send = h3indexset_send,
   alignment = double,
-  storage = extended,
-  analyze = span_analyze
+  storage = extended
+  -- , analyze = geoset_analyze
 );
 
 /******************************************************************************
