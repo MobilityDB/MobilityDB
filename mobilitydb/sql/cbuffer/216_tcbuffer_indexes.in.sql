@@ -89,7 +89,9 @@ CREATE OPERATOR CLASS tcbuffer_rtree_ops
   OPERATOR  17    -|- (tcbuffer, stbox),
   OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
---  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tcbuffer, tstzspan),
   OPERATOR  28    &<# (tcbuffer, stbox),
@@ -112,8 +114,8 @@ CREATE OPERATOR CLASS tcbuffer_rtree_ops
   FUNCTION  3 tspatial_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
-  FUNCTION  7 stbox_gist_same(stbox, stbox, internal);
---  FUNCTION  8 gist_tcbuffer_distance(internal, tcbuffer, smallint, oid, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -164,7 +166,9 @@ CREATE OPERATOR CLASS tcbuffer_quadtree_ops
   OPERATOR  17    -|- (tcbuffer, stbox),
   OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
---  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tcbuffer, tstzspan),
   OPERATOR  28    &<# (tcbuffer, stbox),
@@ -238,7 +242,9 @@ CREATE OPERATOR CLASS tcbuffer_kdtree_ops
   OPERATOR  17    -|- (tcbuffer, stbox),
   OPERATOR  17    -|- (tcbuffer, tcbuffer),
   -- nearest approach distance
---  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tcbuffer, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tcbuffer, tstzspan),
   OPERATOR  28    &<# (tcbuffer, stbox),

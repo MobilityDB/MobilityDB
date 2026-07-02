@@ -89,7 +89,9 @@ CREATE OPERATOR CLASS {TEMP}_rtree_ops
   OPERATOR  17    -|- ({TEMP}, stbox),
   OPERATOR  17    -|- ({TEMP}, {TEMP}),
   -- nearest approach distance
---  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, {TEMP}) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# ({TEMP}, tstzspan),
   OPERATOR  28    &<# ({TEMP}, stbox),
@@ -112,8 +114,8 @@ CREATE OPERATOR CLASS {TEMP}_rtree_ops
   FUNCTION  3 tspatial_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
-  FUNCTION  7 stbox_gist_same(stbox, stbox, internal);
---  FUNCTION  8 gist_{TEMP}_distance(internal, {TEMP}, smallint, oid, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -164,7 +166,9 @@ CREATE OPERATOR CLASS {TEMP}_quadtree_ops
   OPERATOR  17    -|- ({TEMP}, stbox),
   OPERATOR  17    -|- ({TEMP}, {TEMP}),
   -- nearest approach distance
---  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, {TEMP}) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# ({TEMP}, tstzspan),
   OPERATOR  28    &<# ({TEMP}, stbox),
@@ -238,7 +242,9 @@ CREATE OPERATOR CLASS {TEMP}_kdtree_ops
   OPERATOR  17    -|- ({TEMP}, stbox),
   OPERATOR  17    -|- ({TEMP}, {TEMP}),
   -- nearest approach distance
---  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, {TEMP}) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| ({TEMP}, geometry) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# ({TEMP}, tstzspan),
   OPERATOR  28    &<# ({TEMP}, stbox),
