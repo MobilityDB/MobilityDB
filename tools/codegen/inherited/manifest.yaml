@@ -77,3 +77,10 @@ subtypes:
     bin:   301
     category: tspatial
     files: [indexes]
+
+  - temp:  tpose
+    base:  pose
+    brief: "temporal poses"
+    bin:   98
+    category: tspatial
+    files: [indexes]
