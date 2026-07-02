@@ -187,6 +187,13 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-0
 SELECT round(nearestApproachDistance(geometry 'Linestring(4 -3,4 6)', tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01'), 6);
 SELECT round(nearestApproachDistance(tcbuffer '{Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(8 3), 2)@2000-01-02}', geometry 'Multipolygon(((200 200,200 210,210 210,210 200,200 200)),((9 -1,9 1,12 1,12 -1,9 -1)))'), 6);
 
+-- Perpendicular perfect-square crossing: the buffer centre sweeps across the
+-- edge's supporting line at an interior projection, so the squared
+-- perpendicular distance is a perfect square whose stationarity discriminant
+-- rounds to a small negative; the crossing (overlap) instant must still be
+-- taken, giving 0 rather than the edge-endpoint distance.
+SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(141.4213562373095 173.20508075688772), 1)@2000-01-02]' |=| geometry 'Linestring(173.20508075688772 0, 0 141.4213562373095)', 6);
+
 -------------------------------------------------------------------------------
 
 -- Analytic shortestLine: its length equals the nearest-approach distance;

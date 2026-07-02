@@ -122,13 +122,13 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) ?= tr
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
  count 
 -------
-    27
+    17
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eIntersects(temp, g);
  count 
 -------
-    27
+    17
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
@@ -190,14 +190,14 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer
   WHERE tDwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
  count 
 -------
-     9
+     8
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry
   WHERE tDwithin(temp, g, 10) ?= true <> edwithin(temp, g, 10);
  count 
 -------
-     9
+     8
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2

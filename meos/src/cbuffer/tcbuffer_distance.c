@@ -556,6 +556,14 @@ tcbuffer_minfun(double A, double B, double C, double R0, double DR, double lo,
   }
   else if (fabs(a1) > 1e-18)
     cand[nc++] = -a0 / a1;
+  /* Vertex of the quadratic under the root. In the perpendicular regime that
+   * quadratic is a perfect square, so the stationarity discriminant above is a
+   * rounding-noise negative and its double root -B/(2A) is dropped; that root
+   * is the instant the moving centre crosses the edge's supporting line (an
+   * exact zero distance, i.e. an overlap), so add it explicitly to never miss
+   * it. */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
   double best = DBL_MAX;
   for (int i = 0; i < nc; i++)
   {
@@ -800,6 +808,11 @@ tcbuffer_minfun_w(double A, double B, double C, double R0, double DR, double lo,
   }
   else if (fabs(a1) > 1e-18)
     cand[nc++] = -a0 / a1;
+  /* Vertex of the quadratic under the root; in the perpendicular regime it is a
+   * perfect square whose stationarity double root -B/(2A) rounds out above, so
+   * add it explicitly (the instant the centre crosses the edge line). */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
   double best = DBL_MAX, bt = lo;
   for (int i = 0; i < nc; i++)
   {
@@ -1310,7 +1323,7 @@ tcbuffer_seq_nad(const TSequence *seq, const TcbGeom *g, double *best)
  * buffer and a geometry
  */
 static double
-tcbuffer_geo_nad_analytic(const Temporal *temp, const GSERIALIZED *gs)
+nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
   TcbSeg *segs = NULL;
@@ -1411,7 +1424,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  return tcbuffer_geo_nad_analytic(temp, gs);
+  return nad_tcbuffer_geo_analytic(temp, gs);
 }
 
 /**
