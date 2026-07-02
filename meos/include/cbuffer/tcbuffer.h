@@ -72,6 +72,16 @@ extern int tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
 
+/* Native (GEOS-free) temporal within relationship helpers */
+
+extern void *tcbuffer_geo_ctx_make(const GSERIALIZED *gs);
+extern void tcbuffer_geo_ctx_free(void *ctx);
+extern int tcbuffer_geo_ctx_nsegs(const void *ctx);
+extern bool tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist,
+  const void *ctx);
+extern int tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2,
+  double dist, const void *ctx, double *outlo, double *outhi, int maxout);
+
 /*****************************************************************************/
 
 #endif /* __TCBUFFER_H__ */

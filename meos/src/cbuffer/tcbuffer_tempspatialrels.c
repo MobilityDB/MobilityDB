@@ -271,11 +271,9 @@ tinterrel_tcbufferseq_step_geom(const TSequence *seq, const GSERIALIZED *gs,
     bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
     GSERIALIZED *circle = tcbufferinst_traversed_area(inst);
     /* Loop for each point in the intersection */
-    bool found = false;
     for (int j = 0; j < npoints; j++)
     {
-      found = geom_intersects2d(circle, points[j]);
-      if (found)
+      if (geom_intersects2d(circle, points[j]))
       {
         if (timestamptz_cmp_internal(inst->t, mint) < 0)
           mint = inst->t;
@@ -314,11 +312,8 @@ tinterrel_tcbufferseq_step_geom(const TSequence *seq, const GSERIALIZED *gs,
         }
         pfree(s);
       }
-      else
-      {}
     }
     pfree(circle);
-    inst = next;
   }
   pfree_array((void *) points, npoints);
   /* If there is no intersection */
@@ -558,6 +553,269 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
   return result;
 }
 
+/*****************************************************************************
+ * Native (GEOS-free) temporal intersects/disjoint with a geometry
+ *
+ * These mirror the traversed-area functions above but discover the intersecting
+ * sub-periods from the exact swept-capsule distance kernel instead of
+ * linearizing the circular buffer through GEOS. They are used for every
+ * non-curved geometry; the traversed-area functions remain the fallback for
+ * curved input.
+ *****************************************************************************/
+
+/**
+ * @brief Native version of #tinterrel_tcbufferinst_geom
+ */
+static Temporal *
+tinterrel_tcbufferinst_geo_native(const TInstant *inst, bool tinter,
+  const void *ctx)
+{
+  bool within = tcbuffer_disc_within_ctx(
+    DatumGetCbufferP(tinstant_value_p(inst)), 0.0, ctx);
+  Datum d = (within == tinter) ? BoolGetDatum(true) : BoolGetDatum(false);
+  return (Temporal *) tinstant_make(d, T_TBOOL, inst->t);
+}
+
+/**
+ * @brief Native version of #tinterrel_tcbufferseq_disc_geom
+ */
+static Temporal *
+tinterrel_tcbufferseq_disc_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  Set *s = NULL;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)), 0.0,
+        ctx))
+    {
+      if (! s)
+        s = value_set(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ);
+      else
+      {
+        Set *s1 = union_set_value(s, TimestampTzGetDatum(inst->t));
+        pfree(s);
+        s = s1;
+      }
+    }
+  }
+  Datum bool_true = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
+  Datum bool_false = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
+  if (! s)
+    return (Temporal *) tsequence_from_base_temp(bool_false, T_TBOOL, seq);
+  TSequence *res_true = tsequence_from_base_tstzset(bool_true, T_TBOOL, s);
+  int count;
+  TimestampTz *times = tsequence_timestamps(seq, &count);
+  Datum *datumarr = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    datumarr[i] = TimestampTzGetDatum(times[i]);
+  pfree(times);
+  Set *s_time = set_make_free(datumarr, count, T_TIMESTAMPTZ, ORDER);
+  Set *s_minus = minus_set_set(s_time, s);
+  Temporal *result;
+  if (s_minus)
+  {
+    TSequence *res_false = tsequence_from_base_tstzset(bool_false, T_TBOOL,
+      s_minus);
+    result = tsequence_merge(res_true, res_false);
+    pfree(res_true); pfree(s_minus); pfree(res_false);
+  }
+  else
+    result = (Temporal *) res_true;
+  pfree(s); pfree(s_time);
+  return result;
+}
+
+/**
+ * @brief Build the intersects/disjoint temporal Boolean of a sequence from the
+ * spanset @p ss of intersecting sub-periods (shared by the step and linear
+ * native paths)
+ */
+static Temporal *
+tinterrel_tcbufferseq_from_spanset(const TSequence *seq, const SpanSet *ss,
+  bool tinter)
+{
+  Datum bool_true = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
+  Datum bool_false = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
+  /* No intersecting sub-period: the relationship is false over the whole
+   * sequence (resp. true for disjoint), matching the traversed-area path */
+  if (! ss)
+    return (Temporal *) tsequence_from_base_temp(bool_false, T_TBOOL, seq);
+  TSequenceSet *res_true = tsequenceset_from_base_tstzspanset(bool_true,
+    T_TBOOL, ss, STEP);
+  SpanSet *ss_time = tsequence_time(seq);
+  SpanSet *ss_minus = minus_spanset_spanset(ss_time, ss);
+  TSequenceSet *result;
+  if (ss_minus)
+  {
+    TSequenceSet *res_false = tsequenceset_from_base_tstzspanset(bool_false,
+      T_TBOOL, ss_minus, STEP);
+    result = tsequenceset_merge(res_true, res_false);
+    pfree(res_true); pfree(ss_minus); pfree(res_false);
+  }
+  else
+    result = res_true;
+  pfree(ss_time);
+  return (Temporal *) result;
+}
+
+/**
+ * @brief Native version of #tinterrel_tcbufferseq_step_geom
+ */
+static Temporal *
+tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  SpanSet *ss = NULL;
+  bool lower_inc = seq->period.lower_inc;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const TInstant *next = (i < seq->count - 1) ?
+      TSEQUENCE_INST_N(seq, i + 1) : inst;
+    bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
+    if (! tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+        0.0, ctx))
+      continue;
+    /* The step value is constant over [inst, next), so the span is exactly
+     * [inst->t, next->t); mint/maxt equal the segment endpoints, hence the
+     * endpoint inclusivity is the sequence's own lower_inc/upper_inc. For the
+     * last instant (next == inst) the span degenerates to a point. */
+    TimestampTz mint = inst->t, maxt = next->t;
+    if (mint == maxt && (! lower_inc || ! upper_inc))
+      continue;
+    bool lower_inc1, upper_inc1;
+    if (mint == maxt)
+      lower_inc1 = upper_inc1 = true;
+    else
+    {
+      lower_inc1 = lower_inc;
+      upper_inc1 = upper_inc;
+    }
+    Span *sp = span_make(TimestampTzGetDatum(mint), TimestampTzGetDatum(maxt),
+      lower_inc1, upper_inc1, T_TIMESTAMPTZ);
+    if (! ss)
+      ss = span_to_spanset(sp);
+    else
+    {
+      SpanSet *ss1 = union_spanset_span(ss, sp);
+      pfree(ss);
+      ss = ss1;
+    }
+    pfree(sp);
+  }
+  Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
+  if (ss)
+    pfree(ss);
+  return result;
+}
+
+/**
+ * @brief Native version of #tinterrel_tcbufferseq_linear_geom
+ */
+static Temporal *
+tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
+  double *rlo = palloc(sizeof(double) * maxo);
+  double *rhi = palloc(sizeof(double) * maxo);
+  SpanSet *ss = NULL;
+  bool lower_inc = seq->period.lower_inc;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    bool upper_inc = seq->period.upper_inc;
+    double dur = (double) (inst2->t - inst1->t);
+    int nr = tcbufferseg_within_ctx(DatumGetCbufferP(tinstant_value_p(inst1)),
+      DatumGetCbufferP(tinstant_value_p(inst2)), 0.0, ctx, rlo, rhi, maxo);
+    for (int j = 0; j < nr; j++)
+    {
+      TimestampTz mint = inst1->t + (TimestampTz) llround(rlo[j] * dur);
+      TimestampTz maxt = inst1->t + (TimestampTz) llround(rhi[j] * dur);
+      if (mint < inst1->t) mint = inst1->t;
+      if (maxt > inst2->t) maxt = inst2->t;
+      bool lower_inc1 = (mint == inst1->t) ? lower_inc : true;
+      bool upper_inc1 = (maxt == inst2->t) ? upper_inc : true;
+      if (mint == maxt && ! (lower_inc1 && upper_inc1))
+        continue;
+      Span *sp = span_make(TimestampTzGetDatum(mint),
+        TimestampTzGetDatum(maxt), lower_inc1, upper_inc1, T_TIMESTAMPTZ);
+      if (! ss)
+        ss = span_to_spanset(sp);
+      else
+      {
+        SpanSet *ss1 = union_spanset_span(ss, sp);
+        pfree(ss);
+        ss = ss1;
+      }
+      pfree(sp);
+    }
+    inst1 = inst2;
+  }
+  pfree(rlo); pfree(rhi);
+  Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
+  if (ss)
+    pfree(ss);
+  return result;
+}
+
+/**
+ * @brief Native dispatch over a temporal circular buffer sequence
+ */
+static Temporal *
+tinterrel_tcbufferseq_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  if (seq->count == 1)
+    return tinterrel_tcbufferinst_geo_native(TSEQUENCE_INST_N(seq, 0), tinter,
+      ctx);
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tinterrel_tcbufferseq_disc_geo_native(seq, tinter, ctx);
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+    return tinterrel_tcbufferseq_step_geo_native(seq, tinter, ctx);
+  return tinterrel_tcbufferseq_linear_geo_native(seq, tinter, ctx);
+}
+
+/**
+ * @brief Native dispatch over a temporal circular buffer sequence set
+ */
+static Temporal *
+tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
+  const void *ctx)
+{
+  if (ss->count == 1)
+    return tinterrel_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, 0), tinter,
+      ctx);
+  Temporal **res_seq = palloc(sizeof(Temporal *) * ss->count);
+  int count = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    Temporal *res = tinterrel_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, i),
+      tinter, ctx);
+    if (res)
+      res_seq[count++] = res;
+  }
+  Datum datum_false = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
+  if (! count)
+  {
+    pfree(res_seq);
+    return (Temporal *) tsequenceset_from_base_temp(datum_false, T_TBOOL, ss);
+  }
+  Temporal *result;
+  if (count == 1)
+  {
+    result = res_seq[0];
+    pfree(res_seq);
+    return result;
+  }
+  result = temporal_merge_array(res_seq, count);
+  pfree_array((void *) res_seq, count);
+  return result;
+}
+
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer and a geometry intersect or are disjoint
@@ -586,8 +844,30 @@ tinterrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
       /* Computing disjoint */
       temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
 
+  /* Native GEOS-free path for non-curved geometry; the traversed-area path
+   * remains the fallback for curved input */
+  void *ctx = tcbuffer_geo_ctx_make(gs);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
+  if (ctx)
+  {
+    switch (temp->subtype)
+    {
+      case TINSTANT:
+        result = tinterrel_tcbufferinst_geo_native((TInstant *) temp, tinter,
+          ctx);
+        break;
+      case TSEQUENCE:
+        result = tinterrel_tcbufferseq_geo_native((TSequence *) temp, tinter,
+          ctx);
+        break;
+      default: /* TSEQUENCESET */
+        result = tinterrel_tcbufferseqset_geo_native((TSequenceSet *) temp,
+          tinter, ctx);
+    }
+    tcbuffer_geo_ctx_free(ctx);
+    return result;
+  }
   switch (temp->subtype)
   {
     case TINSTANT:

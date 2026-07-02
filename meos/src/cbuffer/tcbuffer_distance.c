@@ -1382,6 +1382,280 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /*****************************************************************************
+ * Temporal within relationship (GEOS-free)
+ *
+ * The sub-periods during which a temporal circular buffer stays within a
+ * distance of a non-curved geometry, from the same swept-capsule distance
+ * kernel as the nearest-approach value. The candidate crossing instants are
+ * the roots of dist(centre(t), edge) = radius(t) + dist per boundary edge;
+ * each candidate sub-interval is classified with the exact interior-aware unit
+ * distance, so the ever-projection of the result agrees with the
+ * nearest-approach value.
+ *****************************************************************************/
+
+/**
+ * @brief Reusable geometry context that owns the boundary segments and the
+ * bucket hierarchy, so many discs and segments can be tested against one
+ * geometry without reparsing it
+ */
+typedef struct
+{
+  TcbSeg *segs;
+  TcbBucket *bks;
+  TcbGeom g;
+} TcbGeoCtx;
+
+/**
+ * @brief Build the reusable geometry context for the native within kernel, or
+ * return NULL for curved or unsupported geometry (the caller then uses the
+ * exact traversed-area path)
+ */
+void *
+tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  TcbSeg *segs = NULL;
+  int cap = 0, n = 0;
+  bool has_poly = false;
+  bool ok = tcbuffer_geo_segs(lw, &segs, &cap, &n, &has_poly);
+  lwgeom_free(lw);
+  if (! ok || n == 0)
+  {
+    if (segs) pfree(segs);
+    return NULL;
+  }
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
+    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
+    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
+    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
+  }
+  int nbk = 0;
+  TcbBucket *bks = tcbuffer_build_buckets(segs, n, gxmin, gymin, gxmax, gymax,
+    &nbk);
+  TcbGeoCtx *ctx = palloc(sizeof(TcbGeoCtx));
+  ctx->segs = segs;
+  ctx->bks = bks;
+  ctx->g = (TcbGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks,
+    nbk };
+  return ctx;
+}
+
+/**
+ * @brief Free a geometry context built by #tcbuffer_geo_ctx_make
+ */
+void
+tcbuffer_geo_ctx_free(void *ctx)
+{
+  if (! ctx)
+    return;
+  TcbGeoCtx *c = (TcbGeoCtx *) ctx;
+  pfree(c->bks);
+  pfree(c->segs);
+  pfree(c);
+}
+
+/**
+ * @brief Return the number of boundary segments in a geometry context, used to
+ * size the per-segment within-interval output
+ */
+int
+tcbuffer_geo_ctx_nsegs(const void *ctxv)
+{
+  return ((const TcbGeoCtx *) ctxv)->g.n;
+}
+
+/**
+ * @brief Return true if a static circular buffer is within @p dist of the
+ * geometry, i.e. dist(centre, geometry) - radius <= dist
+ */
+bool
+tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
+{
+  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  double best = DBL_MAX;
+  tcbuffer_unit_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &ctx->g,
+    &best);
+  return best <= dist;
+}
+
+/**
+ * @brief Append to @p cand the normalized times in (lo,hi) at which the moving
+ * disc distance to a region equals @p dist, i.e. the roots of
+ * (A - DR^2) t^2 + (B - 2 R0 DR) t + (C - R0^2) = 0 with R0 = r1 + dist
+ */
+static void
+tcbuffer_region_within_roots(double A, double B, double C, double R0,
+  double DR, double lo, double hi, double *cand, int *nc)
+{
+  double a = A - DR * DR;
+  double b = B - 2.0 * R0 * DR;
+  double c = C - R0 * R0;
+  if (fabs(a) < 1e-18)
+  {
+    if (fabs(b) > 1e-18)
+    {
+      double t = -c / b;
+      if (t > lo && t < hi)
+        cand[(*nc)++] = t;
+    }
+    return;
+  }
+  double disc = b * b - 4.0 * a * c;
+  if (disc < 0.0)
+    return;
+  double sd = sqrt(disc);
+  double t1 = (-b - sd) / (2.0 * a);
+  double t2 = (-b + sd) / (2.0 * a);
+  if (t1 > lo && t1 < hi)
+    cand[(*nc)++] = t1;
+  if (t2 > lo && t2 < hi)
+    cand[(*nc)++] = t2;
+}
+
+/**
+ * @brief Append the within-distance crossing times of one moving disc segment
+ * against one geometry edge, mirroring the perpendicular/endpoint region split
+ * of #tcbuffer_seg_edge_mindist
+ */
+static void
+tcbuffer_seg_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbSeg *e, double dist, double *cand, int *nc)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1, R0 = r1 + dist;
+  const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  const double ux = bx - ax, uy = by - ay, l2 = ux * ux + uy * uy;
+  if (l2 <= 1e-24)
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    tcbuffer_region_within_roots(A, B, C, R0, dr, 0.0, 1.0, cand, nc);
+    return;
+  }
+  const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
+  const double s1 = dcx * ux + dcy * uy;
+  double bp[4];
+  int nb = 0;
+  bp[nb++] = 0.0;
+  bp[nb++] = 1.0;
+  if (fabs(s1) > 1e-18)
+  {
+    double ta = -s0 / s1, tb = (l2 - s0) / s1;
+    if (ta > 0.0 && ta < 1.0) bp[nb++] = ta;
+    if (tb > 0.0 && tb < 1.0) bp[nb++] = tb;
+  }
+  for (int i = 0; i < nb; i++)
+    for (int j = i + 1; j < nb; j++)
+      if (bp[j] < bp[i]) { double tmp = bp[i]; bp[i] = bp[j]; bp[j] = tmp; }
+  for (int k = 0; k + 1 < nb; k++)
+  {
+    double lo = bp[k], hi = bp[k + 1];
+    if (hi - lo < 1e-15)
+      continue;
+    double mt = 0.5 * (lo + hi);
+    double s = (s0 + s1 * mt) / l2;
+    double A, B, C;
+    if (s <= 0.0)
+    {
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+      C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    }
+    else if (s >= 1.0)
+    {
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
+      C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
+    }
+    else
+    {
+      double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
+      double k1 = dcx * uy - dcy * ux;
+      A = k1 * k1 / l2;
+      B = 2.0 * k0 * k1 / l2;
+      C = k0 * k0 / l2;
+    }
+    tcbuffer_region_within_roots(A, B, C, R0, dr, lo, hi, cand, nc);
+  }
+}
+
+/**
+ * @brief Comparator for sorting the candidate crossing times
+ */
+static int
+tcbuffer_double_cmp(const void *a, const void *b)
+{
+  double d = *(const double *) a - *(const double *) b;
+  return (d < 0.0) ? -1 : (d > 0.0 ? 1 : 0);
+}
+
+/**
+ * @brief Return the within-distance sub-intervals of one linear moving disc
+ * segment as normalized [0,1] time ranges in @p outlo / @p outhi, returning
+ * their count. The crossing candidates come from the per-edge roots and each
+ * sub-interval is classified with the exact interior-aware unit distance.
+ */
+int
+tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
+  const void *ctxv, double *outlo, double *outhi, int maxout)
+{
+  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
+  const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
+  double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
+  double cx2 = p2->x, cy2 = p2->y, r2 = cb2->radius;
+  int ncap = 2 + 4 * ctx->g.n;
+  double *cand = palloc(sizeof(double) * ncap);
+  int nc = 0;
+  cand[nc++] = 0.0;
+  cand[nc++] = 1.0;
+  for (int k = 0; k < ctx->g.n; k++)
+    tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, &ctx->g.segs[k],
+      dist, cand, &nc);
+  qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
+  int m = 0;
+  for (int i = 0; i < nc; i++)
+    if (i == 0 || cand[i] - cand[m - 1] > 1e-15)
+      cand[m++] = cand[i];
+  int nout = 0;
+  int k = 0;
+  while (k < m - 1 && nout < maxout)
+  {
+    double tm = 0.5 * (cand[k] + cand[k + 1]);
+    double cx = cx1 + (cx2 - cx1) * tm, cy = cy1 + (cy2 - cy1) * tm;
+    double r = r1 + (r2 - r1) * tm;
+    double best = DBL_MAX;
+    tcbuffer_unit_nad(cx, cy, r, cx, cy, r, &ctx->g, &best);
+    if (best <= dist)
+    {
+      int ks = k;
+      k++;
+      while (k < m - 1)
+      {
+        double tm2 = 0.5 * (cand[k] + cand[k + 1]);
+        double cx_2 = cx1 + (cx2 - cx1) * tm2, cy_2 = cy1 + (cy2 - cy1) * tm2;
+        double r_2 = r1 + (r2 - r1) * tm2;
+        double best2 = DBL_MAX;
+        tcbuffer_unit_nad(cx_2, cy_2, r_2, cx_2, cy_2, r_2, &ctx->g, &best2);
+        if (best2 <= dist) k++;
+        else break;
+      }
+      outlo[nout] = cand[ks];
+      outhi[nout] = cand[k];
+      nout++;
+    }
+    else
+      k++;
+  }
+  pfree(cand);
+  return nout;
+}
+
+/*****************************************************************************
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
