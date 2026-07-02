@@ -74,9 +74,9 @@ subtypes:
   - temp:  tnpoint
     base:  npoint
     brief: "temporal network points"
-    bin:   301
+    bin:   300
     category: tspatial
-    files: [indexes]
+    files: [posops, indexes]
 
   - temp:  tpose
     base:  pose

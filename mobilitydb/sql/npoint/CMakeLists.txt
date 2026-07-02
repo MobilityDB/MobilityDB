@@ -12,7 +12,7 @@ SET(LOCAL_FILES
   311_tnpoint_gin
   312_tnpoint_distance
   314_tnpoint_aggfuncs
-  317_tnpoint_indexes
+  316_tnpoint_indexes
   )
 
 append_portable_aliases()
