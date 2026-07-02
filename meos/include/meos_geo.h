@@ -891,6 +891,7 @@ extern Temporal *tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 extern Temporal *tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern double nad_stbox_stbox(const STBox *box1, const STBox *box2);
+extern double stbox_spatial_distance(const STBox *box1, const STBox *box2);
 extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box);
 extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);

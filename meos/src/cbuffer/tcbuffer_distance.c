@@ -1874,33 +1874,6 @@ mindist_tcbuffer_tcbuffer_threshold(const Temporal *temp1,
 }
 
 /**
- * @brief Return the spatial-only distance between two spatiotemporal boxes,
- * ignoring time entirely
- */
-static double
-tcbuffer_stbox_spatial_distance(const STBox *box1, const STBox *box2)
-{
-  /* Spatial extents overlap → exact minimum is 0 (some pair of points
-   * inside the joined extent has zero distance) */
-  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax &&
-      box1->ymin <= box2->ymax && box2->ymin <= box1->ymax)
-    return 0.0;
-
-  /* Spatial extents disjoint → exact bbox-to-bbox euclidean distance.
-   * Drop the time component of each box before serialising to geometry. */
-  datum_func2 func = geo_distance_fn(box1->flags);
-  STBox b1 = *box1, b2 = *box2;
-  MEOS_FLAGS_SET_T(b1.flags, false);
-  MEOS_FLAGS_SET_T(b2.flags, false);
-  Datum g1 = PointerGetDatum(stbox_geo(&b1));
-  Datum g2 = PointerGetDatum(stbox_geo(&b2));
-  double result = DatumGetFloat8(func(g1, g2));
-  pfree(DatumGetPointer(g1));
-  pfree(DatumGetPointer(g2));
-  return result;
-}
-
-/**
  * @ingroup meos_cbuffer_dist
  * @brief Return the minimum spatial distance between two temporal circular
  * buffers, capped at @p threshold
@@ -1932,7 +1905,7 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   {
     const STBox *bbox1 = (const STBox *) temporal_bbox_ptr(temp1);
     const STBox *bbox2 = (const STBox *) temporal_bbox_ptr(temp2);
-    double bbox_dist = tcbuffer_stbox_spatial_distance(bbox1, bbox2);
+    double bbox_dist = stbox_spatial_distance(bbox1, bbox2);
     if (bbox_dist >= threshold)
       return threshold;
   }

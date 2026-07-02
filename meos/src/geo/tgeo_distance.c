@@ -795,19 +795,9 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
       return DBL_MAX;
 
-  /* If the boxes intersect in the value dimension return 0 */
-  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
-    return 0.0;
-
-  /* Select the distance function to be applied */
-  datum_func2 func = geo_distance_fn(box1->flags);
-  /* Convert the boxes to geometries */
-  Datum geo1 = PointerGetDatum(stbox_geo(box1));
-  Datum geo2 = PointerGetDatum(stbox_geo(box2));
-  /* Compute the result */
-  double result = DatumGetFloat8(func(geo1, geo2));
-  pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
-  return result;
+  /* The nearest approach distance is the spatial-only distance between the
+   * boxes (time already tested above) */
+  return stbox_spatial_distance(box1, box2);
 }
 
 /**
@@ -993,8 +983,13 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * Set-set spatial minimum distance
  *****************************************************************************/
 
-/* Spatial-only distance between two STBoxes; ignores time entirely. */
-static double
+/**
+ * @ingroup meos_geo_distance
+ * @brief Return the spatial-only minimum distance between two spatiotemporal
+ * boxes, ignoring the time dimension entirely
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)
 {
   /* Spatial extents overlap → exact minimum is 0 (some pair of points

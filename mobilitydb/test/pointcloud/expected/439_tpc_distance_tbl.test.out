@@ -32,7 +32,7 @@ ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
 LIMIT 5;
  k  | finite 
 ----+--------
- 41 | false
+ 41 | true
  22 | true
  19 | true
  17 | true
@@ -53,7 +53,7 @@ ORDER BY temp |=| tpcbox_zt(0, 0, 0, 0, 0, 0,
 LIMIT 5;
  k  | finite 
 ----+--------
- 41 | false
+ 41 | true
  22 | true
  19 | true
  17 | true
