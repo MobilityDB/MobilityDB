@@ -84,3 +84,12 @@ subtypes:
     bin:   98
     category: tspatial
     files: [indexes]
+
+  - temp:  trgeometry
+    base:  rgeometry
+    fam:   rgeo
+    stem:  trgeo
+    brief: "temporal rigid geometries"
+    bin:   146
+    category: tspatial
+    files: [indexes]

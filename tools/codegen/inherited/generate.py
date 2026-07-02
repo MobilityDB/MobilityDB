@@ -71,7 +71,11 @@ def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # but a family whose directory differs from its base type (h3: dir `h3`, base
     # `h3index`) overrides it with an explicit `fam`.
     fam = sub.get("fam", sub["base"])
-    return ROOT / "mobilitydb" / "sql" / fam / f"{num}_{sub['temp']}_{behaviour}.in.sql"
+    # The filename type token defaults to the temp type, but a family whose files
+    # abbreviate it (rgeo: type `trgeometry`, files `..._trgeo_...`) overrides it
+    # with an explicit `stem`.
+    stem = sub.get("stem", sub["temp"])
+    return ROOT / "mobilitydb" / "sql" / fam / f"{num}_{stem}_{behaviour}.in.sql"
 
 
 def strip_banner(text: str) -> str:
