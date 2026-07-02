@@ -78,7 +78,7 @@ subtypes:
     brief: "temporal network points"
     bin:   300
     category: tspatial
-    files: [posops, indexes]
+    files: [compops, posops, indexes]
 
   - temp:  tpose
     base:  pose
