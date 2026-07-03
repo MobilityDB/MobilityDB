@@ -211,6 +211,29 @@ CREATE FUNCTION nsegment(geometry)
 CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);
 CREATE CAST (geometry AS nsegment) WITH FUNCTION nsegment(geometry);
 
+CREATE FUNCTION stbox(npoint)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Npoint_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(nsegment)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Nsegment_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(npoint, timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Npoint_timestamptz_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(npoint, tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Npoint_tstzspan_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (npoint AS stbox) WITH FUNCTION stbox(npoint);
+CREATE CAST (nsegment AS stbox) WITH FUNCTION stbox(nsegment);
+
 /*****************************************************************************
  * Accessors
  *****************************************************************************/

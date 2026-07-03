@@ -78,7 +78,13 @@ subtypes:
     brief: "temporal network points"
     bin:   300
     category: tspatial
-    files: [compops, posops, indexes]
+    # npoint's scalar base::stbox conversions are npoint-specific (Npoint_to_stbox
+    # + the extra nsegment/timestamptz/tstzspan variants), so they live in the base
+    # file 300_npoint (Conversion between network and space), not the templated
+    # cbuffer block; and tnpoint has no trajectory-tiling stboxes functions.
+    scalar_stbox_cast: false
+    stboxes: false
+    files: [compops, posops, topops, indexes]
 
   - temp:  tpose
     base:  pose
