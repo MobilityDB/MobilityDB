@@ -3,46 +3,28 @@ Copyright(c) MobilityDB Contributors
 Licensed under the PostgreSQL License (see LICENSE.txt).
 -->
 
-# Portable named-function aliases
+# Portable operator coverage verifier
 
-`generate.py` produces a bare-name function alias for every MobilityDB
-operator overload (topology, time-position, space X/Y/Z position, temporal
-comparison, `same`), so the same SQL runs unchanged on MobilityDB, MobilityDuck
-and MobilitySpark (RFC: `doc/rfc/sql-portability`). Each alias reuses the
-operator's own backing C symbol, so it is the operator's exact implementation.
+Every MobilityDB operator names its backing function with the bare portable
+name directly — positional (`left`/`right`/`before`/`after` and the `over*`
+variants), topological (`contains`/`contained`/`overlaps`/`adjacent`/`same`)
+and comparison (`tEq`/`eEq`/`aEq`, …) — so the same SQL runs unchanged on
+MobilityDB, MobilityDuck and MobilitySpark (RFC: `doc/rfc/sql-portability`). The
+bare names live in the operator definitions; there is no generated SQL.
 
-## Regenerate
+`generate.py` classifies every `CREATE OPERATOR` symbol in `mobilitydb/sql`
+against the dialect and fails when any symbol is unclassified, so a parity gap
+(a new operator with no portable-name mapping) surfaces as a build error rather
+than silently.
+
+## Check (CI gate, `check-code.yml`)
 
 ```bash
-python3 tools/codegen/portable_aliases/generate.py --insrc
+python3 tools/codegen/portable_aliases/generate.py --check
 ```
 
-Writes `mobilitydb/sql/<group>/<NNN>_portable_aliases.in.sql` (wired into each
-subdir `CMakeLists.txt`) and `verify_equivalence.sql`. The generator is
-idempotent — committed output equals a fresh run.
-
-## Verification (three independent layers)
-
-1. **Static invariants — no database** (CI gate, `check-code.yml`):
-
-   ```bash
-   python3 tools/codegen/portable_aliases/generate.py --check
-   ```
-
-   Fails on any of: collisions, unresolved backing function, invented C
-   symbol, unclassified operator. The coverage audit classifies every
-   `CREATE OPERATOR` symbol — 100% coverage with documented exclusions
-   (standard SQL operators; operators with existing callable named backing).
-
-2. **Equivalence by construction** — every alias C symbol is one the core SQL
-   already uses (`invented symbols = 0`), so the alias and the operator are
-   the same implementation regardless of any built `.so`.
-
-3. **On-database equivalence** — after `CREATE EXTENSION mobilitydb` on a
-   current build:
-
-   ```bash
-   tools/codegen/portable_aliases/verify.sh <database>
-   ```
-
-   Runs `verify_equivalence.sql`; expects `PORTABLE ALIASES OK`.
+Fails on any unclassified operator. Adding an operator requires classifying its
+symbol in `generate.py` — either mapping it to a bare portable name
+(`OP_TO_NAME`) or placing it in a documented already-portable bucket: standard
+SQL operators, the ever/always and distance families, json access/existence
+operators, and operators with an existing callable named backing.
