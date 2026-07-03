@@ -330,62 +330,62 @@ CREATE OPERATOR %<> (
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION tgeo_teq(geometry, tgeometry)
+CREATE FUNCTION tEq(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_teq(tgeometry, geometry)
+CREATE FUNCTION tEq(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_teq(tgeometry, tgeometry)
+CREATE FUNCTION tEq(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = geometry, RIGHTARG = tgeometry,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = tgeometry, RIGHTARG = geometry,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = #=
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tgeo_teq(geography, tgeography)
+CREATE FUNCTION tEq(geography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_teq(tgeography, geography)
+CREATE FUNCTION tEq(tgeography, geography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_teq(tgeography, tgeography)
+CREATE FUNCTION tEq(tgeography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = geography, RIGHTARG = tgeography,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = tgeography, RIGHTARG = geography,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tgeo_teq,
+  PROCEDURE = tEq,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = #=
 );
@@ -394,62 +394,62 @@ CREATE OPERATOR #= (
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION tgeo_tne(geometry, tgeometry)
+CREATE FUNCTION tNe(geometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_tne(tgeometry, geometry)
+CREATE FUNCTION tNe(tgeometry, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_tne(tgeometry, tgeometry)
+CREATE FUNCTION tNe(tgeometry, tgeometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = geometry, RIGHTARG = tgeometry,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = tgeometry, RIGHTARG = geometry,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = #<>
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tgeo_tne(geography, tgeography)
+CREATE FUNCTION tNe(geography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_tne(tgeography, geography)
+CREATE FUNCTION tNe(tgeography, geography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_tne(tgeography, tgeography)
+CREATE FUNCTION tNe(tgeography, tgeography)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = geography, RIGHTARG = tgeography,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = tgeography, RIGHTARG = geography,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = tgeo_tne,
+  PROCEDURE = tNe,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = #<>
 );
