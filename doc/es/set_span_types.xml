@@ -912,7 +912,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="spatialset_spatial_srid">
+	<sect1 xml:id="spatialset_spatial_srid">
 		<title>Sistema de referencia espacial</title>
 
 		<itemizedlist>
@@ -1389,7 +1389,7 @@ SELECT tCount(ps) FROM periods;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="setspan_indexing">
+	<sect1 xml:id="setspan_indexing">
 		<title>Indexación</title>
 
 		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos de conjunto y de rango. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>tstzspan</varname> en una tabla <varname>Reservation</varname> es como sigue:
