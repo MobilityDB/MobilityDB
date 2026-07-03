@@ -6,12 +6,12 @@ SET(LOCAL_FILES
   105_tpose_spatialfuncs
   108_tpose_topops
   109_tpose_posops
+  110_tpose_distance
   111_tpose_aggfuncs
-  113_tpose_distance
-  114_tpose_indexes
-  115_tpose_spatialrels
-  116_tpose_tempspatialrels
-  118_tpose_analytics
+  112_tpose_spatialrels
+  114_tpose_tempspatialrels
+  116_tpose_indexes
+  117_tpose_analytics
   119_tpose_tile
   120_geopose_frames
   )
