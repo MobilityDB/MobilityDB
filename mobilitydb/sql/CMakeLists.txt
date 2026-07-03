@@ -51,22 +51,6 @@ macro(process_file f srcdir bindir)
   file(WRITE ${bindir}/${f}.sql.in "${CURR_CONTENTS}")
 endmacro()
 
-# Auto-register a type family's generated portable-alias SQL file. The file is
-# emitted by tools/codegen/portable_aliases/generate.py as <NNN>_portable_aliases.in.sql
-# in the family directory; its mere presence registers it for the build, so no
-# family has to hand-list it (and a new family needs no manifest edit). Called
-# from within each (feature-gated) family directory, so a family's aliases are
-# only built when that family is. Final load order is by the <NNN> prefix via
-# the global list(SORT) below, not by position in LOCAL_FILES.
-macro(append_portable_aliases)
-  file(GLOB _portable_aliases RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/*_portable_aliases.in.sql)
-  foreach (_pa ${_portable_aliases})
-    string(REGEX REPLACE "\\.in\\.sql$" "" _pa "${_pa}")
-    list(APPEND LOCAL_FILES ${_pa})
-  endforeach()
-endmacro()
-
 add_subdirectory(temporal)
 add_subdirectory(geo)
 if(ARROW)
