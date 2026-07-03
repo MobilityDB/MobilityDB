@@ -40,43 +40,43 @@
 
 /* tstzspan op tnpoint */
 
-CREATE FUNCTION temporal_before(tstzspan, tnpoint)
+CREATE FUNCTION before(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbefore(tstzspan, tnpoint)
+CREATE FUNCTION overbefore(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_after(tstzspan, tnpoint)
+CREATE FUNCTION after(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overafter(tstzspan, tnpoint)
+CREATE FUNCTION overafter(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
   LEFTARG = tstzspan, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_before,
+  PROCEDURE = before,
   COMMUTATOR = #>>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tstzspan, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overbefore,
+  PROCEDURE = overbefore,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tstzspan, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_after,
+  PROCEDURE = after,
   COMMUTATOR = <<#,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tstzspan, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overafter,
+  PROCEDURE = overafter,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -84,119 +84,119 @@ CREATE OPERATOR #&> (
  * stbox
  *****************************************************************************/
 
-CREATE FUNCTION temporal_left(stbox, tnpoint)
+CREATE FUNCTION left(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(stbox, tnpoint)
+CREATE FUNCTION overleft(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(stbox, tnpoint)
+CREATE FUNCTION right(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(stbox, tnpoint)
+CREATE FUNCTION overright(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_below(stbox, tnpoint)
+CREATE FUNCTION below(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbelow(stbox, tnpoint)
+CREATE FUNCTION overbelow(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_above(stbox, tnpoint)
+CREATE FUNCTION above(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overabove(stbox, tnpoint)
+CREATE FUNCTION overabove(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_before(stbox, tnpoint)
+CREATE FUNCTION before(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbefore(stbox, tnpoint)
+CREATE FUNCTION overbefore(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_after(stbox, tnpoint)
+CREATE FUNCTION after(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overafter(stbox, tnpoint)
+CREATE FUNCTION overafter(stbox, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_left,
+  PROCEDURE = left,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overleft,
+  PROCEDURE = overleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_right,
+  PROCEDURE = right,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overright,
+  PROCEDURE = overright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_below,
+  PROCEDURE = below,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overbelow,
+  PROCEDURE = overbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_above,
+  PROCEDURE = above,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overabove,
+  PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_before,
+  PROCEDURE = before,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overbefore,
+  PROCEDURE = overbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_after,
+  PROCEDURE = after,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = stbox, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overafter,
+  PROCEDURE = overafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -206,43 +206,43 @@ CREATE OPERATOR #&> (
 
 /* tnpoint op tstzspan */
 
-CREATE FUNCTION temporal_before(tnpoint, tstzspan)
+CREATE FUNCTION before(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbefore(tnpoint, tstzspan)
+CREATE FUNCTION overbefore(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_after(tnpoint, tstzspan)
+CREATE FUNCTION after(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overafter(tnpoint, tstzspan)
+CREATE FUNCTION overafter(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
   LEFTARG = tnpoint, RIGHTARG = tstzspan,
-  PROCEDURE = temporal_before,
+  PROCEDURE = before,
   COMMUTATOR = #>>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tnpoint, RIGHTARG = tstzspan,
-  PROCEDURE = temporal_overbefore,
+  PROCEDURE = overbefore,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tnpoint, RIGHTARG = tstzspan,
-  PROCEDURE = temporal_after,
+  PROCEDURE = after,
   COMMUTATOR = <<#,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tnpoint, RIGHTARG = tstzspan,
-  PROCEDURE = temporal_overafter,
+  PROCEDURE = overafter,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
@@ -250,119 +250,119 @@ CREATE OPERATOR #&> (
 
 /* tnpoint op stbox */
 
-CREATE FUNCTION temporal_left(tnpoint, stbox)
+CREATE FUNCTION left(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(tnpoint, stbox)
+CREATE FUNCTION overleft(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(tnpoint, stbox)
+CREATE FUNCTION right(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(tnpoint, stbox)
+CREATE FUNCTION overright(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_below(tnpoint, stbox)
+CREATE FUNCTION below(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbelow(tnpoint, stbox)
+CREATE FUNCTION overbelow(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_above(tnpoint, stbox)
+CREATE FUNCTION above(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overabove(tnpoint, stbox)
+CREATE FUNCTION overabove(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_before(tnpoint, stbox)
+CREATE FUNCTION before(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbefore(tnpoint, stbox)
+CREATE FUNCTION overbefore(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_after(tnpoint, stbox)
+CREATE FUNCTION after(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overafter(tnpoint, stbox)
+CREATE FUNCTION overafter(tnpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_left,
+  PROCEDURE = left,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overleft,
+  PROCEDURE = overleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_right,
+  PROCEDURE = right,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overright,
+  PROCEDURE = overright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_below,
+  PROCEDURE = below,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overbelow,
+  PROCEDURE = overbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_above,
+  PROCEDURE = above,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overabove,
+  PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_before,
+  PROCEDURE = before,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overbefore,
+  PROCEDURE = overbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_after,
+  PROCEDURE = after,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tnpoint, RIGHTARG = stbox,
-  PROCEDURE = temporal_overafter,
+  PROCEDURE = overafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
@@ -370,119 +370,119 @@ CREATE OPERATOR #&> (
 
 /* tnpoint op tnpoint */
 
-CREATE FUNCTION temporal_left(tnpoint, tnpoint)
+CREATE FUNCTION left(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(tnpoint, tnpoint)
+CREATE FUNCTION overleft(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(tnpoint, tnpoint)
+CREATE FUNCTION right(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(tnpoint, tnpoint)
+CREATE FUNCTION overright(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_below(tnpoint, tnpoint)
+CREATE FUNCTION below(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbelow(tnpoint, tnpoint)
+CREATE FUNCTION overbelow(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_above(tnpoint, tnpoint)
+CREATE FUNCTION above(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overabove(tnpoint, tnpoint)
+CREATE FUNCTION overabove(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_before(tnpoint, tnpoint)
+CREATE FUNCTION before(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbefore(tnpoint, tnpoint)
+CREATE FUNCTION overbefore(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_after(tnpoint, tnpoint)
+CREATE FUNCTION after(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overafter(tnpoint, tnpoint)
+CREATE FUNCTION overafter(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_left,
+  PROCEDURE = left,
   COMMUTATOR = '>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overleft,
+  PROCEDURE = overleft,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_right,
+  PROCEDURE = right,
   COMMUTATOR = '<<',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overright,
+  PROCEDURE = overright,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_below,
+  PROCEDURE = below,
   COMMUTATOR = '|>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overbelow,
+  PROCEDURE = overbelow,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_above,
+  PROCEDURE = above,
   COMMUTATOR = '<<|',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overabove,
+  PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_before,
+  PROCEDURE = before,
   COMMUTATOR = '#>>',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overbefore,
+  PROCEDURE = overbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_after,
+  PROCEDURE = after,
   COMMUTATOR = '<<#',
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = temporal_overafter,
+  PROCEDURE = overafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
