@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a set
- * @sqlfn set_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 inline Datum
@@ -197,7 +197,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the left of a value
- * @sqlfn set_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 inline Datum
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the left of the second one
- * @sqlfn set_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 inline Datum
@@ -228,7 +228,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a set
- * @sqlfn set_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 inline Datum
@@ -242,7 +242,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set is to the right of a value
- * @sqlfn set_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 inline Datum
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set is to the right of the second one
- * @sqlfn set_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 inline Datum
@@ -273,7 +273,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a set
- * @sqlfn set_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -287,7 +287,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the right of a value
- * @sqlfn set_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -302,7 +302,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the right of the
  * second one
- * @sqlfn set_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 inline Datum
@@ -319,7 +319,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a set
- * @sqlfn set_overright()
+ * @sqlfn overright()
  * @sqlop @p
  */
 inline Datum
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a set does not extend to the left of a value
- * @sqlfn set_overright()
+ * @sqlfn overright()
  * @sqlop @p &>
  */
 inline Datum
@@ -348,7 +348,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first set does not extend to the left of the
  * second one
- * @sqlfn set_overright()
+ * @sqlfn overright()
  * @sqlop @p &>
  */
 inline Datum

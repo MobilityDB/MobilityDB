@@ -460,80 +460,80 @@ CREATE OPERATOR -|- (
  * Position operators
  *****************************************************************************/
 
-CREATE FUNCTION tbox_left(tbox, tbox)
+CREATE FUNCTION left(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_overleft(tbox, tbox)
+CREATE FUNCTION overleft(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_right(tbox, tbox)
+CREATE FUNCTION right(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_overright(tbox, tbox)
+CREATE FUNCTION overright(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_before(tbox, tbox)
+CREATE FUNCTION before(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_overbefore(tbox, tbox)
+CREATE FUNCTION overbefore(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_after(tbox, tbox)
+CREATE FUNCTION after(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_overafter(tbox, tbox)
+CREATE FUNCTION overafter(tbox, tbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
-  PROCEDURE = tbox_left,
+  PROCEDURE = left,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = >>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR &< (
-  PROCEDURE = tbox_overleft,
+  PROCEDURE = overleft,
   LEFTARG = tbox, RIGHTARG = tbox,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR >> (
   LEFTARG = tbox, RIGHTARG = tbox,
-  PROCEDURE = tbox_right,
+  PROCEDURE = right,
   COMMUTATOR = <<,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR &> (
-  PROCEDURE = tbox_overright,
+  PROCEDURE = overright,
   LEFTARG = tbox, RIGHTARG = tbox,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <<# (
-  PROCEDURE = tbox_before,
+  PROCEDURE = before,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = #>>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = tbox_overbefore,
+  PROCEDURE = overbefore,
   LEFTARG = tbox, RIGHTARG = tbox,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = tbox_after,
+  PROCEDURE = after,
   LEFTARG = tbox, RIGHTARG = tbox,
   COMMUTATOR = <<#,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR #&> (
-  PROCEDURE = tbox_overafter,
+  PROCEDURE = overafter,
   LEFTARG = tbox, RIGHTARG = tbox,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );

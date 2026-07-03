@@ -195,7 +195,7 @@ PG_FUNCTION_INFO_V1(Left_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the left of a span
- * @sqlfn span_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 Datum
@@ -211,7 +211,7 @@ PG_FUNCTION_INFO_V1(Left_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the left of a value
- * @sqlfn span_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 Datum
@@ -227,7 +227,7 @@ PG_FUNCTION_INFO_V1(Left_span_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span is to the left of the second one
- * @sqlfn span_left()
+ * @sqlfn left()
  * @sqlop @p <<
  */
 Datum
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(Right_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value is to the right of a span
- * @sqlfn span_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 Datum
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Right_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span is to the right of a value
- * @sqlfn span_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 Datum
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Right_span_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span is to the right of the second one
- * @sqlfn span_right()
+ * @sqlfn right()
  * @sqlop @p >>
  */
 Datum
@@ -299,7 +299,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the right of a span
- * @sqlfn span_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 Datum
@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the right of a value
- * @sqlfn span_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 Datum
@@ -332,7 +332,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_span);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span does not extend to the right of the
  * second one
- * @sqlfn span_overleft()
+ * @sqlfn overleft()
  * @sqlop @p &<
  */
 Datum
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Overright_value_span);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a value does not extend to the left of a span
- * @sqlfn span_overright()
+ * @sqlfn overright()
  * @sqlop @p &>
  */
 Datum
@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(Overright_span_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a span does not extend to the left of a value
- * @sqlfn span_overright()
+ * @sqlfn overright()
  * @sqlop @p &>
  */
 Datum
@@ -385,7 +385,7 @@ PG_FUNCTION_INFO_V1(Overright_span_span);
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first span does not extend to the left of the
  * second one
- * @sqlfn span_overright()
+ * @sqlfn overright()
  * @sqlop @p &>
  */
 Datum
