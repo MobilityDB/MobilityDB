@@ -700,6 +700,22 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 -- CURVEPOLYGON(CIRCULARSTRING(0.7 1,1.3 1,0.7 1))
 </programlisting>
 			</listitem>
+			<listitem xml:id="tcbuffer_centroid">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</para>
+				<para><varname>centroid(tcbuffer) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
+-- [POINT(1 1)@2001-01-01 00:00:00+01, POINT(3 3)@2001-01-03 00:00:00+01]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_convexHull">
+				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
+				<para>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</para>
+				<para><varname>convexHull(tcbuffer) → geometry</varname></para>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -767,6 +783,25 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 -- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
 </programlisting>
 			</listitem>
+			<listitem xml:id="tcbuffer_minDistance">
+				<indexterm significance="normal"><primary><varname>minDistance</varname></primary></indexterm>
+				<para>Devuelve la distancia espacial mínima, ignorando el tiempo</para>
+				<para><varname>minDistance(tcbuffer,{geo,cbuffer}) → float</varname></para>
+				<para><varname>minDistance(tcbuffer,tcbuffer) → float</varname> (agregado)</para>
+				<para>El resultado es la distancia espacial entre las áreas barridas por los dos argumentos durante toda su vida útil, igual a <varname>ST_Distance(traversedArea(...), traversedArea(...))</varname>. La forma de dos argumentos de búfer circular temporal es un agregado, de modo que una combinación cruzada agrupada por una clave produce el mínimo sobre cada par del grupo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
+  Cbuffer(Point(10 0), 0.5)@2001-01-02]', geometry 'Point(5 5)');
+-- 4.5
+SELECT minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2001-01-01,
+  Cbuffer(Point(10 0), 0.5)@2001-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)');
+-- 3.5
+SELECT g, minDistance(t1.Noise, t2.Noise)
+FROM Vessel v1, VesselTrip t1, Vessel v2, VesselTrip t2
+WHERE v1.MMSI = t1.MMSI AND v2.MMSI = t2.MMSI
+GROUP BY t1.ShipTypeLabel, t2.ShipTypeLabel;
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -804,6 +839,18 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
 /* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673+01,
    Cbuffer(Point(2 2),0.7)@2001-01-03 00:00:00+01]} */
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcbuffer_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringir un búfer circular temporal a (el complemento de) una caja espaciotemporal</para>
+				<para><varname>atStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
+				<para><varname>minusStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
+  Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
+-- {[Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.5)@2000-01-02 00:00:00+01)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1051,6 +1098,35 @@ SELECT astext(tCentroid(Temp))
 FROM Temp;
 /* {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
    POINT(55.7001249027598 72.9552602410653)@2001-01-03)} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tcbuffer_simplification">
+		<title>Simplificación</title>
+		<itemizedlist>
+			<listitem xml:id="tcbuffer_minDistSimplify">
+				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Devuelve un búfer circular temporal simplificado asegurándose de que los centros consecutivos estén al menos separados por una cierta distancia o intervalo de tiempo</para>
+				<para><varname>minDistSimplify(tcbuffer,mindist float) → tcbuffer</varname></para>
+				<para><varname>minTimeDeltaSimplify(tcbuffer,mint interval) → tcbuffer</varname></para>
+				<para>La simplificación opera sobre la trayectoria de los centros del búfer circular temporal y conserva el radio en cada instante que sobrevive. La simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del valor dado.</para>
+			</listitem>
+
+			<listitem xml:id="tcbuffer_douglasPeuckerSimplify">
+				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Devuelve un búfer circular temporal simplificado usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink></para>
+				<para><varname>maxDistSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer</varname></para>
+				<para><varname>douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist=true) → tcbuffer</varname></para>
+				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> utiliza una versión de un solo paso del algoritmo mientras que <varname>douglasPeuckerSimplify</varname> utiliza el algoritmo recursivo estándar. Al igual que las funciones anteriores, la simplificación opera sobre la trayectoria de los centros y conserva el radio en cada instante que sobrevive.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
+  Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03,
+  Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0));
+-- {Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(4 4),0.5)@2000-01-04 00:00:00+01}
 </programlisting>
 			</listitem>
 		</itemizedlist>
