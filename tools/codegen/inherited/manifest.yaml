@@ -83,7 +83,7 @@ subtypes:
   - temp:  tpose
     base:  pose
     brief: "temporal poses"
-    bin:   98
+    bin:   100
     category: tspatial
     files: [indexes]
 
