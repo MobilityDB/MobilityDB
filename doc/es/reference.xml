@@ -129,6 +129,13 @@
 					<entry><varname>th3index</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>quadbin</varname></emphasis></entry>
+					<entry><varname>quadbinset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tquadbin</varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>pcpoint</varname></emphasis></entry>
 					<entry><varname>pcpointset</varname></entry>
 					<entry><varname/></entry>
@@ -1728,6 +1735,740 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Geometrías rígidas temporales</title>
+
+		<sect2>
+			<title>Entrada y salida</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_asText"><varname>asText</varname></link>: Devuelve la representación en formato Well-Known Text (WKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación en formato Extended Well-Known Text (EWKT), precedida por el SRID</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación en formato Moving Features JSON</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación en formato Extended Well-Known Binary (EWKB), o su texto codificado en hexadecimal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Analiza una trgeometry a partir de su forma WKT, EWKT, MFJSON, EWKB o hex-EWKB</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_constructor"><varname>trgeometry</varname></link>: Construir una geometría rígida temporal a partir de una geometría de referencia y una pose temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname></link>: Añade un único instante a una trgeometry existente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Añade una secuencia completa a una trgeometry existente</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversiones de tipo</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_to_tpose"><varname>tpose</varname></link>: Devuelve la pose temporal subyacente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_to_tgeompoint"><varname>tgeompoint</varname></link>: Devuelve la trayectoria del centroide (antena) como un punto temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accesores</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueAtTimestamp</varname></link>: Devuelve la geometría materializada en el inicio, el final o un instante de tiempo elegido</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_numInstants"><varname>numInstants</varname>, <varname>numSequences</varname>, <varname>numTimestamps</varname></link>: Devuelve el número de instantes, secuencias o instantes de tiempo distintos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_instants"><varname>instants</varname>, <varname>sequences</varname>, <varname>segments</varname></link>: Devuelve el arreglo de instantes, secuencias o segmentos entre instantes constituyentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_points"><varname>points</varname></link>: Devuelve el conjunto de puntos distintos del centroide (antena)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_rotation"><varname>rotation</varname></link>: Devuelve el ángulo de rotación como un flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_geom"><varname>geom</varname></link>: Devuelve la geometría de referencia estática</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Área recorrida</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Devuelve la unión de los polígonos materializados a lo largo del dominio temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones espaciales</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_centroid_func"><varname>centroid</varname></link>: Devuelve el centroide del cuerpo en movimiento como un punto temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_convexHull_func"><varname>convexHull</varname></link>: Devuelve la envolvente convexa del área recorrida por el cuerpo en movimiento</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_bodyPointTrajectory_func"><varname>bodyPointTrajectory</varname></link>: Devuelve la trayectoria en el marco global de un punto del marco del cuerpo transportado por la geometría</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Métricas de movimiento</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_length"><varname>length</varname>, <varname>cumulativeLength</varname></link>: Devuelve la longitud total o acumulada recorrida por el centroide</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Devuelve la velocidad del centroide como un flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo de la trayectoria del centroide como una geometría</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Modificaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Redondea todos los componentes numéricos a un número dado de decimales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convierte entre las interpolaciones lineal y escalonada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Desplaza, escala, o desplaza y escala a la vez el dominio temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Restricciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringe una trgeometry a (el complemento de) una geometría</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringe una trgeometry a (el complemento de) un cuadro espaciotemporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de distancia</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Devuelve la distancia temporal entre dos trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la menor distancia entre dos trgeometries a lo largo de su dominio temporal compartido</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Devuelve el instante en el que los argumentos están a su menor distancia mutua</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta los dos argumentos en su punto de máxima aproximación</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Similitud</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de Hausdorff, de Frechet o de Dynamic Time Warp</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Devuelve los pares de correspondencia de Frechet o de Dynamic Time Warp</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Prueba la (des)igualdad exacta de dos trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_evereq"><varname>?=</varname>, <varname>?&lt;&gt;</varname></link>: Prueba si la geometría materializada es alguna vez (no) igual al operando</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_alwayseq"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Prueba si la geometría materializada es siempre (no) igual al operando</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de cuadro delimitador</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_topops"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Operadores topológicos estándar sobre cuadros delimitadores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_posops"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Operadores de posición espacial y temporal sobre cuadros delimitadores</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Teselas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_spaceBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve los cuadros de una cuadrícula espacial, temporal o espaciotemporal intersecados</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Cajas delimitadoras</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_stboxes"><varname>stboxes</varname>, <varname>spans</varname></link>: Devuelve los cuadros espaciotemporales o los lapsos de tiempo de los segmentos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_split_boxes"><varname>splitNStboxes</varname>, <varname>splitEachNStboxes</varname>, <varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Devuelve los cuadros o lapsos divididos en un número dado de particiones</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Agregaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_tcount"><varname>tCount</varname></link>: Número de trgeometries que se solapan en cada instante</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Cuadro delimitador agregado de una columna de trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un conjunto de secuencias</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Índices de celda H3 temporales</title>
+
+		<sect2>
+			<title>Conversiones de tipo</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tbigint"><varname>th3index::tbigint</varname>, <varname>tbigint::th3index</varname></link>: Convertir entre una celda H3 temporal y un bigint temporal (explícito, sin coste)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_tgeogpoint"><varname>th3index::tgeogpoint</varname>, <varname>th3index::tgeompoint</varname></link>: Convertir una celda H3 temporal en un punto temporal de los centroides de las celdas</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Cobertura geométrica estática</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_geoToH3Cell"><varname>geoToH3Cell</varname></link>: Devuelve la celda H3 que contiene una geometría de punto en la resolución dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_geoToH3IndexSet"><varname>geoToH3IndexSet</varname></link>: Devuelve el conjunto de celdas H3 que cubren una geometría en la resolución dada</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accesores</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Devuelve el primer o el último identificador de celda H3 de un valor temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Devuelve el n-ésimo identificador de celda H3 distinto</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_getValues"><varname>getValues</varname></link>: Devuelve el conjunto de identificadores de celda H3 distintos que toma la trayectoria</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el identificador de celda H3 en un instante dado</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Inspección del índice</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_get_resolution"><varname>th3GetResolution</varname></link>: Devuelve el nivel de resolución temporal (0-15) de cada celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_base_cell_number"><varname>th3GetBaseCellNumber</varname></link>: Devuelve el número de celda base temporal (0-121) de cada celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_cell"><varname>isValidCell</varname></link>: Devuelve un booleano temporal que indica si cada valor es una celda válida</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_res_class_iii"><varname>th3IsResClassIii</varname></link>: Devuelve un booleano temporal que indica si cada celda tiene orientación de Clase III</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_pentagon"><varname>th3IsPentagon</varname></link>: Devuelve un booleano temporal que indica si cada celda es un pentágono</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Jerarquía</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Devuelve la celda padre temporal en la resolución dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Devuelve la celda hija central temporal en la resolución dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_child_pos"><varname>th3CellToChildPos</varname></link>: Devuelve la posición ordinal de cada celda entre las hijas de su padre</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_child_pos_to_cell"><varname>th3ChildPosToCell</varname></link>: Devuelve la celda hija temporal en una posición ordinal dada</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversiones de latitud/longitud</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tgeompoint_to_th3"><varname>tgeompoint_to_th3</varname>, <varname>tgeogpoint_to_th3</varname></link>: Devuelve la celda H3 temporal que contiene cada punto en la resolución dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname></link>: Devuelve el centroide geodésico temporal de cada celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_boundary"><varname>th3CellToBoundary</varname></link>: Devuelve la frontera poligonal temporal de cada celda como una geografía</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Aristas dirigidas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Devuelve un booleano temporal que indica si dos celdas son vecinas en la malla</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cells_to_directed_edge"><varname>th3CellsToDirectedEdge</varname></link>: Devuelve un identificador de arista dirigida temporal a partir de un par de celdas origen/destino</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_directed_edge"><varname>isValidDirectedEdge</varname></link>: Devuelve un booleano temporal que indica si cada valor es una arista dirigida válida</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_directed_edge_origin"><varname>th3GetDirectedEdgeOrigin</varname>, <varname>th3GetDirectedEdgeDestination</varname></link>: Devuelve la celda origen o destino temporal de una arista dirigida</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_directed_edge_to_boundary"><varname>th3DirectedEdgeToBoundary</varname></link>: Devuelve la frontera poligonal temporal de cada arista dirigida como una geografía</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Vértices</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_vertex"><varname>th3CellToVertex</varname></link>: Devuelve el vértice H3 temporal en el número de vértice dado</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToLatlng</varname></link>: Devuelve las coordenadas geodésicas temporales de cada vértice</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Devuelve un booleano temporal que indica si cada valor es un vértice válido</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Recorrido de la malla</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal en saltos de malla entre dos celdas temporales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convertir entre una celda temporal y una coordenada local (I, J) temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Métricas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_area"><varname>th3CellArea</varname></link>: Devuelve el área temporal de cada celda en la unidad solicitada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Devuelve la longitud temporal de cada arista dirigida en la unidad solicitada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Devuelve la distancia temporal de círculo máximo entre dos puntos geodésicos temporales</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparaciones ever y always</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_ever_eq"><varname>ever_eq</varname>, <varname>?=</varname></link>: Devuelve si una celda H3 temporal es alguna vez igual al valor de prueba</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_always_eq"><varname>always_eq</varname>, <varname>%=</varname></link>: Devuelve si una celda H3 temporal es siempre igual al valor de prueba</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_ever_ne"><varname>ever_ne</varname>, <varname>?&lt;&gt;</varname></link>: Devuelve si una celda H3 temporal es alguna vez distinta del valor de prueba</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_always_ne"><varname>always_ne</varname>, <varname>%&lt;&gt;</varname></link>: Devuelve si una celda H3 temporal es siempre distinta del valor de prueba</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparaciones temporales</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_temporal_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Devuelve la igualdad o desigualdad instante a instante entre una celda H3 temporal y un valor de prueba</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de cuadro delimitador</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Solapamiento, contiene, contenido en, igual y adyacente del cuadro delimitador</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_space_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname></link>: Posición relativa a lo largo de los ejes espaciales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_time_position"><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Posición relativa a lo largo del eje temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones que devuelven conjuntos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_grid_disk"><varname>h3GridDisk</varname></link>: Todas las celdas dentro de k pasos de malla desde el origen</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_grid_ring"><varname>h3GridRing</varname></link>: Las celdas situadas exactamente a k pasos de malla del origen</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_grid_path_cells"><varname>h3GridPathCells</varname></link>: El camino inclusivo de celdas entre dos celdas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_children"><varname>h3CellToChildren</varname></link>: Todas las hijas de una celda en la resolución objetivo dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_compact_cells"><varname>h3CompactCells</varname></link>: Representación compactada de resolución mixta de un conjunto de celdas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_uncompact_cells"><varname>h3UncompactCells</varname></link>: Representación descompactada en la resolución dada</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_origin_to_directed_edges"><varname>h3OriginToDirectedEdges</varname></link>: Todas las aristas dirigidas salientes de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_vertexes"><varname>h3CellToVertexes</varname></link>: Todos los vértices de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: Los índices de cara del icosaedro intersecados por una celda</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Relaciones espaciales</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_rel_contains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>tContains</varname></link>: Si una huella contiene a la otra (solo interiores)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_covers"><varname>eCovers</varname>, <varname>aCovers</varname>, <varname>tCovers</varname></link>: Si una huella cubre a la otra (incluida la frontera)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_disjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>tDisjoint</varname></link>: Si las huellas no comparten ningún punto</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_intersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>tIntersects</varname></link>: Si las huellas comparten al menos un punto</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_touches"><varname>eTouches</varname>, <varname>aTouches</varname>, <varname>tTouches</varname></link>: Si las huellas comparten un punto de frontera pero ningún punto interior</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>tDwithin</varname></link>: Si las huellas se encuentran dentro de una distancia dada</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Índices</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_rtree_ops"><varname>th3index_rtree_ops</varname></link>: Clase de operadores GiST que indexa el cuadro delimitador espaciotemporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_quadtree_ops"><varname>th3index_quadtree_ops</varname>, <varname>th3index_kdtree_ops</varname></link>: Clases de operadores SP-GiST basadas en el cuadro delimitador espaciotemporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Índices de celda Quadbin temporales</title>
+
+		<sect2>
+			<title>Conversiones de tipo</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_tbigint"><varname>tquadbin::tbigint</varname>, <varname>tbigint::tquadbin</varname></link>: Convertir entre una celda quadbin temporal y un bigint temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_tgeompoint"><varname>tquadbin::tgeompoint</varname></link>: Convertir una celda quadbin temporal a un punto geométrico temporal de los centroides de las celdas</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Celdas estáticas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="quadbin_is_valid_index"><varname>isValidIndex</varname></link>: Devuelve si un valor es un identificador quadbin estructuralmente válido</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Devuelve si un valor es una celda quadbin válida</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accesores</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Devuelve la primera o la última celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Devuelve la enésima celda distinta</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_getValues"><varname>getValues</varname></link>: Devuelve el conjunto de celdas distintas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve la celda en una marca de tiempo</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Inspección del índice</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Devuelve el nivel de resolución (zoom) de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Devuelve un booleano temporal de validez de la celda</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Jerarquía</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Devuelve la celda padre en una resolución más gruesa</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Devuelve las celdas hijas en una resolución más fina</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_sibling"><varname>quadbinCellSibling</varname></link>: Devuelve la celda vecina en una dirección</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_grid_disk"><varname>quadbinGridDisk</varname></link>: Devuelve las celdas dentro de k pasos de malla de un origen</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversiones geométricas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Devuelve la celda que contiene un punto en una resolución</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Devuelve el centroide de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Devuelve el polígono de frontera de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_bounding_box"><varname>quadbinCellToBoundingBox</varname></link>: Devuelve la caja delimitadora de una celda</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Teselas y quadkeys</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_tile_to_cell"><varname>quadbinTileToCell</varname></link>: Devuelve la celda a partir de coordenadas de tesela slippy-map</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_tile"><varname>quadbinCellToTile</varname></link>: Devuelve las coordenadas de tesela de una celda</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Devuelve la cadena quadkey de una celda</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Métricas</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Devuelve el área de una celda</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Índices</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_btree_ops"><varname>tquadbin_btree_ops</varname></link>: Clase de operadores B-tree por defecto</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_hash_ops"><varname>tquadbin_hash_ops</varname></link>: Clase de operadores hash por defecto</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 

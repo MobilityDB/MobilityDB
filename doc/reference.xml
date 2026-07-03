@@ -129,6 +129,13 @@
 					<entry><varname>th3index</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>quadbin</varname></emphasis></entry>
+					<entry><varname>quadbinset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tquadbin</varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>pcpoint</varname></emphasis></entry>
 					<entry><varname>pcpointset</varname></entry>
 					<entry><varname/></entry>
@@ -2314,6 +2321,270 @@
 	</sect1>
 
 	<sect1>
+		<title>Temporal Rigid Geometries</title>
+
+		<sect2>
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asEWKT"><varname>asEWKT</varname></link>: Return the Extended Well-Known Text (EWKT) representation, prefixed with the SRID</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_asEWKB"><varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) representation, or its hex-encoded text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_fromText"><varname>trgeometryFromText</varname>, <varname>trgeometryFromEWKT</varname>, <varname>trgeometryFromMFJSON</varname>, <varname>trgeometryFromEWKB</varname>, <varname>trgeometryFromHexEWKB</varname></link>: Parse a trgeometry from its WKT, EWKT, MFJSON, EWKB, or hex-EWKB form</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Constructors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_constructor"><varname>trgeometry</varname></link>: Construct a temporal rigid geometry from a reference geometry and a temporal pose</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname></link>: Append a single instant to an existing trgeometry</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Append an entire sequence to an existing trgeometry</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_to_tpose"><varname>tpose</varname></link>: Return the underlying temporal pose</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_to_tgeompoint"><varname>tgeompoint</varname></link>: Return the centroid (antenna) trajectory as a temporal point</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueAtTimestamp</varname></link>: Return the materialised geometry at the start, end, or a chosen timestamp</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_numInstants"><varname>numInstants</varname>, <varname>numSequences</varname>, <varname>numTimestamps</varname></link>: Return the number of distinct instants, sequences, or timestamps</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_instants"><varname>instants</varname>, <varname>sequences</varname>, <varname>segments</varname></link>: Return the array of constituent instants, sequences, or inter-instant segments</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_points"><varname>points</varname></link>: Return the set of distinct centroid (antenna) points</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_rotation"><varname>rotation</varname></link>: Return the rotation angle as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_geom"><varname>geom</varname></link>: Return the static reference geometry</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Traversed Area</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Return the union of the materialised polygons across the time domain</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Spatial Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_centroid_func"><varname>centroid</varname></link>: Return the centroid of the moving body as a temporal point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_convexHull_func"><varname>convexHull</varname></link>: Return the convex hull of the area traversed by the moving body</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_bodyPointTrajectory_func"><varname>bodyPointTrajectory</varname></link>: Return the world-frame trajectory of a body-frame point carried by the geometry</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Motion Metrics</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_length"><varname>length</varname>, <varname>cumulativeLength</varname></link>: Return the total or cumulative length traversed by the centroid</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Return the speed of the centroid as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Return the time-weighted centroid of the centroid trajectory as a geometry</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Modifications</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_round"><varname>round</varname></link>: Round all numeric components to a given number of decimal places</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_setInterp"><varname>setInterp</varname></link>: Convert between linear and step interpolations</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift, scale, or both shift and scale the time domain</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Restrictions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict a trgeometry to (the complement of) a geometry</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict a trgeometry to (the complement of) a spatiotemporal box</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Distance Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Return the temporal distance between two trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance between two trgeometries over their shared time domain</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_nai"><varname>nearestApproachInstant</varname></link>: Return the instant at which the arguments are at their smallest mutual distance</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the two arguments at their nearest approach</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Similarity</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Return the Hausdorff, Frechet, or Dynamic Time Warp distance</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Return the Frechet or Dynamic Time Warp correspondence pairs</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Test exact (in)equality of two trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_evereq"><varname>?=</varname>, <varname>?&lt;&gt;</varname></link>: Test whether the materialised geometry is ever (not) equal to the operand</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_alwayseq"><varname>%=</varname>, <varname>%&lt;&gt;</varname></link>: Test whether the materialised geometry is always (not) equal to the operand</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_topops"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Standard topological operators on bounding boxes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_posops"><varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Spatial and temporal position operators on bounding boxes</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Tiles</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_spaceBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return the boxes of a spatial, temporal, or spatiotemporal grid intersected</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Boxes</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_stboxes"><varname>stboxes</varname>, <varname>spans</varname></link>: Return the spatiotemporal boxes or time spans of the segments</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_split_boxes"><varname>splitNStboxes</varname>, <varname>splitEachNStboxes</varname>, <varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return the boxes or spans split into a given number of bins</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Aggregations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="trgeometry_tcount"><varname>tCount</varname></link>: Number of overlapping trgeometries at each instant</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Aggregate bounding box of a column of trgeometries</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname></link>: Combine two trgeometries with the same reference geometry into a sequence-set</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
 		<title>Temporal JSON</title>
 
 		<sect2>
@@ -2512,6 +2783,476 @@
 
 				<listitem>
 					<para><link linkend="tjsonb_wCount"><varname>wCount</varname></link>: Window count</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal H3 Cell Indices</title>
+
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tbigint"><varname>th3index::tbigint</varname>, <varname>tbigint::th3index</varname></link>: Convert between a temporal H3 cell and a temporal bigint (explicit, zero-cost)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_tgeogpoint"><varname>th3index::tgeogpoint</varname>, <varname>th3index::tgeompoint</varname></link>: Cast a temporal H3 cell to a temporal point of cell centroids</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Static Geometry Coverage</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_geoToH3Cell"><varname>geoToH3Cell</varname></link>: Return the H3 cell containing a point geometry at the given resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_geoToH3IndexSet"><varname>geoToH3IndexSet</varname></link>: Return the set of H3 cells covering a geometry at the given resolution</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Return the first or last H3 cell identifier of a temporal value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Return the nth distinct H3 cell identifier</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_getValues"><varname>getValues</varname></link>: Return the set of distinct H3 cell identifiers the trajectory takes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the H3 cell identifier at a given timestamp</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Index Inspection</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_get_resolution"><varname>th3GetResolution</varname></link>: Return the temporal resolution level (0-15) of each cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_base_cell_number"><varname>th3GetBaseCellNumber</varname></link>: Return the temporal base-cell number (0-121) of each cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_cell"><varname>isValidCell</varname></link>: Return a temporal boolean of whether each value is a valid cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_res_class_iii"><varname>th3IsResClassIii</varname></link>: Return a temporal boolean of whether each cell has Class-III orientation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_pentagon"><varname>th3IsPentagon</varname></link>: Return a temporal boolean of whether each cell is a pentagon</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Hierarchy</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_parent"><varname>th3CellToParent</varname></link>: Return the temporal parent cell at the given resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_center_child"><varname>th3CellToCenterChild</varname></link>: Return the temporal center-child cell at the given resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_child_pos"><varname>th3CellToChildPos</varname></link>: Return each cell's ordinal position among its parent's children</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_child_pos_to_cell"><varname>th3ChildPosToCell</varname></link>: Return the temporal child cell at a given ordinal position</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Lat/Lng Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tgeompoint_to_th3"><varname>tgeompoint_to_th3</varname>, <varname>tgeogpoint_to_th3</varname></link>: Return the temporal H3 cell containing each point at the given resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_latlng"><varname>th3CellToLatlng</varname></link>: Return the temporal geodetic centroid of each cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_boundary"><varname>th3CellToBoundary</varname></link>: Return the temporal polygon boundary of each cell as a geography</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Directed Edges</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_are_neighbor_cells"><varname>th3AreNeighborCells</varname></link>: Return a temporal boolean of whether two cells are grid neighbours</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cells_to_directed_edge"><varname>th3CellsToDirectedEdge</varname></link>: Return a temporal directed-edge identifier from an origin/destination cell pair</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_directed_edge"><varname>isValidDirectedEdge</varname></link>: Return a temporal boolean of whether each value is a valid directed edge</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_directed_edge_origin"><varname>th3GetDirectedEdgeOrigin</varname>, <varname>th3GetDirectedEdgeDestination</varname></link>: Return the temporal origin or destination cell of a directed edge</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_directed_edge_to_boundary"><varname>th3DirectedEdgeToBoundary</varname></link>: Return the temporal polygon boundary of each directed edge as a geography</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Vertices</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_vertex"><varname>th3CellToVertex</varname></link>: Return the temporal H3 vertex at the given vertex number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_vertex_to_latlng"><varname>th3VertexToLatlng</varname></link>: Return the temporal geodetic coordinates of each vertex</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_is_valid_vertex"><varname>isValidVertex</varname></link>: Return a temporal boolean of whether each value is a valid vertex</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Grid Traversal</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_grid_distance"><varname>th3GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal grid-hop distance between two temporal cells</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_local_ij"><varname>th3CellToLocalIj</varname>, <varname>th3LocalIjToCell</varname></link>: Convert between a temporal cell and a temporal local (I, J) coordinate</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Metrics</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_cell_area"><varname>th3CellArea</varname></link>: Return the temporal area of each cell in the requested unit</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_edge_length"><varname>th3EdgeLength</varname></link>: Return the temporal length of each directed edge in the requested unit</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_great_circle_distance"><varname>greatCircleDistance</varname></link>: Return the temporal great-circle distance between two temporal geodetic points</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Ever and Always Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_ever_eq"><varname>ever_eq</varname>, <varname>?=</varname></link>: Return whether a temporal H3 cell is ever equal to the probe</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_always_eq"><varname>always_eq</varname>, <varname>%=</varname></link>: Return whether a temporal H3 cell is always equal to the probe</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_ever_ne"><varname>ever_ne</varname>, <varname>?&lt;&gt;</varname></link>: Return whether a temporal H3 cell is ever different from the probe</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_always_ne"><varname>always_ne</varname>, <varname>%&lt;&gt;</varname></link>: Return whether a temporal H3 cell is always different from the probe</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Temporal Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_temporal_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname></link>: Return the per-instant equality or inequality between a temporal H3 cell and a probe</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_overlaps"><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname></link>: Bounding-box overlap, contains, contained-by, same, and adjacent</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_space_position"><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname></link>: Relative position along the spatial axes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_time_position"><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Relative position along the time axis</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Set-Returning Helpers</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_h3_grid_disk"><varname>h3GridDisk</varname></link>: All cells within k grid steps of the origin</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_grid_ring"><varname>h3GridRing</varname></link>: The cells at exactly k grid steps from the origin</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_grid_path_cells"><varname>h3GridPathCells</varname></link>: The inclusive path of cells between two cells</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_children"><varname>h3CellToChildren</varname></link>: All children of a cell at the given target resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_compact_cells"><varname>h3CompactCells</varname></link>: Compacted mixed-resolution representation of a cell set</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_uncompact_cells"><varname>h3UncompactCells</varname></link>: Uncompacted representation at the given resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_origin_to_directed_edges"><varname>h3OriginToDirectedEdges</varname></link>: All outgoing directed edges of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_cell_to_vertexes"><varname>h3CellToVertexes</varname></link>: All vertexes of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_h3_get_icosahedron_faces"><varname>h3GetIcosahedronFaces</varname></link>: The icosahedron face indexes intersected by a cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Spatial Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_rel_contains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>tContains</varname></link>: Whether one footprint contains the other (interiors only)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_covers"><varname>eCovers</varname>, <varname>aCovers</varname>, <varname>tCovers</varname></link>: Whether one footprint covers the other (boundary included)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_disjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>tDisjoint</varname></link>: Whether the footprints share no point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_intersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>tIntersects</varname></link>: Whether the footprints share at least one point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_touches"><varname>eTouches</varname>, <varname>aTouches</varname>, <varname>tTouches</varname></link>: Whether the footprints share a boundary point but no interior point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_rel_dwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>tDwithin</varname></link>: Whether the footprints lie within a given distance</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Indexing</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_rtree_ops"><varname>th3index_rtree_ops</varname></link>: GiST operator class indexing the spatiotemporal bounding box</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_quadtree_ops"><varname>th3index_quadtree_ops</varname>, <varname>th3index_kdtree_ops</varname></link>: SP-GiST operator classes keyed on the spatiotemporal bounding box</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal Quadbin Cell Indices</title>
+
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_tbigint"><varname>tquadbin::tbigint</varname>, <varname>tbigint::tquadbin</varname></link>: Convert between a temporal quadbin cell and a temporal bigint</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_tgeompoint"><varname>tquadbin::tgeompoint</varname></link>: Convert a temporal quadbin cell to a temporal geometry point of cell centroids</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Static Cells</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="quadbin_is_valid_index"><varname>isValidIndex</varname></link>: Return whether a value is a structurally valid quadbin identifier</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Return whether a value is a valid quadbin cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Return the first or the last cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Return the nth distinct cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_getValues"><varname>getValues</varname></link>: Return the set of distinct cells</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the cell at a timestamp</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Index Inspection</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_get_resolution"><varname>quadbinGetResolution</varname>, <varname>tquadbinGetResolution</varname></link>: Return the resolution (zoom) level of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_is_valid_cell"><varname>isValidCell</varname></link>: Return a temporal boolean of cell validity</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Hierarchy</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_parent"><varname>quadbinCellToParent</varname>, <varname>tquadbinCellToParent</varname></link>: Return the parent cell at a coarser resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_children"><varname>quadbinCellToChildren</varname></link>: Return the child cells at a finer resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_sibling"><varname>quadbinCellSibling</varname></link>: Return the neighbouring cell in a direction</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_grid_disk"><varname>quadbinGridDisk</varname></link>: Return the cells within k grid steps of an origin</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Geometry Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_point_to_cell"><varname>geoToQuadbinCell</varname></link>: Return the cell containing a point at a resolution</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_point"><varname>quadbinCellToPoint</varname>, <varname>tquadbinCellToPoint</varname></link>: Return the centroid of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Return the boundary polygon of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_bounding_box"><varname>quadbinCellToBoundingBox</varname></link>: Return the bounding box of a cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Tiles and Quadkeys</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_tile_to_cell"><varname>quadbinTileToCell</varname></link>: Return the cell from slippy-map tile coordinates</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_tile"><varname>quadbinCellToTile</varname></link>: Return the tile coordinates of a cell</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Return the quadkey string of a cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Metrics</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_quadbin_cell_area"><varname>quadbinCellArea</varname>, <varname>tquadbinCellArea</varname></link>: Return the area of a cell</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Indexing</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_btree_ops"><varname>tquadbin_btree_ops</varname></link>: Default B-tree operator class</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_hash_ops"><varname>tquadbin_hash_ops</varname></link>: Default hash operator class</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
