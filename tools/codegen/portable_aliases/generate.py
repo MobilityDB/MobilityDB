@@ -96,14 +96,10 @@ SYM_RE = re.compile(r"'MODULE_PATHNAME',\s*'([A-Za-z0-9_]+)'")
 
 # Numeric prefix per subdir: sorts AFTER that group's type/operator defs
 # under the top-level list(SORT) (aliases depend only on argument types).
-# The temporal group (base types + cbuffer/npoint/h3/quadbin), the json family
-# (jsonbset + tjsonb), and the pose, rgeo and pointcloud families are absent:
-# their posops files name the positional backing functions with the bare portable
-# name directly, so the proc == name guard in the emit loop skips them and they
-# need no alias file. geo keeps a generated alias file for its stbox positional
-# operators and temporal comparison operators, whose backing functions carry
-# prefixed names.
-GROUP_PREFIX = {"geo": "079"}
+# Every family names its positional and comparison operator backing functions with
+# the bare portable name directly, so the proc == name guard in the emit loop skips
+# them all and no family needs a generated alias file.
+GROUP_PREFIX = {}
 
 HEADER = (
     "/*****************************************************************************\n"
