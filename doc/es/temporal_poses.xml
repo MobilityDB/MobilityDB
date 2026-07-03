@@ -363,6 +363,217 @@ SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~=
 
 			</itemizedlist>
 		</sect2>
+		<sect2 xml:id="pose_ogc_geopose">
+			<title>Soporte de OGC GeoPose v1.0</title>
+			<para>El tipo <varname>pose</varname> de MobilityDB implementa el modelo de datos que subyace al <ulink url="https://www.ogc.org/standards/geopose/">estándar OGC GeoPose v1.0</ulink> (<ulink url="https://docs.ogc.org/is/21-056r10/21-056r10.html">21-056r10</ulink>): una <varname>position</varname> más una <varname>orientation</varname> en un marco de referencia conocido, donde la orientación es un cuaternión unitario en la convención de Hamilton o, de forma equivalente, una terna yaw / pitch / roll bajo la convención Tait-Bryan intrínseca ZYX. Esta sección agrupa la superficie SQL que expone esa interoperabilidad: E/S JSON para las clases de conformidad Basic del estándar, una función auxiliar de renormalización explícita para quienes ejecutan composiciones largas, y los accesores de ángulos de Euler que esperan los consumidores Basic-YPR.</para>
+
+			<sect3 xml:id="pose_geopose_io">
+				<title>Entrada y salida JSON</title>
+				<itemizedlist>
+					<listitem xml:id="pose_geopose_funcs">
+						<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>poseFromGeoPose</varname></primary></indexterm>
+						<para>Convertir hacia o desde la codificación JSON de OGC GeoPose v1.0 (clase de conformidad Basic-Quaternion o Basic-YPR)</para>
+						<para><varname>asGeoPose(pose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+						<para><varname>poseFromGeoPose(text) → pose</varname></para>
+						<para>El argumento <varname>conformance</varname> selecciona la clase de salida: <varname>0</varname> = Basic-Quaternion (predeterminado, sin pérdida), <varname>1</varname> = Basic-YPR (yaw, pitch, roll en grados, Tait-Bryan intrínseco ZYX). El argumento <varname>maxdecimaldigits</varname> es el número de dígitos significativos que se conservan en los números JSON; <varname>-1</varname> utiliza el valor predeterminado sin pérdida de json-c. La función de entrada detecta automáticamente la clase de conformidad a partir de las claves JSON (el miembro <varname>quaternion</varname> → Basic-Quaternion, el miembro <varname>angles</varname> → Basic-YPR). Las clases de conformidad Basic exigen un marco exterior geográfico; la implementación acepta el SRID 4326 (o 0, tratado como geográfico) y rechaza los SRID proyectados en el límite de la conversión.</para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)', 0, 6);
+-- {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)', 1, 6);
+-- {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+SELECT asEWKT(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'));
+-- Pose(POINT Z (8 47 1500),0.7071067811865476,0,0,0.7071067811865475)
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_normalize">
+				<title>Renormalización de cuaterniones</title>
+				<itemizedlist>
+					<listitem xml:id="pose_normalize">
+						<indexterm significance="normal"><primary><varname>poseNormalize</varname></primary></indexterm>
+						<para>Devuelve una pose cuyo cuaternión de orientación se ha llevado de nuevo a la norma unitaria. Una pose 2D se devuelve sin cambios, ya que su orientación es un único ángulo que no deriva. A una pose 3D se le divide el cuaternión por su norma euclidiana, de modo que composiciones largas de SLERP (o cualquier otra vía que acumule deriva de punto flotante en <varname>|q|</varname>) pueden restaurarse al invariante <varname>|q| = 1</varname> que requiere el código de SLERP y de descomposición de Euler.</para>
+						<para><varname>poseNormalize(pose) → pose</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
+-- Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_ypr">
+				<title>Accesores de ángulos de Euler</title>
+				<itemizedlist>
+					<listitem xml:id="pose_yaw_pitch_roll">
+						<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+						<para>Devuelve el ángulo yaw, pitch o roll de una pose, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</para>
+						<para><varname>yaw(pose) → float</varname></para>
+						<para><varname>pitch(pose) → float</varname></para>
+						<para><varname>roll(pose) → float</varname></para>
+						<para>Para una pose 2D, <varname>yaw</varname> devuelve la rotación almacenada <varname>theta</varname> —por convención, el yaw del marco del cuerpo— y <varname>pitch</varname> y <varname>roll</varname> devuelven <varname>0</varname>. Para una pose 3D, los tres valores provienen de la descomposición Tait-Bryan intrínseca ZYX del cuaternión de orientación. El término de pitch <varname>asin</varname> se acota a <varname>[-1, 1]</varname> para absorber la pequeña deriva numérica que pueden introducir las composiciones largas de cuaterniones.</para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
+-- 0.5
+SELECT pitch(pose 'Pose(Point(1 1), 0.5)');
+-- 0
+SELECT roll(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
+-- 0
+SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)');
+-- 1.5707963267948966
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpose_yaw_pitch_roll">
+						<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+						<para>Eleva los accesores de ángulos de Euler a través de una pose temporal, devolviendo un flotante temporal (radianes) por cada instante bajo la convención Tait-Bryan intrínseca ZYX</para>
+						<para><varname>yaw(tpose) → tfloat</varname></para>
+						<para><varname>pitch(tpose) → tfloat</varname></para>
+						<para><varname>roll(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- [0@2000-01-01, 0.5@2000-01-02]
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_frames">
+				<title>Registro de metadatos de marcos</title>
+				<para>El estándar OGC GeoPose v1.0 distingue el <emphasis>marco exterior</emphasis> (la referencia global, por ejemplo, WGS-84 geográfico o ECEF) del <emphasis>marco interior</emphasis> (el marco del cuerpo cuya orientación es el cuaternión de la pose). Las clases de conformidad Basic exigen WGS-84 geográfico como marco exterior y un marco interior implícito de ejes de cuerpo dextrógiros; la clase Advanced admite pilas de marcos con nombre.</para>
+				<para>En MobilityDB v1, el tipo <varname>pose</varname> codifica el marco exterior de forma implícita mediante su SRID y utiliza el marco interior convencional de ejes de cuerpo dextrógiros. La tabla <varname>geopose_frames</varname> documenta esta correspondencia y siembra un registro paralelo a la tabla <varname>pointcloud_formats</varname> de pgPointCloud, de modo que el soporte futuro de la clase Advanced solo necesite ampliar el catálogo en lugar de rediseñarlo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT frame_id, authority, code, name, is_geographic
+FROM geopose_frames ORDER BY frame_id;
+-- 1 | EPSG | 4326 | WGS-84 geographic (lat/lon/h)                | t
+-- 2 | EPSG | 4978 | WGS-84 ECEF (Earth-Centred Earth-Fixed)      | f
+-- 3 | OGC  | LTP  | Local Tangent Plane (East-North-Up)          | f
+-- 4 | OGC  | BODY | Right-handed body axes (default inner frame) | f
+</programlisting>
+				<para>Tres funciones auxiliares SQL proporcionan una interfaz de consulta estable para el código que no quiere codificar de forma rígida la disposición de la tabla:</para>
+				<itemizedlist>
+					<listitem><para><varname>geopose_frame_srid(int) → int</varname> — el SRID de PostGIS de un marco, o <varname>NULL</varname> si el marco es paramétrico (LTP, BODY).</para></listitem>
+					<listitem><para><varname>geopose_frame_name(int) → text</varname> — el nombre legible del marco.</para></listitem>
+					<listitem><para><varname>geopose_frame_is_geographic(int) → boolean</varname> — <varname>true</varname> para los marcos lat/lon/h, <varname>false</varname> para los cartesianos o proyectados.</para></listitem>
+				</itemizedlist>
+				<para>Los usuarios pueden registrar marcos personalizados insertándolos en <varname>geopose_frames</varname>; el catálogo está marcado como una tabla de configuración, por lo que <varname>pg_dump</varname> preserva las filas del usuario.</para>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_apply">
+				<title>Transformación rígida cuerpo↔mundo</title>
+				<para>La función <varname>applyPose</varname> aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo→mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo. La transformación es</para>
+				<programlisting xml:space="preserve" format="linespecific">
+world = R(q) · body + p
+</programlisting>
+				<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. La versión v1 admite geometrías de cuerpo de tipo punto y multipunto; las líneas y los polígonos quedan aplazados. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
+				<para><varname>applyPose(geometry, pose) → geometry</varname></para>
+				<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A body sensor offset 1 unit along the body X axis, traced through a
+-- tpose that ends 90 degrees yawed and translated to (10, 20).
+SELECT asText(applyPose(ST_Point(1,0),
+  tpose '[Pose(Point(0 0), 0)@2026-01-01,
+          Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
+-- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_transform">
+				<title>Transformaciones de marco entre SRID</title>
+				<para>La función <varname>transform(pose, srid)</varname> lleva los valores de pose de un SRID a otro. El flujo de trabajo n.º 6 del plan de GeoPose temporal amplía el comportamiento preexistente de <emphasis>solo posición</emphasis> con la corrección de orientación necesaria cuando el marco de origen y el de destino tienen bases distintas en el punto de la pose. La versión v1 implementa el caso canónico de OGC GeoPose —WGS-84 geográfico (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978)— utilizando la base estándar Este-Norte-Arriba en el punto geográfico como pivote de rotación. Para los pares de SRID cuya corrección de orientación aún no está definida, <varname>transform</varname> emite un <varname>NOTICE</varname> y deja pasar la orientación sin cambios.</para>
+				<para>Un viaje de ida y vuelta a través de ECEF y de regreso aterriza exactamente en la pose de entrada:</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(
+  transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978),
+            4326), 6));
+-- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
+
+-- At the equator-meridian (lat=lon=0), the body identity quaternion in
+-- the ECEF basis becomes the canonical ENU->ECEF rotation:
+SELECT asEWKT(round(
+  transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)
+</programlisting>
+				<para>La implementación también corrige un error preexistente de solo posición en el que <varname>transform</varname> no actualizaba el campo SRID del resultado, de modo que la pose devuelta ahora lleva el SRID de destino como se espera.</para>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_temporal_io">
+				<title>E/S JSON temporal</title>
+				<itemizedlist>
+					<listitem xml:id="tpose_geopose_funcs">
+						<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
+						<indexterm significance="normal"><primary><varname>tposeFromGeoPose</varname></primary></indexterm>
+						<para>Convierte una pose temporal hacia o desde una envoltura JSON TemporalGeoPose. Cada carga útil por instante es un documento GeoPose de clase Basic estrictamente válido según OGC más un miembro <varname>validTime</varname>; la envoltura registra la clase de conformidad, la interpolación y (para secuencias y conjuntos de secuencias) la inclusión de los límites del período. Un consumidor GeoPose ajeno a MEOS puede iterar sobre <varname>instants[]</varname> (o cada <varname>sequences[].instants[]</varname>) y consumir cada elemento como un documento GeoPose estático.</para>
+						<para><varname>asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+						<para><varname>tposeFromGeoPose(text) → tpose</varname></para>
+						<para>La forma de la envoltura es</para>
+						<programlisting xml:space="preserve" format="linespecific">
+{
+  "type":          "TemporalGeoPose",
+  "version":       "1.0",
+  "conformance":   "Basic-Quaternion" | "Basic-YPR",
+  "interpolation": "None" | "Discrete" | "Step" | "Linear",
+  "instants":      [...]                  // for TInstant + TSequence
+  "lower_inc":     true|false,            // for TSequence only
+  "upper_inc":     true|false,            // for TSequence only
+  "sequences":     [{...}, ...]           // for TSequenceSet only
+}
+</programlisting>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
+                         Pose(Point(9 48), 0.5)@2026-01-02]',
+                 1, 4);
+-- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR",
+--  "interpolation":"Linear","lower_inc":true,"upper_inc":true,
+--  "instants":[
+--    {"position":{"lat":47,"lon":8,"h":0},
+--     "angles":{"yaw":0,"pitch":0,"roll":0},
+--     "validTime":"2026-01-01 00:00:00+01"},
+--    {"position":{"lat":48,"lon":9,"h":0},
+--     "angles":{"yaw":28.65,"pitch":0,"roll":0},
+--     "validTime":"2026-01-02 00:00:00+01"}]}
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3 xml:id="pose_geopose_speed">
+				<title>Velocidad y velocidad angular</title>
+				<itemizedlist>
+					<listitem xml:id="tpose_speed">
+						<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+						<para>Devuelve la velocidad de una pose temporal como un flotante temporal: la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo). La orientación no forma parte de este escalar; para la velocidad angular véase <varname>angularSpeed</varname>.</para>
+						<para><varname>speed(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
+-- (sqrt(2) units / 86400 seconds — units depend on the SRID's CRS)
+</programlisting>
+					</listitem>
+
+					<listitem xml:id="tpose_angular_speed">
+						<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
+						<para>Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación por pasos (radianes por unidad de tiempo). Para las poses 2D es el delta theta del arco más corto por segmento dividido por la duración del segmento; para las poses 3D es el ángulo de arco de SLERP <varname>2 · acos(|q1 · q2|)</varname> dividido por la duración del segmento. SLERP tiene por construcción velocidad angular constante a lo largo de un segmento, por lo que el resultado es constante a trozos.</para>
+						<para><varname>angularSpeed(tpose) → tfloat</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
+SELECT asText(angularSpeed(tpose
+  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+-- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
+</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
 	</sect1>
 
 	<sect1 xml:id="temp_poses">
@@ -636,6 +847,17 @@ SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
 SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
   Pose(Point Z(2 2 2), 1, 0, 0, 0)@2001-01-02)')::tgeompoint);
 -- [POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_tgeogpoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir una pose temporal geodésica en un punto geográfico temporal</para>
+				<para><varname>tpose::tgeogpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText((tpose '[GeodPose(Point(1 1), 0.2)@2001-01-01,
+  GeodPose(Point(1 1), 0.3)@2001-01-02)')::tgeogpoint);
+-- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02)
 </programlisting>
 			</listitem>
 		</itemizedlist>
